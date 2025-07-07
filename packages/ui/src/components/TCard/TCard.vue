@@ -48,7 +48,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useBemm } from '../../composables/useBemm'
+import { useBemm } from 'bemm'
 import TIcon from '../TIcon/TIcon.vue'
 import TButton from '../TButton/TButton.vue'
 import type { ButtonType, ButtonSize, ButtonColor } from '../TButton/TButton.model'
@@ -87,11 +87,11 @@ const emit = defineEmits<{
 }>()
 
 // BEM classes
-const { bemClass } = useBemm('card')
+const bemm = useBemm('card')
 
 // Computed properties
 const cardClasses = computed(() => {
-  return bemClass(undefined, {
+  return bemm('', {
     [props.size]: true,
     clickable: props.clickable,
     'has-image': Boolean(props.image),

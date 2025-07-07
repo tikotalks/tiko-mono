@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useBemm } from '../../composables/useBemm'
+import { useBemm } from 'bemm'
 // Simple fallback for icon loading
 const getIcon = async (name: string): Promise<string> => {
   // For now, return a simple placeholder SVG
@@ -35,7 +35,7 @@ const props = withDefaults(defineProps<TIconProps>(), {
 })
 
 // BEM classes
-const { bemClass } = useBemm('icon')
+const bemm = useBemm('icon')
 
 // Icon SVG content
 const iconSvg = ref<string>('')
@@ -60,7 +60,7 @@ const iconClasses = computed(() => {
     ? props.size
     : 'custom'
     
-  return bemClass(undefined, {
+  return bemm('', {
     [sizeClass]: true
   })
 })
