@@ -1,0 +1,30 @@
+@mixin icon-music-note {
+	svg {
+		animation: ICON_MUSIC_NOTE 1s ease-in-out infinite;
+
+		--icon-fill: var(--primary-rgb);
+
+		@keyframes ICON_MUSIC_NOTE {
+			// Create a bouncy happy animation for a music not
+
+			0% {
+				transform: translateY(0) rotate(0deg);
+			}
+			20% {
+				transform: translateY(-20%) rotate(-5deg);
+			}
+			40% {
+				transform: translateY(0) rotate(5deg);
+			}
+			60% {
+				transform: translateY(-15%) rotate(-3deg);
+			}
+			80% {
+				transform: translateY(0) rotate(3deg);
+			}
+			100% {
+				transform: translateY(0) rotate(0deg);
+			}
+		}
+	}
+}

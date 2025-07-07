@@ -1,0 +1,112 @@
+@mixin icon-settings5 {
+	svg {
+		$time: 1.5s;
+		@keyframes ICONS_SETTINGS_LINE1 {
+			0%,
+			100% {
+				stroke-dashoffset: 0;
+			}
+			50% {
+				stroke-dashoffset: 30;
+			}
+		}
+		@keyframes ICONS_SETTINGS_LINE2 {
+			0% {
+				stroke-dashoffset: 15;
+			}
+			25% {
+				stroke-dashoffset: 30;
+			}
+			75% {
+				stroke-dashoffset: 0;
+			}
+			100% {
+				stroke-dashoffset: 15;
+			}
+		}
+		@keyframes ICONS_SETTINGS_LINE3 {
+			0%,
+			100% {
+				stroke-dashoffset: 30;
+			}
+			50% {
+				stroke-dashoffset: 0;
+			}
+		}
+		$timing: linear;
+
+		line:nth-child(1) {
+			animation: ICONS_SETTINGS_LINE1 #{$time} #{$timing} infinite;
+		}
+		line:nth-of-type(2) {
+			animation: ICONS_SETTINGS_LINE2 #{$time} #{$timing} infinite;
+		}
+		line:nth-of-type(3) {
+			animation: ICONS_SETTINGS_LINE3 #{$time} #{$timing} infinite;
+		}
+		@keyframes ICONS_SETTINGS_CIRCLE1 {
+			0%,
+			100% {
+				transform: translateX(0%);
+			}
+			50% {
+				transform: translateX(-40%);
+			}
+		}
+		@keyframes ICONS_SETTINGS_CIRCLE2 {
+			0% {
+				transform: translateX(-20%);
+			}
+			25% {
+				transform: translateX(-40%);
+			}
+			75% {
+				transform: translateX(0%);
+			}
+			100% {
+				transform: translateX(-20%);
+			}
+		}
+		@keyframes ICONS_SETTINGS_CIRCLE3 {
+			0%,
+			100% {
+				transform: translateX(-40%);
+			}
+			50% {
+				transform: translateX(-0%);
+			}
+		}
+		g:nth-of-type(1) circle {
+			animation: ICONS_SETTINGS_CIRCLE1 #{$time} #{$timing} infinite;
+		}
+		g:nth-of-type(2) circle {
+			animation: ICONS_SETTINGS_CIRCLE2 #{$time} #{$timing} infinite;
+		}
+		g:nth-of-type(3) circle {
+			animation: ICONS_SETTINGS_CIRCLE3 #{$time} #{$timing} infinite;
+		}
+	}
+}
+
+@mixin icon-settings5-start {
+	svg {
+		line:nth-child(1) {
+			stroke-dashoffset: 0;
+		}
+		line:nth-of-type(2) {
+			stroke-dashoffset: 15;
+		}
+		line:nth-of-type(3) {
+			stroke-dashoffset: 30;
+		}
+		g:nth-of-type(1) circle {
+			transform: translateX(-0%);
+		}
+		g:nth-of-type(2) circle {
+			transform: translateX(-20%);
+		}
+		g:nth-of-type(3) circle {
+			transform: translateX(-40%);
+		}
+	}
+}

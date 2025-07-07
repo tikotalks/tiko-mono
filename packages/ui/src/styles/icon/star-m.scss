@@ -1,0 +1,15 @@
+@mixin icon-star-m {
+	svg {
+		animation: ICON_STAR_M 1s ease-in-out forwards;
+
+		@keyframes ICON_STAR_M {
+			0% {
+				transform: rotate(0deg);
+			}
+			25%,
+			100% {
+				transform: rotate(72deg);
+			}
+		}
+	}
+}

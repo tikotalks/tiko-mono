@@ -1,0 +1,15 @@
+:root {
+	--space: 1em;
+	--space-s: calc(var(--space) / 2);
+	--space-xs: calc(var(--space) / 3);
+	--space-l: calc(var(--space) * 2);
+	--space-xl: calc(var(--space) * 3);
+	--spacing: clamp(2em, 8vw, 6em);
+	--border-radius: 1.5em;
+	--spacing: clamp(2em, 8vw, 6em);
+	--bezier: cubic-bezier(0, 0.75, 0.5, 1.5);
+	--max-post-width: 640px;
+}
+body {
+	--drop-shadow: 0 1px 2px 1px var(--drop-shadow-color, var(--accent));
+}

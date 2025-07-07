@@ -1,0 +1,40 @@
+@use 'functions';
+@use 'variables';
+
+:root {
+	@each $color-name, $color-value in variables.$colors {
+		--color-#{$color-name}: #{$color-value};
+		@include functions.hslColors($color-name, $color-value);
+		@include functions.rgbColors($color-name, $color-value);
+		--color-#{$color-name}-text: #{functions.textColorShade($color-value, $color-name)};
+	}
+	@each $color-name, $color-value in variables.$base-colors {
+		--color-#{$color-name}: #{$color-value};
+		@include functions.hslColors($color-name, $color-value);
+		@include functions.rgbColors($color-name, $color-value);
+		--color-#{$color-name}-text: #{functions.textColorShade($color-value, $color-name)};
+	}
+
+	--space: 1em;
+	--space-s: calc(var(--space) / 2);
+	--spacing: clamp(2em, 8vw, 6em);
+	--border-radius: 0.5em;
+	--spacing: clamp(2em, 8vw, 6em);
+	--bezier: cubic-bezier(0, 0.75, 0.5, 1.5);
+}
+// @media (prefers-color-scheme: dark) {
+// 	:root {
+// 		@include functions.darkModeBase();
+// 	}
+// }
+// @media (prefers-color-scheme: light) {
+	:root {
+		@include functions.lightModeBase();
+	}
+// }
+[data-color-mode='dark'] {
+	@include functions.darkModeBase();
+}
+[data-color-mode='light'] {
+	@include functions.lightModeBase();
+}

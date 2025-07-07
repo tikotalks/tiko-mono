@@ -1,0 +1,238 @@
+// @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+@font-face {
+  font-family: 'Graphik';
+  src: url('/fonts/graphik-regular-web.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Graphik';
+  src: url('/fonts/graphik-semibold-web.woff') format('woff');
+  font-weight: bold;
+  font-style: normal;
+}
+
+body {
+	&[data-font-size='small'] {
+		font-size: 16px;
+	}
+	&[data-font-size='medium'] {
+		font-size: 18px;
+	}
+	&[data-font-size='large'] {
+		font-size: 20px;
+	}
+	&[data-font-size='xlarge'] {
+		font-size: 24px;
+	}
+}
+
+* {
+	font-family: var(--font-family, 'Graphik'), sans-serif;
+	font-size: var(--font-size, 1em);
+}
+
+
+.highlight{
+	display: inline;
+	position: relative;
+	&::before{
+		background-color: var(--color-yellow);
+z-index: -1;
+		content: '';
+		left: 50%; top: 50%;
+		width: 100%; height: 100%;
+		border-radius: .25em;
+		padding: var(--space-xs) var(--space-s);
+		transform: translate(-50%,-50%);
+		position:absolute
+	}
+	// &:has(.animate-in){
+	// 	display: none;
+	// }
+}
+.heading {
+	--heading-font-family-default: 'Graphik', sans-serif;
+	font-family: var(--heading-font-family, var(--heading-font-family-default));
+	font-weight: var(--heading-font-weight, 600);
+	font-size: var(--heading-font-size, 1.5em);
+	line-height: var(--heading-line-height, 1.2);
+	color: var(--heading-color, currentColor);
+	margin: 0;
+	padding: 0;
+
+	&:has(.icon) {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+		.icon {
+			font-size: var(--heading-icon-size, 1em);
+		}
+	}
+	&:has(strong) {
+		font-weight: normal;
+		color: var(--color, var(--foreground));
+		strong {
+			color: var(--foreground);
+			font-weight: bold;
+		}
+	}
+
+	&--1 {
+		font-size: 2.5em;
+		line-height: 1.2;
+		// letter-spacing: -0.025em;
+	}
+	&--2 {
+		font-size: 2em;
+		line-height: 1.2;
+		// letter-spacing: -0.025em;
+	}
+	&--3 {
+		font-size: 1.5em;
+		line-height: 1.2;
+		// letter-spacing: -0.025em;
+	}
+	&--4 {
+		font-size: 1.25em;
+		line-height: 1.2;
+	}
+	&--5 {
+		font-size: 1em;
+		line-height: 1.2;
+	}
+	&--6 {
+		font-family: var(--heading-font-family-h6, var(--heading-font-family, 'Inter'));
+		font-size: 0.875em;
+		line-height: 1.2;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+	}
+}
+
+h1:not([class]),
+h2:not([class]),
+h3:not([class]),
+h4:not([class]),
+h5:not([class]),
+h6:not([class]) {
+	@extend .heading;
+}
+h1:not([class]) {
+	@extend .heading--1;
+}
+
+h2:not([class]) {
+	@extend .heading--2;
+}
+
+h3:not([class]) {
+	@extend .heading--3;
+}
+h4:not([class]) {
+	@extend .heading--4;
+}
+
+h5:not([class]) {
+	@extend .heading--5;
+}
+h6:not([class]) {
+	@extend .heading--6;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+.button,
+.button-group,
+hr {
+	& + *:not([class]),
+	& + .button,
+	& + .button-group {
+		margin-top: 1em;
+	}
+}
+
+p {
+	line-height: 1.5;
+	&:first-child {
+		font-size: 1.1em;
+	}
+}
+
+// List styling for unclassed lists
+ul:not([class]) {
+	padding-left: 1.5em;
+	margin: 1em 0;
+	list-style-type: none;
+
+	li {
+		position: relative;
+		margin-bottom: 0.5em;
+		line-height: 1.5;
+
+		&:before {
+			content: '';
+			position: absolute;
+			left: -1.5em;
+			top: 0.5em;
+			width: 0.5em;
+			height: 0.5em;
+			border-radius: 50%;
+			background-color: var(--color, var(--accent, currentColor));
+		}
+
+		// Nested lists
+		ul:not([class]) {
+			margin: 0.5em 0;
+
+			li:before {
+				background-color: transparent;
+				border: 1px solid var(--color, var(--accent, currentColor));
+			}
+		}
+	}
+}
+
+ol:not([class]) {
+	padding-left: 1.5em;
+	margin: 1em 0;
+	counter-reset: item;
+	list-style-type: none;
+
+	li {
+		position: relative;
+		margin-bottom: 0.5em;
+		line-height: 1.5;
+		counter-increment: item;
+
+		&:before {
+			content: counter(item) '.';
+			position: absolute;
+			left: -1.5em;
+			top: 0;
+			color: var(--color, var(--accent, currentColor));
+			font-weight: 600;
+		}
+
+		// Nested lists
+		ol:not([class]) {
+			margin: 0.5em 0;
+			counter-reset: subitem;
+
+			li {
+				counter-increment: subitem;
+
+				&:before {
+					content: counter(item) '.' counter(subitem);
+				}
+			}
+		}
+	}
+}
+

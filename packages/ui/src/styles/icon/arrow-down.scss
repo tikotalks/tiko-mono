@@ -1,0 +1,17 @@
+@mixin icon-arrow-down {
+	svg {
+		animation: ICON_ARROW_DOWN 0.3s ease-in-out forwards;
+
+		@keyframes ICON_ARROW_DOWN {
+			0% {
+				transform: translateY(0%);
+			}
+			50% {
+				transform: translateY(50%);
+			}
+			100% {
+				transform: translateY(0%);
+			}
+		}
+	}
+}

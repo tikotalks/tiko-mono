@@ -1,0 +1,35 @@
+@mixin icon-temple {
+	svg {
+		line:nth-child(1),
+		line:nth-child(2),
+		line:nth-child(3),
+		line:nth-child(4) {
+			color: red;
+			fill: blue;
+			animation: ICON_TEMPLE_PILARS 0.5s ease-in-out forwards;
+			@keyframes ICON_TEMPLE_PILARS {
+				50% {
+					stroke-dasharray: 2em;
+					stroke-dashoffset: -2em;
+				}
+				0%,
+				100% {
+					stroke-dasharray: 2em;
+					stroke-dashoffset: 0em;
+				}
+			}
+		}
+		path {
+			animation: ICON_TEMPLE_ROOF 0.5s ease-in-out forwards;
+			@keyframes ICON_TEMPLE_ROOF {
+				50% {
+					transform: translateY(50%);
+				}
+				0%,
+				100% {
+					transform: translateY(0%);
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,1 @@
+export { default as TAppLayout } from './TAppLayout.vue'

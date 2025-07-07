@@ -1,0 +1,7 @@
+@use 'sass:string';
+@use 'core/join';
+
+@function variable($message, $names...) {
+	$names: join.join($names, ', $');
+	@return string.unquote('$#{$names}: #{$message}.');
+}

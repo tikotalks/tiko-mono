@@ -1,0 +1,17 @@
+@mixin icon-arrow-up-left {
+	svg {
+		animation: ICON_ARROW_UP_LEFT 0.3s ease-in-out forwards;
+
+		@keyframes ICON_ARROW_UP_LEFT {
+			0% {
+				transform: translate(0%,0%);
+			}
+			50% {
+				transform: translate(-50%, -50%);
+			}
+			100% {
+				transform: translate(0%,0%);
+			}
+		}
+	}
+}
