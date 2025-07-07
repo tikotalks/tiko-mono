@@ -1,16 +1,48 @@
 import { createClient } from '@supabase/supabase-js'
 
 // These would normally come from environment variables
-const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL || 'https://placeholder.supabase.co'
-const supabaseAnonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || 'placeholder-key'
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true
-  }
+// Debug environment variables
+console.log('Environment check:', {
+  hasUrl: !!supabaseUrl,
+  hasKey: !!supabaseAnonKey,
+  url: supabaseUrl,
+  env: import.meta.env
 })
+
+// Validate Supabase configuration
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Missing Supabase configuration:', {
+    hasUrl: !!supabaseUrl,
+    hasKey: !!supabaseAnonKey,
+    url: supabaseUrl,
+    allEnvVars: import.meta.env
+  })
+}
+
+if (supabaseUrl === 'https://placeholder.supabase.co' || supabaseAnonKey === 'placeholder-key') {
+  console.warn('Using placeholder Supabase credentials. Please update your .env file.')
+}
+
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co', 
+  supabaseAnonKey || 'placeholder-key',
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      flowType: 'pkce'
+    },
+    global: {
+      headers: {
+        'X-Client-Info': '@supabase/supabase-js@2.50.3'
+      }
+    }
+  }
+)
 
 // Database types (these would normally be generated from Supabase)
 export interface Database {

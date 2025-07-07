@@ -17,8 +17,9 @@
             :is-loading="authLoading"
             :error="authError"
             @apple-sign-in="handleAppleSignIn"
-            @email-sign-in="handleEmailSignIn"
-            @email-sign-up="handleEmailSignUp"
+            @email-submit="handleEmailSubmit"
+            @verification-submit="handleVerificationSubmit"
+            @resend-code="handleResendCode"
             @clear-error="clearAuthError"
           />
         </div>
@@ -66,32 +67,39 @@ const handleAppleSignIn = async () => {
   }
 }
 
-const handleEmailSignIn = async (email: string, password: string) => {
+const handleEmailSubmit = async (email: string, fullName?: string) => {
   authLoading.value = true
   authError.value = null
 
   try {
-    await authStore.signInWithEmail(email, password)
+    await authStore.signInWithPasswordlessEmail(email, fullName)
   } catch (error) {
-    authError.value = error instanceof Error ? error.message : 'Sign-in failed'
+    authError.value = error instanceof Error ? error.message : 'Failed to send verification code'
   } finally {
     authLoading.value = false
   }
 }
 
-const handleEmailSignUp = async (email: string, password: string, fullName?: string) => {
+const handleVerificationSubmit = async (email: string, code: string) => {
   authLoading.value = true
   authError.value = null
 
   try {
-    await authStore.signUpWithEmail(email, password, fullName)
-    authError.value = null
-    // Show success message instead of error
-    authError.value = 'Check your email to confirm your account'
+    await authStore.verifyEmailOtp(email, code)
   } catch (error) {
-    authError.value = error instanceof Error ? error.message : 'Sign-up failed'
+    authError.value = error instanceof Error ? error.message : 'Invalid verification code'
   } finally {
     authLoading.value = false
+  }
+}
+
+const handleResendCode = async (email: string) => {
+  authError.value = null
+
+  try {
+    await authStore.resendEmailOtp(email)
+  } catch (error) {
+    authError.value = error instanceof Error ? error.message : 'Failed to resend code'
   }
 }
 
