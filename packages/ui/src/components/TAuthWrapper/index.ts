@@ -1,0 +1,1 @@
+export { default as TAuthWrapper } from './TAuthWrapper.vue'

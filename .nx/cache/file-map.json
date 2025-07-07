@@ -1,0 +1,489 @@
+{
+  "version": "6.0",
+  "nxVersion": "18.0.0",
+  "deps": {
+    "@supabase/supabase-js": "^2.50.3",
+    "bemm": "^1.2.2",
+    "pinia": "^2.1.7",
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.0",
+    "@nx/eslint": "18.0.0",
+    "@nx/js": "18.0.0",
+    "@nx/vite": "18.0.0",
+    "@nx/vue": "18.0.0",
+    "@nx/workspace": "18.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vitejs/plugin-vue": "^4.6.2",
+    "@vue/eslint-config-typescript": "^12.0.0",
+    "eslint": "~8.57.0",
+    "eslint-plugin-vue": "^9.20.1",
+    "nx": "18.0.0",
+    "prettier": "^3.2.5",
+    "typescript": "~5.3.3",
+    "vite": "^5.1.4",
+    "vitest": "^1.3.1",
+    "vue-tsc": "^1.8.27"
+  },
+  "pathMappings": {
+    "@tiko/ui": [
+      "packages/ui/src/index.ts"
+    ],
+    "@tiko/core": [
+      "packages/core/src/index.ts"
+    ],
+    "@tiko/i18n": [
+      "packages/i18n/src/index.ts"
+    ],
+    "@tiko/speech": [
+      "packages/speech/src/index.ts"
+    ],
+    "@tiko/media": [
+      "packages/media/src/index.ts"
+    ],
+    "@tiko/ai": [
+      "packages/ai/src/index.ts"
+    ]
+  },
+  "nxJsonPlugins": [],
+  "fileMap": {
+    "nonProjectFiles": [],
+    "projectFileMap": {
+      "@tiko/ui": [
+        {
+          "file": "packages/ui/package.json",
+          "hash": "12752256368360472950"
+        },
+        {
+          "file": "packages/ui/src/components/TAuthWrapper/TAuthWrapper.vue",
+          "hash": "12106160357605253230",
+          "deps": [
+            "npm:vue",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "packages/ui/src/components/TAuthWrapper/index.ts",
+          "hash": "10354254590897039648"
+        },
+        {
+          "file": "packages/ui/src/components/TButton/TButton.model.ts",
+          "hash": "717427495786717967"
+        },
+        {
+          "file": "packages/ui/src/components/TButton/TButton.vue",
+          "hash": "1682042169327849278",
+          "deps": [
+            "npm:vue"
+          ]
+        },
+        {
+          "file": "packages/ui/src/components/TButton/index.ts",
+          "hash": "9705217843446571940"
+        },
+        {
+          "file": "packages/ui/src/components/TCard/TCard.vue",
+          "hash": "17100082737671197160",
+          "deps": [
+            "npm:vue"
+          ]
+        },
+        {
+          "file": "packages/ui/src/components/TCard/index.ts",
+          "hash": "11668682304376892158"
+        },
+        {
+          "file": "packages/ui/src/components/TIcon/TIcon.vue",
+          "hash": "14967208481957869210",
+          "deps": [
+            "npm:vue"
+          ]
+        },
+        {
+          "file": "packages/ui/src/components/TIcon/index.ts",
+          "hash": "14483563101890141443"
+        },
+        {
+          "file": "packages/ui/src/components/TInput/TInput.vue",
+          "hash": "16871687115820803296",
+          "deps": [
+            "npm:vue"
+          ]
+        },
+        {
+          "file": "packages/ui/src/components/TInput/index.ts",
+          "hash": "11311130512009543965"
+        },
+        {
+          "file": "packages/ui/src/components/TLoginForm/TLoginForm.vue",
+          "hash": "6395311252740364860",
+          "deps": [
+            "npm:vue"
+          ]
+        },
+        {
+          "file": "packages/ui/src/components/TLoginForm/index.ts",
+          "hash": "11225624404229838211"
+        },
+        {
+          "file": "packages/ui/src/composables/useBemm.ts",
+          "hash": "9782493555170887945",
+          "deps": [
+            "npm:bemm"
+          ]
+        },
+        {
+          "file": "packages/ui/src/index.ts",
+          "hash": "16617628110395324405"
+        },
+        {
+          "file": "packages/ui/src/styles/index.scss",
+          "hash": "2024248194925608096"
+        }
+      ],
+      "yes-no": [
+        {
+          "file": "apps/yes-no/dist/assets/index-C-YY6TVR.css",
+          "hash": "7939949423133246921"
+        },
+        {
+          "file": "apps/yes-no/dist/assets/index-fw80Mvuf.js",
+          "hash": "14601785545620332885"
+        },
+        {
+          "file": "apps/yes-no/dist/index.html",
+          "hash": "8755509929079812263"
+        },
+        {
+          "file": "apps/yes-no/index.html",
+          "hash": "14668033772973918461"
+        },
+        {
+          "file": "apps/yes-no/package.json",
+          "hash": "18393216195787440271",
+          "deps": [
+            "@tiko/ui",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/yes-no/src/App.vue",
+          "hash": "17719359167805804310",
+          "deps": [
+            "npm:vue",
+            "@tiko/core",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/yes-no/src/components/QuestionInput.vue",
+          "hash": "16643375369161769270",
+          "deps": [
+            "npm:vue",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/yes-no/src/main.ts",
+          "hash": "2204471735980649484",
+          "deps": [
+            "npm:vue",
+            "npm:pinia"
+          ]
+        },
+        {
+          "file": "apps/yes-no/src/stores/yesno.ts",
+          "hash": "5539566517067772459",
+          "deps": [
+            "npm:pinia",
+            "npm:vue",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/yes-no/src/views/YesNoView.vue",
+          "hash": "10445508726161350084",
+          "deps": [
+            "npm:vue",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/yes-no/tsconfig.json",
+          "hash": "11420375390224879402"
+        },
+        {
+          "file": "apps/yes-no/vite.config.ts",
+          "hash": "14524591659911634165",
+          "deps": [
+            "npm:vite",
+            "npm:@vitejs/plugin-vue",
+            "npm:path"
+          ]
+        }
+      ],
+      "timer": [
+        {
+          "file": "apps/timer/dist/assets/index-BiNGEgxX.js",
+          "hash": "3487238681969185487"
+        },
+        {
+          "file": "apps/timer/dist/assets/index-Bv4sjToj.css",
+          "hash": "15576862777684837304"
+        },
+        {
+          "file": "apps/timer/dist/index.html",
+          "hash": "3082373719192306040"
+        },
+        {
+          "file": "apps/timer/index.html",
+          "hash": "8141142482529795425"
+        },
+        {
+          "file": "apps/timer/package.json",
+          "hash": "17931654945507494220",
+          "deps": [
+            "@tiko/ui",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/timer/src/App.vue",
+          "hash": "12815109855697459154",
+          "deps": [
+            "npm:vue",
+            "@tiko/core",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/timer/src/components/TimeDisplay.vue",
+          "hash": "8680101851477158870",
+          "deps": [
+            "npm:vue",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/timer/src/components/TimerControls.vue",
+          "hash": "11733101038502988823",
+          "deps": [
+            "npm:vue",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/timer/src/main.ts",
+          "hash": "2204471735980649484",
+          "deps": [
+            "npm:vue",
+            "npm:pinia"
+          ]
+        },
+        {
+          "file": "apps/timer/src/stores/timer.ts",
+          "hash": "15554792691744199729",
+          "deps": [
+            "npm:pinia",
+            "npm:vue",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/timer/src/views/TimerView.vue",
+          "hash": "7335724846030590640",
+          "deps": [
+            "npm:vue",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/timer/tsconfig.json",
+          "hash": "11420375390224879402"
+        },
+        {
+          "file": "apps/timer/vite.config.ts",
+          "hash": "10584857036191400680",
+          "deps": [
+            "npm:vite",
+            "npm:@vitejs/plugin-vue",
+            "npm:path"
+          ]
+        }
+      ],
+      "tiko-mono": [
+        {
+          "file": ".claude/settings.local.json",
+          "hash": "13043224764404262874"
+        },
+        {
+          "file": ".env",
+          "hash": "776421961785693358"
+        },
+        {
+          "file": ".env.example",
+          "hash": "393595204208437308"
+        },
+        {
+          "file": ".eslintrc.json",
+          "hash": "997038725116886389"
+        },
+        {
+          "file": "README.md",
+          "hash": "10443589632451655199"
+        },
+        {
+          "file": "nx.json",
+          "hash": "4086016510830601015"
+        },
+        {
+          "file": "package.json",
+          "hash": "6016376984548442885"
+        },
+        {
+          "file": "pnpm-lock.yaml",
+          "hash": "18268715508982472363"
+        },
+        {
+          "file": "pnpm-workspace.yaml",
+          "hash": "11805071067713496448"
+        },
+        {
+          "file": "tsconfig.base.json",
+          "hash": "2132343731737046128"
+        },
+        {
+          "file": ".nx/cache/parsed-lock-file.json",
+          "hash": "3257210435192545503"
+        },
+        {
+          "file": ".nx/cache/lockfile.hash",
+          "hash": "6469986498378163749"
+        },
+        {
+          "file": ".nx/cache/project-graph.json",
+          "hash": "15549407045775477812"
+        },
+        {
+          "file": ".nx/cache/file-map.json",
+          "hash": "1673299321909537107"
+        }
+      ],
+      "type": [
+        {
+          "file": "apps/type/dist/assets/index-CefRhLJp.js",
+          "hash": "8226301657688263144"
+        },
+        {
+          "file": "apps/type/dist/assets/index-EoxirUnT.css",
+          "hash": "12982519941183765452"
+        },
+        {
+          "file": "apps/type/dist/index.html",
+          "hash": "5232785578956641538"
+        },
+        {
+          "file": "apps/type/index.html",
+          "hash": "14457189648177639121"
+        },
+        {
+          "file": "apps/type/package.json",
+          "hash": "2831361527940597623",
+          "deps": [
+            "@tiko/ui",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/type/src/App.vue",
+          "hash": "17601265106747395243",
+          "deps": [
+            "npm:vue",
+            "@tiko/core",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/type/src/main.ts",
+          "hash": "2204471735980649484",
+          "deps": [
+            "npm:vue",
+            "npm:pinia"
+          ]
+        },
+        {
+          "file": "apps/type/src/stores/type.ts",
+          "hash": "738111698234528429",
+          "deps": [
+            "npm:pinia",
+            "npm:vue",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/type/src/views/TypeView.vue",
+          "hash": "3624653831449734006",
+          "deps": [
+            "npm:vue",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/type/tsconfig.json",
+          "hash": "16751532594296189637"
+        },
+        {
+          "file": "apps/type/tsconfig.tsbuildinfo",
+          "hash": "5850973571734153781"
+        },
+        {
+          "file": "apps/type/vite.config.ts",
+          "hash": "7785045922056615396",
+          "deps": [
+            "npm:vite",
+            "npm:@vitejs/plugin-vue",
+            "npm:path"
+          ]
+        }
+      ],
+      "@tiko/core": [
+        {
+          "file": "packages/core/package.json",
+          "hash": "12507171174096775956"
+        },
+        {
+          "file": "packages/core/src/index.ts",
+          "hash": "9288218389903599137"
+        },
+        {
+          "file": "packages/core/src/lib/supabase.ts",
+          "hash": "16357084243237820570",
+          "deps": [
+            "npm:@supabase/supabase-js"
+          ]
+        },
+        {
+          "file": "packages/core/src/stores/app.ts",
+          "hash": "16692262201480756785",
+          "deps": [
+            "npm:pinia",
+            "npm:vue"
+          ]
+        },
+        {
+          "file": "packages/core/src/stores/auth.ts",
+          "hash": "13917923314207059960",
+          "deps": [
+            "npm:pinia",
+            "npm:vue",
+            "npm:@supabase/supabase-js"
+          ]
+        },
+        {
+          "file": "packages/core/src/types/user.ts",
+          "hash": "17319046267866738710"
+        }
+      ]
+    }
+  }
+}
