@@ -1,18 +1,18 @@
 <template>
-  <div :class="bemClass()">
+  <div :class="bemm()">
     <!-- Loading State -->
-    <div v-if="isInitializing" :class="bemClass('loading')">
-      <div :class="bemClass('loading-content')">
-        <div :class="bemClass('loading-spinner')"></div>
-        <h2 :class="bemClass('loading-title')">Loading Tiko...</h2>
-        <p :class="bemClass('loading-subtitle')">Preparing your communication apps</p>
+    <div v-if="isInitializing" :class="bemm('loading')">
+      <div :class="bemm('loading-content')">
+        <div :class="bemm('loading-spinner')"></div>
+        <h2 :class="bemm('loading-title')">Loading Tiko...</h2>
+        <p :class="bemm('loading-subtitle')">Preparing your communication apps</p>
       </div>
     </div>
 
     <!-- Login Form -->
-    <div v-else-if="!isAuthenticated" :class="bemClass('login')">
-      <div :class="bemClass('login-background')">
-        <div :class="bemClass('login-content')">
+    <div v-else-if="!isAuthenticated" :class="bemm('login')">
+      <div :class="bemm('login-background')">
+        <div :class="bemm('login-content')">
           <TLoginForm
             :is-loading="authLoading"
             :error="authError"
@@ -26,7 +26,7 @@
     </div>
 
     <!-- Authenticated Content -->
-    <div v-else :class="bemClass('app')">
+    <div v-else :class="bemm('app')">
       <slot />
     </div>
   </div>
