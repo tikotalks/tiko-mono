@@ -1,54 +1,21 @@
 {
   "run": {
-    "command": "nx run-many --target=typecheck --all",
-    "startTime": "2025-07-07T11:33:19.901Z",
-    "endTime": "2025-07-07T11:33:21.853Z",
+    "command": "nx build cards",
+    "startTime": "2025-07-07T13:36:05.115Z",
+    "endTime": "2025-07-07T13:36:05.960Z",
     "inner": false
   },
   "tasks": [
     {
-      "taskId": "@tiko/core:typecheck",
-      "target": "typecheck",
+      "taskId": "@tiko/core:build",
+      "target": "build",
       "projectName": "@tiko/core",
-      "hash": "11764553043994304864",
-      "startTime": "2025-07-07T11:33:19.905Z",
-      "endTime": "2025-07-07T11:33:20.723Z",
+      "hash": "11157642982940687667",
+      "startTime": "2025-07-07T13:36:05.119Z",
+      "endTime": "2025-07-07T13:36:05.960Z",
       "params": "",
       "cacheStatus": "cache-miss",
       "status": 1
-    },
-    {
-      "taskId": "@tiko/ui:typecheck",
-      "target": "typecheck",
-      "projectName": "@tiko/ui",
-      "hash": "10855388615146043754",
-      "startTime": "2025-07-07T11:33:19.906Z",
-      "endTime": "2025-07-07T11:33:20.994Z",
-      "params": "",
-      "cacheStatus": "cache-miss",
-      "status": 1
-    },
-    {
-      "taskId": "timer:typecheck",
-      "target": "typecheck",
-      "projectName": "timer",
-      "hash": "2614702637050962921",
-      "startTime": "2025-07-07T11:33:20.723Z",
-      "endTime": "2025-07-07T11:33:21.255Z",
-      "params": "",
-      "cacheStatus": "cache-miss",
-      "status": 1
-    },
-    {
-      "taskId": "yes-no:typecheck",
-      "target": "typecheck",
-      "projectName": "yes-no",
-      "hash": "12084897812343136652",
-      "startTime": "2025-07-07T11:33:19.906Z",
-      "endTime": "2025-07-07T11:33:21.853Z",
-      "params": "",
-      "cacheStatus": "cache-miss",
-      "status": 0
     }
   ]
 }
