@@ -1,0 +1,18 @@
+{
+  "name": "cards-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/cards-e2e/src",
+  "targets": {
+    "e2e": {
+      "executor": "@nx/cypress:cypress",
+      "options": {
+        "cypressConfig": "apps/cards-e2e/cypress.config.ts",
+        "testingType": "e2e",
+        "devServerTarget": "cards:serve"
+      }
+    }
+  },
+  "tags": [],
+  "implicitDependencies": ["cards"]
+}

@@ -45,6 +45,8 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
 
     try {
+      console.log('Attempting sign up with:', { email, hasPassword: !!password, fullName })
+      
       const { data, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -56,18 +58,114 @@ export const useAuthStore = defineStore('auth', () => {
         }
       })
 
+      console.log('Sign up response:', { data, error: authError })
+
       if (authError) {
+        console.error('Supabase auth error:', authError)
         throw authError
       }
 
       // Don't set user/session here as they need to confirm email first
       return data
       
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Sign up failed'
+    } catch (err: any) {
+      console.error('Sign up failed:', err)
+      
+      if (err instanceof TypeError && err.message === 'Failed to fetch') {
+        error.value = 'Network error: Cannot connect to authentication service. Please check your internet connection and try again.'
+      } else if (err?.error_code === 'email_address_invalid') {
+        error.value = 'Please enter a valid email address'
+      } else if (err?.message?.includes('email')) {
+        error.value = 'Email format is invalid. Please use a valid email address.'
+      } else if (err?.message?.includes('password')) {
+        error.value = 'Password must be at least 6 characters long'
+      } else {
+        error.value = err instanceof Error ? err.message : 'Sign up failed'
+      }
       throw err
     } finally {
       isLoading.value = false
+    }
+  }
+
+  const signInWithPasswordlessEmail = async (email: string, fullName?: string) => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const { data, error: authError } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: true,
+          data: fullName ? {
+            full_name: fullName,
+            language: 'en'
+          } : {
+            language: 'en'
+          }
+        }
+      })
+
+      if (authError) {
+        throw authError
+      }
+
+      return data
+      
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to send verification code'
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const verifyEmailOtp = async (email: string, token: string) => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const { data, error: authError } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'email'
+      })
+
+      if (authError) {
+        throw authError
+      }
+
+      if (data.user && data.session) {
+        user.value = data.user
+        session.value = data.session
+      }
+
+      return data
+      
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Invalid verification code'
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const resendEmailOtp = async (email: string) => {
+    try {
+      const { data, error: authError } = await supabase.auth.resend({
+        type: 'email',
+        email
+      })
+
+      if (authError) {
+        throw authError
+      }
+
+      return data
+      
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to resend verification code'
+      throw err
     }
   }
 
@@ -182,6 +280,9 @@ export const useAuthStore = defineStore('auth', () => {
     // Actions
     signInWithEmail,
     signUpWithEmail,
+    signInWithPasswordlessEmail,
+    verifyEmailOtp,
+    resendEmailOtp,
     signInWithApple,
     logout,
     initializeFromStorage,
