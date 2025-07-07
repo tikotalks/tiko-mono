@@ -1,8 +1,8 @@
 <template>
-  <div class="timer-view">
+  <div :class="bemm()">
     <!-- Header -->
-    <header class="timer-header">
-      <h1 class="timer-header__title">Timer</h1>
+    <header :class="bemm('header')">
+      <h1 :class="bemm('header-title')">Timer</h1>
       
       <TButton
         icon="settings"
@@ -15,7 +15,7 @@
     </header>
 
     <!-- Main Timer Display -->
-    <main class="timer-main">
+    <main :class="bemm('main')">
       <TimeDisplay
         :display-time="displayTime"
         :progress="progress"
@@ -37,13 +37,13 @@
     </main>
 
     <!-- Settings Panel -->
-    <div v-if="showSettings" class="timer-settings">
-      <div class="timer-settings__backdrop" @click="hideSettings" />
-      <div class="timer-settings__panel">
-        <h3 class="timer-settings__title">Timer Settings</h3>
+    <div v-if="showSettings" :class="bemm('settings')">
+      <div :class="bemm('settings-backdrop')" @click="hideSettings" />
+      <div :class="bemm('settings-panel')">
+        <h3 :class="bemm('settings-title')">Timer Settings</h3>
         
-        <div class="timer-settings__group">
-          <label class="timer-settings__checkbox">
+        <div :class="bemm('settings-group')">
+          <label :class="bemm('settings-checkbox')">
             <input
               v-model="localSettings.soundEnabled"
               type="checkbox"
@@ -53,8 +53,8 @@
           </label>
         </div>
         
-        <div class="timer-settings__group">
-          <label class="timer-settings__checkbox">
+        <div :class="bemm('settings-group')">
+          <label :class="bemm('settings-checkbox')">
             <input
               v-model="localSettings.vibrationEnabled"
               type="checkbox"
@@ -64,7 +64,7 @@
           </label>
         </div>
         
-        <div class="timer-settings__actions">
+        <div :class="bemm('settings-actions')">
           <TButton
             label="Close"
             type="default"
@@ -77,11 +77,11 @@
     </div>
 
     <!-- Expired Overlay -->
-    <div v-if="isExpired" class="timer-expired">
-      <div class="timer-expired__content">
+    <div v-if="isExpired" :class="bemm('expired')">
+      <div :class="bemm('expired-content')">
         <TIcon name="clock" size="4rem" />
-        <h2 class="timer-expired__title">Time's Up!</h2>
-        <p class="timer-expired__message">
+        <h2 :class="bemm('expired-title')">Time's Up!</h2>
+        <p :class="bemm('expired-message')">
           {{ mode === 'down' ? 'Your countdown has finished' : 'Timer notification' }}
         </p>
         
@@ -99,12 +99,14 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, reactive, watch, toRefs } from 'vue'
+import { useBemm } from 'bemm'
 import { TButton, TIcon } from '@tiko/ui'
 import { useTimerStore } from '../stores/timer'
 import TimeDisplay from '../components/TimeDisplay.vue'
 import TimerControls from '../components/TimerControls.vue'
 
 const timerStore = useTimerStore()
+const bemm = useBemm('timer-view')
 
 // Local state
 const showSettings = ref(false)

@@ -1,10 +1,10 @@
 <template>
-  <div class="timer-controls">
+  <div :class="bemm()">
     <!-- Time Setting -->
-    <div class="timer-controls__time-setting">
-      <h3 class="timer-controls__title">Set Time</h3>
+    <div :class="bemm('time-setting')">
+      <h3 :class="bemm('title')">Set Time</h3>
       
-      <div class="timer-controls__time-inputs">
+      <div :class="bemm('time-inputs')">
         <TInput
           v-model="minutes"
           type="number"
@@ -16,7 +16,7 @@
           @update:modelValue="updateTime"
         />
         
-        <span class="timer-controls__separator">:</span>
+        <span :class="bemm('separator')">:</span>
         
         <TInput
           v-model="seconds"
@@ -32,7 +32,7 @@
     </div>
     
     <!-- Mode Toggle -->
-    <div class="timer-controls__mode">
+    <div :class="bemm('mode')">
       <TButton
         :label="mode === 'down' ? 'Count Down' : 'Count Up'"
         :type="mode === 'down' ? 'default' : 'ghost'"
@@ -45,7 +45,7 @@
     </div>
     
     <!-- Control Buttons -->
-    <div class="timer-controls__buttons">
+    <div :class="bemm('buttons')">
       <TButton
         v-if="!isRunning"
         label="Start"
@@ -78,10 +78,10 @@
     </div>
     
     <!-- Quick Time Buttons -->
-    <div class="timer-controls__quick-times">
-      <h4 class="timer-controls__subtitle">Quick Times</h4>
+    <div :class="bemm('quick-times')">
+      <h4 :class="bemm('subtitle')">Quick Times</h4>
       
-      <div class="timer-controls__quick-buttons">
+      <div :class="bemm('quick-buttons')">
         <TButton
           v-for="quickTime in quickTimes"
           :key="quickTime.seconds"
@@ -99,6 +99,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { useBemm } from 'bemm'
 import { TButton, TInput } from '@tiko/ui'
 
 interface Props {
@@ -108,6 +109,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const bemm = useBemm('timer-controls')
 
 const emit = defineEmits<{
   setTime: [minutes: number, seconds: number]
