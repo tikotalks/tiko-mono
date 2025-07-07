@@ -1,0 +1,125 @@
+@use 'icon';
+
+.icon--star-m.icon--animated {
+	&:hover {
+		@include icon.icon-star-m;
+	}
+}
+
+.icon--graph-up.icon--animated {
+	&:hover {
+		@include icon.icon-graph-up;
+	}
+}
+
+.icon--temple.icon--animated,
+.icon--temple2.icon--animated {
+	&:hover {
+		@include icon.icon-temple;
+	}
+}
+
+.icon--chip.icon--animated {
+	&:hover {
+		@include icon.icon-chip;
+	}
+}
+
+.icon--luggage.icon--animated {
+	&:hover {
+		@include icon.icon-luggage;
+	}
+}
+.icon--rocket.icon--animated {
+	--animation-time: 5s;
+	@include icon.icon-rocket-wiggle;
+	@include icon.icon-rocket-fire;
+	&:hover {
+		--animation-time: 2s;
+	}
+}
+
+.icon--three-dots.icon--animated {
+	@include icon.icon-three-dots-horizontal;
+}
+
+.icon--alarm-bell.icon--animated {
+	&:hover {
+		@include icon.icon-alarm-bell;
+	}
+}
+
+.icon--search-m.icon--animated {
+	&:hover {
+		@include icon.icon-search;
+	}
+}
+
+.icon--add-l.icon--animated {
+	&:hover {
+		@include icon.icon-add;
+	}
+}
+
+.icon--music-note.icon--animated {
+	&:hover {
+		@include icon.icon-music-note;
+	}
+}
+
+.icon--compass.icon--animated {
+	&:hover {
+		@include icon.icon-compass;
+	}
+}
+
+.icon--terminal.icon--animated{
+	@include icon.icon-terminal-line-blink;
+
+	&:hover {
+		@include icon.icon-terminal;
+	}
+}
+
+.icon--note-edit{
+	line{
+		stroke-linecap: round;
+	}
+}
+
+*:has(> .icon--settings5.icon--animated) {
+	&:hover .icon--settings5.icon--animated {
+		@include icon.icon-settings5;
+	}
+}
+.icon--settings5.icon--animated {
+	@include icon.icon-settings5-start;
+}
+*:has(> .icon--arrow-left.icon--animated):hover {
+	.icon--arrow-left.icon--animated {
+		@include icon.icon-arrow-left;
+	}
+}
+
+*:has(> .icon--arrow-right.icon--animated):hover {
+	.icon--arrow-right.icon--animated {
+		@include icon.icon-arrow-right;
+	}
+}
+*:has(> .icon--arrow-up.icon--animated):hover {
+	.icon--arrow-up.icon--animated {
+		@include icon.icon-arrow-up;
+	}
+}
+
+*:has(> .icon--arrow-down.icon--animated):hover {
+	.icon--arrow-down.icon--animated {
+		@include icon.icon-arrow-down;
+	}
+}
+
+*:has(> .icon--arrow-up-left.icon--animated):hover {
+	.icon--arrow-up-left.icon--animated {
+		@include icon.icon-arrow-up-left;
+	}
+}

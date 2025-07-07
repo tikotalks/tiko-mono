@@ -1,0 +1,63 @@
+@use 'sass:map';
+@use 'sass:list';
+
+// Base Colors
+$base-colors: (
+	'purple': #9049ce,
+	'blue': #7bcdff,
+	'green': #4fcf4f,
+	'lime': #8aff84,
+	'yellow': #ffe34b,
+	'orange': #f6a53a,
+	'red': #ff4d5e,
+	'pink': #ea7f9a,
+	'brown': #4f332d,
+	'gray': #b0b0b0,
+	'black': #111111,
+	'white': #ffffff,
+	'turquoise': #63d4c7,
+	'cyan': #baf0ff,
+	'indigo': #571ab4,
+	'violet': #dfbaff,
+	'magenta': #e524b5,
+	'rose': #ff7dff,
+	'coral': #ff7d7d,
+	'gold': #ffd700,
+	'silver': #c0c0c0,
+	'bronze': #cd7f32,
+	'dark-blue': #220d5c,
+);
+
+$base-color-names: map.keys($base-colors);
+
+// Project Colors
+$colors: (
+	'dark': #18032a,
+	'light': #ffffff,
+	'accent-dark': #000000,
+	'accent-light': #edf2f5,
+	'primary': map.get($base-colors, 'indigo'),
+	'secondary': map.get($base-colors, 'gold'),
+	'tertiary': map.get($base-colors, 'blue'),
+	'quaternary': map.get($base-colors, 'lime'),
+	'quinary': map.get($base-colors, 'rose'),
+	//
+	'success': map.get($base-colors, 'green'),
+	'warning': map.get($base-colors, 'orange'),
+	'error': map.get($base-colors, 'red'),
+	'info': map.get($base-colors, 'blue'),
+);
+
+$color-names: map.keys($colors);
+
+// Theme Colors
+
+$theme-colors: (
+	background: var(--light),
+	foreground: var(--dark),
+);
+$theme-color-names: map.keys($theme-colors);
+
+// All Colors
+$all-colors: map.merge($base-colors, $colors, $theme-colors);
+$all-color-names: list.join($base-color-names, list.join($color-names, $theme-color-names, comma), comma);

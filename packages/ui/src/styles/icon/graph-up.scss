@@ -1,0 +1,35 @@
+@mixin icon-graph-up {
+	svg {
+		line {
+			stroke-dashoffset: 2em;
+			stroke-dasharray: 2em;
+			animation: ICON_GRAPH_UP_LINES 1s linear forwards;
+			@keyframes ICON_GRAPH_UP_LINES {
+				0% {
+					stroke-dashoffset: 2em;
+				}
+				100% {
+					stroke-dashoffset: 0;
+				}
+			}
+			@for $i from 1 through 6 {
+				&:nth-child(#{$i}) {
+					animation-delay: $i * 0.1s;
+				}
+			}
+		}
+		polyline {
+			stroke-dashoffset: 5em;
+			stroke-dasharray: 5em;
+			animation: ICON_GRAPH_UP_ARROW 1s linear forwards;
+			@keyframes ICON_GRAPH_UP_ARROW {
+				0% {
+					stroke-dashoffset: 5em;
+				}
+				100% {
+					stroke-dashoffset: 0;
+				}
+			}
+		}
+	}
+}

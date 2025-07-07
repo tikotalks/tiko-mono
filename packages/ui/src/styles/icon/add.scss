@@ -1,0 +1,42 @@
+@mixin icon-add {
+	svg {
+		line:nth-child(1) {
+			animation: ICON_ADD_LINE_Y 2s ease-in-out infinite;
+		}
+		line:nth-child(2) {
+			animation: ICON_ADD_LINE_X 2s ease-in-out infinite;
+		}
+
+		@keyframes ICON_ADD_LINE_X {
+			0% {
+				transform: translateX(-100%);
+				opacity: 0;
+			}
+			20%,
+			80% {
+				transform: translateX(0%);
+				opacity: 1;
+			}
+			100% {
+				transform: translateX(100%);
+				opacity: 0;
+			}
+		}
+
+		@keyframes ICON_ADD_LINE_Y {
+			0% {
+				transform: translateY(-100%);
+				opacity: 0;
+			}
+			20%,
+			80% {
+				transform: translateY(0%);
+				opacity: 1;
+			}
+			100% {
+				transform: translateY(100%);
+				opacity: 0;
+			}
+		}
+	}
+}

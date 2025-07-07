@@ -1,0 +1,49 @@
+@mixin icon-terminal {
+	svg {
+		// animation: ICON_TERMINAL 1s ease-in-out forwards;
+		// opacity: 0;
+
+		// @keyframes ICON_TERMINAL {
+		// 	0% {
+		// 		transform: translate(0%, 0%);
+		// 		opacity: 0;
+		// 	}
+
+		// 	5% {
+		// 		transform: translate(-50%, 50%);
+		// 		opacity: 1;
+		// 	}
+
+		// 	90% {
+		// 		transform: translate(50%, -50%);
+		// 	}
+
+		// 	95% {
+		// 		transform: translate(50%, -50%);
+		// 		opacity: 0;
+		// 	}
+
+		// 	100% {
+		// 		transform: translate(0%, 0%);
+		// 		opacity: 1;
+		// 	}
+		// }
+	}
+}
+
+@mixin icon-terminal-line-blink {
+	svg line {
+		animation: ICON_TERMINAL_LINE_BLINK 2s ease-in-out infinite;
+	}
+
+
+	@keyframes ICON_TERMINAL_LINE_BLINK {
+
+		30%, 70% {
+			opacity: 1;
+		}
+		0%, 100% {
+			opacity: 0;
+		}
+	}
+}

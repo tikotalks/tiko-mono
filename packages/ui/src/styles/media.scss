@@ -1,0 +1,106 @@
+@mixin mobile-only() {
+	@media screen and (width <= 50em) {
+		@content;
+	}
+}
+@mixin mobile-up() {
+	@media screen and (width >= 50em) {
+		@content;
+	}
+}
+
+@mixin tablet() {
+	@media screen and (width >= 50em) and (width <= 66em) {
+		@content;
+	}
+}
+@mixin desktop() {
+	@media screen and (width >= 50em) {
+		@content;
+	}
+}
+@mixin mobile() {
+	@media screen and (width <= 50em) {
+		@content;
+	}
+}
+@mixin max() {
+	@media screen and (width >= 80em) {
+		@content;
+	}
+}
+
+// Tablet is the not mobile screen, but when
+// the main navigation is vertical. Desktop does include tablet too
+@mixin tablet-down() {
+	@media screen and (width <= 66em) {
+		@content;
+	}
+}
+
+// Desktop is the screen which are not mobile, when we have the "normal" navigation
+@mixin desktop-up() {
+	@media screen and (width >= 66em) {
+		@content;
+	}
+}
+@mixin desktop-down() {
+	@media screen and (width <= 66em) {
+		@content;
+	}
+}
+
+// Max is the screen when the it hit the max width.
+@mixin max-down {
+	@media screen and (width <= 120em) {
+		@content;
+	}
+}
+@mixin max-up {
+	@media screen and (width >= 120em) {
+		@content;
+	}
+}
+
+@mixin non-touch-device() {
+	@media (hover: hover) and (pointer: fine) {
+		@content;
+	}
+}
+
+@mixin hideScrollbars {
+	&::-webkit-scrollbar {
+		display: none;
+	}
+
+	/* Hide scrollbar for IE, Edge and Firefox */
+	& {
+		-ms-overflow-style: none; /* IE and Edge */
+		scrollbar-width: none; /* Firefox */
+	}
+}
+
+@mixin scrollbar($thumb-color, $track-color: transparent, $thickness: 6px) {
+	// Firefox
+	scrollbar-width: thin; // thin | auto | none
+	scrollbar-color: #{$thumb-color} #{$track-color};
+
+	// WebKit (Chrome, Edge Chromium, Safari)
+	&::-webkit-scrollbar {
+		width: $thickness;
+		height: $thickness;
+	}
+
+	&::-webkit-scrollbar-track {
+		background: $track-color;
+	}
+
+	&::-webkit-scrollbar-thumb {
+		background-color: $thumb-color;
+		border-radius: 999px;
+		border: none;
+	}
+
+	// IE & Old Edge fallback (no styling, but show scrollbars)
+	-ms-overflow-style: auto;
+}

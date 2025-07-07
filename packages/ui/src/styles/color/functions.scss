@@ -1,0 +1,142 @@
+@use 'sass:color';
+@use 'sass:map';
+@use 'sass:math';
+@use '../math/unitless' as internalMath;
+@use 'variables';
+
+@function toRgbString($color) {
+	@return color.channel($color, 'red'), color.channel($color, 'green'), color.channel($color, 'blue');
+}
+
+@function values($color-value) {
+	$value: map.get(variables.$colors, $color-value);
+	@return toRgbString($value);
+}
+
+@function perceived-lightness($color) {
+  $r: color.channel($color, 'red');
+  $g: color.channel($color, 'blue');
+  $b: color.channel($color, 'green');
+
+  // ITU-R BT.709 perceived brightness formula
+  $brightness: math.div(0.2126 * $r + 0.7152 * $g + 0.0722 * $b, 255) * 100;
+
+  @return $brightness;
+}
+
+
+@function darken-color-mix($color, $amount) {
+  // Convert to HSL
+  $h: color.channel($color,'hue', $space: hsl);
+  $s: color.channel($color,'saturation', $space: hsl);
+  $l: color.channel($color, 'lightness', $space: hsl);
+
+  // Create a darker version of same hue
+  $dark-version: hsl($h, $s, max($l - 100%, 0%)); // or adjust as needed
+
+  // Mix the original with the dark version
+  @return color-mix(in srgb, $dark-version $amount, $color);
+}
+
+@function lighten-color-mix($color, $amount) {
+  $h: color.channel($color,'hue', $space: hsl);
+  $s: color.channel($color,'saturation', $space: hsl);
+  $l: color.channel($color, 'lightness', $space: hsl);
+
+  // Create a lighter version of the same hue
+  $light-version: hsl($h, $s, min($l + 100%, 100%));
+
+  // Mix the original with the lighter version
+  @return color-mix(in srgb, $light-version $amount, $color);
+}
+
+@function textColorShade($color-value, $color-name) {
+	$lightness: perceived-lightness($color-value);
+
+	@if $lightness > 50 {
+		@return darken-color-mix($color-value, 60%);
+	} @else {
+		@return lighten-color-mix($color-value, 75%);
+	}
+}
+
+@function setLightness($color-name, $lightness) {
+	@return hsla(var(--color-#{$color-name}-h), var(--#{$color-name}-s), $lightness, 1);
+}
+
+@mixin hslColors($color, $value) {
+	--color-#{$color}-h: #{color.channel($value, 'hue', $space: hsl)};
+	--color-#{$color}-s: #{color.channel($value, 'saturation', $space: hsl)};
+	--color-#{$color}-l: #{color.channel($value, 'lightness', $space: hsl)};
+}
+@mixin rgbColors($color, $value) {
+	--color-#{$color}-r: #{color.channel($value, 'red')};
+	--color-#{$color}-g: #{color.channel($value, 'green')};
+	--color-#{$color}-b: #{color.channel($value, 'blue')};
+}
+
+@mixin darkModeBase {
+	--color-background: var(--color-dark);
+	--color-background-text: var(--color-light);
+	--color-foreground: var(--color-light);
+	--color-foreground-text: var(--color-dark);
+	--color-accent: var(--color-accent-dark);
+	--color-accent-text: var(--color-accent-dark-text);
+	@include hslColors('accent', map.get(variables.$colors, 'accent-dark'));
+}
+@mixin lightModeBase {
+	--color-background: var(--color-light);
+	--color-background-text: var(--color-dark);
+	--color-foreground: var(--color-dark);
+	--color-foreground-text: var(--color-light);
+	--color-accent: var(--color-accent-light);
+	--color-accent-text: var(--color-accent-light-text);
+	@include hslColors('accent', map.get(variables.$colors, 'accent-light'));
+}
+
+@function darkenVar($var: --color-primary, $amount: 10%) {
+	@return color-mix(in oklab, var($var), black $amount);
+}
+
+@function darken($var: --color-primary, $amount: 10%) {
+	@return color-mix(in oklab, var(--#{$var}), black $amount);
+}
+
+@function lightenVar($var: --color-primary, $amount: 10%) {
+	@return color-mix(in oklab, var($var), white $amount);
+}
+
+@function lighten($var, $amount: 10%) {
+	@return color-mix(in oklab, var(--#{$var}), white $amount);
+}
+
+@mixin setContrastText($color, $amount) {
+	@media (prefers-color-scheme: dark) {
+		--contrast-text: #{lightenVar($color, $amount)};
+		[data-color-mode='dark'] & {
+			--contrast-text: #{lightenVar($color, $amount)};
+		}
+		[data-color-mode='light'] & {
+			--contrast-text: #{darkenVar($color, $amount)};
+		}
+	}
+	@media (prefers-color-scheme: light) {
+		--contrast-text: #{darkenVar($color, $amount)};
+		[data-color-mode='dark'] & {
+			--contrast-text: #{lightenVar($color, $amount)};
+		}
+		[data-color-mode='light'] & {
+			--contrast-text: #{darkenVar($color, $amount)};
+		}
+	}
+}
+
+@function opacity($color, $amount) {
+	// Check if amount is a percentage. Then do 100% - percentage. Otherwise if a decimal, make it a percentage.
+	@if internalMath.unitless($amount) {
+		$amount: math.percentage($amount);
+	}
+	$amount: calc(100% - #{$amount});
+
+	@return color-mix(in srgb, transparent $amount, var(--#{$color}));
+}

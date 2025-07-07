@@ -1,0 +1,6 @@
+@use 'parameter';
+@use 'internal/invalid-type';
+
+@function parameter-type($context, $name, $value, $types...) {
+	@return parameter.parameter(invalid-type.invalid-type($types, $value), $context, $name);
+}

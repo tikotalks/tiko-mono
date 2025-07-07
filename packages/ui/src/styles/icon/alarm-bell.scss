@@ -1,0 +1,17 @@
+@mixin icon-alarm-bell {
+	svg {
+		animation: ICON_ALARM_BELL 0.3s ease-in-out infinite;
+
+		@keyframes ICON_ALARM_BELL {
+			0% {
+				transform: rotate(0);
+			}
+			50% {
+				transform: rotate(-20deg);
+			}
+			100% {
+				transform: rotate(0);
+			}
+		}
+	}
+}

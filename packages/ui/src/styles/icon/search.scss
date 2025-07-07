@@ -1,0 +1,17 @@
+@mixin icon-search {
+	svg {
+		animation: ICON_SEARCH 1s ease-in-out infinite;
+
+		--icon-fill: var(--primary-rgb);
+
+		@keyframes ICON_SEARCH {
+			0%,
+			100% {
+				transform: scale(1);
+			}
+			50% {
+				transform: scale(1.2);
+			}
+		}
+	}
+}
