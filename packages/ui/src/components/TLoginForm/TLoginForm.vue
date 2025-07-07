@@ -1,13 +1,13 @@
 <template>
-  <div :class="bemClass()">
+  <div :class="bemm()">
     <!-- Header -->
-    <div :class="bemClass('header')">
-      <h1 :class="bemClass('title')">Welcome to Tiko</h1>
-      <p :class="bemClass('subtitle')">Sign in to access your communication apps</p>
+    <div :class="bemm('header')">
+      <h1 :class="bemm('title')">Welcome to Tiko</h1>
+      <p :class="bemm('subtitle')">Sign in to access your communication apps</p>
     </div>
 
     <!-- Login Methods -->
-    <div :class="bemClass('methods')">
+    <div :class="bemm('methods')">
       <!-- Apple Sign-In -->
       <TButton
         :label="'Continue with Apple'"
@@ -17,16 +17,16 @@
         size="large"
         :action="handleAppleSignIn"
         :disabled="isLoading"
-        :class="bemClass('apple-button')"
+        :class="bemm('apple-button')"
       />
 
       <!-- Divider -->
-      <div :class="bemClass('divider')">
-        <span :class="bemClass('divider-text')">or</span>
+      <div :class="bemm('divider')">
+        <span :class="bemm('divider-text')">or</span>
       </div>
 
       <!-- Email Form -->
-      <form :class="bemClass('form')" @submit.prevent="handleEmailSubmit">
+      <form :class="bemm('form')" @submit.prevent="handleEmailSubmit">
         <TInput
           v-model="email"
           type="email"
@@ -35,7 +35,7 @@
           :error="emailError"
           :disabled="isLoading"
           required
-          :class="bemClass('email-input')"
+          :class="bemm('email-input')"
         />
 
         <TInput
@@ -47,10 +47,10 @@
           :error="passwordError"
           :disabled="isLoading"
           :required="isSignIn"
-          :class="bemClass('password-input')"
+          :class="bemm('password-input')"
         />
 
-        <div v-if="showPassword" :class="bemClass('form-actions')">
+        <div v-if="showPassword" :class="bemm('form-actions')">
           <TButton
             :label="isSignIn ? 'Sign In' : 'Create Account'"
             type="fancy"
@@ -58,7 +58,7 @@
             size="large"
             :action="handleEmailSubmit"
             :disabled="!isFormValid || isLoading"
-            :class="bemClass('submit-button')"
+            :class="bemm('submit-button')"
           />
 
           <TButton
@@ -68,18 +68,18 @@
             size="medium"
             :action="toggleSignMode"
             :disabled="isLoading"
-            :class="bemClass('toggle-button')"
+            :class="bemm('toggle-button')"
           />
         </div>
 
-        <div v-else :class="bemClass('form-actions')">
+        <div v-else :class="bemm('form-actions')">
           <TInput
             v-model="fullName"
             type="text"
             label="Full Name (Optional)"
             placeholder="Enter your full name"
             :disabled="isLoading"
-            :class="bemClass('name-input')"
+            :class="bemm('name-input')"
           />
 
           <TButton
@@ -89,43 +89,43 @@
             size="large"
             :action="initiateEmailFlow"
             :disabled="!email || isLoading"
-            :class="bemClass('continue-button')"
+            :class="bemm('continue-button')"
           />
         </div>
       </form>
     </div>
 
     <!-- Loading State -->
-    <div v-if="isLoading" :class="bemClass('loading')">
-      <div :class="bemClass('loading-spinner')"></div>
-      <p :class="bemClass('loading-text')">{{ loadingText }}</p>
+    <div v-if="isLoading" :class="bemm('loading')">
+      <div :class="bemm('loading-spinner')"></div>
+      <p :class="bemm('loading-text')">{{ loadingText }}</p>
     </div>
 
     <!-- Error Message -->
-    <div v-if="error" :class="bemClass('error')">
-      <TIcon name="alert-circle" :class="bemClass('error-icon')" />
-      <p :class="bemClass('error-message')">{{ error }}</p>
+    <div v-if="error" :class="bemm('error')">
+      <TIcon name="alert-circle" :class="bemm('error-icon')" />
+      <p :class="bemm('error-message')">{{ error }}</p>
       <TButton
         label="Try Again"
         type="ghost"
         color="error"
         size="small"
         :action="clearError"
-        :class="bemClass('error-button')"
+        :class="bemm('error-button')"
       />
     </div>
 
     <!-- Success Message -->
-    <div v-if="successMessage" :class="bemClass('success')">
-      <TIcon name="check-circle" :class="bemClass('success-icon')" />
-      <p :class="bemClass('success-message')">{{ successMessage }}</p>
+    <div v-if="successMessage" :class="bemm('success')">
+      <TIcon name="check-circle" :class="bemm('success-icon')" />
+      <p :class="bemm('success-message')">{{ successMessage }}</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useBemm } from '../../composables/useBemm'
+import { useBemm } from 'bemm'
 import TButton from '../TButton/TButton.vue'
 import TInput from '../TInput/TInput.vue'
 import TIcon from '../TIcon/TIcon.vue'
@@ -148,7 +148,7 @@ const emit = defineEmits<{
 }>()
 
 // BEM classes
-const { bemClass } = useBemm('login-form')
+const bemm = useBemm('login-form')
 
 // Form state
 const email = ref('')
