@@ -11,10 +11,19 @@ export default defineConfig({
       '@tiko/core': resolve(__dirname, '../../packages/core/src')
     }
   },
+  envDir: resolve(__dirname, '../../'),
   server: {
     port: 3000
   },
   build: {
     outDir: 'dist'
-  }
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: 'modern-compiler',
+        additionalData: `\n@use "@tiko/ui/styles/global.scss" as global;`,
+      },
+    },
+  },
 })
