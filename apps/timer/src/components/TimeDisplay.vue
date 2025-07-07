@@ -1,17 +1,17 @@
 <template>
   <div :class="displayClasses">
-    <div class="time-display__time">
+    <div :class="bemm('time')">
       {{ displayTime }}
     </div>
-    
-    <div class="time-display__progress">
-      <div 
-        class="time-display__progress-bar"
+
+    <div :class="bemm('progress')">
+      <div
+        :class="bemm('progress-bar')"
         :style="{ width: `${Math.min(100, progress)}%` }"
       />
     </div>
-    
-    <div class="time-display__mode">
+
+    <div :class="bemm('mode')">
       {{ mode === 'down' ? 'Count Down' : 'Count Up' }}
     </div>
   </div>
@@ -42,7 +42,7 @@ const displayClasses = computed(() => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .time-display {
   display: flex;
   flex-direction: column;
@@ -53,9 +53,9 @@ const displayClasses = computed(() => {
   border-radius: 1rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
-  
+
   &__time {
-    font-size: 4rem;
+    font-size: 20vh;
     font-weight: 700;
     font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
     color: var(--text-primary);
@@ -63,7 +63,7 @@ const displayClasses = computed(() => {
     line-height: 1;
     transition: color 0.3s ease;
   }
-  
+
   &__progress {
     width: 100%;
     max-width: 300px;
@@ -73,14 +73,14 @@ const displayClasses = computed(() => {
     overflow: hidden;
     position: relative;
   }
-  
+
   &__progress-bar {
     height: 100%;
     background: var(--color-primary);
     border-radius: 4px;
     transition: width 0.3s ease, background-color 0.3s ease;
   }
-  
+
   &__mode {
     font-size: 0.875rem;
     font-weight: 500;
@@ -88,58 +88,58 @@ const displayClasses = computed(() => {
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
-  
+
   // States
   &--running {
     .time-display__time {
       color: var(--color-primary);
     }
-    
+
     .time-display__progress-bar {
       background: var(--color-primary);
     }
   }
-  
+
   &--expired {
     background: var(--color-error);
     color: white;
     animation: expiredPulse 1s ease-in-out infinite;
-    
+
     .time-display__time {
       color: white;
     }
-    
+
     .time-display__mode {
       color: rgba(255, 255, 255, 0.8);
     }
-    
+
     .time-display__progress {
       background: rgba(255, 255, 255, 0.3);
     }
-    
+
     .time-display__progress-bar {
       background: white;
     }
   }
-  
+
   // Mode specific colors
   &--down {
     .time-display__progress-bar {
       background: var(--color-warning);
     }
-    
+
     &.time-display--running {
       .time-display__progress-bar {
         background: var(--color-warning);
       }
     }
   }
-  
+
   &--up {
     .time-display__progress-bar {
       background: var(--color-success);
     }
-    
+
     &.time-display--running {
       .time-display__progress-bar {
         background: var(--color-success);
@@ -159,26 +159,15 @@ const displayClasses = computed(() => {
   }
 }
 
-// Mobile responsiveness
-@media (max-width: 768px) {
-  .time-display {
-    padding: 1.5rem;
-    
-    &__time {
-      font-size: 3rem;
-    }
-  }
-}
-
 // Reduced motion support
 @media (prefers-reduced-motion: reduce) {
   .time-display {
     transition: none;
-    
+
     &--expired {
       animation: none;
     }
-    
+
     &__progress-bar {
       transition: width 0.1s ease;
     }

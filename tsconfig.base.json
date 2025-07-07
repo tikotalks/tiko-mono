@@ -16,12 +16,12 @@
     "baseUrl": ".",
     "strict": true,
     "paths": {
-      "@tiko/ui": ["packages/ui/src/index.ts"],
+      "@tiko/ai": ["packages/ai/src/index.ts"],
       "@tiko/core": ["packages/core/src/index.ts"],
       "@tiko/i18n": ["packages/i18n/src/index.ts"],
-      "@tiko/speech": ["packages/speech/src/index.ts"],
       "@tiko/media": ["packages/media/src/index.ts"],
-      "@tiko/ai": ["packages/ai/src/index.ts"]
+      "@tiko/speech": ["packages/speech/src/index.ts"],
+      "@tiko/ui": ["packages/ui/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
