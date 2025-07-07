@@ -1,49 +1,46 @@
 <template>
-  <div class="yes-no-view">
-    <!-- Header with settings -->
-    <header class="yes-no-header">
-      <TButton
-        icon="settings"
-        type="ghost"
-        size="medium"
-        color="secondary"
-        :action="toggleSettings"
-        aria-label="Settings"
-      />
-      
+  <TAppLayout
+    title="Yes or No"
+    subtitle="Tap the question to hear it spoken, then choose your answer"
+    @profile="handleProfile"
+    @settings="handleSettings"
+    @logout="handleLogout"
+  >
+    <template #top-bar-actions>
       <TButton
         icon="edit"
         type="ghost"
         size="medium"
         color="secondary"
-        :action="showQuestionInput"
+        @click="showQuestionInput"
         aria-label="Edit Question"
       />
-    </header>
+    </template>
 
-    <!-- Main question display -->
-    <main class="yes-no-main">
-      <div class="yes-no-question">
+    <div :class="bemm()">
+      <!-- Main question display -->
+      <main :class="bemm('main')">
+      <div :class="bemm('question')">
         <button
-          class="yes-no-question__button"
+          :class="bemm('question', 'button')"
           @click="speakQuestion"
           :disabled="isPlaying"
           data-cy="question-display"
         >
-          <div class="yes-no-question__text">
+          <div :class="bemm('question', 'text')">
             {{ currentQuestion }}
           </div>
-          
+
           <TIcon
             :name="isPlaying ? 'volume-2' : 'volume-1'"
-            class="yes-no-question__icon"
+            :class="bemm('question', 'icon')"
             size="large"
           />
         </button>
       </div>
 
       <!-- Answer buttons -->
-      <div class="yes-no-answers">
+      <TButtonGroup :class="bemm('answers')">
         <TButton
           label="Yes"
           type="fancy"
@@ -52,10 +49,10 @@
           icon="check"
           :action="() => handleAnswer('yes')"
           :vibrate="settings.hapticFeedback"
-          class="yes-no-answers__button yes-no-answers__button--yes"
+          :class="bemm('answers', 'button', 'yes')"
           data-cy="yes-button"
         />
-        
+
         <TButton
           label="No"
           type="fancy"
@@ -64,31 +61,31 @@
           icon="x"
           :action="() => handleAnswer('no')"
           :vibrate="settings.hapticFeedback"
-          class="yes-no-answers__button yes-no-answers__button--no"
+          :class="bemm('answers', 'button', 'no')"
           data-cy="no-button"
         />
-      </div>
+      </TButtonGroup>
     </main>
 
     <!-- Question input modal -->
-    <div v-if="showInput" class="yes-no-modal">
-      <div class="yes-no-modal__backdrop" @click="hideQuestionInput" />
-      <div class="yes-no-modal__content">
+    <div v-if="showInput" :class="bemm('modal')">
+      <div :class="bemm('modal', 'backdrop')" @click="hideQuestionInput" />
+      <div :class="bemm('modal', 'content')">
         <QuestionInput @close="hideQuestionInput" />
       </div>
     </div>
 
     <!-- Settings panel -->
-    <div v-if="showSettingsPanel" class="yes-no-settings">
-      <div class="yes-no-settings__backdrop" @click="hideSettings" />
-      <div class="yes-no-settings__panel">
-        <h3 class="yes-no-settings__title">Settings</h3>
-        
-        <div class="yes-no-settings__group">
-          <label class="yes-no-settings__label">Button Size</label>
+    <div v-if="showSettingsPanel" :class="bemm('settings')">
+      <div :class="bemm('settings', 'backdrop')" @click="hideSettings" />
+      <div :class="bemm('settings', 'panel')">
+        <h3 :class="bemm('settings', 'title')">Settings</h3>
+
+        <div :class="bemm('settings', 'group')">
+          <label :class="bemm('settings', 'label')">Button Size</label>
           <select
             v-model="localSettings.buttonSize"
-            class="yes-no-settings__select"
+            :class="bemm('settings', 'select')"
             @change="updateSettings"
           >
             <option value="small">Small</option>
@@ -96,9 +93,9 @@
             <option value="large">Large</option>
           </select>
         </div>
-        
-        <div class="yes-no-settings__group">
-          <label class="yes-no-settings__checkbox">
+
+        <div :class="bemm('settings', 'group')">
+          <label :class="bemm('settings', 'checkbox')">
             <input
               v-model="localSettings.autoSpeak"
               type="checkbox"
@@ -107,9 +104,9 @@
             <span>Auto-speak answers</span>
           </label>
         </div>
-        
-        <div class="yes-no-settings__group">
-          <label class="yes-no-settings__checkbox">
+
+        <div :class="bemm('settings', 'group')">
+          <label :class="bemm('settings', 'checkbox')">
             <input
               v-model="localSettings.hapticFeedback"
               type="checkbox"
@@ -118,8 +115,8 @@
             <span>Haptic feedback</span>
           </label>
         </div>
-        
-        <div class="yes-no-settings__actions">
+
+        <div :class="bemm('settings', 'actions')">
           <TButton
             label="Close"
             type="default"
@@ -132,19 +129,22 @@
     </div>
 
     <!-- Feedback overlay -->
-    <div v-if="showFeedback" class="yes-no-feedback" :class="`yes-no-feedback--${feedbackType}`">
+    <div v-if="showFeedback" :class="bemm('feedback', ['', (feedbackType as string)])">
       <TIcon :name="feedbackIcon" size="4rem" />
-      <span class="yes-no-feedback__text">{{ feedbackText }}</span>
+      <span :class="bemm('feedback', 'text')">{{ feedbackText }}</span>
     </div>
-  </div>
+    </div>
+  </TAppLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive, watch, toRefs } from 'vue'
-import { TButton, TIcon } from '@tiko/ui'
+import { useBemm } from 'bemm'
+import { TButton, TButtonGroup, TIcon, TAppLayout } from '@tiko/ui'
 import { useYesNoStore } from '../stores/yesno'
 import QuestionInput from '../components/QuestionInput.vue'
 
+const bemm = useBemm('yes-no-view')
 const yesNoStore = useYesNoStore()
 
 // Local state
@@ -179,9 +179,9 @@ const speakQuestion = () => {
 const handleAnswer = async (answer: 'yes' | 'no') => {
   feedbackType.value = answer
   showFeedback.value = true
-  
+
   await yesNoStore.handleAnswer(answer)
-  
+
   // Hide feedback after 1.5 seconds
   setTimeout(() => {
     showFeedback.value = false
@@ -208,10 +208,26 @@ const updateSettings = async () => {
   await yesNoStore.updateSettings(localSettings)
 }
 
+const handleProfile = () => {
+  console.log('Profile clicked')
+  // TODO: Navigate to profile page or open profile modal
+}
+
+const handleSettings = () => {
+  console.log('Settings clicked')
+  // For now, use the existing settings panel
+  toggleSettings()
+}
+
+const handleLogout = () => {
+  console.log('User logged out')
+  // The auth store handles the logout, this is just for any cleanup
+}
+
 // Initialize
 onMounted(async () => {
   await yesNoStore.loadState()
-  
+
   // Auto-speak question if enabled
   if (settings.value.autoSpeak) {
     setTimeout(() => {
@@ -250,65 +266,24 @@ onMounted(async () => {
 
 .yes-no-question {
   &__button {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    padding: 2rem;
-    background: white;
-    border: none;
-    border-radius: 1rem;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    max-width: 600px;
-    
-    &:hover:not(:disabled) {
-      transform: translateY(-4px);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
-    }
-    
-    &:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-    }
-    
-    &:focus-visible {
-      outline: 3px solid rgba(255, 255, 255, 0.8);
-      outline-offset: 4px;
-    }
+
   }
-  
-  &__text {
-    font-size: 1.5rem;
-    font-weight: 600;
-    text-align: center;
-    color: var(--text-primary);
-    line-height: 1.4;
-  }
-  
-  &__icon {
-    color: var(--color-primary);
-  }
+
+
 }
 
 .yes-no-answers {
   display: flex;
   gap: 2rem;
-  
+
   &__button {
     min-width: 150px;
-    
+
     &--yes {
-      --button-bg: #10b981;
-      --button-bg-hover: #059669;
-      --button-bg-secondary: #34d399;
+
     }
-    
+
     &--no {
-      --button-bg: #ef4444;
-      --button-bg-hover: #dc2626;
-      --button-bg-secondary: #f87171;
     }
   }
 }
@@ -321,7 +296,7 @@ onMounted(async () => {
   right: 0;
   bottom: 0;
   z-index: 1000;
-  
+
   &__backdrop {
     position: absolute;
     top: 0;
@@ -330,7 +305,7 @@ onMounted(async () => {
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
   }
-  
+
   &__content {
     position: absolute;
     top: 50%;
@@ -352,7 +327,7 @@ onMounted(async () => {
   right: 0;
   bottom: 0;
   z-index: 1000;
-  
+
   &__backdrop {
     position: absolute;
     top: 0;
@@ -361,7 +336,7 @@ onMounted(async () => {
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
   }
-  
+
   &__panel {
     position: absolute;
     top: 50%;
@@ -373,24 +348,24 @@ onMounted(async () => {
     min-width: 300px;
     max-width: 90vw;
   }
-  
+
   &__title {
     margin: 0 0 1.5rem;
     font-size: 1.25rem;
     font-weight: 600;
     text-align: center;
   }
-  
+
   &__group {
     margin-bottom: 1.5rem;
   }
-  
+
   &__label {
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 500;
   }
-  
+
   &__select {
     width: 100%;
     padding: 0.75rem;
@@ -398,19 +373,19 @@ onMounted(async () => {
     border-radius: var(--radius-md);
     font-size: 1rem;
   }
-  
+
   &__checkbox {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     cursor: pointer;
-    
+
     input {
       width: 1.25rem;
       height: 1.25rem;
     }
   }
-  
+
   &__actions {
     display: flex;
     justify-content: center;
@@ -435,35 +410,35 @@ onMounted(async () => {
   z-index: 2000;
   pointer-events: none;
   animation: feedbackPulse 1.5s ease-in-out;
-  
+
   &__text {
     font-size: 2rem;
     font-weight: 700;
   }
-  
+
   &--yes {
     color: #10b981;
   }
-  
+
   &--no {
     color: #ef4444;
   }
 }
 
 @keyframes feedbackPulse {
-  0% { 
+  0% {
     transform: translate(-50%, -50%) scale(0.8);
     opacity: 0;
   }
-  20% { 
+  20% {
     transform: translate(-50%, -50%) scale(1.1);
     opacity: 1;
   }
-  80% { 
+  80% {
     transform: translate(-50%, -50%) scale(1);
     opacity: 1;
   }
-  100% { 
+  100% {
     transform: translate(-50%, -50%) scale(0.9);
     opacity: 0;
   }
@@ -475,22 +450,22 @@ onMounted(async () => {
     padding: 1rem;
     gap: 2rem;
   }
-  
+
   .yes-no-question {
     &__button {
       padding: 1.5rem;
     }
-    
+
     &__text {
       font-size: 1.25rem;
     }
   }
-  
+
   .yes-no-answers {
     flex-direction: column;
     width: 100%;
     max-width: 300px;
-    
+
     &__button {
       width: 100%;
       min-width: auto;
@@ -502,12 +477,12 @@ onMounted(async () => {
 @media (prefers-reduced-motion: reduce) {
   .yes-no-question__button {
     transition: none;
-    
+
     &:hover:not(:disabled) {
       transform: none;
     }
   }
-  
+
   .yes-no-feedback {
     animation: none;
   }

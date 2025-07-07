@@ -1,22 +1,15 @@
 <template>
-  <div class="type-view">
-    <!-- Header -->
-    <header class="type-header">
-      <h1 class="type-header__title">Type & Speak</h1>
-      
-      <TButton
-        icon="settings"
-        type="ghost"
-        size="medium"
-        color="secondary"
-        :action="toggleSettings"
-        aria-label="Settings"
-      />
-    </header>
-
-    <!-- Main Content -->
-    <main class="type-main">
-      <!-- Text Input Area -->
+  <TAppLayout
+    title="Type & Speak"
+    subtitle="Type text and hear it spoken aloud"
+    @profile="handleProfile"
+    @settings="handleSettings"
+    @logout="handleLogout"
+  >
+    <div :class="bemm()">
+      <!-- Main Content -->
+      <main :class="bemm('main')">
+        <!-- Text Input Area -->
       <div class="type-input-section">
         <div class="type-input-container">
           <textarea
@@ -27,7 +20,7 @@
             :disabled="isSpeaking"
             @keydown="handleKeydown"
           />
-          
+
           <div class="type-input-actions">
             <TButton
               v-if="currentText.trim()"
@@ -38,7 +31,7 @@
               :action="clearText"
               aria-label="Clear text"
             />
-            
+
             <span class="type-character-count">
               {{ currentText.length }} characters
             </span>
@@ -58,7 +51,7 @@
           :disabled="!canSpeak && !isSpeaking"
           class="type-speak-button"
         />
-        
+
         <div class="type-secondary-controls">
           <TButton
             v-if="isSpeaking"
@@ -98,7 +91,7 @@
     <!-- History Panel -->
     <div v-if="showHistory && recentHistory.length > 0" class="type-history">
       <h3 class="type-history__title">Recent</h3>
-      
+
       <div class="type-history__list">
         <div
           v-for="item in recentHistory.slice(0, 5)"
@@ -108,7 +101,7 @@
           <div class="type-history__text">
             {{ item.text.length > 50 ? item.text.substring(0, 50) + '...' : item.text }}
           </div>
-          
+
           <div class="type-history__actions">
             <TButton
               icon="volume-2"
@@ -118,7 +111,7 @@
               :action="() => speakFromHistory(item)"
               aria-label="Speak this text"
             />
-            
+
             <TButton
               icon="copy"
               type="ghost"
@@ -130,7 +123,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="type-history__footer">
         <TButton
           label="Show All History"
@@ -147,7 +140,7 @@
       <div class="type-settings__backdrop" @click="hideSettings" />
       <div class="type-settings__panel">
         <h3 class="type-settings__title">Voice Settings</h3>
-        
+
         <!-- Rate -->
         <div class="type-settings__group">
           <label class="type-settings__label">
@@ -163,7 +156,7 @@
             @input="updateSettings"
           />
         </div>
-        
+
         <!-- Pitch -->
         <div class="type-settings__group">
           <label class="type-settings__label">
@@ -179,7 +172,7 @@
             @input="updateSettings"
           />
         </div>
-        
+
         <!-- Volume -->
         <div class="type-settings__group">
           <label class="type-settings__label">
@@ -195,7 +188,7 @@
             @input="updateSettings"
           />
         </div>
-        
+
         <!-- Auto Save -->
         <div class="type-settings__group">
           <label class="type-settings__checkbox">
@@ -207,7 +200,85 @@
             <span>Save to history automatically</span>
           </label>
         </div>
-        
+
+        <div class="type-settings__actions">
+          <TButton
+            label="Close"
+            type="default"
+            color="primary"
+            :action="hideSettings"
+            size="medium"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div v-if="showSettings" class="type-settings">
+      <div class="type-settings__backdrop" @click="hideSettings" />
+      <div class="type-settings__panel">
+        <h3 class="type-settings__title">Voice Settings</h3>
+
+        <!-- Rate -->
+        <div class="type-settings__group">
+          <label class="type-settings__label">
+            Speech Rate: {{ localSettings.rate.toFixed(1) }}x
+          </label>
+          <input
+            v-model.number="localSettings.rate"
+            type="range"
+            min="0.1"
+            max="3"
+            step="0.1"
+            class="type-settings__slider"
+            @input="updateSettings"
+          />
+        </div>
+
+        <!-- Pitch -->
+        <div class="type-settings__group">
+          <label class="type-settings__label">
+            Pitch: {{ localSettings.pitch.toFixed(1) }}
+          </label>
+          <input
+            v-model.number="localSettings.pitch"
+            type="range"
+            min="0"
+            max="2"
+            step="0.1"
+            class="type-settings__slider"
+            @input="updateSettings"
+          />
+        </div>
+
+        <!-- Volume -->
+        <div class="type-settings__group">
+          <label class="type-settings__label">
+            Volume: {{ Math.round(localSettings.volume * 100) }}%
+          </label>
+          <input
+            v-model.number="localSettings.volume"
+            type="range"
+            min="0"
+            max="1"
+            step="0.1"
+            class="type-settings__slider"
+            @input="updateSettings"
+          />
+        </div>
+
+        <!-- Auto Save -->
+        <div class="type-settings__group">
+          <label class="type-settings__checkbox">
+            <input
+              v-model="localSettings.autoSave"
+              type="checkbox"
+              @change="updateSettings"
+            />
+            <span>Save to history automatically</span>
+          </label>
+        </div>
+
         <div class="type-settings__actions">
           <TButton
             label="Close"
@@ -220,12 +291,16 @@
       </div>
     </div>
   </div>
+  </TAppLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, reactive, watch, toRefs } from 'vue'
-import { TButton } from '@tiko/ui'
+import { useBemm } from 'bemm'
+import { TButton, TAppLayout } from '@tiko/ui'
 import { useTypeStore } from '../stores/type'
+
+const bemm = useBemm('type-view')
 
 const typeStore = useTypeStore()
 
@@ -319,6 +394,22 @@ const showFullHistory = () => {
   console.log('Show full history - not implemented yet')
 }
 
+const handleProfile = () => {
+  console.log('Profile clicked')
+  // TODO: Navigate to profile page or open profile modal
+}
+
+const handleSettings = () => {
+  console.log('Settings clicked')
+  // Use the existing settings panel
+  toggleSettings()
+}
+
+const handleLogout = () => {
+  console.log('User logged out')
+  // The auth store handles the logout, this is just for any cleanup
+}
+
 // Keyboard shortcuts
 const handleKeydown = (event: KeyboardEvent) => {
   if (event.ctrlKey || event.metaKey) {
@@ -344,7 +435,7 @@ const handleGlobalKeydown = (event: KeyboardEvent) => {
   if (event.target && (event.target as HTMLElement).tagName === 'TEXTAREA') {
     return // Don't interfere with textarea input
   }
-  
+
   switch (event.key) {
     case ' ':
       if (!event.ctrlKey && !event.metaKey) {
@@ -392,7 +483,7 @@ onUnmounted(() => {
   padding: 1rem;
   position: relative;
   z-index: 10;
-  
+
   &__title {
     margin: 0;
     font-size: 1.5rem;
@@ -434,17 +525,17 @@ onUnmounted(() => {
   line-height: 1.6;
   resize: vertical;
   transition: border-color 0.2s ease;
-  
+
   &:focus {
     outline: none;
     border-color: var(--color-primary);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
-  
+
   &::placeholder {
     color: var(--text-tertiary);
   }
-  
+
   &:disabled {
     background: var(--bg-tertiary);
     color: var(--text-tertiary);
@@ -473,7 +564,7 @@ onUnmounted(() => {
 .type-speak-button {
   transform: scale(1);
   transition: transform 0.2s ease;
-  
+
   &:hover {
     transform: scale(1.05);
   }
@@ -506,12 +597,12 @@ onUnmounted(() => {
   font-family: inherit;
   font-size: 1rem;
   background: white;
-  
+
   &:focus {
     outline: none;
     border-color: var(--color-primary);
   }
-  
+
   &:disabled {
     background: var(--bg-tertiary);
     color: var(--text-tertiary);
@@ -524,20 +615,20 @@ onUnmounted(() => {
   border-radius: 1rem;
   padding: 1.5rem;
   backdrop-filter: blur(10px);
-  
+
   &__title {
     margin: 0 0 1rem;
     font-size: 1.125rem;
     font-weight: 600;
     color: var(--text-primary);
   }
-  
+
   &__list {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
   }
-  
+
   &__item {
     display: flex;
     align-items: center;
@@ -547,19 +638,19 @@ onUnmounted(() => {
     border-radius: 0.5rem;
     gap: 1rem;
   }
-  
+
   &__text {
     flex: 1;
     font-size: 0.875rem;
     color: var(--text-primary);
     line-height: 1.4;
   }
-  
+
   &__actions {
     display: flex;
     gap: 0.25rem;
   }
-  
+
   &__footer {
     margin-top: 1rem;
     text-align: center;
@@ -574,7 +665,7 @@ onUnmounted(() => {
   right: 0;
   bottom: 0;
   z-index: 1000;
-  
+
   &__backdrop {
     position: absolute;
     top: 0;
@@ -583,7 +674,7 @@ onUnmounted(() => {
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
   }
-  
+
   &__panel {
     position: absolute;
     top: 50%;
@@ -597,25 +688,25 @@ onUnmounted(() => {
     max-height: 90vh;
     overflow-y: auto;
   }
-  
+
   &__title {
     margin: 0 0 1.5rem;
     font-size: 1.25rem;
     font-weight: 600;
     text-align: center;
   }
-  
+
   &__group {
     margin-bottom: 1.5rem;
   }
-  
+
   &__label {
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 500;
     color: var(--text-primary);
   }
-  
+
   &__slider {
     width: 100%;
     height: 2px;
@@ -624,7 +715,7 @@ onUnmounted(() => {
     outline: none;
     -webkit-appearance: none;
     appearance: none;
-    
+
     &::-webkit-slider-thumb {
       appearance: none;
       width: 20px;
@@ -633,7 +724,7 @@ onUnmounted(() => {
       background: var(--color-primary);
       cursor: pointer;
     }
-    
+
     &::-moz-range-thumb {
       width: 20px;
       height: 20px;
@@ -643,19 +734,19 @@ onUnmounted(() => {
       border: none;
     }
   }
-  
+
   &__checkbox {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     cursor: pointer;
-    
+
     input {
       width: 1.25rem;
       height: 1.25rem;
     }
   }
-  
+
   &__actions {
     display: flex;
     justify-content: center;
@@ -669,17 +760,17 @@ onUnmounted(() => {
     padding: 1rem;
     gap: 1.5rem;
   }
-  
+
   .type-textarea {
     min-height: 120px;
     font-size: 1rem;
   }
-  
+
   .type-input-section,
   .type-voice-section {
     padding: 1rem;
   }
-  
+
   .type-settings {
     &__panel {
       padding: 1.5rem;
@@ -693,7 +784,7 @@ onUnmounted(() => {
 @media (prefers-reduced-motion: reduce) {
   .type-speak-button {
     transition: none;
-    
+
     &:hover {
       transform: none;
     }
