@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useBemm } from '@tiko/ui'
+import { useBemm } from 'bemm'
 
 interface Props {
   displayTime: string
@@ -31,10 +31,10 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { bemClass } = useBemm('time-display')
+const bemm = useBemm('time-display')
 
 const displayClasses = computed(() => {
-  return bemClass(undefined, {
+  return bemm('', {
     expired: props.isExpired,
     running: props.isRunning,
     [props.mode]: true
