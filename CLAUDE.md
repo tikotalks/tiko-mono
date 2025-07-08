@@ -228,6 +228,49 @@ Available TikoEvents include:
 - Notifications: `notification:show`, `notification:hide`
 - Theme: `theme:change`
 - App State: `app:ready`, `app:error`, `app:focus`, `app:blur`
+- Parent Mode: `parent:unlocked`, `parent:locked`, `parent:permission-denied`
+
+### 11. Parent Mode System (Global Feature)
+- **Use `useParentMode` composable** for secure parental controls across all apps
+- **PIN-protected access** to administrative features (4-digit numeric PIN)
+- **Session management** with configurable timeouts and auto-lock
+- **App-specific permissions** for granular control over features
+
+```typescript
+// Enable parent mode in any app
+const parentMode = useParentMode('radio')
+
+// Check if user can manage content
+if (parentMode.canManageContent.value) {
+  // Show admin controls
+}
+
+// Check specific permissions
+if (parentMode.hasPermission('radio', 'canManageItems')) {
+  // Allow item management
+}
+
+// Components for parent mode UI
+<TParentModeToggle 
+  app-name="radio"
+  required-permission="canManageItems" 
+/>
+```
+
+Parent Mode Database Requirements:
+```sql
+-- Add to user_profiles table
+ALTER TABLE user_profiles ADD COLUMN parent_pin_hash TEXT;
+ALTER TABLE user_profiles ADD COLUMN parent_mode_enabled BOOLEAN DEFAULT false;
+ALTER TABLE user_profiles ADD COLUMN parent_mode_settings JSONB;
+```
+
+Security Features:
+- PIN hashed using SHA-256 with salt
+- Session-based unlock with configurable timeout
+- No plaintext PIN storage or logging
+- Rate limiting for PIN attempts
+- Cross-app permission system
 
 ## File Structure Standards
 

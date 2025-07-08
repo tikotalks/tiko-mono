@@ -2,13 +2,15 @@
   <div :class="bemm()">
     <!-- Login Card -->
     <div :class="bemm('card')">
-      <!-- Header -->
-      <div :class="bemm('header')">
-        <h4 :class="bemm('title')">Login to your account</h4>
-      </div>
 
-      <!-- Email Step -->
-      <div v-if="currentStep === 'email'" :class="bemm('content')">
+
+      <template v-if="currentStep === 'email'" >
+                  <!-- Header -->
+                  <div :class="bemm('header')">
+        <h4 :class="bemm('title')">Login to your account</h4>
+      </div>  <!-- Email Step -->
+      <div :class="bemm('content')">
+
         <!-- Email Input -->
         <Form @submit.prevent="handleEmailSubmit">
           <InputEmail
@@ -60,8 +62,11 @@
         </div>
       </div>
 
+    </template>
+
+    <template v-else-if="currentStep === 'verification'">
       <!-- Verification Code Step -->
-      <div v-else-if="currentStep === 'verification'" :class="bemm('content')">
+      <div :class="bemm('content')">
         <div :class="bemm('verification-info')">
           <TIcon name="mail" :class="bemm('verification-icon')" />
           <p :class="bemm('verification-text')">
@@ -115,12 +120,15 @@
           </button>
         </div>
       </div>
+      </template>
 
       <!-- Register Step -->
-      <div v-else-if="currentStep === 'register'" :class="bemm('content')">
+      <template v-else-if="currentStep === 'register'" >
         <div :class="bemm('header')">
           <h2 :class="bemm('title')">Create your account</h2>
         </div>
+        <div  :class="bemm('content')">
+
 
         <Form @submit.prevent="handleRegisterSubmit">
           <InputEmail
@@ -180,6 +188,7 @@
           :class="bemm('error-button')"
         >Try Again</TButton>
       </div>
+    </template>
     </div>
   </div>
 </template>
@@ -339,6 +348,8 @@ onUnmounted(() => {
 
   --card-padding: var(--space-xl);
 
+  .button{ width: 100%; }
+
   &__card {
     background: var(--color-background);
     border-radius: var(--border-radius);
@@ -363,6 +374,18 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+  }
+
+  &__register-link{
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+    background-color: transparent;font-size: 1em;border:none;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
 
@@ -391,8 +414,6 @@ onUnmounted(() => {
       z-index: 1;
     }
   }
-
-
 }
 
 </style>

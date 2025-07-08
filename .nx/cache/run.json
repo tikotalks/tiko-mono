@@ -1,8 +1,8 @@
 {
   "run": {
-    "command": "nx build cards",
-    "startTime": "2025-07-07T13:36:05.115Z",
-    "endTime": "2025-07-07T13:36:05.960Z",
+    "command": "nx build radio --skip-nx-cache",
+    "startTime": "2025-07-08T11:22:24.168Z",
+    "endTime": "2025-07-08T11:22:24.843Z",
     "inner": false
   },
   "tasks": [
@@ -10,9 +10,9 @@
       "taskId": "@tiko/core:build",
       "target": "build",
       "projectName": "@tiko/core",
-      "hash": "11157642982940687667",
-      "startTime": "2025-07-07T13:36:05.119Z",
-      "endTime": "2025-07-07T13:36:05.960Z",
+      "hash": "2700601382510141007",
+      "startTime": "2025-07-08T11:22:24.172Z",
+      "endTime": "2025-07-08T11:22:24.842Z",
       "params": "",
       "cacheStatus": "cache-miss",
       "status": 1

@@ -1,7 +1,7 @@
 <template>
   <div :class="bemm()">
     <h3 :class="bemm('title')">EventBus Demo</h3>
-    
+
     <div :class="bemm('buttons')">
       <TButton
         type="default"
@@ -11,7 +11,7 @@
       >
         Emit Notification
       </TButton>
-      
+
       <TButton
         type="default"
         color="success"
@@ -20,7 +20,7 @@
       >
         Emit Timer Event
       </TButton>
-      
+
       <TButton
         type="ghost"
         color="secondary"
@@ -30,11 +30,11 @@
         Clear Events
       </TButton>
     </div>
-    
+
     <div :class="bemm('events')">
       <h4 :class="bemm('subtitle')">Received Events:</h4>
-      <div 
-        v-for="event in receivedEvents" 
+      <div
+        v-for="event in receivedEvents"
         :key="event.id"
         :class="bemm('event')"
       >
@@ -133,7 +133,7 @@ onUnmounted(() => {
   padding: var(--space-md, 1em);
   background: var(--color-background);
   border: 1px solid color-mix(in srgb, var(--color-foreground), transparent 80%);
-  border-radius: var(--radius-md, 0.5em);
+  border-radius: var(--border-radius, 0.5em);
 
   &__title,
   &__subtitle {

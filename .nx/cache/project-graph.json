@@ -1,50 +1,5 @@
 {
   "nodes": {
-    "cards-e2e": {
-      "name": "cards-e2e",
-      "type": "e2e",
-      "data": {
-        "root": "apps/cards-e2e",
-        "targets": {
-          "lint": {
-            "cache": true,
-            "inputs": [
-              "default",
-              "{workspaceRoot}/.eslintrc.json",
-              "{workspaceRoot}/.eslintignore"
-            ],
-            "executor": "nx:run-commands",
-            "options": {
-              "cwd": "apps/cards-e2e",
-              "command": "eslint ."
-            },
-            "configurations": {}
-          },
-          "e2e": {
-            "cache": true,
-            "inputs": [
-              "default",
-              "^production"
-            ],
-            "executor": "@nx/cypress:cypress",
-            "options": {
-              "cypressConfig": "apps/cards-e2e/cypress.config.ts",
-              "testingType": "e2e",
-              "devServerTarget": "cards:serve"
-            },
-            "configurations": {}
-          }
-        },
-        "name": "cards-e2e",
-        "$schema": "../../node_modules/nx/schemas/project-schema.json",
-        "projectType": "application",
-        "sourceRoot": "apps/cards-e2e/src",
-        "tags": [],
-        "implicitDependencies": [
-          "cards"
-        ]
-      }
-    },
     "@tiko/core": {
       "name": "@tiko/core",
       "type": "lib",
@@ -327,6 +282,77 @@
         "sourceRoot": "apps/cards/src",
         "projectType": "application",
         "$schema": "../../node_modules/nx/schemas/project-schema.json",
+        "implicitDependencies": [],
+        "tags": []
+      }
+    },
+    "radio": {
+      "name": "radio",
+      "type": "app",
+      "data": {
+        "root": "apps/radio",
+        "targets": {
+          "lint": {
+            "cache": true,
+            "inputs": [
+              "default",
+              "{workspaceRoot}/.eslintrc.json",
+              "{workspaceRoot}/.eslintignore"
+            ],
+            "executor": "nx:run-commands",
+            "options": {
+              "cwd": "apps/radio",
+              "command": "eslint ."
+            },
+            "configurations": {}
+          },
+          "build": {
+            "cache": true,
+            "dependsOn": [
+              "^build"
+            ],
+            "inputs": [
+              "production",
+              "^production"
+            ],
+            "outputs": [
+              "{projectRoot}/dist"
+            ],
+            "executor": "nx:run-commands",
+            "options": {
+              "cwd": "apps/radio",
+              "command": "vite build"
+            },
+            "configurations": {}
+          },
+          "serve": {
+            "options": {
+              "cwd": "apps/radio",
+              "command": "vite serve"
+            },
+            "executor": "nx:run-commands",
+            "configurations": {}
+          },
+          "preview": {
+            "options": {
+              "cwd": "apps/radio",
+              "command": "vite preview"
+            },
+            "executor": "nx:run-commands",
+            "configurations": {}
+          },
+          "serve-static": {
+            "executor": "@nx/web:file-server",
+            "options": {
+              "buildTarget": "build"
+            },
+            "configurations": {}
+          }
+        },
+        "name": "radio",
+        "$schema": "../../node_modules/nx/schemas/project-schema.json",
+        "projectType": "application",
+        "sourceRoot": "apps/radio/src",
         "implicitDependencies": [],
         "tags": []
       }
@@ -5958,6 +5984,15 @@
         "hash": "sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw=="
       }
     },
+    "npm:mitt@3.0.1": {
+      "type": "npm",
+      "name": "npm:mitt@3.0.1",
+      "data": {
+        "version": "mitt@3.0.1",
+        "packageName": "mitt@3.0.1",
+        "hash": "sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw=="
+      }
+    },
     "npm:mlly@1.7.4": {
       "type": "npm",
       "name": "npm:mlly@1.7.4",
@@ -7958,13 +7993,6 @@
     }
   },
   "dependencies": {
-    "cards-e2e": [
-      {
-        "source": "cards-e2e",
-        "target": "cards",
-        "type": "implicit"
-      }
-    ],
     "@tiko/core": [],
     "@tiko/ui": [
       {
@@ -7993,6 +8021,18 @@
       },
       {
         "source": "cards",
+        "target": "@tiko/core",
+        "type": "static"
+      }
+    ],
+    "radio": [
+      {
+        "source": "radio",
+        "target": "@tiko/ui",
+        "type": "static"
+      },
+      {
+        "source": "radio",
         "target": "@tiko/core",
         "type": "static"
       }

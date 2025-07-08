@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <TAuthWrapper>
+    <TAuthWrapper  :backgroundVideo="backgroundVideoUrl" :title="'Timer'">
       <TimerView />
     </TAuthWrapper>
   </div>
@@ -11,6 +11,8 @@ import { onMounted } from 'vue'
 import { useAppStore } from '@tiko/core'
 import { TAuthWrapper } from '@tiko/ui'
 import TimerView from './views/TimerView.vue'
+import backgroundVideoUrl from './assets/login-background.mp4'
+
 
 const appStore = useAppStore()
 

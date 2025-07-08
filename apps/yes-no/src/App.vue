@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <TAuthWrapper>
+    <TAuthWrapper  :backgroundVideo="backgroundVideoUrl" :title="'Yes/No'">
       <YesNoView />
     </TAuthWrapper>
   </div>
@@ -12,6 +12,7 @@ import { onMounted } from 'vue';
 import { useAppStore } from '@tiko/core';
 import { TAuthWrapper, TPopup } from '@tiko/ui';
 import YesNoView from './views/YesNoView.vue';
+import backgroundVideoUrl from './assets/login-background.mp4'
 
 const appStore = useAppStore();
 

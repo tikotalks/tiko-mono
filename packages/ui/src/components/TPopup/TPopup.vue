@@ -19,15 +19,16 @@
 					:class="bemm('background')"
 					@click="popupService.closePopup(popup.id)"
 				/>
-				<div :class="bemm('wrapper')">
-					<div :class="bemm('container')">
+		 <div :class="bemm('wrapper')">
+
+							<div :class="bemm('container')">
 						<header
 							v-if="hasSlot('header')"
 							:class="bemm('header')"
 						>
 							<slot name="header" />
 						</header>
-						<TButton
+			 <TButton
 							v-if="popup.config.canClose"
 							:class="bemm('close')"
 							:icon="Icons.MULTIPLY_M"
@@ -39,13 +40,14 @@
 							v-bind="popup.props"
 							@close="popupService.closePopup(popup.id)"
 						/>
-						<header
+						<footer
 							v-if="hasSlot('footer')"
 							:class="bemm('footer')"
 						>
 							<slot name="footer" />
-						</header>
-					</div>
+						</footer>
+					</div
+				</div>
 				</div>
 			</div>
 		</template>

@@ -1,6 +1,0 @@
-
-> timer@1.0.0 typecheck /Users/silvandiepen/Repositories/_tiko/tiko-mono/apps/timer
-> vue-tsc --noEmit
-
-sh: vue-tsc: command not found
-[41m[30m ELIFECYCLE [39m[49m [31mCommand failed.[39m

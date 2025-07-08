@@ -31,7 +31,7 @@
         <div :class="bemm('section')">
           <h3 :class="bemm('section-title')">Basic Information</h3>
 
-          <TInput
+          <TInputText
             v-model="form.label"
             label="Card Label"
             placeholder="e.g., Water, Happy, Help"
@@ -39,7 +39,7 @@
             :class="bemm('field')"
           />
 
-          <TInput
+          <TInputText
             v-model="form.audioText"
             label="Audio Text"
             placeholder="What should be spoken when tapped"
@@ -47,7 +47,7 @@
             :class="bemm('field')"
           />
 
-          <TInput
+          <TInputText
             v-model="tagInput"
             label="Tags"
             placeholder="e.g., food, emotion, need (comma separated)"
@@ -106,7 +106,7 @@
             </TButton>
           </div>
 
-          <TInput
+          <TInputText
             v-if="showUrlInput"
             v-model="form.imageUrl"
             label="Image URL"
@@ -172,7 +172,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TInput, TCardCommunication, type Card } from '@tiko/ui'
+import { TButton, TInputText, TCardCommunication, type Card } from '@tiko/ui'
 import { useCardsStore } from '../stores/cards'
 
 interface Emits {

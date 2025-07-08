@@ -1,7 +1,7 @@
 <template>
   <div :class="bemm()">
     <h3 :class="bemm('title')">Input Components Demo</h3>
-    
+
     <!-- TInput Component -->
     <div :class="bemm('section')">
       <h4 :class="bemm('subtitle')">TInput Component</h4>
@@ -13,7 +13,7 @@
       />
       <p :class="bemm('value')">Value: {{ tikoInput }}</p>
     </div>
-    
+
     <!-- InputText Component (using InputBase) -->
     <div :class="bemm('section')">
       <h4 :class="bemm('subtitle')">InputText Component (using InputBase)</h4>
@@ -26,7 +26,7 @@
       />
       <p :class="bemm('value')">Value: {{ textInput }}</p>
     </div>
-    
+
     <!-- TInputText Component -->
     <div :class="bemm('section')">
       <h4 :class="bemm('subtitle')">TInputText Component (New)</h4>
@@ -67,7 +67,7 @@ const newTextInput = ref('')
   padding: var(--space-md, 1em);
   background: var(--color-background);
   border: 1px solid color-mix(in srgb, var(--color-foreground), transparent 80%);
-  border-radius: var(--radius-md, 0.5em);
+  border-radius: var(--border-radius, 0.5em);
 
   &__title,
   &__subtitle {
@@ -82,13 +82,13 @@ const newTextInput = ref('')
 
   &__subtitle {
     font-size: 1em;
-    margin-bottom: var(--space-sm, 0.75em);
+    margin-bottom: var(--space-s, 0.75em);
   }
 
   &__section {
     display: flex;
     flex-direction: column;
-    gap: var(--space-sm, 0.75em);
+    gap: var(--space-s, 0.75em);
     padding: var(--space-md, 1em);
     background: color-mix(in srgb, var(--color-primary), transparent 95%);
     border-radius: var(--radius-sm, 0.25em);
