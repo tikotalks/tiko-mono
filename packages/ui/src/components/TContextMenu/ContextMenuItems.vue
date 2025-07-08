@@ -8,9 +8,8 @@
             <template v-if="item.type == 'default'">
                 <TButton
                     :icon="item.icon"
-                    size="small"
                     :class="bemm('item', ['', 'normal', item.items?.length ? 'has-submenu' : ''])"
-                    variant="ghost"
+                    :type="'ghost'"
                     :href="getItemLink(item) || ''"
                     @click="handleClick($event, item)"
                 >
@@ -71,7 +70,7 @@
 
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
-import { defineProps } from 'vue';
+import { defineProps, type PropType } from 'vue';
 import type ContextPanel from './ContextPanel.vue';
 import TIcon from '../TIcon/TIcon.vue';
 import TButton from '../TButton/TButton.vue';
@@ -183,16 +182,16 @@ const handleClick = (event: Event, item: ContextMenuItem) => {
 
     &__separator {
         height: 1px;
-        background-color: var(--color-border, #e0e0e0);
+        background-color: var(--color-accent);
         border: none;
         margin: 0.5em 0;
     }
 
     &__header {
-        margin: var(--space-s, 0.5rem);
+        margin: var(--space-s);
         font-size: 0.75em;
         text-transform: uppercase;
-        color: var(--color-primary, #007bff);
+        color: var(--color-primary);
 
         h5 {
             margin: 0;
@@ -268,30 +267,30 @@ const handleClick = (event: Event, item: ContextMenuItem) => {
             }
         }
 
-        &--normal {
-            &::before {
-                content: '';
-                width: 100%;
-                height: 100%;
-                border-radius: inherit;
-                background-color: var(--color-border, #e0e0e0);
-                display: block;
-                position: absolute;
-                left: 50%;
-                top: 50%;
-                opacity: 0;
-                transform: translate(-50%, -50%) scale(0.75);
-                transition: all 0.3s ease;
-            }
+        // &--normal {
+        //     &::before {
+        //         content: '';
+        //         width: 100%;
+        //         height: 100%;
+        //         border-radius: inherit;
+        //         background-color: var(--color-border, #e0e0e0);
+        //         display: block;
+        //         position: absolute;
+        //         left: 50%;
+        //         top: 50%;
+        //         opacity: 0;
+        //         transform: translate(-50%, -50%) scale(0.75);
+        //         transition: all 0.3s ease;
+        //     }
 
-            &:hover {
-                opacity: 1;
-                &::before {
-                    opacity: 1;
-                    transform: translate(-50%, -50%) scale(1);
-                }
-            }
-        }
+        //     &:hover {
+        //         opacity: 1;
+        //         &::before {
+        //             opacity: 1;
+        //             transform: translate(-50%, -50%) scale(1);
+        //         }
+        //     }
+        // }
     }
 }
 </style>

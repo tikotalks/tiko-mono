@@ -70,7 +70,6 @@ const displayClasses = computed(() => {
     height: 8px;
     background: var(--bg-tertiary);
     border-radius: 4px;
-    overflow: hidden;
     position: relative;
   }
 

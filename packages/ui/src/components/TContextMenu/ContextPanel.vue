@@ -29,7 +29,7 @@
 
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
-import { defineProps, ref, onMounted, onUnmounted } from 'vue';
+import { defineProps, ref, onMounted, onUnmounted, type PropType } from 'vue';
 import { type ContextPanelConfig, ContextPanelConfigDefault, ContextPanelClickMode } from './ContextPanel.model';
 
 const bemm = useBemm('context-panel');

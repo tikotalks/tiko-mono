@@ -1,7 +1,7 @@
 <template>
   <div :class="bemm()">
     <slot />
-     </div>
+  </div>
 </template>
 
 
@@ -18,7 +18,9 @@ const bemm = useBemm('button-group');
   gap: var(--space-s);
 
   .button{
-    margin: 0;
+    &, & + .button{
+      margin: 0;
+    }
   }
 }
 </style>

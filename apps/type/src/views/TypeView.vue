@@ -2,6 +2,7 @@
   <TAppLayout
     title="Type & Speak"
     subtitle="Type text and hear it spoken aloud"
+    :show-header="true"
     @profile="handleProfile"
     @settings="handleSettings"
     @logout="handleLogout"
@@ -28,7 +29,7 @@
               type="ghost"
               size="small"
               color="secondary"
-              :action="clearText"
+              @click="clearText"
               aria-label="Clear text"
             />
 
@@ -42,33 +43,41 @@
       <!-- Main Controls -->
       <div class="type-controls">
         <TButton
-          :label="isSpeaking ? 'Stop' : 'Speak'"
           :icon="isSpeaking ? 'square' : 'volume-2'"
-          type="fancy"
+          type="default"
           :color="isSpeaking ? 'error' : 'primary'"
-          :action="toggleSpeak"
+          @click="toggleSpeak"
           size="large"
           :disabled="!canSpeak && !isSpeaking"
           class="type-speak-button"
-        />
+        >
+          {{ isSpeaking ? 'Stop' : 'Speak' }}
+        </TButton>
 
         <div class="type-secondary-controls">
           <TButton
             v-if="isSpeaking"
-            label="Pause"
             icon="pause"
             type="default"
             color="warning"
-            :action="pause"
+            @click="pause"
             size="medium"
-          />
+          >
+            Pause
+          </TButton>
         </div>
       </div>
 
       <!-- Voice Selection -->
       <div class="type-voice-section">
         <h3 class="type-section-title">Voice</h3>
-        <select
+        <TInputSelect
+        :options="availableVoices"
+          v-model="selectedVoiceIndex"
+          :disabled="isSpeaking || isLoading"
+          @change="onVoiceChange"
+          />
+        <!-- <select
           v-model="selectedVoiceIndex"
           class="type-voice-select"
           :disabled="isSpeaking || isLoading"
@@ -84,7 +93,7 @@
           >
             {{ voice.name }} ({{ voice.lang }})
           </option>
-        </select>
+        </select> -->
       </div>
     </main>
 
@@ -191,14 +200,19 @@
 
         <!-- Auto Save -->
         <div class="type-settings__group">
-          <label class="type-settings__checkbox">
+          <TInputCheckbox
+            v-model="localSettings.autoSave"
+            label="Save to history automatically"
+            @change="updateSettings"
+          />
+          <!-- <label class="type-settings__checkbox">
             <input
               v-model="localSettings.autoSave"
               type="checkbox"
               @change="updateSettings"
             />
             <span>Save to history automatically</span>
-          </label>
+          </label> -->
         </div>
 
         <div class="type-settings__actions">
@@ -221,7 +235,15 @@
 
         <!-- Rate -->
         <div class="type-settings__group">
-          <label class="type-settings__label">
+          <TInputRange
+            v-model.number="localSettings.rate"
+            label="Speech Rate"
+            :min="0.1"
+            :max="3"
+            step="0.1"
+            @input="updateSettings"
+          />
+          <!-- <label class="type-settings__label">
             Speech Rate: {{ localSettings.rate.toFixed(1) }}x
           </label>
           <input
@@ -232,12 +254,20 @@
             step="0.1"
             class="type-settings__slider"
             @input="updateSettings"
-          />
+          /> -->
         </div>
 
         <!-- Pitch -->
         <div class="type-settings__group">
-          <label class="type-settings__label">
+          <TInputRange
+            v-model.number="localSettings.pitch"
+            label="Pitch"
+            :min="0"
+            :max="2"
+            step="0.1"
+            @input="updateSettings"
+          />
+          <!-- <label class="type-settings__label">
             Pitch: {{ localSettings.pitch.toFixed(1) }}
           </label>
           <input
@@ -248,12 +278,20 @@
             step="0.1"
             class="type-settings__slider"
             @input="updateSettings"
-          />
+          /> -->
         </div>
 
         <!-- Volume -->
         <div class="type-settings__group">
-          <label class="type-settings__label">
+          <TInputRange
+            v-model.number="localSettings.volume"
+            label="Volume"
+            :min="0"
+            :max="1"
+            step="0.1"
+            @input="updateSettings"
+          />
+          <!-- <label class="type-settings__label">
             Volume: {{ Math.round(localSettings.volume * 100) }}%
           </label>
           <input
@@ -264,19 +302,25 @@
             step="0.1"
             class="type-settings__slider"
             @input="updateSettings"
-          />
+          /> -->
         </div>
 
         <!-- Auto Save -->
         <div class="type-settings__group">
-          <label class="type-settings__checkbox">
+          <TInputCheckbox
+            v-model="localSettings.autoSave"
+            label="Save to history automatically"
+            @change="updateSettings"
+            />
+          <!-- <label class="type-settings__checkbox">
+
             <input
               v-model="localSettings.autoSave"
               type="checkbox"
               @change="updateSettings"
             />
             <span>Save to history automatically</span>
-          </label>
+          </label> -->
         </div>
 
         <div class="type-settings__actions">
@@ -297,8 +341,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, reactive, watch, toRefs } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TAppLayout } from '@tiko/ui'
+import { TButton, TAppLayout, TInputRange, TInputCheckbox, TInputSelect } from '@tiko/ui'
 import { useTypeStore } from '../stores/type'
+
 
 const bemm = useBemm('type-view')
 
@@ -469,10 +514,8 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .type-view {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   position: relative;
 }
 
@@ -707,46 +750,6 @@ onUnmounted(() => {
     color: var(--text-primary);
   }
 
-  &__slider {
-    width: 100%;
-    height: 2px;
-    border-radius: 1px;
-    background: var(--bg-tertiary);
-    outline: none;
-    -webkit-appearance: none;
-    appearance: none;
-
-    &::-webkit-slider-thumb {
-      appearance: none;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: var(--color-primary);
-      cursor: pointer;
-    }
-
-    &::-moz-range-thumb {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: var(--color-primary);
-      cursor: pointer;
-      border: none;
-    }
-  }
-
-  &__checkbox {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-
-    input {
-      width: 1.25rem;
-      height: 1.25rem;
-    }
-  }
-
   &__actions {
     display: flex;
     justify-content: center;
@@ -754,31 +757,6 @@ onUnmounted(() => {
   }
 }
 
-// Mobile responsiveness
-@media (max-width: 768px) {
-  .type-main {
-    padding: 1rem;
-    gap: 1.5rem;
-  }
-
-  .type-textarea {
-    min-height: 120px;
-    font-size: 1rem;
-  }
-
-  .type-input-section,
-  .type-voice-section {
-    padding: 1rem;
-  }
-
-  .type-settings {
-    &__panel {
-      padding: 1.5rem;
-      margin: 1rem;
-      min-width: auto;
-    }
-  }
-}
 
 // Reduced motion support
 @media (prefers-reduced-motion: reduce) {

@@ -53,7 +53,7 @@
 @function textColorShade($color-value, $color-name) {
 	$lightness: perceived-lightness($color-value);
 
-	@if $lightness > 50 {
+	@if $lightness > 60 {
 		@return darken-color-mix($color-value, 60%);
 	} @else {
 		@return lighten-color-mix($color-value, 75%);

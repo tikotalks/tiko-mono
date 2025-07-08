@@ -3,6 +3,7 @@
     title="Communication Cards"
     :subtitle="editMode ? 'Select cards to organize or delete' : 'Tap cards to speak'"
     :is-loading="isLoading"
+    :show-header="true"
     @profile="handleProfile"
     @settings="handleSettings"
     @logout="handleLogout"
@@ -41,9 +42,10 @@
         <TButton
           :class="bemm('view-button', { active: currentView === 'grid' })"
           color="secondary"
-          icon="grid"
+          icon="board-multi"
           @click="handleViewChange('grid')"
           title="Grid View"
+          tooltip="Grid View"
         />
         <TButton
           :class="bemm('view-button', { active: currentView === 'groups' })"
@@ -51,6 +53,7 @@
           icon="folder"
           @click="handleViewChange('groups')"
           title="Groups View"
+          tooltip="Groups View"
         />
       </div>
     </div>

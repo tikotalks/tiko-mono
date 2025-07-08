@@ -1,30 +1,33 @@
 <template>
   <div :class="bemm()">
     <!-- Top Bar -->
-    <TTopBar
-      :title="title"
-      :subtitle="subtitle"
-      :show-back-button="showBackButton"
-      :back-button-label="backButtonLabel"
-      :show-user-info="showUserInfo"
-      :show-online-status="showOnlineStatus"
-      :is-user-online="isUserOnline"
-      :is-loading="isLoading"
-      :custom-menu-items="customMenuItems"
-      @back="$emit('back')"
-      @profile="$emit('profile')"
-      @settings="$emit('settings')"
-      @logout="$emit('logout')"
-      @menu-item-click="$emit('menu-item-click', $event)"
-    >
-      <template #center>
-        <slot name="top-bar-center" />
-      </template>
+    <header :class="bemm('header')">
+      <TTopBar
+        v-if="showHeader"
+        :title="title"
+        :subtitle="subtitle"
+        :show-back-button="showBackButton"
+        :back-button-label="backButtonLabel"
+        :show-user-info="showUserInfo"
+        :show-online-status="showOnlineStatus"
+        :is-user-online="isUserOnline"
+        :is-loading="isLoading"
+        :custom-menu-items="customMenuItems"
+        @back="$emit('back')"
+        @profile="$emit('profile')"
+        @settings="$emit('settings')"
+        @logout="$emit('logout')"
+        @menu-item-click="$emit('menu-item-click', $event)"
+      >
+        <template #center>
+          <slot name="top-bar-center" />
+        </template>
 
-      <template #actions>
-        <slot name="top-bar-actions" />
-      </template>
-    </TTopBar>
+        <template #actions>
+          <slot name="top-bar-actions" />
+        </template>
+      </TTopBar>
+    </header>
 
     <!-- Main Content -->
     <main :class="bemm('content')">
@@ -39,47 +42,59 @@
 </template>
 
 <script setup lang="ts">
-import { useBemm } from 'bemm'
-import { TTopBar } from '../TTopBar'
-import type { ContextMenuItem } from '../TContextMenu'
+import { useBemm } from 'bemm';
+import { TTopBar } from '../TTopBar';
+import type { ContextMenuItem } from '../TContextMenu';
 
 interface Props {
-  title?: string
-  subtitle?: string
-  showBackButton?: boolean
-  backButtonLabel?: string
-  showUserInfo?: boolean
-  showOnlineStatus?: boolean
-  isUserOnline?: boolean
-  isLoading?: boolean
-  customMenuItems?: ContextMenuItem[]
+  title?: string;
+  subtitle?: string;
+  showBackButton?: boolean;
+  backButtonLabel?: string;
+  showUserInfo?: boolean;
+  showOnlineStatus?: boolean;
+  showHeader?: boolean;
+  isUserOnline?: boolean;
+  isLoading?: boolean;
+  customMenuItems?: ContextMenuItem[];
 }
 
 interface Emits {
-  (e: 'back'): void
-  (e: 'profile'): void
-  (e: 'settings'): void
-  (e: 'logout'): void
-  (e: 'menu-item-click', item: ContextMenuItem): void
+  (e: 'back'): void;
+  (e: 'profile'): void;
+  (e: 'settings'): void;
+  (e: 'logout'): void;
+  (e: 'menu-item-click', item: ContextMenuItem): void;
 }
 
-defineProps<Props>()
-defineEmits<Emits>()
+defineProps<Props>();
+defineEmits<Emits>();
 
-const bemm = useBemm('app-layout')
+const bemm = useBemm('app-layout');
 </script>
 
 <style lang="scss" scoped>
 .app-layout {
   height: 100vh;
+  width: 100vw;
   display: flex;
   flex-direction: column;
-  background: var(--color-background);
+  background: var(--color-accent);
+  align-items: center;
+  justify-content: center;
+
+  &__header {
+    width: calc(100% - (var(--space) * 2));
+    top: var(--space);
+    position: fixed;
+    z-index: 10;
+    left: var(--space);
+    border-radius: var(--border-radius-s);
+  }
 
   &__content {
-    flex: 1;
-    overflow-y: auto;
     position: relative;
+    height: fit-content;
   }
 
   &__footer {
@@ -88,5 +103,4 @@ const bemm = useBemm('app-layout')
     background: var(--color-accent);
   }
 }
-
 </style>

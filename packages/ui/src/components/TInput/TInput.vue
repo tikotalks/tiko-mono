@@ -4,14 +4,14 @@
       {{ label }}
       <span v-if="required" :class="bemm('required')">*</span>
     </label>
-    
+
     <div :class="bemm('wrapper')">
       <TIcon
         v-if="prefixIcon"
         :name="prefixIcon"
         :class="bemm('icon', ['prefix'])"
       />
-      
+
       <input
         :id="inputId"
         :class="bemm('field')"
@@ -31,13 +31,13 @@
         @blur="handleBlur"
         @keydown="handleKeydown"
       />
-      
+
       <TIcon
         v-if="suffixIcon"
         :name="suffixIcon"
         :class="bemm('icon', ['suffix'])"
       />
-      
+
       <div v-if="type === 'number' && showSpinners" :class="bemm('spinners')">
         <button
           type="button"
@@ -48,7 +48,7 @@
         >
           <TIcon name="chevron-up" size="small" />
         </button>
-        
+
         <button
           type="button"
           :class="bemm('spinner', ['down'])"
@@ -60,7 +60,7 @@
         </button>
       </div>
     </div>
-    
+
     <div v-if="description || hasError" :id="descriptionId" :class="bemm('description')">
       <span v-if="hasError" :class="bemm('error')">{{ error }}</span>
       <span v-else-if="description" :class="bemm('help')">{{ description }}</span>
@@ -162,11 +162,11 @@ const handleKeydown = (event: KeyboardEvent) => {
 
 const increment = () => {
   if (props.disabled || props.readonly) return
-  
+
   const currentValue = Number(props.modelValue) || 0
   const step = props.step || 1
   const newValue = currentValue + step
-  
+
   if (props.max === undefined || newValue <= props.max) {
     emit('update:modelValue', newValue)
   }
@@ -174,11 +174,11 @@ const increment = () => {
 
 const decrement = () => {
   if (props.disabled || props.readonly) return
-  
+
   const currentValue = Number(props.modelValue) || 0
   const step = props.step || 1
   const newValue = currentValue - step
-  
+
   if (props.min === undefined || newValue >= props.min) {
     emit('update:modelValue', newValue)
   }
@@ -190,71 +190,71 @@ const decrement = () => {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  
+
   &__label {
     font-weight: 500;
     color: var(--text-primary);
     font-size: 0.875rem;
   }
-  
+
   &__required {
     color: var(--color-error);
     margin-left: 0.25rem;
   }
-  
+
   &__wrapper {
     position: relative;
     display: flex;
     align-items: center;
   }
-  
+
   &__field {
     width: 100%;
     padding: 0.75rem 1rem;
     border: 1px solid var(--border-primary);
-    border-radius: var(--radius-md);
+    border-radius: var(--border-radius);
     font-family: inherit;
     font-size: 1rem;
     line-height: 1.5;
     transition: all 0.2s ease;
     background: var(--bg-primary);
     color: var(--text-primary);
-    
+
     &:focus {
       outline: none;
       border-color: var(--color-primary);
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
-    
+
     &::placeholder {
       color: var(--text-tertiary);
     }
-    
+
     &:disabled {
       background: var(--bg-tertiary);
       color: var(--text-tertiary);
       cursor: not-allowed;
     }
-    
+
     &:readonly {
       background: var(--bg-secondary);
     }
   }
-  
+
   &__icon {
     position: absolute;
     color: var(--text-secondary);
     pointer-events: none;
-    
+
     &--prefix {
       left: 0.75rem;
     }
-    
+
     &--suffix {
       right: 0.75rem;
     }
   }
-  
+
   &__spinners {
     position: absolute;
     right: 0.25rem;
@@ -264,7 +264,7 @@ const decrement = () => {
     overflow: hidden;
     border: 1px solid var(--border-primary);
   }
-  
+
   &__spinner {
     display: flex;
     align-items: center;
@@ -275,95 +275,95 @@ const decrement = () => {
     border: none;
     cursor: pointer;
     transition: background-color 0.2s ease;
-    
+
     &:hover:not(:disabled) {
       background: var(--bg-tertiary);
     }
-    
+
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
-    
+
     &--up {
       border-bottom: 1px solid var(--border-primary);
     }
   }
-  
+
   &__description {
     font-size: 0.875rem;
     line-height: 1.4;
   }
-  
+
   &__error {
     color: var(--color-error);
   }
-  
+
   &__help {
     color: var(--text-secondary);
   }
-  
+
   // Size variants
   &--small {
     .input__field {
       padding: 0.5rem 0.75rem;
       font-size: 0.875rem;
     }
-    
+
     .input__icon--prefix {
       left: 0.5rem;
     }
-    
+
     .input__icon--suffix {
       right: 0.5rem;
     }
   }
-  
+
   &--large {
     .input__field {
       padding: 1rem 1.25rem;
       font-size: 1.125rem;
     }
-    
+
     .input__icon--prefix {
       left: 1rem;
     }
-    
+
     .input__icon--suffix {
       right: 1rem;
     }
   }
-  
+
   // States
   &--has-prefix {
     .input__field {
       padding-left: 2.5rem;
     }
   }
-  
+
   &--has-suffix:not(.input--has-spinners) {
     .input__field {
       padding-right: 2.5rem;
     }
   }
-  
+
   &--has-spinners {
     .input__field {
       padding-right: 2.5rem;
     }
   }
-  
+
   &--error {
     .input__field {
       border-color: var(--color-error);
-      
+
       &:focus {
         border-color: var(--color-error);
         box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
       }
     }
   }
-  
+
   &--focused {
     .input__icon {
       color: var(--color-primary);
