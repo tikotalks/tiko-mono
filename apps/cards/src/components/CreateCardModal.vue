@@ -88,7 +88,6 @@
             />
 
             <TButton
-              type="button"
               color="secondary"
               icon="upload"
               @click="$refs.fileInput?.click()"
@@ -97,7 +96,6 @@
             </TButton>
 
             <TButton
-              type="button"
               color="secondary"
               icon="link"
               @click="showUrlInput = !showUrlInput"

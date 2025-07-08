@@ -1,7 +1,6 @@
 <template>
   <TAppLayout
     title="Radio"
-    subtitle="Your audio collection"
     :is-loading="loading"
     :show-header="true"
     @profile="handleProfile"
@@ -10,13 +9,15 @@
   >
     <template #top-bar-actions>
       <div :class="bemm('search-input')">
-            <TInputText
-              v-model="searchQuery"
-              placeholder="Search audio..."
-              icon="search"
-              :class="bemm('search')"
-            />
-          </div>
+        <TInputText
+          v-model="searchQuery"
+          placeholder="Search audio..."
+          icon="search"
+          :class="bemm('search')"
+          @keydown.enter="handleSearch"
+          @input="handleSearchInput"
+        />
+      </div>
 
       <!-- Parent Mode Toggle (Temporary Simple Version) -->
       <TButton
@@ -77,10 +78,8 @@
     <div v-else :class="bemm('grid-container')">
       <!-- Header -->
       <div :class="bemm('header')">
-        <!-- Search and Filters -->
-        <div :class="bemm('search-section')">
-
-          <!-- Tag Filter -->
+        <!-- Tag Filters -->
+        <div :class="bemm('filters-section')">
           <div v-if="availableTags.length > 0" :class="bemm('tag-filters')">
             <TButton
               v-for="tag in availableTags"
@@ -269,6 +268,7 @@ import RadioPlayer from '../components/RadioPlayer.vue'
 import AddItemModal from '../components/AddItemModal.vue'
 import EditItemModal from '../components/EditItemModal.vue'
 import RadioSettingsModal from '../components/RadioSettingsModal.vue'
+import SearchResultsModal from '../components/SearchResultsModal.vue'
 import { useRadioItems } from '../composables/useRadioItems'
 import { useRadioPlayer } from '../composables/useRadioPlayer'
 import { useRadioSettings } from '../composables/useRadioSettings'
@@ -338,7 +338,7 @@ const activeFilter = ref<'all' | 'favorites' | 'recent'>('all')
 
 const availableTags = computed(() => getAllTags())
 
-const baseFilteredItems = computed(() => {
+const filteredItems = computed(() => {
   let filtered = items.value
 
   // Apply active filter
@@ -354,18 +354,7 @@ const baseFilteredItems = computed(() => {
       break
   }
 
-  return filtered
-})
-
-const filteredItems = computed(() => {
-  let filtered = baseFilteredItems.value
-
-  // Apply search
-  if (searchQuery.value.trim()) {
-    filtered = searchItems(searchQuery.value)
-  }
-
-  // Apply tag filters
+  // Apply tag filters (keep tag filtering for the main view)
   if (selectedTags.value.length > 0) {
     filtered = filterByTags(selectedTags.value)
   }
@@ -400,7 +389,6 @@ const clearTagFilters = () => {
 }
 
 const clearFilters = () => {
-  searchQuery.value = ''
   selectedTags.value = []
   activeFilter.value = 'all'
 }
@@ -494,6 +482,43 @@ const handleSettingsClick = () => {
   })
 }
 
+// Search handlers
+const handleSearch = () => {
+  openSearchModal()
+}
+
+const handleSearchInput = () => {
+  // Open modal after 3 characters
+  if (searchQuery.value.trim().length >= 3) {
+    openSearchModal()
+  }
+}
+
+const openSearchModal = () => {
+  console.log('Opening search modal with query:', searchQuery.value)
+  popupService.showPopup({
+    component: SearchResultsModal,
+    props: {
+      searchQuery: searchQuery.value,
+      allItems: items.value,
+      currentPlayingId: currentItem.value?.id,
+      isPlaying: isPlaying.value,
+      canManageContent: canManageContent.value,
+      onPlayItem: playItem,
+      onPauseItem: pauseItem,
+      onEditItem: editItem,
+      onPlayAll: (searchResults: RadioItem[]) => {
+        // Play all search results as a playlist
+        if (searchResults.length > 0) {
+          const searchResultIds = searchResults.map(item => item.id)
+          setPlaylist(searchResultIds)
+          playItem(searchResults[0])
+        }
+      }
+    }
+  })
+}
+
 // Simple local parent mode state for testing
 const localParentModeEnabled = ref(false)
 
@@ -560,14 +585,14 @@ onMounted(async () => {
     margin: 0;
   }
 
-  &__search-section {
+  &__search-input {
+    max-width: 25em;
+  }
+
+  &__filters-section {
     display: flex;
     flex-direction: column;
     gap: var(--space-md, 1em);
-  }
-
-  &__search-input {
-    max-width: 25em;
   }
 
   &__tag-filters {
