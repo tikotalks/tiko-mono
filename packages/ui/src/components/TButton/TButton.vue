@@ -141,6 +141,7 @@ const buttonStyles = computed(() => {
   cursor: pointer;
   text-decoration: none;
   transition: all 0.2s ease;
+  border-radius: var(--border-radius, 0.5em);
 
   // Button type variants
   &--default {
@@ -191,7 +192,7 @@ const buttonStyles = computed(() => {
   }
 
   &:focus {
-    outline: 2px solid var(--button-color);
+    outline: 1px dotted var(--button-color);
     outline-offset: 2px;
   }
 

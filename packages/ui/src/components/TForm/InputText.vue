@@ -1,6 +1,6 @@
 <!-- TextInput.vue -->
 <template>
-	
+
 	<InputBase
 		v-if="model !== undefined"
 		v-model="model"

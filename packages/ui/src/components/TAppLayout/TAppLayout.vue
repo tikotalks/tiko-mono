@@ -79,7 +79,6 @@ const bemm = useBemm('app-layout');
   width: 100vw;
   display: flex;
   flex-direction: column;
-  background: var(--color-accent);
   align-items: center;
   justify-content: center;
 

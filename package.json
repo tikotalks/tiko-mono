@@ -27,7 +27,8 @@
     "serve:sounds": "nx serve sounds",
     "serve:sequence": "nx serve sequence",
     "serve:board": "nx serve board",
-    "serve:type": "nx serve type"
+    "serve:type": "nx serve type",
+    "serve:radio": "nx serve radio"
   },
   "devDependencies": {
     "@nx/cypress": "18.0.0",

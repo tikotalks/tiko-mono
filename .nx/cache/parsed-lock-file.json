@@ -5445,6 +5445,15 @@
         "hash": "sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw=="
       }
     },
+    "npm:mitt@3.0.1": {
+      "type": "npm",
+      "name": "npm:mitt@3.0.1",
+      "data": {
+        "version": "mitt@3.0.1",
+        "packageName": "mitt@3.0.1",
+        "hash": "sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw=="
+      }
+    },
     "npm:mlly@1.7.4": {
       "type": "npm",
       "name": "npm:mlly@1.7.4",

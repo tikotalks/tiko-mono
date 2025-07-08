@@ -47,6 +47,7 @@ const usePopupService = () => {
 	const popups = ref<PopupInstance[]>([]);
 
 	const showPopup = (opts: PopupOptions) => {
+
 		const options = { ...defaultPopupOptions, ...opts };
 		const id = options.id || crypto.randomUUID();
 

@@ -36,6 +36,10 @@ const iconName = computed(()=>{
       return 'check-m';
     case 'x':
       return 'multiply-m';
+		case 'play':
+			return 'playback-play';
+		case 'pause':
+			return 'playback-pause';
     default:
       return props.name;
   }

@@ -9,12 +9,15 @@ export * from './components/TTopBar'
 export * from './components/TContextMenu'
 export * from './components/TAppLayout'
 export * from './components/TPopup'
+export * from './components/TParentMode'
 
-export * as TInputText from './components/TForm/InputText.vue';
-export * as TInputEmail from './components/TForm/InputEmail/InputEmail.vue';
-export * as TInputRange from './components/TForm/InputRange.vue';
-export * as TInputSelect from './components/TForm/InputSelect.vue';
-export * as TInputCheckbox from './components/TForm/InputCheckbox.vue';
+export { default as TInputText } from './components/TForm/TInputText.vue';
+export { default as TInputEmail } from './components/TForm/InputEmail/InputEmail.vue';
+export { default as TInputRange } from './components/TForm/InputRange.vue';
+export { default as TInputSelect } from './components/TForm/InputSelect.vue';
+export { default as TInputCheckbox } from './components/TForm/InputCheckbox.vue';
+export { default as TInputRadio } from './components/TForm/InputRadio.vue';
+export { default as TTextArea } from './components/TForm/InputTextArea.vue';
 
 
 // TrustCafe-style components with T prefix (temporarily disabled due to import issues)
@@ -39,6 +42,15 @@ export type {
   TikoEvents
 } from './composables/useEventBus.model'
 export { useId, useIds, useFormIds } from './composables/useId'
+export { useParentMode } from './composables/useParentMode'
+export type {
+  ParentModeState,
+  ParentModeSettings,
+  ParentModeAppPermissions,
+  ParentModeResponse,
+  ParentModeToggleProps,
+  ParentModePinInputProps
+} from './composables/useParentMode.model'
 
 // Utilities
 export * from './utils'
