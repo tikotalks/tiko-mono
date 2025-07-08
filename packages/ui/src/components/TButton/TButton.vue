@@ -1,342 +1,282 @@
 <template>
   <component
-    :is="componentTag"
-    :class="buttonClasses"
-    :disabled="disabled || loading"
-    :type="componentTag === 'button' ? htmlType : undefined"
-    :to="componentTag === 'router-link' ? to : undefined"
-    :aria-label="ariaLabel || label"
-    :aria-describedby="ariaDescribedBy"
-    :aria-pressed="status === 'success' ? 'true' : undefined"
-    @click="handleClick"
-    @pointerdown="handlePointerDown"
-    @pointerup="handlePointerUp"
-    @pointerleave="handlePointerUp"
-    @keydown="handleKeydown"
+    :is="to ? 'a' : element"
+    :href="to || href"
+    :class="blockClasses"
+    :disabled="isDisabled"
+    :type="htmlButtonType === 'auto' ? 'button' : htmlButtonType"
+    :style="buttonStyles"
+    v-bind="$attrs"
   >
-    <TIcon
-      v-if="showLeftIcon"
-      :name="leftIconName"
-      :size="iconSize"
-      :class="bemm('icon', ['left'])"
-      aria-hidden="true"
-    />
-
-    <span v-if="hasLabel" :class="bemm('label')">
-      <slot>{{ label }}</slot>
-    </span>
-
-    <TIcon
-      v-if="showRightIcon"
-      :name="rightIconName"
-      :size="iconSize"
-      :class="bemm('icon', ['','right'])"
-      aria-hidden="true"
-    />
-
-    <div v-if="loading" :class="bemm('spinner')" aria-hidden="true">
-      <TIcon name="loader" :size="iconSize" />
+    <div :class="bemm('container', ['', reverse ? 'direction-reverse' : ''])">
+      <span v-if="icon" :class="bemm('icon')">
+        <TIcon :name="icon" />
+        <TIcon v-if="hoverIcon" :name="hoverIcon" />
+      </span>
+      <span v-if="hasSlot && type !== ButtonType.ICON_ONLY" :class="bemm('text')">
+        <slot />
+      </span>
     </div>
+    <div v-if="status !== ButtonStatus.IDLE" :class="bemm('status')">
+      <span v-if="status === ButtonStatus.LOADING">Loading...</span>
+      <TIcon
+        v-if="status === ButtonStatus.SUCCESS || status === ButtonStatus.SUCCESS_ALT"
+        name="check"
+      />
+      <TIcon
+        v-if="status === ButtonStatus.ERROR || status === ButtonStatus.ERROR_ALT"
+        name="x"
+      />
+    </div>
+    <span
+      v-if="count && count > -1"
+      :class="bemm('count')"
+    >
+      {{ count }}
+    </span>
   </component>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, useSlots } from 'vue'
+import { computed, useSlots, ref, watch } from 'vue'
 import { useBemm } from 'bemm'
-import { TButtonProps, LongPressState } from './TButton.model'
-import TIcon from '../TIcon/TIcon.vue'
+import { TIcon } from '../TIcon'
+import { ButtonType, ButtonSize, ButtonColor, ButtonStatus, type TButtonProps } from './TButton.model'
 
-// Props with defaults
 const props = withDefaults(defineProps<TButtonProps>(), {
-  type: 'default',
-  size: 'medium',
-  color: 'primary',
-  status: 'idle',
-  htmlType: 'button',
-  iconPosition: 'left',
-  longPressTime: 500,
-  vibrate: true
+  icon: '',
+  hoverIcon: '',
+  size: ButtonSize.MEDIUM,
+  type: ButtonType.DEFAULT,
+  color: ButtonColor.PRIMARY,
+  count: -1,
+  disabled: false,
+  to: '',
+  href: '',
+  element: 'button',
+  tooltip: '',
+  shadow: false,
+  htmlButtonType: 'auto',
+  hideLabel: 'none',
+  status: ButtonStatus.IDLE,
+  reverse: false
 })
 
-// Emits
-const emit = defineEmits<{
-  click: [event: Event]
-  longPress: []
-}>()
-
-// BEM classes
 const bemm = useBemm('button')
-
-// Long press state
-const longPressState = reactive<LongPressState>({
-  isPressed: false,
-  timer: null,
-  startTime: 0
-})
-
-// Component tag logic
-const componentTag = computed(() => {
-  return props.to ? 'router-link' : 'button'
-})
-
-// Icon logic
 const slots = useSlots()
-const hasLabel = computed(() => Boolean(props.label || slots.default))
-const showLeftIcon = computed(() => props.icon && props.iconPosition === 'left')
-const showRightIcon = computed(() => props.icon && props.iconPosition === 'right')
 
-const leftIconName = computed(() => {
-  if (props.status === 'success') return 'check'
-  if (props.status === 'error') return 'x'
-  return props.icon || ''
-})
+const blockClasses = computed(() => {
+  const classes = [bemm()]
 
-const rightIconName = computed(() => {
-  if (props.status === 'success') return 'check'
-  if (props.status === 'error') return 'x'
-  return props.icon || ''
-})
-
-const iconSize = computed(() => {
-  const sizeMap = {
-    small: 'small',
-    medium: 'medium',
-    large: 'large'
+  if (props.icon) {
+    classes.push(bemm('', 'has-icon'))
   }
-  return sizeMap[props.size]
+  classes.push(bemm('', props.size))
+  classes.push(bemm('', props.type))
+  classes.push(bemm('', props.color))
+  classes.push(bemm('', props.variant))
+
+  if (!hasSlot.value && props.icon) {
+    classes.push(bemm('', 'icon-only'))
+  }
+
+  if (hasSlot.value && props.icon) {
+    classes.push(bemm('', 'text-icon'))
+  }
+
+  if (props.status !== ButtonStatus.IDLE) {
+    classes.push(bemm('', `status-${props.status}`))
+  }
+
+  return classes
 })
 
-// Button classes
-const buttonClasses = computed(() => {
-  return [bemm(),bemm('', {
-    [props.type]: true,
-    [props.size]: true,
-    [props.color]: true,
-    [props.status]: true,
-    disabled: props.disabled,
-    loading: props.loading,
-    'has-icon': Boolean(props.icon),
-    'icon-only': Boolean(props.icon) && !hasLabel.value,
-    'is-pressed': longPressState.isPressed
-  })]
-})
+const isDisabled = ref(props.disabled)
+watch(
+  () => props.disabled,
+  (newValue) => {
+    isDisabled.value = newValue
+  },
+  { immediate: true }
+)
 
-// Event handlers
-const handleClick = (event: Event) => {
-  if (props.disabled || props.loading) return
+const hasSlot = computed(() => !!slots?.default)
 
-  emit('click', event)
-  props.action?.()
-}
-
-const handlePointerDown = (event: PointerEvent) => {
-  if (props.disabled || props.loading || !props.onLongPress) return
-
-  longPressState.isPressed = true
-  longPressState.startTime = Date.now()
-
-  longPressState.timer = window.setTimeout(() => {
-    if (longPressState.isPressed) {
-      // Vibrate if supported and enabled
-      if (props.vibrate && 'vibrate' in navigator) {
-        navigator.vibrate(50)
-      }
-
-      emit('longPress')
-      props.onLongPress?.()
+const buttonStyles = computed(() => {
+  if(props.type == ButtonType.GHOST){
+    return {
+      '--button-color': `var(--color-${props.color})`,
     }
-  }, props.longPressTime)
-}
-
-const handlePointerUp = () => {
-  longPressState.isPressed = false
-
-  if (longPressState.timer) {
-    clearTimeout(longPressState.timer)
-    longPressState.timer = null
   }
-}
-
-const handleKeydown = (event: KeyboardEvent) => {
-  // Handle Enter and Space keys for accessibility
-  if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault()
-    handleClick(event)
-  }
-}
-
-// Cleanup on unmount
-import { onUnmounted } from 'vue'
-
-onUnmounted(() => {
-  if (longPressState.timer) {
-    clearTimeout(longPressState.timer)
+  return {
+    '--button-color': `var(--color-${props.color})`,
+    '--button-color-text': `var(--color-${props.color}-text)`
   }
 })
 </script>
 
 <style lang="scss" scoped>
+/**
+ * TButton component styles following Tiko design system standards
+ * - Uses em units and CSS custom properties for spacing
+ * - Uses semantic colors for theming
+ * - Uses flex + gap for layout instead of margins
+ * - Follows BEM methodology
+ */
 .button {
-  // Base styles
+  // Base semantic color variables
+  --button-color: var(--color-primary);
+  --button-color-text: var(--color-primary-text);
+  --button-color-border: var(--color-primary);
+  --button-background: var(--button-color);
+
+  // Component styles
   position: relative;
+  width: fit-content;
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5em;
-  padding: .5em 1em;
+  color: var(--button-color-text);
+  background-color: transparent;
   border: none;
-  border-radius: var(--border-radius);
-  font-family: inherit;
-  text-decoration: none;
+  white-space: nowrap;
   cursor: pointer;
+  text-decoration: none;
   transition: all 0.2s ease;
-  user-select: none;
 
-
-  // Focus styles
-  &:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 2px;
-  }
-
-  // Elements
-  &__label {
-    flex: 1;
-    text-align: center;
-  }
-
-  &__icon {
-    flex-shrink: 0;
-    border: 1px solid red;
-  }
-
-  &__spinner {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    animation: spin 1s linear infinite;
-  }
-
-  // Sizes
-  &--small {
-    font-size: .75em;
-  }
-
-  &--medium {
-    font-size: 1em;
-  }
-
-  &--large {
-    font-size: 1.5em;
-  }
-
-  // Types
+  // Button type variants
   &--default {
-    background: var(--button-bg, #3b82f6);
-    color: var(--button-color, white);
+    --button-background: var(--button-color);
 
     &:hover:not(:disabled) {
-      background: var(--button-bg-hover, #2563eb);
-    }
-
-    &:active {
-      background: var(--button-bg-active, #1d4ed8);
+      opacity: 0.9;
     }
   }
 
   &--ghost {
-    background: transparent;
-    color: var(--button-color, #3b82f6);
-    border: 1px solid currentColor;
+    --button-background: transparent;
+    --button-color-border: transparent;
+    --button-color-text: var(--button-color);
 
     &:hover:not(:disabled) {
-      background: var(--button-bg-hover, rgba(59, 130, 246, 0.1));
+      --button-background: color-mix(in srgb, var(--button-color), transparent 90%);
     }
   }
 
-  &--fancy {
-    background: linear-gradient(135deg, var(--button-bg, #3b82f6), var(--button-bg-secondary, #8b5cf6));
-    color: var(--button-color, white);
-    box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
+  &--outline {
+    --button-background: transparent;
+    --button-color-text: var(--button-color);
 
     &:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px 0 rgba(59, 130, 246, 0.5);
+      --button-background: var(--button-color);
+      --button-color-text: var(--color-background);
     }
   }
 
-  // Colors
 
-
-  // States
-  &--loading {
-    .button__label,
-    .button__icon {
-      opacity: 0;
-    }
+  // Background pseudo-element
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: var(--button-background);
+    border-radius: var(--border-radius, 0.5em);
+    transition: all 0.2s ease;
+    z-index: 0;
   }
 
-  &--success {
-    --button-bg: #10b981;
-  }
-
-  &--error {
-    --button-bg: #ef4444;
-  }
-
+  // Interactive states
   &:disabled {
     opacity: 0.5;
+    pointer-events: none;
     cursor: not-allowed;
-    transform: none !important;
   }
 
-  &--is-pressed {
-    transform: scale(0.98);
+  &:focus {
+    outline: 2px solid var(--button-color);
+    outline-offset: 2px;
   }
 
-  // Icon only buttons
+  // Container for content
+  &__container {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs, 0.5em);
+
+    &--direction-reverse {
+      flex-direction: row-reverse;
+    }
+  }
+
+  // Size variants using design system spacing
+  &--small {
+    .button__container {
+      padding: var(--space-xs, 0.5em) var(--space-s, 0.75em);
+      font-size: 0.875em;
+    }
+  }
+
+  &--medium {
+    .button__container {
+      padding: var(--space-s, 0.75em) var(--space, 1em);
+      font-size: 1em;
+    }
+  }
+
+  &--large {
+    .button__container {
+      padding: var(--space, 1em) var(--space-lg, 1.25em);
+      font-size: 1.125em;
+    }
+  }
+
   &--icon-only {
-    padding: 0.75rem;
-
-    &.button--small {
-      padding: 0.5rem;
-    }
-
-    &.button--large {
-      padding: 1rem;
+    .button__container {
+      padding: var(--space-s, 0.75em);
+      aspect-ratio: 1;
     }
   }
-}
 
-@keyframes spin {
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
-// High contrast mode support
-@media (prefers-contrast: high) {
-  .button {
-    border: 2px solid currentColor;
-
-    &--ghost {
-      border-width: 2px;
-    }
+  // Content elements
+  &__text {
+    display: flex;
+    align-items: center;
   }
-}
 
-// Reduced motion support
-@media (prefers-reduced-motion: reduce) {
-  .button {
-    transition: none;
+  &__icon {
+    display: flex;
+    align-items: center;
+    font-size: 1.25em;
+  }
 
-    &:hover:not(:disabled) {
-      transform: none;
-    }
+  // Badge count
+  &__count {
+    position: absolute;
+    right: calc(-1 * var(--space-xs, 0.5em));
+    top: calc(-1 * var(--space-xs, 0.5em));
+    background: var(--color-error);
+    color: var(--color-error-text, var(--color-background));
+    border-radius: 50%;
+    min-width: 1.25em;
+    height: 1.25em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75em;
+    font-weight: 600;
+  }
 
-    .button__spinner {
-      animation: none;
-    }
+  // Status overlay
+  &__status {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--button-background);
+    border-radius: var(--border-radius, 0.5em);
+    z-index: 2;
   }
 }
 </style>

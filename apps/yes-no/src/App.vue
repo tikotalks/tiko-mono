@@ -4,20 +4,21 @@
       <YesNoView />
     </TAuthWrapper>
   </div>
+  <TPopup />
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { useAppStore } from '@tiko/core'
-import { TAuthWrapper } from '@tiko/ui'
-import YesNoView from './views/YesNoView.vue'
+import { onMounted } from 'vue';
+import { useAppStore } from '@tiko/core';
+import { TAuthWrapper, TPopup } from '@tiko/ui';
+import YesNoView from './views/YesNoView.vue';
 
-const appStore = useAppStore()
+const appStore = useAppStore();
 
 onMounted(() => {
   // Initialize network monitoring
-  appStore.initializeNetworkMonitoring()
-})
+  appStore.initializeNetworkMonitoring();
+});
 </script>
 
 <style lang="scss">

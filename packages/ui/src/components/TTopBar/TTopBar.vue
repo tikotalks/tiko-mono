@@ -96,8 +96,8 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useBemm } from 'bemm'
 import { useAuthStore } from '@tiko/core'
 import TButton from '../TButton/TButton.vue'
-import TIcon from '../TIcon/TIcon.vue'
 import TButtonGroup from '../TButton/TButtonGroup.vue'
+import TIcon from '../TIcon/TIcon.vue'
 import { TContextMenu, type ContextMenuItem, type ContextMenuConfig, ContextMenuConfigDefault } from '../TContextMenu'
 
 interface Props {
@@ -213,7 +213,7 @@ const defaultMenuItems = computed<Partial<ContextMenuItem>[]>(() => [
   {
     id: 'logout',
     label: 'Sign Out',
-    icon: 'log-out',
+    icon: 'arrow-right',
     action: handleLogout,
     type: 'default'
   }
@@ -228,7 +228,7 @@ const userMenuConfig = computed<ContextMenuConfig>(() => ({
   ...ContextMenuConfigDefault,
   id: 'user-menu',
   menu: userMenuItems.value,
-  position: 'bottom-right',
+  position: 'bottom-left',
   clickMode: 'short'
 }))
 
@@ -285,11 +285,13 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.5rem;
-  background: var(--color-accent);
+  padding: var(--space-s);
+  padding-left: var(--space);
+  background: var(--color-background);
   border-bottom: 1px solid var(--color-border);
   min-height: 4rem;
   z-index: 100;
+  border-radius: inherit;
 
   &__left {
     display: flex;

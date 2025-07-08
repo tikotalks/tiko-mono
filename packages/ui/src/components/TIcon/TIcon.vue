@@ -32,6 +32,10 @@ const iconName = computed(()=>{
       return 'edit-m';
     case 'plus':
       return 'add-m';
+    case 'check':
+      return 'check-m';
+    case 'x':
+      return 'multiply-m';
     default:
       return props.name;
   }

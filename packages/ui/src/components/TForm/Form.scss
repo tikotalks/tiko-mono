@@ -1,0 +1,719 @@
+@use '../../styles/media.scss' as media;
+
+@function line-gradient($direction: to right, $color: currentColor, $width: 2px, $position: middle) {
+	@if $position ==start {
+		@return linear-gradient($direction, $color 0, $color $width, transparent $width, transparent 100%);
+	}
+
+	@else if $position ==end {
+		@return linear-gradient($direction,
+			transparent 0,
+			transparent calc(100% - #{$width}),
+			$color calc(100% - #{$width}),
+			$color 100%);
+	}
+
+	@else {
+		@return linear-gradient($direction,
+			transparent calc(50% - (#{$width} / 2)),
+			$color calc(50% - (#{$width} / 2)),
+			$color calc(50% + (#{$width} / 2)),
+			transparent calc(50% + (#{$width} / 2)));
+	}
+}
+
+@mixin formSizing {
+	&--small {
+		--form-sizing: 0.75;
+	}
+
+	&--medium {
+		--form-sizing: 1;
+	}
+
+	&--large {
+		--form-sizing: 1.25;
+	}
+}
+
+@mixin inputState() {
+	&__status {
+		width: 1em;
+		height: 1em;
+		transform: translateY(-50%);
+		line-height: 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: absolute;
+		top: 50%;
+		right: var(--space-s);
+		font-size: 1.25em;
+
+		&--success {
+			color: var(--color-success);
+		}
+
+		&--error {
+			color: var(--color-error);
+		}
+
+		.icon {
+			--icon-fill: transparent;
+		}
+	}
+
+	&__errors {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-s);
+		padding: var(--space-s) 0;
+	}
+
+	&__error {
+		background-color: color-mix(in srgb, var(--color-error), var(--color-background) 80%);
+		border-radius: var(--border-radius);
+		border: 1px solid color-mix(in srgb, var(--color-error), var(--color-background) 50%);
+		color: color-mix(in srgb, var(--color-error), var(--color-foreground) 50%);
+		animation: popInError 0.3s var(--bezier);
+		transform-origin: 0 0;
+		padding: var(--space-s) var(--space);
+
+		@at-root {
+			@keyframes popInError {
+				0% {
+					opacity: 0;
+					transform: scale(1, 0.5) translateY(25%);
+				}
+
+				100% {
+					opacity: 1;
+					transform: scale(1, 1) translateY(0);
+				}
+			}
+		}
+	}
+	&__error-text{
+		font-size: 0.66em;
+		display: block;
+		line-height: 1;
+	}
+}
+
+@mixin inputBase() {
+	--sizing: var(--form-sizing, 1);
+	color: currentColor;
+
+	$b: &;
+
+	@include inputState();
+
+	&--small {
+		--sizing: 0.75;
+	}
+
+	&--medium {
+		--sizing: 1;
+	}
+
+	&--large {
+		--sizing: 1.25;
+	}
+
+	&__control {
+		padding: var(--input-control-padding, var(--input-control-padding-y, calc(0.75em * var(--sizing)))) var(--input-control-padding, var(--input-control-padding-x, calc(var(--sizing) * 1em)));
+		background-color: transparent;
+		border: none;
+		font-size: calc(1em * var(--sizing));
+		line-height: 1;
+		width: 100%;
+		color: currentColor;
+		position: relative;
+		z-index: 2;
+		text-align: var(--input-control-text-align, left);
+
+		&:focus {
+			outline: none;
+		}
+
+		&::placeholder {
+			opacity: 0.5;
+		}
+	}
+
+	&__description {
+		font-size: 0.75em;
+		margin: var(--space) 0;
+		opacity: 0.5;
+	}
+
+	&--no-controls {
+		input {
+			&[type='number'] {
+				appearance: textfield;
+				-moz-appearance: textfield;
+
+				&::-webkit-outer-spin-button,
+				&::-webkit-inner-spin-button {
+					-webkit-appearance: none;
+					margin: 0;
+				}
+			}
+		}
+	}
+
+	&__control-container {
+		font-size: var(--input-control-font-size, 1em);
+
+		position: relative;
+		width: 100%;
+
+		&:has([disabled]):not(:has([disabled='false'])) {
+			opacity: 0.25;
+		}
+
+		&::before {
+			position: absolute;
+			top: 0;
+			left: 0;
+			opacity: 1;
+			box-shadow: var(--drop-shadow);
+			outline: 1px solid color-mix(in srgb, var(--color-foreground), var(--color-background) 66.66%);
+			border-radius: var(--input-border-radius, var(--border-radius));
+			transition: box-shadow 0.3s ease-in-out;
+			background-color: var(--input-control-background, var(--color-background));
+			content: '';
+			width: 100%;
+			height: 100%;
+
+			[data-contrast-mode] & {
+				outline: 2px solid var(--color-foreground);
+			}
+		}
+
+		&:has(:focus) {
+			&::before {
+				opacity: 1;
+				outline: 1px solid color-mix(in srgb, var(--color-primary), var(--color-background) 50%);
+				box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-primary), var(--color-background) 80%);
+				// border: 2px solid color-mix(in srgb, var(--color-primary-rgb), .5);
+
+				[data-contrast-mode] & {
+					outline: 2px solid color-mix(in srgb, var(--primar), var(--color-background) 50%);
+					box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-primary), var(--color-background) 50%);
+				}
+			}
+		}
+	}
+
+	&__control-container,
+	&__controls {
+		&:hover {
+			#{$b}__reset {
+				opacity: 1;
+			}
+		}
+	}
+
+	&__label {
+		font-size: calc(0.875em * var(--sizing));
+		display: block;
+		font-weight: 500;
+
+		&+[class*='control-container'],
+		&+[class*='controls'] {
+			margin-top: 0.5em;
+		}
+	}
+
+	&__reset {
+		position: absolute;
+		top: 50%;
+		right: var(--space-xs);
+		transform: translateY(-50%);
+		z-index: 100;
+		opacity: 0;
+	}
+}
+
+// @mixin inputTextarea {
+//   &__control {
+//     font-size: 1em;
+//     font-family: inherit;
+
+//     padding: 0.75em 1em;
+//     min-height: 5em;
+//   }
+// }
+
+// @mixin inputPassword {
+
+// }
+
+@mixin inputRange {
+	&__control-container {
+		display: flex;
+		align-items: center;
+		gap: 1em;
+	}
+
+	&__control {
+		--input-range-height: 1.5em;
+		--input-range-track-background-color: color-mix(in srgb, var(--color-primary), var(--color-background), 25%);
+		--input-range-thumb-background-color: color-mix(in srgb, var(--color-primary), var(--color-background), 25%);
+		--input-range-progress-background-color: var(--color-foreground);
+
+		-webkit-appearance: none;
+		appearance: none;
+		width: 100%;
+		cursor: pointer;
+		outline: none;
+		overflow: hidden;
+		border-radius: var(--input-range-track-height, var(--input-range-height));
+
+		&::-webkit-slider-runnable-track {
+			height: var(--input-range-track-height, var(--input-range-height));
+			background: var(--input-range-track, var(--input-range-track-background-color));
+			border-radius: var(--input-range-track-radius, var(--input-range-height));
+		}
+
+		&::-moz-range-track {
+			height: var(--input-range-track-height, var(--input-range-height));
+			background: var(--input-range-track, var(--input-range-track-background-color));
+			border-radius: var(--input-range-track-radius, var(--input-range-height));
+		}
+
+		&::-webkit-slider-thumb {
+			-webkit-appearance: none;
+			appearance: none;
+			height: var(--input-range-track-height, var(--input-range-height));
+			width: var(--input-range-track-height, var(--input-range-height));
+			background-color: var(--input-range-thumb, var(--input-range-thumb-background-color));
+			border-radius: 50%;
+			border: 2px solid var(--input-range-progress, var(--input-range-progress-background-color));
+			box-shadow: calc(-200px - (var(--input-range-track-height, var(--input-range-height)) / 2)) 0 0 200px var(--input-range-progress, var(--input-range-progress-background-color));
+		}
+
+		&::-moz-range-thumb {
+			height: 15px;
+			width: 15px;
+			background-color: var(--input-range-thumb, var(--input-range-thumb-background-color));
+			border-radius: 50%;
+			border: 2px solid var(--input-range-progress, var(--input-range-progress-background-color));
+			box-shadow: calc(-200px - (var(--input-range-track-height, var(--input-range-height)) / 2)) 0 0 200px var(--input-range-progress, var(--input-range-progress-background-color));
+		}
+	}
+}
+
+@mixin inputSwitch() {
+	display: flex;
+	flex-direction: column-reverse;
+	max-width: 100%;
+
+	&__control-container {
+		display: flex;
+		align-items: center;
+		justify-content: flex-start;
+		gap: 0.5em;
+		width: fit-content;
+		padding: var(--input-switch-padding, calc(var(--space) / 2));
+		position: relative;
+		max-width: 100%;
+		flex-wrap: wrap;
+
+		&:has(:checked) {
+			&~.input-checkbox__label::before {
+				background-position: calc((var(--input-checkbox-height) * 0.5) + var(--input-checkbox-space)) var(--input-checkbox-space);
+			}
+		}
+
+		&::before {
+			position: absolute;
+			pointer-events: none;
+			top: 0;
+			left: 0;
+			opacity: 1;
+			background-color: var(--input-switch-container-background, var(--color-accent));
+			box-shadow: var(--input-switch-container-shadow, none);
+			border-radius: 1.5em;
+			content: '';
+			width: 100%;
+			height: 100%;
+		}
+	}
+
+	&__option {
+		// padding: calc(var(--space) / 3) calc(var(--space) / 1.5);
+		// border-radius: 3em;
+		// color: var(--color-foreground);
+		// display: flex;
+		// gap: calc(var(--space) / 2);
+		// align-items: center;
+		// justify-content: center;
+	}
+
+	&__option-count {
+		border-radius: var(--border-radius);
+		background-color: var(--color-foreground);
+		color: var(--color-background);
+		font-size: 0.66em;
+		padding: 0.25em 0.5em;
+	}
+
+	&__control {
+		opacity: 0;
+		position: absolute;
+		appearance: none;
+		-webkit-appearance: none;
+	}
+
+	&__label {
+		display: flex;
+		gap: 0.5em;
+	}
+}
+
+@mixin inputColor() {}
+
+@mixin inputSelect() {
+	&__control {
+		appearance: none;
+		background-image: url('data:image/svg+xml,<svg id="chevron-down" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72"><polyline points="13.95 27.23 36.23 49.5 58.5 27.23" style="fill: none; stroke: currentColor; stroke-linejoin: round; stroke-width:4" /></svg> ');
+		background-repeat: no-repeat;
+		background-position: right 0.7rem top 50%;
+		background-size: 1em auto;
+	}
+}
+
+@mixin inputSelectIcon() {
+	$b: &;
+
+	& {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xs);
+	}
+
+	&__label {
+		display: flex;
+		gap: var(--space);
+	}
+
+	&__control-container {
+		border-radius: var(--border-radius);
+
+		transition: max-height 0.3s ease-in-out;
+
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xs);
+
+		#{$b}--collapsed & {
+			max-height: 0;
+			padding: 0;
+			opacity: 0;
+		}
+	}
+
+	&__control-options {
+		@include media.scrollbar(red, blue, 5px);
+
+		scrollbar-color: var(--color-accent) var(--color-background);
+		flex-wrap: wrap;
+		border: 1px solid var(--color-accent);
+		max-height: 200px;
+		scrollbar-gutter: stable;
+		overflow-y: auto;
+	}
+
+	&__control-option-wrapper {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		flex-wrap: wrap;
+		gap: var(--space-xs);
+		background-color: var(--color-foreground);
+		height: fit-content;
+	}
+
+	&__control-item {
+		position: relative;
+		border: 1px solid var(--color-accent);
+		border-radius: var(--border-radius);
+
+		&:hover:not([class*='--active']) #{$b}__control-preview {
+			background-color: var(--color-accent);
+		}
+
+		&--active #{$b}__control-preview {
+			background-color: color-mix(in srgb, var(--color-tertiary), transparent 50%);
+
+			&::before {
+				transform: translate(-50%, -50%) scale(1);
+			}
+		}
+
+		&--clear {
+			#{$b}__control-preview {
+				border: 1px solid var(--color-accent);
+
+				&::before {
+					content: '\2715';
+				}
+			}
+
+			&#{$b}__control-item--active #{$b}__control-preview::before {
+				content: '\2714';
+			}
+		}
+	}
+
+	&__control-label {
+		font-size: 0.5em;
+		position: absolute;
+		left: 50%;
+		transform: translateX(-50%);
+		opacity: 0;
+	}
+
+	&__control-input {
+		width: 0;
+		height: 0;
+		position: absolute;
+	}
+
+	&__control-preview {
+		position: relative;
+		width: 2em;
+		height: 2em;
+		border-radius: var(--border-radius);
+		background-color: var(--color-background);
+		box-shadow: 0 0 0 0em color-mix(in srgb, var(--color-accent), transparent 80%);
+		transition: box-shadow 0.2s ease-in-out;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		.icon {
+			font-size: 1.5em;
+		}
+	}
+
+	&__control-filter {
+		background-color: var(--color-background);
+		position: sticky;
+		top: 0;
+		z-index: 2;
+	}
+}
+
+@mixin inputSelectColor() {
+	$b: &;
+
+	& {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xs);
+	}
+
+	&__label {
+		display: flex;
+		gap: var(--space);
+	}
+
+	&__control-container {
+		display: flex;
+		gap: var(--space);
+		flex-wrap: wrap;
+		max-height: 300px;
+		transition: max-height 0.3s ease-in-out;
+		overflow: hidden;
+		border: 1px solid var(--color-accent);
+		padding: var(--space-s);
+
+		#{$b}--collapsed & {
+			max-height: 0;
+			padding: 0;
+			opacity: 0;
+		}
+	}
+
+	&__control-item {
+		position: relative;
+
+		&--active #{$b}__control-preview {
+			box-shadow: 0 0 0 0.25em color-mix(in srgb, var(--input-select-color), transparent 80%);
+
+			&::before {
+				transform: translate(-50%, -50%) scale(1);
+			}
+		}
+
+		&--clear {
+			#{$b}__control-preview {
+				&::before {
+					content: '\2715';
+				}
+
+				border: 1px solid var(--color-accent);
+			}
+
+			&#{$b}__control-item--active #{$b}__control-preview::before {
+				content: '\2714';
+			}
+		}
+
+		&--gold,
+		&--silver,
+		&--bronze {
+			#{$b}__control-preview::after {
+				content: '';
+			}
+		}
+
+		&--white {
+			#{$b}__control-preview {
+				outline: 1px solid var(--color-accent);
+			}
+		}
+	}
+
+	&__control-label {
+		font-size: 0.5em;
+		position: absolute;
+		left: 50%;
+		transform: translateX(-50%);
+		opacity: 0;
+	}
+
+	&__control-input {
+		width: 0;
+		height: 0;
+		position: absolute;
+	}
+
+	&__control-preview {
+		position: relative;
+		width: 1.25em;
+		height: 1.25em;
+		border-radius: 50%;
+		background-color: var(--input-select-color);
+		box-shadow: 0 0 0 0em color-mix(in srgb, var(--input-select-color), transparent 80%);
+		transition: box-shadow 0.2s ease-in-out;
+
+		&::after {
+			width: 100%;
+			height: 100%;
+
+			position: absolute;
+			left: 0;
+			top: 0;
+			display: block;
+			border-radius: 50%;
+			background-image: linear-gradient(to right bottom,
+					transparent,
+					rgba(255, 255, 255, 0.5),
+					rgba(0, 0, 0, 0.125),
+					transparent);
+		}
+
+		&::before {
+			content: '\2714';
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -100%) scale(0);
+			font-size: 0.5em;
+			transition: transform 0.3s ease-in-out;
+		}
+	}
+}
+
+@mixin inputImage() {
+	&__preview-container {
+		cursor: pointer;
+		border-radius: var(--border-radius);
+		padding: var(--space);
+		text-align: center;
+		min-height: 10em;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.2s ease;
+		background-color: var(--color-accent);
+		border: 1px solid transparent;
+
+		&:hover {
+			border: 1px dashed var(--color-foreground);
+			border-color: var(--color-primary);
+		}
+
+		&--dragging {
+			border-color: var(--color-secondary);
+			background-color: var(--color-accent);
+		}
+	}
+
+	&__preview {
+		max-width: 100%;
+		max-height: 200px;
+		object-fit: contain;
+		border-radius: var(--border-radius);
+	}
+
+	&__placeholder {
+		color: var(--color-foreground);
+		display: flex;
+		flex-direction: row;
+		gap: var(--space-s);
+		font-size: 0.75em;
+		opacity: 0.5;
+		align-items: center;
+		justify-content: center;
+	}
+
+	&__placeholder-text {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-s);
+		height: fit-content;
+	}
+
+	&__placeholder-icon {
+		font-size: 4em;
+		opacity: 0.5;
+	}
+
+	&__placeholder-sub {
+		// color: var(--color-primary);
+	}
+
+	&[disabled] {
+		.input-image__preview-container {
+			cursor: not-allowed;
+			opacity: 0.7;
+		}
+	}
+}
+
+@function lineGradient($direction: to right, $color: currentColor, $width: 2px, $position: middle) {
+	@if $position ==start {
+		@return linear-gradient($direction, $color 0, $color $width, transparent $width, transparent 100%);
+	}
+
+	@else if $position ==end {
+		@return linear-gradient($direction,
+			transparent 0,
+			transparent calc(100% - #{$width}),
+			$color calc(100% - #{$width}),
+			$color 100%);
+	}
+
+	@else {
+		@return linear-gradient($direction,
+			transparent calc(50% - (#{$width} / 2)),
+			$color calc(50% - (#{$width} / 2)),
+			$color calc(50% + (#{$width} / 2)),
+			transparent calc(50% + (#{$width} / 2)));
+	}
+}
