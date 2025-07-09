@@ -1,4 +1,4 @@
-name: Build and Deploy Web Apps
+name: Build and Test Web Apps
 
 on:
   push:
@@ -68,51 +68,5 @@ jobs:
           !apps/*/dist/**/*.map
         retention-days: 30
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
-    
-    strategy:
-      matrix:
-        app: [cards, radio, timer, type, yes-no]
-        
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: build-artifacts
-        path: apps/
-
-    - name: Install Netlify CLI
-      run: npm install -g netlify-cli
-
-    - name: Create or update Netlify site
-      run: |
-        cd apps/${{ matrix.app }}
-        
-        # Check if site exists and get site ID
-        SITE_ID=$(netlify sites:list 2>/dev/null | grep "${{ matrix.app }}-tiko" | head -1 | cut -d' ' -f1 || echo "")
-        
-        if [ -z "$SITE_ID" ]; then
-          echo "Creating new Netlify site for ${{ matrix.app }}"
-          SITE_ID=$(netlify sites:create --name "${{ matrix.app }}-tiko" | grep "Site ID:" | cut -d':' -f2 | xargs)
-          echo "Created site with ID: $SITE_ID"
-        else
-          echo "Using existing site ID: $SITE_ID"
-        fi
-        
-        # Set custom domain (ignore errors if domain already exists)
-        netlify domains:add ${{ matrix.app }}.tiko.mt --site $SITE_ID || true
-        
-        # Deploy to production or branch preview
-        if [ "${{ github.ref }}" = "refs/heads/master" ]; then
-          netlify deploy --prod --dir=dist --site=$SITE_ID --message="Deploy from GitHub Actions - ${{ matrix.app }} (master)"
-        else
-          netlify deploy --dir=dist --site=$SITE_ID --message="Deploy from GitHub Actions - ${{ matrix.app }} (develop)"
-        fi
-      env:
-        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+  # Deployment handled by Netlify Git integration
+  # Each app will be deployed automatically when changes are pushed to the repository
