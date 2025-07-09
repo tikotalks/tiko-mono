@@ -1,6 +1,6 @@
 [build]
-  publish = "dist"
-  command = "cd ../../ && pnpm install && pnpm build --filter=cards"
+  publish = "apps/cards/dist"
+  command = "pnpm install && pnpm build --filter=cards"
 
 [build.environment]
   NODE_VERSION = "18"
