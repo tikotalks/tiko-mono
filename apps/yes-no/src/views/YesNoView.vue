@@ -38,29 +38,13 @@
 
         <!-- Answer buttons -->
         <div :class="bemm('answers')">
-          <TButton
-            icon="check"
-            type="default"
-            color="success"
-            :size="settings.buttonSize"
-            @click="() => handleAnswer('yes')"
-            :class="bemm('answers-button', 'yes')"
-            data-cy="yes-button"
-          >
-            Yes
-          </TButton>
+          <YesNoButton
+          :mode="1"
+          @click="() => handleAnswer('yes')"></YesNoButton>
+          <YesNoButton
+          :mode="0"
+          @click="() => handleAnswer('no')"></YesNoButton>
 
-          <TButton
-            icon="x"
-            type="default"
-            color="error"
-            :size="settings.buttonSize"
-            @click="() => handleAnswer('no')"
-            :class="bemm('answers-button', 'no')"
-            data-cy="no-button"
-          >
-            No
-          </TButton>
         </div>
       </main>
 
@@ -84,6 +68,7 @@ import { TButton, TIcon, TAppLayout, popupService } from '@tiko/ui';
 import { useYesNoStore } from '../stores/yesno';
 import YesNoSettingsForm from '../components/YesNoSettingsForm.vue';
 import QuestionInputForm from '../components/QuestionInputForm.vue';
+import YesNoButton from '../components/YesNoButton.vue';
 
 const bemm = useBemm('yes-no');
 const yesNoStore = useYesNoStore();
@@ -217,9 +202,16 @@ onMounted(async () => {
     gap: 3rem;
   }
 
+  &__answers {
+    display: flex;
+    gap:var(--space-s);
+    width: 100%;
+    justify-content: center;
+    font-size: 20vmin;
+  }
+
 
   &__question{
-    border: 1px solid red;
     display: flex;
     align-items: center; justify-content: center;
   &-text{

@@ -688,7 +688,7 @@
         },
         {
           "file": ".github/workflows/ios-apps.yml",
-          "hash": "14874741554319151837"
+          "hash": "17648168074117156348"
         },
         {
           "file": ".gitignore",
@@ -1821,7 +1821,7 @@
         },
         {
           "file": "packages/ui/src/styles/app.scss",
-          "hash": "6519910039326408238"
+          "hash": "11930919581828254057"
         },
         {
           "file": "packages/ui/src/styles/base.scss",
@@ -1829,7 +1829,7 @@
         },
         {
           "file": "packages/ui/src/styles/color/color.scss",
-          "hash": "4451231703763808615"
+          "hash": "16770525828765020708"
         },
         {
           "file": "packages/ui/src/styles/color/functions.scss",
@@ -2398,7 +2398,7 @@
         },
         {
           "file": "apps/yes-no/src/views/YesNoView.vue",
-          "hash": "1854617819049881569",
+          "hash": "10634982841267374591",
           "deps": [
             "npm:vue",
             "npm:bemm",
@@ -2419,6 +2419,14 @@
         {
           "file": "apps/yes-no/vite.config.ts",
           "hash": "7523001170824048237"
+        },
+        {
+          "file": "apps/yes-no/src/components/YesNoButton.vue",
+          "hash": "8268772120666917040",
+          "deps": [
+            "npm:bemm",
+            "npm:vue"
+          ]
         }
       ]
     }

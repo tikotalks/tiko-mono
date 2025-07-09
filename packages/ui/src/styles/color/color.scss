@@ -22,16 +22,16 @@
 	--spacing: clamp(2em, 8vw, 6em);
 	--bezier: cubic-bezier(0, 0.75, 0.5, 1.5);
 }
-// @media (prefers-color-scheme: dark) {
-// 	:root {
-// 		@include functions.darkModeBase();
-// 	}
-// }
-// @media (prefers-color-scheme: light) {
+@media (prefers-color-scheme: dark) {
+	:root {
+		@include functions.darkModeBase();
+	}
+}
+@media (prefers-color-scheme: light) {
 	:root {
 		@include functions.lightModeBase();
 	}
-// }
+}
 [data-color-mode='dark'] {
 	@include functions.darkModeBase();
 }
