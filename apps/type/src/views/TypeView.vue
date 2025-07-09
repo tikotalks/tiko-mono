@@ -1,5 +1,6 @@
 <template>
-  <TAppLayout
+  <TAuthWrapper :backgroundVideo="backgroundVideoUrl" title="Type">
+    <TAppLayout
     title="Type & Speak"
     subtitle="Type text and hear it spoken aloud"
     :show-header="true"
@@ -336,13 +337,15 @@
     </div>
   </div>
   </TAppLayout>
+  </TAuthWrapper>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, reactive, watch, toRefs } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TAppLayout, TInputRange, TInputCheckbox, TInputSelect } from '@tiko/ui'
+import { TButton, TAppLayout, TAuthWrapper, TInputRange, TInputCheckbox, TInputSelect } from '@tiko/ui'
 import { useTypeStore } from '../stores/type'
+import backgroundVideoUrl from '../assets/login-background.mp4'
 
 
 const bemm = useBemm('type-view')

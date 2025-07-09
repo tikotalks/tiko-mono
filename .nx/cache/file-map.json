@@ -216,7 +216,7 @@
         },
         {
           "file": "apps/radio/src/main.ts",
-          "hash": "9572434472353167897",
+          "hash": "11087103341407874193",
           "deps": [
             "npm:vue",
             "npm:pinia"
@@ -261,6 +261,22 @@
         {
           "file": "apps/radio/vite.config.ts",
           "hash": "996584251071566405"
+        },
+        {
+          "file": "apps/radio/src/components/AuthCallback.vue",
+          "hash": "1590527885778842756",
+          "deps": [
+            "npm:vue",
+            "npm:vue-router",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/radio/src/router/index.ts",
+          "hash": "10071613999365107849",
+          "deps": [
+            "npm:vue-router"
+          ]
         }
       ],
       "cards": [
@@ -319,7 +335,7 @@
         },
         {
           "file": "apps/cards/src/main.ts",
-          "hash": "15908929983910874006",
+          "hash": "15155482039661041071",
           "deps": [
             "npm:vue",
             "npm:pinia"
@@ -366,6 +382,22 @@
         {
           "file": "apps/cards/vite.config.ts",
           "hash": "8817323695432231280"
+        },
+        {
+          "file": "apps/cards/src/components/AuthCallback.vue",
+          "hash": "1590527885778842756",
+          "deps": [
+            "npm:vue",
+            "npm:vue-router",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/cards/src/router/index.ts",
+          "hash": "14225670442799170315",
+          "deps": [
+            "npm:vue-router"
+          ]
         }
       ],
       "@tiko/core": [
@@ -425,7 +457,7 @@
         },
         {
           "file": "apps/timer/package.json",
-          "hash": "12885991112746590887",
+          "hash": "5876245750388747282",
           "deps": [
             "@tiko/ui",
             "@tiko/core"
@@ -433,7 +465,7 @@
         },
         {
           "file": "apps/timer/src/App.vue",
-          "hash": "3776444049422109947",
+          "hash": "7956093231154882990",
           "deps": [
             "npm:vue",
             "@tiko/core",
@@ -508,7 +540,7 @@
         },
         {
           "file": "apps/timer/src/main.ts",
-          "hash": "2204471735980649484",
+          "hash": "2254930083372279472",
           "deps": [
             "npm:vue",
             "npm:pinia"
@@ -525,7 +557,7 @@
         },
         {
           "file": "apps/timer/src/views/TimerView.vue",
-          "hash": "7412793662136228295",
+          "hash": "8960963269530734854",
           "deps": [
             "npm:vue",
             "npm:bemm",
@@ -546,6 +578,22 @@
         {
           "file": "apps/timer/vite.config.ts",
           "hash": "2783579839886412282"
+        },
+        {
+          "file": "apps/timer/src/components/AuthCallback.vue",
+          "hash": "1590527885778842756",
+          "deps": [
+            "npm:vue",
+            "npm:vue-router",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/timer/src/router/index.ts",
+          "hash": "13650611841783995332",
+          "deps": [
+            "npm:vue-router"
+          ]
         }
       ],
       "@tiko/ui": [
@@ -1522,7 +1570,7 @@
         },
         {
           "file": "apps/yes-no/src/main.ts",
-          "hash": "2204471735980649484",
+          "hash": "2254930083372279472",
           "deps": [
             "npm:vue",
             "npm:pinia"
@@ -1560,6 +1608,22 @@
         {
           "file": "apps/yes-no/vite.config.ts",
           "hash": "271596548029313619"
+        },
+        {
+          "file": "apps/yes-no/src/components/AuthCallback.vue",
+          "hash": "1590527885778842756",
+          "deps": [
+            "npm:vue",
+            "npm:vue-router",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/yes-no/src/router/index.ts",
+          "hash": "16089089833007995475",
+          "deps": [
+            "npm:vue-router"
+          ]
         }
       ],
       "tiko-mono": [
@@ -1668,7 +1732,7 @@
         },
         {
           "file": "apps/type/package.json",
-          "hash": "12378269203446386054",
+          "hash": "9585320547298111768",
           "deps": [
             "@tiko/ui",
             "@tiko/core"
@@ -1676,7 +1740,7 @@
         },
         {
           "file": "apps/type/src/App.vue",
-          "hash": "322020935323381396",
+          "hash": "9017071866189120068",
           "deps": [
             "npm:vue",
             "@tiko/core",
@@ -1697,7 +1761,7 @@
         },
         {
           "file": "apps/type/src/main.ts",
-          "hash": "2204471735980649484",
+          "hash": "2254930083372279472",
           "deps": [
             "npm:vue",
             "npm:pinia"
@@ -1714,7 +1778,7 @@
         },
         {
           "file": "apps/type/src/views/TypeView.vue",
-          "hash": "15775165363186444359",
+          "hash": "15602021627388615481",
           "deps": [
             "npm:vue",
             "npm:bemm",
@@ -1739,6 +1803,22 @@
         {
           "file": "apps/type/vite.config.ts",
           "hash": "12293056096034540066"
+        },
+        {
+          "file": "apps/type/src/components/AuthCallback.vue",
+          "hash": "1590527885778842756",
+          "deps": [
+            "npm:vue",
+            "npm:vue-router",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/type/src/router/index.ts",
+          "hash": "11454979894213009382",
+          "deps": [
+            "npm:vue-router"
+          ]
         }
       ]
     }

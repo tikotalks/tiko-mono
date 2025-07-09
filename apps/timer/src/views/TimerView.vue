@@ -1,11 +1,12 @@
 <template>
-  <TAppLayout
-    title="Timer"
-    :show-header="true"
-    @profile="handleProfile"
-    @settings="handleAppSettings"
-    @logout="handleLogout"
-  >
+  <TAuthWrapper :backgroundVideo="backgroundVideoUrl" title="Timer">
+    <TAppLayout
+      title="Timer"
+      :show-header="true"
+      @profile="handleProfile"
+      @settings="handleAppSettings"
+      @logout="handleLogout"
+    >
     <template #top-bar-actions>
       <!-- Timer Controls -->
       <TButton
@@ -103,16 +104,18 @@
         </TButton>
       </div>
     </div>
-  </TAppLayout>
+    </TAppLayout>
+  </TAuthWrapper>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TIcon, TAppLayout, popupService } from '@tiko/ui'
+import { TButton, TIcon, TAppLayout, TAuthWrapper, popupService } from '@tiko/ui'
 import { useTimer } from '../composables/useTimer'
 import TimerSettingsForm from '../components/TimerSettingsForm.vue'
 import TimeDisplay from '../components/TimeDisplay.vue'
+import backgroundVideoUrl from '../assets/login-background.mp4'
 
 const bemm = useBemm('timer-view')
 const {
