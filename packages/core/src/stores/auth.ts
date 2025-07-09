@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { User, Session } from '@supabase/supabase-js'
-import { supabase } from '../lib/supabase'
+import { supabase, getAuthRedirectUrl } from '../lib/supabase'
 
 export const useAuthStore = defineStore('auth', () => {
   // State
@@ -97,6 +97,7 @@ export const useAuthStore = defineStore('auth', () => {
         email,
         options: {
           shouldCreateUser: true,
+          emailRedirectTo: getAuthRedirectUrl(),
           data: fullName ? {
             full_name: fullName,
             language: 'en'
@@ -177,7 +178,7 @@ export const useAuthStore = defineStore('auth', () => {
       const { data, error: authError } = await supabase.auth.signInWithOAuth({
         provider: 'apple',
         options: {
-          redirectTo: window.location.origin
+          redirectTo: getAuthRedirectUrl()
         }
       })
 

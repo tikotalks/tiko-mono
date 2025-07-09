@@ -26,6 +26,9 @@ if (supabaseUrl === 'https://placeholder.supabase.co' || supabaseAnonKey === 'pl
   console.warn('Using placeholder Supabase credentials. Please update your .env file.')
 }
 
+// Get the site URL for auth redirects
+const siteUrl = import.meta.env.VITE_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000')
+
 export const supabase = createClient(
   supabaseUrl || 'https://placeholder.supabase.co', 
   supabaseAnonKey || 'placeholder-key',
@@ -43,6 +46,11 @@ export const supabase = createClient(
     }
   }
 )
+
+// Helper function to get the correct redirect URL for auth
+export const getAuthRedirectUrl = () => {
+  return `${siteUrl}/auth/callback`
+}
 
 // Database types (these would normally be generated from Supabase)
 export interface Database {
