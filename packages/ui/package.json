@@ -17,9 +17,9 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "open-icon": "^1.0.0",
     "vue": "^3.4.21",
-    "vue-router": "^4.3.0",
-    "open-icon": "^1.0.0"
+    "vue-router": "^4.3.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.6.2",

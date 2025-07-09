@@ -1,16 +1,27 @@
 :root {
+	// Spacing system
 	--space: 1em;
 	--space-s: calc(var(--space) / 2);
 	--space-xs: calc(var(--space) / 3);
 	--space-l: calc(var(--space) * 2);
 	--space-xl: calc(var(--space) * 3);
 	--spacing: clamp(2em, 8vw, 6em);
+	
+	// Border radius
 	--border-radius-s: .5em;
 	--border-radius: 1em;
 	--border-radius-l: 1.5em;
-	--spacing: clamp(2em, 8vw, 6em);
+	
+	// Animation
 	--bezier: cubic-bezier(0, 0.75, 0.5, 1.5);
+	
+	// Layout
 	--max-post-width: 640px;
+	
+	// Typography - Nunito font stack
+	--font-family-body: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+	--font-family-heading: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+	--font-family-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
 }
 body {
 	--drop-shadow: 0 1px 2px 1px var(--drop-shadow-color, var(--accent));
