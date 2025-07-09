@@ -290,12 +290,23 @@ nx serve yes-no
 # Build for web
 nx build yes-no
 
-# Sync with native wrapper
-nx run yes-no:sync
+# iOS Development Commands
+pnpm run ios:build:yes-no        # Build and sync Yes-No for iOS
+pnpm run ios:build:cards         # Build and sync Cards for iOS
+pnpm run ios:build:timer         # Build and sync Timer for iOS
+pnpm run ios:build:radio         # Build and sync Radio for iOS
+pnpm run ios:build:type          # Build and sync Type for iOS
 
-# Open in native dev tools
-nx run yes-no:ios
-nx run yes-no:android
+# Open in Xcode
+pnpm run ios:open:yes-no         # Open Yes-No in Xcode
+pnpm run ios:open:cards          # Open Cards in Xcode
+pnpm run ios:open:timer          # Open Timer in Xcode
+pnpm run ios:open:radio          # Open Radio in Xcode
+pnpm run ios:open:type           # Open Type in Xcode
+
+# Individual app commands
+cd apps/cards && pnpm run ios:run    # Build, sync, and open Cards in Xcode
+cd apps/timer && pnpm run cap:sync   # Sync Timer with iOS
 ```
 
 ---
