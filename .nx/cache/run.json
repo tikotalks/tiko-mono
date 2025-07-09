@@ -1,20 +1,86 @@
 {
   "run": {
-    "command": "nx serve timer",
-    "startTime": "2025-07-09T07:28:50.842Z",
-    "endTime": "2025-07-09T07:56:49.473Z",
+    "command": "nx run-many --target=build --all",
+    "startTime": "2025-07-09T09:29:56.249Z",
+    "endTime": "2025-07-09T09:29:56.408Z",
     "inner": false
   },
   "tasks": [
     {
-      "taskId": "timer:serve",
-      "target": "serve",
-      "projectName": "timer",
-      "hash": "10195902199977003654",
-      "startTime": "2025-07-09T07:28:50.849Z",
-      "endTime": "2025-07-09T07:56:49.472Z",
+      "taskId": "@tiko/core:build",
+      "target": "build",
+      "projectName": "@tiko/core",
+      "hash": "10455636028917805576",
+      "startTime": "2025-07-09T09:29:56.255Z",
+      "endTime": "2025-07-09T09:29:56.281Z",
       "params": "",
-      "cacheStatus": "cache-miss",
+      "cacheStatus": "local-cache-hit",
+      "status": 0
+    },
+    {
+      "taskId": "@tiko/ui:build",
+      "target": "build",
+      "projectName": "@tiko/ui",
+      "hash": "16821701387926595744",
+      "startTime": "2025-07-09T09:29:56.289Z",
+      "endTime": "2025-07-09T09:29:56.296Z",
+      "params": "",
+      "cacheStatus": "local-cache-hit",
+      "status": 0
+    },
+    {
+      "taskId": "yes-no:build",
+      "target": "build",
+      "projectName": "yes-no",
+      "hash": "3661630122560491780",
+      "startTime": "2025-07-09T09:29:56.306Z",
+      "endTime": "2025-07-09T09:29:56.318Z",
+      "params": "",
+      "cacheStatus": "local-cache-hit",
+      "status": 0
+    },
+    {
+      "taskId": "radio:build",
+      "target": "build",
+      "projectName": "radio",
+      "hash": "6599594403901168970",
+      "startTime": "2025-07-09T09:29:56.306Z",
+      "endTime": "2025-07-09T09:29:56.323Z",
+      "params": "",
+      "cacheStatus": "local-cache-hit",
+      "status": 0
+    },
+    {
+      "taskId": "cards:build",
+      "target": "build",
+      "projectName": "cards",
+      "hash": "5230493400715055586",
+      "startTime": "2025-07-09T09:29:56.306Z",
+      "endTime": "2025-07-09T09:29:56.334Z",
+      "params": "",
+      "cacheStatus": "local-cache-hit",
+      "status": 0
+    },
+    {
+      "taskId": "timer:build",
+      "target": "build",
+      "projectName": "timer",
+      "hash": "7522709272344016478",
+      "startTime": "2025-07-09T09:29:56.346Z",
+      "endTime": "2025-07-09T09:29:56.372Z",
+      "params": "",
+      "cacheStatus": "local-cache-hit",
+      "status": 0
+    },
+    {
+      "taskId": "type:build",
+      "target": "build",
+      "projectName": "type",
+      "hash": "16104710657763964961",
+      "startTime": "2025-07-09T09:29:56.351Z",
+      "endTime": "2025-07-09T09:29:56.384Z",
+      "params": "",
+      "cacheStatus": "local-cache-hit",
       "status": 0
     }
   ]

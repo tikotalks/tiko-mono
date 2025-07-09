@@ -3902,3 +3902,540 @@
 [NX Daemon Server] - 2025-07-09T08:47:53.254Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 24.125040999613702ms
 [NX Daemon Server] - 2025-07-09T08:47:53.256Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 27.878624999895692ms
 [NX Daemon Server] - 2025-07-09T08:47:53.286Z - Time taken for 'build-project-configs' 31.75616700015962ms
+[NX Daemon Server] - 2025-07-09T08:48:59.552Z - [WATCHER]: .github/workflows/build-and-deploy.yml was modified
+[NX Daemon Server] - 2025-07-09T08:48:59.553Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:49:05.955Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:49:05.955Z - [REQUEST]: .github/workflows/build-and-deploy.yml
+[NX Daemon Server] - 2025-07-09T08:49:05.955Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:49:05.980Z - Time taken for 'hash changed files from watcher' 0.6430000001564622ms
+[NX Daemon Server] - 2025-07-09T08:49:05.995Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 26.479790999554098ms
+[NX Daemon Server] - 2025-07-09T08:49:05.997Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 26.98479100037366ms
+[NX Daemon Server] - 2025-07-09T08:49:05.999Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 28.704916999675333ms
+[NX Daemon Server] - 2025-07-09T08:49:06.036Z - Time taken for 'build-project-configs' 41.712749999947846ms
+[NX Daemon Server] - 2025-07-09T08:49:09.402Z - [WATCHER]: .github/workflows/ios-apps.yml was modified
+[NX Daemon Server] - 2025-07-09T08:49:09.402Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:49:15.803Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:49:15.803Z - [REQUEST]: .github/workflows/ios-apps.yml
+[NX Daemon Server] - 2025-07-09T08:49:15.803Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:49:15.821Z - Time taken for 'hash changed files from watcher' 0.3980829995125532ms
+[NX Daemon Server] - 2025-07-09T08:49:15.835Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 26.211500000208616ms
+[NX Daemon Server] - 2025-07-09T08:49:15.839Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 29.538292000070214ms
+[NX Daemon Server] - 2025-07-09T08:49:15.845Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 37.53474999964237ms
+[NX Daemon Server] - 2025-07-09T08:49:15.847Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 36.93087500054389ms
+[NX Daemon Server] - 2025-07-09T08:49:15.884Z - Time taken for 'build-project-configs' 46.977540999650955ms
+[NX Daemon Server] - 2025-07-09T08:56:30.061Z - [WATCHER]: packages/core/vite.config.ts was created or restored
+[NX Daemon Server] - 2025-07-09T08:56:30.062Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:56:30.163Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:56:30.164Z - [REQUEST]: packages/core/vite.config.ts
+[NX Daemon Server] - 2025-07-09T08:56:30.164Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:56:30.190Z - Time taken for 'hash changed files from watcher' 0.4177080001682043ms
+[NX Daemon Server] - 2025-07-09T08:56:30.224Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 39.14000000059605ms
+[NX Daemon Server] - 2025-07-09T08:56:30.227Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 53.999540999531746ms
+[NX Daemon Server] - 2025-07-09T08:56:30.232Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 55.3389160009101ms
+[NX Daemon Server] - 2025-07-09T08:56:30.241Z - Time taken for '@nx/vite/plugin:createNodes:apps/yes-no/vite.config.ts' 58.491209000349045ms
+[NX Daemon Server] - 2025-07-09T08:56:30.339Z - Time taken for 'build-project-configs' 123.69479200057685ms
+[NX Daemon Server] - 2025-07-09T09:13:02.580Z - [WATCHER]: .claude/settings.local.json was modified
+[NX Daemon Server] - 2025-07-09T09:13:02.581Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:13:02.783Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T09:13:02.783Z - [REQUEST]: .claude/settings.local.json
+[NX Daemon Server] - 2025-07-09T09:13:02.783Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T09:13:02.816Z - Time taken for 'hash changed files from watcher' 0.4277079999446869ms
+[NX Daemon Server] - 2025-07-09T09:13:02.827Z - Time taken for '@nx/vite/plugin:createNodes:packages/core/vite.config.ts' 20.133040999993682ms
+[NX Daemon Server] - 2025-07-09T09:13:02.830Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 25.539707999676466ms
+[NX Daemon Server] - 2025-07-09T09:13:02.831Z - Time taken for '@nx/vite/plugin:createNodes:apps/yes-no/vite.config.ts' 25.115249999798834ms
+[NX Daemon Server] - 2025-07-09T09:13:02.832Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 28.362666999921203ms
+[NX Daemon Server] - 2025-07-09T09:13:02.874Z - Time taken for 'build-project-configs' 41.9177919998765ms
+[NX Daemon Server] - 2025-07-09T09:15:25.889Z - [WATCHER]: .github/workflows/build-and-deploy.yml was modified
+[NX Daemon Server] - 2025-07-09T09:15:25.889Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:15:26.292Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T09:15:26.292Z - [REQUEST]: .github/workflows/build-and-deploy.yml
+[NX Daemon Server] - 2025-07-09T09:15:26.292Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T09:15:26.314Z - Time taken for 'hash changed files from watcher' 1.2619160003960133ms
+[NX Daemon Server] - 2025-07-09T09:15:26.326Z - Time taken for '@nx/vite/plugin:createNodes:packages/core/vite.config.ts' 20.608625000342727ms
+[NX Daemon Server] - 2025-07-09T09:15:26.330Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 27.76654199976474ms
+[NX Daemon Server] - 2025-07-09T09:15:26.333Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 30.837291999720037ms
+[NX Daemon Server] - 2025-07-09T09:15:26.335Z - Time taken for '@nx/vite/plugin:createNodes:apps/yes-no/vite.config.ts' 29.462958000600338ms
+[NX Daemon Server] - 2025-07-09T09:15:26.374Z - Time taken for 'build-project-configs' 40.200333000160754ms
+[NX Daemon Server] - 2025-07-09T09:18:50.068Z - [WATCHER]: .github/workflows/build-and-deploy.yml was modified
+[NX Daemon Server] - 2025-07-09T09:18:50.068Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:18:50.871Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T09:18:50.871Z - [REQUEST]: .github/workflows/build-and-deploy.yml
+[NX Daemon Server] - 2025-07-09T09:18:50.871Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T09:18:50.895Z - Time taken for 'hash changed files from watcher' 0.9382079998031259ms
+[NX Daemon Server] - 2025-07-09T09:18:50.906Z - Time taken for '@nx/vite/plugin:createNodes:packages/core/vite.config.ts' 22.977416000328958ms
+[NX Daemon Server] - 2025-07-09T09:18:50.914Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 30.96329199988395ms
+[NX Daemon Server] - 2025-07-09T09:18:50.918Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 38.6189580000937ms
+[NX Daemon Server] - 2025-07-09T09:18:50.955Z - Time taken for 'build-project-configs' 46.82620800007135ms
+[NX Daemon Server] - 2025-07-09T09:21:02.850Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T09:21:02.851Z - Established a connection. Number of open connections: 3
+[NX Daemon Server] - 2025-07-09T09:21:02.852Z - Closed a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T09:21:02.855Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2025-07-09T09:21:02.857Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2025-07-09T09:21:02.858Z - Time taken for 'total for creating and serializing project graph' 1.1028749998658895ms
+[NX Daemon Server] - 2025-07-09T09:21:02.862Z - Done responding to the client project-graph
+[NX Daemon Server] - 2025-07-09T09:21:02.862Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 3. Response time: 5.
+[NX Daemon Server] - 2025-07-09T09:21:02.884Z - [REQUEST]: Responding to the client. handleHashTasks
+[NX Daemon Server] - 2025-07-09T09:21:02.885Z - Done responding to the client handleHashTasks
+[NX Daemon Server] - 2025-07-09T09:21:02.885Z - Handled HASH_TASKS. Handling time: 5. Response time: 1.
+[NX Daemon Server] - 2025-07-09T09:21:04.060Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:21:04.108Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:21:04.109Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:21:04.109Z - Handled RECORD_OUTPUTS_HASH. Handling time: 33. Response time: 1.
+[NX Daemon Server] - 2025-07-09T09:21:04.120Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:21:04.834Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:21:04.834Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:21:04.834Z - Handled RECORD_OUTPUTS_HASH. Handling time: 6. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:21:04.839Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T09:21:24.272Z - [WATCHER]: packages/ui/vite.config.ts was created or restored
+[NX Daemon Server] - 2025-07-09T09:21:24.272Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:21:24.374Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T09:21:24.374Z - [REQUEST]: packages/ui/vite.config.ts
+[NX Daemon Server] - 2025-07-09T09:21:24.374Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T09:21:24.393Z - Time taken for 'hash changed files from watcher' 0.198874999769032ms
+[NX Daemon Server] - 2025-07-09T09:21:24.415Z - Time taken for '@nx/vite/plugin:createNodes:packages/core/vite.config.ts' 30.488208000548184ms
+[NX Daemon Server] - 2025-07-09T09:21:24.417Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 36.35404200013727ms
+[NX Daemon Server] - 2025-07-09T09:21:24.422Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 35.435624999925494ms
+[NX Daemon Server] - 2025-07-09T09:21:24.423Z - Time taken for '@nx/vite/plugin:createNodes:apps/yes-no/vite.config.ts' 39.45104099996388ms
+[NX Daemon Server] - 2025-07-09T09:21:24.424Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 41.50929199997336ms
+[NX Daemon Server] - 2025-07-09T09:21:24.453Z - Time taken for 'build-project-configs' 50.974750000052154ms
+[NX Daemon Server] - 2025-07-09T09:21:29.564Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T09:21:29.564Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T09:21:29.564Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T09:21:29.565Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2025-07-09T09:21:29.565Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2025-07-09T09:21:29.565Z - Time taken for 'total for creating and serializing project graph' 0.03337500058114529ms
+[NX Daemon Server] - 2025-07-09T09:21:29.566Z - Done responding to the client project-graph
+[NX Daemon Server] - 2025-07-09T09:21:29.566Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 0. Response time: 1.
+[NX Daemon Server] - 2025-07-09T09:21:29.582Z - [REQUEST]: Responding to the client. handleHashTasks
+[NX Daemon Server] - 2025-07-09T09:21:29.582Z - Done responding to the client handleHashTasks
+[NX Daemon Server] - 2025-07-09T09:21:29.582Z - Handled HASH_TASKS. Handling time: 4. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:21:29.613Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:21:29.613Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:21:29.613Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 6. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:21:29.618Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:21:29.618Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:21:29.618Z - Handled RECORD_OUTPUTS_HASH. Handling time: 4. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:21:30.975Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:21:30.975Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:21:30.976Z - Handled RECORD_OUTPUTS_HASH. Handling time: 8. Response time: 1.
+[NX Daemon Server] - 2025-07-09T09:21:30.981Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T09:21:41.127Z - [WATCHER]: packages/ui/vite.config.ts was modified
+[NX Daemon Server] - 2025-07-09T09:21:41.127Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:21:41.228Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T09:21:41.228Z - [REQUEST]: packages/ui/vite.config.ts
+[NX Daemon Server] - 2025-07-09T09:21:41.228Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T09:21:41.243Z - Time taken for 'hash changed files from watcher' 0.21054099965840578ms
+[NX Daemon Server] - 2025-07-09T09:21:41.278Z - Time taken for '@nx/vite/plugin:createNodes:packages/core/vite.config.ts' 41.88975000008941ms
+[NX Daemon Server] - 2025-07-09T09:21:41.282Z - Time taken for '@nx/vite/plugin:createNodes:packages/ui/vite.config.ts' 46.01050000078976ms
+[NX Daemon Server] - 2025-07-09T09:21:41.285Z - Time taken for '@nx/vite/plugin:createNodes:apps/yes-no/vite.config.ts' 49.86566700041294ms
+[NX Daemon Server] - 2025-07-09T09:21:41.290Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 54.31283299997449ms
+[NX Daemon Server] - 2025-07-09T09:21:41.296Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 62.85433300025761ms
+[NX Daemon Server] - 2025-07-09T09:21:41.347Z - Time taken for 'build-project-configs' 69.7955829994753ms
+[NX Daemon Server] - 2025-07-09T09:21:46.599Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T09:21:46.600Z - Established a connection. Number of open connections: 3
+[NX Daemon Server] - 2025-07-09T09:21:46.600Z - Closed a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T09:21:46.601Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2025-07-09T09:21:46.601Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2025-07-09T09:21:46.601Z - Time taken for 'total for creating and serializing project graph' 0.08208299987018108ms
+[NX Daemon Server] - 2025-07-09T09:21:46.602Z - Done responding to the client project-graph
+[NX Daemon Server] - 2025-07-09T09:21:46.602Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 0. Response time: 1.
+[NX Daemon Server] - 2025-07-09T09:21:46.620Z - [REQUEST]: Responding to the client. handleHashTasks
+[NX Daemon Server] - 2025-07-09T09:21:46.620Z - Done responding to the client handleHashTasks
+[NX Daemon Server] - 2025-07-09T09:21:46.620Z - Handled HASH_TASKS. Handling time: 4. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:21:46.671Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:21:46.671Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:21:46.671Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 26. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:21:46.683Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:21:46.683Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:21:46.683Z - Handled RECORD_OUTPUTS_HASH. Handling time: 12. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:21:48.271Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:21:48.271Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:21:48.271Z - Handled RECORD_OUTPUTS_HASH. Handling time: 7. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:21:48.274Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T09:22:30.028Z - [WATCHER]: packages/ui/vite.config.ts was modified
+[NX Daemon Server] - 2025-07-09T09:22:30.029Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:22:30.130Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T09:22:30.130Z - [REQUEST]: packages/ui/vite.config.ts
+[NX Daemon Server] - 2025-07-09T09:22:30.130Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T09:22:30.150Z - Time taken for 'hash changed files from watcher' 0.3392909998074174ms
+[NX Daemon Server] - 2025-07-09T09:22:30.165Z - Time taken for '@nx/vite/plugin:createNodes:packages/core/vite.config.ts' 26.97675000037998ms
+[NX Daemon Server] - 2025-07-09T09:22:30.170Z - Time taken for '@nx/vite/plugin:createNodes:packages/ui/vite.config.ts' 30.99716700054705ms
+[NX Daemon Server] - 2025-07-09T09:22:30.172Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 36.748124999925494ms
+[NX Daemon Server] - 2025-07-09T09:22:30.174Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 36.81149999983609ms
+[NX Daemon Server] - 2025-07-09T09:22:30.175Z - Time taken for '@nx/vite/plugin:createNodes:apps/yes-no/vite.config.ts' 37.1282919999212ms
+[NX Daemon Server] - 2025-07-09T09:22:30.180Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 40.17166700027883ms
+[NX Daemon Server] - 2025-07-09T09:22:30.217Z - Time taken for 'build-project-configs' 49.21866700053215ms
+[NX Daemon Server] - 2025-07-09T09:22:35.507Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T09:22:35.508Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T09:22:35.508Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T09:22:35.510Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2025-07-09T09:22:35.511Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2025-07-09T09:22:35.511Z - Time taken for 'total for creating and serializing project graph' 0.15833400003612041ms
+[NX Daemon Server] - 2025-07-09T09:22:35.513Z - Done responding to the client project-graph
+[NX Daemon Server] - 2025-07-09T09:22:35.513Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 1. Response time: 2.
+[NX Daemon Server] - 2025-07-09T09:22:35.529Z - [REQUEST]: Responding to the client. handleHashTasks
+[NX Daemon Server] - 2025-07-09T09:22:35.529Z - Done responding to the client handleHashTasks
+[NX Daemon Server] - 2025-07-09T09:22:35.529Z - Handled HASH_TASKS. Handling time: 4. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:22:35.559Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:22:35.559Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:22:35.559Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 5. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:22:35.566Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:22:35.566Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:22:35.566Z - Handled RECORD_OUTPUTS_HASH. Handling time: 6. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:22:37.595Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:22:37.596Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:22:37.596Z - Handled RECORD_OUTPUTS_HASH. Handling time: 4. Response time: 1.
+[NX Daemon Server] - 2025-07-09T09:22:37.596Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:22:37.650Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:22:42.491Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:22:42.583Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:22:42.676Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:22:42.739Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:22:42.792Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:22:43.059Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:22:43.059Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:22:43.059Z - Handled RECORD_OUTPUTS_HASH. Handling time: 11. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:22:43.130Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:22:43.218Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:22:43.313Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:22:43.414Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:22:43.842Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:22:43.901Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:22:43.956Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:22:44.077Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:22:44.077Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:22:44.077Z - Handled RECORD_OUTPUTS_HASH. Handling time: 15. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:22:44.155Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:22:44.240Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:22:44.322Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:22:44.385Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:22:45.175Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:22:45.175Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:22:45.175Z - Handled RECORD_OUTPUTS_HASH. Handling time: 18. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:22:51.328Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:22:51.329Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:22:51.329Z - Handled RECORD_OUTPUTS_HASH. Handling time: 12. Response time: 1.
+[NX Daemon Server] - 2025-07-09T09:22:51.534Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:22:51.534Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:22:51.534Z - Handled RECORD_OUTPUTS_HASH. Handling time: 13. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:22:51.539Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T09:23:41.326Z - [WATCHER]: .claude/settings.local.json was modified
+[NX Daemon Server] - 2025-07-09T09:23:41.328Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:23:41.430Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T09:23:41.430Z - [REQUEST]: .claude/settings.local.json
+[NX Daemon Server] - 2025-07-09T09:23:41.430Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T09:23:41.463Z - Time taken for 'hash changed files from watcher' 0.7594590000808239ms
+[NX Daemon Server] - 2025-07-09T09:23:41.500Z - Time taken for '@nx/vite/plugin:createNodes:packages/core/vite.config.ts' 53.05195799935609ms
+[NX Daemon Server] - 2025-07-09T09:23:41.507Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 64.4869169993326ms
+[NX Daemon Server] - 2025-07-09T09:23:41.511Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 71.50033400021493ms
+[NX Daemon Server] - 2025-07-09T09:23:41.515Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 70.65333299990743ms
+[NX Daemon Server] - 2025-07-09T09:23:41.552Z - Time taken for 'build-project-configs' 85.33458300027996ms
+[NX Daemon Server] - 2025-07-09T09:23:41.929Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T09:23:41.929Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T09:23:41.929Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T09:23:41.930Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2025-07-09T09:23:41.930Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2025-07-09T09:23:41.931Z - Time taken for 'total for creating and serializing project graph' 0.08454199973493814ms
+[NX Daemon Server] - 2025-07-09T09:23:41.932Z - Done responding to the client project-graph
+[NX Daemon Server] - 2025-07-09T09:23:41.932Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 0. Response time: 2.
+[NX Daemon Server] - 2025-07-09T09:23:41.949Z - [REQUEST]: Responding to the client. handleHashTasks
+[NX Daemon Server] - 2025-07-09T09:23:41.949Z - Done responding to the client handleHashTasks
+[NX Daemon Server] - 2025-07-09T09:23:41.949Z - Handled HASH_TASKS. Handling time: 4. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:23:42.012Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:23:42.013Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:23:42.013Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 31. Response time: 1.
+[NX Daemon Server] - 2025-07-09T09:23:42.019Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:23:42.019Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:23:42.019Z - Handled RECORD_OUTPUTS_HASH. Handling time: 6. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:23:42.026Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:23:42.026Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:23:42.026Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 6. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:23:42.032Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:23:42.032Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:23:42.032Z - Handled RECORD_OUTPUTS_HASH. Handling time: 5. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:23:42.045Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:23:42.045Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:23:42.045Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 11. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:23:42.056Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:23:42.056Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:23:42.056Z - Handled RECORD_OUTPUTS_HASH. Handling time: 10. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:23:42.059Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T09:23:50.181Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T09:23:50.181Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T09:23:50.181Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T09:23:50.182Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2025-07-09T09:23:50.182Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2025-07-09T09:23:50.182Z - Time taken for 'total for creating and serializing project graph' 0.04983299970626831ms
+[NX Daemon Server] - 2025-07-09T09:23:50.183Z - Done responding to the client project-graph
+[NX Daemon Server] - 2025-07-09T09:23:50.183Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 0. Response time: 1.
+[NX Daemon Server] - 2025-07-09T09:23:50.196Z - [REQUEST]: Responding to the client. handleHashTasks
+[NX Daemon Server] - 2025-07-09T09:23:50.196Z - Done responding to the client handleHashTasks
+[NX Daemon Server] - 2025-07-09T09:23:50.196Z - Handled HASH_TASKS. Handling time: 2. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:23:50.227Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:23:50.227Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:23:50.227Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 6. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:23:50.236Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:23:50.236Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:23:50.236Z - Handled RECORD_OUTPUTS_HASH. Handling time: 8. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:23:50.243Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:23:50.243Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:23:50.243Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 6. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:23:50.249Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:23:50.249Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:23:50.249Z - Handled RECORD_OUTPUTS_HASH. Handling time: 6. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:23:50.255Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:23:50.255Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:23:50.255Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 4. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:23:50.263Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:23:50.263Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:23:50.263Z - Handled RECORD_OUTPUTS_HASH. Handling time: 7. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:23:50.266Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T09:28:29.255Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T09:28:29.255Z - Established a connection. Number of open connections: 3
+[NX Daemon Server] - 2025-07-09T09:28:29.256Z - Closed a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T09:28:29.257Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2025-07-09T09:28:29.257Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2025-07-09T09:28:29.257Z - Time taken for 'total for creating and serializing project graph' 0.1138749998062849ms
+[NX Daemon Server] - 2025-07-09T09:28:29.258Z - Done responding to the client project-graph
+[NX Daemon Server] - 2025-07-09T09:28:29.258Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 0. Response time: 1.
+[NX Daemon Server] - 2025-07-09T09:28:29.271Z - [REQUEST]: Responding to the client. handleHashTasks
+[NX Daemon Server] - 2025-07-09T09:28:29.271Z - Done responding to the client handleHashTasks
+[NX Daemon Server] - 2025-07-09T09:28:29.271Z - Handled HASH_TASKS. Handling time: 2. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:28:29.334Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:28:29.334Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:28:29.334Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 35. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:28:29.341Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:28:29.341Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:28:29.341Z - Handled RECORD_OUTPUTS_HASH. Handling time: 6. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:28:29.349Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:28:29.350Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:28:29.350Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 5. Response time: 1.
+[NX Daemon Server] - 2025-07-09T09:28:29.355Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:28:29.355Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:28:29.355Z - Handled RECORD_OUTPUTS_HASH. Handling time: 5. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:28:33.550Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:28:33.550Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:28:33.550Z - Handled RECORD_OUTPUTS_HASH. Handling time: 11. Response time: 1.
+[NX Daemon Server] - 2025-07-09T09:28:33.554Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T09:28:44.883Z - [WATCHER]: apps/yes-no/package.json was modified
+[NX Daemon Server] - 2025-07-09T09:28:44.883Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:28:44.985Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T09:28:44.985Z - [REQUEST]: apps/yes-no/package.json
+[NX Daemon Server] - 2025-07-09T09:28:44.985Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T09:28:45.002Z - Time taken for 'hash changed files from watcher' 0.25ms
+[NX Daemon Server] - 2025-07-09T09:28:45.014Z - Time taken for '@nx/vite/plugin:createNodes:packages/core/vite.config.ts' 22.24712499976158ms
+[NX Daemon Server] - 2025-07-09T09:28:45.019Z - Time taken for '@nx/vite/plugin:createNodes:packages/ui/vite.config.ts' 26.038790999911726ms
+[NX Daemon Server] - 2025-07-09T09:28:45.028Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 35.26891600061208ms
+[NX Daemon Server] - 2025-07-09T09:28:45.031Z - Time taken for '@nx/vite/plugin:createNodes:apps/yes-no/vite.config.ts' 39.51141600031406ms
+[NX Daemon Server] - 2025-07-09T09:28:45.033Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 41.50674999970943ms
+[NX Daemon Server] - 2025-07-09T09:28:45.066Z - Time taken for 'build-project-configs' 48.35133299976587ms
+[NX Daemon Server] - 2025-07-09T09:28:56.014Z - [WATCHER]: apps/timer/package.json was modified
+[NX Daemon Server] - 2025-07-09T09:28:56.015Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:28:56.215Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T09:28:56.215Z - [REQUEST]: apps/timer/package.json
+[NX Daemon Server] - 2025-07-09T09:28:56.215Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T09:28:56.233Z - Time taken for 'hash changed files from watcher' 0.23195799998939037ms
+[NX Daemon Server] - 2025-07-09T09:28:56.243Z - Time taken for '@nx/vite/plugin:createNodes:packages/core/vite.config.ts' 20.617624999955297ms
+[NX Daemon Server] - 2025-07-09T09:28:56.247Z - Time taken for '@nx/vite/plugin:createNodes:packages/ui/vite.config.ts' 24.298041000030935ms
+[NX Daemon Server] - 2025-07-09T09:28:56.254Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 33.72691700048745ms
+[NX Daemon Server] - 2025-07-09T09:28:56.256Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 36.54258400015533ms
+[NX Daemon Server] - 2025-07-09T09:28:56.258Z - Time taken for '@nx/vite/plugin:createNodes:apps/yes-no/vite.config.ts' 37.202499999664724ms
+[NX Daemon Server] - 2025-07-09T09:28:56.302Z - Time taken for 'build-project-configs' 48.40054200030863ms
+[NX Daemon Server] - 2025-07-09T09:29:05.489Z - [WATCHER]: apps/type/package.json was modified
+[NX Daemon Server] - 2025-07-09T09:29:05.489Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:05.890Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T09:29:05.891Z - [REQUEST]: apps/type/package.json
+[NX Daemon Server] - 2025-07-09T09:29:05.891Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T09:29:05.906Z - Time taken for 'hash changed files from watcher' 0.3531659999862313ms
+[NX Daemon Server] - 2025-07-09T09:29:05.917Z - Time taken for '@nx/vite/plugin:createNodes:packages/core/vite.config.ts' 20.77337499987334ms
+[NX Daemon Server] - 2025-07-09T09:29:05.919Z - Time taken for '@nx/vite/plugin:createNodes:packages/ui/vite.config.ts' 22.02945899963379ms
+[NX Daemon Server] - 2025-07-09T09:29:05.922Z - Time taken for '@nx/vite/plugin:createNodes:apps/yes-no/vite.config.ts' 26.218958999961615ms
+[NX Daemon Server] - 2025-07-09T09:29:05.924Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 28.700540999881923ms
+[NX Daemon Server] - 2025-07-09T09:29:05.927Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 33.24354199972004ms
+[NX Daemon Server] - 2025-07-09T09:29:05.956Z - Time taken for 'build-project-configs' 37.509750000201166ms
+[NX Daemon Server] - 2025-07-09T09:29:10.900Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T09:29:10.900Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T09:29:10.900Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T09:29:10.901Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2025-07-09T09:29:10.901Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2025-07-09T09:29:10.901Z - Time taken for 'total for creating and serializing project graph' 0.04779199976474047ms
+[NX Daemon Server] - 2025-07-09T09:29:10.902Z - Done responding to the client project-graph
+[NX Daemon Server] - 2025-07-09T09:29:10.902Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 0. Response time: 1.
+[NX Daemon Server] - 2025-07-09T09:29:10.919Z - [REQUEST]: Responding to the client. handleHashTasks
+[NX Daemon Server] - 2025-07-09T09:29:10.919Z - Done responding to the client handleHashTasks
+[NX Daemon Server] - 2025-07-09T09:29:10.919Z - Handled HASH_TASKS. Handling time: 3. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:10.956Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:10.956Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:10.956Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 9. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:10.962Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:10.962Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:10.962Z - Handled RECORD_OUTPUTS_HASH. Handling time: 6. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:10.969Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:10.969Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:10.969Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 5. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:10.976Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:10.976Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:10.976Z - Handled RECORD_OUTPUTS_HASH. Handling time: 5. Response time: 1.
+[NX Daemon Server] - 2025-07-09T09:29:10.993Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:10.993Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:10.993Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 10. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:10.998Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:10.998Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:10.998Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 4. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:11.009Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:11.009Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:11.009Z - Handled RECORD_OUTPUTS_HASH. Handling time: 10. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:11.014Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:11.014Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:11.014Z - Handled RECORD_OUTPUTS_HASH. Handling time: 5. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:12.259Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:12.259Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:12.259Z - Handled RECORD_OUTPUTS_HASH. Handling time: 11. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:15.038Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:15.105Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:15.155Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:15.206Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:15.979Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:16.050Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:16.166Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:16.278Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:16.347Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:16.926Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:16.928Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:16.928Z - Handled RECORD_OUTPUTS_HASH. Handling time: 214. Response time: 2.
+[NX Daemon Server] - 2025-07-09T09:29:16.947Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:16.947Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:16.947Z - Handled RECORD_OUTPUTS_HASH. Handling time: 17. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:17.211Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:17.231Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T09:29:17.266Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:24.625Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T09:29:24.625Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T09:29:24.625Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T09:29:24.626Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2025-07-09T09:29:24.626Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2025-07-09T09:29:24.626Z - Time taken for 'total for creating and serializing project graph' 0.06216700002551079ms
+[NX Daemon Server] - 2025-07-09T09:29:24.627Z - Done responding to the client project-graph
+[NX Daemon Server] - 2025-07-09T09:29:24.627Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 0. Response time: 1.
+[NX Daemon Server] - 2025-07-09T09:29:24.642Z - [REQUEST]: Responding to the client. handleHashTasks
+[NX Daemon Server] - 2025-07-09T09:29:24.642Z - Done responding to the client handleHashTasks
+[NX Daemon Server] - 2025-07-09T09:29:24.642Z - Handled HASH_TASKS. Handling time: 1. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:24.682Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:24.682Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:24.682Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 6. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:24.689Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:24.689Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:24.689Z - Handled RECORD_OUTPUTS_HASH. Handling time: 6. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:24.696Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:24.696Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:24.696Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 6. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:24.702Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:24.702Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:24.702Z - Handled RECORD_OUTPUTS_HASH. Handling time: 5. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:25.817Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:25.817Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:25.817Z - Handled RECORD_OUTPUTS_HASH. Handling time: 14. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:25.820Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T09:29:36.742Z - [WATCHER]: apps/type/src/App.vue was modified
+[NX Daemon Server] - 2025-07-09T09:29:36.742Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:36.843Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T09:29:36.844Z - [REQUEST]: apps/type/src/App.vue
+[NX Daemon Server] - 2025-07-09T09:29:36.844Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T09:29:36.866Z - Time taken for 'hash changed files from watcher' 0.5121670002117753ms
+[NX Daemon Server] - 2025-07-09T09:29:36.883Z - Time taken for '@nx/vite/plugin:createNodes:packages/core/vite.config.ts' 24.62375000026077ms
+[NX Daemon Server] - 2025-07-09T09:29:36.885Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 34.42570799961686ms
+[NX Daemon Server] - 2025-07-09T09:29:36.889Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 37.24895799998194ms
+[NX Daemon Server] - 2025-07-09T09:29:36.890Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 37.633084000088274ms
+[NX Daemon Server] - 2025-07-09T09:29:36.925Z - Time taken for 'build-project-configs' 47.156333999708295ms
+[NX Daemon Server] - 2025-07-09T09:29:43.484Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T09:29:43.485Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T09:29:43.485Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T09:29:43.486Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2025-07-09T09:29:43.486Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2025-07-09T09:29:43.486Z - Time taken for 'total for creating and serializing project graph' 0.0590420002117753ms
+[NX Daemon Server] - 2025-07-09T09:29:43.487Z - Done responding to the client project-graph
+[NX Daemon Server] - 2025-07-09T09:29:43.487Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 0. Response time: 1.
+[NX Daemon Server] - 2025-07-09T09:29:43.519Z - [REQUEST]: Responding to the client. handleHashTasks
+[NX Daemon Server] - 2025-07-09T09:29:43.519Z - Done responding to the client handleHashTasks
+[NX Daemon Server] - 2025-07-09T09:29:43.519Z - Handled HASH_TASKS. Handling time: 9. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:43.563Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:43.563Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:43.563Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 7. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:43.569Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:43.569Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:43.569Z - Handled RECORD_OUTPUTS_HASH. Handling time: 6. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:43.576Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:43.576Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:43.576Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 5. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:43.582Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:43.582Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:43.582Z - Handled RECORD_OUTPUTS_HASH. Handling time: 6. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:46.890Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:46.943Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:46.994Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:47.547Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:47.651Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:47.707Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:47.959Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:47.959Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:47.959Z - Handled RECORD_OUTPUTS_HASH. Handling time: 20. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:48.034Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:48.091Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T09:29:48.095Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:48.147Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:48.230Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:48.287Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:29:56.227Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T09:29:56.227Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T09:29:56.228Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T09:29:56.229Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2025-07-09T09:29:56.230Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2025-07-09T09:29:56.230Z - Time taken for 'total for creating and serializing project graph' 0.2918340004980564ms
+[NX Daemon Server] - 2025-07-09T09:29:56.232Z - Done responding to the client project-graph
+[NX Daemon Server] - 2025-07-09T09:29:56.233Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 1. Response time: 3.
+[NX Daemon Server] - 2025-07-09T09:29:56.249Z - [REQUEST]: Responding to the client. handleHashTasks
+[NX Daemon Server] - 2025-07-09T09:29:56.249Z - Done responding to the client handleHashTasks
+[NX Daemon Server] - 2025-07-09T09:29:56.249Z - Handled HASH_TASKS. Handling time: 3. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:56.281Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:56.281Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:56.281Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 8. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:56.288Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:56.288Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:56.288Z - Handled RECORD_OUTPUTS_HASH. Handling time: 6. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:56.295Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:56.295Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:56.296Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 5. Response time: 1.
+[NX Daemon Server] - 2025-07-09T09:29:56.302Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:56.302Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:56.302Z - Handled RECORD_OUTPUTS_HASH. Handling time: 6. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:56.318Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:56.318Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:56.318Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 10. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:56.323Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:56.323Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:56.323Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 4. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:56.334Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:56.334Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:56.334Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 10. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:56.346Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:56.346Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:56.346Z - Handled RECORD_OUTPUTS_HASH. Handling time: 11. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:56.351Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:56.351Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:56.351Z - Handled RECORD_OUTPUTS_HASH. Handling time: 4. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:56.361Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:56.361Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:56.361Z - Handled RECORD_OUTPUTS_HASH. Handling time: 10. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:56.372Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:56.372Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:56.372Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 10. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:56.384Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:56.384Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-09T09:29:56.384Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 11. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:56.396Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:56.396Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:56.396Z - Handled RECORD_OUTPUTS_HASH. Handling time: 12. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:56.407Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:56.407Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T09:29:56.407Z - Handled RECORD_OUTPUTS_HASH. Handling time: 10. Response time: 0.
+[NX Daemon Server] - 2025-07-09T09:29:56.410Z - Closed a connection. Number of open connections: 1

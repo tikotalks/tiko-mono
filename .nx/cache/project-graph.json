@@ -14,16 +14,32 @@
             "configurations": {}
           },
           "build": {
-            "dependsOn": [
-              "^build"
-            ],
-            "inputs": [
-              "production",
-              "^production"
-            ],
             "executor": "nx:run-script",
             "options": {
               "script": "build"
+            },
+            "configurations": {}
+          },
+          "serve": {
+            "options": {
+              "cwd": "packages/core",
+              "command": "vite serve"
+            },
+            "executor": "nx:run-commands",
+            "configurations": {}
+          },
+          "preview": {
+            "options": {
+              "cwd": "packages/core",
+              "command": "vite preview"
+            },
+            "executor": "nx:run-commands",
+            "configurations": {}
+          },
+          "serve-static": {
+            "executor": "@nx/web:file-server",
+            "options": {
+              "buildTarget": "build"
             },
             "configurations": {}
           },
@@ -83,16 +99,32 @@
             "configurations": {}
           },
           "build": {
-            "dependsOn": [
-              "^build"
-            ],
-            "inputs": [
-              "production",
-              "^production"
-            ],
             "executor": "nx:run-script",
             "options": {
               "script": "build"
+            },
+            "configurations": {}
+          },
+          "serve": {
+            "options": {
+              "cwd": "packages/ui",
+              "command": "vite serve"
+            },
+            "executor": "nx:run-commands",
+            "configurations": {}
+          },
+          "preview": {
+            "options": {
+              "cwd": "packages/ui",
+              "command": "vite preview"
+            },
+            "executor": "nx:run-commands",
+            "configurations": {}
+          },
+          "serve-static": {
+            "executor": "@nx/web:file-server",
+            "options": {
+              "buildTarget": "build"
             },
             "configurations": {}
           },
