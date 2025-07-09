@@ -73,7 +73,10 @@
       <div class="type-voice-section">
         <h3 class="type-section-title">Voice</h3>
         <TInputSelect
-        :options="availableVoices"
+          :options="availableVoices.map((voice, index) => ({
+            label: `${voice.name} (${voice.lang})`,
+            value: index
+          }))"
           v-model="selectedVoiceIndex"
           :disabled="isSpeaking || isLoading"
           @change="onVoiceChange"
@@ -241,7 +244,7 @@
             label="Speech Rate"
             :min="0.1"
             :max="3"
-            step="0.1"
+            :step="0.1"
             @input="updateSettings"
           />
           <!-- <label class="type-settings__label">
@@ -265,7 +268,7 @@
             label="Pitch"
             :min="0"
             :max="2"
-            step="0.1"
+            :step="0.1"
             @input="updateSettings"
           />
           <!-- <label class="type-settings__label">
@@ -289,7 +292,7 @@
             label="Volume"
             :min="0"
             :max="1"
-            step="0.1"
+            :step="0.1"
             @input="updateSettings"
           />
           <!-- <label class="type-settings__label">

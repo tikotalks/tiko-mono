@@ -25,5 +25,10 @@ onMounted(() => {
   height: 100vh;
   display: flex;
   flex-direction: column;
+
+  --color-primary: var(--color-orange);
+  --color-primary-text: var(--color-orange-text);
+  --color-secondary: var(--color-blue);
+  --color-secondary-text: var(--color-blue-text);
 }
 </style>

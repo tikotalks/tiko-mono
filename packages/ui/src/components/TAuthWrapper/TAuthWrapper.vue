@@ -13,6 +13,12 @@
         playback
         :class="bemm('video')"
       ></video>
+      <img
+        v-if="props.backgroundImage"
+        :src="props.backgroundImage"
+        alt="Background Image"
+        :class="bemm('image')"
+      />
     </div>
   <!-- Loading State -->
     <div v-if="isInitializing" :class="bemm('loading')">
@@ -73,6 +79,10 @@ const authError = ref<string | null>(null);
 
 const props = defineProps({
   backgroundVideo: {
+    type: String,
+    default: '',
+  },
+  backgroundImage: {
     type: String,
     default: '',
   },
@@ -186,6 +196,16 @@ onMounted(async () => {
   }
 
   &__video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    mix-blend-mode: multiply;
+    transform: scale(1.25);
+    filter: blur(5px);
+    opacity: 0.5;
+  }
+  &__image {
     width: 100%;
     height: 100%;
     object-fit: cover;

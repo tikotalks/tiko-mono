@@ -1,5 +1,5 @@
 <template>
-  <TAuthWrapper :backgroundVideo="backgroundVideoUrl" title="Timer">
+  <TAuthWrapper title="Timer" :backgroundImage="backgroundImage">
     <TAppLayout
       title="Timer"
       :show-header="true"
@@ -115,7 +115,8 @@ import { TButton, TIcon, TAppLayout, TAuthWrapper, popupService } from '@tiko/ui
 import { useTimer } from '../composables/useTimer'
 import TimerSettingsForm from '../components/TimerSettingsForm.vue'
 import TimeDisplay from '../components/TimeDisplay.vue'
-import backgroundVideoUrl from '../assets/login-background.mp4'
+// import backgroundVideoUrl from '../assets/login-background.mp4'
+import backgroundImage from '../assets/app-icon-timer.png'
 
 const bemm = useBemm('timer-view')
 const {
