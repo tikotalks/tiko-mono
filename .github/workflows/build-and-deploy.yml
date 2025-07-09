@@ -2,9 +2,9 @@ name: Build and Deploy Web Apps
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ master, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 env:
   NODE_VERSION: '18'
@@ -69,7 +69,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
     
     strategy:
       matrix:
@@ -107,8 +107,8 @@ jobs:
         netlify domains:add ${{ matrix.app }}.tiko.mt --site-id $SITE_ID || true
         
         # Deploy to production or branch preview
-        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-          netlify deploy --prod --dir=dist --site=$SITE_ID --message="Deploy from GitHub Actions - ${{ matrix.app }} (main)"
+        if [ "${{ github.ref }}" = "refs/heads/master" ]; then
+          netlify deploy --prod --dir=dist --site=$SITE_ID --message="Deploy from GitHub Actions - ${{ matrix.app }} (master)"
         else
           netlify deploy --dir=dist --site=$SITE_ID --message="Deploy from GitHub Actions - ${{ matrix.app }} (develop)"
         fi
