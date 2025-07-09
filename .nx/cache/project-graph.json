@@ -323,54 +323,68 @@
       "type": "app",
       "data": {
         "root": "apps/radio",
+        "name": "radio",
         "targets": {
-          "lint": {
-            "cache": true,
-            "inputs": [
-              "default",
-              "{workspaceRoot}/.eslintrc.json",
-              "{workspaceRoot}/.eslintignore"
-            ],
-            "executor": "nx:run-commands",
+          "dev": {
+            "executor": "nx:run-script",
             "options": {
-              "cwd": "apps/radio",
-              "command": "eslint ."
+              "script": "dev"
             },
             "configurations": {}
           },
           "build": {
-            "cache": true,
-            "dependsOn": [
-              "^build"
-            ],
-            "inputs": [
-              "production",
-              "^production"
-            ],
-            "outputs": [
-              "{projectRoot}/dist"
-            ],
-            "executor": "nx:run-commands",
+            "executor": "nx:run-script",
             "options": {
-              "cwd": "apps/radio",
-              "command": "vite build"
+              "script": "build"
+            },
+            "configurations": {}
+          },
+          "preview": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "preview"
             },
             "configurations": {}
           },
           "serve": {
+            "executor": "nx:run-script",
             "options": {
-              "cwd": "apps/radio",
-              "command": "vite serve"
+              "script": "serve"
             },
-            "executor": "nx:run-commands",
             "configurations": {}
           },
-          "preview": {
+          "test": {
+            "executor": "nx:run-script",
+            "inputs": [
+              "default",
+              "^production",
+              "{workspaceRoot}/jest.preset.js"
+            ],
             "options": {
-              "cwd": "apps/radio",
-              "command": "vite preview"
+              "script": "test"
             },
-            "executor": "nx:run-commands",
+            "configurations": {}
+          },
+          "typecheck": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "typecheck"
+            },
+            "configurations": {}
+          },
+          "lint": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "lint"
+            },
+            "configurations": {}
+          },
+          "nx-release-publish": {
+            "dependsOn": [
+              "^nx-release-publish"
+            ],
+            "executor": "@nx/js:release-publish",
+            "options": {},
             "configurations": {}
           },
           "serve-static": {
@@ -381,10 +395,9 @@
             "configurations": {}
           }
         },
-        "name": "radio",
-        "$schema": "../../node_modules/nx/schemas/project-schema.json",
-        "projectType": "application",
         "sourceRoot": "apps/radio/src",
+        "projectType": "application",
+        "$schema": "../../node_modules/nx/schemas/project-schema.json",
         "implicitDependencies": [],
         "tags": []
       }
