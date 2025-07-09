@@ -1,17 +1,5 @@
-// @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-
-@font-face {
-  font-family: 'Graphik';
-  src: url('/fonts/graphik-regular-web.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Graphik';
-  src: url('/fonts/graphik-semibold-web.woff') format('woff');
-  font-weight: bold;
-  font-style: normal;
-}
+// Import Nunito font
+@import './fonts.scss';
 
 body {
 	&[data-font-size='small'] {
@@ -29,7 +17,7 @@ body {
 }
 
 * {
-	font-family: var(--font-family, 'Graphik'), sans-serif;
+	font-family: var(--font-family-body);
 	font-size: var(--font-size, 1em);
 }
 
@@ -53,8 +41,7 @@ z-index: -1;
 	// }
 }
 .heading {
-	--heading-font-family-default: 'Graphik', sans-serif;
-	font-family: var(--heading-font-family, var(--heading-font-family-default));
+	font-family: var(--font-family-heading);
 	font-weight: var(--heading-font-weight, 600);
 	font-size: var(--heading-font-size, 1.5em);
 	line-height: var(--heading-line-height, 1.2);
@@ -103,7 +90,7 @@ z-index: -1;
 		line-height: 1.2;
 	}
 	&--6 {
-		font-family: var(--heading-font-family-h6, var(--heading-font-family, 'Inter'));
+		font-family: var(--font-family-heading);
 		font-size: 0.875em;
 		line-height: 1.2;
 		text-transform: uppercase;
