@@ -1,15 +1,11 @@
 <template>
   <div :class="bemm()">
-    <div :class="bemm('header')">
-      <h3 :class="bemm('title')">Timer Settings</h3>
-    </div>
-
     <div :class="bemm('content')">
       <!-- Timer Duration (countdown only) -->
     <div v-if="mode === 'down'" :class="bemm('group')">
       <label :class="bemm('label')">Timer Duration</label>
       <div :class="bemm('time-inputs')">
-        <TInput
+        <TInputNumber
           v-model="localMinutes"
           type="number"
           :min="0"
@@ -18,7 +14,7 @@
           :class="bemm('time-input')"
         />
         <span>:</span>
-        <TInput
+        <TInputNumber
           v-model="localSeconds"
           type="number"
           :min="0"
@@ -28,44 +24,36 @@
         />
       </div>
       <div :class="bemm('time-presets')">
-        <button
+        <TButton
           v-for="preset in timePresets"
           :key="preset.label"
-          type="button"
+          :size="'small'"
           :class="bemm('preset-button')"
           @click="setPreset(preset.minutes, preset.seconds)"
         >
           {{ preset.label }}
-        </button>
+        </TButton>
       </div>
     </div>
 
     <!-- Notifications -->
-    <div :class="bemm('group')">
-      <label :class="bemm('checkbox')">
-        <input 
-          v-model="localSettings.soundEnabled"
-          type="checkbox"
-        />
-        Sound notification
-      </label>
-    </div>
+     <TInputCheckbox
+      v-model="localSettings.soundEnabled"
+      :label="'Sound notification'"
+      :class="bemm('checkbox')"
+    />
 
-    <div :class="bemm('group')">
-      <label :class="bemm('checkbox')">
-        <input 
-          v-model="localSettings.vibrationEnabled"
-          type="checkbox"
-        />
-        Vibration notification
-      </label>
-    </div>
+    <TInputCheckbox
+      v-model="localSettings.vibrationEnabled"
+      :label="'Vibration notification'"
+      :class="bemm('checkbox')"
+    />
 
     <div :class="bemm('actions')">
       <TButton
         type="default"
         color="primary"
-        @click="emit('close')"
+        @click="handleClose"
         size="medium"
       >
         Close
@@ -76,9 +64,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TInput } from '@tiko/ui'
+import { TButton, TInputCheckbox, TInputNumber } from '@tiko/ui'
 import type { TimerMode, TimerSettings } from '../composables/useTimer'
 
 interface Props {
@@ -117,18 +105,25 @@ const setPreset = (presetMinutes: number, presetSeconds: number) => {
   localSeconds.value = presetSeconds
 }
 
-const handleApply = () => {
-  props.onApply?.({
-    minutes: localMinutes.value,
-    seconds: localSeconds.value,
-    settings: localSettings
-  })
+
+const handleClose = () => {
   emit('close')
 }
 
-// Watch for changes and call onApply
+// Auto-apply changes when user finishes making changes (with debounce)
+let applyTimeout: NodeJS.Timeout | null = null
 watch([localMinutes, localSeconds, localSettings], () => {
-  handleApply()
+  if (applyTimeout) {
+    clearTimeout(applyTimeout)
+  }
+  applyTimeout = setTimeout(() => {
+    // Auto-apply settings changes (but don't close modal)
+    props.onApply?.({
+      minutes: localMinutes.value,
+      seconds: localSeconds.value,
+      settings: localSettings
+    })
+  }, 500) // Apply changes after 500ms of no changes
 }, { deep: true })
 </script>
 
@@ -142,20 +137,6 @@ watch([localMinutes, localSeconds, localSettings], () => {
   border-radius: 0.75rem;
   min-width: 400px;
   max-width: 500px;
-
-  &__header {
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--color-border);
-    margin-bottom: 1.5rem;
-  }
-
-  &__title {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-    text-align: center;
-    color: var(--color-primary-text);
-  }
 
   &__content {
     display: flex;
@@ -177,7 +158,7 @@ watch([localMinutes, localSeconds, localSettings], () => {
   &__time-inputs {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-s);
     justify-content: center;
     margin-bottom: 1rem;
 
@@ -187,20 +168,6 @@ watch([localMinutes, localSeconds, localSettings], () => {
     }
   }
 
-  &__time-input {
-    width: 60px;
-    padding: 0.5rem;
-    border: 2px solid var(--color-border);
-    border-radius: 0.5rem;
-    text-align: center;
-    font-size: 1.25rem;
-    font-weight: 600;
-
-    &:focus {
-      outline: none;
-      border-color: var(--color-primary);
-    }
-  }
 
   &__time-presets {
     display: flex;
@@ -209,36 +176,8 @@ watch([localMinutes, localSeconds, localSettings], () => {
     justify-content: center;
   }
 
-  &__preset-button {
-    padding: 0.5rem 1rem;
-    background: var(--color-accent);
-    border: 1px solid var(--color-border);
-    border-radius: 0.5rem;
-    cursor: pointer;
-    font-size: 0.875rem;
-    transition: all 0.2s ease;
 
-    &:hover {
-      background: var(--color-primary);
-      color: white;
-    }
-  }
 
-  &__checkbox {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-
-    input {
-      width: 1.25rem;
-      height: 1.25rem;
-    }
-
-    span {
-      font-size: 0.875rem;
-    }
-  }
 
   &__actions {
     display: flex;

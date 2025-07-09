@@ -1,21 +1,21 @@
 {
   "run": {
-    "command": "nx build radio --skip-nx-cache",
-    "startTime": "2025-07-08T11:22:24.168Z",
-    "endTime": "2025-07-08T11:22:24.843Z",
+    "command": "nx serve timer",
+    "startTime": "2025-07-09T07:28:50.842Z",
+    "endTime": "2025-07-09T07:56:49.473Z",
     "inner": false
   },
   "tasks": [
     {
-      "taskId": "@tiko/core:build",
-      "target": "build",
-      "projectName": "@tiko/core",
-      "hash": "2700601382510141007",
-      "startTime": "2025-07-08T11:22:24.172Z",
-      "endTime": "2025-07-08T11:22:24.842Z",
+      "taskId": "timer:serve",
+      "target": "serve",
+      "projectName": "timer",
+      "hash": "10195902199977003654",
+      "startTime": "2025-07-09T07:28:50.849Z",
+      "endTime": "2025-07-09T07:56:49.472Z",
       "params": "",
       "cacheStatus": "cache-miss",
-      "status": 1
+      "status": 0
     }
   ]
 }

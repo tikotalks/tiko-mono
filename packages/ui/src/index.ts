@@ -12,6 +12,7 @@ export * from './components/TPopup'
 export * from './components/TParentMode'
 
 export { default as TInputText } from './components/TForm/TInputText.vue';
+export { default as TInputNumber } from './components/TForm/InputNumber.vue';
 export { default as TInputEmail } from './components/TForm/InputEmail/InputEmail.vue';
 export { default as TInputRange } from './components/TForm/InputRange.vue';
 export { default as TInputSelect } from './components/TForm/InputSelect.vue';

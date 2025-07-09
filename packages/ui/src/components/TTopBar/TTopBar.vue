@@ -318,7 +318,7 @@ onUnmounted(() => {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--color-primary-text);
+    color: var(--color-primary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

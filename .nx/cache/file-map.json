@@ -81,318 +81,6 @@
   "fileMap": {
     "nonProjectFiles": [],
     "projectFileMap": {
-      "type": [
-        {
-          "file": "apps/type/index.html",
-          "hash": "14457189648177639121"
-        },
-        {
-          "file": "apps/type/package.json",
-          "hash": "2831361527940597623",
-          "deps": [
-            "@tiko/ui",
-            "@tiko/core"
-          ]
-        },
-        {
-          "file": "apps/type/src/App.vue",
-          "hash": "1838786972944076018",
-          "deps": [
-            "npm:vue",
-            "@tiko/core",
-            "@tiko/ui",
-            "npm:@tiko/ui/src/components/TPopup/TPopup.vue"
-          ]
-        },
-        {
-          "file": "apps/type/src/assets/login-background.mp4",
-          "hash": "9432821962872986475"
-        },
-        {
-          "file": "apps/type/src/components/VideoTest.vue",
-          "hash": "13786367335994687590",
-          "deps": [
-            "npm:vue",
-            "npm:bemm"
-          ]
-        },
-        {
-          "file": "apps/type/src/main.ts",
-          "hash": "2204471735980649484",
-          "deps": [
-            "npm:vue",
-            "npm:pinia"
-          ]
-        },
-        {
-          "file": "apps/type/src/stores/type.ts",
-          "hash": "738111698234528429",
-          "deps": [
-            "npm:pinia",
-            "npm:vue",
-            "@tiko/core"
-          ]
-        },
-        {
-          "file": "apps/type/src/views/TypeView.vue",
-          "hash": "15775165363186444359",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/type/src/vite-env.d.ts",
-          "hash": "8331640056497245042",
-          "deps": [
-            "npm:vue"
-          ]
-        },
-        {
-          "file": "apps/type/tsconfig.json",
-          "hash": "16751532594296189637"
-        },
-        {
-          "file": "apps/type/tsconfig.tsbuildinfo",
-          "hash": "5850973571734153781"
-        },
-        {
-          "file": "apps/type/vite.config.ts",
-          "hash": "12293056096034540066"
-        }
-      ],
-      "cards": [
-        {
-          "file": "apps/cards/.eslintrc.json",
-          "hash": "14341420822390559472"
-        },
-        {
-          "file": "apps/cards/index.html",
-          "hash": "8056182915657017894"
-        },
-        {
-          "file": "apps/cards/package.json",
-          "hash": "9464510626969666146",
-          "deps": [
-            "@tiko/ui",
-            "@tiko/core"
-          ]
-        },
-        {
-          "file": "apps/cards/project.json",
-          "hash": "2623804660829198906"
-        },
-        {
-          "file": "apps/cards/src/App.vue",
-          "hash": "12368781486022665295",
-          "deps": [
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/cards/src/components/CreateCardModal.vue",
-          "hash": "11220990682750271159",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/cards/src/components/CreateGroupModal.vue",
-          "hash": "2317748359865261036",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/cards/src/main.ts",
-          "hash": "15908929983910874006",
-          "deps": [
-            "npm:vue",
-            "npm:pinia"
-          ]
-        },
-        {
-          "file": "apps/cards/src/stores/cards.ts",
-          "hash": "3232291808684758845",
-          "deps": [
-            "npm:pinia",
-            "npm:vue",
-            "@tiko/core",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/cards/src/views/CardsView.vue",
-          "hash": "3741893399167637870",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/cards/src/vite-env.d.ts",
-          "hash": "8331640056497245042",
-          "deps": [
-            "npm:vue"
-          ]
-        },
-        {
-          "file": "apps/cards/tsconfig.app.json",
-          "hash": "3738736504077772611"
-        },
-        {
-          "file": "apps/cards/tsconfig.json",
-          "hash": "8655538082301816057"
-        },
-        {
-          "file": "apps/cards/tsconfig.spec.json",
-          "hash": "15943385144407153049"
-        },
-        {
-          "file": "apps/cards/vite.config.ts",
-          "hash": "8817323695432231280"
-        },
-        {
-          "file": "apps/cards/src/assets/login-background.mp4",
-          "hash": "6106353344161762045"
-        }
-      ],
-      "timer": [
-        {
-          "file": "apps/timer/index.html",
-          "hash": "8141142482529795425"
-        },
-        {
-          "file": "apps/timer/package.json",
-          "hash": "17931654945507494220",
-          "deps": [
-            "@tiko/ui",
-            "@tiko/core"
-          ]
-        },
-        {
-          "file": "apps/timer/src/App.vue",
-          "hash": "12506454485581638248",
-          "deps": [
-            "npm:vue",
-            "@tiko/core",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/timer/src/assets/login-background.mp4",
-          "hash": "2999053420067581370"
-        },
-        {
-          "file": "apps/timer/src/components/EmailValidationDemo.vue",
-          "hash": "15474426883868667820",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "npm:@tiko/ui/src/components/TForm/InputEmail/InputEmail.vue"
-          ]
-        },
-        {
-          "file": "apps/timer/src/components/EventBusDemo.vue",
-          "hash": "16909199262308132641",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/timer/src/components/InputDemo.vue",
-          "hash": "13782796492232050965",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui",
-            "npm:@tiko/ui/src/components/TForm/InputText.vue",
-            "npm:@tiko/ui/src/components/TForm/TInputText.vue"
-          ]
-        },
-        {
-          "file": "apps/timer/src/components/TimeDisplay.vue",
-          "hash": "7894466641321596610",
-          "deps": [
-            "npm:vue",
-            "npm:bemm"
-          ]
-        },
-        {
-          "file": "apps/timer/src/components/TimerControls.vue",
-          "hash": "4392251231668892971",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/timer/src/components/TimerSettingsForm.vue",
-          "hash": "1138200333919946718",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/timer/src/composables/useTimer.ts",
-          "hash": "14877528815809735900",
-          "deps": [
-            "npm:vue"
-          ]
-        },
-        {
-          "file": "apps/timer/src/main.ts",
-          "hash": "2204471735980649484",
-          "deps": [
-            "npm:vue",
-            "npm:pinia"
-          ]
-        },
-        {
-          "file": "apps/timer/src/stores/timer.ts",
-          "hash": "15554792691744199729",
-          "deps": [
-            "npm:pinia",
-            "npm:vue",
-            "@tiko/core"
-          ]
-        },
-        {
-          "file": "apps/timer/src/views/TimerView.vue",
-          "hash": "5253943305836016026",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/timer/src/vite-env.d.ts",
-          "hash": "8331640056497245042",
-          "deps": [
-            "npm:vue"
-          ]
-        },
-        {
-          "file": "apps/timer/tsconfig.json",
-          "hash": "11420375390224879402"
-        },
-        {
-          "file": "apps/timer/vite.config.ts",
-          "hash": "2783579839886412282"
-        }
-      ],
       "radio": [
         {
           "file": "apps/radio/.eslintrc.json",
@@ -405,6 +93,13 @@
         {
           "file": "apps/radio/project.json",
           "hash": "16103026524815699814"
+        },
+        {
+          "file": "apps/radio/src/App.vue",
+          "hash": "9329678408867777156",
+          "deps": [
+            "@tiko/ui"
+          ]
         },
         {
           "file": "apps/radio/src/app/App.spec.ts",
@@ -423,40 +118,34 @@
           "hash": "17457764574336503069"
         },
         {
-          "file": "apps/radio/src/main.ts",
-          "hash": "9572434472353167897",
+          "file": "apps/radio/src/assets/.gitkeep",
+          "hash": "15007076064907657075"
+        },
+        {
+          "file": "apps/radio/src/assets/login-background.mp4",
+          "hash": "6106353344161762045"
+        },
+        {
+          "file": "apps/radio/src/components/AddItemModal.vue",
+          "hash": "11294596780499795966",
           "deps": [
             "npm:vue",
-            "npm:pinia"
+            "npm:bemm",
+            "@tiko/ui"
           ]
         },
         {
-          "file": "apps/radio/src/styles.scss",
-          "hash": "4298454374187625429"
-        },
-        {
-          "file": "apps/radio/tsconfig.app.json",
-          "hash": "3738736504077772611"
-        },
-        {
-          "file": "apps/radio/tsconfig.json",
-          "hash": "8655538082301816057"
-        },
-        {
-          "file": "apps/radio/tsconfig.spec.json",
-          "hash": "15943385144407153049"
-        },
-        {
-          "file": "apps/radio/vite.config.ts",
-          "hash": "996584251071566405"
-        },
-        {
-          "file": "apps/radio/src/types/radio.types.ts",
-          "hash": "15782202145791135091"
+          "file": "apps/radio/src/components/EditItemModal.vue",
+          "hash": "15964676920953279871",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui"
+          ]
         },
         {
           "file": "apps/radio/src/components/RadioCard.vue",
-          "hash": "2516835257345827909",
+          "hash": "7399802257548889820",
           "deps": [
             "npm:vue",
             "npm:bemm",
@@ -465,7 +154,25 @@
         },
         {
           "file": "apps/radio/src/components/RadioPlayer.vue",
-          "hash": "1545340373610770627",
+          "hash": "9700497860735819714",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/radio/src/components/RadioSettingsModal.vue",
+          "hash": "1215869500043892254",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/radio/src/components/SearchResultsModal.vue",
+          "hash": "14518259449248089353",
           "deps": [
             "npm:vue",
             "npm:bemm",
@@ -474,19 +181,10 @@
         },
         {
           "file": "apps/radio/src/composables/useRadioItems.ts",
-          "hash": "9935071968508092415",
+          "hash": "12143754312590353957",
           "deps": [
             "npm:vue",
             "@tiko/core"
-          ]
-        },
-        {
-          "file": "apps/radio/src/views/RadioView.vue",
-          "hash": "14874548976392063116",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui"
           ]
         },
         {
@@ -505,36 +203,27 @@
           ]
         },
         {
-          "file": "apps/radio/src/components/AddItemModal.vue",
-          "hash": "6839846682549023730",
+          "file": "apps/radio/src/main.ts",
+          "hash": "9572434472353167897",
           "deps": [
             "npm:vue",
-            "npm:bemm",
-            "@tiko/ui"
+            "npm:pinia"
           ]
         },
         {
-          "file": "apps/radio/src/components/EditItemModal.vue",
-          "hash": "15245621592812699693",
+          "file": "apps/radio/src/styles.scss",
+          "hash": "4298454374187625429"
+        },
+        {
+          "file": "apps/radio/src/types/radio.types.ts",
+          "hash": "15782202145791135091"
+        },
+        {
+          "file": "apps/radio/src/views/RadioView.vue",
+          "hash": "3494173114561656421",
           "deps": [
             "npm:vue",
             "npm:bemm",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/radio/src/components/RadioSettingsModal.vue",
-          "hash": "16663510917680867655",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/radio/src/App.vue",
-          "hash": "9329678408867777156",
-          "deps": [
             "@tiko/ui"
           ]
         },
@@ -546,95 +235,20 @@
           ]
         },
         {
-          "file": "apps/radio/src/assets/.gitkeep",
-          "hash": "15007076064907657075"
+          "file": "apps/radio/tsconfig.app.json",
+          "hash": "3738736504077772611"
         },
         {
-          "file": "apps/radio/src/assets/login-background.mp4",
-          "hash": "6106353344161762045"
-        }
-      ],
-      "tiko-mono": [
-        {
-          "file": ".claude/settings.local.json",
-          "hash": "11757878990409359802"
+          "file": "apps/radio/tsconfig.json",
+          "hash": "8655538082301816057"
         },
         {
-          "file": ".env.example",
-          "hash": "393595204208437308"
+          "file": "apps/radio/tsconfig.spec.json",
+          "hash": "15943385144407153049"
         },
         {
-          "file": ".eslintrc.json",
-          "hash": "2415304941954136904"
-        },
-        {
-          "file": ".gitignore",
-          "hash": "3915369953218892281"
-        },
-        {
-          "file": ".prettierignore",
-          "hash": "16448050467312557263"
-        },
-        {
-          "file": ".prettierrc",
-          "hash": "16267754514737964994"
-        },
-        {
-          "file": "CLAUDE.md",
-          "hash": "8458934744087596863"
-        },
-        {
-          "file": "RADIO_APP_REQUIREMENTS.md",
-          "hash": "16510145899067652132"
-        },
-        {
-          "file": "README.md",
-          "hash": "10443589632451655199"
-        },
-        {
-          "file": "nx.json",
-          "hash": "1555334447818277734"
-        },
-        {
-          "file": "package.json",
-          "hash": "13086140076938683478"
-        },
-        {
-          "file": "pnpm-lock.yaml",
-          "hash": "2798034015345645747"
-        },
-        {
-          "file": "pnpm-workspace.yaml",
-          "hash": "11805071067713496448"
-        },
-        {
-          "file": "tsconfig.base.json",
-          "hash": "2856224400387627277"
-        },
-        {
-          "file": "vite.config.base.ts",
-          "hash": "18319036135190279317",
-          "deps": [
-            "npm:vite",
-            "npm:@vitejs/plugin-vue",
-            "npm:path"
-          ]
-        },
-        {
-          "file": "RADIO_APP_IMPLEMENTATION.md",
-          "hash": "14361803541132681367"
-        },
-        {
-          "file": "supabase/migrations/001_create_radio_tables.sql",
-          "hash": "5753252165275748883"
-        },
-        {
-          "file": "supabase/migrations/002_fix_radio_rls_policies.sql",
-          "hash": "8185328133106640134"
-        },
-        {
-          "file": "supabase/migrations/003_create_user_profiles_and_fix_policies.sql",
-          "hash": "8162795009568190410"
+          "file": "apps/radio/vite.config.ts",
+          "hash": "996584251071566405"
         }
       ],
       "yes-no": [
@@ -731,42 +345,85 @@
           "hash": "271596548029313619"
         }
       ],
-      "@tiko/core": [
+      "type": [
         {
-          "file": "packages/core/package.json",
-          "hash": "12507171174096775956"
+          "file": "apps/type/index.html",
+          "hash": "14457189648177639121"
         },
         {
-          "file": "packages/core/src/index.ts",
-          "hash": "2210259467925989465"
-        },
-        {
-          "file": "packages/core/src/lib/supabase.ts",
-          "hash": "2023458536389933132",
+          "file": "apps/type/package.json",
+          "hash": "2831361527940597623",
           "deps": [
-            "npm:@supabase/supabase-js"
+            "@tiko/ui",
+            "@tiko/core"
           ]
         },
         {
-          "file": "packages/core/src/stores/app.ts",
-          "hash": "16692262201480756785",
+          "file": "apps/type/src/App.vue",
+          "hash": "1838786972944076018",
+          "deps": [
+            "npm:vue",
+            "@tiko/core",
+            "@tiko/ui",
+            "npm:@tiko/ui/src/components/TPopup/TPopup.vue"
+          ]
+        },
+        {
+          "file": "apps/type/src/assets/login-background.mp4",
+          "hash": "9432821962872986475"
+        },
+        {
+          "file": "apps/type/src/components/VideoTest.vue",
+          "hash": "13375985300916874246",
+          "deps": [
+            "npm:vue",
+            "npm:bemm"
+          ]
+        },
+        {
+          "file": "apps/type/src/main.ts",
+          "hash": "2204471735980649484",
+          "deps": [
+            "npm:vue",
+            "npm:pinia"
+          ]
+        },
+        {
+          "file": "apps/type/src/stores/type.ts",
+          "hash": "738111698234528429",
           "deps": [
             "npm:pinia",
+            "npm:vue",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/type/src/views/TypeView.vue",
+          "hash": "15775165363186444359",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/type/src/vite-env.d.ts",
+          "hash": "8331640056497245042",
+          "deps": [
             "npm:vue"
           ]
         },
         {
-          "file": "packages/core/src/stores/auth.ts",
-          "hash": "13351022089452087396",
-          "deps": [
-            "npm:pinia",
-            "npm:vue",
-            "npm:@supabase/supabase-js"
-          ]
+          "file": "apps/type/tsconfig.json",
+          "hash": "16751532594296189637"
         },
         {
-          "file": "packages/core/src/types/user.ts",
-          "hash": "17319046267866738710"
+          "file": "apps/type/tsconfig.tsbuildinfo",
+          "hash": "5850973571734153781"
+        },
+        {
+          "file": "apps/type/vite.config.ts",
+          "hash": "12293056096034540066"
         }
       ],
       "@tiko/ui": [
@@ -1217,7 +874,7 @@
         },
         {
           "file": "packages/ui/src/components/TForm/InputText.vue",
-          "hash": "5299672481660426015"
+          "hash": "16580399816987651328"
         },
         {
           "file": "packages/ui/src/components/TForm/InputTextArea.vue",
@@ -1270,7 +927,7 @@
         },
         {
           "file": "packages/ui/src/components/TIcon/TIcon.vue",
-          "hash": "9773246475245110516",
+          "hash": "16178867081588981134",
           "deps": [
             "npm:bemm",
             "npm:vue",
@@ -1307,7 +964,7 @@
         },
         {
           "file": "packages/ui/src/components/TParentMode/TParentModePinInput.vue",
-          "hash": "9479882541630199721",
+          "hash": "3947421011188309961",
           "deps": [
             "npm:vue",
             "npm:bemm"
@@ -1315,7 +972,7 @@
         },
         {
           "file": "packages/ui/src/components/TParentMode/TParentModeToggle.vue",
-          "hash": "17199019964247400512",
+          "hash": "968323119838145984",
           "deps": [
             "npm:vue",
             "npm:bemm"
@@ -1334,7 +991,7 @@
         },
         {
           "file": "packages/ui/src/components/TPopup/TPopup.service.ts",
-          "hash": "14319803388235807966",
+          "hash": "17129006161178930299",
           "deps": [
             "npm:vue"
           ]
@@ -1345,7 +1002,7 @@
         },
         {
           "file": "packages/ui/src/components/TPopup/TPopup.vue",
-          "hash": "10099288374828444898",
+          "hash": "17008528690660367008",
           "deps": [
             "npm:bemm",
             "npm:open-icon",
@@ -1435,7 +1092,7 @@
         },
         {
           "file": "packages/ui/src/components/TTopBar/TTopBar.vue",
-          "hash": "5686084825913222831",
+          "hash": "7742263440141227648",
           "deps": [
             "npm:vue",
             "npm:bemm",
@@ -1489,11 +1146,11 @@
         },
         {
           "file": "packages/ui/src/index.ts",
-          "hash": "5989594388073127355"
+          "hash": "1836248281446231376"
         },
         {
           "file": "packages/ui/src/styles/app.scss",
-          "hash": "12356672252918236579"
+          "hash": "6519910039326408238"
         },
         {
           "file": "packages/ui/src/styles/base.scss",
@@ -1674,6 +1331,354 @@
         {
           "file": "packages/ui/src/utils/validation.ts",
           "hash": "10479462677516515154"
+        }
+      ],
+      "tiko-mono": [
+        {
+          "file": ".env.example",
+          "hash": "393595204208437308"
+        },
+        {
+          "file": ".eslintrc.json",
+          "hash": "2415304941954136904"
+        },
+        {
+          "file": ".gitignore",
+          "hash": "1565230639308686533"
+        },
+        {
+          "file": ".prettierignore",
+          "hash": "16448050467312557263"
+        },
+        {
+          "file": ".prettierrc",
+          "hash": "16267754514737964994"
+        },
+        {
+          "file": "CLAUDE.md",
+          "hash": "8458934744087596863"
+        },
+        {
+          "file": "RADIO_APP_IMPLEMENTATION.md",
+          "hash": "14361803541132681367"
+        },
+        {
+          "file": "RADIO_APP_REQUIREMENTS.md",
+          "hash": "16510145899067652132"
+        },
+        {
+          "file": "README.md",
+          "hash": "10443589632451655199"
+        },
+        {
+          "file": "nx.json",
+          "hash": "1555334447818277734"
+        },
+        {
+          "file": "package.json",
+          "hash": "13086140076938683478"
+        },
+        {
+          "file": "pnpm-lock.yaml",
+          "hash": "2798034015345645747"
+        },
+        {
+          "file": "pnpm-workspace.yaml",
+          "hash": "11805071067713496448"
+        },
+        {
+          "file": "supabase/migrations/001_create_radio_tables.sql",
+          "hash": "5753252165275748883"
+        },
+        {
+          "file": "supabase/migrations/002_fix_radio_rls_policies.sql",
+          "hash": "8185328133106640134"
+        },
+        {
+          "file": "supabase/migrations/003_create_user_profiles_and_fix_policies.sql",
+          "hash": "8162795009568190410"
+        },
+        {
+          "file": "tsconfig.base.json",
+          "hash": "2856224400387627277"
+        },
+        {
+          "file": "vite.config.base.ts",
+          "hash": "18319036135190279317",
+          "deps": [
+            "npm:vite",
+            "npm:@vitejs/plugin-vue",
+            "npm:path"
+          ]
+        }
+      ],
+      "@tiko/core": [
+        {
+          "file": "packages/core/package.json",
+          "hash": "12507171174096775956"
+        },
+        {
+          "file": "packages/core/src/index.ts",
+          "hash": "2210259467925989465"
+        },
+        {
+          "file": "packages/core/src/lib/supabase.ts",
+          "hash": "2023458536389933132",
+          "deps": [
+            "npm:@supabase/supabase-js"
+          ]
+        },
+        {
+          "file": "packages/core/src/stores/app.ts",
+          "hash": "16692262201480756785",
+          "deps": [
+            "npm:pinia",
+            "npm:vue"
+          ]
+        },
+        {
+          "file": "packages/core/src/stores/auth.ts",
+          "hash": "13351022089452087396",
+          "deps": [
+            "npm:pinia",
+            "npm:vue",
+            "npm:@supabase/supabase-js"
+          ]
+        },
+        {
+          "file": "packages/core/src/types/user.ts",
+          "hash": "17319046267866738710"
+        }
+      ],
+      "timer": [
+        {
+          "file": "apps/timer/index.html",
+          "hash": "8141142482529795425"
+        },
+        {
+          "file": "apps/timer/package.json",
+          "hash": "17931654945507494220",
+          "deps": [
+            "@tiko/ui",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/timer/src/App.vue",
+          "hash": "3776444049422109947",
+          "deps": [
+            "npm:vue",
+            "@tiko/core",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/timer/src/assets/login-background.mp4",
+          "hash": "2999053420067581370"
+        },
+        {
+          "file": "apps/timer/src/components/EmailValidationDemo.vue",
+          "hash": "13819513492637318234",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "npm:@tiko/ui/src/components/TForm/InputEmail/InputEmail.vue"
+          ]
+        },
+        {
+          "file": "apps/timer/src/components/EventBusDemo.vue",
+          "hash": "4887453509575478019",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/timer/src/components/InputDemo.vue",
+          "hash": "18025466295643401580",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui",
+            "npm:@tiko/ui/src/components/TForm/InputText.vue",
+            "npm:@tiko/ui/src/components/TForm/TInputText.vue"
+          ]
+        },
+        {
+          "file": "apps/timer/src/components/TimeDisplay.vue",
+          "hash": "6346160711116087626",
+          "deps": [
+            "npm:vue",
+            "npm:bemm"
+          ]
+        },
+        {
+          "file": "apps/timer/src/components/TimerControls.vue",
+          "hash": "4392251231668892971",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/timer/src/components/TimerSettingsForm.vue",
+          "hash": "773176667074358593",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/timer/src/composables/useTimer.ts",
+          "hash": "14877528815809735900",
+          "deps": [
+            "npm:vue"
+          ]
+        },
+        {
+          "file": "apps/timer/src/main.ts",
+          "hash": "2204471735980649484",
+          "deps": [
+            "npm:vue",
+            "npm:pinia"
+          ]
+        },
+        {
+          "file": "apps/timer/src/stores/timer.ts",
+          "hash": "15554792691744199729",
+          "deps": [
+            "npm:pinia",
+            "npm:vue",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/timer/src/views/TimerView.vue",
+          "hash": "7412793662136228295",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/timer/src/vite-env.d.ts",
+          "hash": "8331640056497245042",
+          "deps": [
+            "npm:vue"
+          ]
+        },
+        {
+          "file": "apps/timer/tsconfig.json",
+          "hash": "11420375390224879402"
+        },
+        {
+          "file": "apps/timer/vite.config.ts",
+          "hash": "2783579839886412282"
+        }
+      ],
+      "cards": [
+        {
+          "file": "apps/cards/.eslintrc.json",
+          "hash": "14341420822390559472"
+        },
+        {
+          "file": "apps/cards/index.html",
+          "hash": "8056182915657017894"
+        },
+        {
+          "file": "apps/cards/package.json",
+          "hash": "9464510626969666146",
+          "deps": [
+            "@tiko/ui",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/cards/project.json",
+          "hash": "2623804660829198906"
+        },
+        {
+          "file": "apps/cards/src/App.vue",
+          "hash": "12368781486022665295",
+          "deps": [
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/cards/src/assets/login-background.mp4",
+          "hash": "6106353344161762045"
+        },
+        {
+          "file": "apps/cards/src/components/CreateCardModal.vue",
+          "hash": "4628662892565765810",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/cards/src/components/CreateGroupModal.vue",
+          "hash": "2317748359865261036",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/cards/src/main.ts",
+          "hash": "15908929983910874006",
+          "deps": [
+            "npm:vue",
+            "npm:pinia"
+          ]
+        },
+        {
+          "file": "apps/cards/src/stores/cards.ts",
+          "hash": "3232291808684758845",
+          "deps": [
+            "npm:pinia",
+            "npm:vue",
+            "@tiko/core",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/cards/src/views/CardsView.vue",
+          "hash": "3741893399167637870",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/cards/src/vite-env.d.ts",
+          "hash": "8331640056497245042",
+          "deps": [
+            "npm:vue"
+          ]
+        },
+        {
+          "file": "apps/cards/tsconfig.app.json",
+          "hash": "3738736504077772611"
+        },
+        {
+          "file": "apps/cards/tsconfig.json",
+          "hash": "8655538082301816057"
+        },
+        {
+          "file": "apps/cards/tsconfig.spec.json",
+          "hash": "15943385144407153049"
+        },
+        {
+          "file": "apps/cards/vite.config.ts",
+          "hash": "8817323695432231280"
         }
       ]
     }
