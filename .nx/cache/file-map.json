@@ -379,7 +379,7 @@
         },
         {
           "file": "packages/core/src/lib/supabase.ts",
-          "hash": "2023458536389933132",
+          "hash": "9971650968923216473",
           "deps": [
             "npm:@supabase/supabase-js"
           ]
@@ -394,7 +394,7 @@
         },
         {
           "file": "packages/core/src/stores/auth.ts",
-          "hash": "13351022089452087396",
+          "hash": "9251945990839817844",
           "deps": [
             "npm:pinia",
             "npm:vue",
