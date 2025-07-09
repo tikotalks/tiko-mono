@@ -92,7 +92,7 @@
         },
         {
           "file": "apps/radio/netlify.toml",
-          "hash": "14768123955210026080"
+          "hash": "14596632882514297001"
         },
         {
           "file": "apps/radio/package.json",
@@ -274,7 +274,7 @@
         },
         {
           "file": "apps/cards/netlify.toml",
-          "hash": "14768123955210026080"
+          "hash": "15444416978346050325"
         },
         {
           "file": "apps/cards/package.json",
@@ -421,7 +421,7 @@
         },
         {
           "file": "apps/timer/netlify.toml",
-          "hash": "14768123955210026080"
+          "hash": "10310274323628693311"
         },
         {
           "file": "apps/timer/package.json",
@@ -1471,7 +1471,7 @@
         },
         {
           "file": "apps/yes-no/netlify.toml",
-          "hash": "14768123955210026080"
+          "hash": "5171671946123114186"
         },
         {
           "file": "apps/yes-no/package.json",
@@ -1664,7 +1664,7 @@
         },
         {
           "file": "apps/type/netlify.toml",
-          "hash": "14768123955210026080"
+          "hash": "9713957705603341200"
         },
         {
           "file": "apps/type/package.json",
