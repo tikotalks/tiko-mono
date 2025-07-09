@@ -20,6 +20,12 @@ html {
 
 body {
 	background-color: var(--color-accent);
+	background-image: radial-gradient(
+		ellipse at center,
+		var(--color-background) 0%,
+		var(--color-background) 50%,
+		var(--color-accent) 100%
+	);
 	background-attachment: fixed;
 	background-size: 100% 100%;
 	color: var(--color-foreground);
