@@ -13,7 +13,7 @@ import { useAppStore } from '@tiko/core'
 import { TAuthWrapper } from '@tiko/ui'
 import TypeView from './views/TypeView.vue'
 import backgroundVideoUrl from './assets/login-background.mp4'
-import TPopup from '@tiko/ui/src/components/TPopup/TPopup.vue'
+import { TPopup } from '@tiko/ui'
 
 const appStore = useAppStore()
 
