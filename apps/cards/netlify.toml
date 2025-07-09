@@ -10,17 +10,17 @@
   to = "/index.html"
   status = 200
 
-[headers]
+[[headers]]
   for = "/assets/*"
   [headers.values]
     Cache-Control = "max-age=31536000, immutable"
 
-[headers]
+[[headers]]
   for = "/*.js"
   [headers.values]
     Cache-Control = "max-age=31536000, immutable"
 
-[headers]
+[[headers]]
   for = "/*.css"
   [headers.values]
     Cache-Control = "max-age=31536000, immutable"

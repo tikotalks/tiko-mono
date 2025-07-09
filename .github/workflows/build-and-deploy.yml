@@ -95,18 +95,18 @@ jobs:
         cd apps/${{ matrix.app }}
         
         # Check if site exists and get site ID
-        SITE_ID=$(netlify sites:list --json | jq -r '.[] | select(.name == "${{ matrix.app }}-tiko") | .id' || echo "")
+        SITE_ID=$(netlify sites:list 2>/dev/null | grep "${{ matrix.app }}-tiko" | head -1 | cut -d' ' -f1 || echo "")
         
         if [ -z "$SITE_ID" ]; then
           echo "Creating new Netlify site for ${{ matrix.app }}"
-          SITE_ID=$(netlify sites:create --name "${{ matrix.app }}-tiko" --json | jq -r '.id')
+          SITE_ID=$(netlify sites:create --name "${{ matrix.app }}-tiko" | grep "Site ID:" | cut -d':' -f2 | xargs)
           echo "Created site with ID: $SITE_ID"
         else
           echo "Using existing site ID: $SITE_ID"
         fi
         
-        # Set custom domain
-        netlify domains:add ${{ matrix.app }}.tiko.mt --site-id $SITE_ID || true
+        # Set custom domain (ignore errors if domain already exists)
+        netlify domains:add ${{ matrix.app }}.tiko.mt --site $SITE_ID || true
         
         # Deploy to production or branch preview
         if [ "${{ github.ref }}" = "refs/heads/master" ]; then
