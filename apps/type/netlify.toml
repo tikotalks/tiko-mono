@@ -1,6 +1,6 @@
 [build]
   publish = "dist"
-  command = "npm run build"
+  command = "cd ../../ && pnpm install && pnpm build --filter=type"
 
 [build.environment]
   NODE_VERSION = "18"

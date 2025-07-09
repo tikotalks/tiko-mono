@@ -4556,3 +4556,42 @@
 [NX Daemon Server] - 2025-07-09T09:44:10.557Z - Time taken for '@nx/vite/plugin:createNodes:apps/yes-no/vite.config.ts' 31.9503750000149ms
 [NX Daemon Server] - 2025-07-09T09:44:10.558Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 39.17554200068116ms
 [NX Daemon Server] - 2025-07-09T09:44:10.591Z - Time taken for 'build-project-configs' 45.81329200044274ms
+[NX Daemon Server] - 2025-07-09T09:49:56.321Z - [WATCHER]: apps/timer/netlify.toml was modified
+[NX Daemon Server] - 2025-07-09T09:49:56.323Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:49:56.724Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T09:49:56.724Z - [REQUEST]: apps/timer/netlify.toml
+[NX Daemon Server] - 2025-07-09T09:49:56.724Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T09:49:56.751Z - Time taken for 'hash changed files from watcher' 0.559417000040412ms
+[NX Daemon Server] - 2025-07-09T09:49:56.763Z - Time taken for '@nx/vite/plugin:createNodes:packages/core/vite.config.ts' 21.41341600008309ms
+[NX Daemon Server] - 2025-07-09T09:49:56.764Z - Time taken for '@nx/vite/plugin:createNodes:packages/ui/vite.config.ts' 22.164124999195337ms
+[NX Daemon Server] - 2025-07-09T09:49:56.769Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 32.78999999910593ms
+[NX Daemon Server] - 2025-07-09T09:49:56.771Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 30.477665999904275ms
+[NX Daemon Server] - 2025-07-09T09:49:56.802Z - Time taken for 'build-project-configs' 44.912500001490116ms
+[NX Daemon Server] - 2025-07-09T09:50:06.684Z - [WATCHER]: apps/cards/netlify.toml was modified
+[NX Daemon Server] - 2025-07-09T09:50:06.684Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:50:06.851Z - [WATCHER]: apps/radio/netlify.toml was modified
+[NX Daemon Server] - 2025-07-09T09:50:06.851Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:50:07.015Z - [WATCHER]: apps/type/netlify.toml was modified
+[NX Daemon Server] - 2025-07-09T09:50:07.015Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:50:07.485Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T09:50:07.486Z - [REQUEST]: apps/cards/netlify.toml,apps/radio/netlify.toml,apps/type/netlify.toml
+[NX Daemon Server] - 2025-07-09T09:50:07.486Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T09:50:07.501Z - Time taken for 'hash changed files from watcher' 0.46962499991059303ms
+[NX Daemon Server] - 2025-07-09T09:50:07.523Z - Time taken for '@nx/vite/plugin:createNodes:packages/core/vite.config.ts' 28.57550000026822ms
+[NX Daemon Server] - 2025-07-09T09:50:07.526Z - Time taken for '@nx/vite/plugin:createNodes:packages/ui/vite.config.ts' 31.6671660002321ms
+[NX Daemon Server] - 2025-07-09T09:50:07.532Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 39.31774999946356ms
+[NX Daemon Server] - 2025-07-09T09:50:07.535Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 43.43658399954438ms
+[NX Daemon Server] - 2025-07-09T09:50:07.538Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 46.11987500078976ms
+[NX Daemon Server] - 2025-07-09T09:50:07.540Z - Time taken for '@nx/vite/plugin:createNodes:apps/yes-no/vite.config.ts' 47.107584001496434ms
+[NX Daemon Server] - 2025-07-09T09:50:07.587Z - Time taken for 'build-project-configs' 57.36083300039172ms
+[NX Daemon Server] - 2025-07-09T09:50:12.220Z - [WATCHER]: apps/yes-no/netlify.toml was modified
+[NX Daemon Server] - 2025-07-09T09:50:12.220Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T09:50:13.822Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T09:50:13.822Z - [REQUEST]: apps/yes-no/netlify.toml
+[NX Daemon Server] - 2025-07-09T09:50:13.822Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T09:50:13.846Z - Time taken for 'hash changed files from watcher' 0.38274999894201756ms
+[NX Daemon Server] - 2025-07-09T09:50:13.856Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 24.07429200038314ms
+[NX Daemon Server] - 2025-07-09T09:50:13.859Z - Time taken for '@nx/vite/plugin:createNodes:packages/core/vite.config.ts' 21.532124999910593ms
+[NX Daemon Server] - 2025-07-09T09:50:13.861Z - Time taken for '@nx/vite/plugin:createNodes:apps/yes-no/vite.config.ts' 24.40166600048542ms
+[NX Daemon Server] - 2025-07-09T09:50:13.862Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 30.79841599985957ms
+[NX Daemon Server] - 2025-07-09T09:50:13.895Z - Time taken for 'build-project-configs' 40.31362500041723ms
