@@ -249,6 +249,10 @@
         {
           "file": "apps/radio/vite.config.ts",
           "hash": "996584251071566405"
+        },
+        {
+          "file": "apps/radio/netlify.toml",
+          "hash": "11931345194891571211"
         }
       ],
       "yes-no": [
@@ -343,6 +347,10 @@
         {
           "file": "apps/yes-no/vite.config.ts",
           "hash": "271596548029313619"
+        },
+        {
+          "file": "apps/yes-no/netlify.toml",
+          "hash": "11931345194891571211"
         }
       ],
       "type": [
@@ -424,6 +432,10 @@
         {
           "file": "apps/type/vite.config.ts",
           "hash": "12293056096034540066"
+        },
+        {
+          "file": "apps/type/netlify.toml",
+          "hash": "11931345194891571211"
         }
       ],
       "@tiko/ui": [
@@ -1410,6 +1422,22 @@
             "npm:@vitejs/plugin-vue",
             "npm:path"
           ]
+        },
+        {
+          "file": ".github/workflows/build-and-deploy.yml",
+          "hash": "12039175063673154477"
+        },
+        {
+          "file": ".claude/settings.local.json",
+          "hash": "9275558490213351257"
+        },
+        {
+          "file": ".github/workflows/ios-apps.yml",
+          "hash": "7692475237910272958"
+        },
+        {
+          "file": ".github/README.md",
+          "hash": "9880202541922983046"
         }
       ],
       "@tiko/core": [
@@ -1578,6 +1606,10 @@
         {
           "file": "apps/timer/vite.config.ts",
           "hash": "2783579839886412282"
+        },
+        {
+          "file": "apps/timer/netlify.toml",
+          "hash": "11931345194891571211"
         }
       ],
       "cards": [
@@ -1679,6 +1711,10 @@
         {
           "file": "apps/cards/vite.config.ts",
           "hash": "8817323695432231280"
+        },
+        {
+          "file": "apps/cards/netlify.toml",
+          "hash": "11931345194891571211"
         }
       ]
     }
