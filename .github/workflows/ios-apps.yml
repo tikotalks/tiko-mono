@@ -1,0 +1,83 @@
+name: Build iOS Apps
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+  PNPM_VERSION: '8.15.0'
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    
+    strategy:
+      matrix:
+        app: [cards, radio, timer, type, yes-no]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+
+    - name: Get pnpm store directory
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: Setup pnpm cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Build web app
+      run: pnpm nx build ${{ matrix.app }}
+      env:
+        NODE_ENV: production
+
+    # TODO: Uncomment when Capacitor is set up
+    # - name: Setup iOS build environment
+    #   run: |
+    #     cd apps/${{ matrix.app }}
+    #     npx cap add ios
+    #     npx cap sync ios
+
+    # - name: Build iOS app
+    #   run: |
+    #     cd apps/${{ matrix.app }}
+    #     npx cap build ios --prod
+
+    # - name: Upload iOS build artifacts
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: ios-${{ matrix.app }}-build
+    #     path: apps/${{ matrix.app }}/ios/App/build/
+    #     retention-days: 30
+
+    - name: iOS setup required
+      run: |
+        echo "⚠️  iOS build configuration is not yet set up."
+        echo "To enable iOS builds, please:"
+        echo "1. Install Capacitor: pnpm add @capacitor/core @capacitor/cli @capacitor/ios"
+        echo "2. Create capacitor.config.ts for each app"
+        echo "3. Run: npx cap add ios for each app"
+        echo "4. Uncomment the iOS build steps in this workflow"

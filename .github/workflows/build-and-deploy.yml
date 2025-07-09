@@ -1,0 +1,116 @@
+name: Build and Deploy Web Apps
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  NODE_VERSION: '18'
+  PNPM_VERSION: '8.15.0'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ env.PNPM_VERSION }}
+
+    - name: Get pnpm store directory
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: Setup pnpm cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Lint
+      run: pnpm lint
+
+    - name: Type check
+      run: pnpm typecheck
+
+    - name: Build all apps
+      run: pnpm build
+      env:
+        NODE_ENV: production
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts
+        path: |
+          apps/*/dist/
+          !apps/*/dist/**/*.map
+        retention-days: 30
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    
+    strategy:
+      matrix:
+        app: [cards, radio, timer, type, yes-no]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: build-artifacts
+        path: apps/
+
+    - name: Install Netlify CLI
+      run: npm install -g netlify-cli
+
+    - name: Create or update Netlify site
+      run: |
+        cd apps/${{ matrix.app }}
+        
+        # Check if site exists and get site ID
+        SITE_ID=$(netlify sites:list --json | jq -r '.[] | select(.name == "${{ matrix.app }}-tiko") | .id' || echo "")
+        
+        if [ -z "$SITE_ID" ]; then
+          echo "Creating new Netlify site for ${{ matrix.app }}"
+          SITE_ID=$(netlify sites:create --name "${{ matrix.app }}-tiko" --json | jq -r '.id')
+          echo "Created site with ID: $SITE_ID"
+        else
+          echo "Using existing site ID: $SITE_ID"
+        fi
+        
+        # Set custom domain
+        netlify domains:add ${{ matrix.app }}.tiko.mt --site-id $SITE_ID || true
+        
+        # Deploy to production or branch preview
+        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          netlify deploy --prod --dir=dist --site=$SITE_ID --message="Deploy from GitHub Actions - ${{ matrix.app }} (main)"
+        else
+          netlify deploy --dir=dist --site=$SITE_ID --message="Deploy from GitHub Actions - ${{ matrix.app }} (develop)"
+        fi
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
