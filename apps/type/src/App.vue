@@ -1,8 +1,6 @@
 <template>
   <div id="app">
-    <TAuthWrapper :backgroundVideo="backgroundVideoUrl" title="Type">
-      <TypeView />
-    </TAuthWrapper>
+    <router-view />
   </div>
   <TPopup />
 </template>
@@ -10,9 +8,6 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useAppStore } from '@tiko/core'
-import { TAuthWrapper } from '@tiko/ui'
-import TypeView from './views/TypeView.vue'
-import backgroundVideoUrl from './assets/login-background.mp4'
 import { TPopup } from '@tiko/ui'
 
 const appStore = useAppStore()
