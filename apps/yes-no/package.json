@@ -10,7 +10,13 @@
     "serve": "vite",
     "test": "vitest",
     "typecheck": "vue-tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "cap:add": "cap add ios",
+    "cap:sync": "cap sync",
+    "cap:open": "cap open ios",
+    "cap:build": "pnpm run build && cap sync",
+    "ios:build": "pnpm run build && cap sync ios",
+    "ios:run": "pnpm run build && cap sync ios && cap open ios"
   },
   "dependencies": {
     "vue": "^3.4.21",
