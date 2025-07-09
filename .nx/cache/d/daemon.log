@@ -2463,3 +2463,1233 @@
 [NX Daemon Server] - 2025-07-08T12:47:56.455Z - [WATCHER]: Stopping the watcher for /Users/silvandiepen/Repositories/_tiko/tiko-mono (sources)
 [NX Daemon Server] - 2025-07-08T12:47:56.455Z - [WATCHER]: Stopping the watcher for /Users/silvandiepen/Repositories/_tiko/tiko-mono (outputs)
 [NX Daemon Server] - 2025-07-08T12:47:56.455Z - Server stopped because: "Stopping the daemon the set of ignored files changed (native)"
+[NX Daemon Server] - 2025-07-09T07:28:45.110Z - Started listening on: /var/folders/4c/_7nd1rcn73v0w77fzjybw0br0000gn/T/06cf2e3d6e56600cc809/d.sock
+[NX Daemon Server] - 2025-07-09T07:28:45.116Z - [WATCHER]: Subscribed to changes within: /Users/silvandiepen/Repositories/_tiko/tiko-mono (native)
+[NX Daemon Server] - 2025-07-09T07:28:45.116Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T07:28:45.117Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T07:28:45.117Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T07:28:45.118Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2025-07-09T07:28:45.127Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:28:45.127Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:28:45.127Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:28:45.382Z - Time taken for 'hash changed files from watcher' 8.844499999999996ms
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+[NX Daemon Server] - 2025-07-09T07:28:45.605Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 249.57383300000004ms
+[NX Daemon Server] - 2025-07-09T07:28:45.833Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2025-07-09T07:28:45.834Z - Time taken for 'total for creating and serializing project graph' 714.998667ms
+[NX Daemon Server] - 2025-07-09T07:28:45.845Z - Done responding to the client project-graph
+[NX Daemon Server] - 2025-07-09T07:28:45.845Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 715. Response time: 12.
+[NX Daemon Server] - 2025-07-09T07:28:45.849Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2025-07-09T07:28:50.818Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T07:28:50.819Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2025-07-09T07:28:50.819Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T07:28:50.820Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2025-07-09T07:28:50.820Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2025-07-09T07:28:50.820Z - Time taken for 'total for creating and serializing project graph' 0.11354199999914272ms
+[NX Daemon Server] - 2025-07-09T07:28:50.822Z - Done responding to the client project-graph
+[NX Daemon Server] - 2025-07-09T07:28:50.822Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 0. Response time: 2.
+[NX Daemon Server] - 2025-07-09T07:28:50.842Z - [REQUEST]: Responding to the client. handleHashTasks
+[NX Daemon Server] - 2025-07-09T07:28:50.842Z - Done responding to the client handleHashTasks
+[NX Daemon Server] - 2025-07-09T07:28:50.842Z - Handled HASH_TASKS. Handling time: 7. Response time: 0.
+[NX Daemon Server] - 2025-07-09T07:31:21.461Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:31:21.463Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:31:21.564Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:31:21.565Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:31:21.565Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:31:21.593Z - Time taken for 'hash changed files from watcher' 0.7869159999827389ms
+[NX Daemon Server] - 2025-07-09T07:31:21.607Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 31.48487500002375ms
+[NX Daemon Server] - 2025-07-09T07:31:21.611Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 36.29908299999079ms
+[NX Daemon Server] - 2025-07-09T07:31:21.648Z - Time taken for 'build-project-configs' 43.87341699999524ms
+[NX Daemon Server] - 2025-07-09T07:31:26.078Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:31:26.078Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:31:26.279Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:31:26.280Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:31:26.280Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:31:26.300Z - Time taken for 'hash changed files from watcher' 0.41649999999208376ms
+[NX Daemon Server] - 2025-07-09T07:31:26.318Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 30.173792000015965ms
+[NX Daemon Server] - 2025-07-09T07:31:26.321Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 34.13683299999684ms
+[NX Daemon Server] - 2025-07-09T07:31:26.323Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 33.26962500001537ms
+[NX Daemon Server] - 2025-07-09T07:31:26.337Z - Time taken for 'build-project-configs' 42.46779100000276ms
+[NX Daemon Server] - 2025-07-09T07:32:48.963Z - [WATCHER]: apps/timer/src/views/TimerView.vue was modified
+[NX Daemon Server] - 2025-07-09T07:32:48.964Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:32:49.366Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:32:49.366Z - [REQUEST]: apps/timer/src/views/TimerView.vue
+[NX Daemon Server] - 2025-07-09T07:32:49.366Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:32:49.384Z - Time taken for 'hash changed files from watcher' 0.5235840000095777ms
+[NX Daemon Server] - 2025-07-09T07:32:49.400Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 27.64354099999764ms
+[NX Daemon Server] - 2025-07-09T07:32:49.403Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 29.450500000006286ms
+[NX Daemon Server] - 2025-07-09T07:32:49.438Z - Time taken for 'build-project-configs' 35.99862500000745ms
+[NX Daemon Server] - 2025-07-09T07:33:00.653Z - [WATCHER]: apps/timer/src/views/TimerView.vue was modified
+[NX Daemon Server] - 2025-07-09T07:33:00.656Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:33:01.457Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:33:01.457Z - [REQUEST]: apps/timer/src/views/TimerView.vue
+[NX Daemon Server] - 2025-07-09T07:33:01.457Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:33:01.482Z - Time taken for 'hash changed files from watcher' 0.7011250000214204ms
+[NX Daemon Server] - 2025-07-09T07:33:01.497Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 28.675749999994878ms
+[NX Daemon Server] - 2025-07-09T07:33:01.498Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 33.72675000000163ms
+[NX Daemon Server] - 2025-07-09T07:33:01.554Z - Time taken for 'build-project-configs' 42.399792000011075ms
+[NX Daemon Server] - 2025-07-09T07:33:14.916Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:33:14.917Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:33:16.519Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:33:16.519Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:33:16.519Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:33:16.546Z - Time taken for 'hash changed files from watcher' 0.7562079999479465ms
+[NX Daemon Server] - 2025-07-09T07:33:16.560Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 30.974290999991354ms
+[NX Daemon Server] - 2025-07-09T07:33:16.596Z - Time taken for 'build-project-configs' 45.535207999986596ms
+[NX Daemon Server] - 2025-07-09T07:33:20.655Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:33:20.655Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:33:23.856Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:33:23.856Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:33:23.856Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:33:23.873Z - Time taken for 'hash changed files from watcher' 0.4163750000298023ms
+[NX Daemon Server] - 2025-07-09T07:33:23.884Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 21.554333000036422ms
+[NX Daemon Server] - 2025-07-09T07:33:23.914Z - Time taken for 'build-project-configs' 29.326916999998502ms
+[NX Daemon Server] - 2025-07-09T07:33:34.871Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:33:34.871Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:33:40.442Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:33:40.442Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:33:41.273Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:33:41.273Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:33:41.273Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:33:41.295Z - Time taken for 'hash changed files from watcher' 0.3789169999654405ms
+[NX Daemon Server] - 2025-07-09T07:33:41.305Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 23.77729100000579ms
+[NX Daemon Server] - 2025-07-09T07:33:41.307Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 24.63520800002152ms
+[NX Daemon Server] - 2025-07-09T07:33:41.313Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 32.92816700000549ms
+[NX Daemon Server] - 2025-07-09T07:33:41.355Z - Time taken for 'build-project-configs' 47.582290999998804ms
+[NX Daemon Server] - 2025-07-09T07:33:51.956Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:33:51.959Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:33:56.180Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:33:56.180Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:33:57.598Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:33:57.598Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:33:58.361Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:33:58.361Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:33:58.361Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:33:58.386Z - Time taken for 'hash changed files from watcher' 0.5958329999702983ms
+[NX Daemon Server] - 2025-07-09T07:33:58.398Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 27.09000000002561ms
+[NX Daemon Server] - 2025-07-09T07:33:58.400Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 27.50745899998583ms
+[NX Daemon Server] - 2025-07-09T07:33:58.444Z - Time taken for 'build-project-configs' 38.93483299994841ms
+[NX Daemon Server] - 2025-07-09T07:34:11.136Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:34:11.138Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:34:17.540Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:34:17.540Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:34:17.540Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:34:17.568Z - Time taken for 'hash changed files from watcher' 0.6013749999692664ms
+[NX Daemon Server] - 2025-07-09T07:34:17.583Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 33.49475000001257ms
+[NX Daemon Server] - 2025-07-09T07:34:17.612Z - Time taken for 'build-project-configs' 41.13825000001816ms
+[NX Daemon Server] - 2025-07-09T07:35:08.574Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:35:08.576Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:35:11.263Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:35:11.263Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:35:14.977Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:35:14.978Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:35:14.978Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:35:15.003Z - Time taken for 'hash changed files from watcher' 0.5340829999768175ms
+[NX Daemon Server] - 2025-07-09T07:35:15.020Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 32.65383400005521ms
+[NX Daemon Server] - 2025-07-09T07:35:15.022Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 33.69029200001387ms
+[NX Daemon Server] - 2025-07-09T07:35:15.025Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 38.165291999990586ms
+[NX Daemon Server] - 2025-07-09T07:35:15.058Z - Time taken for 'build-project-configs' 45.7956669999985ms
+[NX Daemon Server] - 2025-07-09T07:35:15.346Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:35:15.346Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:35:21.200Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:35:21.201Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:35:21.748Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:35:21.748Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:35:21.748Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:35:21.764Z - Time taken for 'hash changed files from watcher' 0.5604169999714941ms
+[NX Daemon Server] - 2025-07-09T07:35:21.776Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 21.630541999998968ms
+[NX Daemon Server] - 2025-07-09T07:35:21.779Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 24.574958999990486ms
+[NX Daemon Server] - 2025-07-09T07:35:21.780Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 24.00595899997279ms
+[NX Daemon Server] - 2025-07-09T07:35:21.811Z - Time taken for 'build-project-configs' 31.527166999992914ms
+[NX Daemon Server] - 2025-07-09T07:35:24.214Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:35:24.215Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:35:30.616Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:35:30.616Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:35:30.616Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:35:30.634Z - Time taken for 'hash changed files from watcher' 0.37512499996228144ms
+[NX Daemon Server] - 2025-07-09T07:35:30.649Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 28.11174999998184ms
+[NX Daemon Server] - 2025-07-09T07:35:30.652Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 26.942749999987427ms
+[NX Daemon Server] - 2025-07-09T07:35:30.687Z - Time taken for 'build-project-configs' 35.90045800001826ms
+[NX Daemon Server] - 2025-07-09T07:35:33.810Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:35:33.811Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:35:40.212Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:35:40.212Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:35:40.212Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:35:40.232Z - Time taken for 'hash changed files from watcher' 0.44700000004377216ms
+[NX Daemon Server] - 2025-07-09T07:35:40.249Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 28.445999999996275ms
+[NX Daemon Server] - 2025-07-09T07:35:40.250Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 30.51974999997765ms
+[NX Daemon Server] - 2025-07-09T07:35:40.285Z - Time taken for 'build-project-configs' 38.526124999974854ms
+[NX Daemon Server] - 2025-07-09T07:35:41.269Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:35:41.269Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:35:43.857Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:35:43.858Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:35:47.669Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:35:47.670Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:35:47.670Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:35:47.686Z - Time taken for 'hash changed files from watcher' 0.37475000001722947ms
+[NX Daemon Server] - 2025-07-09T07:35:47.698Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 22.176458000030834ms
+[NX Daemon Server] - 2025-07-09T07:35:47.732Z - Time taken for 'build-project-configs' 29.92083299998194ms
+[NX Daemon Server] - 2025-07-09T07:35:53.252Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:35:53.252Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:35:57.286Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:35:57.286Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:35:59.654Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:35:59.654Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:35:59.654Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:35:59.678Z - Time taken for 'hash changed files from watcher' 0.5341669999761507ms
+[NX Daemon Server] - 2025-07-09T07:35:59.692Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 28.7208329999703ms
+[NX Daemon Server] - 2025-07-09T07:35:59.695Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 31.67349999997532ms
+[NX Daemon Server] - 2025-07-09T07:35:59.698Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 35.15470799995819ms
+[NX Daemon Server] - 2025-07-09T07:35:59.743Z - Time taken for 'build-project-configs' 43.54916699999012ms
+[NX Daemon Server] - 2025-07-09T07:36:08.016Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:36:08.016Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:36:14.417Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:36:14.418Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:36:14.418Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:36:14.443Z - Time taken for 'hash changed files from watcher' 0.712082999991253ms
+[NX Daemon Server] - 2025-07-09T07:36:14.456Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 27.31545900000492ms
+[NX Daemon Server] - 2025-07-09T07:36:14.458Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 26.46670799999265ms
+[NX Daemon Server] - 2025-07-09T07:36:14.497Z - Time taken for 'build-project-configs' 37.824167000013404ms
+[NX Daemon Server] - 2025-07-09T07:36:15.162Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:36:15.163Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:36:18.540Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:36:18.541Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:36:21.565Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:36:21.565Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:36:21.565Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:36:21.584Z - Time taken for 'hash changed files from watcher' 0.33100000000558794ms
+[NX Daemon Server] - 2025-07-09T07:36:21.594Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 21.823583999997936ms
+[NX Daemon Server] - 2025-07-09T07:36:21.596Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 22.82708299998194ms
+[NX Daemon Server] - 2025-07-09T07:36:21.598Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 23.131708000029903ms
+[NX Daemon Server] - 2025-07-09T07:36:21.629Z - Time taken for 'build-project-configs' 33.2039999999688ms
+[NX Daemon Server] - 2025-07-09T07:36:24.890Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:36:24.890Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:36:25.850Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:36:25.851Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:36:31.291Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:36:31.291Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:36:31.291Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:36:31.307Z - Time taken for 'hash changed files from watcher' 0.40154099999926984ms
+[NX Daemon Server] - 2025-07-09T07:36:31.349Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 51.446582999953534ms
+[NX Daemon Server] - 2025-07-09T07:36:31.350Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 54.14904099999694ms
+[NX Daemon Server] - 2025-07-09T07:36:31.385Z - Time taken for 'build-project-configs' 59.851499999989755ms
+[NX Daemon Server] - 2025-07-09T07:36:37.711Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:36:37.712Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:36:44.113Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:36:44.113Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:36:44.113Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:36:44.142Z - Time taken for 'hash changed files from watcher' 0.5543329999782145ms
+[NX Daemon Server] - 2025-07-09T07:36:44.159Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 31.731709000014234ms
+[NX Daemon Server] - 2025-07-09T07:36:44.161Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 36.92366700002458ms
+[NX Daemon Server] - 2025-07-09T07:36:44.193Z - Time taken for 'build-project-configs' 47.40412500000093ms
+[NX Daemon Server] - 2025-07-09T07:36:59.981Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:36:59.982Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:37:06.384Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:37:06.385Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:37:06.385Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:37:06.403Z - Time taken for 'hash changed files from watcher' 0.5876670000143349ms
+[NX Daemon Server] - 2025-07-09T07:37:06.418Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 24.973583000013605ms
+[NX Daemon Server] - 2025-07-09T07:37:06.419Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 25.584167000022717ms
+[NX Daemon Server] - 2025-07-09T07:37:06.458Z - Time taken for 'build-project-configs' 35.230291999992914ms
+[NX Daemon Server] - 2025-07-09T07:37:36.807Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:37:36.808Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:37:43.210Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:37:43.212Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:37:43.212Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:37:43.239Z - Time taken for 'hash changed files from watcher' 0.46354200004134327ms
+[NX Daemon Server] - 2025-07-09T07:37:43.248Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 22.95787499996368ms
+[NX Daemon Server] - 2025-07-09T07:37:43.250Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 23.630832999944687ms
+[NX Daemon Server] - 2025-07-09T07:37:43.283Z - Time taken for 'build-project-configs' 40.44099999999162ms
+[NX Daemon Server] - 2025-07-09T07:37:46.502Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:37:46.503Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:37:52.903Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:37:52.904Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:37:52.904Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:37:52.926Z - Time taken for 'hash changed files from watcher' 0.44724999996833503ms
+[NX Daemon Server] - 2025-07-09T07:37:52.934Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 23.998124999925494ms
+[NX Daemon Server] - 2025-07-09T07:37:52.936Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 23.264624999952503ms
+[NX Daemon Server] - 2025-07-09T07:37:52.968Z - Time taken for 'build-project-configs' 34.84087499999441ms
+[NX Daemon Server] - 2025-07-09T07:37:53.111Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:37:53.112Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:37:59.512Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:37:59.513Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:37:59.513Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:37:59.532Z - Time taken for 'hash changed files from watcher' 0.4307079999707639ms
+[NX Daemon Server] - 2025-07-09T07:37:59.542Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 22.605959000065923ms
+[NX Daemon Server] - 2025-07-09T07:37:59.544Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 26.394208000041544ms
+[NX Daemon Server] - 2025-07-09T07:37:59.568Z - Time taken for 'build-project-configs' 31.03649999992922ms
+[NX Daemon Server] - 2025-07-09T07:38:08.780Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:38:08.780Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:38:15.181Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:38:15.181Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:38:15.181Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:38:15.215Z - Time taken for 'hash changed files from watcher' 0.6112499999580905ms
+[NX Daemon Server] - 2025-07-09T07:38:15.234Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 42.76179199991748ms
+[NX Daemon Server] - 2025-07-09T07:38:15.239Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 41.78291700000409ms
+[NX Daemon Server] - 2025-07-09T07:38:15.288Z - Time taken for 'build-project-configs' 61.119124999968335ms
+[NX Daemon Server] - 2025-07-09T07:38:24.493Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:38:24.494Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:38:25.764Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:38:25.765Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:38:30.895Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:38:30.895Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:38:30.895Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:38:30.924Z - Time taken for 'hash changed files from watcher' 0.7344169999705628ms
+[NX Daemon Server] - 2025-07-09T07:38:30.936Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 27.54958400002215ms
+[NX Daemon Server] - 2025-07-09T07:38:30.974Z - Time taken for 'build-project-configs' 40.07391599996481ms
+[NX Daemon Server] - 2025-07-09T07:38:34.663Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:38:34.664Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:38:37.943Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:38:37.943Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:38:41.065Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:38:41.065Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:38:41.065Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:38:41.087Z - Time taken for 'hash changed files from watcher' 0.3987499999348074ms
+[NX Daemon Server] - 2025-07-09T07:38:41.100Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 27.113833999959752ms
+[NX Daemon Server] - 2025-07-09T07:38:41.101Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 25.16975000000093ms
+[NX Daemon Server] - 2025-07-09T07:38:41.105Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 29.236166000016965ms
+[NX Daemon Server] - 2025-07-09T07:38:41.149Z - Time taken for 'build-project-configs' 40.45233300002292ms
+[NX Daemon Server] - 2025-07-09T07:38:42.072Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:38:42.073Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:38:48.306Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:38:48.307Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:38:48.474Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:38:48.474Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:38:48.474Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:38:48.490Z - Time taken for 'hash changed files from watcher' 0.22741699998732656ms
+[NX Daemon Server] - 2025-07-09T07:38:48.506Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 26.790874999947846ms
+[NX Daemon Server] - 2025-07-09T07:38:48.508Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 28.837249999982305ms
+[NX Daemon Server] - 2025-07-09T07:38:48.509Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 32.038500000024214ms
+[NX Daemon Server] - 2025-07-09T07:38:48.547Z - Time taken for 'build-project-configs' 36.71816600009333ms
+[NX Daemon Server] - 2025-07-09T07:38:53.570Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:38:53.570Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:38:59.971Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:38:59.972Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:38:59.972Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:39:00.005Z - Time taken for 'hash changed files from watcher' 0.4272499999497086ms
+[NX Daemon Server] - 2025-07-09T07:39:00.025Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 44.03370899998117ms
+[NX Daemon Server] - 2025-07-09T07:39:00.028Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 49.31904099998064ms
+[NX Daemon Server] - 2025-07-09T07:39:00.030Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 50.3505839999998ms
+[NX Daemon Server] - 2025-07-09T07:39:00.061Z - Time taken for 'build-project-configs' 59.871541999978945ms
+[NX Daemon Server] - 2025-07-09T07:39:01.304Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:39:01.305Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:39:07.706Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:39:07.706Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:39:07.706Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:39:07.728Z - Time taken for 'hash changed files from watcher' 0.4214170000050217ms
+[NX Daemon Server] - 2025-07-09T07:39:07.735Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 21.092958000022918ms
+[NX Daemon Server] - 2025-07-09T07:39:07.737Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 22.56529199995566ms
+[NX Daemon Server] - 2025-07-09T07:39:07.764Z - Time taken for 'build-project-configs' 32.51737500005402ms
+[NX Daemon Server] - 2025-07-09T07:39:14.224Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:39:14.225Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:39:20.627Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:39:20.627Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:39:20.627Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:39:20.650Z - Time taken for 'hash changed files from watcher' 0.5831250000046566ms
+[NX Daemon Server] - 2025-07-09T07:39:20.660Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 25.122791000059806ms
+[NX Daemon Server] - 2025-07-09T07:39:20.663Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 26.62962499994319ms
+[NX Daemon Server] - 2025-07-09T07:39:20.665Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 26.963417000020854ms
+[NX Daemon Server] - 2025-07-09T07:39:20.707Z - Time taken for 'build-project-configs' 36.61812499992084ms
+[NX Daemon Server] - 2025-07-09T07:39:28.174Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:39:28.175Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:39:30.135Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:39:30.135Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:39:32.486Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:39:32.486Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:39:34.576Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:39:34.576Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:39:34.576Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:39:34.598Z - Time taken for 'hash changed files from watcher' 0.38237499992828816ms
+[NX Daemon Server] - 2025-07-09T07:39:34.608Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 23.462375000002794ms
+[NX Daemon Server] - 2025-07-09T07:39:34.610Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 23.627582999994047ms
+[NX Daemon Server] - 2025-07-09T07:39:34.611Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 28.065958000021055ms
+[NX Daemon Server] - 2025-07-09T07:39:34.638Z - Time taken for 'build-project-configs' 34.81708399998024ms
+[NX Daemon Server] - 2025-07-09T07:39:47.529Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:39:47.529Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:39:53.931Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:39:53.932Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:39:53.932Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:39:53.949Z - Time taken for 'hash changed files from watcher' 0.2347089999821037ms
+[NX Daemon Server] - 2025-07-09T07:39:53.960Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 22.40025000006426ms
+[NX Daemon Server] - 2025-07-09T07:39:53.987Z - Time taken for 'build-project-configs' 29.534917000099085ms
+[NX Daemon Server] - 2025-07-09T07:39:55.125Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:39:55.126Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:39:57.968Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:39:57.969Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:40:01.527Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:40:01.527Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:40:01.527Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:40:01.554Z - Time taken for 'hash changed files from watcher' 0.47008400002960116ms
+[NX Daemon Server] - 2025-07-09T07:40:01.566Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 30.01487499999348ms
+[NX Daemon Server] - 2025-07-09T07:40:01.575Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 37.49204199993983ms
+[NX Daemon Server] - 2025-07-09T07:40:01.580Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 46.34233300003689ms
+[NX Daemon Server] - 2025-07-09T07:40:01.592Z - Time taken for 'build-project-configs' 54.5335840000771ms
+[NX Daemon Server] - 2025-07-09T07:40:06.905Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:40:06.906Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:40:13.309Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:40:13.311Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:40:13.311Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:40:13.346Z - Time taken for 'hash changed files from watcher' 0.578417000011541ms
+[NX Daemon Server] - 2025-07-09T07:40:13.362Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 35.27037499996368ms
+[NX Daemon Server] - 2025-07-09T07:40:13.364Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 35.67612499999814ms
+[NX Daemon Server] - 2025-07-09T07:40:13.365Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 38.460334000061266ms
+[NX Daemon Server] - 2025-07-09T07:40:13.398Z - Time taken for 'build-project-configs' 52.137584000010975ms
+[NX Daemon Server] - 2025-07-09T07:41:18.836Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:41:18.837Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:41:19.586Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:41:19.586Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:41:23.409Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:41:23.410Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:41:25.239Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:41:25.239Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:41:25.239Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:41:25.358Z - Time taken for 'hash changed files from watcher' 1.3548329999903217ms
+[NX Daemon Server] - 2025-07-09T07:41:25.382Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 103.90133299992885ms
+[NX Daemon Server] - 2025-07-09T07:41:25.388Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 90.25591700000223ms
+[NX Daemon Server] - 2025-07-09T07:41:25.390Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 94.31941700004973ms
+[NX Daemon Server] - 2025-07-09T07:41:25.421Z - Time taken for 'build-project-configs' 146.12283300003037ms
+[NX Daemon Server] - 2025-07-09T07:41:27.227Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:41:27.227Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:41:31.705Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:41:31.706Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:41:33.629Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:41:33.629Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:41:33.629Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:41:33.652Z - Time taken for 'hash changed files from watcher' 0.49924999999348074ms
+[NX Daemon Server] - 2025-07-09T07:41:33.658Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 20.696166999987327ms
+[NX Daemon Server] - 2025-07-09T07:41:33.660Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 20.52620800002478ms
+[NX Daemon Server] - 2025-07-09T07:41:33.661Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 24.296084000030532ms
+[NX Daemon Server] - 2025-07-09T07:41:33.685Z - Time taken for 'build-project-configs' 30.68658300000243ms
+[NX Daemon Server] - 2025-07-09T07:41:54.874Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:41:54.875Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:42:01.277Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:42:01.277Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:42:01.277Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:42:01.297Z - Time taken for 'hash changed files from watcher' 0.46250000002328306ms
+[NX Daemon Server] - 2025-07-09T07:42:01.344Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 59.00341599993408ms
+[NX Daemon Server] - 2025-07-09T07:42:01.346Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 59.035000000032596ms
+[NX Daemon Server] - 2025-07-09T07:42:01.380Z - Time taken for 'build-project-configs' 68.47520800004713ms
+[NX Daemon Server] - 2025-07-09T07:42:01.536Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:42:01.536Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:42:07.937Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:42:07.938Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:42:07.938Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:42:07.961Z - Time taken for 'hash changed files from watcher' 0.6317920000292361ms
+[NX Daemon Server] - 2025-07-09T07:42:07.971Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 24.08933300001081ms
+[NX Daemon Server] - 2025-07-09T07:42:07.973Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 22.066666000057012ms
+[NX Daemon Server] - 2025-07-09T07:42:07.975Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 29.509290999965742ms
+[NX Daemon Server] - 2025-07-09T07:42:08.019Z - Time taken for 'build-project-configs' 36.44437499996275ms
+[NX Daemon Server] - 2025-07-09T07:42:11.886Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:42:11.887Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:42:18.122Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:42:18.125Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:42:18.289Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:42:18.289Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:42:18.289Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:42:18.345Z - Time taken for 'hash changed files from watcher' 0.5862500000512227ms
+[NX Daemon Server] - 2025-07-09T07:42:18.363Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 68.35262499994133ms
+[NX Daemon Server] - 2025-07-09T07:42:18.367Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 71.56174999999348ms
+[NX Daemon Server] - 2025-07-09T07:42:18.370Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 75.16920899995603ms
+[NX Daemon Server] - 2025-07-09T07:42:18.416Z - Time taken for 'build-project-configs' 86.17725000006612ms
+[NX Daemon Server] - 2025-07-09T07:43:22.533Z - [WATCHER]: apps/timer/src/views/TimerView.vue was modified
+[NX Daemon Server] - 2025-07-09T07:43:22.534Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:43:28.935Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:43:28.935Z - [REQUEST]: apps/timer/src/views/TimerView.vue
+[NX Daemon Server] - 2025-07-09T07:43:28.935Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:43:28.955Z - Time taken for 'hash changed files from watcher' 0.544374999939464ms
+[NX Daemon Server] - 2025-07-09T07:43:28.966Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 22.41650000005029ms
+[NX Daemon Server] - 2025-07-09T07:43:28.969Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 25.18208300007973ms
+[NX Daemon Server] - 2025-07-09T07:43:28.970Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 27.212749999947846ms
+[NX Daemon Server] - 2025-07-09T07:43:28.997Z - Time taken for 'build-project-configs' 33.45604199997615ms
+[NX Daemon Server] - 2025-07-09T07:43:31.857Z - [WATCHER]: apps/timer/src/views/TimerView.vue was modified
+[NX Daemon Server] - 2025-07-09T07:43:31.857Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:43:38.258Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:43:38.258Z - [REQUEST]: apps/timer/src/views/TimerView.vue
+[NX Daemon Server] - 2025-07-09T07:43:38.258Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:43:38.270Z - Time taken for 'hash changed files from watcher' 0.38762499997392297ms
+[NX Daemon Server] - 2025-07-09T07:43:38.279Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 17.04308299999684ms
+[NX Daemon Server] - 2025-07-09T07:43:38.282Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 18.834625000017695ms
+[NX Daemon Server] - 2025-07-09T07:43:38.329Z - Time taken for 'build-project-configs' 25.6816660000477ms
+[NX Daemon Server] - 2025-07-09T07:43:50.826Z - [WATCHER]: apps/timer/src/views/TimerView.vue was modified
+[NX Daemon Server] - 2025-07-09T07:43:50.826Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:43:57.227Z - [WATCHER]: apps/timer/src/views/TimerView.vue was modified
+[NX Daemon Server] - 2025-07-09T07:43:57.227Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:43:57.228Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:43:57.228Z - [REQUEST]: apps/timer/src/views/TimerView.vue
+[NX Daemon Server] - 2025-07-09T07:43:57.228Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:43:57.251Z - Time taken for 'hash changed files from watcher' 0.20612500002607703ms
+[NX Daemon Server] - 2025-07-09T07:43:57.289Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 52.87020799994934ms
+[NX Daemon Server] - 2025-07-09T07:43:57.294Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 59.690333000035025ms
+[NX Daemon Server] - 2025-07-09T07:43:57.305Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 64.50433399993926ms
+[NX Daemon Server] - 2025-07-09T07:43:57.409Z - Time taken for 'build-project-configs' 95.9311250000028ms
+[NX Daemon Server] - 2025-07-09T07:44:16.499Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:44:16.499Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:44:22.900Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:44:22.901Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T07:44:22.901Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:44:22.957Z - Time taken for 'hash changed files from watcher' 0.597499999916181ms
+[NX Daemon Server] - 2025-07-09T07:44:22.968Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 28.223250000039116ms
+[NX Daemon Server] - 2025-07-09T07:44:22.971Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 35.568708000006154ms
+[NX Daemon Server] - 2025-07-09T07:44:23.001Z - Time taken for 'build-project-configs' 65.93704200000502ms
+[NX Daemon Server] - 2025-07-09T07:44:23.664Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T07:44:23.664Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:44:28.892Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T07:44:28.892Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:44:30.066Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:44:30.066Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue,apps/timer/src/components/TimerSettingsForm.vue
+[NX Daemon Server] - 2025-07-09T07:44:30.066Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:44:30.082Z - Time taken for 'hash changed files from watcher' 0.35933300002943724ms
+[NX Daemon Server] - 2025-07-09T07:44:30.091Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 21.150917000020854ms
+[NX Daemon Server] - 2025-07-09T07:44:30.092Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 20.163042000029236ms
+[NX Daemon Server] - 2025-07-09T07:44:30.093Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 21.72837500006426ms
+[NX Daemon Server] - 2025-07-09T07:44:30.128Z - Time taken for 'build-project-configs' 29.879083000007086ms
+[NX Daemon Server] - 2025-07-09T07:44:36.471Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T07:44:36.471Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:44:42.873Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:44:42.874Z - [REQUEST]: apps/timer/src/components/TimerSettingsForm.vue
+[NX Daemon Server] - 2025-07-09T07:44:42.874Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:44:42.892Z - Time taken for 'hash changed files from watcher' 0.8720830000238493ms
+[NX Daemon Server] - 2025-07-09T07:44:42.903Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 22.643082999973558ms
+[NX Daemon Server] - 2025-07-09T07:44:42.904Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 22.44145800010301ms
+[NX Daemon Server] - 2025-07-09T07:44:42.905Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 23.90595799998846ms
+[NX Daemon Server] - 2025-07-09T07:44:42.934Z - Time taken for 'build-project-configs' 29.652541999937966ms
+[NX Daemon Server] - 2025-07-09T07:44:47.653Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:44:47.653Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T07:44:54.054Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:44:54.055Z - [REQUEST]: apps/timer/src/components/TimerSettingsForm.vue
+[NX Daemon Server] - 2025-07-09T07:44:54.055Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:44:54.070Z - Time taken for 'hash changed files from watcher' 0.3852920000208542ms
+[NX Daemon Server] - 2025-07-09T07:44:54.081Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 20.55683300003875ms
+[NX Daemon Server] - 2025-07-09T07:44:54.083Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 20.834917000029236ms
+[NX Daemon Server] - 2025-07-09T07:44:54.126Z - Time taken for 'build-project-configs' 29.101583000039682ms
+[NX Daemon Server] - 2025-07-09T07:45:12.216Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T07:45:12.216Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:45:18.618Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:45:18.618Z - [REQUEST]: apps/timer/src/components/TimerSettingsForm.vue
+[NX Daemon Server] - 2025-07-09T07:45:18.618Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:45:18.642Z - Time taken for 'hash changed files from watcher' 0.5459999999729916ms
+[NX Daemon Server] - 2025-07-09T07:45:18.659Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 32.32679200009443ms
+[NX Daemon Server] - 2025-07-09T07:45:18.663Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 34.35891700000502ms
+[NX Daemon Server] - 2025-07-09T07:45:18.703Z - Time taken for 'build-project-configs' 46.20833299995866ms
+[NX Daemon Server] - 2025-07-09T07:46:06.508Z - [WATCHER]: apps/timer/src/views/TimerView.vue was modified
+[NX Daemon Server] - 2025-07-09T07:46:06.509Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:46:09.830Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:46:09.831Z - [WATCHER]: apps/timer/src/views/TimerView.vue was modified
+[NX Daemon Server] - 2025-07-09T07:46:12.910Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:46:12.910Z - [REQUEST]: apps/timer/src/views/TimerView.vue
+[NX Daemon Server] - 2025-07-09T07:46:12.910Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:46:12.938Z - Time taken for 'hash changed files from watcher' 0.9162910000886768ms
+[NX Daemon Server] - 2025-07-09T07:46:12.951Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 29.149167000083253ms
+[NX Daemon Server] - 2025-07-09T07:46:12.955Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 34.443457999965176ms
+[NX Daemon Server] - 2025-07-09T07:46:13.000Z - Time taken for 'build-project-configs' 42.39624999999069ms
+[NX Daemon Server] - 2025-07-09T07:46:16.004Z - [WATCHER]: apps/timer/src/views/TimerView.vue was modified
+[NX Daemon Server] - 2025-07-09T07:46:16.004Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:46:17.987Z - [WATCHER]: apps/timer/src/views/TimerView.vue was modified
+[NX Daemon Server] - 2025-07-09T07:46:17.987Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:46:22.405Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:46:22.406Z - [REQUEST]: apps/timer/src/views/TimerView.vue
+[NX Daemon Server] - 2025-07-09T07:46:22.406Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:46:22.425Z - Time taken for 'hash changed files from watcher' 0.3445409999694675ms
+[NX Daemon Server] - 2025-07-09T07:46:22.434Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 16.997667000163347ms
+[NX Daemon Server] - 2025-07-09T07:46:22.436Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 16.888666999991983ms
+[NX Daemon Server] - 2025-07-09T07:46:22.437Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 19.01687499997206ms
+[NX Daemon Server] - 2025-07-09T07:46:22.472Z - Time taken for 'build-project-configs' 31.02233300008811ms
+[NX Daemon Server] - 2025-07-09T07:46:22.812Z - [WATCHER]: apps/timer/src/views/TimerView.vue was modified
+[NX Daemon Server] - 2025-07-09T07:46:22.812Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:46:29.204Z - [WATCHER]: apps/timer/src/views/TimerView.vue was modified
+[NX Daemon Server] - 2025-07-09T07:46:29.205Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:46:29.213Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:46:29.213Z - [REQUEST]: apps/timer/src/views/TimerView.vue
+[NX Daemon Server] - 2025-07-09T07:46:29.213Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:46:29.238Z - Time taken for 'hash changed files from watcher' 0.5238339998759329ms
+[NX Daemon Server] - 2025-07-09T07:46:29.254Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 31.93820900004357ms
+[NX Daemon Server] - 2025-07-09T07:46:29.257Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 33.6107919998467ms
+[NX Daemon Server] - 2025-07-09T07:46:29.260Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 34.75162500003353ms
+[NX Daemon Server] - 2025-07-09T07:46:29.321Z - Time taken for 'build-project-configs' 49.205124999862164ms
+[NX Daemon Server] - 2025-07-09T07:46:33.054Z - [WATCHER]: apps/timer/src/views/TimerView.vue was modified
+[NX Daemon Server] - 2025-07-09T07:46:33.054Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:46:39.455Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:46:39.456Z - [REQUEST]: apps/timer/src/views/TimerView.vue
+[NX Daemon Server] - 2025-07-09T07:46:39.456Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:46:39.478Z - Time taken for 'hash changed files from watcher' 0.4304160000756383ms
+[NX Daemon Server] - 2025-07-09T07:46:39.489Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 24.666332999942824ms
+[NX Daemon Server] - 2025-07-09T07:46:39.491Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 27.669291999889538ms
+[NX Daemon Server] - 2025-07-09T07:46:39.525Z - Time taken for 'build-project-configs' 38.83895800006576ms
+[NX Daemon Server] - 2025-07-09T07:46:42.180Z - [WATCHER]: apps/timer/src/views/TimerView.vue was modified
+[NX Daemon Server] - 2025-07-09T07:46:42.180Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:46:46.340Z - [WATCHER]: apps/timer/src/views/TimerView.vue was modified
+[NX Daemon Server] - 2025-07-09T07:46:46.341Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:46:48.581Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:46:48.582Z - [REQUEST]: apps/timer/src/views/TimerView.vue
+[NX Daemon Server] - 2025-07-09T07:46:48.582Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:46:48.605Z - Time taken for 'hash changed files from watcher' 0.4866250001359731ms
+[NX Daemon Server] - 2025-07-09T07:46:48.617Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 28.12679100013338ms
+[NX Daemon Server] - 2025-07-09T07:46:48.620Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 28.27979200007394ms
+[NX Daemon Server] - 2025-07-09T07:46:48.622Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 31.265875000040978ms
+[NX Daemon Server] - 2025-07-09T07:46:48.658Z - Time taken for 'build-project-configs' 40.05899999989197ms
+[NX Daemon Server] - 2025-07-09T07:46:49.601Z - [WATCHER]: apps/timer/src/views/TimerView.vue was modified
+[NX Daemon Server] - 2025-07-09T07:46:49.601Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:46:56.003Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:46:56.004Z - [REQUEST]: apps/timer/src/views/TimerView.vue
+[NX Daemon Server] - 2025-07-09T07:46:56.004Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:46:56.024Z - Time taken for 'hash changed files from watcher' 0.6573330000974238ms
+[NX Daemon Server] - 2025-07-09T07:46:56.033Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 20.42599999997765ms
+[NX Daemon Server] - 2025-07-09T07:46:56.036Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 25.119292000075802ms
+[NX Daemon Server] - 2025-07-09T07:46:56.039Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 25.029582999879494ms
+[NX Daemon Server] - 2025-07-09T07:46:56.073Z - Time taken for 'build-project-configs' 34.46624999982305ms
+[NX Daemon Server] - 2025-07-09T07:47:05.950Z - [WATCHER]: apps/timer/src/views/TimerView.vue was modified
+[NX Daemon Server] - 2025-07-09T07:47:05.950Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:47:12.352Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:47:12.352Z - [REQUEST]: apps/timer/src/views/TimerView.vue
+[NX Daemon Server] - 2025-07-09T07:47:12.352Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:47:12.366Z - Time taken for 'hash changed files from watcher' 0.5688749998807907ms
+[NX Daemon Server] - 2025-07-09T07:47:12.376Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 19.039875000016764ms
+[NX Daemon Server] - 2025-07-09T07:47:12.379Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 23.406541999895126ms
+[NX Daemon Server] - 2025-07-09T07:47:12.381Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 23.258499999996275ms
+[NX Daemon Server] - 2025-07-09T07:47:12.408Z - Time taken for 'build-project-configs' 28.89545900002122ms
+[NX Daemon Server] - 2025-07-09T07:47:27.259Z - [WATCHER]: apps/timer/src/views/TimerView.vue was modified
+[NX Daemon Server] - 2025-07-09T07:47:27.259Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:47:33.661Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:47:33.662Z - [REQUEST]: apps/timer/src/views/TimerView.vue
+[NX Daemon Server] - 2025-07-09T07:47:33.662Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:47:33.683Z - Time taken for 'hash changed files from watcher' 0.4526670000050217ms
+[NX Daemon Server] - 2025-07-09T07:47:33.694Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 23.531291000079364ms
+[NX Daemon Server] - 2025-07-09T07:47:33.696Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 24.014083000132814ms
+[NX Daemon Server] - 2025-07-09T07:47:33.697Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 25.0496249999851ms
+[NX Daemon Server] - 2025-07-09T07:47:33.728Z - Time taken for 'build-project-configs' 35.35429199994542ms
+[NX Daemon Server] - 2025-07-09T07:48:01.015Z - [WATCHER]: apps/timer/src/App.vue was modified
+[NX Daemon Server] - 2025-07-09T07:48:01.016Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:48:06.449Z - [WATCHER]: apps/timer/src/App.vue was modified
+[NX Daemon Server] - 2025-07-09T07:48:06.449Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:48:07.422Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:48:07.422Z - [REQUEST]: apps/timer/src/App.vue
+[NX Daemon Server] - 2025-07-09T07:48:07.422Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:48:07.443Z - Time taken for 'hash changed files from watcher' 5.73091599997133ms
+[NX Daemon Server] - 2025-07-09T07:48:07.456Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 26.172624999890104ms
+[NX Daemon Server] - 2025-07-09T07:48:07.458Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 26.785416999831796ms
+[NX Daemon Server] - 2025-07-09T07:48:07.491Z - Time taken for 'build-project-configs' 36.74262500018813ms
+[NX Daemon Server] - 2025-07-09T07:48:28.692Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T07:48:28.693Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:48:31.242Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T07:48:31.242Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:48:34.202Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T07:48:34.202Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:48:35.094Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:48:35.094Z - [REQUEST]: apps/timer/src/components/TimerSettingsForm.vue
+[NX Daemon Server] - 2025-07-09T07:48:35.094Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:48:35.115Z - Time taken for 'hash changed files from watcher' 0.49529200000688434ms
+[NX Daemon Server] - 2025-07-09T07:48:35.130Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 30.013874999945983ms
+[NX Daemon Server] - 2025-07-09T07:48:35.132Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 28.395332999993116ms
+[NX Daemon Server] - 2025-07-09T07:48:35.210Z - Time taken for 'build-project-configs' 37.78954100003466ms
+[NX Daemon Server] - 2025-07-09T07:48:42.682Z - [WATCHER]: packages/ui/src/index.ts was modified
+[NX Daemon Server] - 2025-07-09T07:48:42.683Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:48:44.455Z - [WATCHER]: packages/ui/src/index.ts was modified
+[NX Daemon Server] - 2025-07-09T07:48:44.456Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:48:45.919Z - [WATCHER]: packages/ui/src/index.ts was modified
+[NX Daemon Server] - 2025-07-09T07:48:45.919Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:48:49.084Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:48:49.085Z - [REQUEST]: packages/ui/src/index.ts
+[NX Daemon Server] - 2025-07-09T07:48:49.085Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:48:49.104Z - Time taken for 'hash changed files from watcher' 0.49041700013913214ms
+[NX Daemon Server] - 2025-07-09T07:48:49.119Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 27.24866700009443ms
+[NX Daemon Server] - 2025-07-09T07:48:49.122Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 27.748000000137836ms
+[NX Daemon Server] - 2025-07-09T07:48:49.153Z - Time taken for 'build-project-configs' 37.3624589999672ms
+[NX Daemon Server] - 2025-07-09T07:49:08.102Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T07:49:08.102Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:49:14.504Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:49:14.505Z - [REQUEST]: apps/timer/src/components/TimerSettingsForm.vue
+[NX Daemon Server] - 2025-07-09T07:49:14.505Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:49:14.531Z - Time taken for 'hash changed files from watcher' 0.9836669999640435ms
+[NX Daemon Server] - 2025-07-09T07:49:14.546Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 31.885040999855846ms
+[NX Daemon Server] - 2025-07-09T07:49:14.548Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 36.53170799999498ms
+[NX Daemon Server] - 2025-07-09T07:49:14.549Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 34.094457999803126ms
+[NX Daemon Server] - 2025-07-09T07:49:14.581Z - Time taken for 'build-project-configs' 43.24387499992736ms
+[NX Daemon Server] - 2025-07-09T07:49:40.275Z - [WATCHER]: packages/ui/src/index.ts was modified
+[NX Daemon Server] - 2025-07-09T07:49:40.276Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:49:46.676Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:49:46.677Z - [REQUEST]: packages/ui/src/index.ts
+[NX Daemon Server] - 2025-07-09T07:49:46.677Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:49:46.698Z - Time taken for 'hash changed files from watcher' 0.5457500000484288ms
+[NX Daemon Server] - 2025-07-09T07:49:46.715Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 30.757916999980807ms
+[NX Daemon Server] - 2025-07-09T07:49:46.718Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 33.45904200011864ms
+[NX Daemon Server] - 2025-07-09T07:49:46.749Z - Time taken for 'build-project-configs' 40.27191700018011ms
+[NX Daemon Server] - 2025-07-09T07:51:40.536Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T07:51:40.537Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:51:46.505Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T07:51:46.506Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:51:46.942Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:51:46.943Z - [REQUEST]: apps/timer/src/components/TimerSettingsForm.vue
+[NX Daemon Server] - 2025-07-09T07:51:46.944Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:51:46.980Z - Time taken for 'hash changed files from watcher' 1.5106250001117587ms
+[NX Daemon Server] - 2025-07-09T07:51:46.996Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 35.625499999849126ms
+[NX Daemon Server] - 2025-07-09T07:51:46.998Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 38.95183299994096ms
+[NX Daemon Server] - 2025-07-09T07:51:47.001Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 38.040290999924764ms
+[NX Daemon Server] - 2025-07-09T07:51:47.040Z - Time taken for 'build-project-configs' 54.231833999976516ms
+[NX Daemon Server] - 2025-07-09T07:52:07.012Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T07:52:07.012Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:52:13.417Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:52:13.418Z - [REQUEST]: apps/timer/src/components/TimerSettingsForm.vue
+[NX Daemon Server] - 2025-07-09T07:52:13.418Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:52:13.438Z - Time taken for 'hash changed files from watcher' 3.250959000084549ms
+[NX Daemon Server] - 2025-07-09T07:52:13.450Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 21.963833999820054ms
+[NX Daemon Server] - 2025-07-09T07:52:13.452Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 23.522667000070214ms
+[NX Daemon Server] - 2025-07-09T07:52:13.493Z - Time taken for 'build-project-configs' 31.65670799999498ms
+[NX Daemon Server] - 2025-07-09T07:52:23.241Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T07:52:23.241Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:52:29.642Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:52:29.643Z - [REQUEST]: apps/timer/src/components/TimerSettingsForm.vue
+[NX Daemon Server] - 2025-07-09T07:52:29.643Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:52:29.661Z - Time taken for 'hash changed files from watcher' 0.48945800005458295ms
+[NX Daemon Server] - 2025-07-09T07:52:29.674Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 23.601250000065193ms
+[NX Daemon Server] - 2025-07-09T07:52:29.712Z - Time taken for 'build-project-configs' 32.20966699998826ms
+[NX Daemon Server] - 2025-07-09T07:52:34.524Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T07:52:34.525Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:52:40.927Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:52:40.928Z - [REQUEST]: apps/timer/src/components/TimerSettingsForm.vue
+[NX Daemon Server] - 2025-07-09T07:52:40.928Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:52:40.954Z - Time taken for 'hash changed files from watcher' 0.6367089999839664ms
+[NX Daemon Server] - 2025-07-09T07:52:40.967Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 27.36312499991618ms
+[NX Daemon Server] - 2025-07-09T07:52:40.968Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 28.15795799996704ms
+[NX Daemon Server] - 2025-07-09T07:52:41.000Z - Time taken for 'build-project-configs' 40.94604199985042ms
+[NX Daemon Server] - 2025-07-09T07:53:00.579Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T07:53:00.579Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:53:00.803Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T07:53:00.804Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:53:05.796Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T07:53:05.796Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:53:06.981Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:53:06.981Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T07:53:06.981Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:53:07.001Z - Time taken for 'hash changed files from watcher' 0.5450000001583248ms
+[NX Daemon Server] - 2025-07-09T07:53:07.015Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 25.22533300006762ms
+[NX Daemon Server] - 2025-07-09T07:53:07.017Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 26.286542000016198ms
+[NX Daemon Server] - 2025-07-09T07:53:07.019Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 27.478667000075802ms
+[NX Daemon Server] - 2025-07-09T07:53:07.056Z - Time taken for 'build-project-configs' 38.59808400017209ms
+[NX Daemon Server] - 2025-07-09T07:53:35.969Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T07:53:35.971Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:53:42.371Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:53:42.372Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T07:53:42.372Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:53:42.392Z - Time taken for 'hash changed files from watcher' 0.4983749999664724ms
+[NX Daemon Server] - 2025-07-09T07:53:42.409Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 29.53662499994971ms
+[NX Daemon Server] - 2025-07-09T07:53:42.415Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 35.083083000034094ms
+[NX Daemon Server] - 2025-07-09T07:53:42.451Z - Time taken for 'build-project-configs' 40.55437500006519ms
+[NX Daemon Server] - 2025-07-09T07:53:51.570Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T07:53:51.570Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:53:57.972Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:53:57.972Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T07:53:57.972Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:53:57.992Z - Time taken for 'hash changed files from watcher' 0.4543749999720603ms
+[NX Daemon Server] - 2025-07-09T07:53:58.003Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 23.701917000114918ms
+[NX Daemon Server] - 2025-07-09T07:53:58.005Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 26.49441700009629ms
+[NX Daemon Server] - 2025-07-09T07:53:58.007Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 25.925499999895692ms
+[NX Daemon Server] - 2025-07-09T07:53:58.037Z - Time taken for 'build-project-configs' 32.81099999998696ms
+[NX Daemon Server] - 2025-07-09T07:54:13.964Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.service.ts was modified
+[NX Daemon Server] - 2025-07-09T07:54:13.964Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:54:20.366Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:54:20.366Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.service.ts
+[NX Daemon Server] - 2025-07-09T07:54:20.366Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:54:20.386Z - Time taken for 'hash changed files from watcher' 0.5154999999795109ms
+[NX Daemon Server] - 2025-07-09T07:54:20.424Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 48.76758400001563ms
+[NX Daemon Server] - 2025-07-09T07:54:20.426Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 51.91062500001863ms
+[NX Daemon Server] - 2025-07-09T07:54:20.428Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 53.29287500004284ms
+[NX Daemon Server] - 2025-07-09T07:54:20.466Z - Time taken for 'build-project-configs' 60.11337499995716ms
+[NX Daemon Server] - 2025-07-09T07:54:20.908Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.service.ts was modified
+[NX Daemon Server] - 2025-07-09T07:54:20.909Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:54:22.024Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.service.ts was modified
+[NX Daemon Server] - 2025-07-09T07:54:22.025Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:54:23.759Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.service.ts was modified
+[NX Daemon Server] - 2025-07-09T07:54:23.759Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:54:27.309Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:54:27.309Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.service.ts
+[NX Daemon Server] - 2025-07-09T07:54:27.309Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:54:27.324Z - Time taken for 'hash changed files from watcher' 0.5075000000651926ms
+[NX Daemon Server] - 2025-07-09T07:54:27.335Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 20.39633300015703ms
+[NX Daemon Server] - 2025-07-09T07:54:27.337Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 21.371749999932945ms
+[NX Daemon Server] - 2025-07-09T07:54:27.366Z - Time taken for 'build-project-configs' 29.390209000092ms
+[NX Daemon Server] - 2025-07-09T07:54:42.377Z - [WATCHER]: apps/timer/src/views/TimerView.vue was modified
+[NX Daemon Server] - 2025-07-09T07:54:42.377Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:54:43.633Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:54:43.634Z - [WATCHER]: apps/timer/src/views/TimerView.vue was modified
+[NX Daemon Server] - 2025-07-09T07:54:46.886Z - [WATCHER]: apps/timer/src/views/TimerView.vue was modified
+[NX Daemon Server] - 2025-07-09T07:54:46.887Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:54:48.779Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:54:48.779Z - [REQUEST]: apps/timer/src/views/TimerView.vue
+[NX Daemon Server] - 2025-07-09T07:54:48.780Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:54:48.800Z - Time taken for 'hash changed files from watcher' 0.38949999981559813ms
+[NX Daemon Server] - 2025-07-09T07:54:48.814Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 27.15108300000429ms
+[NX Daemon Server] - 2025-07-09T07:54:48.816Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 28.63570800004527ms
+[NX Daemon Server] - 2025-07-09T07:54:48.819Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 30.768208999885246ms
+[NX Daemon Server] - 2025-07-09T07:54:48.855Z - Time taken for 'build-project-configs' 42.73320799996145ms
+[NX Daemon Server] - 2025-07-09T07:54:57.934Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.service.ts was modified
+[NX Daemon Server] - 2025-07-09T07:54:57.935Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:55:03.577Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.service.ts was modified
+[NX Daemon Server] - 2025-07-09T07:55:03.577Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:55:04.335Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:55:04.335Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.service.ts
+[NX Daemon Server] - 2025-07-09T07:55:04.335Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:55:04.355Z - Time taken for 'hash changed files from watcher' 0.5782500000204891ms
+[NX Daemon Server] - 2025-07-09T07:55:04.366Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 24.516208000015467ms
+[NX Daemon Server] - 2025-07-09T07:55:04.371Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 26.812083000084385ms
+[NX Daemon Server] - 2025-07-09T07:55:04.399Z - Time taken for 'build-project-configs' 35.30324999988079ms
+[NX Daemon Server] - 2025-07-09T07:56:16.989Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T07:56:16.990Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:56:21.888Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T07:56:21.888Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:56:23.393Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:56:23.393Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T07:56:23.394Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:56:23.427Z - Time taken for 'hash changed files from watcher' 2.3255839999765158ms
+[NX Daemon Server] - 2025-07-09T07:56:23.443Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 32.64962500007823ms
+[NX Daemon Server] - 2025-07-09T07:56:23.446Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 37.21858399990015ms
+[NX Daemon Server] - 2025-07-09T07:56:23.485Z - Time taken for 'build-project-configs' 46.38116600015201ms
+[NX Daemon Server] - 2025-07-09T07:56:25.020Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T07:56:25.020Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:56:26.519Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T07:56:26.519Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:56:28.175Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T07:56:28.175Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:56:31.422Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:56:31.422Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T07:56:31.422Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:56:31.435Z - Time taken for 'hash changed files from watcher' 0.31324999989010394ms
+[NX Daemon Server] - 2025-07-09T07:56:31.443Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 17.552084000082687ms
+[NX Daemon Server] - 2025-07-09T07:56:31.446Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 20.16691599995829ms
+[NX Daemon Server] - 2025-07-09T07:56:31.476Z - Time taken for 'build-project-configs' 26.827625000150874ms
+[NX Daemon Server] - 2025-07-09T07:56:32.811Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T07:56:32.811Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:56:36.559Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T07:56:36.559Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:56:37.709Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T07:56:37.709Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:56:39.212Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:56:39.213Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T07:56:39.213Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:56:39.233Z - Time taken for 'hash changed files from watcher' 0.5923750000074506ms
+[NX Daemon Server] - 2025-07-09T07:56:39.241Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 16.092875000089407ms
+[NX Daemon Server] - 2025-07-09T07:56:39.243Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 18.443042000057176ms
+[NX Daemon Server] - 2025-07-09T07:56:39.244Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 21.102249999996275ms
+[NX Daemon Server] - 2025-07-09T07:56:39.270Z - Time taken for 'build-project-configs' 30.218708999920636ms
+[NX Daemon Server] - 2025-07-09T07:56:45.583Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T07:56:45.584Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:56:46.067Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T07:56:46.067Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:56:49.471Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-09T07:56:49.472Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-09T07:56:49.472Z - Handled RECORD_OUTPUTS_HASH. Handling time: 0. Response time: 1.
+[NX Daemon Server] - 2025-07-09T07:56:49.481Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2025-07-09T07:56:50.754Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T07:56:50.754Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-09T07:56:50.754Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-09T07:56:50.755Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2025-07-09T07:56:50.755Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:56:50.755Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T07:56:50.755Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:56:50.768Z - Time taken for 'hash changed files from watcher' 0.1568330000154674ms
+[NX Daemon Server] - 2025-07-09T07:56:50.775Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 17.480834000045434ms
+[NX Daemon Server] - 2025-07-09T07:56:50.777Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 17.912166999885812ms
+[NX Daemon Server] - 2025-07-09T07:56:50.778Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 19.509374999906868ms
+[NX Daemon Server] - 2025-07-09T07:56:50.787Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2025-07-09T07:56:50.787Z - Time taken for 'total for creating and serializing project graph' 32.24216700019315ms
+[NX Daemon Server] - 2025-07-09T07:56:50.789Z - Done responding to the client project-graph
+[NX Daemon Server] - 2025-07-09T07:56:50.789Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 32. Response time: 2.
+[NX Daemon Server] - 2025-07-09T07:56:50.807Z - [REQUEST]: Responding to the client. handleHashTasks
+[NX Daemon Server] - 2025-07-09T07:56:50.807Z - Done responding to the client handleHashTasks
+[NX Daemon Server] - 2025-07-09T07:56:50.807Z - Handled HASH_TASKS. Handling time: 3. Response time: 0.
+[NX Daemon Server] - 2025-07-09T07:57:17.528Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:57:17.535Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T07:57:17.641Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:57:17.641Z - [REQUEST]: apps/timer/src/components/TimerSettingsForm.vue
+[NX Daemon Server] - 2025-07-09T07:57:17.641Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:57:17.677Z - Time taken for 'hash changed files from watcher' 4.809249999932945ms
+[NX Daemon Server] - 2025-07-09T07:57:17.696Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 38.53095899987966ms
+[NX Daemon Server] - 2025-07-09T07:57:17.697Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 39.13595800008625ms
+[NX Daemon Server] - 2025-07-09T07:57:17.704Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 47.418209000024945ms
+[NX Daemon Server] - 2025-07-09T07:57:17.737Z - Time taken for 'build-project-configs' 55.98783400002867ms
+[NX Daemon Server] - 2025-07-09T07:57:25.866Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T07:57:25.867Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:57:26.067Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:57:26.067Z - [REQUEST]: apps/timer/src/components/TimerSettingsForm.vue
+[NX Daemon Server] - 2025-07-09T07:57:26.067Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:57:26.098Z - Time taken for 'hash changed files from watcher' 0.22279200004413724ms
+[NX Daemon Server] - 2025-07-09T07:57:26.116Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 39.329999999841675ms
+[NX Daemon Server] - 2025-07-09T07:57:26.122Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 44.31787500018254ms
+[NX Daemon Server] - 2025-07-09T07:57:26.127Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 52.79837500001304ms
+[NX Daemon Server] - 2025-07-09T07:57:26.167Z - Time taken for 'build-project-configs' 60.55737500009127ms
+[NX Daemon Server] - 2025-07-09T07:57:27.029Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T07:57:27.030Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:57:27.432Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:57:27.433Z - [REQUEST]: apps/timer/src/components/TimerSettingsForm.vue
+[NX Daemon Server] - 2025-07-09T07:57:27.433Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:57:27.449Z - Time taken for 'hash changed files from watcher' 1.2265000001061708ms
+[NX Daemon Server] - 2025-07-09T07:57:27.456Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 15.801457999972627ms
+[NX Daemon Server] - 2025-07-09T07:57:27.458Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 18.819041999988258ms
+[NX Daemon Server] - 2025-07-09T07:57:27.460Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 19.39837499987334ms
+[NX Daemon Server] - 2025-07-09T07:57:27.470Z - Time taken for 'build-project-configs' 27.045000000158325ms
+[NX Daemon Server] - 2025-07-09T07:57:37.100Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T07:57:37.100Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:57:37.902Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:57:37.902Z - [REQUEST]: apps/timer/src/components/TimerSettingsForm.vue
+[NX Daemon Server] - 2025-07-09T07:57:37.902Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:57:37.922Z - Time taken for 'hash changed files from watcher' 0.2791659999638796ms
+[NX Daemon Server] - 2025-07-09T07:57:37.946Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 38.46058399998583ms
+[NX Daemon Server] - 2025-07-09T07:57:37.962Z - Time taken for 'build-project-configs' 44.10166599997319ms
+[NX Daemon Server] - 2025-07-09T07:57:48.288Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T07:57:48.288Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:57:49.889Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:57:49.889Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T07:57:49.890Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:57:49.907Z - Time taken for 'hash changed files from watcher' 0.3826250000856817ms
+[NX Daemon Server] - 2025-07-09T07:57:49.920Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 24.13833300000988ms
+[NX Daemon Server] - 2025-07-09T07:57:49.922Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 23.81333399983123ms
+[NX Daemon Server] - 2025-07-09T07:57:49.923Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 28.48016699985601ms
+[NX Daemon Server] - 2025-07-09T07:57:49.969Z - Time taken for 'build-project-configs' 34.981958999997005ms
+[NX Daemon Server] - 2025-07-09T07:57:52.224Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T07:57:52.226Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:57:55.427Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:57:55.428Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T07:57:55.428Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:57:55.446Z - Time taken for 'hash changed files from watcher' 0.5269170000683516ms
+[NX Daemon Server] - 2025-07-09T07:57:55.459Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 20.673708999995142ms
+[NX Daemon Server] - 2025-07-09T07:57:55.460Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 26.371708000078797ms
+[NX Daemon Server] - 2025-07-09T07:57:55.487Z - Time taken for 'build-project-configs' 31.96750000002794ms
+[NX Daemon Server] - 2025-07-09T07:57:59.122Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T07:57:59.124Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:58:03.371Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T07:58:03.371Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:58:05.525Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:58:05.525Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T07:58:05.525Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:58:05.540Z - Time taken for 'hash changed files from watcher' 0.34975000005215406ms
+[NX Daemon Server] - 2025-07-09T07:58:05.553Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 20.73816700000316ms
+[NX Daemon Server] - 2025-07-09T07:58:05.557Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 24.234459000173956ms
+[NX Daemon Server] - 2025-07-09T07:58:05.560Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 28.174875000026077ms
+[NX Daemon Server] - 2025-07-09T07:58:05.594Z - Time taken for 'build-project-configs' 33.28875000006519ms
+[NX Daemon Server] - 2025-07-09T07:58:31.351Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:58:31.354Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T07:58:37.755Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:58:37.755Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T07:58:37.755Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:58:37.778Z - Time taken for 'hash changed files from watcher' 0.9280419999267906ms
+[NX Daemon Server] - 2025-07-09T07:58:37.791Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 24.91116699995473ms
+[NX Daemon Server] - 2025-07-09T07:58:37.792Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 25.047166999895126ms
+[NX Daemon Server] - 2025-07-09T07:58:37.830Z - Time taken for 'build-project-configs' 35.94091699994169ms
+[NX Daemon Server] - 2025-07-09T07:58:38.379Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T07:58:38.379Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:58:44.781Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:58:44.781Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T07:58:44.781Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:58:44.803Z - Time taken for 'hash changed files from watcher' 0.40187499998137355ms
+[NX Daemon Server] - 2025-07-09T07:58:44.813Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 21.03454100014642ms
+[NX Daemon Server] - 2025-07-09T07:58:44.818Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 25.98566700005904ms
+[NX Daemon Server] - 2025-07-09T07:58:44.820Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 28.825666000135243ms
+[NX Daemon Server] - 2025-07-09T07:58:44.853Z - Time taken for 'build-project-configs' 38.68862499995157ms
+[NX Daemon Server] - 2025-07-09T07:58:45.037Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T07:58:45.037Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:58:51.439Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:58:51.439Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T07:58:51.439Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:58:51.450Z - Time taken for 'hash changed files from watcher' 0.21762499981559813ms
+[NX Daemon Server] - 2025-07-09T07:58:51.459Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 16.096832999959588ms
+[NX Daemon Server] - 2025-07-09T07:58:51.461Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 17.403666999889538ms
+[NX Daemon Server] - 2025-07-09T07:58:51.462Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 19.779000000096858ms
+[NX Daemon Server] - 2025-07-09T07:58:51.491Z - Time taken for 'build-project-configs' 23.27966699982062ms
+[NX Daemon Server] - 2025-07-09T07:59:19.821Z - [WATCHER]: apps/timer/src/views/TimerView.vue was modified
+[NX Daemon Server] - 2025-07-09T07:59:19.822Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:59:26.224Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:59:26.224Z - [REQUEST]: apps/timer/src/views/TimerView.vue
+[NX Daemon Server] - 2025-07-09T07:59:26.224Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:59:26.253Z - Time taken for 'hash changed files from watcher' 0.6590830001514405ms
+[NX Daemon Server] - 2025-07-09T07:59:26.273Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 39.18537500011735ms
+[NX Daemon Server] - 2025-07-09T07:59:26.277Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 43.52637500013225ms
+[NX Daemon Server] - 2025-07-09T07:59:26.295Z - Time taken for 'build-project-configs' 51.72066600015387ms
+[NX Daemon Server] - 2025-07-09T07:59:47.163Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.service.ts was modified
+[NX Daemon Server] - 2025-07-09T07:59:47.164Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T07:59:53.574Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T07:59:53.578Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.service.ts
+[NX Daemon Server] - 2025-07-09T07:59:53.578Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T07:59:53.647Z - Time taken for 'hash changed files from watcher' 1.855625000083819ms
+[NX Daemon Server] - 2025-07-09T07:59:53.719Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 106.08987500006333ms
+[NX Daemon Server] - 2025-07-09T07:59:53.870Z - Time taken for 'build-project-configs' 157.07920800009742ms
+[NX Daemon Server] - 2025-07-09T08:00:24.564Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:00:24.565Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:00:28.615Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:00:28.615Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:00:30.968Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:00:30.968Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T08:00:30.968Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:00:30.986Z - Time taken for 'hash changed files from watcher' 1.119124999968335ms
+[NX Daemon Server] - 2025-07-09T08:00:31.000Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 24.600417000008747ms
+[NX Daemon Server] - 2025-07-09T08:00:31.002Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 26.510207999963313ms
+[NX Daemon Server] - 2025-07-09T08:00:31.004Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 29.68954100017436ms
+[NX Daemon Server] - 2025-07-09T08:00:31.036Z - Time taken for 'build-project-configs' 34.43683400005102ms
+[NX Daemon Server] - 2025-07-09T08:00:43.873Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:00:43.874Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:00:50.275Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:00:50.275Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T08:00:50.275Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:00:50.303Z - Time taken for 'hash changed files from watcher' 0.396582999965176ms
+[NX Daemon Server] - 2025-07-09T08:00:50.312Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 28.848541000159457ms
+[NX Daemon Server] - 2025-07-09T08:00:50.315Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 29.33233299991116ms
+[NX Daemon Server] - 2025-07-09T08:00:50.316Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 30.741042000008747ms
+[NX Daemon Server] - 2025-07-09T08:00:50.348Z - Time taken for 'build-project-configs' 40.59791600005701ms
+[NX Daemon Server] - 2025-07-09T08:01:03.272Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:01:03.273Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:01:04.868Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:01:04.868Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:01:09.676Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:01:09.676Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T08:01:09.676Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:01:09.705Z - Time taken for 'hash changed files from watcher' 0.7368749999441206ms
+[NX Daemon Server] - 2025-07-09T08:01:09.724Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 36.268416999839246ms
+[NX Daemon Server] - 2025-07-09T08:01:09.757Z - Time taken for 'build-project-configs' 45.692125000059605ms
+[NX Daemon Server] - 2025-07-09T08:01:18.984Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:01:18.988Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:01:25.390Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:01:25.390Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T08:01:25.390Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:01:25.423Z - Time taken for 'hash changed files from watcher' 0.7756669998634607ms
+[NX Daemon Server] - 2025-07-09T08:01:25.444Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 34.07616699999198ms
+[NX Daemon Server] - 2025-07-09T08:01:25.445Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 38.51787499990314ms
+[NX Daemon Server] - 2025-07-09T08:01:25.482Z - Time taken for 'build-project-configs' 57.34912499994971ms
+[NX Daemon Server] - 2025-07-09T08:01:27.908Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:01:27.908Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:01:34.310Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:01:34.310Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T08:01:34.310Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:01:34.326Z - Time taken for 'hash changed files from watcher' 0.39262499986216426ms
+[NX Daemon Server] - 2025-07-09T08:01:34.337Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 18.76383399986662ms
+[NX Daemon Server] - 2025-07-09T08:01:34.340Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 23.434458000119776ms
+[NX Daemon Server] - 2025-07-09T08:01:34.372Z - Time taken for 'build-project-configs' 30.732249999884516ms
+[NX Daemon Server] - 2025-07-09T08:01:45.402Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:01:45.402Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:01:51.803Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:01:51.804Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T08:01:51.804Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:01:51.827Z - Time taken for 'hash changed files from watcher' 0.4974579999689013ms
+[NX Daemon Server] - 2025-07-09T08:01:51.841Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 27.741457999916747ms
+[NX Daemon Server] - 2025-07-09T08:01:51.844Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 29.519125000108033ms
+[NX Daemon Server] - 2025-07-09T08:01:51.845Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 32.36983300000429ms
+[NX Daemon Server] - 2025-07-09T08:01:51.876Z - Time taken for 'build-project-configs' 38.976792000001296ms
+[NX Daemon Server] - 2025-07-09T08:01:52.192Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:01:52.193Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:01:58.595Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:01:58.596Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T08:01:58.596Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:01:58.621Z - Time taken for 'hash changed files from watcher' 0.7779999999329448ms
+[NX Daemon Server] - 2025-07-09T08:01:58.640Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 35.66275000013411ms
+[NX Daemon Server] - 2025-07-09T08:01:58.642Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 35.04279200010933ms
+[NX Daemon Server] - 2025-07-09T08:01:58.680Z - Time taken for 'build-project-configs' 46.72629199991934ms
+[NX Daemon Server] - 2025-07-09T08:02:00.698Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:02:00.698Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:02:07.100Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:02:07.100Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T08:02:07.100Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:02:07.127Z - Time taken for 'hash changed files from watcher' 0.627957999939099ms
+[NX Daemon Server] - 2025-07-09T08:02:07.140Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 28.893917000154033ms
+[NX Daemon Server] - 2025-07-09T08:02:07.143Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 35.09454199997708ms
+[NX Daemon Server] - 2025-07-09T08:02:07.145Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 32.36141699994914ms
+[NX Daemon Server] - 2025-07-09T08:02:07.177Z - Time taken for 'build-project-configs' 44.74545900011435ms
+[NX Daemon Server] - 2025-07-09T08:02:24.682Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:02:24.683Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:02:29.832Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:02:29.832Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:02:31.084Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:02:31.084Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T08:02:31.084Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:02:31.106Z - Time taken for 'hash changed files from watcher' 0.42016700003296137ms
+[NX Daemon Server] - 2025-07-09T08:02:31.117Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 23.208749999990687ms
+[NX Daemon Server] - 2025-07-09T08:02:31.119Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 24.430750000057742ms
+[NX Daemon Server] - 2025-07-09T08:02:31.155Z - Time taken for 'build-project-configs' 35.99716699984856ms
+[NX Daemon Server] - 2025-07-09T08:02:44.700Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:02:44.700Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:02:46.515Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:02:46.516Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:02:47.751Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:02:47.751Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:02:49.847Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:02:49.848Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:02:51.102Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:02:51.103Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T08:02:51.103Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:02:51.123Z - Time taken for 'hash changed files from watcher' 0.3836250000167638ms
+[NX Daemon Server] - 2025-07-09T08:02:51.134Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 21.176375000039116ms
+[NX Daemon Server] - 2025-07-09T08:02:51.138Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 25.104708000086248ms
+[NX Daemon Server] - 2025-07-09T08:02:51.171Z - Time taken for 'build-project-configs' 36.00666700000875ms
+[NX Daemon Server] - 2025-07-09T08:02:52.813Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:02:52.814Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:02:56.067Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:02:56.067Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:02:59.216Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:02:59.217Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T08:02:59.217Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:02:59.235Z - Time taken for 'hash changed files from watcher' 0.596667000092566ms
+[NX Daemon Server] - 2025-07-09T08:02:59.247Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 23.831416999921203ms
+[NX Daemon Server] - 2025-07-09T08:02:59.251Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 26.186083000153303ms
+[NX Daemon Server] - 2025-07-09T08:02:59.288Z - Time taken for 'build-project-configs' 36.12770799989812ms
+[NX Daemon Server] - 2025-07-09T08:03:52.080Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:03:52.081Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:03:57.358Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:03:57.359Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:03:58.482Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:03:58.483Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T08:03:58.483Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:03:58.505Z - Time taken for 'hash changed files from watcher' 1.2050830000080168ms
+[NX Daemon Server] - 2025-07-09T08:03:58.534Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 43.73233299981803ms
+[NX Daemon Server] - 2025-07-09T08:03:58.536Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 44.037000000011176ms
+[NX Daemon Server] - 2025-07-09T08:03:58.538Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 44.0386250000447ms
+[NX Daemon Server] - 2025-07-09T08:03:58.575Z - Time taken for 'build-project-configs' 52.471791999880224ms
+[NX Daemon Server] - 2025-07-09T08:04:02.483Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:04:02.483Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:04:08.885Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:04:08.886Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T08:04:08.886Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:04:08.903Z - Time taken for 'hash changed files from watcher' 0.6009159996174276ms
+[NX Daemon Server] - 2025-07-09T08:04:08.911Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 19.291791999712586ms
+[NX Daemon Server] - 2025-07-09T08:04:08.914Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 19.95724999997765ms
+[NX Daemon Server] - 2025-07-09T08:04:08.916Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 23.405790999997407ms
+[NX Daemon Server] - 2025-07-09T08:04:08.947Z - Time taken for 'build-project-configs' 30.74441699963063ms
+[NX Daemon Server] - 2025-07-09T08:04:44.597Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:04:44.598Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:04:46.333Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:04:46.333Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:04:50.999Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:04:50.999Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T08:04:50.999Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:04:51.021Z - Time taken for 'hash changed files from watcher' 0.34387499978765845ms
+[NX Daemon Server] - 2025-07-09T08:04:51.039Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 32.9154579997994ms
+[NX Daemon Server] - 2025-07-09T08:04:51.040Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 32.16958299977705ms
+[NX Daemon Server] - 2025-07-09T08:04:51.072Z - Time taken for 'build-project-configs' 40.717166000045836ms
+[NX Daemon Server] - 2025-07-09T08:04:51.741Z - [WATCHER]: packages/ui/src/components/TPopup/TPopup.vue was modified
+[NX Daemon Server] - 2025-07-09T08:04:51.741Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:04:58.144Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:04:58.145Z - [REQUEST]: packages/ui/src/components/TPopup/TPopup.vue
+[NX Daemon Server] - 2025-07-09T08:04:58.145Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:04:58.167Z - Time taken for 'hash changed files from watcher' 0.7632079999893904ms
+[NX Daemon Server] - 2025-07-09T08:04:58.184Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 31.585625000298023ms
+[NX Daemon Server] - 2025-07-09T08:04:58.188Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 32.129084000363946ms
+[NX Daemon Server] - 2025-07-09T08:04:58.230Z - Time taken for 'build-project-configs' 45.648792000021785ms
+[NX Daemon Server] - 2025-07-09T08:06:18.463Z - [WATCHER]: packages/ui/src/components/TTopBar/TTopBar.vue was modified
+[NX Daemon Server] - 2025-07-09T08:06:18.464Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:06:24.866Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:06:24.866Z - [REQUEST]: packages/ui/src/components/TTopBar/TTopBar.vue
+[NX Daemon Server] - 2025-07-09T08:06:24.866Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:06:24.891Z - Time taken for 'hash changed files from watcher' 1.1234999997541308ms
+[NX Daemon Server] - 2025-07-09T08:06:24.906Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 29.804833999834955ms
+[NX Daemon Server] - 2025-07-09T08:06:24.909Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 31.059582999907434ms
+[NX Daemon Server] - 2025-07-09T08:06:24.948Z - Time taken for 'build-project-configs' 40.30579200014472ms
+[NX Daemon Server] - 2025-07-09T08:06:46.968Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T08:06:46.968Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:06:53.370Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:06:53.370Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T08:06:53.370Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:06:53.446Z - Time taken for 'hash changed files from watcher' 0.5100830001756549ms
+[NX Daemon Server] - 2025-07-09T08:06:53.504Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 127.1001670002006ms
+[NX Daemon Server] - 2025-07-09T08:06:53.514Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 136.1847079996951ms
+[NX Daemon Server] - 2025-07-09T08:06:53.520Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 142.9313750001602ms
+[NX Daemon Server] - 2025-07-09T08:06:53.601Z - Time taken for 'build-project-configs' 155.51779100019485ms
+[NX Daemon Server] - 2025-07-09T08:18:19.948Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T08:18:19.949Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:18:23.417Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T08:18:23.418Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:18:24.414Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T08:18:24.416Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:18:26.351Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:18:26.351Z - [REQUEST]: apps/timer/src/components/TimerSettingsForm.vue
+[NX Daemon Server] - 2025-07-09T08:18:26.351Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:18:26.384Z - Time taken for 'hash changed files from watcher' 0.8959999997168779ms
+[NX Daemon Server] - 2025-07-09T08:18:26.411Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 49.111500000115484ms
+[NX Daemon Server] - 2025-07-09T08:18:26.414Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 54.133374999742955ms
+[NX Daemon Server] - 2025-07-09T08:18:26.415Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 52.07170800026506ms
+[NX Daemon Server] - 2025-07-09T08:18:26.445Z - Time taken for 'build-project-configs' 60.9232919998467ms
+[NX Daemon Server] - 2025-07-09T08:18:39.198Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T08:18:39.198Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:18:44.572Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T08:18:44.573Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:18:45.599Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:18:45.600Z - [REQUEST]: apps/timer/src/components/TimerSettingsForm.vue
+[NX Daemon Server] - 2025-07-09T08:18:45.600Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:18:45.630Z - Time taken for 'hash changed files from watcher' 0.7036669999361038ms
+[NX Daemon Server] - 2025-07-09T08:18:45.644Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 33.24416599981487ms
+[NX Daemon Server] - 2025-07-09T08:18:45.648Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 39.007042000070214ms
+[NX Daemon Server] - 2025-07-09T08:18:45.684Z - Time taken for 'build-project-configs' 50.26175000006333ms
+[NX Daemon Server] - 2025-07-09T08:18:50.531Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T08:18:50.532Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:18:54.911Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T08:18:54.912Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:18:56.933Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:18:56.933Z - [REQUEST]: apps/timer/src/components/TimerSettingsForm.vue
+[NX Daemon Server] - 2025-07-09T08:18:56.933Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:18:56.970Z - Time taken for 'hash changed files from watcher' 0.3812919999472797ms
+[NX Daemon Server] - 2025-07-09T08:18:56.990Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 46.109208000358194ms
+[NX Daemon Server] - 2025-07-09T08:18:56.992Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 44.25116699980572ms
+[NX Daemon Server] - 2025-07-09T08:18:57.047Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T08:18:57.048Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:18:57.048Z - Time taken for 'build-project-configs' 58.16258300002664ms
+[NX Daemon Server] - 2025-07-09T08:19:03.449Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:19:03.450Z - [REQUEST]: apps/timer/src/components/TimerSettingsForm.vue
+[NX Daemon Server] - 2025-07-09T08:19:03.450Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:19:03.474Z - Time taken for 'hash changed files from watcher' 0.6224170001223683ms
+[NX Daemon Server] - 2025-07-09T08:19:03.487Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 25.764875000342727ms
+[NX Daemon Server] - 2025-07-09T08:19:03.490Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 30.26437500026077ms
+[NX Daemon Server] - 2025-07-09T08:19:03.503Z - Time taken for 'build-project-configs' 40.62566599994898ms
+[NX Daemon Server] - 2025-07-09T08:19:04.343Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T08:19:04.344Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:19:09.449Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T08:19:09.451Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:19:10.745Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:19:10.745Z - [REQUEST]: apps/timer/src/components/TimerSettingsForm.vue
+[NX Daemon Server] - 2025-07-09T08:19:10.745Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:19:10.769Z - Time taken for 'hash changed files from watcher' 0.44654199993237853ms
+[NX Daemon Server] - 2025-07-09T08:19:10.784Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 31.80358300032094ms
+[NX Daemon Server] - 2025-07-09T08:19:10.789Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 38.35800000000745ms
+[NX Daemon Server] - 2025-07-09T08:19:10.824Z - Time taken for 'build-project-configs' 44.71645800024271ms
+[NX Daemon Server] - 2025-07-09T08:19:12.865Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T08:19:12.865Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:19:19.267Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:19:19.267Z - [REQUEST]: apps/timer/src/components/TimerSettingsForm.vue
+[NX Daemon Server] - 2025-07-09T08:19:19.267Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:19:19.285Z - Time taken for 'hash changed files from watcher' 0.4408749998547137ms
+[NX Daemon Server] - 2025-07-09T08:19:19.297Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 19.383167000021785ms
+[NX Daemon Server] - 2025-07-09T08:19:19.298Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 24.55987499980256ms
+[NX Daemon Server] - 2025-07-09T08:19:19.300Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 25.00854100007564ms
+[NX Daemon Server] - 2025-07-09T08:19:19.336Z - Time taken for 'build-project-configs' 32.67058299994096ms
+[NX Daemon Server] - 2025-07-09T08:19:38.035Z - [WATCHER]: apps/timer/src/components/TimerSettingsForm.vue was modified
+[NX Daemon Server] - 2025-07-09T08:19:38.036Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:19:44.437Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:19:44.437Z - [REQUEST]: apps/timer/src/components/TimerSettingsForm.vue
+[NX Daemon Server] - 2025-07-09T08:19:44.437Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:19:44.456Z - Time taken for 'hash changed files from watcher' 0.31712499959394336ms
+[NX Daemon Server] - 2025-07-09T08:19:44.472Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 27.36837500007823ms
+[NX Daemon Server] - 2025-07-09T08:19:44.513Z - Time taken for 'build-project-configs' 36.18766700010747ms
+[NX Daemon Server] - 2025-07-09T08:20:08.522Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T08:20:08.523Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:20:14.925Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:20:14.926Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T08:20:14.926Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:20:14.986Z - Time taken for 'hash changed files from watcher' 0.9300420000217855ms
+[NX Daemon Server] - 2025-07-09T08:20:15.064Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 127.82683299994096ms
+[NX Daemon Server] - 2025-07-09T08:20:15.070Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 130.13033399963751ms
+[NX Daemon Server] - 2025-07-09T08:20:15.072Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 132.94070799974725ms
+[NX Daemon Server] - 2025-07-09T08:20:15.112Z - Time taken for 'build-project-configs' 145.77774999989197ms
+[NX Daemon Server] - 2025-07-09T08:20:20.241Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T08:20:20.242Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:20:23.248Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T08:20:23.248Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:20:26.643Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:20:26.643Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T08:20:26.643Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:20:26.666Z - Time taken for 'hash changed files from watcher' 0.5605000001378357ms
+[NX Daemon Server] - 2025-07-09T08:20:26.680Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 29.48187500005588ms
+[NX Daemon Server] - 2025-07-09T08:20:26.684Z - Time taken for '@nx/vite/plugin:createNodes:apps/cards/vite.config.ts' 33.61479099979624ms
+[NX Daemon Server] - 2025-07-09T08:20:26.718Z - Time taken for 'build-project-configs' 41.545207999646664ms
+[NX Daemon Server] - 2025-07-09T08:20:32.940Z - [WATCHER]: apps/timer/src/components/TimeDisplay.vue was modified
+[NX Daemon Server] - 2025-07-09T08:20:32.941Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2025-07-09T08:20:39.342Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2025-07-09T08:20:39.343Z - [REQUEST]: apps/timer/src/components/TimeDisplay.vue
+[NX Daemon Server] - 2025-07-09T08:20:39.343Z - [REQUEST]: 
+[NX Daemon Server] - 2025-07-09T08:20:39.363Z - Time taken for 'hash changed files from watcher' 0.4843329996801913ms
+[NX Daemon Server] - 2025-07-09T08:20:39.396Z - Time taken for '@nx/vite/plugin:createNodes:apps/timer/vite.config.ts' 44.99541699979454ms
+[NX Daemon Server] - 2025-07-09T08:20:39.400Z - Time taken for '@nx/vite/plugin:createNodes:apps/type/vite.config.ts' 47.35208400012925ms
+[NX Daemon Server] - 2025-07-09T08:20:39.405Z - Time taken for '@nx/vite/plugin:createNodes:apps/radio/vite.config.ts' 55.48862499976531ms
+[NX Daemon Server] - 2025-07-09T08:20:39.460Z - Time taken for 'build-project-configs' 70.12166699999943ms

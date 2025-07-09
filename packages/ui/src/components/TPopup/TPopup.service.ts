@@ -4,6 +4,7 @@ import { markRaw, ref, nextTick, type Component, type VNode } from 'vue';
 export interface PopupOptions {
 	component: Component;
 	props?: Record<string, any>;
+	title?: string;
 	onClose?: () => void;
 	config?: {
 		background?: boolean;
@@ -31,6 +32,7 @@ export interface PopupInstance {
 	id: string;
 	component: Component;
 	props: Record<string, any>;
+	title?: string;
 	onClose?: () => void;
 	openedTime: number;
 	slots?: Record<string, () => VNode>;
@@ -68,6 +70,7 @@ const usePopupService = () => {
 			id,
 			component: markRaw(options.component),
 			props: wrappedProps,
+			title: options.title || '',
 			config: {
 				hasBackground: options.config?.background ?? true,
 				position: options.config?.position || 'center',

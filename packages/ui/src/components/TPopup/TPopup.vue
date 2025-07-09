@@ -22,25 +22,49 @@
 		 <div :class="bemm('wrapper')">
 
 							<div :class="bemm('container')">
+
+
 						<header
 							v-if="hasSlot('header')"
 							:class="bemm('header')"
 						>
 							<slot name="header" />
 						</header>
-			 <TButton
-							v-if="popup.config.canClose"
+					 <header v-else-if="popup.title"
+						:class="bemm('header')"
+						>
+							<h3 :class="bemm('title')">{{ popup.title }}</h3>
+
+							<TButton
+								v-if="popup.config.canClose"
+								:class="bemm('close')"
+								:icon="Icons.MULTIPLY_M"
+								:size="ButtonSize.SMALL"
+								@click="popupService.closePopup(popup.id)"
+							/>
+					 </header>
+					 <div v-else>
+						NOTHING
+
+						{{ popup.title ? 'something' : 'nothing' }}
+					 </div>
+
+						<TButton
+							v-if="popup.config.canClose && !popup.title"
 							:class="bemm('close')"
 							:icon="Icons.MULTIPLY_M"
 							:size="ButtonSize.SMALL"
 							@click="popupService.closePopup(popup.id)"
 						/>
+						<main :class="bemm('content')">
+
 						<component
 							:is="popup.component"
 							v-bind="popup.props"
 							@close="popupService.closePopup(popup.id)"
 						/>
-						<footer
+					</main>
+					<footer
 							v-if="hasSlot('footer')"
 							:class="bemm('footer')"
 						>
@@ -179,11 +203,15 @@ onUnmounted(() => {
 		animation: containerComeIn .3s var(--bezier) forwards;
 		transform: scale(.75) translateY(var(--spacing));
 		opacity: 0;
-		padding: var(--popup-padding,var(--space));
+
 
 		@include global.desktop-up() {
 			width: var(--popup-width, fit-content);
 		}
+	}
+
+	&__content{
+		padding: var(--popup-padding,var(--space));
 	}
 
 	&__close {
@@ -208,7 +236,18 @@ onUnmounted(() => {
 	}
 
 	&__header{
-		border: 1px solid red;
+		background-color: color-mix(in srgb, var(--color-primary), transparent 80%);
+		border-radius: var(--popup-border-radius, var(--border-radius)) var(--border-radius) 0 0;
+		color: var(--color-primary);
+		border-bottom: 1px solid color-mix(in srgb, var(--color-primary), transparent 60%);
+
+		padding: var(--popup-padding,var(--space));
+position: relative;
+		.popup__close{
+			position: absolute; top: 50%; right: var(--space-s);
+			transform: translateY(-50%);
+			margin: 0;
+		}
 	}
 }
 

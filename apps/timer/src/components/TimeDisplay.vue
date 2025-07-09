@@ -1,5 +1,14 @@
 <template>
-  <div :class="displayClasses">
+  <div :class="displayClasses"
+  :style="{
+      backgroundImage: `conic-gradient(
+        var(--color-primary) ${Math.min(progress, 100)}%,
+        var(--color-secondary) ${Math.min(progress, 100)}%
+      )`
+    }"
+    >
+    <div :class="bemm('container')">
+
     <div :class="bemm('time')">
       {{ displayTime }}
     </div>
@@ -10,11 +19,8 @@
         :style="{ width: `${Math.min(100, progress)}%` }"
       />
     </div>
-
-    <div :class="bemm('mode')">
-      {{ mode === 'down' ? 'Count Down' : 'Count Up' }}
-    </div>
   </div>
+</div>
 </template>
 
 <script setup lang="ts">
@@ -44,33 +50,61 @@ const displayClasses = computed(() => {
 
 <style lang="scss">
 .time-display {
+
+  --display-circle-size: 50vmin;
+  --display-text-size: 15vmin;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1rem;
   padding: 2rem;
-  background: white;
+  color: var(--color-primary);
   border-radius: 1rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
 
+
+  border-radius: 50%;
+  position: relative;
+  background-color: var(--color-primary);
+  padding: var(--space);
+  background-color: var(--color-secondary);
+  background-image: conic-gradient(
+    from 0deg,
+    var(--color-primary) 0%,
+    var(--color-secondary) 100%
+  );
+
+  &__container{
+    background-color: var(--color-background);
+  width: var(--display-circle-size);
+  height: var(--display-circle-size);
+  border-radius: 50%;
+  }
+
+
   &__time {
-    font-size: 20vh;
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  font-size: var(--display-text-size);
     font-weight: 700;
     font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
     color: var(--text-primary);
     text-align: center;
     line-height: 1;
     transition: color 0.3s ease;
+    letter-spacing: -0.05em;
   }
 
   &__progress {
     width: 100%;
-    max-width: 300px;
     height: 8px;
-    background: var(--bg-tertiary);
+    background: var(--color-background);
     border-radius: 4px;
-    position: relative;
+    position: fixed;
+    bottom: var(--space);
+    width: calc(100vw - var(--space-l));
+    left: var(--space);
   }
 
   &__progress-bar {

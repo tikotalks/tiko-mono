@@ -1,18 +1,61 @@
 <template>
   <TAppLayout
     title="Timer"
-    subtitle="Simple timer and stopwatch"
     :show-header="true"
     @profile="handleProfile"
     @settings="handleAppSettings"
     @logout="handleLogout"
   >
     <template #top-bar-actions>
+      <!-- Timer Controls -->
+      <TButton
+        v-if="!isRunning"
+        icon="play"
+        type="icon-only"
+        size="medium"
+        @click="start"
+        :aria-label="'Start timer'"
+      >
+        Start
+      </TButton>
+      <TButton
+        v-else
+        icon="pause"
+        type="icon-only"
+        color="success"
+        size="medium"
+        @click="pause"
+        :aria-label="'Pause timer'"
+      >
+        Pause
+      </TButton>
+
+      <TButton
+        icon="arrow-rotate-top-left"
+        type="icon-only"
+        size="medium"
+        @click="reset"
+        :aria-label="'Reset timer'"
+      >
+        Reset
+      </TButton>
+
+      <!-- Edit Timer Button -->
+      <TButton
+        icon="edit"
+        type="icon-only"
+        size="medium"
+        @click="showEditSettings"
+        :aria-label="'Edit timer settings'"
+      >
+        Edit
+      </TButton>
+
+      <!-- Mode Toggle -->
       <TButton
         :icon="mode === 'up' ? 'arrow-up' : 'arrow-down'"
-        type="ghost"
+        type="icon-only"
         size="medium"
-        color="secondary"
         @click="toggleMode"
         :aria-label="`Switch to ${mode === 'up' ? 'countdown' : 'count up'} mode`"
       />
@@ -22,7 +65,15 @@
       <!-- Main Timer Display -->
       <main :class="bemm('main')">
         <!-- Timer Display -->
-        <div :class="bemm('display')">
+         <TimeDisplay
+          :displayTime="formattedTime"
+          :progress="progress"
+          :mode="mode"
+          :isExpired="isExpired"
+          :isRunning="isRunning"
+          :class="bemm('display')"
+         ></TimeDisplay>
+        <!-- <div :class="bemm('display')">
           <div :class="bemm('time')">{{ formattedTime }}</div>
           <div v-if="mode === 'down'" :class="bemm('progress')">
             <div
@@ -30,53 +81,9 @@
               :style="{ width: `${progress}%` }"
             />
           </div>
-        </div>
+        </div> -->
 
-        <!-- Controls -->
-        <div :class="bemm('controls')">
-          <TButton
-            v-if="!isRunning"
-            icon="playback-play"
-            type="default"
-            color="success"
-            size="large"
-            @click="start"
-          >
-            Start
-          </TButton>
-          <TButton
-            v-else
-            icon="playback-pause"
-            type="default"
-            color="warning"
-            size="large"
-            @click="pause"
-          >
-            Pause
-          </TButton>
-
-          <TButton
-            icon="arrow-rotate-top-left"
-            type="outline"
-            color="secondary"
-            size="large"
-            @click="reset"
-          >
-            Reset
-          </TButton>
-        </div>
-
-        <!-- Edit Button -->
-        <TButton
-          icon="edit"
-          type="ghost"
-          color="secondary"
-          size="medium"
-          @click="showEditSettings"
-          :class="bemm('edit-button')"
-        >
-          Edit Timer
-        </TButton>
+        <!-- Controls moved to top bar -->
       </main>
     </div>
 
@@ -105,6 +112,7 @@ import { useBemm } from 'bemm'
 import { TButton, TIcon, TAppLayout, popupService } from '@tiko/ui'
 import { useTimer } from '../composables/useTimer'
 import TimerSettingsForm from '../components/TimerSettingsForm.vue'
+import TimeDisplay from '../components/TimeDisplay.vue'
 
 const bemm = useBemm('timer-view')
 const {
@@ -127,8 +135,9 @@ const minutes = ref(5)
 const seconds = ref(0)
 
 const showEditSettings = () => {
-  popupService.open({
+  popupService.showPopup({
     component: TimerSettingsForm,
+    title: 'Edit Timer Settings',
     props: {
       mode: mode.value,
       minutes: minutes.value,
@@ -139,7 +148,7 @@ const showEditSettings = () => {
         updateSettings(data.settings)
         minutes.value = data.minutes
         seconds.value = data.seconds
-        popupService.close()
+        popupService.closePopup()
       }
     }
   })
@@ -231,15 +240,7 @@ onUnmounted(() => {
     border-radius: 4px;
   }
 
-  &__controls {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-  }
-
-  &__edit-button {
-    margin-top: 1rem;
-  }
+  // Controls moved to top bar
 
 
   &__expired {

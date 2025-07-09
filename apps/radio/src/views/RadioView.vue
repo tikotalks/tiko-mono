@@ -397,6 +397,7 @@ const editItem = (item: RadioItem) => {
   console.log('Edit item clicked - opening EditItemModal for:', item.title)
   popupService.showPopup({
     component: EditItemModal,
+    title: 'Edit Audio Item',
     props: {
       item: item,
       onSubmit: (itemId: string, updates: Partial<RadioItem>) => handleEditItem(itemId, updates)

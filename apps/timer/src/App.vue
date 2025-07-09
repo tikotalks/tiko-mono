@@ -4,12 +4,13 @@
       <TimerView />
     </TAuthWrapper>
   </div>
+  <TPopup></TPopup>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useAppStore } from '@tiko/core'
-import { TAuthWrapper } from '@tiko/ui'
+import { TAuthWrapper, TPopup } from '@tiko/ui'
 import TimerView from './views/TimerView.vue'
 import backgroundVideoUrl from './assets/login-background.mp4'
 
