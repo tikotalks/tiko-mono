@@ -84,11 +84,11 @@ const bemm = useBemm('app-layout');
 
   &__header {
     width: calc(100% - (var(--space) * 2));
-    top: var(--space);
+    top: 0;
     position: fixed;
     z-index: 10;
     left: var(--space);
-    border-radius: var(--border-radius-s);
+    border-radius: 0 0 var(--border-radius-s) var(--border-radius-s);
   }
 
   &__content {
