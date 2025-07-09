@@ -55,7 +55,7 @@ jobs:
         NODE_ENV: production
 
     - name: Setup iOS certificates (if available)
-      if: env.IOS_CERTIFICATE_BASE64 != '' && env.IOS_PROVISIONING_PROFILE_BASE64 != ''
+      if: secrets.IOS_CERTIFICATE_BASE64 != '' && secrets.IOS_PROVISIONING_PROFILE_BASE64 != '' && matrix.app == 'cards'
       run: |
         # Create certificate directory
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
@@ -76,9 +76,6 @@ jobs:
         # Install provisioning profile
         echo "${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}" | base64 --decode > profile.mobileprovision
         cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
-      env:
-        IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
-        IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
 
     - name: Sync Capacitor
       run: |
@@ -99,55 +96,41 @@ jobs:
         ls -la ios/App/
 
     - name: Build iOS app (unsigned)
-      if: env.IOS_CERTIFICATE_BASE64 == '' || env.IOS_PROVISIONING_PROFILE_BASE64 == ''
+      if: matrix.app != 'cards'
       run: |
         cd apps/${{ matrix.app }}/ios/App
-        xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -destination generic/platform=iOS build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
-      env:
-        IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
-        IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+        xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -destination generic/platform=iOS build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO DEVELOPMENT_TEAM=""
 
     - name: Build iOS app (signed)
-      if: env.IOS_CERTIFICATE_BASE64 != '' && env.IOS_PROVISIONING_PROFILE_BASE64 != ''
+      if: matrix.app == 'cards' && secrets.IOS_CERTIFICATE_BASE64 != '' && secrets.IOS_PROVISIONING_PROFILE_BASE64 != ''
       run: |
         cd apps/${{ matrix.app }}/ios/App
         xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -destination generic/platform=iOS -archivePath App.xcarchive archive
         xcodebuild -exportArchive -archivePath App.xcarchive -exportPath export -exportOptionsPlist ../../../export-options.plist
-      env:
-        IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
-        IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
 
     - name: Upload unsigned build artifacts
-      if: env.IOS_CERTIFICATE_BASE64 == '' || env.IOS_PROVISIONING_PROFILE_BASE64 == ''
+      if: matrix.app != 'cards'
       uses: actions/upload-artifact@v4
       with:
         name: ios-${{ matrix.app }}-build-unsigned
-        path: apps/${{ matrix.app }}/ios/build/
+        path: apps/${{ matrix.app }}/ios/App/build/
         retention-days: 30
-      env:
-        IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
-        IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
 
     - name: Upload signed build artifacts
-      if: env.IOS_CERTIFICATE_BASE64 != '' && env.IOS_PROVISIONING_PROFILE_BASE64 != ''
+      if: matrix.app == 'cards' && secrets.IOS_CERTIFICATE_BASE64 != '' && secrets.IOS_PROVISIONING_PROFILE_BASE64 != ''
       uses: actions/upload-artifact@v4
       with:
         name: ios-${{ matrix.app }}-build-signed
-        path: apps/${{ matrix.app }}/ios/export/
+        path: apps/${{ matrix.app }}/ios/App/export/
         retention-days: 30
-      env:
-        IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
-        IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
 
     - name: iOS build status
       run: |
-        if [ -z "${{ secrets.IOS_CERTIFICATE_BASE64 }}" ] || [ -z "${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}" ]; then
-          echo "✅ Built unsigned iOS app for ${{ matrix.app }}"
-          echo "⚠️  To enable signed builds for App Store distribution, add these GitHub Secrets:"
-          echo "   - IOS_CERTIFICATE_BASE64 (base64 encoded .p12 file)"
-          echo "   - IOS_CERTIFICATE_PASSWORD (password for .p12 file)"
-          echo "   - IOS_PROVISIONING_PROFILE_BASE64 (base64 encoded .mobileprovision file)"
-          echo "   - KEYCHAIN_PASSWORD (temporary keychain password)"
-        else
+        if [ "${{ matrix.app }}" = "cards" ] && [ -n "${{ secrets.IOS_CERTIFICATE_BASE64 }}" ] && [ -n "${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}" ]; then
           echo "✅ Built signed iOS app for ${{ matrix.app }} ready for App Store"
+        else
+          echo "✅ Built unsigned iOS app for ${{ matrix.app }}"
+          if [ "${{ matrix.app }}" != "cards" ]; then
+            echo "⚠️  To enable signed builds for ${{ matrix.app }}, create App ID and provisioning profile in Apple Developer"
+          fi
         fi
