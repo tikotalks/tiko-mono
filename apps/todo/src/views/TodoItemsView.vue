@@ -1,0 +1,278 @@
+<template>
+  <div :class="bemm()">
+    <!-- Action buttons -->
+    <div v-if="parentMode.canManageContent.value" :class="bemm('actions')">
+      <TButton
+        icon="add"
+        color="primary"
+        @click="showAddItemModal"
+      >
+        Add Item
+      </TButton>
+    </div>
+    <!-- Empty State -->
+    <div v-if="items.length === 0" :class="bemm('empty')">
+      <TIcon name="clipboard" />
+      <h2>No items yet</h2>
+      <p v-if="!parentMode.canManageContent.value">
+        Ask a parent to add items to this list!
+      </p>
+      <p v-else>Add your first todo item to get started</p>
+      <TButton
+        v-if="parentMode.canManageContent.value"
+        icon="add"
+        color="primary"
+        @click="showAddItemModal"
+      >
+        Add Todo Item
+      </TButton>
+    </div>
+
+    <!-- Items Grid -->
+    <TDraggableList
+      v-else
+      :items="items"
+      :enabled="parentMode.canManageContent.value"
+      :on-reorder="handleReorderItems"
+      :class="bemm('grid')"
+    >
+      <template #default="{ item }">
+        <TodoItemCard
+          :item="item"
+          :can-edit="parentMode.canManageContent.value"
+          @click="handleItemClick(item)"
+          @edit="editItem(item)"
+          @delete="confirmDeleteItem(item)"
+        />
+      </template>
+    </TDraggableList>
+
+    <!-- Progress Bar -->
+    <div v-if="items.length > 0" :class="bemm('progress')">
+      <div :class="bemm('progress-bar')">
+        <div
+          :class="bemm('progress-fill')"
+          :style="{ width: `${progressPercentage}%` }"
+        />
+      </div>
+      <span :class="bemm('progress-text')">
+        {{ completedCount }} / {{ items.length }} completed
+      </span>
+    </div>
+  </div>
+
+  <!-- Check Off Animation -->
+  <CheckOffAnimation
+    v-if="showCheckAnimation"
+    :item="currentCheckItem"
+    @complete="handleAnimationComplete"
+  />
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+import { useBemm } from 'bemm';
+import {
+  TButton,
+  TIcon,
+  TDraggableList,
+  popupService,
+  useParentMode,
+  toastService,
+} from '@tiko/ui';
+import { storeToRefs } from 'pinia';
+import { useTodoStore } from '../stores/todo';
+import TodoItemCard from '../components/TodoItemCard.vue';
+import AddTodoModal from '../components/AddTodoModal.vue';
+import CheckOffAnimation from '../components/CheckOffAnimation.vue';
+import type { TodoItem } from '../types/todo.types';
+
+const bemm = useBemm('todo-items');
+const route = useRoute();
+const todoStore = useTodoStore();
+const parentMode = useParentMode('todo');
+
+const groupId = computed(() => route.params.id as string);
+const { getGroupById, getItemsByGroupId, getGroupProgress } =
+  storeToRefs(todoStore);
+
+const group = computed(() => getGroupById.value(groupId.value));
+const items = computed(() => getItemsByGroupId.value(groupId.value));
+const progress = computed(() => getGroupProgress.value(groupId.value));
+const completedCount = computed(() => progress.value.completed);
+const progressPercentage = computed(() => progress.value.percentage);
+
+const showCheckAnimation = ref(false);
+const currentCheckItem = ref<TodoItem | null>(null);
+
+const handleItemClick = (item: TodoItem) => {
+  if (!item.completed) {
+    // Show check-off animation
+    currentCheckItem.value = item;
+    showCheckAnimation.value = true;
+
+    // Mark as completed
+    todoStore.toggleItemComplete(item.id);
+  }
+};
+
+const handleAnimationComplete = () => {
+  showCheckAnimation.value = false;
+  currentCheckItem.value = null;
+};
+
+const showAddItemModal = () => {
+  popupService.open({
+    component: AddTodoModal,
+    props: {
+      groupId: groupId.value,
+      onCreated: () => {
+        popupService.close();
+      },
+      onClose: () => popupService.close(),
+    },
+  });
+};
+
+const editItem = (item: TodoItem) => {
+  popupService.open({
+    component: AddTodoModal,
+    props: {
+      groupId: groupId.value,
+      item,
+      onUpdated: () => {
+        popupService.close();
+      },
+      onClose: () => popupService.close(),
+    },
+  });
+};
+
+const confirmDeleteItem = (item: TodoItem) => {
+  popupService.open({
+    component: 'notification',
+    props: {
+      title: 'Delete Item?',
+      message: `Are you sure you want to delete "${item.title}"?`,
+      type: 'warning',
+      actions: [
+        {
+          label: 'Cancel',
+          color: 'secondary',
+          handler: () => popupService.close(),
+        },
+        {
+          label: 'Delete',
+          color: 'error',
+          handler: () => {
+            todoStore.deleteItem(item.id);
+            popupService.close();
+            toastService.show({
+              message: 'Item deleted',
+              type: 'success',
+            });
+          },
+        },
+      ],
+    },
+  });
+};
+
+
+const handleReorderItems = async (reorderedItems: TodoItem[]) => {
+  const itemIds = reorderedItems.map((item) => item.id);
+  await todoStore.reorderItems(groupId.value, itemIds);
+};
+
+onMounted(async () => {
+  // Load groups if not already loaded
+  if (!group.value) {
+    await todoStore.loadGroups();
+  }
+
+  // Group will be handled by App.vue if not found
+
+  // Load items for this group
+  await todoStore.loadItems(groupId.value);
+});
+</script>
+
+<style lang="scss" scoped>
+.todo-items {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space);
+  padding: var(--space);
+  position: relative;
+
+  &__actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    gap: var(--space-s);
+    z-index: 10;
+  }
+
+  &__empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space);
+    text-align: center;
+    color: var(--color-foreground);
+
+    h2 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    p {
+      margin: 0;
+      opacity: 0.7;
+    }
+    .icon{
+      border: 1px solid red;
+    }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--space);
+    align-content: start;
+    flex: 1;
+  }
+
+  &__progress {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding-top: var(--space);
+    border-top: 1px solid var(--color-border);
+
+    &-bar {
+      height: 8px;
+      background-color: var(--color-background-secondary);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    &-fill {
+      height: 100%;
+      background-color: var(--color-success);
+      transition: width 0.3s ease;
+    }
+
+    &-text {
+      text-align: center;
+      font-size: 0.875rem;
+      color: var(--color-foreground-secondary);
+    }
+  }
+}
+</style>
