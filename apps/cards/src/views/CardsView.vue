@@ -1,5 +1,6 @@
 <template>
-  <TAppLayout
+  <TAuthWrapper title="Cards" :backgroundImage="backgroundImage">
+    <TAppLayout
     title="Communication Cards"
     :subtitle="editMode ? 'Select cards to organize or delete' : 'Tap cards to speak'"
     :is-loading="isLoading"
@@ -224,15 +225,17 @@
     />
     </div>
   </TAppLayout>
+  </TAuthWrapper>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TInput, TIcon, TCardCommunication, TAppLayout } from '@tiko/ui'
+import { TAuthWrapper, TButton, TInput, TIcon, TCardCommunication, TAppLayout } from '@tiko/ui'
 import { useCardsStore } from '../stores/cards'
 import CreateCardModal from '../components/CreateCardModal.vue'
 import CreateGroupModal from '../components/CreateGroupModal.vue'
+import backgroundImage from '../assets/app-icon-cards.png'
 
 const bemm = useBemm('cards-view')
 

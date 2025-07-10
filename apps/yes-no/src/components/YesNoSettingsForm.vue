@@ -1,11 +1,6 @@
 <template>
   <div :class="bemm()">
-    <div :class="bemm('header')">
-      <h3 :class="bemm('title')">Yes or No Settings</h3>
-    </div>
-    
-    <div :class="bemm('content')">
-      <div :class="bemm('group')">
+    <div :class="bemm('group')">
       <label :class="bemm('label')">Button Size</label>
       <select v-model="localSettings.buttonSize" :class="bemm('select')">
         <option value="small">Small</option>
@@ -15,35 +10,20 @@
     </div>
 
     <div :class="bemm('group')">
-      <label :class="bemm('checkbox')">
-        <input 
-          v-model="localSettings.autoSpeak"
-          type="checkbox"
-        />
-        Auto-speak answers
-      </label>
+
+      <TInputCheckbox
+        v-model="localSettings.autoSpeak"
+        :label="'Auto-speak answers'"
+        :class="bemm('checkbox')"
+      />
     </div>
 
     <div :class="bemm('group')">
-      <label :class="bemm('checkbox')">
-        <input 
-          v-model="localSettings.hapticFeedback"
-          type="checkbox"
-        />
-        Haptic feedback
-      </label>
-      </div>
-    </div>
-    
-    <div :class="bemm('actions')">
-      <TButton
-        type="default"
-        color="primary"
-        @click="emit('close')"
-        size="medium"
-      >
-        Close
-      </TButton>
+      <TInputCheckbox
+        v-model="localSettings.hapticFeedback"
+        :label="'Haptic feedback'"
+        :class="bemm('checkbox')"
+      />
     </div>
   </div>
 </template>
@@ -51,7 +31,7 @@
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton } from '@tiko/ui'
+import { TButton, TInputCheckbox } from '@tiko/ui'
 
 interface YesNoSettings {
   buttonSize: 'small' | 'medium' | 'large'

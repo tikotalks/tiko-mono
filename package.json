@@ -29,17 +29,20 @@
     "serve:board": "nx serve board",
     "serve:type": "nx serve type",
     "serve:radio": "nx serve radio",
+    "serve:todo": "nx serve todo",
     "ios:build:all": "nx run-many --target=build --all && nx run-many --target=cap:sync --all",
     "ios:build:cards": "cd apps/cards && pnpm run ios:build",
     "ios:build:timer": "cd apps/timer && pnpm run ios:build",
     "ios:build:radio": "cd apps/radio && pnpm run ios:build",
     "ios:build:type": "cd apps/type && pnpm run ios:build",
     "ios:build:yes-no": "cd apps/yes-no && pnpm run ios:build",
+    "ios:build:todo": "cd apps/todo && pnpm run ios:build",
     "ios:open:cards": "cd apps/cards && pnpm run cap:open",
     "ios:open:timer": "cd apps/timer && pnpm run cap:open",
     "ios:open:radio": "cd apps/radio && pnpm run cap:open",
     "ios:open:type": "cd apps/type && pnpm run cap:open",
-    "ios:open:yes-no": "cd apps/yes-no && pnpm run cap:open"
+    "ios:open:yes-no": "cd apps/yes-no && pnpm run cap:open",
+    "ios:open:todo": "cd apps/todo && pnpm run cap:open"
   },
   "devDependencies": {
     "@capacitor/cli": "^7.4.1",

@@ -20,16 +20,20 @@
         :class="bemm('image')"
       />
     </div>
-  <!-- Loading State -->
-    <div v-if="isInitializing" :class="bemm('loading')">
-      <div :class="bemm('loading-content')">
-        <div :class="bemm('loading-spinner')"></div>
-        <h2 :class="bemm('loading-title')">Loading Tiko...</h2>
-        <p :class="bemm('loading-subtitle')">
-          Preparing your communication apps
-        </p>
-      </div>
-    </div>
+  <!-- Loading State with Splash Screen -->
+    <TSplashScreen
+      v-if="isInitializing"
+      :app-name="splashConfig.appName"
+      :app-icon="splashConfig.appIcon"
+      :theme="splashConfig.theme"
+      :duration="0"
+      :show-loading="true"
+      :loading-text="splashConfig.loadingText"
+      :version="splashConfig.version"
+      :enable-transitions="true"
+      :background-color="splashConfig.backgroundColor"
+      @complete="handleSplashComplete"
+    />
 
     <!-- Login Form within App Layout -->
     <TAppLayout
@@ -65,12 +69,18 @@ import { useBemm } from 'bemm';
 import { useAuthStore } from '@tiko/core';
 import TLoginForm from '../TLoginForm/TLoginForm.vue';
 import TAppLayout from '../TAppLayout/TAppLayout.vue';
+import TSplashScreen from '../TSplashScreen/TSplashScreen.vue';
+import { defaultTikoSplashConfigs } from '../../utils/splash-screen-config';
+import { useTikoConfig } from '../../composables/useTikoConfig';
 
 // BEM classes
 const bemm = useBemm('auth-wrapper');
 
 // Store
 const authStore = useAuthStore();
+
+// Get Tiko config for theme
+const { config: tikoConfig } = useTikoConfig();
 
 // Local state
 const isInitializing = ref(true);
@@ -90,10 +100,31 @@ const props = defineProps({
     type: String,
     default: 'Welcome to Tiko',
   },
+  appName: {
+    type: String,
+    default: 'todo'
+  }
 });
 
 // Computed
 const isAuthenticated = computed(() => authStore.isAuthenticated);
+
+// Splash screen configuration
+const splashConfig = computed(() => {
+  const config = defaultTikoSplashConfigs[props.appName as keyof typeof defaultTikoSplashConfigs] || defaultTikoSplashConfigs.todo;
+  
+  // Get primary color from Tiko config
+  const primaryColor = tikoConfig.value?.theme?.primary;
+  const backgroundColor = primaryColor ? `var(--color-${primaryColor})` : config.backgroundColor;
+  
+  return {
+    ...config,
+    loadingText: 'Preparing your app...',
+    version: '1.0.0',
+    theme: 'auto' as const,
+    backgroundColor
+  };
+});
 
 // Methods
 const handleAppleSignIn = async () => {
@@ -115,7 +146,9 @@ const handleEmailSubmit = async (email: string, fullName?: string) => {
   authError.value = null;
 
   try {
-    await authStore.signInWithPasswordlessEmail(email, fullName);
+    // Get display name from splash config or use appName
+    const appDisplayName = splashConfig.value.appName || props.appName;
+    await authStore.signInWithPasswordlessEmail(email, fullName, appDisplayName);
   } catch (error) {
     authError.value =
       error instanceof Error
@@ -155,8 +188,16 @@ const clearAuthError = () => {
   authError.value = null;
 };
 
+const handleSplashComplete = () => {
+  // Splash screen completed, but we continue showing it until auth is ready
+  // The splash screen will automatically hide when isInitializing becomes false
+};
+
 // Initialize authentication
 onMounted(async () => {
+  const minDisplayTime = 2000; // Show splash for at least 2 seconds
+  const startTime = Date.now();
+  
   try {
     // Set up auth state listener
     authStore.setupAuthListener();
@@ -166,7 +207,17 @@ onMounted(async () => {
   } catch (error) {
     console.error('Failed to initialize auth:', error);
   } finally {
-    isInitializing.value = false;
+    // Ensure splash screen shows for minimum time
+    const elapsed = Date.now() - startTime;
+    const remainingTime = Math.max(0, minDisplayTime - elapsed);
+    
+    if (remainingTime > 0) {
+      setTimeout(() => {
+        isInitializing.value = false;
+      }, remainingTime);
+    } else {
+      isInitializing.value = false;
+    }
   }
 
     const video = document.getElementById('backgroundVideo') as HTMLVideoElement;
@@ -222,47 +273,6 @@ onMounted(async () => {
     font-weight: 600;
   }
 
-  &__loading {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(
-      135deg,
-      var(--color-primary) 0%,
-      var(--color-secondary) 100%
-    );
-  }
-
-  &__loading-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.5rem;
-    text-align: center;
-    color: var(--color-background);
-  }
-
-  &__loading-spinner {
-    width: 3rem;
-    height: 3rem;
-    border: 4px solid var(--color-accent);
-    border-top-color: var(--color-background);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-
-  &__loading-title {
-    margin: 0;
-    font-size: 2rem;
-    font-weight: 700;
-  }
-
-  &__loading-subtitle {
-    margin: 0;
-    font-size: 1.125rem;
-    opacity: 0.9;
-  }
 
   &__login {
     display: flex;
@@ -305,20 +315,11 @@ onMounted(async () => {
       min-height: 50vh;
     }
 
-    &__loading-title {
-      font-size: 1.5rem;
-    }
-
-    &__loading-subtitle {
-      font-size: 1rem;
-    }
   }
 }
 
 // Reduced motion support
 @media (prefers-reduced-motion: reduce) {
-  .auth-wrapper__loading-spinner {
-    animation: none;
-  }
+  // TSplashScreen handles its own reduced motion
 }
 </style>

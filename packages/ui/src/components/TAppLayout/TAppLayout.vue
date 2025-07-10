@@ -92,6 +92,7 @@ const bemm = useBemm('app-layout');
   }
 
   &__content {
+    width: 100%;
     position: relative;
     height: fit-content;
   }

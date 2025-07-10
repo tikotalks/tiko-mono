@@ -1,23 +1,23 @@
 // Tiko UI Styles
-// Import fonts first to ensure they're available
-@import './fonts.scss';
+// Forward fonts first to ensure they're available
+@forward './fonts.scss';
 
 // Base styles and variables
-@import './reset.scss';
-@import './base.scss';
-@import './color/index.scss';
+@forward './reset.scss';
+@forward './base.scss';
+@forward './color/index.scss';
 
 // Typography (includes font imports)
-@import './typography.scss';
+@forward './typography.scss';
 
 // Layout and components
-@import './content.scss';
-@import './media.scss';
+@forward './content.scss';
+@forward './media.scss';
 
 // Icons
-@import './icon/index.scss';
-@import './icon-animations.scss';
+@forward './icon/index.scss';
+@forward './icon-animations.scss';
 
 // Global styles
-@import './global.scss';
-@import './app.scss';
+@forward './global.scss';
+@forward './app.scss';

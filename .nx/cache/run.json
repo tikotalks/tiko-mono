@@ -1,18 +1,95 @@
 {
   "run": {
-    "command": "nx serve radio",
-    "startTime": "2025-07-09T13:17:00.790Z",
-    "endTime": "2025-07-09T13:19:59.096Z",
+    "command": "nx run-many --target=build --all --filter=@tiko/core --filter=@tiko/ui",
+    "startTime": "2025-07-10T12:08:19.942Z",
+    "endTime": "2025-07-10T12:08:38.341Z",
     "inner": false
   },
   "tasks": [
     {
-      "taskId": "radio:serve",
-      "target": "serve",
+      "taskId": "@tiko/core:build",
+      "target": "build",
+      "projectName": "@tiko/core",
+      "hash": "4843599665806472757",
+      "startTime": "2025-07-10T12:08:19.946Z",
+      "endTime": "2025-07-10T12:08:20.830Z",
+      "params": "",
+      "cacheStatus": "cache-miss",
+      "status": 0
+    },
+    {
+      "taskId": "@tiko/ui:build",
+      "target": "build",
+      "projectName": "@tiko/ui",
+      "hash": "4177421763631765828",
+      "startTime": "2025-07-10T12:08:20.831Z",
+      "endTime": "2025-07-10T12:08:22.445Z",
+      "params": "",
+      "cacheStatus": "cache-miss",
+      "status": 0
+    },
+    {
+      "taskId": "cards:build",
+      "target": "build",
+      "projectName": "cards",
+      "hash": "16703593175969258240",
+      "startTime": "2025-07-10T12:08:22.449Z",
+      "endTime": "2025-07-10T12:08:29.402Z",
+      "params": "",
+      "cacheStatus": "cache-miss",
+      "status": 0
+    },
+    {
+      "taskId": "yes-no:build",
+      "target": "build",
+      "projectName": "yes-no",
+      "hash": "13021723344676158750",
+      "startTime": "2025-07-10T12:08:22.449Z",
+      "endTime": "2025-07-10T12:08:29.579Z",
+      "params": "",
+      "cacheStatus": "cache-miss",
+      "status": 0
+    },
+    {
+      "taskId": "radio:build",
+      "target": "build",
       "projectName": "radio",
-      "hash": "14951133517339583236",
-      "startTime": "2025-07-09T13:17:00.795Z",
-      "endTime": "2025-07-09T13:19:59.095Z",
+      "hash": "12976213915305105684",
+      "startTime": "2025-07-10T12:08:22.449Z",
+      "endTime": "2025-07-10T12:08:29.727Z",
+      "params": "",
+      "cacheStatus": "cache-miss",
+      "status": 0
+    },
+    {
+      "taskId": "timer:build",
+      "target": "build",
+      "projectName": "timer",
+      "hash": "15664399287355945172",
+      "startTime": "2025-07-10T12:08:29.402Z",
+      "endTime": "2025-07-10T12:08:37.747Z",
+      "params": "",
+      "cacheStatus": "cache-miss",
+      "status": 0
+    },
+    {
+      "taskId": "type:build",
+      "target": "build",
+      "projectName": "type",
+      "hash": "4735868947572876239",
+      "startTime": "2025-07-10T12:08:29.727Z",
+      "endTime": "2025-07-10T12:08:38.159Z",
+      "params": "",
+      "cacheStatus": "cache-miss",
+      "status": 0
+    },
+    {
+      "taskId": "todo:build",
+      "target": "build",
+      "projectName": "todo",
+      "hash": "17344521478893043599",
+      "startTime": "2025-07-10T12:08:29.579Z",
+      "endTime": "2025-07-10T12:08:38.340Z",
       "params": "",
       "cacheStatus": "cache-miss",
       "status": 0

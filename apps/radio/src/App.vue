@@ -1,30 +1,33 @@
 <template>
-  <div id="app">
-    <TAuthWrapper :title="'Radio'" :backgroundImage="backgroundImage">
-      <RadioView />
-    </TAuthWrapper>
-    <TPopup />
+  <div id="app" :style="themeStyles">
+    <router-view />
   </div>
+  <TPopup />
 </template>
 
 <script setup lang="ts">
-import { TAuthWrapper, TPopup } from '@tiko/ui'
-import RadioView from './views/RadioView.vue'
-import backgroundImage from "./assets/app-icon-radio.png"
+import { onMounted } from 'vue'
+import { useAppStore } from '@tiko/core'
+import { TPopup, useTikoConfig } from '@tiko/ui'
+import tikoConfig from '../tiko.config'
 
+const appStore = useAppStore()
+
+// Set config and get theme styles
+const { themeStyles } = useTikoConfig(tikoConfig)
+
+onMounted(() => {
+  // Initialize network monitoring
+  appStore.initializeNetworkMonitoring()
+})
 </script>
 
 <style lang="scss">
 @use '@tiko/ui/styles/app.scss';
-#app {
-  min-height: 100vh;
-  font-family: var(--font-family-default);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 
-  --color-primary: var(--color-yellow);
-  --color-primary-text: var(--color-yellow-text);
-  --color-secondary: var(--color-blue);
-  --color-secondary-text: var(--color-blue-text);
+#app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 </style>

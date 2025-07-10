@@ -19,51 +19,45 @@
 					:class="bemm('background')"
 					@click="popupService.closePopup(popup.id)"
 				/>
-		 <div :class="bemm('wrapper')">
+				<div :class="bemm('wrapper')">
+					<div :class="bemm('container')" @click.stop>
 
-							<div :class="bemm('container')">
 
-
-						<header
-							v-if="hasSlot('header')"
-							:class="bemm('header')"
-						>
-							<slot name="header" />
-						</header>
-					 <header v-else-if="popup.title"
+					<header
+						v-if="hasSlot('header')"
 						:class="bemm('header')"
-						>
-							<h3 :class="bemm('title')">{{ popup.title }}</h3>
+					>
+						<slot name="header" />
+					</header>
 
-							<TButton
-								v-if="popup.config.canClose"
-								:class="bemm('close')"
-								:icon="Icons.MULTIPLY_M"
-								:size="ButtonSize.SMALL"
-								@click="popupService.closePopup(popup.id)"
-							/>
-					 </header>
-					 <div v-else>
-						NOTHING
-
-						{{ popup.title ? 'something' : 'nothing' }}
-					 </div>
+					<header v-else-if="popup.title" :class="bemm('header')">
+						<h3 :class="bemm('title')">{{ popup.title }}</h3>
 
 						<TButton
-							v-if="popup.config.canClose && !popup.title"
+							v-if="popup.config.canClose"
 							:class="bemm('close')"
 							:icon="Icons.MULTIPLY_M"
 							:size="ButtonSize.SMALL"
 							@click="popupService.closePopup(popup.id)"
 						/>
-						<main :class="bemm('content')">
+					</header>
 
+					<TButton
+						v-if="popup.config.canClose && !popup.title"
+						:class="bemm('close')"
+						:icon="Icons.MULTIPLY_M"
+						:size="ButtonSize.SMALL"
+						@click="popupService.closePopup(popup.id)"
+					/>
+
+					<main :class="bemm('content')">
 						<component
 							:is="popup.component"
 							v-bind="popup.props"
 							@close="popupService.closePopup(popup.id)"
 						/>
 					</main>
+
 					<footer
 							v-if="hasSlot('footer')"
 							:class="bemm('footer')"

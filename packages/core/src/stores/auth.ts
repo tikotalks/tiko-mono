@@ -88,21 +88,23 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const signInWithPasswordlessEmail = async (email: string, fullName?: string) => {
+  const signInWithPasswordlessEmail = async (email: string, fullName?: string, appName?: string) => {
     isLoading.value = true
     error.value = null
 
     try {
+      // Get the app name from window location or default
+      const siteName = appName || window.location.hostname.split('.')[0] || 'Tiko'
+      
       const { data, error: authError } = await supabase.auth.signInWithOtp({
         email,
         options: {
           shouldCreateUser: true,
           emailRedirectTo: getAuthRedirectUrl(),
-          data: fullName ? {
-            full_name: fullName,
-            language: 'en'
-          } : {
-            language: 'en'
+          data: {
+            ...(fullName ? { full_name: fullName } : {}),
+            language: 'en',
+            app_name: siteName
           }
         }
       })
