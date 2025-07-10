@@ -70,9 +70,17 @@
         <div :class="bemm('verification-info')">
           <TIcon name="mail" :class="bemm('verification-icon')" />
           <p :class="bemm('verification-text')">
-            Enter the {{ codeLength }}-digit code sent to<br>
+            We've sent you an email with two options:<br>
             <strong>{{ email }}</strong>
           </p>
+          <div :class="bemm('verification-options')">
+            <p :class="bemm('option')">
+              <strong>Option 1:</strong> Click the magic link in your email
+            </p>
+            <p :class="bemm('option')">
+              <strong>Option 2:</strong> Enter the {{ codeLength }}-digit code below
+            </p>
+          </div>
         </div>
 
         <Form @submit.prevent="handleVerificationSubmit">
@@ -100,25 +108,23 @@
         </Form>
 
         <!-- Actions -->
-        <div :class="bemm('actions')">
-          <button
-            type="button"
+        <TButtonGroup :class="bemm('actions')">
+          <TButton
             :class="bemm('action-link')"
             @click="handleResendCode"
             :disabled="isLoading || resendCooldown > 0"
           >
             {{ resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Didn't receive code? Resend" }}
-          </button>
+          </TButton>
 
-          <button
-            type="button"
+          <TButton
             :class="bemm('action-link')"
             @click="goBackToEmail"
             :disabled="isLoading"
           >
             Use different email
-          </button>
-        </div>
+          </TButton>
+        </TButtonGroup>
       </div>
       </template>
 
@@ -197,6 +203,7 @@
 import { ref, computed, onUnmounted } from 'vue'
 import { useBemm } from 'bemm'
 import TButton from '../TButton/TButton.vue'
+import TButtonGroup from '../TButton/TButtonGroup.vue'
 import TInput from '../TInput/TInput.vue'
 import TIcon from '../TIcon/TIcon.vue'
 import Form from '../TForm/Form.vue'
@@ -412,6 +419,26 @@ onUnmounted(() => {
       font-size: 0.875rem;
       position: relative;
       z-index: 1;
+    }
+  }
+
+  &__verification-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-s);
+    margin-top: var(--space-s);
+    padding: var(--space-s);
+    background: color-mix(in srgb, var(--color-primary), transparent 95%);
+    border-radius: var(--border-radius-s);
+    border-left: 3px solid var(--color-primary);
+  }
+
+  &__option {
+    margin: 0;
+    font-size: 0.875em;
+
+    strong {
+      color: var(--color-primary);
     }
   }
 }

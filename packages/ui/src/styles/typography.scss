@@ -1,5 +1,5 @@
 // Import Nunito font
-@import './fonts.scss';
+@use './fonts.scss';
 
 body {
 	&[data-font-size='small'] {

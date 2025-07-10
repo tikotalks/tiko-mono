@@ -1,15 +1,25 @@
 <template>
-  <div id="app">
-    <TAuthWrapper title="Cards" :backgroundImage="backgroundImage">
-      <CardsView />
-    </TAuthWrapper>
+  <div id="app" :style="themeStyles">
+    <router-view />
   </div>
+  <TPopup />
 </template>
 
 <script setup lang="ts">
-import { TAuthWrapper } from '@tiko/ui'
-import CardsView from './views/CardsView.vue'
-import backgroundImage from './assets/app-icon-cards.png'
+import { onMounted } from 'vue'
+import { useAppStore } from '@tiko/core'
+import { TPopup, useTikoConfig } from '@tiko/ui'
+import tikoConfig from '../tiko.config'
+
+const appStore = useAppStore()
+
+// Set config and get theme styles
+const { themeStyles } = useTikoConfig(tikoConfig)
+
+onMounted(() => {
+  // Initialize network monitoring
+  appStore.initializeNetworkMonitoring()
+})
 </script>
 
 <style lang="scss">
@@ -19,10 +29,5 @@ import backgroundImage from './assets/app-icon-cards.png'
   height: 100vh;
   display: flex;
   flex-direction: column;
-
-  --color-primary: var(--color-green);
-  --color-primary-text: var(--color-green-text);
-  --color-secondary: var(--color-blue);
-  --color-secondary-text: var(--color-blue-text);
 }
 </style>

@@ -1,7 +1,7 @@
 import { ref } from 'vue';
 import type { Icons } from 'open-icon';
-import type { ToastPosition, ToastType } from './Toast.model';
-import { ToastSettings } from './Toast.model';
+import type { ToastPosition, ToastType } from './TToast.model';
+import { ToastSettings } from './TToast.model';
 
 export interface ToastOptions {
 	message: string;

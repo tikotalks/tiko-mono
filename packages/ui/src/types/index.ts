@@ -93,3 +93,6 @@ export const NotificationType = {
 	SUCCESS: 'success',
 };
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType];
+
+export type { TikoConfig, TikoThemeColors } from './tiko-config';
+export { defineConfig } from './tiko-config';

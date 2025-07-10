@@ -12,7 +12,7 @@
 				:style="`--toast-color: var(--${toast.type})`"
 			>
 				<div :class="bemm('content')">
-					<Icon
+					<TIcon
 						v-if="toast.icon"
 						:class="bemm('icon')"
 						:name="toast.icon"
@@ -27,12 +27,12 @@
 						{{ toast.message }}
 					</div>
 				</div>
-				<Button
+				<TButton
 					v-if="toast.dismissible"
 					:class="bemm('close')"
-					:type="ButtonSettings.Type.GHOST"
-					:size="ButtonSettings.Size.SMALL"
-					:icon="ButtonSettings.Icon.MULTIPLY_M"
+					type="ghost"
+					size="small"
+					icon="x"
 					@click="dismiss(toast.id)"
 				/>
 			</div>
@@ -41,11 +41,12 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useBemm } from 'bemm';
-import { ToastType } from './Toast.model';
-import { toastService } from './Toast.service';
-import { Button, ButtonSettings } from '@/components/Atoms/Button';
-import Icon from '@/components/Atoms/Icon.vue';
+import { ToastType } from './TToast.model';
+import { toastService } from './TToast.service';
+import { TButton } from '../TButton';
+import { TIcon } from '../TIcon';
 
 const toasts = computed(() => {
 	return toastService.toasts.value;

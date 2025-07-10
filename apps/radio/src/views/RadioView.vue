@@ -1,5 +1,6 @@
 <template>
-  <TAppLayout
+  <TAuthWrapper :title="'Radio'" :backgroundImage="backgroundImage" app-name="radio">
+    <TAppLayout
     title="Radio"
     :is-loading="loading"
     :show-header="true"
@@ -22,7 +23,7 @@
       <!-- Parent Mode Toggle (Temporary Simple Version) -->
       <TButton
         type="ghost"
-        :icon="canManageContent ? 'unlock' : 'lock'"
+        :icon="canManageContent ? 'locked' : 'locked'"
         @click="toggleParentMode"
         :class="bemm('parent-mode-toggle')"
       >
@@ -251,12 +252,14 @@
     <!-- Modals are now handled by popup service -->
     </div>
   </TAppLayout>
+  </TAuthWrapper>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useBemm } from 'bemm'
 import {
+  TAuthWrapper,
   TButton,
   TInputText,
   TIcon,
@@ -271,6 +274,7 @@ import RadioSettingsModal from '../components/RadioSettingsModal.vue'
 import SearchResultsModal from '../components/SearchResultsModal.vue'
 import { useRadioItems } from '../composables/useRadioItems'
 import { useRadioPlayer } from '../composables/useRadioPlayer'
+import backgroundImage from "../assets/app-icon-radio.png"
 import { useRadioSettings } from '../composables/useRadioSettings'
 import type { RadioItem } from '../types/radio.types'
 

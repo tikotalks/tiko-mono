@@ -1,5 +1,6 @@
 <template>
-  <TAppLayout
+  <TAuthWrapper :backgroundImage="backgroundImage" :title="'Yes/No'">
+    <TAppLayout
     title="Yes or No"
     :show-header="true"
     @profile="handleProfile"
@@ -17,37 +18,40 @@
       />
     </template>
 
-    <div :class="bemm()">
+    <div :class="bemm('', ['', showFeedback ? feedbackType : ''])">
       <!-- Main question display -->
       <main :class="bemm('main')">
-        <div :class="bemm('question')"
-        @click="speakQuestion"
-        data-cy="question-display"
-        :disabled="isPlaying">
+        <div
+          :class="bemm('question')"
+          @click="speakQuestion"
+          data-cy="question-display"
+          :disabled="isPlaying"
+        >
+          <div :class="bemm('question-text')">
+            {{ currentQuestion }}
+          </div>
 
-            <div :class="bemm('question-text')">
-              {{ currentQuestion }}
-            </div>
-
-            <TIcon
-              :name="isPlaying ? 'volume-2' : 'volume-1'"
-              :class="bemm('question-icon')"
-              size="large"
-            />
+          <TIcon
+            :name="isPlaying ? 'volume-2' : 'volume-1'"
+            :class="bemm('question-icon')"
+            size="large"
+          />
         </div>
 
         <!-- Answer buttons -->
         <div :class="bemm('answers')">
           <YesNoButton
-          :mode="1"
-          @click="() => handleAnswer('yes')"></YesNoButton>
+          :class="bemm('answer',['','yes'])"
+            :mode="0"
+            @click="() => handleAnswer('yes')"
+          ></YesNoButton>
           <YesNoButton
-          :mode="0"
-          @click="() => handleAnswer('no')"></YesNoButton>
-
+          :class="bemm('answer',['','no'])"
+            :mode="1"
+            @click="() => handleAnswer('no')"
+          ></YesNoButton>
         </div>
       </main>
-
 
       <!-- Feedback overlay -->
       <div
@@ -59,16 +63,18 @@
       </div>
     </div>
   </TAppLayout>
+  </TAuthWrapper>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive, watch, toRefs } from 'vue';
 import { useBemm } from 'bemm';
-import { TButton, TIcon, TAppLayout, popupService } from '@tiko/ui';
+import { TAuthWrapper, TButton, TIcon, TAppLayout, popupService } from '@tiko/ui';
 import { useYesNoStore } from '../stores/yesno';
 import YesNoSettingsForm from '../components/YesNoSettingsForm.vue';
 import QuestionInputForm from '../components/QuestionInputForm.vue';
 import YesNoButton from '../components/YesNoButton.vue';
+import backgroundImage from '../assets/app-icon-yes-no.png';
 
 const bemm = useBemm('yes-no');
 const yesNoStore = useYesNoStore();
@@ -88,7 +94,7 @@ const localSettings = reactive({
 const { currentQuestion, isPlaying, settings } = toRefs(yesNoStore);
 
 const feedbackIcon = computed(() =>
-  feedbackType.value === 'yes' ? 'check-circle' : 'x-circle',
+  feedbackType.value === 'yes' ? 'check-m' : 'multiply-m',
 );
 const feedbackText = computed(() =>
   feedbackType.value === 'yes' ? 'Yes!' : 'No!',
@@ -123,27 +129,29 @@ const handleAnswer = async (answer: 'yes' | 'no') => {
 const showQuestionInput = () => {
   popupService.open({
     component: QuestionInputForm,
+    title: 'Edit Question',
     props: {
       onApply: async (question: string) => {
-        await yesNoStore.setQuestion(question)
-        popupService.close()
-      }
-    }
-  })
+        await yesNoStore.setQuestion(question);
+        popupService.close();
+      },
+    },
+  });
 };
 
 const showSettingsPopup = () => {
   popupService.open({
     component: YesNoSettingsForm,
+    title: 'Settings',
     props: {
       settings: settings.value,
       onApply: async (newSettings: any) => {
-        Object.assign(localSettings, newSettings)
-        await yesNoStore.updateSettings(newSettings)
-        popupService.close()
-      }
-    }
-  })
+        Object.assign(localSettings, newSettings);
+        await yesNoStore.updateSettings(newSettings);
+        popupService.close();
+      },
+    },
+  });
 };
 
 const updateSettings = async () => {
@@ -184,6 +192,28 @@ onMounted(async () => {
   flex-direction: column;
   position: relative;
 
+  &::before {
+    content: '';
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: var(
+      --layout-background-color,
+      color-mix(in srgb, var(--color-primary), transparent 75%)
+    );
+    transition: background-color 0.3s ease;
+    opacity: 1;
+  }
+
+  &--yes {
+    --layout-background-color: var(--color-green);
+  }
+  &--no {
+    --layout-background-color: var(--color-red);
+  }
+
   &__header {
     display: flex;
     justify-content: space-between;
@@ -204,21 +234,26 @@ onMounted(async () => {
 
   &__answers {
     display: flex;
-    gap:var(--space-s);
+    gap: var(--space-s);
     width: 100%;
     justify-content: center;
     font-size: 20vmin;
   }
 
+  &:has(:hover){
+    .yes-no__answer{
+      transform: scale(0.5);
+    }
+  }
 
-  &__question{
+  &__question {
     display: flex;
-    align-items: center; justify-content: center;
-  &-text{
-    font-size: 2em;
+    align-items: center;
+    justify-content: center;
+    &-text {
+      font-size: 2em;
+    }
   }
-  }
-
 
   // Feedback overlay
   &__feedback {
@@ -244,11 +279,11 @@ onMounted(async () => {
     }
 
     &--yes {
-      color: #10b981;
+      color: var(--color-green);
     }
 
     &--no {
-      color: #ef4444;
+      color: var(--color-green);
     }
   }
 }

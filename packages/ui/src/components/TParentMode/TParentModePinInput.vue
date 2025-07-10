@@ -1,6 +1,5 @@
 <template>
-  <TPopup :show="true" @close="$emit('close')" :closable="true">
-    <div :class="bemm()">
+  <div :class="bemm()">
       <div :class="bemm('header')">
         <TIcon :name="mode === 'setup' ? 'shield-plus' : 'lock'" :class="bemm('icon')" />
         <h2 :class="bemm('title')">{{ title }}</h2>
@@ -35,6 +34,45 @@
           />
         </div>
 
+        <!-- Number Pad -->
+        <div v-if="mode === 'unlock' || (mode === 'setup' && pinValue.length < 4)" :class="bemm('numpad')">
+          <button
+            v-for="num in [1, 2, 3, 4, 5, 6, 7, 8, 9]"
+            :key="num"
+            type="button"
+            :class="bemm('numpad-button')"
+            @click="handleNumberClick(num.toString())"
+          >
+            {{ num }}
+          </button>
+          
+          <button
+            type="button"
+            :class="bemm('numpad-button', 'clear')"
+            @click="handleClearClick"
+            :disabled="(confirmValue ? confirmValue : pinValue).length === 0"
+          >
+            <TIcon name="arrow-left" />
+          </button>
+          
+          <button
+            type="button"
+            :class="bemm('numpad-button')"
+            @click="handleNumberClick('0')"
+          >
+            0
+          </button>
+          
+          <button
+            type="button"
+            :class="bemm('numpad-button', 'submit')"
+            @click="handleSubmit"
+            :disabled="!canSubmit"
+          >
+            <TIcon name="check" />
+          </button>
+        </div>
+
         <!-- Confirmation PIN for setup mode -->
         <div v-if="mode === 'setup' && pinValue.length === 4" :class="bemm('confirm-section')">
           <p :class="bemm('confirm-label')">Confirm your PIN</p>
@@ -61,6 +99,45 @@
               @keydown="handleConfirmKeydown"
             />
           </div>
+
+          <!-- Number Pad for Confirm -->
+          <div v-if="mode === 'setup' && pinValue.length === 4 && confirmValue.length < 4" :class="bemm('numpad')">
+            <button
+              v-for="num in [1, 2, 3, 4, 5, 6, 7, 8, 9]"
+              :key="`confirm-${num}`"
+              type="button"
+              :class="bemm('numpad-button')"
+              @click="handleNumberClick(num.toString())"
+            >
+              {{ num }}
+            </button>
+            
+            <button
+              type="button"
+              :class="bemm('numpad-button', 'clear')"
+              @click="handleClearClick"
+              :disabled="confirmValue.length === 0"
+            >
+              <TIcon name="arrow-left" />
+            </button>
+            
+            <button
+              type="button"
+              :class="bemm('numpad-button')"
+              @click="handleNumberClick('0')"
+            >
+              0
+            </button>
+            
+            <button
+              type="button"
+              :class="bemm('numpad-button', 'submit')"
+              @click="handleSubmit"
+              :disabled="!canSubmit"
+            >
+              <TIcon name="check" />
+            </button>
+          </div>
         </div>
 
         <!-- Actions -->
@@ -68,7 +145,7 @@
           <TButton
             type="ghost"
             color="secondary"
-            @click="$emit('close')"
+            @click="handleClosePopup"
           >
             Cancel
           </TButton>
@@ -100,19 +177,22 @@
           {{ error }}
         </div>
       </form>
-    </div>
-  </TPopup>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, nextTick, watch } from 'vue'
 import { useBemm } from 'bemm'
-import TPopup from '../TPopup/TPopup.vue'
 import TButton from '../TButton/TButton.vue'
 import TIcon from '../TIcon/TIcon.vue'
 import type { ParentModePinInputProps } from '../../composables/useParentMode.model'
 
-const props = withDefaults(defineProps<ParentModePinInputProps>(), {
+interface ExtendedProps extends ParentModePinInputProps {
+  onPinEntered?: (pin: string) => void
+  onClose?: () => void
+}
+
+const props = withDefaults(defineProps<ExtendedProps>(), {
   showConfirmation: true,
   autoFocus: true,
   title: '',
@@ -246,7 +326,13 @@ const handleSubmit = async () => {
       return
     }
 
+    // Emit event for v-model usage
     emit('pin-entered', pinValue.value)
+    
+    // Call callback prop for popup service usage
+    if (props.onPinEntered) {
+      props.onPinEntered(pinValue.value)
+    }
   } catch (err) {
     error.value = 'An error occurred. Please try again.'
     console.error('PIN input error:', err)
@@ -263,6 +349,42 @@ const toggleNumberVisibility = () => {
 }
 
 /**
+ * Handle number pad click
+ */
+const handleNumberClick = (num: string) => {
+  // Determine which field is active
+  if (props.mode === 'setup' && pinValue.value.length === 4 && confirmValue.value.length < 4) {
+    // Add to confirm field
+    confirmValue.value += num
+    if (confirmValue.value.length === 4 && confirmValue.value === pinValue.value) {
+      handleSubmit()
+    }
+  } else if (pinValue.value.length < 4) {
+    // Add to pin field
+    pinValue.value += num
+    if (props.mode === 'unlock' && pinValue.value.length === 4) {
+      handleSubmit()
+    } else if (props.mode === 'setup' && pinValue.value.length === 4) {
+      nextTick(() => {
+        confirmInput.value?.focus()
+      })
+    }
+  }
+}
+
+/**
+ * Handle clear button click
+ */
+const handleClearClick = () => {
+  // Determine which field to clear from
+  if (props.mode === 'setup' && pinValue.value.length === 4 && confirmValue.value.length > 0) {
+    confirmValue.value = confirmValue.value.slice(0, -1)
+  } else if (pinValue.value.length > 0) {
+    pinValue.value = pinValue.value.slice(0, -1)
+  }
+}
+
+/**
  * Reset form
  */
 const reset = () => {
@@ -270,6 +392,16 @@ const reset = () => {
   confirmValue.value = ''
   error.value = ''
   isProcessing.value = false
+}
+
+/**
+ * Handle popup close
+ */
+const handleClosePopup = () => {
+  emit('close')
+  if (props.onClose) {
+    props.onClose()
+  }
 }
 
 // Watch for mode changes to reset form
@@ -410,6 +542,61 @@ watch(pinInput, (input) => {
     color: color-mix(in srgb, var(--color-error), var(--color-foreground) 20%);
     font-size: 0.875em;
     text-align: center;
+  }
+
+  &__numpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-s);
+    max-width: 300px;
+    margin: 0 auto var(--space);
+  }
+
+  &__numpad-button {
+    aspect-ratio: 1;
+    min-height: 3.5em;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius);
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-size: 1.25rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-primary);
+      border-color: var(--color-primary);
+      color: var(--color-primary-text);
+      transform: scale(1.05);
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.95);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &--clear {
+      background-color: var(--color-background-secondary);
+    }
+
+    &--submit {
+      background-color: var(--color-success);
+      border-color: var(--color-success);
+      color: var(--color-success-text);
+
+      &:hover:not(:disabled) {
+        background-color: var(--color-success);
+        opacity: 0.9;
+      }
+    }
   }
 }
 

@@ -1,16 +1,20 @@
 <template>
-  <div id="app">
+  <div id="app" :style="themeStyles">
     <router-view />
   </div>
-  <TPopup></TPopup>
+  <TPopup />
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useAppStore } from '@tiko/core'
-import { TPopup } from '@tiko/ui'
+import { TPopup, useTikoConfig } from '@tiko/ui'
+import tikoConfig from '../tiko.config'
 
 const appStore = useAppStore()
+
+// Set config and get theme styles
+const { themeStyles } = useTikoConfig(tikoConfig)
 
 onMounted(() => {
   // Initialize network monitoring
@@ -25,10 +29,5 @@ onMounted(() => {
   height: 100vh;
   display: flex;
   flex-direction: column;
-
-  --color-primary: var(--color-orange);
-  --color-primary-text: var(--color-orange-text);
-  --color-secondary: var(--color-blue);
-  --color-secondary-text: var(--color-blue-text);
 }
 </style>
