@@ -2246,10 +2246,11 @@
         },
         {
           "file": "apps/timer/src/components/TimeDisplay.vue",
-          "hash": "10228345945450109540",
+          "hash": "1964945232048349801",
           "deps": [
             "npm:vue",
-            "npm:bemm"
+            "npm:bemm",
+            "@tiko/ui"
           ]
         },
         {
@@ -2279,7 +2280,7 @@
         },
         {
           "file": "apps/timer/src/composables/useTimer.ts",
-          "hash": "2348340187358622342",
+          "hash": "18122188494184702290",
           "deps": [
             "npm:vue"
           ]
@@ -2311,7 +2312,7 @@
         },
         {
           "file": "apps/timer/src/views/TimerView.vue",
-          "hash": "12078827019781389431",
+          "hash": "13885128078379396235",
           "deps": [
             "npm:vue",
             "npm:bemm",

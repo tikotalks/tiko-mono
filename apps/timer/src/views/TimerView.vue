@@ -8,8 +8,10 @@
         :mode="mode"
         :isExpired="isExpired"
         :isRunning="isRunning"
+        :pulse="!isRunning"
+        :progress="progress"
         @click="isRunning ? pause() : start()"
-        :class="bemm('display', ['', isRunning ? 'running' : 'paused', isExpired ? 'expired' : '',
+        :class="bemm('display', ['', isExpired ? 'expired' : '',
           timeLeft < 10 ? 'last-seconds' : ''
         ])"
       />
@@ -122,23 +124,23 @@ onUnmounted(() => {
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
 
-    &--paused{
-      animation: pausePulse 5s infinite;
-      @keyframes pausePulse {
-        0% { transform: translate(-50%, -50%) scale(1); }
-        50% { transform:  translate(-50%, -50%) scale(1.1); }
-        100% { transform: translate(-50%, -50%)  scale(1); }
-      }
-    }
+    // &--paused{
+    //   animation: pausePulse 5s infinite;
+    //   @keyframes pausePulse {
+    //     0% { transform: translate(-50%, -50%) scale(1); }
+    //     50% { transform:  translate(-50%, -50%) scale(1.1); }
+    //     100% { transform: translate(-50%, -50%)  scale(1); }
+    //   }
+    // }
 
-    &--last-seconds{
-      animation: leftPulse 1s infinite;
-      @keyframes leftPulse {
-        0% { transform: translate(-50%, -50%) scale(1); }
-        50% { transform:  translate(-50%, -50%) scale(1.1); }
-        100% { transform: translate(-50%, -50%)  scale(1); }
-      }
-    }
+    // &--last-seconds{
+    //   animation: leftPulse 1s infinite;
+    //   @keyframes leftPulse {
+    //     0% { transform: translate(-50%, -50%) scale(1); }
+    //     50% { transform:  translate(-50%, -50%) scale(1.1); }
+    //     100% { transform: translate(-50%, -50%)  scale(1); }
+    //   }
+    // }
   }
 
   &__time {
@@ -166,7 +168,7 @@ onUnmounted(() => {
 
     &--down {
       background: var(--color-warning);
-      
+
       &.timer-view__progress-bar--running {
         background: var(--color-warning);
       }
@@ -174,7 +176,7 @@ onUnmounted(() => {
 
     &--up {
       background: var(--color-success);
-      
+
       &.timer-view__progress-bar--running {
         background: var(--color-success);
       }
