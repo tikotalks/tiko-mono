@@ -1,8 +1,8 @@
 {
   "run": {
-    "command": "nx build @tiko/ui",
-    "startTime": "2025-07-11T10:13:42.831Z",
-    "endTime": "2025-07-11T10:13:44.750Z",
+    "command": "nx build todo",
+    "startTime": "2025-07-11T11:34:00.822Z",
+    "endTime": "2025-07-11T11:34:09.385Z",
     "inner": false
   },
   "tasks": [
@@ -11,8 +11,8 @@
       "target": "build",
       "projectName": "@tiko/core",
       "hash": "1225004083937953592",
-      "startTime": "2025-07-11T10:13:42.834Z",
-      "endTime": "2025-07-11T10:13:42.872Z",
+      "startTime": "2025-07-11T11:34:00.826Z",
+      "endTime": "2025-07-11T11:34:00.903Z",
       "params": "",
       "cacheStatus": "local-cache-hit",
       "status": 0
@@ -21,9 +21,20 @@
       "taskId": "@tiko/ui:build",
       "target": "build",
       "projectName": "@tiko/ui",
-      "hash": "18347386951933929307",
-      "startTime": "2025-07-11T10:13:42.887Z",
-      "endTime": "2025-07-11T10:13:44.750Z",
+      "hash": "18158129897782388880",
+      "startTime": "2025-07-11T11:34:00.935Z",
+      "endTime": "2025-07-11T11:34:03.813Z",
+      "params": "",
+      "cacheStatus": "cache-miss",
+      "status": 0
+    },
+    {
+      "taskId": "todo:build:production",
+      "target": "build",
+      "projectName": "todo",
+      "hash": "239047811021137195",
+      "startTime": "2025-07-11T11:34:03.814Z",
+      "endTime": "2025-07-11T11:34:09.384Z",
       "params": "",
       "cacheStatus": "cache-miss",
       "status": 0

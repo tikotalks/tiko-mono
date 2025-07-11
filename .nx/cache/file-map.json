@@ -115,7 +115,7 @@
         },
         {
           "file": "apps/todo/src/App.vue",
-          "hash": "13749932857454834395",
+          "hash": "15400101510604743524",
           "deps": [
             "npm:vue",
             "npm:vue-router",
@@ -165,7 +165,7 @@
         },
         {
           "file": "apps/todo/src/components/TodoGroupCard.vue",
-          "hash": "13249892396545242857",
+          "hash": "4544163319289776259",
           "deps": [
             "npm:bemm",
             "@tiko/ui"
@@ -999,7 +999,7 @@
         },
         {
           "file": "apps/timer/src/components/TimeDisplay.vue",
-          "hash": "6346160711116087626",
+          "hash": "4573605864017785155",
           "deps": [
             "npm:vue",
             "npm:bemm"
@@ -1057,7 +1057,7 @@
         },
         {
           "file": "apps/timer/src/views/TimerView.vue",
-          "hash": "1248672288770246323",
+          "hash": "15332552247633754700",
           "deps": [
             "npm:vue",
             "npm:bemm",
@@ -1085,6 +1085,13 @@
         {
           "file": "apps/timer/vite.config.ts",
           "hash": "18212497671248572936"
+        },
+        {
+          "file": "apps/timer/src/components/TimeNumber.vue",
+          "hash": "18082631285667483475",
+          "deps": [
+            "npm:bemm"
+          ]
         }
       ],
       "type": [
@@ -1785,7 +1792,7 @@
         },
         {
           "file": "packages/ui/src/components/TAppLayout/TAppLayout.vue",
-          "hash": "1508043814145412365",
+          "hash": "10360159061121003152",
           "deps": [
             "npm:bemm"
           ]
@@ -2476,7 +2483,7 @@
         },
         {
           "file": "packages/ui/src/components/TTopBar/TTopBar.vue",
-          "hash": "7371912706518518612",
+          "hash": "15964894776007411567",
           "deps": [
             "npm:vue",
             "npm:bemm",
@@ -2761,7 +2768,7 @@
         },
         {
           "file": "packages/ui/src/components/TFramework/TFramework.vue",
-          "hash": "2242702959836356321",
+          "hash": "12571881658846474000",
           "deps": [
             "npm:vue",
             "npm:vue-router",
@@ -2772,7 +2779,7 @@
         },
         {
           "file": "packages/ui/src/components/TFramework/TSettings.vue",
-          "hash": "8939511868825962307",
+          "hash": "5811567602383383134",
           "deps": [
             "npm:vue",
             "npm:bemm",
@@ -2797,23 +2804,23 @@
         },
         {
           "file": "packages/ui/src/i18n/locales/nl.ts",
-          "hash": "17251844677683705799"
+          "hash": "1652934075613053710"
         },
         {
           "file": "packages/ui/src/i18n/locales/ru.ts",
-          "hash": "6791640757902743013"
+          "hash": "18422902048265310616"
         },
         {
           "file": "packages/ui/src/i18n/locales/fr.ts",
-          "hash": "16876103267584025503"
+          "hash": "13416481939403442616"
         },
         {
           "file": "packages/ui/src/i18n/locales/de.ts",
-          "hash": "458473317912166155"
+          "hash": "16525669253890382264"
         },
         {
           "file": "packages/ui/src/i18n/locales/es.ts",
-          "hash": "17511417691822858409"
+          "hash": "6239128493907295940"
         },
         {
           "file": "packages/ui/src/i18n/locales/index.ts",
@@ -2829,35 +2836,35 @@
         },
         {
           "file": "packages/ui/src/i18n/locales/en-GB.ts",
-          "hash": "11568096057025429652"
+          "hash": "16148498904748396319"
         },
         {
           "file": "packages/ui/src/i18n/locales/en-US.ts",
-          "hash": "2290402865907960483"
+          "hash": "14082292170133505989"
         },
         {
           "file": "packages/ui/src/i18n/locales/pt.ts",
-          "hash": "6464747973756998113"
+          "hash": "13658448688879054777"
         },
         {
           "file": "packages/ui/src/i18n/locales/it.ts",
-          "hash": "68601426923932317"
+          "hash": "13659323124160754209"
         },
         {
           "file": "packages/ui/src/i18n/locales/pl.ts",
-          "hash": "13258375704814010119"
+          "hash": "1813159864866034325"
         },
         {
           "file": "packages/ui/src/i18n/locales/ro.ts",
-          "hash": "9444488093386480031"
+          "hash": "12869227419221881280"
         },
         {
           "file": "packages/ui/src/i18n/locales/sv.ts",
-          "hash": "16306252378594430930"
+          "hash": "9473324302774745996"
         },
         {
           "file": "packages/ui/src/i18n/locales/el.ts",
-          "hash": "13838811687060057533"
+          "hash": "15396315585525928616"
         },
         {
           "file": "packages/ui/src/components/TProfile/TProfile.model.ts",
@@ -2868,7 +2875,7 @@
         },
         {
           "file": "packages/ui/src/components/TProfile/TProfile.vue",
-          "hash": "15053217308702317526",
+          "hash": "10792236986628203982",
           "deps": [
             "npm:vue",
             "npm:bemm",

@@ -190,6 +190,7 @@ export const sv: TranslationSchema = {
     uploadImagePrompt: 'Ladda upp en bild för att göra uppgiften mer visuell',
     saveChanges: 'Spara ändringar',
     addItem: 'Lägg till uppgift',
+    addGroup: 'Lägg till grupp',
     noTodoListsYet: 'Inga att-göra-listor än',
     askParentCreate: 'Be en förälder att skapa din första att-göra-lista!',
     createFirstTodoList: 'Skapa din första att-göra-lista för att komma igång',

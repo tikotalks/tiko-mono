@@ -9,6 +9,7 @@
         :mode="mode"
         :isExpired="isExpired"
         :isRunning="isRunning"
+        @click="isRunning ? pause() : start()"
         :class="bemm('display')"
       />
     </main>

@@ -1,16 +1,17 @@
 <template>
   <div :class="displayClasses"
   :style="{
-      backgroundImage: `conic-gradient(
-        var(--color-primary) ${Math.min(progress, 100)}%,
-        var(--color-secondary) ${Math.min(progress, 100)}%
-      )`
+    '--progress': `${Math.min(progress, 100)}%`,
     }"
     >
     <div :class="bemm('container')">
 
     <div :class="bemm('time')">
-      {{ displayTime }}
+      <TimeNumber v-if="deconstructedTime.hour1" :number="deconstructedTime.hour1" />
+      <TimeNumber :number="deconstructedTime.hour2" />
+      <span>:</span>
+      <TimeNumber :number="deconstructedTime.minute1" />
+      <TimeNumber :number="deconstructedTime.minute2" />
     </div>
 
     <div :class="bemm('progress')">
@@ -27,6 +28,8 @@
 import { computed } from 'vue'
 import { useBemm } from 'bemm'
 
+import TimeNumber from './TimeNumber.vue'
+
 interface Props {
   displayTime: string
   progress: number
@@ -34,7 +37,15 @@ interface Props {
   isExpired: boolean
   isRunning: boolean
 }
-
+const deconstructedTime = computed(() => {
+  const time = props.displayTime.replace(':', ''); // e.g., "0230"
+  return {
+    hour1: parseInt(time[0]),
+    hour2: parseInt(time[1]),
+    minute1: parseInt(time[2]),
+    minute2: parseInt(time[3]),
+  };
+});
 const props = defineProps<Props>()
 
 const bemm = useBemm('time-display')
@@ -52,7 +63,7 @@ const displayClasses = computed(() => {
 .time-display {
 
   --display-circle-size: 50vmin;
-  --display-text-size: 15vmin;
+  --display-text-size: 10vmin;
 
   display: flex;
   flex-direction: column;
@@ -68,18 +79,31 @@ const displayClasses = computed(() => {
   position: relative;
   background-color: var(--color-primary);
   padding: var(--space);
-  background-color: var(--color-secondary);
-  background-image: conic-gradient(
+  // background-color: var(--color-secondary);
+  background-image: linear-gradient(to right bottom,var(--color-background), color-mix( in srgb, var(--color-secondary), transparent 25%));
+
+  &::before{
+    content: "";
+    width: 100%; height: 100%; position: absolute;top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background-image: conic-gradient(
     from 0deg,
-    var(--color-primary) 0%,
-    var(--color-secondary) 100%
+    transparent var(--progress, 0%),
+    var(--color-tertiary) var(--progress, 0%)
   );
+  }
 
   &__container{
     background-color: var(--color-background);
   width: var(--display-circle-size);
   height: var(--display-circle-size);
   border-radius: 50%;
+  box-shadow: .25em .25em 1em rgba(0, 0, 0, 0.5), .25em .25em .5em rgba(0, 0, 0, 0.5),
+  -0.25em -.25em 1em var(--color-background) inset,
+  -0.5em -.5em 3em rgba(255,255,255, 0.5) inset;
+  z-index: 2;
+
   }
 
 
@@ -87,13 +111,8 @@ const displayClasses = computed(() => {
     position: absolute; top: 50%; left: 50%;
     transform: translate(-50%, -50%);
   font-size: var(--display-text-size);
-    font-weight: 700;
-    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
-    color: var(--text-primary);
-    text-align: center;
-    line-height: 1;
-    transition: color 0.3s ease;
-    letter-spacing: -0.05em;
+    display: flex;
+    align-items: center;
   }
 
   &__progress {

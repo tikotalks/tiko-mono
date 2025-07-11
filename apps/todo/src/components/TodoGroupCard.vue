@@ -25,7 +25,7 @@
     
     <div :class="bemm('stats')">
       <span :class="bemm('count')">
-        {{ progress.completed }} / {{ progress.total }} items
+        {{ t(keys.todo.completedCount, { completed: progress.completed, total: progress.total }) }}
       </span>
       <div :class="bemm('progress')">
         <div 
@@ -39,7 +39,7 @@
 
 <script setup lang="ts">
 import { useBemm } from 'bemm'
-import { TIcon, TButton } from '@tiko/ui'
+import { TIcon, TButton, useI18n } from '@tiko/ui'
 import type { TodoGroup } from '../types/todo.types'
 
 interface Props {
@@ -52,7 +52,7 @@ interface Props {
   canEdit?: boolean
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 defineEmits<{
   click: []
   edit: []
@@ -60,6 +60,7 @@ defineEmits<{
 }>()
 
 const bemm = useBemm('todo-group-card')
+const { t, keys } = useI18n()
 </script>
 
 <style lang="scss" scoped>

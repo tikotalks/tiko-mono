@@ -192,6 +192,7 @@ export const de: TranslationSchema = {
     uploadImagePrompt: 'Laden Sie ein Bild hoch, um die Aufgabe visueller zu gestalten',
     saveChanges: 'Änderungen speichern',
     addItem: 'Element hinzufügen',
+    addGroup: 'Gruppe hinzufügen',
     noTodoListsYet: 'Noch keine Aufgabenlisten',
     askParentCreate: 'Bitten Sie einen Elternteil, Ihre erste Aufgabenliste zu erstellen!',
     createFirstTodoList: 'Erstellen Sie Ihre erste Aufgabenliste, um zu beginnen',

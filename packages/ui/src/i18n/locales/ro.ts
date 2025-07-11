@@ -190,6 +190,7 @@ export const ro: TranslationSchema = {
     uploadImagePrompt: 'Încarcă o imagine pentru a face elementul mai vizual',
     saveChanges: 'Salvează modificările',
     addItem: 'Adaugă element',
+    addGroup: 'Adaugă grup',
     noTodoListsYet: 'Încă nu există liste de sarcini',
     askParentCreate: 'Cere unui părinte să creeze prima ta listă de sarcini!',
     createFirstTodoList: 'Creează prima ta listă de sarcini pentru a începe',
