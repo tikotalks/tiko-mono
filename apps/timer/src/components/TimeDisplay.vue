@@ -1,27 +1,15 @@
 <template>
-  <div :class="displayClasses"
-  :style="{
-    '--progress': `${Math.min(progress, 100)}%`,
-    }"
-    >
+  <div :class="displayClasses">
     <div :class="bemm('container')">
-
-    <div :class="bemm('time')">
-      <TimeNumber v-if="deconstructedTime.hour1" :number="deconstructedTime.hour1" />
-      <TimeNumber :number="deconstructedTime.hour2" />
-      <span>:</span>
-      <TimeNumber :number="deconstructedTime.minute1" />
-      <TimeNumber :number="deconstructedTime.minute2" />
-    </div>
-
-    <div :class="bemm('progress')">
-      <div
-        :class="bemm('progress-bar')"
-        :style="{ width: `${Math.min(100, progress)}%` }"
-      />
+      <div :class="bemm('time')">
+        <TimeNumber v-if="deconstructedTime.hour1" :number="deconstructedTime.hour1" />
+        <TimeNumber :number="deconstructedTime.hour2" />
+        <span>:</span>
+        <TimeNumber :number="deconstructedTime.minute1" />
+        <TimeNumber :number="deconstructedTime.minute2" />
+      </div>
     </div>
   </div>
-</div>
 </template>
 
 <script setup lang="ts">
@@ -32,7 +20,6 @@ import TimeNumber from './TimeNumber.vue'
 
 interface Props {
   displayTime: string
-  progress: number
   mode: 'up' | 'down'
   isExpired: boolean
   isRunning: boolean
@@ -82,17 +69,6 @@ const displayClasses = computed(() => {
   // background-color: var(--color-secondary);
   background-image: linear-gradient(to right bottom,var(--color-background), color-mix( in srgb, var(--color-secondary), transparent 25%));
 
-  &::before{
-    content: "";
-    width: 100%; height: 100%; position: absolute;top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    background-image: conic-gradient(
-    from 0deg,
-    transparent var(--progress, 0%),
-    var(--color-tertiary) var(--progress, 0%)
-  );
-  }
 
   &__container{
     background-color: var(--color-background);
@@ -115,23 +91,6 @@ const displayClasses = computed(() => {
     align-items: center;
   }
 
-  &__progress {
-    width: 100%;
-    height: 8px;
-    background: var(--color-background);
-    border-radius: 4px;
-    position: fixed;
-    bottom: var(--space);
-    width: calc(100vw - var(--space-l));
-    left: var(--space);
-  }
-
-  &__progress-bar {
-    height: 100%;
-    background: var(--color-primary);
-    border-radius: 4px;
-    transition: width 0.3s ease, background-color 0.3s ease;
-  }
 
   &__mode {
     font-size: 0.875rem;
@@ -147,9 +106,6 @@ const displayClasses = computed(() => {
       color: var(--color-primary);
     }
 
-    .time-display__progress-bar {
-      background: var(--color-primary);
-    }
   }
 
   &--expired {
@@ -165,39 +121,8 @@ const displayClasses = computed(() => {
       color: rgba(255, 255, 255, 0.8);
     }
 
-    .time-display__progress {
-      background: rgba(255, 255, 255, 0.3);
-    }
-
-    .time-display__progress-bar {
-      background: white;
-    }
   }
 
-  // Mode specific colors
-  &--down {
-    .time-display__progress-bar {
-      background: var(--color-warning);
-    }
-
-    &.time-display--running {
-      .time-display__progress-bar {
-        background: var(--color-warning);
-      }
-    }
-  }
-
-  &--up {
-    .time-display__progress-bar {
-      background: var(--color-success);
-    }
-
-    &.time-display--running {
-      .time-display__progress-bar {
-        background: var(--color-success);
-      }
-    }
-  }
 }
 
 @keyframes expiredPulse {
@@ -220,9 +145,6 @@ const displayClasses = computed(() => {
       animation: none;
     }
 
-    &__progress-bar {
-      transition: width 0.1s ease;
-    }
   }
 }
 </style>
