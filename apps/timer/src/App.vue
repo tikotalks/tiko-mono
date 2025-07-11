@@ -83,6 +83,9 @@ const seconds = ref(0)
 const loading = ref(false)
 
 // Framework configuration
+// Inject popup service at setup time
+const popupService = inject<any>('popupService')
+
 const frameworkConfig = computed<FrameworkConfig>(() => ({
   ...tikoConfig,
   topBar: {
@@ -120,10 +123,10 @@ const frameworkConfig = computed<FrameworkConfig>(() => ({
 
 // Show timer settings
 const showEditSettings = () => {
-  const popupService = inject<any>('popupService')
   if (popupService) {
     popupService.open({
       component: TimerSettingsForm,
+      title: 'Timer Settings',
       props: {
         mode: mode.value,
         minutes: minutes.value,
@@ -139,6 +142,8 @@ const showEditSettings = () => {
         onClose: () => popupService.close()
       }
     })
+  } else {
+    console.error('PopupService not available')
   }
 }
 </script>

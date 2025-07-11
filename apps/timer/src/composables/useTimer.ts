@@ -7,23 +7,24 @@ export interface TimerSettings {
 
 export type TimerMode = 'up' | 'down'
 
+// Create shared state outside of the composable function
+const currentTime = ref(0) // seconds
+const targetTime = ref(20) // 20 seconds default
+const mode = ref<TimerMode>('down')
+const isRunning = ref(false)
+const isExpired = ref(false)
+const timeLeft = ref(targetTime.value)
+
+// Settings
+const settings = ref<TimerSettings>({
+  soundEnabled: true,
+  vibrationEnabled: true
+})
+
+// Timer interval
+let intervalId: number | null = null
+
 export function useTimer() {
-  // State
-  const currentTime = ref(0) // seconds
-  const targetTime = ref(20) // 5 minutes default
-  const mode = ref<TimerMode>('down')
-  const isRunning = ref(false)
-  const isExpired = ref(false)
-  const timeLeft = ref(targetTime.value)
-
-  // Settings
-  const settings = ref<TimerSettings>({
-    soundEnabled: true,
-    vibrationEnabled: true
-  })
-
-  // Timer interval
-  let intervalId: number | null = null
 
   // Computed
   const displayTime = computed(() => {
@@ -83,9 +84,6 @@ export function useTimer() {
   const expire = () => {
     pause()
     isExpired.value = true
-
-    const timeLeft = ref(targetTime.value)
-
 
     // Notifications
     if (settings.value.soundEnabled) {
