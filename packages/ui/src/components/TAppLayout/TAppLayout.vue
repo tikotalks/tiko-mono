@@ -81,6 +81,7 @@ const bemm = useBemm('app-layout');
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  overflow: auto;
 
   &__header {
     width: calc(100% - (var(--space) * 2));
@@ -95,6 +96,7 @@ const bemm = useBemm('app-layout');
     width: 100%;
     position: relative;
     height: fit-content;
+
   }
 
   &__footer {

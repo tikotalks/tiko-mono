@@ -1,35 +1,5 @@
 <template>
-  <TAuthWrapper title="Cards" :backgroundImage="backgroundImage">
-    <TAppLayout
-    title="Communication Cards"
-    :subtitle="editMode ? 'Select cards to organize or delete' : 'Tap cards to speak'"
-    :is-loading="isLoading"
-    :show-header="true"
-    @profile="handleProfile"
-    @settings="handleSettings"
-    @logout="handleLogout"
-  >
-    <template #top-bar-actions>
-      <TButton
-        :class="bemm('action-button')"
-        :color="editMode ? 'success' : 'primary'"
-        :icon="editMode ? 'check' : 'edit'"
-        @click="handleToggleEditMode"
-      >
-        {{ editMode ? 'Done' : 'Edit' }}
-      </TButton>
-
-      <TButton
-        :class="bemm('action-button')"
-        color="primary"
-        icon="plus"
-        @click="showCreateModal = true"
-      >
-        Add Card
-      </TButton>
-    </template>
-
-    <div :class="bemm()">
+  <div :class="bemm()">
       <!-- Search & Filters -->
     <div :class="bemm('toolbar')">
       <TInput
@@ -67,7 +37,7 @@
         <TButton
           color="primary"
           icon="folder-plus"
-          @click="showGroupModal = true"
+          @click="showCreateGroupModal"
         >
           Create Group
         </TButton>
@@ -110,9 +80,10 @@
             Create your first communication card to get started
           </p>
           <TButton
+            v-if="parentMode.canManageContent.value"
             color="primary"
             icon="plus"
-            @click="showCreateModal = true"
+            @click="showCreateCardModal"
           >
             Create First Card
           </TButton>
@@ -154,9 +125,9 @@
 
         <!-- Add Card Button -->
         <div
-          v-if="editMode"
+          v-if="editMode && parentMode.canManageContent.value"
           :class="bemm('add-card')"
-          @click="showCreateModal = true"
+          @click="showCreateCardModal"
         >
           <TIcon name="plus" :class="bemm('add-icon')" />
           <span :class="bemm('add-text')">Add Card</span>
@@ -209,35 +180,19 @@
       </div>
     </main>
 
-    <!-- Create Card Modal -->
-    <CreateCardModal
-      v-if="showCreateModal"
-      @close="showCreateModal = false"
-      @created="handleCardCreated"
-    />
-
-    <!-- Create Group Modal -->
-    <CreateGroupModal
-      v-if="showGroupModal"
-      :selected-cards="selectedCards"
-      @close="showGroupModal = false"
-      @created="handleGroupCreated"
-    />
-    </div>
-  </TAppLayout>
-  </TAuthWrapper>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, inject } from 'vue'
 import { useBemm } from 'bemm'
-import { TAuthWrapper, TButton, TInput, TIcon, TCardCommunication, TAppLayout } from '@tiko/ui'
+import { TButton, TInput, TIcon, TCardCommunication, useParentMode } from '@tiko/ui'
 import { useCardsStore } from '../stores/cards'
 import CreateCardModal from '../components/CreateCardModal.vue'
 import CreateGroupModal from '../components/CreateGroupModal.vue'
-import backgroundImage from '../assets/app-icon-cards.png'
 
 const bemm = useBemm('cards-view')
+const parentMode = useParentMode('cards')
 
 // Store
 const store = useCardsStore()
@@ -266,13 +221,13 @@ const searchQuery = computed({
   set: (value: string) => store.searchQuery = value
 })
 
-// Local state
-const showCreateModal = ref(false)
-const showGroupModal = ref(false)
+// Get injected services from Framework
+const popupService = inject<any>('popupService')
+const toastService = inject<any>('toastService')
 
 // Methods
 const handleCardClick = (card: any) => {
-  if (editMode.value) {
+  if (editMode.value && parentMode.canManageContent.value) {
     // In edit mode, clicking toggles selection
     toggleCardSelection(card.id)
     console.log('Card selected/deselected:', card.label)
@@ -300,12 +255,20 @@ const handleCardDelete = async (cardId: string) => {
 }
 
 const handleCardCreated = () => {
-  showCreateModal.value = false
+  popupService?.close()
+  toastService?.show({
+    message: 'Card created successfully',
+    type: 'success'
+  })
 }
 
 const handleGroupCreated = () => {
-  showGroupModal.value = false
+  popupService?.close()
   clearSelection()
+  toastService?.show({
+    message: 'Group created successfully',
+    type: 'success'
+  })
 }
 
 const deleteSelectedCards = async () => {
@@ -318,29 +281,32 @@ const deleteSelectedCards = async () => {
   clearSelection()
 }
 
-const handleToggleEditMode = () => {
-  toggleEditMode()
-  console.log('Edit mode:', editMode.value ? 'ON' : 'OFF')
-}
-
 const handleViewChange = (view: 'grid' | 'groups') => {
   store.currentView = view
   console.log('View changed to:', view)
 }
 
-const handleProfile = () => {
-  console.log('Profile clicked')
-  // TODO: Navigate to profile page or open profile modal
+// Show create card modal
+const showCreateCardModal = () => {
+  popupService?.open({
+    component: CreateCardModal,
+    props: {
+      onCreated: handleCardCreated,
+      onClose: () => popupService?.close()
+    }
+  })
 }
 
-const handleSettings = () => {
-  console.log('Settings clicked')
-  // TODO: Navigate to settings page or open settings modal
-}
-
-const handleLogout = () => {
-  console.log('User logged out')
-  // The auth store handles the logout, this is just for any cleanup
+// Show create group modal
+const showCreateGroupModal = () => {
+  popupService?.open({
+    component: CreateGroupModal,
+    props: {
+      selectedCards: selectedCards.value,
+      onCreated: handleGroupCreated,
+      onClose: () => popupService?.close()
+    }
+  })
 }
 </script>
 

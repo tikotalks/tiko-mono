@@ -655,45 +655,77 @@
     },
     "todo": {
       "name": "todo",
-      "type": "lib",
+      "type": "app",
       "data": {
         "root": "apps/todo",
+        "name": "todo",
         "targets": {
-          "lint": {
-            "cache": true,
-            "inputs": [
-              "default",
-              "{workspaceRoot}/.eslintrc.json",
-              "{workspaceRoot}/.eslintignore"
-            ],
-            "executor": "nx:run-commands",
+          "dev": {
+            "executor": "nx:run-script",
             "options": {
-              "cwd": "apps/todo",
-              "command": "eslint ."
+              "script": "dev"
             },
             "configurations": {}
           },
           "build": {
-            "executor": "nx:run-script",
+            "executor": "@nx/vite:build",
+            "outputs": [
+              "{options.outputPath}"
+            ],
+            "defaultConfiguration": "production",
             "options": {
-              "script": "build"
+              "outputPath": "dist/apps/todo",
+              "skipTypeCheck": true
+            },
+            "configurations": {
+              "production": {
+                "mode": "production"
+              }
+            }
+          },
+          "preview": {
+            "executor": "@nx/vite:preview-server",
+            "defaultConfiguration": "development",
+            "options": {
+              "buildTarget": "todo:build"
+            },
+            "configurations": {
+              "development": {
+                "buildTarget": "todo:build:development"
+              },
+              "production": {
+                "buildTarget": "todo:build:production"
+              }
+            }
+          },
+          "lint": {
+            "executor": "@nx/linter:eslint",
+            "outputs": [
+              "{options.outputFile}"
+            ],
+            "options": {
+              "lintFilePatterns": [
+                "apps/todo/**/*.{js,jsx,ts,tsx,vue}"
+              ]
             },
             "configurations": {}
           },
           "serve": {
+            "executor": "@nx/vite:dev-server",
+            "defaultConfiguration": "development",
             "options": {
-              "cwd": "apps/todo",
-              "command": "vite serve"
+              "buildTarget": "todo:build"
             },
-            "executor": "nx:run-commands",
-            "configurations": {}
-          },
-          "preview": {
-            "executor": "nx:run-script",
-            "options": {
-              "script": "preview"
-            },
-            "configurations": {}
+            "configurations": {
+              "development": {
+                "buildTarget": "todo:build:development",
+                "hmr": true
+              },
+              "production": {
+                "buildTarget": "todo:build:production",
+                "hmr": false
+              }
+            }
           },
           "serve-static": {
             "executor": "@nx/web:file-server",
@@ -702,17 +734,26 @@
             },
             "configurations": {}
           },
-          "dev": {
-            "executor": "nx:run-script",
+          "test": {
+            "inputs": [
+              "default",
+              "^production",
+              "{workspaceRoot}/jest.preset.js"
+            ],
+            "executor": "@nx/vite:test",
+            "outputs": [
+              "{options.reportsDirectory}"
+            ],
             "options": {
-              "script": "dev"
+              "passWithNoTests": true,
+              "reportsDirectory": "../../coverage/apps/todo"
             },
             "configurations": {}
           }
         },
-        "sourceRoot": "apps/todo",
-        "name": "todo",
-        "projectType": "library",
+        "sourceRoot": "apps/todo/src",
+        "projectType": "application",
+        "$schema": "../../node_modules/nx/schemas/project-schema.json",
         "implicitDependencies": [],
         "tags": []
       }

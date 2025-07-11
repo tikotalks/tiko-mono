@@ -175,7 +175,7 @@ defineExpose({
         --panel-shadow: var(--color-primary-text, #000);
         background: var(--context-panel-background, var(--color-accent, #fff));
         border-radius: var(--context-panel-border-radius, var(--border-radius, 8px));
-        box-shadow: 0 0 100px 0px color-mix(in srgb, var(--panel-shadow), transparent 75%);
+        box-shadow: 0 0 100px 0px color-mix(in srgb, var(--panel-shadow), transparent 75%),.25em .25em .5em 0px color-mix(in srgb, var(--panel-shadow), transparent 75%), -0.125em -.125em .5em color-mix(in srgb, var(--color-foreground), transparent 90%) inset;
         padding: var(--context-panel-padding);
         touch-action: none;
     }
@@ -192,14 +192,15 @@ defineExpose({
         min-width: 100px;
         opacity: 0;
         transition:
-            transform 0.5s ease,
-            opacity 0.5s ease;
+            transform 0.25s ease,
+            opacity 0.25s ease;
 
         transform: translateX(var(--translateX, 0)) translateY(var(--translateY, 0)) scale(var(--scale, 0));
         bottom: var(--context-panel-position-bottom, auto);
         top: var(--context-panel-position-top, auto);
         left: var(--context-panel-position-left, auto);
         right: var(--context-panel-position-right, auto);
+        // box-shadow: 0.25em .25em 1em color-mix(in srgb, var(--color-foreground), transparent 75%) inset;
 
         &::before {
             content: '';

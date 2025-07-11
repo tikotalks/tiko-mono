@@ -1,58 +1,6 @@
 <template>
-  <TAuthWrapper :title="'Radio'" :backgroundImage="backgroundImage" app-name="radio">
-    <TAppLayout
-    title="Radio"
-    :is-loading="loading"
-    :show-header="true"
-    @profile="handleProfile"
-    @settings="handleSettings"
-    @logout="handleLogout"
-  >
-    <template #top-bar-actions>
-      <div :class="bemm('search-input')">
-        <TInputText
-          v-model="searchQuery"
-          placeholder="Search audio..."
-          icon="search"
-          :class="bemm('search')"
-          @keydown.enter="handleSearch"
-          @input="handleSearchInput"
-        />
-      </div>
-
-      <!-- Parent Mode Toggle (Temporary Simple Version) -->
-      <TButton
-        type="ghost"
-        :icon="canManageContent ? 'locked' : 'locked'"
-        @click="toggleParentMode"
-        :class="bemm('parent-mode-toggle')"
-      >
-        {{ canManageContent ? 'Parent Mode' : 'Enable Parent Mode' }}
-      </TButton>
-
-      <!-- Add Item Button (Parent Mode only) -->
-      <TButton
-        v-if="canManageContent"
-        type="default"
-        color="primary"
-        icon="plus"
-        @click="handleAddClick"
-        :class="bemm('add-button')"
-      >
-        Add Audio
-      </TButton>
-
-      <!-- Settings -->
-      <TButton
-        type="ghost"
-        icon="settings"
-        @click="handleSettingsClick"
-        :class="bemm('settings-button')"
-      />
-    </template>
-
-    <div :class="bemm()">
-      <!-- Full-screen Player Mode -->
+  <div :class="bemm()">
+    <!-- Full-screen Player Mode -->
       <RadioPlayer
       v-if="playerMode === 'fullscreen'"
       :current-item="currentItem"
@@ -158,7 +106,7 @@
             Start building your audio collection by adding your first track
           </p>
           <TButton
-            v-if="canManageContent"
+            v-if="parentMode.canManageContent.value"
             color="primary"
             icon="plus"
             @click="handleAddClick"
@@ -250,21 +198,20 @@
     </div>
 
     <!-- Modals are now handled by popup service -->
-    </div>
-  </TAppLayout>
-  </TAuthWrapper>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, inject } from 'vue'
 import { useBemm } from 'bemm'
 import {
-  TAuthWrapper,
   TButton,
   TInputText,
   TIcon,
-  TAppLayout,
-  popupService
+  useParentMode,
+  useEventBus,
+  type PopupService,
+  type ToastService
 } from '@tiko/ui'
 import RadioCard from '../components/RadioCard.vue'
 import RadioPlayer from '../components/RadioPlayer.vue'
@@ -274,12 +221,14 @@ import RadioSettingsModal from '../components/RadioSettingsModal.vue'
 import SearchResultsModal from '../components/SearchResultsModal.vue'
 import { useRadioItems } from '../composables/useRadioItems'
 import { useRadioPlayer } from '../composables/useRadioPlayer'
-import backgroundImage from "../assets/app-icon-radio.png"
 import { useRadioSettings } from '../composables/useRadioSettings'
 import type { RadioItem } from '../types/radio.types'
 
 const bemm = useBemm('radio-view')
-// const parentMode = useParentMode('radio') // Temporarily disabled
+const parentMode = useParentMode('radio')
+const popupService = inject('popupService')!
+const toastService = inject('toastService')!
+const eventBus = useEventBus()
 
 // Composables
 const radioItems = useRadioItems()
@@ -450,20 +399,6 @@ const handlePlayerError = (errorMessage: string) => {
   console.error('Player error:', errorMessage)
 }
 
-// App layout handlers
-const handleProfile = () => {
-  // Navigate to profile or show profile modal
-  console.log('Profile clicked')
-}
-
-const handleSettings = () => {
-  showSettings.value = true
-}
-
-const handleLogout = () => {
-  // Handle logout
-  console.log('Logout clicked')
-}
 
 // Modal handlers using popup service
 const handleAddClick = () => {
@@ -488,13 +423,9 @@ const handleSettingsClick = () => {
 }
 
 // Search handlers
-const handleSearch = () => {
-  openSearchModal()
-}
-
-const handleSearchInput = () => {
-  // Open modal after 3 characters
-  if (searchQuery.value.trim().length >= 3) {
+const handleSearch = (query: string) => {
+  searchQuery.value = query
+  if (query.trim().length >= 3) {
     openSearchModal()
   }
 }
@@ -508,7 +439,7 @@ const openSearchModal = () => {
       allItems: items.value,
       currentPlayingId: currentItem.value?.id,
       isPlaying: isPlaying.value,
-      canManageContent: canManageContent.value,
+      canManageContent: parentMode.canManageContent.value,
       onPlayItem: playItem,
       onPauseItem: pauseItem,
       onEditItem: editItem,
@@ -524,36 +455,32 @@ const openSearchModal = () => {
   })
 }
 
-// Simple local parent mode state for testing
-const localParentModeEnabled = ref(false)
-
-// Override the computed canManageContent to use local state for now
-const canManageContent = computed(() => {
-  return localParentModeEnabled.value
-})
-
-// Temporary simple parent mode toggle
-const toggleParentMode = () => {
-  console.log('Parent mode toggle clicked. Current state:', localParentModeEnabled.value)
-
-  if (localParentModeEnabled.value) {
-    localParentModeEnabled.value = false
-    console.log('Parent mode disabled')
-  } else {
-    // For testing, just enable it directly
-    localParentModeEnabled.value = true
-    console.log('Parent mode enabled')
-  }
-}
 
 // Watch for filtered items changes to update playlist
 watch(filteredItems, (newItems) => {
   setPlaylist(newItems.map(item => item.id))
 }, { immediate: true })
 
-// Initialize
+// Listen to events from App.vue topbar
 onMounted(async () => {
   console.log('Radio app mounting...')
+  
+  // Set up event listeners
+  eventBus.on('radio:search', (data: { query: string }) => {
+    searchQuery.value = data.query
+    if (data.query.trim().length >= 3) {
+      openSearchModal()
+    }
+  })
+  
+  eventBus.on('radio:add-item', () => {
+    handleAddClick()
+  })
+  
+  eventBus.on('radio:show-settings', () => {
+    handleSettingsClick()
+  })
+  
   try {
     console.log('Fetching radio items...')
     await fetchItems()

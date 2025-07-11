@@ -33,6 +33,10 @@
 					<header v-else-if="popup.title" :class="bemm('header')">
 						<h3 :class="bemm('title')">{{ popup.title }}</h3>
 
+						<div :class="bemm('description')" v-if="popup.description">
+							{{ popup.description }}
+						</div>
+
 						<TButton
 							v-if="popup.config.canClose"
 							:class="bemm('close')"
@@ -197,6 +201,9 @@ onUnmounted(() => {
 		animation: containerComeIn .3s var(--bezier) forwards;
 		transform: scale(.75) translateY(var(--spacing));
 		opacity: 0;
+		box-shadow:	.5em .5em 6em rgba(0,0,0,.125), .25em .25em 1em rgba(0,0,0,.125),
+		-0.25em -.25em 1em rgba(255,255,255,.125) inset;
+
 
 
 		@include global.desktop-up() {
@@ -230,18 +237,23 @@ onUnmounted(() => {
 	}
 
 	&__header{
-		background-color: color-mix(in srgb, var(--color-primary), transparent 80%);
+		background-image: linear-gradient(to left top, color-mix(in srgb, var(--color-primary), transparent 80%), transparent);
 		border-radius: var(--popup-border-radius, var(--border-radius)) var(--border-radius) 0 0;
-		color: var(--color-primary);
-		border-bottom: 1px solid color-mix(in srgb, var(--color-primary), transparent 60%);
+		color: var(--color-foreground);
 
 		padding: var(--popup-padding,var(--space));
-position: relative;
+		position: relative;
 		.popup__close{
-			position: absolute; top: 50%; right: var(--space-s);
-			transform: translateY(-50%);
+			position: absolute; top: var(--space-s); right: var(--space-s);
 			margin: 0;
 		}
+	}
+
+	&__description{
+		margin-top: .5em;
+		opacity: .5;
+		font-size: .875em;
+		max-width: calc(100% - var(--spacing));
 	}
 }
 

@@ -1,93 +1,17 @@
 <template>
-  <TAuthWrapper title="Timer" :backgroundImage="backgroundImage">
-    <TAppLayout
-      title="Timer"
-      :show-header="true"
-      @profile="handleProfile"
-      @settings="handleAppSettings"
-      @logout="handleLogout"
-    >
-    <template #top-bar-actions>
-      <!-- Timer Controls -->
-      <TButton
-        v-if="!isRunning"
-        icon="play"
-        type="icon-only"
-        size="medium"
-        @click="start"
-        :aria-label="'Start timer'"
-      >
-        Start
-      </TButton>
-      <TButton
-        v-else
-        icon="pause"
-        type="icon-only"
-        color="success"
-        size="medium"
-        @click="pause"
-        :aria-label="'Pause timer'"
-      >
-        Pause
-      </TButton>
-
-      <TButton
-        icon="arrow-rotate-top-left"
-        type="icon-only"
-        size="medium"
-        @click="reset"
-        :aria-label="'Reset timer'"
-      >
-        Reset
-      </TButton>
-
-      <!-- Edit Timer Button -->
-      <TButton
-        icon="edit"
-        type="icon-only"
-        size="medium"
-        @click="showEditSettings"
-        :aria-label="'Edit timer settings'"
-      >
-        Edit
-      </TButton>
-
-      <!-- Mode Toggle -->
-      <TButton
-        :icon="mode === 'up' ? 'arrow-up' : 'arrow-down'"
-        type="icon-only"
-        size="medium"
-        @click="toggleMode"
-        :aria-label="`Switch to ${mode === 'up' ? 'countdown' : 'count up'} mode`"
+  <div :class="bemm()">
+    <!-- Main Timer Display -->
+    <main :class="bemm('main')">
+      <!-- Timer Display -->
+      <TimeDisplay
+        :displayTime="formattedTime"
+        :progress="progress"
+        :mode="mode"
+        :isExpired="isExpired"
+        :isRunning="isRunning"
+        :class="bemm('display')"
       />
-    </template>
-
-    <div :class="bemm()">
-      <!-- Main Timer Display -->
-      <main :class="bemm('main')">
-        <!-- Timer Display -->
-         <TimeDisplay
-          :displayTime="formattedTime"
-          :progress="progress"
-          :mode="mode"
-          :isExpired="isExpired"
-          :isRunning="isRunning"
-          :class="bemm('display')"
-         ></TimeDisplay>
-        <!-- <div :class="bemm('display')">
-          <div :class="bemm('time')">{{ formattedTime }}</div>
-          <div v-if="mode === 'down'" :class="bemm('progress')">
-            <div
-              :class="bemm('progress-bar')"
-              :style="{ width: `${progress}%` }"
-            />
-          </div>
-        </div> -->
-
-        <!-- Controls moved to top bar -->
-      </main>
-    </div>
-
+    </main>
 
     <!-- Expired Overlay -->
     <div v-if="isExpired" :class="bemm('expired')">
@@ -104,71 +28,27 @@
         </TButton>
       </div>
     </div>
-    </TAppLayout>
-  </TAuthWrapper>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TIcon, TAppLayout, TAuthWrapper, popupService } from '@tiko/ui'
+import { TButton, TIcon } from '@tiko/ui'
 import { useTimer } from '../composables/useTimer'
-import TimerSettingsForm from '../components/TimerSettingsForm.vue'
 import TimeDisplay from '../components/TimeDisplay.vue'
-// import backgroundVideoUrl from '../assets/login-background.mp4'
-import backgroundImage from '../assets/app-icon-timer.png'
 
 const bemm = useBemm('timer-view')
 const {
   mode,
   isRunning,
   isExpired,
-  settings,
   formattedTime,
   progress,
   start,
   pause,
-  reset,
-  setTime,
-  toggleMode,
-  updateSettings
+  reset
 } = useTimer()
-
-// Local state for time settings
-const minutes = ref(5)
-const seconds = ref(0)
-
-const showEditSettings = () => {
-  popupService.showPopup({
-    component: TimerSettingsForm,
-    title: 'Edit Timer Settings',
-    props: {
-      mode: mode.value,
-      minutes: minutes.value,
-      seconds: seconds.value,
-      settings: settings.value,
-      onApply: (data: { minutes: number, seconds: number, settings: any }) => {
-        setTime(data.minutes, data.seconds)
-        updateSettings(data.settings)
-        minutes.value = data.minutes
-        seconds.value = data.seconds
-        popupService.closePopup()
-      }
-    }
-  })
-}
-
-const handleProfile = () => {
-  console.log('Profile clicked')
-}
-
-const handleAppSettings = () => {
-  showEditSettings()
-}
-
-const handleLogout = () => {
-  console.log('User logged out')
-}
 
 // Keyboard shortcuts
 const handleKeydown = (event: KeyboardEvent) => {
@@ -208,13 +88,17 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .timer-view {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
   &__main {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh;
-    gap: 2rem;
+    gap: var(--space-lg);
   }
 
   &__display {

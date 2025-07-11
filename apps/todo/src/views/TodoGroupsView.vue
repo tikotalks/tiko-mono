@@ -1,14 +1,5 @@
 <template>
   <div :class="bemm()">
-    <TButton
-      v-if="parentMode.canManageContent.value"
-      icon="add"
-      color="primary"
-      @click="showAddGroupModal"
-      style="position: absolute; top: var(--space); right: var(--space); z-index: 10;"
-    >
-      Add Group
-    </TButton>
         <!-- Empty State -->
         <div v-if="groups.length === 0" :class="bemm('empty')">
           <TIcon name="clipboard" size="4rem" />
@@ -19,14 +10,6 @@
           <p v-else>
             Create your first todo list to get started
           </p>
-          <TButton
-            v-if="parentMode.canManageContent.value"
-            icon="add"
-            color="primary"
-            @click="showAddGroupModal"
-          >
-            Create Todo List
-          </TButton>
         </div>
 
         <!-- Groups Grid -->
@@ -52,16 +35,13 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
 import { 
-  TButton, 
   TIcon, 
   TDraggableList,
-  popupService,
-  useParentMode,
-  toastService
+  useParentMode
 } from '@tiko/ui'
 import { storeToRefs } from 'pinia'
 import { useTodoStore } from '../stores/todo'
@@ -74,6 +54,10 @@ const router = useRouter()
 const todoStore = useTodoStore()
 const parentMode = useParentMode('todo')
 
+// Get injected services from Framework
+const popupService = inject<any>('popupService')
+const toastService = inject<any>('toastService')
+
 const { groups, getGroupProgress } = storeToRefs(todoStore)
 
 onMounted(async () => {
@@ -84,20 +68,6 @@ const navigateToGroup = (groupId: string) => {
   router.push(`/group/${groupId}`)
 }
 
-const showAddGroupModal = () => {
-  popupService.open({
-    component: AddGroupModal,
-    props: {
-      onCreated: (group: TodoGroup) => {
-        popupService.close()
-        if (group) {
-          navigateToGroup(group.id)
-        }
-      },
-      onClose: () => popupService.close()
-    }
-  })
-}
 
 const editGroup = (group: TodoGroup) => {
   popupService.open({

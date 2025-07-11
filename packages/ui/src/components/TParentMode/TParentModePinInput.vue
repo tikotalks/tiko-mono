@@ -1,11 +1,5 @@
 <template>
   <div :class="bemm()">
-      <div :class="bemm('header')">
-        <TIcon :name="mode === 'setup' ? 'shield-plus' : 'lock'" :class="bemm('icon')" />
-        <h2 :class="bemm('title')">{{ title }}</h2>
-        <p v-if="description" :class="bemm('description')">{{ description }}</p>
-      </div>
-
       <form @submit.prevent="handleSubmit">
         <div :class="bemm('pin-container')">
           <!-- PIN Input Dots -->
@@ -45,16 +39,16 @@
           >
             {{ num }}
           </button>
-          
+
           <button
             type="button"
-            :class="bemm('numpad-button', 'clear')"
+            :class="bemm('numpad-button', ['','clear'])"
             @click="handleClearClick"
             :disabled="(confirmValue ? confirmValue : pinValue).length === 0"
           >
             <TIcon name="arrow-left" />
           </button>
-          
+
           <button
             type="button"
             :class="bemm('numpad-button')"
@@ -62,10 +56,10 @@
           >
             0
           </button>
-          
+
           <button
             type="button"
-            :class="bemm('numpad-button', 'submit')"
+            :class="bemm('numpad-button', ['','submit'])"
             @click="handleSubmit"
             :disabled="!canSubmit"
           >
@@ -111,7 +105,7 @@
             >
               {{ num }}
             </button>
-            
+
             <button
               type="button"
               :class="bemm('numpad-button', 'clear')"
@@ -120,7 +114,7 @@
             >
               <TIcon name="arrow-left" />
             </button>
-            
+
             <button
               type="button"
               :class="bemm('numpad-button')"
@@ -128,7 +122,7 @@
             >
               0
             </button>
-            
+
             <button
               type="button"
               :class="bemm('numpad-button', 'submit')"
@@ -328,7 +322,7 @@ const handleSubmit = async () => {
 
     // Emit event for v-model usage
     emit('pin-entered', pinValue.value)
-    
+
     // Call callback prop for popup service usage
     if (props.onPinEntered) {
       props.onPinEntered(pinValue.value)
@@ -555,8 +549,8 @@ watch(pinInput, (input) => {
   &__numpad-button {
     aspect-ratio: 1;
     min-height: 3.5em;
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius);
+    border: 1px solid color-mix(in srgb, var(--color-foreground), transparent 80%);
+    border-radius: var(--border-radius);
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-size: 1.25rem;
@@ -596,6 +590,10 @@ watch(pinInput, (input) => {
         background-color: var(--color-success);
         opacity: 0.9;
       }
+    }
+
+    .icon{
+      font-size: 2em;
     }
   }
 }

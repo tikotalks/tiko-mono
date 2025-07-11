@@ -19,6 +19,7 @@ import { useEventBus } from '../../composables/useEventBus'
 import { toastService as defaultToastService, ToastSettings } from '../TToast'
 import TButton from '../TButton/TButton.vue'
 import TParentModePinInput from './TParentModePinInput.vue'
+import ConfirmDialog from '../TPopup/components/ConfirmDialog.vue'
 import type { ParentModeToggleProps } from '../../composables/useParentMode.model'
 import { popupService } from '../TPopup'
 
@@ -89,10 +90,10 @@ const handleToggleClick = async () => {
       console.log('Showing setup modal via popup service')
       props.popupService.open({
         component: TParentModePinInput,
+        title: 'Set Up Parent Mode',
+        description: 'Create a 4-digit PIN to protect parental controls',
         props: {
           mode: 'setup',
-          title: 'Set Up Parent Mode',
-          description: 'Create a 4-digit PIN to protect parental controls',
           onPinEntered: async (pin: string) => {
             const result = await parentMode.enable(pin)
             if (result.success) {
@@ -118,29 +119,58 @@ const handleToggleClick = async () => {
     return
   }
 
-  // If already unlocked, disable parent mode entirely
+  // If already unlocked, show confirmation to disable parent mode
   if (isUnlocked.value) {
     console.log('Going to disable flow - parent mode is unlocked')
-    console.log('Disabling parent mode...')
-    const result = await parentMode.disable()
-    console.log('Disable result:', result)
-    if (result.success) {
-      // Wait a moment for database update to complete, then re-initialize
-      await new Promise(resolve => setTimeout(resolve, 100))
-      console.log('Re-initializing after disable...')
-      await parentMode.initialize()
-      console.log('State after re-initialize:', {
-        isEnabled: parentMode.isEnabled.value,
-        isUnlocked: parentMode.isUnlocked.value
-      })
-      emit('mode-changed', false)
-      toast.value.show({
-        message: 'Parent mode disabled',
-        type: 'default'
+
+    // Show confirmation dialog
+    if (props.popupService) {
+      props.popupService.open({
+        component: ConfirmDialog,
+        title: 'Disable Parent Mode',
+        props: {
+          title: 'Disable Parent Mode',
+          message: 'Are you sure you want to disable Parent Mode? This will remove all parental controls.',
+          icon: 'shield-off',
+          confirmLabel: 'Yes, Disable',
+          cancelLabel: 'Cancel',
+          confirmColor: 'warning',
+          onConfirm: async () => {
+            console.log('User confirmed - disabling parent mode...')
+            props.popupService.close()
+
+            const result = await parentMode.disable()
+            console.log('Disable result:', result)
+            if (result.success) {
+              // Wait a moment for database update to complete, then re-initialize
+              await new Promise(resolve => setTimeout(resolve, 100))
+              console.log('Re-initializing after disable...')
+              await parentMode.initialize()
+              console.log('State after re-initialize:', {
+                isEnabled: parentMode.isEnabled.value,
+                isUnlocked: parentMode.isUnlocked.value
+              })
+              emit('mode-changed', false)
+              toast.value.show({
+                message: 'Parent mode disabled',
+                type: 'success'
+              })
+            } else {
+              toast.value.show({
+                message: result.error || 'Failed to disable parent mode',
+                type: 'error'
+              })
+            }
+          },
+          onCancel: () => {
+            props.popupService.close()
+          }
+        }
       })
     } else {
+      // Fallback to simple toast if no popup service
       toast.value.show({
-        message: result.error || 'Failed to disable parent mode',
+        message: 'Cannot disable parent mode - no popup service available',
         type: 'error'
       })
     }
@@ -150,7 +180,7 @@ const handleToggleClick = async () => {
   // If parent mode is enabled but not unlocked, show unlock flow
   if (parentMode.isEnabled.value && !isUnlocked.value) {
     console.log('Going to unlock flow - parent mode enabled but not unlocked')
-    
+
     // Check if user has required permission (only check when enabled)
     if (props.requiredPermission && !parentMode.hasPermission(props.appName, props.requiredPermission)) {
       emit('permission-denied', props.requiredPermission)
@@ -167,10 +197,10 @@ const handleToggleClick = async () => {
       try {
         props.popupService.open({
           component: TParentModePinInput,
+          title: 'Enter Parent PIN',
+          description: 'Enter your 4-digit PIN to access parent controls',
           props: {
             mode: 'unlock',
-            title: 'Enter Parent PIN',
-            description: 'Enter your 4-digit PIN to access parent controls',
             onPinEntered: handlePinEntered,
             onClose: () => props.popupService.close()
           }

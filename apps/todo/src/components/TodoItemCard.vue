@@ -1,18 +1,17 @@
 <template>
-  <div 
-    :class="bemm('', { completed: item.completed, clickable: !item.completed })" 
+  <div
+    :class="bemm('', { completed: item.completed, clickable: !item.completed })"
     @click="handleClick"
   >
     <div v-if="item.imageUrl" :class="bemm('image')">
       <img :src="item.imageUrl" :alt="item.title" />
     </div>
-    
+
     <div :class="bemm('content')">
       <h4 :class="bemm('title')">{{ item.title }}</h4>
-      
+
       <div v-if="item.completed" :class="bemm('completed-badge')">
-        <TIcon name="check" size="1rem" />
-        <span>Done!</span>
+        <TIcon name="check" />
       </div>
     </div>
 
@@ -24,7 +23,7 @@
         @click="$emit('edit')"
       />
       <TButton
-        icon="trash"
+        icon="x"
         type="ghost"
         size="small"
         color="error"
@@ -63,16 +62,16 @@ const handleClick = () => {
 
 <style lang="scss" scoped>
 .todo-item-card {
-  background-color: var(--color-background);
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius);
-  padding: var(--space-s);
+  background-color: var(--color-primary);
+  color: var(--color-primary-text);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--border-radius);
+  padding: var(--space);
   display: flex;
   flex-direction: column;
   gap: var(--space-s);
   transition: all 0.2s ease;
   position: relative;
-  overflow: hidden;
 
   &--clickable {
     cursor: pointer;
@@ -128,9 +127,12 @@ const handleClick = () => {
     align-items: center;
     justify-content: center;
     gap: var(--space-xs);
-    color: var(--color-success);
-    font-size: 0.875rem;
-    font-weight: 600;
+    color: var(--color-success-text);
+    font-size:1.5em;
+    position: absolute; right: 0; top: 0;
+    transform: translate(50%,-50%);
+    background-color: var(--color-success);
+    border-radius: 50%;
   }
 
   &__actions {
