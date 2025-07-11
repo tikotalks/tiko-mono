@@ -309,5 +309,13 @@ export const nl: TranslationSchema = {
     imageProcessingFailed: 'Afbeelding verwerken mislukt',
     profileUpdated: 'Profiel succesvol bijgewerkt',
     updateFailed: 'Profiel bijwerken mislukt'
+  },
+  tiko: {
+    welcome: 'Welkom bij Tiko',
+    selectApp: 'Selecteer een app om te beginnen',
+    moreApps: 'Meer Apps Beschikbaar',
+    installFromStore: 'Installeer vanuit Store',
+    appNotInstalled: 'App niet geïnstalleerd',
+    openApp: 'App Openen'
   }
 }

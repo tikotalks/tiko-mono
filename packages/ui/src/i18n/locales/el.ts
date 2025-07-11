@@ -309,5 +309,13 @@ export const el: TranslationSchema = {
     imageProcessingFailed: 'Αποτυχία επεξεργασίας εικόνας',
     profileUpdated: 'Το προφίλ ενημερώθηκε επιτυχώς',
     updateFailed: 'Αποτυχία ενημέρωσης προφίλ'
+  },
+  tiko: {
+    welcome: 'Καλώς ήρθατε στο Tiko',
+    selectApp: 'Επιλέξτε μια εφαρμογή για να ξεκινήσετε',
+    moreApps: 'Περισσότερες Εφαρμογές Διαθέσιμες',
+    installFromStore: 'Εγκατάσταση από το Store',
+    appNotInstalled: 'Η εφαρμογή δεν είναι εγκατεστημένη',
+    openApp: 'Άνοιγμα Εφαρμογής'
   }
 }

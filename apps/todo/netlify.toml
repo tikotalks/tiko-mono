@@ -1,6 +1,7 @@
 [build]
   publish = "apps/todo/dist"
   command = "pnpm install && pnpm build --filter=todo"
+  ignore = "bash ./scripts/ignore-build-todo.sh"
 
 [build.environment]
   NODE_VERSION = "20"

@@ -311,5 +311,13 @@ export const fr: TranslationSchema = {
     imageProcessingFailed: 'Échec du traitement de l\'image',
     profileUpdated: 'Profil mis à jour avec succès',
     updateFailed: 'Échec de la mise à jour du profil'
+  },
+  tiko: {
+    welcome: 'Bienvenue dans Tiko',
+    selectApp: 'Sélectionnez une application pour commencer',
+    moreApps: 'Plus d\'Applications Disponibles',
+    installFromStore: 'Installer depuis le Store',
+    appNotInstalled: 'Application non installée',
+    openApp: 'Ouvrir l\'Application'
   }
 }

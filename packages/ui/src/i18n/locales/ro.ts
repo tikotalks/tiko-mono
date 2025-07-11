@@ -309,5 +309,13 @@ export const ro: TranslationSchema = {
     imageProcessingFailed: 'Procesarea imaginii a eșuat',
     profileUpdated: 'Profil actualizat cu succes',
     updateFailed: 'Actualizarea profilului a eșuat'
+  },
+  tiko: {
+    welcome: 'Bun venit la Tiko',
+    selectApp: 'Selectează o aplicație pentru a începe',
+    moreApps: 'Mai Multe Aplicații Disponibile',
+    installFromStore: 'Instalează din Magazin',
+    appNotInstalled: 'Aplicația nu este instalată',
+    openApp: 'Deschide Aplicația'
   }
 }

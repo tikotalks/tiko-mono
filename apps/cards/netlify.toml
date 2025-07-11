@@ -1,6 +1,7 @@
 [build]
   publish = "apps/cards/dist"
   command = "pnpm install && pnpm build --filter=cards"
+  ignore = "bash ./scripts/ignore-build-cards.sh"
 
 [build.environment]
   NODE_VERSION = "20"

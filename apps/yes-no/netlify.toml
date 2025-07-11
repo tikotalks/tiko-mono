@@ -1,6 +1,7 @@
 [build]
   publish = "apps/yes-no/dist"
   command = "pnpm install && pnpm build --filter=yes-no"
+  ignore = "bash ./scripts/ignore-build-yes-no.sh"
 
 [build.environment]
   NODE_VERSION = "20"

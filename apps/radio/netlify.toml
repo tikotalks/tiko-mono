@@ -1,6 +1,7 @@
 [build]
   publish = "apps/radio/dist"
   command = "pnpm install && pnpm build --filter=radio"
+  ignore = "bash ./scripts/ignore-build-radio.sh"
 
 [build.environment]
   NODE_VERSION = "20"

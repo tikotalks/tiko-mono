@@ -309,5 +309,13 @@ export const sv: TranslationSchema = {
     imageProcessingFailed: 'Misslyckades med att bearbeta bilden',
     profileUpdated: 'Profil uppdaterad framgångsrikt',
     updateFailed: 'Misslyckades med att uppdatera profil'
+  },
+  tiko: {
+    welcome: 'Välkommen till Tiko',
+    selectApp: 'Välj en app för att komma igång',
+    moreApps: 'Fler Appar Tillgängliga',
+    installFromStore: 'Installera från Butik',
+    appNotInstalled: 'App inte installerad',
+    openApp: 'Öppna App'
   }
 }

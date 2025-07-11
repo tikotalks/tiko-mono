@@ -85,6 +85,106 @@
         "tags": []
       }
     },
+    "ui-docs": {
+      "name": "ui-docs",
+      "type": "app",
+      "data": {
+        "root": "apps/ui-docs",
+        "name": "ui-docs",
+        "targets": {
+          "dev": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "dev"
+            },
+            "configurations": {}
+          },
+          "build": {
+            "executor": "@nx/vite:build",
+            "outputs": [
+              "{options.outputPath}"
+            ],
+            "defaultConfiguration": "production",
+            "options": {
+              "outputPath": "dist/apps/ui-docs"
+            },
+            "configurations": {
+              "development": {
+                "mode": "development"
+              },
+              "production": {
+                "mode": "production"
+              }
+            }
+          },
+          "serve": {
+            "executor": "@nx/vite:dev-server",
+            "defaultConfiguration": "development",
+            "options": {
+              "buildTarget": "ui-docs:build"
+            },
+            "configurations": {
+              "development": {
+                "buildTarget": "ui-docs:build:development",
+                "hmr": true
+              },
+              "production": {
+                "buildTarget": "ui-docs:build:production",
+                "hmr": false
+              }
+            }
+          },
+          "typecheck": {
+            "executor": "nx:run-commands",
+            "options": {
+              "command": "vue-tsc --noEmit --project apps/ui-docs/tsconfig.app.json"
+            },
+            "configurations": {}
+          },
+          "nx-release-publish": {
+            "dependsOn": [
+              "^nx-release-publish"
+            ],
+            "executor": "@nx/js:release-publish",
+            "options": {},
+            "configurations": {}
+          },
+          "lint": {
+            "executor": "@nx/eslint:lint",
+            "outputs": [
+              "{options.outputFile}"
+            ],
+            "options": {
+              "lintFilePatterns": [
+                "apps/ui-docs/**/*.{ts,tsx,vue}"
+              ]
+            },
+            "configurations": {}
+          },
+          "preview": {
+            "options": {
+              "cwd": "apps/ui-docs",
+              "command": "vite preview"
+            },
+            "executor": "nx:run-commands",
+            "configurations": {}
+          },
+          "serve-static": {
+            "executor": "@nx/web:file-server",
+            "options": {
+              "buildTarget": "build"
+            },
+            "configurations": {}
+          }
+        },
+        "sourceRoot": "apps/ui-docs/src",
+        "projectType": "application",
+        "$schema": "../../node_modules/nx/schemas/project-schema.json",
+        "prefix": "ui-docs",
+        "tags": [],
+        "implicitDependencies": []
+      }
+    },
     "@tiko/ui": {
       "name": "@tiko/ui",
       "type": "lib",
@@ -649,6 +749,111 @@
         "sourceRoot": "apps/timer",
         "name": "timer",
         "projectType": "library",
+        "implicitDependencies": [],
+        "tags": []
+      }
+    },
+    "tiko": {
+      "name": "tiko",
+      "type": "app",
+      "data": {
+        "root": "apps/tiko",
+        "name": "tiko",
+        "targets": {
+          "dev": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "dev"
+            },
+            "configurations": {}
+          },
+          "build": {
+            "executor": "@nx/vite:build",
+            "outputs": [
+              "{options.outputPath}"
+            ],
+            "defaultConfiguration": "production",
+            "options": {
+              "outputPath": "dist/apps/tiko",
+              "skipTypeCheck": true
+            },
+            "configurations": {
+              "production": {
+                "mode": "production"
+              }
+            }
+          },
+          "preview": {
+            "executor": "@nx/vite:preview-server",
+            "defaultConfiguration": "development",
+            "options": {
+              "buildTarget": "tiko:build"
+            },
+            "configurations": {
+              "development": {
+                "buildTarget": "tiko:build:development"
+              },
+              "production": {
+                "buildTarget": "tiko:build:production"
+              }
+            }
+          },
+          "lint": {
+            "executor": "@nx/linter:eslint",
+            "outputs": [
+              "{options.outputFile}"
+            ],
+            "options": {
+              "lintFilePatterns": [
+                "apps/tiko/**/*.{js,jsx,ts,tsx,vue}"
+              ]
+            },
+            "configurations": {}
+          },
+          "serve": {
+            "executor": "@nx/vite:dev-server",
+            "defaultConfiguration": "development",
+            "options": {
+              "buildTarget": "tiko:build"
+            },
+            "configurations": {
+              "development": {
+                "buildTarget": "tiko:build:development",
+                "hmr": true
+              },
+              "production": {
+                "buildTarget": "tiko:build:production",
+                "hmr": false
+              }
+            }
+          },
+          "serve-static": {
+            "executor": "@nx/web:file-server",
+            "options": {
+              "buildTarget": "build"
+            },
+            "configurations": {}
+          },
+          "test": {
+            "inputs": [
+              "default",
+              "^production",
+              "{workspaceRoot}/jest.preset.js"
+            ],
+            "executor": "@nx/vite:test",
+            "outputs": [
+              "{options.reportsDirectory}"
+            ],
+            "options": {
+              "passWithNoTests": true,
+              "reportsDirectory": "../../coverage/apps/tiko"
+            },
+            "configurations": {}
+          }
+        },
+        "sourceRoot": "apps/tiko/src",
+        "projectType": "application",
+        "$schema": "../../node_modules/nx/schemas/project-schema.json",
         "implicitDependencies": [],
         "tags": []
       }
@@ -10127,6 +10332,18 @@
   },
   "dependencies": {
     "@tiko/core": [],
+    "ui-docs": [
+      {
+        "source": "ui-docs",
+        "target": "@tiko/ui",
+        "type": "static"
+      },
+      {
+        "source": "ui-docs",
+        "target": "@tiko/core",
+        "type": "static"
+      }
+    ],
     "@tiko/ui": [
       {
         "source": "@tiko/ui",
@@ -10179,6 +10396,13 @@
       {
         "source": "timer",
         "target": "@tiko/core",
+        "type": "static"
+      }
+    ],
+    "tiko": [
+      {
+        "source": "tiko",
+        "target": "@tiko/ui",
         "type": "static"
       }
     ],

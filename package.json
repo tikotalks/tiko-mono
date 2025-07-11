@@ -30,6 +30,8 @@
     "serve:type": "nx serve type",
     "serve:radio": "nx serve radio",
     "serve:todo": "nx serve todo",
+    "serve:tiko": "nx serve tiko",
+    "serve:ui": "nx serve ui-docs",
     "ios:build:all": "nx run-many --target=build --all && nx run-many --target=cap:sync --all",
     "ios:build:cards": "cd apps/cards && pnpm run ios:build",
     "ios:build:timer": "cd apps/timer && pnpm run ios:build",
