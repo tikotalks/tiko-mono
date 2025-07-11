@@ -26,4 +26,14 @@ const router = createRouter({
   routes
 })
 
+// Navigation guard to set dynamic title for group routes
+router.beforeEach(async (to, from, next) => {
+  if (to.name === 'group' && to.params.id) {
+    // We'll need to get the group title here
+    // For now, just set a placeholder
+    to.meta = { ...to.meta, title: 'Loading...' }
+  }
+  next()
+})
+
 export default router

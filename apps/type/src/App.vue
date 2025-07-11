@@ -1,33 +1,43 @@
 <template>
-  <div id="app" :style="themeStyles">
+  <TFramework 
+    :config="frameworkConfig" 
+    :loading="loading"
+  >
     <router-view />
-  </div>
-  <TPopup />
+  </TFramework>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { useAppStore } from '@tiko/core'
-import { TPopup, useTikoConfig } from '@tiko/ui'
+import { computed, ref } from 'vue'
+import { TFramework, type FrameworkConfig } from '@tiko/ui'
 import tikoConfig from '../tiko.config'
 
-const appStore = useAppStore()
+const loading = ref(false)
 
-// Set config and get theme styles
-const { themeStyles } = useTikoConfig(tikoConfig)
-
-onMounted(() => {
-  // Initialize network monitoring
-  appStore.initializeNetworkMonitoring()
-})
+// Framework configuration
+const frameworkConfig = computed<FrameworkConfig>(() => ({
+  ...tikoConfig,
+  topBar: {
+    showUser: true,
+    showTitle: true,
+    showSubtitle: false,
+    showCurrentRoute: false
+  },
+  settings: {
+    enabled: true,
+    sections: [
+      {
+        id: 'type-settings',
+        title: 'Type Game Settings',
+        icon: 'keyboard',
+        order: 10
+        // component: TypeSettings // Add custom settings component if needed
+      }
+    ]
+  }
+}))
 </script>
 
 <style lang="scss">
 @use '@tiko/ui/styles/app.scss';
-
-#app {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
 </style>

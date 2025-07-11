@@ -3,20 +3,16 @@
     <transition name="check-animation" @after-enter="startAnimation">
       <div v-if="show" :class="bemm()">
         <div :class="bemm('backdrop')" />
-        
+
         <div :class="bemm('content')">
-          <div :class="bemm('checkmark', { animate: animating })">
-            <TIcon name="check-fat" size="8rem" />
+          <div :class="bemm('checkmark', { '': true, animate: animating })">
+            <TIcon name="check-fat" />
           </div>
-          
+
           <h1 :class="bemm('title', { animate: animating })">
-            Great Job!
-          </h1>
-          
-          <p :class="bemm('subtitle', { animate: animating })">
             {{ item?.title }}
-          </p>
-          
+          </h1>
+
           <div :class="bemm('confetti')">
             <div
               v-for="i in 30"
@@ -32,58 +28,63 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useBemm } from 'bemm'
-import { TIcon } from '@tiko/ui'
-import type { TodoItem } from '../types/todo.types'
+import { ref, onMounted } from 'vue';
+import { useBemm } from 'bemm';
+import { TIcon } from '@tiko/ui';
+import type { TodoItem } from '../types/todo.types';
 
 interface Props {
-  item: TodoItem | null
+  item: TodoItem | null;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 const emit = defineEmits<{
-  complete: []
-}>()
+  complete: [];
+}>();
 
-const bemm = useBemm('check-off-animation')
-const show = ref(true)
-const animating = ref(false)
+const bemm = useBemm('check-off-animation');
+const show = ref(true);
+const animating = ref(false);
 
 const startAnimation = () => {
-  animating.value = true
-  
+  animating.value = true;
+
   // Hide animation after 2 seconds
   setTimeout(() => {
-    show.value = false
+    show.value = false;
     setTimeout(() => {
-      emit('complete')
-    }, 300)
-  }, 2000)
-}
+      emit('complete');
+    }, 300);
+  }, 2000);
+};
 
 const getConfettiStyle = (index: number) => {
-  const colors = ['var(--color-primary)', 'var(--color-secondary)', 'var(--color-tertiary)', 'var(--color-success)']
-  const angle = (360 / 30) * index
-  const distance = 150 + Math.random() * 100
-  const duration = 1 + Math.random() * 0.5
-  const delay = Math.random() * 0.3
-  
+  const colors = [
+    'var(--color-primary)',
+    'var(--color-secondary)',
+    'var(--color-tertiary)',
+    'var(--color-success)',
+  ];
+  const angle = (360 / 30) * index;
+  const distance = 150 + Math.random() * 100;
+  const duration = 1 + Math.random() * 0.5;
+  const delay = Math.random() * 0.3;
+
   return {
     '--angle': `${angle}deg`,
     '--distance': `${distance}px`,
     '--duration': `${duration}s`,
     '--delay': `${delay}s`,
-    backgroundColor: colors[index % colors.length]
-  }
-}
+    backgroundColor: colors[index % colors.length],
+  };
+};
 
 onMounted(() => {
   // Start the entrance animation
   setTimeout(() => {
-    startAnimation()
-  }, 100)
-})
+    startAnimation();
+  }, 100);
+});
 </script>
 
 <style lang="scss" scoped>
@@ -111,12 +112,24 @@ onMounted(() => {
   }
 
   &__checkmark {
-    color: var(--color-success);
+    color: var(--color-success-text);
     transform: scale(0);
     opacity: 0;
+    font-size: 15vh;
+    display: flex; align-items: center; justify-content: center;
+    width: 20vh;
+    height: 20vh;
+    background-color: var(--color-success);
+    box-shadow: 0.25em 0.25em .5em rgba(0, 0, 0, 0.5) inset,  -0.125em -0.125em .25em rgba(255,255,255, 0.25) inset,
+      0.125em 0.125em 0.25em rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+   .icon{
+    filter: drop-shadow(0 0 0.5em rgba(0, 0, 0, 0.5));
+   }
 
     &--animate {
-      animation: checkmark-pop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+      animation: checkmark-pop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)
+        forwards;
     }
   }
 
@@ -192,9 +205,10 @@ onMounted(() => {
   }
   100% {
     transform: translate(
-      calc(-50% + var(--distance) * cos(var(--angle))),
-      calc(-50% + var(--distance) * sin(var(--angle)))
-    ) rotate(720deg) scale(0);
+        calc(-50% + var(--distance) * cos(var(--angle))),
+        calc(-50% + var(--distance) * sin(var(--angle)))
+      )
+      rotate(720deg) scale(0);
     opacity: 0;
   }
 }

@@ -9,9 +9,11 @@ export * from './components/TTopBar'
 export * from './components/TContextMenu'
 export * from './components/TAppLayout'
 export * from './components/TPopup'
+export * from './components/TProfile'
 export * from './components/TParentMode'
 export * from './components/TDraggableList'
 export * from './components/TSplashScreen'
+export * from './components/TFramework'
 export { default as TTikoLogo } from './components/TTikoLogo/TTikoLogo.vue'
 
 export { default as TInputText } from './components/TForm/TInputText.vue';
@@ -58,6 +60,7 @@ export type {
 export { useTikoConfig } from './composables/useTikoConfig'
 export { useDraggable } from './composables/useDraggable'
 export type { DraggableItem, UseDraggableOptions } from './composables/useDraggable'
+export { useLocalStorage, storage } from './composables/useLocalStorage'
 
 // Utilities
 export * from './utils'

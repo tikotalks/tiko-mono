@@ -442,22 +442,13 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   const reorderItems = async (groupId: string, itemIds: string[]) => {
+    // Store original order for potential rollback
+    const originalItems = items.value
+      .filter(i => i.groupId === groupId)
+      .map(item => ({ id: item.id, orderIndex: item.orderIndex }))
+    
     try {
-      const updates = itemIds.map((itemId, index) => ({
-        id: itemId,
-        order_index: index
-      }))
-      
-      // Update in database
-      for (const update of updates) {
-        await supabase
-          .from('todo_items')
-          .update({ order_index: update.order_index })
-          .eq('id', update.id)
-          .eq('user_id', authStore.user?.id)
-      }
-      
-      // Update local state
+      // Optimistic update: Update local state immediately
       itemIds.forEach((itemId, index) => {
         const item = items.value.find(i => i.id === itemId && i.groupId === groupId)
         if (item) {
@@ -465,29 +456,56 @@ export const useTodoStore = defineStore('todo', () => {
           item.updatedAt = new Date()
         }
       })
+      
+      // Update in database in background using batch operation
+      const updates = itemIds.map((itemId, index) => {
+        const item = items.value.find(i => i.id === itemId)
+        return {
+          id: itemId,
+          group_id: groupId,
+          user_id: authStore.user?.id,
+          title: item?.title,
+          image_url: item?.imageUrl,
+          completed: item?.completed,
+          order_index: index,
+          created_at: item?.createdAt?.toISOString(),
+          updated_at: new Date().toISOString(),
+          completed_at: item?.completedAt?.toISOString()
+        }
+      })
+      
+      // Use upsert for batch update
+      const { error: updateError } = await supabase
+        .from('todo_items')
+        .upsert(updates, { 
+          onConflict: 'id',
+          ignoreDuplicates: false 
+        })
+      
+      if (updateError) throw updateError
     } catch (err: any) {
       error.value = err.message
       console.error('Error reordering items:', err)
+      
+      // Rollback: Restore original order
+      originalItems.forEach(({ id, orderIndex }) => {
+        const item = items.value.find(i => i.id === id && i.groupId === groupId)
+        if (item) {
+          item.orderIndex = orderIndex
+        }
+      })
     }
   }
 
   const reorderGroups = async (groupIds: string[]) => {
+    // Store original order for potential rollback
+    const originalGroups = groups.value.map(group => ({ 
+      id: group.id, 
+      orderIndex: group.orderIndex 
+    }))
+    
     try {
-      const updates = groupIds.map((groupId, index) => ({
-        id: groupId,
-        order_index: index
-      }))
-      
-      // Update in database
-      for (const update of updates) {
-        await supabase
-          .from('todo_groups')
-          .update({ order_index: update.order_index })
-          .eq('id', update.id)
-          .eq('user_id', authStore.user?.id)
-      }
-      
-      // Update local state
+      // Optimistic update: Update local state immediately
       groupIds.forEach((groupId, index) => {
         const group = groups.value.find(g => g.id === groupId)
         if (group) {
@@ -496,11 +514,49 @@ export const useTodoStore = defineStore('todo', () => {
         }
       })
       
-      // Re-sort groups
+      // Re-sort groups immediately for visual feedback
       groups.value.sort((a, b) => a.orderIndex - b.orderIndex)
+      
+      // Update in database in background using batch operation
+      const updates = groupIds.map((groupId, index) => {
+        const group = groups.value.find(g => g.id === groupId)
+        return {
+          id: groupId,
+          user_id: authStore.user?.id,
+          title: group?.title,
+          icon: group?.icon,
+          color: group?.color,
+          item_count: group?.itemCount,
+          completed_count: group?.completedCount,
+          order_index: index,
+          created_at: group?.createdAt?.toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      })
+      
+      // Use upsert for batch update
+      const { error: updateError } = await supabase
+        .from('todo_groups')
+        .upsert(updates, { 
+          onConflict: 'id',
+          ignoreDuplicates: false 
+        })
+      
+      if (updateError) throw updateError
     } catch (err: any) {
       error.value = err.message
       console.error('Error reordering groups:', err)
+      
+      // Rollback: Restore original order
+      originalGroups.forEach(({ id, orderIndex }) => {
+        const group = groups.value.find(g => g.id === id)
+        if (group) {
+          group.orderIndex = orderIndex
+        }
+      })
+      
+      // Re-sort groups back to original order
+      groups.value.sort((a, b) => a.orderIndex - b.orderIndex)
     }
   }
 

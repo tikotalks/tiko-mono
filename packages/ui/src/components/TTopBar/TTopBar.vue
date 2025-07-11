@@ -30,22 +30,35 @@
         <slot name="actions" />
       </TButtonGroup>
 
-      <!-- User Avatar with Context Menu -->
-      <TContextMenu
-        v-if="user"
-        ref="userMenuRef"
-        :config="userMenuConfig"
-      >
-        <div
-          :class="bemm('user')"
-          ref="avatarRef"
-          @keydown="handleAvatarKeyDown"
-          role="button"
-          tabindex="0"
-          :aria-expanded="false"
-          :aria-haspopup="true"
-          :aria-label="userMenuLabel"
+      <!-- User Avatar with Parent Mode Integration -->
+      <div v-if="user" :class="bemm('user-section')">
+        <!-- Parent Mode Enabled Indicator -->
+        <TButton
+          v-if="parentMode.isUnlocked.value"
+          type="ghost"
+          size="small"
+          icon="shield"
+          :class="bemm('parent-mode-indicator')"
         >
+          Parent Mode
+        </TButton>
+
+        <!-- User Avatar -->
+        <TContextMenu
+          v-if="parentMode.isUnlocked.value"
+          ref="userMenuRef"
+          :config="userMenuConfig"
+        >
+          <div
+            :class="bemm('user')"
+            ref="avatarRef"
+            @keydown="handleAvatarKeyDown"
+            role="button"
+            tabindex="0"
+            :aria-expanded="false"
+            :aria-haspopup="true"
+            :aria-label="userMenuLabel"
+          >
           <div :class="bemm('avatar')">
             <img
               v-if="userAvatar"
@@ -82,7 +95,49 @@
           />
         </div>
       </TContextMenu>
+
+      <!-- User Avatar (when NOT in parent mode) -->
+      <div
+        v-else
+        :class="bemm('user')"
+        @click="handleParentModeEnable"
+        @keydown="handleParentModeKeyDown"
+        role="button"
+        tabindex="0"
+        :aria-label="'Enable parent mode'"
+      >
+        <div :class="bemm('avatar')">
+          <img
+            v-if="userAvatar"
+            :src="userAvatar"
+            :alt="userDisplayName"
+            :class="bemm('avatar-image')"
+            @error="handleAvatarError"
+          />
+          <div
+            v-else
+            :class="bemm('avatar-fallback')"
+            :style="{ backgroundColor: userAvatarColor }"
+          >
+            {{ userInitials }}
+          </div>
+
+          <!-- Online indicator -->
+          <div
+            v-if="showOnlineStatus"
+            :class="bemm('online-indicator', { online: isUserOnline })"
+            :aria-label="isUserOnline ? 'Online' : 'Offline'"
+          />
+        </div>
+
+        <!-- User info (desktop only) -->
+        <div v-if="showUserInfo && !isMobile" :class="bemm('user-info')">
+          <span :class="bemm('user-name')">{{ userDisplayName }}</span>
+          <span v-if="userRole" :class="bemm('user-role')">{{ userRole }}</span>
+        </div>
+      </div>
     </div>
+  </div>
 
     <!-- Loading overlay -->
     <div v-if="isLoading" :class="bemm('loading')">
@@ -99,6 +154,9 @@ import TButton from '../TButton/TButton.vue'
 import TButtonGroup from '../TButton/TButtonGroup.vue'
 import TIcon from '../TIcon/TIcon.vue'
 import { TContextMenu, type ContextMenuItem, type ContextMenuConfig, ContextMenuConfigDefault } from '../TContextMenu'
+import { useParentMode } from '../../composables/useParentMode'
+import { popupService } from '../TPopup/TPopup.service'
+import TParentModePinInput from '../TParentMode/TParentModePinInput.vue'
 
 interface Props {
   title?: string
@@ -132,6 +190,7 @@ const emit = defineEmits<Emits>()
 
 const bemm = useBemm('top-bar')
 const authStore = useAuthStore()
+const parentMode = useParentMode()
 
 // Refs
 const avatarRef = ref<HTMLElement>()
@@ -268,6 +327,97 @@ const updateIsMobile = () => {
   isMobile.value = window.innerWidth < 768
 }
 
+// Parent Mode Methods
+const handleParentModeEnable = async () => {
+  try {
+    // If parent mode is not enabled, show setup dialog
+    if (!parentMode.isEnabled.value) {
+      showParentModeSetup()
+      return
+    }
+
+    // If enabled but not unlocked, show PIN entry
+    showParentModeUnlock()
+  } catch (error) {
+    console.error('Parent mode authentication failed:', error)
+  }
+}
+
+/**
+ * Show parent mode setup dialog for new users
+ */
+const showParentModeSetup = () => {
+  popupService.open({
+    component: TParentModePinInput,
+    title: 'Set Up Parent Mode',
+    description: 'Create a 4-digit PIN to enable secure parental controls',
+    props: {
+      mode: 'setup',
+    },
+    config: {
+      background: true,
+      position: 'center',
+      canClose: true,
+      width: '400px'
+    },
+    on: {
+      'pin-entered': async (pin: string) => {
+        const result = await parentMode.enable(pin)
+        if (result.success) {
+          popupService.close()
+          // Automatically unlock after setup
+          await parentMode.unlock(pin)
+        } else {
+          console.error('Failed to enable parent mode:', result.error)
+        }
+      },
+      'close': () => {
+        popupService.close()
+      }
+    }
+  })
+}
+
+/**
+ * Show parent mode unlock dialog
+ */
+const showParentModeUnlock = () => {
+  popupService.open({
+    component: TParentModePinInput,
+    title: 'Enter Parent Mode',
+      description: 'Enter your 4-digit PIN to access parent controls',
+    props: {
+      mode: 'unlock',
+    },
+    config: {
+      background: true,
+      position: 'center',
+      canClose: true,
+      width: '400px'
+    },
+    on: {
+      'pin-entered': async (pin: string) => {
+        const result = await parentMode.unlock(pin)
+        if (result.success) {
+          popupService.close()
+        } else {
+          console.error('Failed to unlock parent mode:', result.error)
+        }
+      },
+      'close': () => {
+        popupService.close()
+      }
+    }
+  })
+}
+
+const handleParentModeKeyDown = (event: KeyboardEvent) => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    handleParentModeEnable()
+  }
+}
+
 // Lifecycle
 onMounted(() => {
   updateIsMobile()
@@ -346,6 +496,23 @@ onUnmounted(() => {
     gap: 1rem;
     flex: 1;
     justify-content: flex-end;
+  }
+
+  &__user-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__parent-mode-indicator {
+    font-size: 0.75rem;
+    color: var(--color-success);
+    border-color: var(--color-success);
+
+    &:hover {
+      background: var(--color-success);
+      color: white;
+    }
   }
 
   &__user {

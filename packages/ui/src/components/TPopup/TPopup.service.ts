@@ -5,6 +5,7 @@ export interface PopupOptions {
 	component: Component;
 	props?: Record<string, any>;
 	title?: string;
+	description?: string;
 	onClose?: () => void;
 	config?: {
 		background?: boolean;
@@ -33,6 +34,7 @@ export interface PopupInstance {
 	component: Component;
 	props: Record<string, any>;
 	title?: string;
+	description?: string;
 	onClose?: () => void;
 	openedTime: number;
 	slots?: Record<string, () => VNode>;
@@ -71,6 +73,7 @@ const usePopupService = () => {
 			component: markRaw(options.component),
 			props: wrappedProps,
 			title: options.title || '',
+			description: options.description || '',
 			config: {
 				hasBackground: options.config?.background ?? true,
 				position: options.config?.position || 'center',

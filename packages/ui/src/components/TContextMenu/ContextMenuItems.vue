@@ -10,6 +10,7 @@
                     :icon="item.icon"
                     :class="bemm('item', ['', 'normal', item.items?.length ? 'has-submenu' : ''])"
                     :type="'ghost'"
+                    :color="'foreground'"
                     :href="getItemLink(item) || ''"
                     @click="handleClick($event, item)"
                 >
@@ -182,7 +183,7 @@ const handleClick = (event: Event, item: ContextMenuItem) => {
 
     &__separator {
         height: 1px;
-        background-color: var(--color-accent);
+        background-color:color-mix(in srgb, var(--color-foreground), transparent 90%);
         border: none;
         margin: 0.5em 0;
     }
@@ -213,6 +214,8 @@ const handleClick = (event: Event, item: ContextMenuItem) => {
     &__item {
         border-radius: var(--border-radius, 4px);
         position: relative;
+
+        --button-color-text: red;
 
         &:hover {
             --icon-fill: var(--color-accent, #fff);

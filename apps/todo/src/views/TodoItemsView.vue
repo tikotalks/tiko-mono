@@ -1,15 +1,5 @@
 <template>
   <div :class="bemm()">
-    <!-- Action buttons -->
-    <div v-if="parentMode.canManageContent.value" :class="bemm('actions')">
-      <TButton
-        icon="add"
-        color="primary"
-        @click="showAddItemModal"
-      >
-        Add Item
-      </TButton>
-    </div>
     <!-- Empty State -->
     <div v-if="items.length === 0" :class="bemm('empty')">
       <TIcon name="clipboard" />
@@ -18,14 +8,6 @@
         Ask a parent to add items to this list!
       </p>
       <p v-else>Add your first todo item to get started</p>
-      <TButton
-        v-if="parentMode.canManageContent.value"
-        icon="add"
-        color="primary"
-        @click="showAddItemModal"
-      >
-        Add Todo Item
-      </TButton>
     </div>
 
     <!-- Items Grid -->
@@ -70,21 +52,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, inject } from 'vue';
 import { useRoute } from 'vue-router';
 import { useBemm } from 'bemm';
 import {
-  TButton,
   TIcon,
   TDraggableList,
-  popupService,
   useParentMode,
-  toastService,
 } from '@tiko/ui';
 import { storeToRefs } from 'pinia';
 import { useTodoStore } from '../stores/todo';
 import TodoItemCard from '../components/TodoItemCard.vue';
-import AddTodoModal from '../components/AddTodoModal.vue';
 import CheckOffAnimation from '../components/CheckOffAnimation.vue';
 import type { TodoItem } from '../types/todo.types';
 
@@ -92,6 +70,10 @@ const bemm = useBemm('todo-items');
 const route = useRoute();
 const todoStore = useTodoStore();
 const parentMode = useParentMode('todo');
+
+// Get injected services from Framework
+const popupService = inject<any>('popupService');
+const toastService = inject<any>('toastService');
 
 const groupId = computed(() => route.params.id as string);
 const { getGroupById, getItemsByGroupId, getGroupProgress } =
@@ -122,18 +104,6 @@ const handleAnimationComplete = () => {
   currentCheckItem.value = null;
 };
 
-const showAddItemModal = () => {
-  popupService.open({
-    component: AddTodoModal,
-    props: {
-      groupId: groupId.value,
-      onCreated: () => {
-        popupService.close();
-      },
-      onClose: () => popupService.close(),
-    },
-  });
-};
 
 const editItem = (item: TodoItem) => {
   popupService.open({
@@ -207,14 +177,6 @@ onMounted(async () => {
   padding: var(--space);
   position: relative;
 
-  &__actions {
-    position: absolute;
-    top: 0;
-    right: 0;
-    display: flex;
-    gap: var(--space-s);
-    z-index: 10;
-  }
 
   &__empty {
     flex: 1;

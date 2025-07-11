@@ -156,7 +156,7 @@ export const useAuthStore = defineStore('auth', () => {
   const resendEmailOtp = async (email: string) => {
     try {
       const { data, error: authError } = await supabase.auth.resend({
-        type: 'email',
+        type: 'signup',
         email
       })
 

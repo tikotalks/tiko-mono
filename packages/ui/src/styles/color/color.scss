@@ -32,9 +32,9 @@
 		@include functions.lightModeBase();
 	}
 }
-[data-color-mode='dark'] {
+[data-theme='dark'] {
 	@include functions.darkModeBase();
 }
-[data-color-mode='light'] {
+[data-theme='light'] {
 	@include functions.lightModeBase();
 }
