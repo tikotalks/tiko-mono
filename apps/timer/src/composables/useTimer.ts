@@ -9,7 +9,7 @@ export type TimerMode = 'up' | 'down'
 
 // Create shared state outside of the composable function
 const currentTime = ref(0) // seconds
-const targetTime = ref(20) // 20 seconds default
+const targetTime = ref(600) // 10 minutes
 const mode = ref<TimerMode>('down')
 const isRunning = ref(false)
 const isExpired = ref(false)
