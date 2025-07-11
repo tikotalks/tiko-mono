@@ -10,8 +10,6 @@ export const useTodoStore = defineStore('todo', () => {
   const items = ref<TodoItem[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
-  
-  const authStore = useAuthStore()
 
   // Getters
   const getGroupById = computed(() => (id: string) => {
@@ -33,6 +31,7 @@ export const useTodoStore = defineStore('todo', () => {
 
   // Load data from Supabase
   const loadGroups = async () => {
+    const authStore = useAuthStore()
     if (!authStore.user) return
     
     loading.value = true
@@ -66,6 +65,7 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   const loadItems = async (groupId?: string) => {
+    const authStore = useAuthStore()
     if (!authStore.user) return
     
     loading.value = true
@@ -113,6 +113,7 @@ export const useTodoStore = defineStore('todo', () => {
 
   // Actions - Groups
   const createGroup = async (input: CreateTodoGroupInput): Promise<TodoGroup | null> => {
+    const authStore = useAuthStore()
     if (!authStore.user) return null
     
     try {
@@ -165,6 +166,7 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   const updateGroup = async (id: string, updates: Partial<TodoGroup>) => {
+    const authStore = useAuthStore()
     try {
       const { error: err } = await supabase
         .from('todo_groups')
@@ -193,6 +195,7 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   const deleteGroup = async (id: string) => {
+    const authStore = useAuthStore()
     try {
       const { error: err } = await supabase
         .from('todo_groups')
@@ -212,6 +215,7 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   const resetGroupItems = async (id: string) => {
+    const authStore = useAuthStore()
     try {
       const { error: err } = await supabase
         .from('todo_items')
@@ -259,6 +263,7 @@ export const useTodoStore = defineStore('todo', () => {
 
   // Actions - Items
   const createItem = async (input: CreateTodoItemInput): Promise<TodoItem | null> => {
+    const authStore = useAuthStore()
     if (!authStore.user) return null
     
     try {
@@ -319,6 +324,7 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   const updateItem = async (id: string, updates: Partial<TodoItem>) => {
+    const authStore = useAuthStore()
     try {
       const item = items.value.find(i => i.id === id)
       if (!item) return
@@ -379,6 +385,7 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   const deleteItem = async (id: string) => {
+    const authStore = useAuthStore()
     try {
       const item = items.value.find(i => i.id === id)
       if (!item) return
@@ -442,6 +449,7 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   const reorderItems = async (groupId: string, itemIds: string[]) => {
+    const authStore = useAuthStore()
     // Store original order for potential rollback
     const originalItems = items.value
       .filter(i => i.groupId === groupId)
@@ -498,6 +506,7 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   const reorderGroups = async (groupIds: string[]) => {
+    const authStore = useAuthStore()
     // Store original order for potential rollback
     const originalGroups = groups.value.map(group => ({ 
       id: group.id, 
