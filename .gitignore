@@ -6,3 +6,6 @@ coverage
 .vscode
 .idea
 .DS_Store
+.nx/cache/file-map.json
+.nx/cache/run.json
+.nx/cache/d/daemon.log

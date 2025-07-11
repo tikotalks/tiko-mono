@@ -5,12 +5,13 @@
       <!-- Timer Display -->
       <TimeDisplay
         :displayTime="formattedTime"
-        :progress="progress"
         :mode="mode"
         :isExpired="isExpired"
         :isRunning="isRunning"
         @click="isRunning ? pause() : start()"
-        :class="bemm('display')"
+        :class="bemm('display', ['', isRunning ? 'running' : 'paused', isExpired ? 'expired' : '',
+          timeLeft < 10 ? 'last-seconds' : ''
+        ])"
       />
     </main>
 
@@ -28,6 +29,14 @@
           Dismiss
         </TButton>
       </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div :class="bemm('progress')">
+      <div
+        :class="bemm('progress-bar', [mode, isRunning ? 'running' : '', isExpired ? 'expired' : ''])"
+        :style="{ width: `${Math.min(100, progress)}%` }"
+      />
     </div>
   </div>
 </template>
@@ -48,7 +57,10 @@ const {
   progress,
   start,
   pause,
-  reset
+  reset,
+  toggleMode,
+  currentTime,
+  timeLeft
 } = useTimer()
 
 // Keyboard shortcuts
@@ -106,6 +118,27 @@ onUnmounted(() => {
     text-align: center;
     font-weight: bold;
     font-variant: tabular-nums;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+
+    &--paused{
+      animation: pausePulse 5s infinite;
+      @keyframes pausePulse {
+        0% { transform: translate(-50%, -50%) scale(1); }
+        50% { transform:  translate(-50%, -50%) scale(1.1); }
+        100% { transform: translate(-50%, -50%)  scale(1); }
+      }
+    }
+
+    &--last-seconds{
+      animation: leftPulse 1s infinite;
+      @keyframes leftPulse {
+        0% { transform: translate(-50%, -50%) scale(1); }
+        50% { transform:  translate(-50%, -50%) scale(1.1); }
+        100% { transform: translate(-50%, -50%)  scale(1); }
+      }
+    }
   }
 
   &__time {
@@ -114,19 +147,42 @@ onUnmounted(() => {
   }
 
   &__progress {
-    width: 200px;
+    position: fixed;
+    bottom: var(--space);
+    left: var(--space);
+    right: var(--space);
     height: 8px;
-    background: var(--color-accent);
+    background: var(--color-background-secondary);
     border-radius: 4px;
     overflow: hidden;
-    margin: 0 auto;
+    z-index: 100;
   }
 
   &__progress-bar {
     height: 100%;
     background: var(--color-primary);
-    transition: width 1s linear;
+    transition: width 0.3s ease, background-color 0.3s ease;
     border-radius: 4px;
+
+    &--down {
+      background: var(--color-warning);
+      
+      &.timer-view__progress-bar--running {
+        background: var(--color-warning);
+      }
+    }
+
+    &--up {
+      background: var(--color-success);
+      
+      &.timer-view__progress-bar--running {
+        background: var(--color-success);
+      }
+    }
+
+    &--expired {
+      background: var(--color-error);
+    }
   }
 
   // Controls moved to top bar

@@ -10,11 +10,12 @@ export type TimerMode = 'up' | 'down'
 export function useTimer() {
   // State
   const currentTime = ref(0) // seconds
-  const targetTime = ref(300) // 5 minutes default
+  const targetTime = ref(20) // 5 minutes default
   const mode = ref<TimerMode>('down')
   const isRunning = ref(false)
   const isExpired = ref(false)
-  
+  const timeLeft = ref(targetTime.value)
+
   // Settings
   const settings = ref<TimerSettings>({
     soundEnabled: true,
@@ -52,11 +53,12 @@ export function useTimer() {
     if (isExpired.value) {
       reset()
     }
-    
+
     isRunning.value = true
     intervalId = window.setInterval(() => {
       currentTime.value += 1
-      
+      timeLeft.value = targetTime.value - currentTime.value
+
       // Check for expiration in countdown mode
       if (mode.value === 'down' && currentTime.value >= targetTime.value) {
         expire()
@@ -81,12 +83,15 @@ export function useTimer() {
   const expire = () => {
     pause()
     isExpired.value = true
-    
+
+    const timeLeft = ref(targetTime.value)
+
+
     // Notifications
     if (settings.value.soundEnabled) {
       playNotificationSound()
     }
-    
+
     if (settings.value.vibrationEnabled) {
       triggerVibration()
     }
@@ -95,6 +100,7 @@ export function useTimer() {
   const setTime = (minutes: number, seconds: number = 0) => {
     if (!isRunning.value) {
       targetTime.value = minutes * 60 + seconds
+      timeLeft.value = targetTime.value
       currentTime.value = 0
       isExpired.value = false
     }
@@ -167,17 +173,18 @@ export function useTimer() {
   return {
     // State
     currentTime,
+    timeLeft,
     targetTime,
     mode,
     isRunning,
     isExpired,
     settings,
-    
+
     // Computed
     displayTime,
     progress,
     formattedTime,
-    
+
     // Methods
     start,
     pause,
