@@ -57,7 +57,7 @@
 
 <script setup lang="ts">
 import { computed, inject, ref } from 'vue'
-import { TFramework, TButton, type FrameworkConfig } from '@tiko/ui'
+import { TFramework, TButton, type FrameworkConfig, popupService as importedPopupService } from '@tiko/ui'
 import { useTimer } from './composables/useTimer'
 import TimerSettingsForm from './components/TimerSettingsForm.vue'
 import tikoConfig from '../tiko.config'
@@ -83,8 +83,9 @@ const seconds = ref(0)
 const loading = ref(false)
 
 // Framework configuration
-// Inject popup service at setup time
-const popupService = inject<any>('popupService')
+// Try to inject popup service, fallback to imported one
+const injectedPopupService = inject<any>('popupService', null)
+const popupService = injectedPopupService || importedPopupService
 
 const frameworkConfig = computed<FrameworkConfig>(() => ({
   ...tikoConfig,

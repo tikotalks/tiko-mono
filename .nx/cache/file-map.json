@@ -2192,7 +2192,7 @@
         },
         {
           "file": "apps/timer/src/App.vue",
-          "hash": "16463519638457794554",
+          "hash": "4588467291767656576",
           "deps": [
             "npm:vue",
             "@tiko/ui"
@@ -2327,7 +2327,7 @@
         },
         {
           "file": "apps/timer/tiko.config.ts",
-          "hash": "7733339950962948573",
+          "hash": "2715050937104423491",
           "deps": [
             "npm:@tiko/ui/types/tiko-config"
           ]
