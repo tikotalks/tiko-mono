@@ -190,6 +190,7 @@ export const it: TranslationSchema = {
     uploadImagePrompt: 'Carica un\'immagine per rendere l\'attività più visiva',
     saveChanges: 'Salva modifiche',
     addItem: 'Aggiungi elemento',
+    addGroup: 'Aggiungi gruppo',
     noTodoListsYet: 'Ancora nessuna lista di attività',
     askParentCreate: 'Chiedi a un genitore di creare la tua prima lista di attività!',
     createFirstTodoList: 'Crea la tua prima lista di attività per iniziare',

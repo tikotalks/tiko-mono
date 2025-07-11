@@ -359,30 +359,34 @@ onMounted(() => {
     padding: var(--space);
     display: flex;
     flex-direction: column;
-    gap: var(--space-lg);
+    gap: var(--space);
   }
 
   &__section {
     display: flex;
     flex-direction: column;
-    gap: var(--space);
+    gap: var(--space); padding: var(--space);
+    background-color: color-mix(in srgb, var(--color-background), var(--color-foreground) 10%);
+    border-radius: var(--border-radius);
   }
 
   &__section-title {
     margin: 0;
-    font-size: 1.1em;
-    font-weight: 600;
+    font-size: .875em;
+    font-weight: 700;
     color: var(--color-foreground);
     display: flex;
     align-items: center;
     gap: var(--space-xs);
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-primary), var(--color-foreground) 50%);
+    letter-spacing: .125em;
   }
 
   &__section-content {
     display: flex;
     flex-direction: column;
     gap: var(--space);
-    padding-left: var(--space);
   }
 
   &__setting-row {

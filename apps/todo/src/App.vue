@@ -14,7 +14,7 @@
         icon="add"
         @click="showAddGroupModal"
       >
-        Add Group
+        {{ t(keys.todo.addGroup) }}
       </TButton>
       <TButton
         v-if="showAddItemButton"
@@ -24,7 +24,7 @@
         icon="add"
         @click="showAddItemModal"
       >
-        Add Item
+        {{ t(keys.todo.addItem) }}
       </TButton>
       <TButton
         v-if="showResetButton"

@@ -190,6 +190,7 @@ export const nl: TranslationSchema = {
     uploadImagePrompt: 'Upload een afbeelding om het todo item visueler te maken',
     saveChanges: 'Wijzigingen opslaan',
     addItem: 'Item toevoegen',
+    addGroup: 'Groep toevoegen',
     noTodoListsYet: 'Nog geen todo lijsten',
     askParentCreate: 'Vraag een ouder om je eerste todo lijst te maken!',
     createFirstTodoList: 'Maak je eerste todo lijst om te beginnen',

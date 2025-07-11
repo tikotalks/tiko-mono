@@ -211,7 +211,7 @@ const loadUserProfile = async () => {
       name: props.user.user_metadata?.full_name || 
             props.user.user_metadata?.name || 
             '',
-      language: locale.value
+      language: props.user.user_metadata?.settings?.language || locale.value
     }
   } catch (error) {
     console.error('Error loading user profile:', error)
@@ -366,7 +366,11 @@ const handleSave = async () => {
 
     // Update user metadata
     const updateData: any = {
-      full_name: formData.value.name
+      full_name: formData.value.name,
+      settings: {
+        language: formData.value.language,
+        ...props.user.user_metadata?.settings
+      }
     }
 
     if (avatarUrl) {
@@ -379,7 +383,7 @@ const handleSave = async () => {
 
     if (authError) throw authError
 
-    // Update locale if changed
+    // Update locale if changed - this also updates localStorage
     if (formData.value.language !== locale.value) {
       setLocale(formData.value.language as any)
     }

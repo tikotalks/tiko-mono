@@ -190,6 +190,7 @@ export const pt: TranslationSchema = {
     uploadImagePrompt: 'Carregue uma imagem para tornar a tarefa mais visual',
     saveChanges: 'Guardar alterações',
     addItem: 'Adicionar item',
+    addGroup: 'Adicionar grupo',
     noTodoListsYet: 'Ainda sem listas de tarefas',
     askParentCreate: 'Peça a um adulto para criar a sua primeira lista de tarefas!',
     createFirstTodoList: 'Crie a sua primeira lista de tarefas para começar',

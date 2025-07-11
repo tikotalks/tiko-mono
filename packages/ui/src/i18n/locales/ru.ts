@@ -190,6 +190,7 @@ export const ru: TranslationSchema = {
     uploadImagePrompt: 'Загрузите изображение чтобы сделать задачу более наглядной',
     saveChanges: 'Сохранить изменения',
     addItem: 'Добавить задачу',
+    addGroup: 'Добавить группу',
     noTodoListsYet: 'Пока нет списков дел',
     askParentCreate: 'Попросите родителя создать ваш первый список дел!',
     createFirstTodoList: 'Создайте свой первый список дел чтобы начать',

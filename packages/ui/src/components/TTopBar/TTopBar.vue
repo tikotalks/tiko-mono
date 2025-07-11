@@ -167,6 +167,7 @@ interface Props {
   isUserOnline?: boolean
   isLoading?: boolean
   customMenuItems?: Partial<ContextMenuItem>[]
+  appName?: string
 }
 
 interface Emits {
@@ -475,7 +476,7 @@ onUnmounted(() => {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--color-primary);
+    color: var(--color-foreground);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -642,6 +643,10 @@ onUnmounted(() => {
     border-top-color: var(--color-primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
+  }
+
+  &__actions{
+    flex-wrap: nowrap
   }
 }
 

@@ -13,6 +13,7 @@
         :is-user-online="isUserOnline"
         :is-loading="isLoading"
         :custom-menu-items="customMenuItems"
+        :app-name="appName"
         @back="$emit('back')"
         @profile="$emit('profile')"
         @settings="$emit('settings')"
@@ -57,6 +58,7 @@ interface Props {
   isUserOnline?: boolean;
   isLoading?: boolean;
   customMenuItems?: ContextMenuItem[];
+  appName?: string;
 }
 
 interface Emits {

@@ -11,6 +11,7 @@
         :show-header="topBar.showTitle !== false"
         :show-back="showBackButton"
         :is-loading="loading"
+        :app-name="config.id"
         @profile="handleProfile"
         @settings="handleSettings"
         @logout="handleLogout"
@@ -74,7 +75,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 const appStore = useAppStore()
 const eventBus = useEventBus()
-const { setLocale, t, keys } = useI18n()
+const { setLocale, t, keys, locale } = useI18n()
 
 // Set config and get theme styles
 const { themeStyles } = useTikoConfig(props.config)
@@ -193,6 +194,13 @@ const updateRouteTitle = () => {
 
 // Watch route changes
 watch(() => route.fullPath, updateRouteTitle, { immediate: true })
+
+// Watch for user metadata changes (including language)
+watch(() => user.value?.user_metadata?.settings?.language, (newLanguage) => {
+  if (newLanguage && newLanguage !== locale.value) {
+    setLocale(newLanguage as Locale)
+  }
+}, { immediate: false })
 
 // Initialize
 onMounted(async () => {
