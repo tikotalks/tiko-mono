@@ -309,5 +309,13 @@ export const enGB: TranslationSchema = {
     imageProcessingFailed: 'Failed to process image',
     profileUpdated: 'Profile updated successfully',
     updateFailed: 'Failed to update profile'
+  },
+  tiko: {
+    welcome: 'Welcome to Tiko',
+    selectApp: 'Select an app to get started',
+    moreApps: 'More Apps Available',
+    installFromStore: 'Install from Store',
+    appNotInstalled: 'App not installed',
+    openApp: 'Open App'
   }
 }

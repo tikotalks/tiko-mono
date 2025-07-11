@@ -1,6 +1,7 @@
 [build]
   publish = "apps/type/dist"
   command = "pnpm install && pnpm build --filter=type"
+  ignore = "bash ./scripts/ignore-build-type.sh"
 
 [build.environment]
   NODE_VERSION = "20"

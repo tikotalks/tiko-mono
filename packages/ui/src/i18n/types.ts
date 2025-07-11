@@ -313,6 +313,14 @@ export interface TranslationSchema {
     profileUpdated: string
     updateFailed: string
   }
+  tiko: {
+    welcome: string
+    selectApp: string
+    moreApps: string
+    installFromStore: string
+    appNotInstalled: string
+    openApp: string
+  }
 }
 
 // Available locales with regional variants

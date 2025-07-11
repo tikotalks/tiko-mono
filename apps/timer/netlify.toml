@@ -1,6 +1,7 @@
 [build]
   publish = "apps/timer/dist"
   command = "pnpm install && pnpm build --filter=timer"
+  ignore = "bash ./scripts/ignore-build-timer.sh"
 
 [build.environment]
   NODE_VERSION = "20"

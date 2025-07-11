@@ -1,0 +1,69 @@
+{
+  "name": "tiko",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/tiko/src",
+  "targets": {
+    "build": {
+      "executor": "@nx/vite:build",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "outputPath": "dist/apps/tiko",
+        "skipTypeCheck": true
+      },
+      "configurations": {
+        "production": {
+          "mode": "production"
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/vite:dev-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "tiko:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "tiko:build:development",
+          "hmr": true
+        },
+        "production": {
+          "buildTarget": "tiko:build:production",
+          "hmr": false
+        }
+      }
+    },
+    "preview": {
+      "executor": "@nx/vite:preview-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "tiko:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "tiko:build:development"
+        },
+        "production": {
+          "buildTarget": "tiko:build:production"
+        }
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "passWithNoTests": true,
+        "reportsDirectory": "../../coverage/apps/tiko"
+      }
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/tiko/**/*.{js,jsx,ts,tsx,vue}"]
+      }
+    }
+  }
+}

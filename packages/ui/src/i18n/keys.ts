@@ -339,5 +339,13 @@ export const translationKeys: TranslationKeys = createKeysObject<TranslationSche
     imageProcessingFailed: '',
     profileUpdated: '',
     updateFailed: ''
+  },
+  tiko: {
+    welcome: '',
+    selectApp: '',
+    moreApps: '',
+    installFromStore: '',
+    appNotInstalled: '',
+    openApp: ''
   }
 }) as TranslationKeys

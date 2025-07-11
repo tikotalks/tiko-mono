@@ -309,5 +309,13 @@ export const ru: TranslationSchema = {
     imageProcessingFailed: 'Ошибка обработки изображения',
     profileUpdated: 'Профиль успешно обновлен',
     updateFailed: 'Не удалось обновить профиль'
+  },
+  tiko: {
+    welcome: 'Добро пожаловать в Tiko',
+    selectApp: 'Выберите приложение для начала работы',
+    moreApps: 'Больше Приложений Доступно',
+    installFromStore: 'Установить из Магазина',
+    appNotInstalled: 'Приложение не установлено',
+    openApp: 'Открыть Приложение'
   }
 }
