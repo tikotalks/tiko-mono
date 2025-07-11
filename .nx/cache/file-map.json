@@ -2476,7 +2476,7 @@
         },
         {
           "file": "packages/ui/src/components/TTopBar/TTopBar.vue",
-          "hash": "9884020133625421526",
+          "hash": "7371912706518518612",
           "deps": [
             "npm:vue",
             "npm:bemm",

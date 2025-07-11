@@ -147,7 +147,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, inject } from 'vue'
 import { useBemm } from 'bemm'
 import { useAuthStore } from '@tiko/core'
 import TButton from '../TButton/TButton.vue'
@@ -155,7 +155,6 @@ import TButtonGroup from '../TButton/TButtonGroup.vue'
 import TIcon from '../TIcon/TIcon.vue'
 import { TContextMenu, type ContextMenuItem, type ContextMenuConfig, ContextMenuConfigDefault } from '../TContextMenu'
 import { useParentMode } from '../../composables/useParentMode'
-import { popupService } from '../TPopup/TPopup.service'
 import TParentModePinInput from '../TParentMode/TParentModePinInput.vue'
 
 interface Props {
@@ -190,7 +189,10 @@ const emit = defineEmits<Emits>()
 
 const bemm = useBemm('top-bar')
 const authStore = useAuthStore()
-const parentMode = useParentMode()
+const parentMode = useParentMode(props.appName || 'default')
+
+// Inject services
+const popupService = inject<any>('popupService')
 
 // Refs
 const avatarRef = ref<HTMLElement>()
@@ -329,6 +331,11 @@ const updateIsMobile = () => {
 
 // Parent Mode Methods
 const handleParentModeEnable = async () => {
+  if (!popupService) {
+    console.error('PopupService not available')
+    return
+  }
+
   try {
     // If parent mode is not enabled, show setup dialog
     if (!parentMode.isEnabled.value) {
