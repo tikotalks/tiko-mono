@@ -12,6 +12,9 @@
     "@capacitor/core": "^7.4.1",
     "@capacitor/ios": "^7.4.1",
     "@nx/cypress": "18.0.0",
+    "chalk": "^5.3.0",
+    "concurrently": "^8.2.2",
+    "inquirer": "^9.2.15",
     "@nx/eslint": "18.0.0",
     "@nx/js": "18.0.0",
     "@nx/vite": "18.0.0",
@@ -417,7 +420,7 @@
         },
         {
           "file": "package.json",
-          "hash": "10565942460180545450"
+          "hash": "2296767213072482453"
         },
         {
           "file": "pnpm-lock.yaml",
@@ -504,12 +507,32 @@
         {
           "file": "docs/SSO_FRAMEWORK_INTEGRATION.md",
           "hash": "2189622342486965045"
+        },
+        {
+          "file": "scripts/serve.js",
+          "hash": "12706512818250931945",
+          "deps": [
+            "npm:child_process",
+            "npm:fs",
+            "npm:path",
+            "npm:inquirer",
+            "npm:chalk"
+          ]
+        },
+        {
+          "file": "scripts/serve-simple.js",
+          "hash": "3814431903831798715",
+          "deps": [
+            "npm:child_process",
+            "npm:fs",
+            "npm:path"
+          ]
         }
       ],
       "ui-docs": [
         {
           "file": "apps/ui-docs/index.html",
-          "hash": "8456176133684050942"
+          "hash": "13829555824100429394"
         },
         {
           "file": "apps/ui-docs/netlify.toml",
@@ -644,7 +667,7 @@
         },
         {
           "file": "apps/todo/index.html",
-          "hash": "8174432562133929446"
+          "hash": "8441813112855057605"
         },
         {
           "file": "apps/todo/netlify.toml",
@@ -848,7 +871,7 @@
         },
         {
           "file": "apps/yes-no/index.html",
-          "hash": "2113041597476535230"
+          "hash": "16231359428798572724"
         },
         {
           "file": "apps/yes-no/ios/.gitignore",
@@ -1071,7 +1094,7 @@
         },
         {
           "file": "apps/timer/index.html",
-          "hash": "13148859087936704446"
+          "hash": "13239914012835279788"
         },
         {
           "file": "apps/timer/ios/.gitignore",
@@ -1335,7 +1358,7 @@
         },
         {
           "file": "apps/radio/index.html",
-          "hash": "8372033419804856589"
+          "hash": "1766199446669197577"
         },
         {
           "file": "apps/radio/ios/.gitignore",
@@ -1641,7 +1664,7 @@
         },
         {
           "file": "apps/type/index.html",
-          "hash": "11071677260626312456"
+          "hash": "10860893038866897482"
         },
         {
           "file": "apps/type/ios/.gitignore",
@@ -1913,7 +1936,7 @@
         },
         {
           "file": "apps/cards/index.html",
-          "hash": "2274662936398281409"
+          "hash": "17282909782467305213"
         },
         {
           "file": "apps/cards/ios/.gitignore",
@@ -2135,11 +2158,10 @@
         },
         {
           "file": "packages/ui/src/components/TAlert/TAlert.vue",
-          "hash": "17599098707304460862",
+          "hash": "8305044210636298668",
           "deps": [
             "npm:vue",
-            "npm:bemm",
-            "npm:@/composables/useI18n"
+            "npm:bemm"
           ]
         },
         {
@@ -2824,10 +2846,9 @@
         },
         {
           "file": "packages/ui/src/components/TSSOButton/TSSOButton.vue",
-          "hash": "2349900251253211170",
+          "hash": "14875596978307021216",
           "deps": [
-            "npm:bemm",
-            "@tiko/core"
+            "npm:bemm"
           ]
         },
         {

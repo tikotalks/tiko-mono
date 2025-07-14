@@ -1,40 +1,18 @@
 {
   "run": {
-    "command": "nx build radio",
-    "startTime": "2025-07-11T15:13:46.772Z",
-    "endTime": "2025-07-11T15:13:58.148Z",
+    "command": "nx serve radio",
+    "startTime": "2025-07-14T06:57:34.491Z",
+    "endTime": "2025-07-14T08:36:55.092Z",
     "inner": false
   },
   "tasks": [
     {
-      "taskId": "@tiko/core:build",
-      "target": "build",
-      "projectName": "@tiko/core",
-      "hash": "5145440105123446859",
-      "startTime": "2025-07-11T15:13:46.782Z",
-      "endTime": "2025-07-11T15:13:46.876Z",
-      "params": "",
-      "cacheStatus": "local-cache-hit",
-      "status": 0
-    },
-    {
-      "taskId": "@tiko/ui:build",
-      "target": "build",
-      "projectName": "@tiko/ui",
-      "hash": "5597592293806841013",
-      "startTime": "2025-07-11T15:13:46.923Z",
-      "endTime": "2025-07-11T15:13:46.970Z",
-      "params": "",
-      "cacheStatus": "local-cache-hit",
-      "status": 0
-    },
-    {
-      "taskId": "radio:build",
-      "target": "build",
+      "taskId": "radio:serve",
+      "target": "serve",
       "projectName": "radio",
-      "hash": "3423088808353439325",
-      "startTime": "2025-07-11T15:13:47.011Z",
-      "endTime": "2025-07-11T15:13:58.148Z",
+      "hash": "14643141872950876972",
+      "startTime": "2025-07-14T06:57:34.494Z",
+      "endTime": "2025-07-14T08:36:55.092Z",
       "params": "",
       "cacheStatus": "cache-miss",
       "status": 0
