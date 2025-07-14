@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import { useBemm } from 'bemm'
-import { useI18n } from '@tiko/core'
+import { useI18n } from '../../composables/useI18n'
 import TButton from '../TButton/TButton.vue'
 import TIcon from '../TIcon/TIcon.vue'
 import type { TSSOButtonProps } from './TSSOButton.model'
