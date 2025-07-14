@@ -24291,3 +24291,105 @@
 [NX Daemon Server] - 2025-07-14T10:46:18.489Z - [REQUEST]: Responding to the client. handleHashTasks
 [NX Daemon Server] - 2025-07-14T10:46:18.489Z - Done responding to the client handleHashTasks
 [NX Daemon Server] - 2025-07-14T10:46:18.489Z - Handled HASH_TASKS. Handling time: 1. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:10.243Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-14T10:50:10.244Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-14T10:50:10.244Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-14T10:50:10.245Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2025-07-14T10:50:10.245Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2025-07-14T10:50:10.245Z - Time taken for 'total for creating and serializing project graph' 0.03887500008568168ms
+[NX Daemon Server] - 2025-07-14T10:50:10.246Z - Done responding to the client project-graph
+[NX Daemon Server] - 2025-07-14T10:50:10.246Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 0. Response time: 1.
+[NX Daemon Server] - 2025-07-14T10:50:10.257Z - [REQUEST]: Responding to the client. handleHashTasks
+[NX Daemon Server] - 2025-07-14T10:50:10.257Z - Done responding to the client handleHashTasks
+[NX Daemon Server] - 2025-07-14T10:50:10.257Z - Handled HASH_TASKS. Handling time: 1. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:10.295Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:10.295Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:10.295Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 18. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:10.310Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:10.310Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:10.310Z - Handled RECORD_OUTPUTS_HASH. Handling time: 15. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:10.327Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:10.327Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:10.327Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 15. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:10.342Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:10.342Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:10.342Z - Handled RECORD_OUTPUTS_HASH. Handling time: 15. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:10.348Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:10.348Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:10.348Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 4. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:10.352Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:10.352Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:10.352Z - Handled RECORD_OUTPUTS_HASH. Handling time: 3. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:10.354Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-14T10:50:18.920Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-14T10:50:18.920Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2025-07-14T10:50:18.920Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2025-07-14T10:50:18.921Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2025-07-14T10:50:18.921Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2025-07-14T10:50:18.921Z - Time taken for 'total for creating and serializing project graph' 0.0381249999627471ms
+[NX Daemon Server] - 2025-07-14T10:50:18.922Z - Done responding to the client project-graph
+[NX Daemon Server] - 2025-07-14T10:50:18.922Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 0. Response time: 1.
+[NX Daemon Server] - 2025-07-14T10:50:18.931Z - [REQUEST]: Responding to the client. handleHashTasks
+[NX Daemon Server] - 2025-07-14T10:50:18.931Z - Done responding to the client handleHashTasks
+[NX Daemon Server] - 2025-07-14T10:50:18.931Z - Handled HASH_TASKS. Handling time: 2. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:18.966Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:18.966Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:18.966Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 16. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:18.982Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:18.982Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:18.982Z - Handled RECORD_OUTPUTS_HASH. Handling time: 15. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:18.998Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:18.998Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:18.998Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 15. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:19.013Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:19.013Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:19.013Z - Handled RECORD_OUTPUTS_HASH. Handling time: 15. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:19.021Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:19.021Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:19.021Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 4. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:19.041Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:19.041Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:19.041Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 20. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:19.060Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:19.060Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:19.060Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 19. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:19.064Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:19.064Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:19.064Z - Handled RECORD_OUTPUTS_HASH. Handling time: 3. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:19.084Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:19.084Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:19.084Z - Handled RECORD_OUTPUTS_HASH. Handling time: 20. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:19.104Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:19.104Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:19.104Z - Handled RECORD_OUTPUTS_HASH. Handling time: 20. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:19.123Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:19.123Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:19.123Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 18. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:19.142Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:19.142Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:19.142Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 18. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:19.146Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:19.146Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:19.146Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 4. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:19.165Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:19.165Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:19.165Z - Handled RECORD_OUTPUTS_HASH. Handling time: 19. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:19.184Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:19.184Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:19.184Z - Handled RECORD_OUTPUTS_HASH. Handling time: 19. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:19.187Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:19.187Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:19.187Z - Handled RECORD_OUTPUTS_HASH. Handling time: 3. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:19.191Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:19.191Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:19.191Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 3. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:19.210Z - [REQUEST]: Responding to the client. outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:19.210Z - Done responding to the client outputsHashesMatch
+[NX Daemon Server] - 2025-07-14T10:50:19.210Z - Handled OUTPUTS_HASHES_MATCH. Handling time: 19. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:19.214Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:19.214Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:19.214Z - Handled RECORD_OUTPUTS_HASH. Handling time: 3. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:19.231Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:19.231Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2025-07-14T10:50:19.231Z - Handled RECORD_OUTPUTS_HASH. Handling time: 17. Response time: 0.
+[NX Daemon Server] - 2025-07-14T10:50:19.234Z - Closed a connection. Number of open connections: 1
