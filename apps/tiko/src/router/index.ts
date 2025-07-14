@@ -9,6 +9,23 @@ const routes = [
     meta: {
       title: 'Dashboard'
     }
+  },
+  {
+    path: '/signin',
+    name: 'signin',
+    component: () => import('../views/SignInView.vue'),
+    meta: {
+      title: 'Sign In',
+      requiresAuth: false
+    }
+  },
+  {
+    path: '/auth/callback',
+    name: 'authCallback',
+    component: () => import('../components/AuthCallback.vue'),
+    meta: {
+      requiresAuth: false
+    }
   }
 ]
 

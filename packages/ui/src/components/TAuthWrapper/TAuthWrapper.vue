@@ -47,6 +47,9 @@
         <TLoginForm
           :is-loading="authLoading"
           :error="authError"
+          :app-id="appName"
+          :app-name="title"
+          :enable-sso="true"
           @apple-sign-in="handleAppleSignIn"
           @email-submit="handleEmailSubmit"
           @verification-submit="handleVerificationSubmit"

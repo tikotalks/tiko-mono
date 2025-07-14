@@ -1,0 +1,71 @@
+import { onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
+import { supabase } from '../lib/supabase'
+
+export interface SSOOptions {
+  onSuccess?: () => void
+  onError?: (error: Error) => void
+}
+
+export function useSSO(options: SSOOptions = {}) {
+  const route = useRoute()
+  const router = useRouter()
+  const authStore = useAuthStore()
+
+  const checkSSOCallback = async () => {
+    // Check if we're on the auth callback route
+    if (route.path !== '/auth/callback') return
+
+    // Get tokens from URL
+    const accessToken = route.query.access_token as string
+    const refreshToken = route.query.refresh_token as string
+
+    if (!accessToken || !refreshToken) {
+      console.error('Missing tokens in SSO callback')
+      if (options.onError) {
+        options.onError(new Error('Missing authentication tokens'))
+      }
+      return
+    }
+
+    try {
+      // Set the session using the tokens
+      const { data, error } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      })
+
+      if (error) {
+        throw error
+      }
+
+      // Update the auth store
+      if (data.session && data.user) {
+        authStore.user = data.user
+        authStore.session = data.session
+      }
+
+      // Clear the tokens from URL
+      router.replace('/')
+
+      // Call success callback
+      if (options.onSuccess) {
+        options.onSuccess()
+      }
+    } catch (error) {
+      console.error('Failed to set session from SSO:', error)
+      if (options.onError) {
+        options.onError(error as Error)
+      }
+    }
+  }
+
+  onMounted(() => {
+    checkSSOCallback()
+  })
+
+  return {
+    checkSSOCallback
+  }
+}

@@ -10404,6 +10404,11 @@
         "source": "tiko",
         "target": "@tiko/ui",
         "type": "static"
+      },
+      {
+        "source": "tiko",
+        "target": "@tiko/core",
+        "type": "static"
       }
     ],
     "todo": [

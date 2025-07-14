@@ -39,6 +39,16 @@
           <span :class="bemm('divider-text')">or</span>
         </div>
 
+        <!-- SSO Button (only show if not in Tiko app and SSO is enabled) -->
+        <TSSOButton
+          v-if="enableSSO && appId && appId !== 'tiko'"
+          :app-id="appId"
+          :app-name="appName"
+          size="large"
+          :disabled="isLoading"
+          :class="bemm('sso-button')"
+        />
+
         <!-- Apple Sign-In -->
         <TButton
           icon="arrow-right"
@@ -209,15 +219,20 @@ import TIcon from '../TIcon/TIcon.vue'
 import Form from '../TForm/Form.vue'
 import InputText from "../TForm/InputText.vue"
 import InputEmail from "../TForm/InputEmail/InputEmail.vue"
+import TSSOButton from "../TSSOButton/TSSOButton.vue"
 
 interface Props {
   isLoading?: boolean
   error?: string | null
+  appId?: string
+  appName?: string
+  enableSSO?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isLoading: false,
-  error: null
+  error: null,
+  enableSSO: true
 })
 
 const emit = defineEmits<{
@@ -440,6 +455,10 @@ onUnmounted(() => {
     strong {
       color: var(--color-primary);
     }
+  }
+
+  &__sso-button {
+    margin-bottom: var(--space-s);
   }
 }
 
