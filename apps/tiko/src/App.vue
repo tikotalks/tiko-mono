@@ -61,7 +61,7 @@ const frameworkConfig = computed<FrameworkConfig>(() => ({
     showTitle: true,
     showSubtitle: false,
     showCurrentRoute: false,
-    routeDisplay: 'title',
+    routeDisplay: 'subtitle',
     showBack: false
   },
   settings: {

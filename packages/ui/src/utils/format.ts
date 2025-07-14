@@ -53,7 +53,7 @@ export function camelToKebab(str: string): string {
  * kebabToCamel("pascal-case") // "pascalCase"
  */
 export function kebabToCamel(str: string): string {
-  return str.replace(/-([a-z])/g, (match, letter) => letter.toUpperCase());
+  return str.replace(/-([a-z])/g, (_match, letter) => letter.toUpperCase());
 }
 
 /**

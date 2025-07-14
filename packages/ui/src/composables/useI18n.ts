@@ -3,14 +3,14 @@
  * Provides translation functionality with type safety, interpolation, and fallback support
  */
 
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useLocalStorage } from './useLocalStorage'
 import { translations } from '../i18n/locales'
 import { translationKeys } from '../i18n/keys'
-import type { Locale, TranslationKey, TranslationFunction, TranslationKeys } from '../i18n/types'
+import type { Locale, TranslationKey, TranslationFunction } from '../i18n/types'
 
 // Global locale state - shared across all components
-const globalLocale = useLocalStorage<Locale>('tiko-language', 'en-GB')
+const [globalLocale, setGlobalLocale] = useLocalStorage<Locale>('tiko-language', 'en-GB')
 
 /**
  * Get nested translation value by dot notation key
@@ -89,7 +89,7 @@ export function useI18n() {
    * @param newLocale - New locale to set
    */
   const setLocale = (newLocale: Locale) => {
-    globalLocale.value = newLocale
+    setGlobalLocale(newLocale)
   }
 
   /**

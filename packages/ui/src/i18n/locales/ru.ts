@@ -190,7 +190,6 @@ export const ru: TranslationSchema = {
     uploadImagePrompt: 'Загрузите изображение чтобы сделать задачу более наглядной',
     saveChanges: 'Сохранить изменения',
     addItem: 'Добавить задачу',
-    addGroup: 'Добавить группу',
     noTodoListsYet: 'Пока нет списков дел',
     askParentCreate: 'Попросите родителя создать ваш первый список дел!',
     createFirstTodoList: 'Создайте свой первый список дел чтобы начать',
@@ -317,5 +316,20 @@ export const ru: TranslationSchema = {
     installFromStore: 'Установить из Магазина',
     appNotInstalled: 'Приложение не установлено',
     openApp: 'Открыть Приложение'
+  },
+  signin: {
+    title: 'Войти',
+    signingInto: 'Вход в {app}',
+    withApple: 'Войти через Apple',
+    withEmail: 'Войти через Email',
+    authenticating: 'Аутентификация...',
+    errors: {
+      noReturnUrl: 'URL возврата не указан',
+      appleSignInFailed: 'Вход через Apple не удался',
+      emailSignInFailed: 'Вход через email не удался'
+    }
+  },
+  sso: {
+    signInWithTiko: 'Войти через Tiko'
   }
 }

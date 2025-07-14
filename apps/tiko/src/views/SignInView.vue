@@ -2,7 +2,7 @@
   <div :class="bemm()">
     <div :class="bemm('container')">
       <div :class="bemm('logo')">
-        <img src="@tiko/ui/assets/tiko-logo.svg" alt="Tiko" />
+        <TTikoLogo />
       </div>
 
       <div :class="bemm('content')">
@@ -49,11 +49,11 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useBemm } from 'bemm'
-import { TButton, TIcon, TAlert } from '@tiko/ui'
+import { TButton, TIcon, TAlert, TTikoLogo } from '@tiko/ui'
 import { useAuthStore } from '@tiko/core'
 import { useI18n } from '@tiko/ui'
-import { useSignIn } from '@/composables/useSignIn'
-import type { TikoApp } from '@/types/signin.types'
+import { useSignIn } from '../composables/useSignIn'
+import type { TikoApp } from '../types/signin.types'
 
 const bemm = useBemm('signin-view')
 const route = useRoute()
@@ -160,11 +160,7 @@ const handleSuccessfulAuth = async () => {
   &__logo {
     display: flex;
     justify-content: center;
-    
-    img {
-      width: 120px;
-      height: auto;
-    }
+    font-size: 120px;
   }
 
   &__content {

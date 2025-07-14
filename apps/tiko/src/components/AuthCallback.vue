@@ -22,13 +22,13 @@ const { t } = useI18n()
 
 onMounted(async () => {
   try {
-    // Get the session from URL (Supabase will redirect here with session data)
-    const { data: { session }, error } = await supabase.auth.getSessionFromUrl()
+    // Handle auth session from URL hash or query params
+    const { data: { session }, error } = await supabase.auth.getSession()
 
     if (error) {
       console.error('Auth callback error:', error)
       router.push({
-        name: 'SignIn',
+        name: 'signin',
         query: {
           error: 'auth_failed',
           return_to: route.query.return_to
@@ -39,7 +39,7 @@ onMounted(async () => {
 
     if (!session) {
       router.push({
-        name: 'SignIn',
+        name: 'signin',
         query: {
           error: 'no_session',
           return_to: route.query.return_to

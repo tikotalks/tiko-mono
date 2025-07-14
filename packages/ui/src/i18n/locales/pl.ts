@@ -190,7 +190,6 @@ export const pl: TranslationSchema = {
     uploadImagePrompt: 'Prześlij obraz, aby zadanie było bardziej wizualne',
     saveChanges: 'Zapisz zmiany',
     addItem: 'Dodaj element',
-    addGroup: 'Dodaj grupę',
     noTodoListsYet: 'Jeszcze nie ma list zadań',
     askParentCreate: 'Poproś rodzica o utworzenie twojej pierwszej listy zadań!',
     createFirstTodoList: 'Utwórz swoją pierwszą listę zadań, aby rozpocząć',
@@ -317,5 +316,20 @@ export const pl: TranslationSchema = {
     installFromStore: 'Zainstaluj ze Sklepu',
     appNotInstalled: 'Aplikacja nie zainstalowana',
     openApp: 'Otwórz Aplikację'
+  },
+  signin: {
+    title: 'Zaloguj się',
+    signingInto: 'Logowanie do {app}',
+    withApple: 'Zaloguj się przez Apple',
+    withEmail: 'Zaloguj się przez Email',
+    authenticating: 'Uwierzytelnianie...',
+    errors: {
+      noReturnUrl: 'Nie określono adresu URL powrotu',
+      appleSignInFailed: 'Logowanie przez Apple nie powiodło się',
+      emailSignInFailed: 'Logowanie przez email nie powiodło się'
+    }
+  },
+  sso: {
+    signInWithTiko: 'Zaloguj się przez Tiko'
   }
 }

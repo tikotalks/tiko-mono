@@ -190,7 +190,6 @@ export const enUS: TranslationSchema = {
     uploadImagePrompt: 'Upload an image to make the todo item more visual',
     saveChanges: 'Save Changes',
     addItem: 'Add Item',
-    addGroup: 'Add Group',
     noTodoListsYet: 'No todo lists yet',
     askParentCreate: 'Ask a parent to create your first todo list!',
     createFirstTodoList: 'Create your first todo list to get started',
@@ -317,5 +316,20 @@ export const enUS: TranslationSchema = {
     installFromStore: 'Install from Store',
     appNotInstalled: 'App not installed',
     openApp: 'Open App'
+  },
+  signin: {
+    title: 'Sign In',
+    signingInto: 'Signing in to {app}',
+    withApple: 'Sign in with Apple',
+    withEmail: 'Sign in with Email',
+    authenticating: 'Authenticating...',
+    errors: {
+      noReturnUrl: 'No return URL specified',
+      appleSignInFailed: 'Apple sign in failed',
+      emailSignInFailed: 'Email sign in failed'
+    }
+  },
+  sso: {
+    signInWithTiko: 'Sign in with Tiko'
   }
 }

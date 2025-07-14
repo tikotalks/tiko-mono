@@ -190,7 +190,6 @@ export const sv: TranslationSchema = {
     uploadImagePrompt: 'Ladda upp en bild för att göra uppgiften mer visuell',
     saveChanges: 'Spara ändringar',
     addItem: 'Lägg till uppgift',
-    addGroup: 'Lägg till grupp',
     noTodoListsYet: 'Inga att-göra-listor än',
     askParentCreate: 'Be en förälder att skapa din första att-göra-lista!',
     createFirstTodoList: 'Skapa din första att-göra-lista för att komma igång',
@@ -317,5 +316,20 @@ export const sv: TranslationSchema = {
     installFromStore: 'Installera från Butik',
     appNotInstalled: 'App inte installerad',
     openApp: 'Öppna App'
+  },
+  signin: {
+    title: 'Logga in',
+    signingInto: 'Loggar in på {app}',
+    withApple: 'Logga in med Apple',
+    withEmail: 'Logga in med e-post',
+    authenticating: 'Autentiserar...',
+    errors: {
+      noReturnUrl: 'Ingen retur-URL angiven',
+      appleSignInFailed: 'Inloggning med Apple misslyckades',
+      emailSignInFailed: 'Inloggning med e-post misslyckades'
+    }
+  },
+  sso: {
+    signInWithTiko: 'Logga in med Tiko'
   }
 }

@@ -190,7 +190,6 @@ export const nl: TranslationSchema = {
     uploadImagePrompt: 'Upload een afbeelding om het todo item visueler te maken',
     saveChanges: 'Wijzigingen opslaan',
     addItem: 'Item toevoegen',
-    addGroup: 'Groep toevoegen',
     noTodoListsYet: 'Nog geen todo lijsten',
     askParentCreate: 'Vraag een ouder om je eerste todo lijst te maken!',
     createFirstTodoList: 'Maak je eerste todo lijst om te beginnen',
@@ -317,5 +316,20 @@ export const nl: TranslationSchema = {
     installFromStore: 'Installeer vanuit Store',
     appNotInstalled: 'App niet geïnstalleerd',
     openApp: 'App Openen'
+  },
+  signin: {
+    title: 'Inloggen',
+    signingInto: 'Inloggen bij {app}',
+    withApple: 'Inloggen met Apple',
+    withEmail: 'Inloggen met E-mail',
+    authenticating: 'Authenticeren...',
+    errors: {
+      noReturnUrl: 'Geen retour-URL opgegeven',
+      appleSignInFailed: 'Inloggen met Apple mislukt',
+      emailSignInFailed: 'Inloggen met e-mail mislukt'
+    }
+  },
+  sso: {
+    signInWithTiko: 'Inloggen met Tiko'
   }
 }

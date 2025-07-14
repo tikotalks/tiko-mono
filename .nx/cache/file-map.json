@@ -88,515 +88,194 @@
   "fileMap": {
     "nonProjectFiles": [],
     "projectFileMap": {
-      "tiko": [
+      "cards": [
         {
-          "file": "apps/tiko/index.html",
-          "hash": "17386586601887484835"
+          "file": "apps/cards/.eslintrc.json",
+          "hash": "14341420822390559472"
         },
         {
-          "file": "apps/tiko/package.json",
-          "hash": "7451126333487603516",
+          "file": "apps/cards/capacitor.config.ts",
+          "hash": "13124348472519656785",
           "deps": [
-            "@tiko/ui"
+            "npm:@capacitor/cli"
           ]
         },
         {
-          "file": "apps/tiko/project.json",
-          "hash": "9646639960664970530"
+          "file": "apps/cards/index.html",
+          "hash": "17282909782467305213"
         },
         {
-          "file": "apps/tiko/src/App.vue",
-          "hash": "8546219589960266339",
-          "deps": [
-            "npm:vue",
-            "npm:vue-router",
-            "@tiko/ui"
-          ]
+          "file": "apps/cards/ios/.gitignore",
+          "hash": "7320921161647232324"
         },
         {
-          "file": "apps/tiko/src/assets/app-icon-cards.png",
+          "file": "apps/cards/ios/App/App.xcodeproj/project.pbxproj",
+          "hash": "6358659350070982718"
+        },
+        {
+          "file": "apps/cards/ios/App/App.xcworkspace/contents.xcworkspacedata",
+          "hash": "5267424201368556030"
+        },
+        {
+          "file": "apps/cards/ios/App/App.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist",
+          "hash": "12722229457274558422"
+        },
+        {
+          "file": "apps/cards/ios/App/App/AppDelegate.swift",
+          "hash": "10885055232217572631"
+        },
+        {
+          "file": "apps/cards/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png",
           "hash": "3393694051764166502"
         },
         {
-          "file": "apps/tiko/src/assets/app-icon-radio.png",
-          "hash": "3732289098782193539"
+          "file": "apps/cards/ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json",
+          "hash": "8592742828066986329"
         },
         {
-          "file": "apps/tiko/src/assets/app-icon-tiko.png",
-          "hash": "11753683661988366152"
+          "file": "apps/cards/ios/App/App/Assets.xcassets/Contents.json",
+          "hash": "5990803069847060607"
         },
         {
-          "file": "apps/tiko/src/assets/app-icon-timer.png",
-          "hash": "16385558625622189678"
+          "file": "apps/cards/ios/App/App/Assets.xcassets/Splash.imageset/Contents.json",
+          "hash": "9385842541853943677"
         },
         {
-          "file": "apps/tiko/src/assets/app-icon-todo.png",
-          "hash": "11753683661988366152"
+          "file": "apps/cards/ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-1.png",
+          "hash": "3237967808663258630"
         },
         {
-          "file": "apps/tiko/src/assets/app-icon-type.png",
-          "hash": "11753683661988366152"
+          "file": "apps/cards/ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-2.png",
+          "hash": "3237967808663258630"
         },
         {
-          "file": "apps/tiko/src/assets/app-icon-yes-no.png",
-          "hash": "15441630164815609171"
+          "file": "apps/cards/ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732.png",
+          "hash": "3237967808663258630"
         },
         {
-          "file": "apps/tiko/src/components/AppTile.vue",
-          "hash": "5992420432530246361",
-          "deps": [
-            "npm:bemm",
-            "@tiko/ui"
-          ]
+          "file": "apps/cards/ios/App/App/Base.lproj/LaunchScreen.storyboard",
+          "hash": "12402387980291643647"
         },
         {
-          "file": "apps/tiko/src/components/AuthCallback.vue",
-          "hash": "14878196560372185731",
-          "deps": [
-            "npm:vue",
-            "npm:vue-router",
-            "npm:bemm",
-            "@tiko/ui",
-            "@tiko/core"
-          ]
+          "file": "apps/cards/ios/App/App/Base.lproj/Main.storyboard",
+          "hash": "14085817207643424634"
         },
         {
-          "file": "apps/tiko/src/composables/useSignIn.ts",
-          "hash": "217452810914968668",
-          "deps": [
-            "@tiko/core",
-            "npm:@/types/signin.types"
-          ]
+          "file": "apps/cards/ios/App/App/Info.plist",
+          "hash": "16456625794942161267"
         },
         {
-          "file": "apps/tiko/src/main.ts",
-          "hash": "2254930083372279472",
-          "deps": [
-            "npm:vue",
-            "npm:pinia"
-          ]
+          "file": "apps/cards/ios/App/Podfile",
+          "hash": "6713469704485391485"
         },
         {
-          "file": "apps/tiko/src/router/index.ts",
-          "hash": "4001330363268681136",
-          "deps": [
-            "npm:vue-router"
-          ]
+          "file": "apps/cards/ios/App/Podfile.lock",
+          "hash": "10421062103968329495"
         },
         {
-          "file": "apps/tiko/src/types/signin.types.ts",
-          "hash": "8501089141233844535"
+          "file": "apps/cards/netlify.toml",
+          "hash": "2589140330017623269"
         },
         {
-          "file": "apps/tiko/src/types/tiko.types.ts",
-          "hash": "14820630241975587092"
-        },
-        {
-          "file": "apps/tiko/src/views/DashboardView.vue",
-          "hash": "15147308870347305165",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/tiko/src/views/SignInView.vue",
-          "hash": "2060509527616405845",
-          "deps": [
-            "npm:vue",
-            "npm:vue-router",
-            "npm:bemm",
-            "@tiko/ui",
-            "@tiko/core",
-            "npm:@/composables/useSignIn",
-            "npm:@/types/signin.types"
-          ]
-        },
-        {
-          "file": "apps/tiko/tiko.config.ts",
-          "hash": "3928002916099314327",
-          "deps": [
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/tiko/tsconfig.app.json",
-          "hash": "7812962253568105051"
-        },
-        {
-          "file": "apps/tiko/tsconfig.json",
-          "hash": "7563429315615513848"
-        },
-        {
-          "file": "apps/tiko/tsconfig.node.json",
-          "hash": "4205013802970425438"
-        },
-        {
-          "file": "apps/tiko/vite.config.ts",
-          "hash": "14318635598438006746"
-        }
-      ],
-      "tiko-mono": [
-        {
-          "file": ".env.example",
-          "hash": "393595204208437308"
-        },
-        {
-          "file": ".eslintrc.json",
-          "hash": "2415304941954136904"
-        },
-        {
-          "file": ".github/README.md",
-          "hash": "9880202541922983046"
-        },
-        {
-          "file": ".github/workflows/build-and-deploy.yml",
-          "hash": "652466778507260603"
-        },
-        {
-          "file": ".github/workflows/ios-apps.yml",
-          "hash": "17648168074117156348"
-        },
-        {
-          "file": ".gitignore",
-          "hash": "9369056935123075861"
-        },
-        {
-          "file": ".prettierignore",
-          "hash": "16448050467312557263"
-        },
-        {
-          "file": ".prettierrc",
-          "hash": "16267754514737964994"
-        },
-        {
-          "file": "CLAUDE.md",
-          "hash": "8458934744087596863"
-        },
-        {
-          "file": "RADIO_APP_IMPLEMENTATION.md",
-          "hash": "14361803541132681367"
-        },
-        {
-          "file": "RADIO_APP_REQUIREMENTS.md",
-          "hash": "16510145899067652132"
-        },
-        {
-          "file": "README.md",
-          "hash": "7428951797497842076"
-        },
-        {
-          "file": "TIKO_CONFIG.md",
-          "hash": "11702607146852483473"
-        },
-        {
-          "file": "assets/fonts/Nunito/Nunito-Black.ttf",
-          "hash": "2684005386031144915"
-        },
-        {
-          "file": "assets/fonts/Nunito/Nunito-BlackItalic.ttf",
-          "hash": "18031102386884378152"
-        },
-        {
-          "file": "assets/fonts/Nunito/Nunito-Bold.ttf",
-          "hash": "610145511864060128"
-        },
-        {
-          "file": "assets/fonts/Nunito/Nunito-BoldItalic.ttf",
-          "hash": "35062582574424703"
-        },
-        {
-          "file": "assets/fonts/Nunito/Nunito-ExtraBold.ttf",
-          "hash": "6162743091566315130"
-        },
-        {
-          "file": "assets/fonts/Nunito/Nunito-ExtraBoldItalic.ttf",
-          "hash": "16492662408915009738"
-        },
-        {
-          "file": "assets/fonts/Nunito/Nunito-ExtraLight.ttf",
-          "hash": "2901766411211963995"
-        },
-        {
-          "file": "assets/fonts/Nunito/Nunito-ExtraLightItalic.ttf",
-          "hash": "14922711880222417325"
-        },
-        {
-          "file": "assets/fonts/Nunito/Nunito-Italic.ttf",
-          "hash": "6605170862551366674"
-        },
-        {
-          "file": "assets/fonts/Nunito/Nunito-Light.ttf",
-          "hash": "16889715936603451860"
-        },
-        {
-          "file": "assets/fonts/Nunito/Nunito-LightItalic.ttf",
-          "hash": "7070522448233477079"
-        },
-        {
-          "file": "assets/fonts/Nunito/Nunito-Medium.ttf",
-          "hash": "15947478631155700758"
-        },
-        {
-          "file": "assets/fonts/Nunito/Nunito-MediumItalic.ttf",
-          "hash": "17596157870930829578"
-        },
-        {
-          "file": "assets/fonts/Nunito/Nunito-Regular.ttf",
-          "hash": "495342246832809945"
-        },
-        {
-          "file": "assets/fonts/Nunito/Nunito-SemiBold.ttf",
-          "hash": "1834780844730036970"
-        },
-        {
-          "file": "assets/fonts/Nunito/Nunito-SemiBoldItalic.ttf",
-          "hash": "13911554010219816563"
-        },
-        {
-          "file": "assets/fonts/Yerevanyan/Yerevanyan Bold Italic.otf",
-          "hash": "7812629096476434692"
-        },
-        {
-          "file": "assets/fonts/Yerevanyan/Yerevanyan Bold.otf",
-          "hash": "11098837560542839040"
-        },
-        {
-          "file": "assets/fonts/Yerevanyan/Yerevanyan Regular Italic.otf",
-          "hash": "7852713538674863945"
-        },
-        {
-          "file": "assets/fonts/Yerevanyan/Yerevanyan Regular.otf",
-          "hash": "13955567033069726393"
-        },
-        {
-          "file": "assets/image/app-icon-audio.png",
-          "hash": "12730368071306548792"
-        },
-        {
-          "file": "assets/image/app-icon-cards.png",
-          "hash": "3393694051764166502"
-        },
-        {
-          "file": "assets/image/app-icon-match.png",
-          "hash": "5235937788308286212"
-        },
-        {
-          "file": "assets/image/app-icon-music.png",
-          "hash": "1133351678345744912"
-        },
-        {
-          "file": "assets/image/app-icon-picture.png",
-          "hash": "7901974553623749922"
-        },
-        {
-          "file": "assets/image/app-icon-radio.png",
-          "hash": "3732289098782193539"
-        },
-        {
-          "file": "assets/image/app-icon-timer.png",
-          "hash": "16385558625622189678"
-        },
-        {
-          "file": "assets/image/app-icon-todo.png",
-          "hash": "11753683661988366152"
-        },
-        {
-          "file": "assets/image/app-icon-type.png",
-          "hash": "14332089062484866757"
-        },
-        {
-          "file": "assets/image/app-icon-yes-no.png",
-          "hash": "15441630164815609171"
-        },
-        {
-          "file": "export-options.plist",
-          "hash": "2380792168481562175"
-        },
-        {
-          "file": "nx.json",
-          "hash": "1555334447818277734"
-        },
-        {
-          "file": "package.json",
-          "hash": "2296767213072482453"
-        },
-        {
-          "file": "pnpm-lock.yaml",
-          "hash": "14195415935037014377"
-        },
-        {
-          "file": "pnpm-workspace.yaml",
-          "hash": "11805071067713496448"
-        },
-        {
-          "file": "scripts/README.md",
-          "hash": "7836954875028493295"
-        },
-        {
-          "file": "scripts/ignore-build-cards.sh",
-          "hash": "4904406108052771839"
-        },
-        {
-          "file": "scripts/ignore-build-radio.sh",
-          "hash": "5263395457534469694"
-        },
-        {
-          "file": "scripts/ignore-build-timer.sh",
-          "hash": "5946881083874515835"
-        },
-        {
-          "file": "scripts/ignore-build-todo.sh",
-          "hash": "12879373157902564846"
-        },
-        {
-          "file": "scripts/ignore-build-type.sh",
-          "hash": "5362027699836318543"
-        },
-        {
-          "file": "scripts/ignore-build-ui-docs.sh",
-          "hash": "4290581591757475556"
-        },
-        {
-          "file": "scripts/ignore-build-yes-no.sh",
-          "hash": "10819262783614072898"
-        },
-        {
-          "file": "supabase/migrations/001_create_radio_tables.sql",
-          "hash": "5753252165275748883"
-        },
-        {
-          "file": "supabase/migrations/002_fix_radio_rls_policies.sql",
-          "hash": "8185328133106640134"
-        },
-        {
-          "file": "supabase/migrations/003_create_user_profiles_and_fix_policies.sql",
-          "hash": "8162795009568190410"
-        },
-        {
-          "file": "supabase/migrations/004_add_parent_mode_to_user_profiles.sql",
-          "hash": "17321182753663631826"
-        },
-        {
-          "file": "supabase/migrations/005_create_user_profiles_if_not_exists.sql",
-          "hash": "6184392940036923520"
-        },
-        {
-          "file": "tsconfig.base.json",
-          "hash": "2856224400387627277"
-        },
-        {
-          "file": "types/vite-env.d.ts",
-          "hash": "9883243673007773431"
-        },
-        {
-          "file": "vite.config.base.ts",
-          "hash": "3805602840888205137",
-          "deps": [
-            "npm:vite",
-            "npm:@vitejs/plugin-vue",
-            "npm:vite-plugin-pwa",
-            "npm:path"
-          ]
-        },
-        {
-          "file": "docs/SSO_INTEGRATION.md",
-          "hash": "8589859377662271604"
-        },
-        {
-          "file": "docs/SSO_FRAMEWORK_INTEGRATION.md",
-          "hash": "2189622342486965045"
-        },
-        {
-          "file": "scripts/serve.js",
-          "hash": "12706512818250931945",
-          "deps": [
-            "npm:child_process",
-            "npm:fs",
-            "npm:path",
-            "npm:inquirer",
-            "npm:chalk"
-          ]
-        },
-        {
-          "file": "scripts/serve-simple.js",
-          "hash": "3814431903831798715",
-          "deps": [
-            "npm:child_process",
-            "npm:fs",
-            "npm:path"
-          ]
-        }
-      ],
-      "ui-docs": [
-        {
-          "file": "apps/ui-docs/index.html",
-          "hash": "13829555824100429394"
-        },
-        {
-          "file": "apps/ui-docs/netlify.toml",
-          "hash": "15499313228968685138"
-        },
-        {
-          "file": "apps/ui-docs/package.json",
-          "hash": "5809410825636492200",
+          "file": "apps/cards/package.json",
+          "hash": "11444939073450439348",
           "deps": [
             "@tiko/ui",
             "@tiko/core"
           ]
         },
         {
-          "file": "apps/ui-docs/project.json",
-          "hash": "8706542807428227275"
+          "file": "apps/cards/project.json",
+          "hash": "2623804660829198906"
         },
         {
-          "file": "apps/ui-docs/src/App.vue",
-          "hash": "4478263425217757437",
+          "file": "apps/cards/public/apple-touch-icon.png",
+          "hash": "3393694051764166502"
+        },
+        {
+          "file": "apps/cards/public/icon.png",
+          "hash": "3393694051764166502"
+        },
+        {
+          "file": "apps/cards/public/pwa-192x192.png",
+          "hash": "3393694051764166502"
+        },
+        {
+          "file": "apps/cards/public/pwa-512x512.png",
+          "hash": "3393694051764166502"
+        },
+        {
+          "file": "apps/cards/src/App.vue",
+          "hash": "3825870275340337208",
           "deps": [
             "npm:vue",
-            "npm:vue-router",
             "@tiko/ui"
           ]
         },
         {
-          "file": "apps/ui-docs/src/assets/ui-docs-icon.png",
-          "hash": "11753683661988366152"
+          "file": "apps/cards/src/assets/app-icon-cards.png",
+          "hash": "3393694051764166502"
         },
         {
-          "file": "apps/ui-docs/src/main.ts",
-          "hash": "14827683725770575171",
+          "file": "apps/cards/src/assets/login-background.mp4",
+          "hash": "6106353344161762045"
+        },
+        {
+          "file": "apps/cards/src/components/AuthCallback.vue",
+          "hash": "1590527885778842756",
           "deps": [
             "npm:vue",
-            "npm:pinia"
+            "npm:vue-router",
+            "@tiko/core"
           ]
         },
         {
-          "file": "apps/ui-docs/src/router/index.ts",
-          "hash": "12396898749295641843",
+          "file": "apps/cards/src/components/CreateCardModal.vue",
+          "hash": "4628662892565765810",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/cards/src/components/CreateGroupModal.vue",
+          "hash": "2317748359865261036",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/cards/src/main.ts",
+          "hash": "10795492307875484904",
+          "deps": [
+            "npm:vue",
+            "npm:pinia",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/cards/src/router/index.ts",
+          "hash": "14225670442799170315",
           "deps": [
             "npm:vue-router"
           ]
         },
         {
-          "file": "apps/ui-docs/src/views/ButtonsView.vue",
-          "hash": "14786054759700636376",
+          "file": "apps/cards/src/stores/cards.ts",
+          "hash": "3232291808684758845",
           "deps": [
-            "npm:bemm",
+            "npm:pinia",
+            "npm:vue",
+            "@tiko/core",
             "@tiko/ui"
           ]
         },
         {
-          "file": "apps/ui-docs/src/views/CardsView.vue",
-          "hash": "12795296159878290011",
-          "deps": [
-            "npm:bemm",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/ui-docs/src/views/ColorsView.vue",
-          "hash": "2198277979168660350",
+          "file": "apps/cards/src/views/CardsView.vue",
+          "hash": "11849943347295565826",
           "deps": [
             "npm:vue",
             "npm:bemm",
@@ -604,57 +283,34 @@
           ]
         },
         {
-          "file": "apps/ui-docs/src/views/HomeView.vue",
-          "hash": "13714657859987466258",
-          "deps": [
-            "npm:bemm",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/ui-docs/src/views/IconsView.vue",
-          "hash": "17823522476129107417",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui",
-            "npm:open-icon"
-          ]
-        },
-        {
-          "file": "apps/ui-docs/src/views/InputsView.vue",
-          "hash": "14299860525513906729",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/ui-docs/src/vite-env.d.ts",
-          "hash": "16196018540974239223",
+          "file": "apps/cards/src/vite-env.d.ts",
+          "hash": "8331640056497245042",
           "deps": [
             "npm:vue"
           ]
         },
         {
-          "file": "apps/ui-docs/tiko.config.ts",
-          "hash": "17770062027577742646",
+          "file": "apps/cards/tiko.config.ts",
+          "hash": "14851616003902669998",
           "deps": [
-            "@tiko/ui"
+            "npm:@tiko/ui/types/tiko-config"
           ]
         },
         {
-          "file": "apps/ui-docs/tsconfig.app.json",
-          "hash": "11996318606680519131"
+          "file": "apps/cards/tsconfig.app.json",
+          "hash": "3738736504077772611"
         },
         {
-          "file": "apps/ui-docs/tsconfig.json",
-          "hash": "11882790767807779806"
+          "file": "apps/cards/tsconfig.json",
+          "hash": "8655538082301816057"
         },
         {
-          "file": "apps/ui-docs/vite.config.ts",
-          "hash": "7968781807550088943"
+          "file": "apps/cards/tsconfig.spec.json",
+          "hash": "15943385144407153049"
+        },
+        {
+          "file": "apps/cards/vite.config.ts",
+          "hash": "17633508088476974877"
         }
       ],
       "todo": [
@@ -859,489 +515,6 @@
         {
           "file": "apps/todo/vite.config.ts",
           "hash": "17193024896760166312"
-        }
-      ],
-      "yes-no": [
-        {
-          "file": "apps/yes-no/capacitor.config.ts",
-          "hash": "2338974041266148472",
-          "deps": [
-            "npm:@capacitor/cli"
-          ]
-        },
-        {
-          "file": "apps/yes-no/index.html",
-          "hash": "16231359428798572724"
-        },
-        {
-          "file": "apps/yes-no/ios/.gitignore",
-          "hash": "7320921161647232324"
-        },
-        {
-          "file": "apps/yes-no/ios/App/App.xcodeproj/project.pbxproj",
-          "hash": "12782526727190867583"
-        },
-        {
-          "file": "apps/yes-no/ios/App/App.xcworkspace/contents.xcworkspacedata",
-          "hash": "5267424201368556030"
-        },
-        {
-          "file": "apps/yes-no/ios/App/App.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist",
-          "hash": "12722229457274558422"
-        },
-        {
-          "file": "apps/yes-no/ios/App/App/AppDelegate.swift",
-          "hash": "10885055232217572631"
-        },
-        {
-          "file": "apps/yes-no/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png",
-          "hash": "15441630164815609171"
-        },
-        {
-          "file": "apps/yes-no/ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json",
-          "hash": "8592742828066986329"
-        },
-        {
-          "file": "apps/yes-no/ios/App/App/Assets.xcassets/Contents.json",
-          "hash": "5990803069847060607"
-        },
-        {
-          "file": "apps/yes-no/ios/App/App/Assets.xcassets/Splash.imageset/Contents.json",
-          "hash": "9385842541853943677"
-        },
-        {
-          "file": "apps/yes-no/ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-1.png",
-          "hash": "3237967808663258630"
-        },
-        {
-          "file": "apps/yes-no/ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-2.png",
-          "hash": "3237967808663258630"
-        },
-        {
-          "file": "apps/yes-no/ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732.png",
-          "hash": "3237967808663258630"
-        },
-        {
-          "file": "apps/yes-no/ios/App/App/Base.lproj/LaunchScreen.storyboard",
-          "hash": "12402387980291643647"
-        },
-        {
-          "file": "apps/yes-no/ios/App/App/Base.lproj/Main.storyboard",
-          "hash": "14085817207643424634"
-        },
-        {
-          "file": "apps/yes-no/ios/App/App/Info.plist",
-          "hash": "918994349981084009"
-        },
-        {
-          "file": "apps/yes-no/ios/App/Podfile",
-          "hash": "6713469704485391485"
-        },
-        {
-          "file": "apps/yes-no/ios/App/Podfile.lock",
-          "hash": "10421062103968329495"
-        },
-        {
-          "file": "apps/yes-no/netlify.toml",
-          "hash": "7076519352936601394"
-        },
-        {
-          "file": "apps/yes-no/package.json",
-          "hash": "13755107644657698451",
-          "deps": [
-            "@tiko/ui",
-            "@tiko/core"
-          ]
-        },
-        {
-          "file": "apps/yes-no/public/apple-touch-icon.png",
-          "hash": "15441630164815609171"
-        },
-        {
-          "file": "apps/yes-no/public/icon.png",
-          "hash": "15441630164815609171"
-        },
-        {
-          "file": "apps/yes-no/public/pwa-192x192.png",
-          "hash": "15441630164815609171"
-        },
-        {
-          "file": "apps/yes-no/public/pwa-512x512.png",
-          "hash": "15441630164815609171"
-        },
-        {
-          "file": "apps/yes-no/src/App.vue",
-          "hash": "9326138836927787188",
-          "deps": [
-            "npm:vue",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/yes-no/src/assets/app-icon-yes-no.png",
-          "hash": "15441630164815609171"
-        },
-        {
-          "file": "apps/yes-no/src/assets/login-background.mp4",
-          "hash": "146329839998103327"
-        },
-        {
-          "file": "apps/yes-no/src/components/AuthCallback.vue",
-          "hash": "1590527885778842756",
-          "deps": [
-            "npm:vue",
-            "npm:vue-router",
-            "@tiko/core"
-          ]
-        },
-        {
-          "file": "apps/yes-no/src/components/QuestionInput.vue",
-          "hash": "15159996114685834501",
-          "deps": [
-            "npm:vue",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/yes-no/src/components/QuestionInputForm.vue",
-          "hash": "6730121888621839510",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/yes-no/src/components/YesNoButton.vue",
-          "hash": "8268772120666917040",
-          "deps": [
-            "npm:bemm",
-            "npm:vue"
-          ]
-        },
-        {
-          "file": "apps/yes-no/src/components/YesNoSettingsForm.vue",
-          "hash": "7974975544872352282",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/yes-no/src/main.ts",
-          "hash": "2254930083372279472",
-          "deps": [
-            "npm:vue",
-            "npm:pinia"
-          ]
-        },
-        {
-          "file": "apps/yes-no/src/router/index.ts",
-          "hash": "16089089833007995475",
-          "deps": [
-            "npm:vue-router"
-          ]
-        },
-        {
-          "file": "apps/yes-no/src/stores/yesno.ts",
-          "hash": "5539566517067772459",
-          "deps": [
-            "npm:pinia",
-            "npm:vue",
-            "@tiko/core"
-          ]
-        },
-        {
-          "file": "apps/yes-no/src/views/YesNoView.vue",
-          "hash": "3612364944053059715",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/yes-no/src/vite-env.d.ts",
-          "hash": "572543325512909463",
-          "deps": [
-            "npm:vue"
-          ]
-        },
-        {
-          "file": "apps/yes-no/tiko.config.ts",
-          "hash": "11909472790601666933",
-          "deps": [
-            "npm:@tiko/ui/types/tiko-config"
-          ]
-        },
-        {
-          "file": "apps/yes-no/tsconfig.json",
-          "hash": "11420375390224879402"
-        },
-        {
-          "file": "apps/yes-no/vite.config.ts",
-          "hash": "7523001170824048237"
-        }
-      ],
-      "timer": [
-        {
-          "file": "apps/timer/capacitor.config.ts",
-          "hash": "4257909592348502468",
-          "deps": [
-            "npm:@capacitor/cli"
-          ]
-        },
-        {
-          "file": "apps/timer/index.html",
-          "hash": "13239914012835279788"
-        },
-        {
-          "file": "apps/timer/ios/.gitignore",
-          "hash": "7320921161647232324"
-        },
-        {
-          "file": "apps/timer/ios/App/App.xcodeproj/project.pbxproj",
-          "hash": "9612434021484859454"
-        },
-        {
-          "file": "apps/timer/ios/App/App.xcworkspace/contents.xcworkspacedata",
-          "hash": "5267424201368556030"
-        },
-        {
-          "file": "apps/timer/ios/App/App.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist",
-          "hash": "12722229457274558422"
-        },
-        {
-          "file": "apps/timer/ios/App/App/AppDelegate.swift",
-          "hash": "10885055232217572631"
-        },
-        {
-          "file": "apps/timer/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png",
-          "hash": "16385558625622189678"
-        },
-        {
-          "file": "apps/timer/ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json",
-          "hash": "8592742828066986329"
-        },
-        {
-          "file": "apps/timer/ios/App/App/Assets.xcassets/Contents.json",
-          "hash": "5990803069847060607"
-        },
-        {
-          "file": "apps/timer/ios/App/App/Assets.xcassets/Splash.imageset/Contents.json",
-          "hash": "9385842541853943677"
-        },
-        {
-          "file": "apps/timer/ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-1.png",
-          "hash": "3237967808663258630"
-        },
-        {
-          "file": "apps/timer/ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-2.png",
-          "hash": "3237967808663258630"
-        },
-        {
-          "file": "apps/timer/ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732.png",
-          "hash": "3237967808663258630"
-        },
-        {
-          "file": "apps/timer/ios/App/App/Base.lproj/LaunchScreen.storyboard",
-          "hash": "12402387980291643647"
-        },
-        {
-          "file": "apps/timer/ios/App/App/Base.lproj/Main.storyboard",
-          "hash": "14085817207643424634"
-        },
-        {
-          "file": "apps/timer/ios/App/App/Info.plist",
-          "hash": "7387290801071890196"
-        },
-        {
-          "file": "apps/timer/ios/App/Podfile",
-          "hash": "6713469704485391485"
-        },
-        {
-          "file": "apps/timer/ios/App/Podfile.lock",
-          "hash": "10421062103968329495"
-        },
-        {
-          "file": "apps/timer/netlify.toml",
-          "hash": "7834398450900273551"
-        },
-        {
-          "file": "apps/timer/package.json",
-          "hash": "11004723919731992808",
-          "deps": [
-            "@tiko/ui",
-            "@tiko/core"
-          ]
-        },
-        {
-          "file": "apps/timer/public/apple-touch-icon.png",
-          "hash": "16385558625622189678"
-        },
-        {
-          "file": "apps/timer/public/icon.png",
-          "hash": "16385558625622189678"
-        },
-        {
-          "file": "apps/timer/public/pwa-192x192.png",
-          "hash": "16385558625622189678"
-        },
-        {
-          "file": "apps/timer/public/pwa-512x512.png",
-          "hash": "16385558625622189678"
-        },
-        {
-          "file": "apps/timer/src/App.vue",
-          "hash": "4588467291767656576",
-          "deps": [
-            "npm:vue",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/timer/src/assets/app-icon-timer.png",
-          "hash": "16385558625622189678"
-        },
-        {
-          "file": "apps/timer/src/assets/login-background.mp4",
-          "hash": "2999053420067581370"
-        },
-        {
-          "file": "apps/timer/src/components/AuthCallback.vue",
-          "hash": "1590527885778842756",
-          "deps": [
-            "npm:vue",
-            "npm:vue-router",
-            "@tiko/core"
-          ]
-        },
-        {
-          "file": "apps/timer/src/components/EmailValidationDemo.vue",
-          "hash": "13819513492637318234",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "npm:@tiko/ui/src/components/TForm/InputEmail/InputEmail.vue"
-          ]
-        },
-        {
-          "file": "apps/timer/src/components/EventBusDemo.vue",
-          "hash": "4887453509575478019",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/timer/src/components/InputDemo.vue",
-          "hash": "18025466295643401580",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui",
-            "npm:@tiko/ui/src/components/TForm/InputText.vue",
-            "npm:@tiko/ui/src/components/TForm/TInputText.vue"
-          ]
-        },
-        {
-          "file": "apps/timer/src/components/TimeDisplay.vue",
-          "hash": "1964945232048349801",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/timer/src/components/TimeNumber.vue",
-          "hash": "18082631285667483475",
-          "deps": [
-            "npm:bemm"
-          ]
-        },
-        {
-          "file": "apps/timer/src/components/TimerControls.vue",
-          "hash": "4392251231668892971",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/timer/src/components/TimerSettingsForm.vue",
-          "hash": "773176667074358593",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/timer/src/composables/useTimer.ts",
-          "hash": "18122188494184702290",
-          "deps": [
-            "npm:vue"
-          ]
-        },
-        {
-          "file": "apps/timer/src/main.ts",
-          "hash": "10933080356393105038",
-          "deps": [
-            "npm:vue",
-            "npm:pinia",
-            "@tiko/core"
-          ]
-        },
-        {
-          "file": "apps/timer/src/router/index.ts",
-          "hash": "13650611841783995332",
-          "deps": [
-            "npm:vue-router"
-          ]
-        },
-        {
-          "file": "apps/timer/src/stores/timer.ts",
-          "hash": "15554792691744199729",
-          "deps": [
-            "npm:pinia",
-            "npm:vue",
-            "@tiko/core"
-          ]
-        },
-        {
-          "file": "apps/timer/src/views/TimerView.vue",
-          "hash": "13885128078379396235",
-          "deps": [
-            "npm:vue",
-            "npm:bemm",
-            "@tiko/ui"
-          ]
-        },
-        {
-          "file": "apps/timer/src/vite-env.d.ts",
-          "hash": "8331640056497245042",
-          "deps": [
-            "npm:vue"
-          ]
-        },
-        {
-          "file": "apps/timer/tiko.config.ts",
-          "hash": "2715050937104423491",
-          "deps": [
-            "npm:@tiko/ui/types/tiko-config"
-          ]
-        },
-        {
-          "file": "apps/timer/tsconfig.json",
-          "hash": "11420375390224879402"
-        },
-        {
-          "file": "apps/timer/vite.config.ts",
-          "hash": "18212497671248572936"
         }
       ],
       "radio": [
@@ -1654,6 +827,164 @@
           "hash": "14796271999026804203"
         }
       ],
+      "tiko": [
+        {
+          "file": "apps/tiko/index.html",
+          "hash": "17386586601887484835"
+        },
+        {
+          "file": "apps/tiko/package.json",
+          "hash": "7451126333487603516",
+          "deps": [
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/tiko/project.json",
+          "hash": "9646639960664970530"
+        },
+        {
+          "file": "apps/tiko/src/App.vue",
+          "hash": "11975811225076845855",
+          "deps": [
+            "npm:vue",
+            "npm:vue-router",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/tiko/src/assets/app-icon-cards.png",
+          "hash": "3393694051764166502"
+        },
+        {
+          "file": "apps/tiko/src/assets/app-icon-radio.png",
+          "hash": "3732289098782193539"
+        },
+        {
+          "file": "apps/tiko/src/assets/app-icon-tiko.png",
+          "hash": "11753683661988366152"
+        },
+        {
+          "file": "apps/tiko/src/assets/app-icon-timer.png",
+          "hash": "16385558625622189678"
+        },
+        {
+          "file": "apps/tiko/src/assets/app-icon-todo.png",
+          "hash": "11753683661988366152"
+        },
+        {
+          "file": "apps/tiko/src/assets/app-icon-type.png",
+          "hash": "11753683661988366152"
+        },
+        {
+          "file": "apps/tiko/src/assets/app-icon-yes-no.png",
+          "hash": "15441630164815609171"
+        },
+        {
+          "file": "apps/tiko/src/components/AppTile.vue",
+          "hash": "5992420432530246361",
+          "deps": [
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/tiko/src/components/AuthCallback.vue",
+          "hash": "5031888057846551215",
+          "deps": [
+            "npm:vue",
+            "npm:vue-router",
+            "npm:bemm",
+            "@tiko/ui",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/tiko/src/composables/useSignIn.ts",
+          "hash": "2250641023891458926",
+          "deps": [
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/tiko/src/main.ts",
+          "hash": "2254930083372279472",
+          "deps": [
+            "npm:vue",
+            "npm:pinia"
+          ]
+        },
+        {
+          "file": "apps/tiko/src/router/index.ts",
+          "hash": "4001330363268681136",
+          "deps": [
+            "npm:vue-router"
+          ]
+        },
+        {
+          "file": "apps/tiko/src/types/signin.types.ts",
+          "hash": "8501089141233844535"
+        },
+        {
+          "file": "apps/tiko/src/types/tiko.types.ts",
+          "hash": "14820630241975587092"
+        },
+        {
+          "file": "apps/tiko/src/views/DashboardView.vue",
+          "hash": "15147308870347305165",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/tiko/src/views/SignInView.vue",
+          "hash": "8538080655762919226",
+          "deps": [
+            "npm:vue",
+            "npm:vue-router",
+            "npm:bemm",
+            "@tiko/ui",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/tiko/tiko.config.ts",
+          "hash": "3928002916099314327",
+          "deps": [
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/tiko/tsconfig.app.json",
+          "hash": "7812962253568105051"
+        },
+        {
+          "file": "apps/tiko/tsconfig.json",
+          "hash": "7563429315615513848"
+        },
+        {
+          "file": "apps/tiko/tsconfig.node.json",
+          "hash": "4205013802970425438"
+        },
+        {
+          "file": "apps/tiko/vite.config.ts",
+          "hash": "14318635598438006746"
+        },
+        {
+          "file": "apps/tiko/src/types/global.d.ts",
+          "hash": "9432686911804557226"
+        },
+        {
+          "file": "apps/tiko/src/types/assets.d.ts",
+          "hash": "12656275575629635903"
+        },
+        {
+          "file": "apps/tiko/src/vite-env.d.ts",
+          "hash": "17384692600866213838"
+        }
+      ],
       "type": [
         {
           "file": "apps/type/capacitor.config.ts",
@@ -1851,6 +1182,134 @@
           "hash": "10107092653320806741"
         }
       ],
+      "ui-docs": [
+        {
+          "file": "apps/ui-docs/index.html",
+          "hash": "13829555824100429394"
+        },
+        {
+          "file": "apps/ui-docs/netlify.toml",
+          "hash": "15499313228968685138"
+        },
+        {
+          "file": "apps/ui-docs/package.json",
+          "hash": "5809410825636492200",
+          "deps": [
+            "@tiko/ui",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/ui-docs/project.json",
+          "hash": "8706542807428227275"
+        },
+        {
+          "file": "apps/ui-docs/src/App.vue",
+          "hash": "4478263425217757437",
+          "deps": [
+            "npm:vue",
+            "npm:vue-router",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/ui-docs/src/assets/ui-docs-icon.png",
+          "hash": "11753683661988366152"
+        },
+        {
+          "file": "apps/ui-docs/src/main.ts",
+          "hash": "14827683725770575171",
+          "deps": [
+            "npm:vue",
+            "npm:pinia"
+          ]
+        },
+        {
+          "file": "apps/ui-docs/src/router/index.ts",
+          "hash": "12396898749295641843",
+          "deps": [
+            "npm:vue-router"
+          ]
+        },
+        {
+          "file": "apps/ui-docs/src/views/ButtonsView.vue",
+          "hash": "14786054759700636376",
+          "deps": [
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/ui-docs/src/views/CardsView.vue",
+          "hash": "12795296159878290011",
+          "deps": [
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/ui-docs/src/views/ColorsView.vue",
+          "hash": "2198277979168660350",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/ui-docs/src/views/HomeView.vue",
+          "hash": "13714657859987466258",
+          "deps": [
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/ui-docs/src/views/IconsView.vue",
+          "hash": "17823522476129107417",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui",
+            "npm:open-icon"
+          ]
+        },
+        {
+          "file": "apps/ui-docs/src/views/InputsView.vue",
+          "hash": "14299860525513906729",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/ui-docs/src/vite-env.d.ts",
+          "hash": "16196018540974239223",
+          "deps": [
+            "npm:vue"
+          ]
+        },
+        {
+          "file": "apps/ui-docs/tiko.config.ts",
+          "hash": "17770062027577742646",
+          "deps": [
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/ui-docs/tsconfig.app.json",
+          "hash": "11996318606680519131"
+        },
+        {
+          "file": "apps/ui-docs/tsconfig.json",
+          "hash": "11882790767807779806"
+        },
+        {
+          "file": "apps/ui-docs/vite.config.ts",
+          "hash": "7968781807550088943"
+        }
+      ],
       "@tiko/core": [
         {
           "file": "packages/core/package.json",
@@ -1922,140 +1381,132 @@
           ]
         }
       ],
-      "cards": [
+      "yes-no": [
         {
-          "file": "apps/cards/.eslintrc.json",
-          "hash": "14341420822390559472"
-        },
-        {
-          "file": "apps/cards/capacitor.config.ts",
-          "hash": "13124348472519656785",
+          "file": "apps/yes-no/capacitor.config.ts",
+          "hash": "2338974041266148472",
           "deps": [
             "npm:@capacitor/cli"
           ]
         },
         {
-          "file": "apps/cards/index.html",
-          "hash": "17282909782467305213"
+          "file": "apps/yes-no/index.html",
+          "hash": "16231359428798572724"
         },
         {
-          "file": "apps/cards/ios/.gitignore",
+          "file": "apps/yes-no/ios/.gitignore",
           "hash": "7320921161647232324"
         },
         {
-          "file": "apps/cards/ios/App/App.xcodeproj/project.pbxproj",
-          "hash": "6358659350070982718"
+          "file": "apps/yes-no/ios/App/App.xcodeproj/project.pbxproj",
+          "hash": "12782526727190867583"
         },
         {
-          "file": "apps/cards/ios/App/App.xcworkspace/contents.xcworkspacedata",
+          "file": "apps/yes-no/ios/App/App.xcworkspace/contents.xcworkspacedata",
           "hash": "5267424201368556030"
         },
         {
-          "file": "apps/cards/ios/App/App.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist",
+          "file": "apps/yes-no/ios/App/App.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist",
           "hash": "12722229457274558422"
         },
         {
-          "file": "apps/cards/ios/App/App/AppDelegate.swift",
+          "file": "apps/yes-no/ios/App/App/AppDelegate.swift",
           "hash": "10885055232217572631"
         },
         {
-          "file": "apps/cards/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png",
-          "hash": "3393694051764166502"
+          "file": "apps/yes-no/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png",
+          "hash": "15441630164815609171"
         },
         {
-          "file": "apps/cards/ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json",
+          "file": "apps/yes-no/ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json",
           "hash": "8592742828066986329"
         },
         {
-          "file": "apps/cards/ios/App/App/Assets.xcassets/Contents.json",
+          "file": "apps/yes-no/ios/App/App/Assets.xcassets/Contents.json",
           "hash": "5990803069847060607"
         },
         {
-          "file": "apps/cards/ios/App/App/Assets.xcassets/Splash.imageset/Contents.json",
+          "file": "apps/yes-no/ios/App/App/Assets.xcassets/Splash.imageset/Contents.json",
           "hash": "9385842541853943677"
         },
         {
-          "file": "apps/cards/ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-1.png",
+          "file": "apps/yes-no/ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-1.png",
           "hash": "3237967808663258630"
         },
         {
-          "file": "apps/cards/ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-2.png",
+          "file": "apps/yes-no/ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-2.png",
           "hash": "3237967808663258630"
         },
         {
-          "file": "apps/cards/ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732.png",
+          "file": "apps/yes-no/ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732.png",
           "hash": "3237967808663258630"
         },
         {
-          "file": "apps/cards/ios/App/App/Base.lproj/LaunchScreen.storyboard",
+          "file": "apps/yes-no/ios/App/App/Base.lproj/LaunchScreen.storyboard",
           "hash": "12402387980291643647"
         },
         {
-          "file": "apps/cards/ios/App/App/Base.lproj/Main.storyboard",
+          "file": "apps/yes-no/ios/App/App/Base.lproj/Main.storyboard",
           "hash": "14085817207643424634"
         },
         {
-          "file": "apps/cards/ios/App/App/Info.plist",
-          "hash": "16456625794942161267"
+          "file": "apps/yes-no/ios/App/App/Info.plist",
+          "hash": "918994349981084009"
         },
         {
-          "file": "apps/cards/ios/App/Podfile",
+          "file": "apps/yes-no/ios/App/Podfile",
           "hash": "6713469704485391485"
         },
         {
-          "file": "apps/cards/ios/App/Podfile.lock",
+          "file": "apps/yes-no/ios/App/Podfile.lock",
           "hash": "10421062103968329495"
         },
         {
-          "file": "apps/cards/netlify.toml",
-          "hash": "2589140330017623269"
+          "file": "apps/yes-no/netlify.toml",
+          "hash": "7076519352936601394"
         },
         {
-          "file": "apps/cards/package.json",
-          "hash": "11444939073450439348",
+          "file": "apps/yes-no/package.json",
+          "hash": "13755107644657698451",
           "deps": [
             "@tiko/ui",
             "@tiko/core"
           ]
         },
         {
-          "file": "apps/cards/project.json",
-          "hash": "2623804660829198906"
+          "file": "apps/yes-no/public/apple-touch-icon.png",
+          "hash": "15441630164815609171"
         },
         {
-          "file": "apps/cards/public/apple-touch-icon.png",
-          "hash": "3393694051764166502"
+          "file": "apps/yes-no/public/icon.png",
+          "hash": "15441630164815609171"
         },
         {
-          "file": "apps/cards/public/icon.png",
-          "hash": "3393694051764166502"
+          "file": "apps/yes-no/public/pwa-192x192.png",
+          "hash": "15441630164815609171"
         },
         {
-          "file": "apps/cards/public/pwa-192x192.png",
-          "hash": "3393694051764166502"
+          "file": "apps/yes-no/public/pwa-512x512.png",
+          "hash": "15441630164815609171"
         },
         {
-          "file": "apps/cards/public/pwa-512x512.png",
-          "hash": "3393694051764166502"
-        },
-        {
-          "file": "apps/cards/src/App.vue",
-          "hash": "3825870275340337208",
+          "file": "apps/yes-no/src/App.vue",
+          "hash": "9326138836927787188",
           "deps": [
             "npm:vue",
             "@tiko/ui"
           ]
         },
         {
-          "file": "apps/cards/src/assets/app-icon-cards.png",
-          "hash": "3393694051764166502"
+          "file": "apps/yes-no/src/assets/app-icon-yes-no.png",
+          "hash": "15441630164815609171"
         },
         {
-          "file": "apps/cards/src/assets/login-background.mp4",
-          "hash": "6106353344161762045"
+          "file": "apps/yes-no/src/assets/login-background.mp4",
+          "hash": "146329839998103327"
         },
         {
-          "file": "apps/cards/src/components/AuthCallback.vue",
+          "file": "apps/yes-no/src/components/AuthCallback.vue",
           "hash": "1590527885778842756",
           "deps": [
             "npm:vue",
@@ -2064,8 +1515,16 @@
           ]
         },
         {
-          "file": "apps/cards/src/components/CreateCardModal.vue",
-          "hash": "4628662892565765810",
+          "file": "apps/yes-no/src/components/QuestionInput.vue",
+          "hash": "15159996114685834501",
+          "deps": [
+            "npm:vue",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/yes-no/src/components/QuestionInputForm.vue",
+          "hash": "6730121888621839510",
           "deps": [
             "npm:vue",
             "npm:bemm",
@@ -2073,8 +1532,16 @@
           ]
         },
         {
-          "file": "apps/cards/src/components/CreateGroupModal.vue",
-          "hash": "2317748359865261036",
+          "file": "apps/yes-no/src/components/YesNoButton.vue",
+          "hash": "8268772120666917040",
+          "deps": [
+            "npm:bemm",
+            "npm:vue"
+          ]
+        },
+        {
+          "file": "apps/yes-no/src/components/YesNoSettingsForm.vue",
+          "hash": "7974975544872352282",
           "deps": [
             "npm:vue",
             "npm:bemm",
@@ -2082,34 +1549,32 @@
           ]
         },
         {
-          "file": "apps/cards/src/main.ts",
-          "hash": "10795492307875484904",
+          "file": "apps/yes-no/src/main.ts",
+          "hash": "2254930083372279472",
           "deps": [
             "npm:vue",
-            "npm:pinia",
-            "@tiko/core"
+            "npm:pinia"
           ]
         },
         {
-          "file": "apps/cards/src/router/index.ts",
-          "hash": "14225670442799170315",
+          "file": "apps/yes-no/src/router/index.ts",
+          "hash": "16089089833007995475",
           "deps": [
             "npm:vue-router"
           ]
         },
         {
-          "file": "apps/cards/src/stores/cards.ts",
-          "hash": "3232291808684758845",
+          "file": "apps/yes-no/src/stores/yesno.ts",
+          "hash": "5539566517067772459",
           "deps": [
             "npm:pinia",
             "npm:vue",
-            "@tiko/core",
-            "@tiko/ui"
+            "@tiko/core"
           ]
         },
         {
-          "file": "apps/cards/src/views/CardsView.vue",
-          "hash": "11849943347295565826",
+          "file": "apps/yes-no/src/views/YesNoView.vue",
+          "hash": "3612364944053059715",
           "deps": [
             "npm:vue",
             "npm:bemm",
@@ -2117,34 +1582,26 @@
           ]
         },
         {
-          "file": "apps/cards/src/vite-env.d.ts",
-          "hash": "8331640056497245042",
+          "file": "apps/yes-no/src/vite-env.d.ts",
+          "hash": "572543325512909463",
           "deps": [
             "npm:vue"
           ]
         },
         {
-          "file": "apps/cards/tiko.config.ts",
-          "hash": "14851616003902669998",
+          "file": "apps/yes-no/tiko.config.ts",
+          "hash": "11909472790601666933",
           "deps": [
             "npm:@tiko/ui/types/tiko-config"
           ]
         },
         {
-          "file": "apps/cards/tsconfig.app.json",
-          "hash": "3738736504077772611"
+          "file": "apps/yes-no/tsconfig.json",
+          "hash": "11420375390224879402"
         },
         {
-          "file": "apps/cards/tsconfig.json",
-          "hash": "8655538082301816057"
-        },
-        {
-          "file": "apps/cards/tsconfig.spec.json",
-          "hash": "15943385144407153049"
-        },
-        {
-          "file": "apps/cards/vite.config.ts",
-          "hash": "17633508088476974877"
+          "file": "apps/yes-no/vite.config.ts",
+          "hash": "7523001170824048237"
         }
       ],
       "@tiko/ui": [
@@ -2978,7 +2435,7 @@
         },
         {
           "file": "packages/ui/src/composables/useI18n.ts",
-          "hash": "16511708085622552804",
+          "hash": "8791734750384582635",
           "deps": [
             "npm:vue"
           ]
@@ -3019,31 +2476,31 @@
         },
         {
           "file": "packages/ui/src/i18n/keys.ts",
-          "hash": "2472650402988718120"
+          "hash": "9591956752144123878"
         },
         {
           "file": "packages/ui/src/i18n/locales/de.ts",
-          "hash": "4127354239585178781"
+          "hash": "3663507028530859404"
         },
         {
           "file": "packages/ui/src/i18n/locales/el.ts",
-          "hash": "16332052914747876042"
+          "hash": "8587241233502004750"
         },
         {
           "file": "packages/ui/src/i18n/locales/en-GB.ts",
-          "hash": "1108948525348532930"
+          "hash": "11385873725816874676"
         },
         {
           "file": "packages/ui/src/i18n/locales/en-US.ts",
-          "hash": "10611519728849318793"
+          "hash": "10827771325938660756"
         },
         {
           "file": "packages/ui/src/i18n/locales/es.ts",
-          "hash": "9732096743082601105"
+          "hash": "6049812289120092453"
         },
         {
           "file": "packages/ui/src/i18n/locales/fr.ts",
-          "hash": "12323366751064941729"
+          "hash": "11504443621444264154"
         },
         {
           "file": "packages/ui/src/i18n/locales/index.ts",
@@ -3051,39 +2508,39 @@
         },
         {
           "file": "packages/ui/src/i18n/locales/it.ts",
-          "hash": "13311104749766153740"
+          "hash": "2051225034802106207"
         },
         {
           "file": "packages/ui/src/i18n/locales/nl.ts",
-          "hash": "9423812357601447829"
+          "hash": "138754811958675164"
         },
         {
           "file": "packages/ui/src/i18n/locales/pl.ts",
-          "hash": "5534997126589031646"
+          "hash": "6913961655116580634"
         },
         {
           "file": "packages/ui/src/i18n/locales/pt.ts",
-          "hash": "9306369304455125304"
+          "hash": "13991961405478074658"
         },
         {
           "file": "packages/ui/src/i18n/locales/ro.ts",
-          "hash": "3127737914324965198"
+          "hash": "13097184987316220960"
         },
         {
           "file": "packages/ui/src/i18n/locales/ru.ts",
-          "hash": "18129656872884205305"
+          "hash": "10308654863186698336"
         },
         {
           "file": "packages/ui/src/i18n/locales/sv.ts",
-          "hash": "3789737112191954032"
+          "hash": "6646294030122078176"
         },
         {
           "file": "packages/ui/src/i18n/types.ts",
-          "hash": "16453792679242683740"
+          "hash": "18264700128599407409"
         },
         {
           "file": "packages/ui/src/index.ts",
-          "hash": "8751586826870865518"
+          "hash": "8076083724223042556"
         },
         {
           "file": "packages/ui/src/styles/app.scss",
@@ -3267,7 +2724,7 @@
         },
         {
           "file": "packages/ui/src/utils/format.ts",
-          "hash": "14473188412534548847"
+          "hash": "5350884724200768113"
         },
         {
           "file": "packages/ui/src/utils/index.ts",
@@ -3293,6 +2750,566 @@
             "npm:@vitejs/plugin-vue",
             "npm:path"
           ]
+        }
+      ],
+      "tiko-mono": [
+        {
+          "file": ".env.example",
+          "hash": "393595204208437308"
+        },
+        {
+          "file": ".eslintrc.json",
+          "hash": "2415304941954136904"
+        },
+        {
+          "file": ".github/README.md",
+          "hash": "9880202541922983046"
+        },
+        {
+          "file": ".github/workflows/build-and-deploy.yml",
+          "hash": "652466778507260603"
+        },
+        {
+          "file": ".github/workflows/ios-apps.yml",
+          "hash": "17648168074117156348"
+        },
+        {
+          "file": ".gitignore",
+          "hash": "4493774610996493157"
+        },
+        {
+          "file": ".prettierignore",
+          "hash": "16448050467312557263"
+        },
+        {
+          "file": ".prettierrc",
+          "hash": "16267754514737964994"
+        },
+        {
+          "file": "CLAUDE.md",
+          "hash": "8458934744087596863"
+        },
+        {
+          "file": "RADIO_APP_IMPLEMENTATION.md",
+          "hash": "14361803541132681367"
+        },
+        {
+          "file": "RADIO_APP_REQUIREMENTS.md",
+          "hash": "16510145899067652132"
+        },
+        {
+          "file": "README.md",
+          "hash": "7428951797497842076"
+        },
+        {
+          "file": "TIKO_CONFIG.md",
+          "hash": "11702607146852483473"
+        },
+        {
+          "file": "assets/fonts/Nunito/Nunito-Black.ttf",
+          "hash": "2684005386031144915"
+        },
+        {
+          "file": "assets/fonts/Nunito/Nunito-BlackItalic.ttf",
+          "hash": "18031102386884378152"
+        },
+        {
+          "file": "assets/fonts/Nunito/Nunito-Bold.ttf",
+          "hash": "610145511864060128"
+        },
+        {
+          "file": "assets/fonts/Nunito/Nunito-BoldItalic.ttf",
+          "hash": "35062582574424703"
+        },
+        {
+          "file": "assets/fonts/Nunito/Nunito-ExtraBold.ttf",
+          "hash": "6162743091566315130"
+        },
+        {
+          "file": "assets/fonts/Nunito/Nunito-ExtraBoldItalic.ttf",
+          "hash": "16492662408915009738"
+        },
+        {
+          "file": "assets/fonts/Nunito/Nunito-ExtraLight.ttf",
+          "hash": "2901766411211963995"
+        },
+        {
+          "file": "assets/fonts/Nunito/Nunito-ExtraLightItalic.ttf",
+          "hash": "14922711880222417325"
+        },
+        {
+          "file": "assets/fonts/Nunito/Nunito-Italic.ttf",
+          "hash": "6605170862551366674"
+        },
+        {
+          "file": "assets/fonts/Nunito/Nunito-Light.ttf",
+          "hash": "16889715936603451860"
+        },
+        {
+          "file": "assets/fonts/Nunito/Nunito-LightItalic.ttf",
+          "hash": "7070522448233477079"
+        },
+        {
+          "file": "assets/fonts/Nunito/Nunito-Medium.ttf",
+          "hash": "15947478631155700758"
+        },
+        {
+          "file": "assets/fonts/Nunito/Nunito-MediumItalic.ttf",
+          "hash": "17596157870930829578"
+        },
+        {
+          "file": "assets/fonts/Nunito/Nunito-Regular.ttf",
+          "hash": "495342246832809945"
+        },
+        {
+          "file": "assets/fonts/Nunito/Nunito-SemiBold.ttf",
+          "hash": "1834780844730036970"
+        },
+        {
+          "file": "assets/fonts/Nunito/Nunito-SemiBoldItalic.ttf",
+          "hash": "13911554010219816563"
+        },
+        {
+          "file": "assets/fonts/Yerevanyan/Yerevanyan Bold Italic.otf",
+          "hash": "7812629096476434692"
+        },
+        {
+          "file": "assets/fonts/Yerevanyan/Yerevanyan Bold.otf",
+          "hash": "11098837560542839040"
+        },
+        {
+          "file": "assets/fonts/Yerevanyan/Yerevanyan Regular Italic.otf",
+          "hash": "7852713538674863945"
+        },
+        {
+          "file": "assets/fonts/Yerevanyan/Yerevanyan Regular.otf",
+          "hash": "13955567033069726393"
+        },
+        {
+          "file": "assets/image/app-icon-audio.png",
+          "hash": "12730368071306548792"
+        },
+        {
+          "file": "assets/image/app-icon-cards.png",
+          "hash": "3393694051764166502"
+        },
+        {
+          "file": "assets/image/app-icon-match.png",
+          "hash": "5235937788308286212"
+        },
+        {
+          "file": "assets/image/app-icon-music.png",
+          "hash": "1133351678345744912"
+        },
+        {
+          "file": "assets/image/app-icon-picture.png",
+          "hash": "7901974553623749922"
+        },
+        {
+          "file": "assets/image/app-icon-radio.png",
+          "hash": "3732289098782193539"
+        },
+        {
+          "file": "assets/image/app-icon-timer.png",
+          "hash": "16385558625622189678"
+        },
+        {
+          "file": "assets/image/app-icon-todo.png",
+          "hash": "11753683661988366152"
+        },
+        {
+          "file": "assets/image/app-icon-type.png",
+          "hash": "14332089062484866757"
+        },
+        {
+          "file": "assets/image/app-icon-yes-no.png",
+          "hash": "15441630164815609171"
+        },
+        {
+          "file": "docs/SSO_FRAMEWORK_INTEGRATION.md",
+          "hash": "2189622342486965045"
+        },
+        {
+          "file": "docs/SSO_INTEGRATION.md",
+          "hash": "8589859377662271604"
+        },
+        {
+          "file": "export-options.plist",
+          "hash": "2380792168481562175"
+        },
+        {
+          "file": "nx.json",
+          "hash": "1555334447818277734"
+        },
+        {
+          "file": "package.json",
+          "hash": "2296767213072482453"
+        },
+        {
+          "file": "pnpm-lock.yaml",
+          "hash": "14195415935037014377"
+        },
+        {
+          "file": "pnpm-workspace.yaml",
+          "hash": "11805071067713496448"
+        },
+        {
+          "file": "remove-env-from-history.sh",
+          "hash": "7026405062376507609"
+        },
+        {
+          "file": "scripts/README.md",
+          "hash": "7836954875028493295"
+        },
+        {
+          "file": "scripts/ignore-build-cards.sh",
+          "hash": "4904406108052771839"
+        },
+        {
+          "file": "scripts/ignore-build-radio.sh",
+          "hash": "5263395457534469694"
+        },
+        {
+          "file": "scripts/ignore-build-timer.sh",
+          "hash": "5946881083874515835"
+        },
+        {
+          "file": "scripts/ignore-build-todo.sh",
+          "hash": "12879373157902564846"
+        },
+        {
+          "file": "scripts/ignore-build-type.sh",
+          "hash": "5362027699836318543"
+        },
+        {
+          "file": "scripts/ignore-build-ui-docs.sh",
+          "hash": "4290581591757475556"
+        },
+        {
+          "file": "scripts/ignore-build-yes-no.sh",
+          "hash": "10819262783614072898"
+        },
+        {
+          "file": "scripts/serve-simple.js",
+          "hash": "3814431903831798715",
+          "deps": [
+            "npm:child_process",
+            "npm:fs",
+            "npm:path"
+          ]
+        },
+        {
+          "file": "scripts/serve.js",
+          "hash": "12706512818250931945",
+          "deps": [
+            "npm:child_process",
+            "npm:fs",
+            "npm:path",
+            "npm:inquirer",
+            "npm:chalk"
+          ]
+        },
+        {
+          "file": "supabase/migrations/001_create_radio_tables.sql",
+          "hash": "5753252165275748883"
+        },
+        {
+          "file": "supabase/migrations/002_fix_radio_rls_policies.sql",
+          "hash": "8185328133106640134"
+        },
+        {
+          "file": "supabase/migrations/003_create_user_profiles_and_fix_policies.sql",
+          "hash": "8162795009568190410"
+        },
+        {
+          "file": "supabase/migrations/004_add_parent_mode_to_user_profiles.sql",
+          "hash": "17321182753663631826"
+        },
+        {
+          "file": "supabase/migrations/005_create_user_profiles_if_not_exists.sql",
+          "hash": "6184392940036923520"
+        },
+        {
+          "file": "tsconfig.base.json",
+          "hash": "2856224400387627277"
+        },
+        {
+          "file": "types/vite-env.d.ts",
+          "hash": "9883243673007773431"
+        },
+        {
+          "file": "vite.config.base.ts",
+          "hash": "3010952916728370437",
+          "deps": [
+            "npm:vite",
+            "npm:@vitejs/plugin-vue",
+            "npm:vite-plugin-pwa",
+            "npm:path"
+          ]
+        },
+        {
+          "file": ".claude/settings.local.json",
+          "hash": "6076390824986041677"
+        }
+      ],
+      "timer": [
+        {
+          "file": "apps/timer/capacitor.config.ts",
+          "hash": "4257909592348502468",
+          "deps": [
+            "npm:@capacitor/cli"
+          ]
+        },
+        {
+          "file": "apps/timer/index.html",
+          "hash": "13239914012835279788"
+        },
+        {
+          "file": "apps/timer/ios/.gitignore",
+          "hash": "7320921161647232324"
+        },
+        {
+          "file": "apps/timer/ios/App/App.xcodeproj/project.pbxproj",
+          "hash": "9612434021484859454"
+        },
+        {
+          "file": "apps/timer/ios/App/App.xcworkspace/contents.xcworkspacedata",
+          "hash": "5267424201368556030"
+        },
+        {
+          "file": "apps/timer/ios/App/App.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist",
+          "hash": "12722229457274558422"
+        },
+        {
+          "file": "apps/timer/ios/App/App/AppDelegate.swift",
+          "hash": "10885055232217572631"
+        },
+        {
+          "file": "apps/timer/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png",
+          "hash": "16385558625622189678"
+        },
+        {
+          "file": "apps/timer/ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json",
+          "hash": "8592742828066986329"
+        },
+        {
+          "file": "apps/timer/ios/App/App/Assets.xcassets/Contents.json",
+          "hash": "5990803069847060607"
+        },
+        {
+          "file": "apps/timer/ios/App/App/Assets.xcassets/Splash.imageset/Contents.json",
+          "hash": "9385842541853943677"
+        },
+        {
+          "file": "apps/timer/ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-1.png",
+          "hash": "3237967808663258630"
+        },
+        {
+          "file": "apps/timer/ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-2.png",
+          "hash": "3237967808663258630"
+        },
+        {
+          "file": "apps/timer/ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732.png",
+          "hash": "3237967808663258630"
+        },
+        {
+          "file": "apps/timer/ios/App/App/Base.lproj/LaunchScreen.storyboard",
+          "hash": "12402387980291643647"
+        },
+        {
+          "file": "apps/timer/ios/App/App/Base.lproj/Main.storyboard",
+          "hash": "14085817207643424634"
+        },
+        {
+          "file": "apps/timer/ios/App/App/Info.plist",
+          "hash": "7387290801071890196"
+        },
+        {
+          "file": "apps/timer/ios/App/Podfile",
+          "hash": "6713469704485391485"
+        },
+        {
+          "file": "apps/timer/ios/App/Podfile.lock",
+          "hash": "10421062103968329495"
+        },
+        {
+          "file": "apps/timer/netlify.toml",
+          "hash": "7834398450900273551"
+        },
+        {
+          "file": "apps/timer/package.json",
+          "hash": "11004723919731992808",
+          "deps": [
+            "@tiko/ui",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/timer/public/apple-touch-icon.png",
+          "hash": "16385558625622189678"
+        },
+        {
+          "file": "apps/timer/public/icon.png",
+          "hash": "16385558625622189678"
+        },
+        {
+          "file": "apps/timer/public/pwa-192x192.png",
+          "hash": "16385558625622189678"
+        },
+        {
+          "file": "apps/timer/public/pwa-512x512.png",
+          "hash": "16385558625622189678"
+        },
+        {
+          "file": "apps/timer/src/App.vue",
+          "hash": "4588467291767656576",
+          "deps": [
+            "npm:vue",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/timer/src/assets/app-icon-timer.png",
+          "hash": "16385558625622189678"
+        },
+        {
+          "file": "apps/timer/src/assets/login-background.mp4",
+          "hash": "2999053420067581370"
+        },
+        {
+          "file": "apps/timer/src/components/AuthCallback.vue",
+          "hash": "1590527885778842756",
+          "deps": [
+            "npm:vue",
+            "npm:vue-router",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/timer/src/components/EmailValidationDemo.vue",
+          "hash": "13819513492637318234",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "npm:@tiko/ui/src/components/TForm/InputEmail/InputEmail.vue"
+          ]
+        },
+        {
+          "file": "apps/timer/src/components/EventBusDemo.vue",
+          "hash": "4887453509575478019",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/timer/src/components/InputDemo.vue",
+          "hash": "18025466295643401580",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui",
+            "npm:@tiko/ui/src/components/TForm/InputText.vue",
+            "npm:@tiko/ui/src/components/TForm/TInputText.vue"
+          ]
+        },
+        {
+          "file": "apps/timer/src/components/TimeDisplay.vue",
+          "hash": "1964945232048349801",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/timer/src/components/TimeNumber.vue",
+          "hash": "18082631285667483475",
+          "deps": [
+            "npm:bemm"
+          ]
+        },
+        {
+          "file": "apps/timer/src/components/TimerControls.vue",
+          "hash": "4392251231668892971",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/timer/src/components/TimerSettingsForm.vue",
+          "hash": "773176667074358593",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/timer/src/composables/useTimer.ts",
+          "hash": "18122188494184702290",
+          "deps": [
+            "npm:vue"
+          ]
+        },
+        {
+          "file": "apps/timer/src/main.ts",
+          "hash": "10933080356393105038",
+          "deps": [
+            "npm:vue",
+            "npm:pinia",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/timer/src/router/index.ts",
+          "hash": "13650611841783995332",
+          "deps": [
+            "npm:vue-router"
+          ]
+        },
+        {
+          "file": "apps/timer/src/stores/timer.ts",
+          "hash": "15554792691744199729",
+          "deps": [
+            "npm:pinia",
+            "npm:vue",
+            "@tiko/core"
+          ]
+        },
+        {
+          "file": "apps/timer/src/views/TimerView.vue",
+          "hash": "13885128078379396235",
+          "deps": [
+            "npm:vue",
+            "npm:bemm",
+            "@tiko/ui"
+          ]
+        },
+        {
+          "file": "apps/timer/src/vite-env.d.ts",
+          "hash": "8331640056497245042",
+          "deps": [
+            "npm:vue"
+          ]
+        },
+        {
+          "file": "apps/timer/tiko.config.ts",
+          "hash": "2715050937104423491",
+          "deps": [
+            "npm:@tiko/ui/types/tiko-config"
+          ]
+        },
+        {
+          "file": "apps/timer/tsconfig.json",
+          "hash": "11420375390224879402"
+        },
+        {
+          "file": "apps/timer/vite.config.ts",
+          "hash": "18212497671248572936"
         }
       ]
     }

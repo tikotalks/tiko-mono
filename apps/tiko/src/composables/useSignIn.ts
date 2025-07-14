@@ -1,5 +1,5 @@
 import { useSupabase } from '@tiko/core'
-import type { TikoApp } from '@/types/signin.types'
+import type { TikoApp } from '../types/signin.types'
 
 export function useSignIn() {
   const supabase = useSupabase()
