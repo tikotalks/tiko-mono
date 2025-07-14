@@ -15,6 +15,9 @@ export * from './components/TDraggableList'
 export * from './components/TSplashScreen'
 export * from './components/TFramework'
 export { default as TTikoLogo } from './components/TTikoLogo/TTikoLogo.vue'
+export * from './components/TSSOButton'
+export * from './components/TSpinner'
+export * from './components/TAlert'
 
 export { default as TInputText } from './components/TForm/TInputText.vue';
 export { default as TInputNumber } from './components/TForm/InputNumber.vue';
