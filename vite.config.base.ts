@@ -5,12 +5,12 @@ import { resolve } from 'path'
 
 export const createViteConfig = (appDir: string, defaultPort: number, pwaConfig?: any) => {
   // Get port from environment variable or use default
-  const port = process.env.PORT ? parseInt(process.env.PORT) : defaultPort
+  const port = process.env['PORT'] ? parseInt(process.env['PORT']) : defaultPort
   
   const plugins = [vue()]
   
   if (pwaConfig) {
-    plugins.push(VitePWA(pwaConfig))
+    plugins.push(VitePWA(pwaConfig) as any)
   }
   
   return defineConfig({

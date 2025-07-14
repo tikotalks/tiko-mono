@@ -347,5 +347,20 @@ export const translationKeys: TranslationKeys = createKeysObject<TranslationSche
     installFromStore: '',
     appNotInstalled: '',
     openApp: ''
+  },
+  signin: {
+    title: '',
+    signingInto: '',
+    withApple: '',
+    withEmail: '',
+    authenticating: '',
+    errors: {
+      noReturnUrl: '',
+      appleSignInFailed: '',
+      emailSignInFailed: ''
+    }
+  },
+  sso: {
+    signInWithTiko: ''
   }
 }) as TranslationKeys

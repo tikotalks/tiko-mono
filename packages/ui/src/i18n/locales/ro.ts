@@ -190,7 +190,6 @@ export const ro: TranslationSchema = {
     uploadImagePrompt: 'Încarcă o imagine pentru a face elementul mai vizual',
     saveChanges: 'Salvează modificările',
     addItem: 'Adaugă element',
-    addGroup: 'Adaugă grup',
     noTodoListsYet: 'Încă nu există liste de sarcini',
     askParentCreate: 'Cere unui părinte să creeze prima ta listă de sarcini!',
     createFirstTodoList: 'Creează prima ta listă de sarcini pentru a începe',
@@ -317,5 +316,20 @@ export const ro: TranslationSchema = {
     installFromStore: 'Instalează din Magazin',
     appNotInstalled: 'Aplicația nu este instalată',
     openApp: 'Deschide Aplicația'
+  },
+  signin: {
+    title: 'Conectare',
+    signingInto: 'Conectare la {app}',
+    withApple: 'Conectați-vă cu Apple',
+    withEmail: 'Conectați-vă cu Email',
+    authenticating: 'Autentificare...',
+    errors: {
+      noReturnUrl: 'Nu a fost specificat URL de retur',
+      appleSignInFailed: 'Conectarea cu Apple a eșuat',
+      emailSignInFailed: 'Conectarea cu email a eșuat'
+    }
+  },
+  sso: {
+    signInWithTiko: 'Conectați-vă cu Tiko'
   }
 }

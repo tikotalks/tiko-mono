@@ -202,7 +202,6 @@ export interface TranslationSchema {
     completedCount: string
     deleteTodoList: string
     deleteTodoListConfirm: string
-    deleteItemQuestion: string
     deleteItemConfirm: string
     todoListDeleted: string
     itemDeleted: string
@@ -320,6 +319,21 @@ export interface TranslationSchema {
     installFromStore: string
     appNotInstalled: string
     openApp: string
+  }
+  signin: {
+    title: string
+    signingInto: string
+    withApple: string
+    withEmail: string
+    authenticating: string
+    errors: {
+      noReturnUrl: string
+      appleSignInFailed: string
+      emailSignInFailed: string
+    }
+  }
+  sso: {
+    signInWithTiko: string
   }
 }
 

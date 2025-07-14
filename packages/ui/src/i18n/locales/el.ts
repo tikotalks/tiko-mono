@@ -190,7 +190,6 @@ export const el: TranslationSchema = {
     uploadImagePrompt: 'Μεταφορτώστε μια εικόνα για να κάνετε την εργασία πιο οπτική',
     saveChanges: 'Αποθήκευση αλλαγών',
     addItem: 'Προσθήκη εργασίας',
-    addGroup: 'Προσθήκη ομάδας',
     noTodoListsYet: 'Δεν υπάρχουν λίστες εργασιών ακόμα',
     askParentCreate: 'Ζητήστε από έναν γονέα να δημιουργήσει την πρώτη σας λίστα εργασιών!',
     createFirstTodoList: 'Δημιουργήστε την πρώτη σας λίστα εργασιών για να ξεκινήσετε',
@@ -317,5 +316,20 @@ export const el: TranslationSchema = {
     installFromStore: 'Εγκατάσταση από το Store',
     appNotInstalled: 'Η εφαρμογή δεν είναι εγκατεστημένη',
     openApp: 'Άνοιγμα Εφαρμογής'
+  },
+  signin: {
+    title: 'Σύνδεση',
+    signingInto: 'Σύνδεση στο {app}',
+    withApple: 'Σύνδεση με Apple',
+    withEmail: 'Σύνδεση με Email',
+    authenticating: 'Πιστοποίηση...',
+    errors: {
+      noReturnUrl: 'Δεν καθορίστηκε URL επιστροφής',
+      appleSignInFailed: 'Η σύνδεση με Apple απέτυχε',
+      emailSignInFailed: 'Η σύνδεση με email απέτυχε'
+    }
+  },
+  sso: {
+    signInWithTiko: 'Σύνδεση με Tiko'
   }
 }
