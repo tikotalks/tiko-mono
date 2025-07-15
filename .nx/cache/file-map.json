@@ -1662,7 +1662,7 @@
         },
         {
           "file": "package.json",
-          "hash": "11344166166603177972"
+          "hash": "5154755432572967997"
         },
         {
           "file": "pnpm-lock.yaml",
@@ -1707,7 +1707,7 @@
         },
         {
           "file": "scripts/build-app-interactive.js",
-          "hash": "7811332418383232842",
+          "hash": "9938549120556222291",
           "deps": [
             "npm:child_process",
             "npm:fs",

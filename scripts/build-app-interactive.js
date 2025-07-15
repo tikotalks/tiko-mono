@@ -52,7 +52,7 @@ function buildApp(appName) {
   console.log(`\n${colors.blue}🔨 Building ${colors.green}${appName}${colors.blue}...${colors.reset}\n`);
   
   try {
-    execSync(`nx build ${appName}`, { 
+    execSync(`npx nx build ${appName}`, { 
       stdio: 'inherit',
       cwd: process.cwd()
     });
@@ -68,7 +68,7 @@ function buildAllApps() {
   console.log(`\n${colors.blue}🔨 Building all apps...${colors.reset}\n`);
   
   try {
-    execSync(`nx run-many --target=build --all`, { 
+    execSync(`npx nx run-many --target=build --all`, { 
       stdio: 'inherit',
       cwd: process.cwd()
     });

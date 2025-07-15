@@ -11,6 +11,7 @@
   "scripts": {
     "serve": "node scripts/serve-app.js",
     "build": "node scripts/build-app-interactive.js",
+    "build:ci": "node scripts/build-app-interactive.js all",
     "test": "node scripts/test-app-interactive.js",
     "test:ci": "npx nx run-many --target=test --all -- --run",
     "ios": "node scripts/ios-app-interactive.js",
