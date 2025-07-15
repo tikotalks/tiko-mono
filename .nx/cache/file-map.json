@@ -556,6 +556,10 @@
           "deps": [
             "npm:vitest"
           ]
+        },
+        {
+          "file": "apps/tiko/netlify.toml",
+          "hash": "1499818555184558532"
         }
       ],
       "radio": [
@@ -1824,6 +1828,10 @@
             "npm:vite-plugin-pwa",
             "npm:path"
           ]
+        },
+        {
+          "file": "scripts/ignore-build-tiko.sh",
+          "hash": "947922162052697754"
         }
       ],
       "type": [
