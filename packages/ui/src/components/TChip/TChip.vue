@@ -29,14 +29,13 @@
 </template>
 
 <script lang="ts" setup>
-import type { PropType } from 'vue';
+import { computed, type PropType } from 'vue';
 
-import Icon from '../Icon.vue';
-
-import ToolTip from '../ToolTip/ToolTip.vue';
-import type { ChipIcon } from './Chip.model';
-import { useBemm } from '@/utils/bemm';
-import type { Colors, Screen } from '@/types';
+import { TIcon as Icon } from '../TIcon';
+import { TToolTip as ToolTip } from '../TToolTip';
+import type { ChipIcon } from './TChip.model';
+import { useBemm } from 'bemm';
+import type { Colors, Screen } from '../../types';
 
 const bemm = useBemm('chip');
 
@@ -127,57 +126,58 @@ const blockClasses = computed(() => {
 		--chip-text-lightness: 40%;
 	}
 
-	&--label-hide {
-		&-mobile {
-			@include global.mobile-only() {
-				#{$b}__label {
-					display: none;
-				}
-			}
-		}
+	// TODO: Fix global mixins import
+	// &--label-hide {
+	// 	&-mobile {
+	// 		@include global.mobile-only() {
+	// 			#{$b}__label {
+	// 				display: none;
+	// 			}
+	// 		}
+	// 	}
 
-		&-tablet {
-			@include global.tablet() {
-				#{$b}__label {
-					display: none;
-				}
-			}
-		}
+	// 	&-tablet {
+	// 		@include global.tablet() {
+	// 			#{$b}__label {
+	// 				display: none;
+	// 			}
+	// 		}
+	// 	}
 
-		&-desktop {
-			@include global.desktop() {
-				#{$b}__label {
-					display: none;
-				}
-			}
-		}
-	}
+	// 	&-desktop {
+	// 		@include global.desktop() {
+	// 			#{$b}__label {
+	// 				display: none;
+	// 			}
+	// 		}
+	// 	}
+	// }
 
-	&--icon-hide {
-		&-mobile {
-			@include global.mobile-only() {
-				#{$b}__icon {
-					display: none;
-				}
-			}
-		}
+	// &--icon-hide {
+	// 	&-mobile {
+	// 		@include global.mobile-only() {
+	// 			#{$b}__icon {
+	// 				display: none;
+	// 			}
+	// 		}
+	// 	}
 
-		&-tablet {
-			@include global.tablet() {
-				#{$b}__icon {
-					display: none;
-				}
-			}
-		}
+	// 	&-tablet {
+	// 		@include global.tablet() {
+	// 			#{$b}__icon {
+	// 				display: none;
+	// 			}
+	// 		}
+	// 	}
 
-		&-desktop {
-			@include global.desktop() {
-				#{$b}__icon {
-					display: none;
-				}
-			}
-		}
-	}
+	// 	&-desktop {
+	// 		@include global.desktop() {
+	// 			#{$b}__icon {
+	// 				display: none;
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	&__content {
 		display: flex;

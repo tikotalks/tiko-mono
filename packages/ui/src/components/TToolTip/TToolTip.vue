@@ -11,8 +11,8 @@
 
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
-import { watch } from 'vue';
-import { ToolTipPosition } from './ToolTip.model';
+import { watch, useSlots, ref, computed, type PropType } from 'vue';
+import { ToolTipPosition } from './TToolTip.model';
 
 const bemm = useBemm('tool-tip');
 const slots = useSlots();
