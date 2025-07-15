@@ -1,0 +1,28 @@
+{
+  "appName": "timer",
+  "timestamp": "2025-07-14T11:19:57.298Z",
+  "analysis": {
+    "totalIconsFound": 13,
+    "icons": [
+      "add-m",
+      "check",
+      "check-m",
+      "clock",
+      "edit",
+      "edit-m",
+      "multiply-m",
+      "pause",
+      "play",
+      "playback-pause",
+      "playback-play",
+      "plus",
+      "x"
+    ],
+    "potentialSavings": "Could potentially tree-shake 987+ unused icons"
+  },
+  "integration": {
+    "optimizedFile": "src/utils/icons.js",
+    "usage": "import { getIcon } from './utils/icons'",
+    "ticonUpdate": "Update TIcon component to use the optimized loader"
+  }
+}

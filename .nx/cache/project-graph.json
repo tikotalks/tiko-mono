@@ -1,5 +1,41 @@
 {
   "nodes": {
+    "@tiko/vite-plugin-icon-treeshake": {
+      "name": "@tiko/vite-plugin-icon-treeshake",
+      "type": "lib",
+      "data": {
+        "root": "packages/vite-plugin-icon-treeshake",
+        "targets": {
+          "lint": {
+            "cache": true,
+            "inputs": [
+              "default",
+              "{workspaceRoot}/.eslintrc.json",
+              "{workspaceRoot}/.eslintignore"
+            ],
+            "executor": "nx:run-commands",
+            "options": {
+              "cwd": "packages/vite-plugin-icon-treeshake",
+              "command": "eslint ."
+            },
+            "configurations": {}
+          },
+          "nx-release-publish": {
+            "dependsOn": [
+              "^nx-release-publish"
+            ],
+            "executor": "@nx/js:release-publish",
+            "options": {},
+            "configurations": {}
+          }
+        },
+        "sourceRoot": "packages/vite-plugin-icon-treeshake",
+        "name": "@tiko/vite-plugin-icon-treeshake",
+        "projectType": "library",
+        "implicitDependencies": [],
+        "tags": []
+      }
+    },
     "@tiko/core": {
       "name": "@tiko/core",
       "type": "lib",
@@ -229,11 +265,6 @@
             "configurations": {}
           },
           "test": {
-            "inputs": [
-              "default",
-              "^production",
-              "{workspaceRoot}/jest.preset.js"
-            ],
             "executor": "nx:run-script",
             "options": {
               "script": "test"
@@ -312,11 +343,6 @@
             "configurations": {}
           },
           "test": {
-            "inputs": [
-              "default",
-              "^production",
-              "{workspaceRoot}/jest.preset.js"
-            ],
             "executor": "nx:run-script",
             "options": {
               "script": "test"
@@ -539,11 +565,6 @@
           },
           "test": {
             "executor": "nx:run-script",
-            "inputs": [
-              "default",
-              "^production",
-              "{workspaceRoot}/jest.preset.js"
-            ],
             "options": {
               "script": "test"
             },
@@ -670,11 +691,6 @@
             "configurations": {}
           },
           "test": {
-            "inputs": [
-              "default",
-              "^production",
-              "{workspaceRoot}/jest.preset.js"
-            ],
             "executor": "nx:run-script",
             "options": {
               "script": "test"
@@ -1005,11 +1021,6 @@
             "configurations": {}
           },
           "test": {
-            "inputs": [
-              "default",
-              "^production",
-              "{workspaceRoot}/jest.preset.js"
-            ],
             "executor": "nx:run-script",
             "options": {
               "script": "test"
@@ -10331,6 +10342,7 @@
     }
   },
   "dependencies": {
+    "@tiko/vite-plugin-icon-treeshake": [],
     "@tiko/core": [],
     "ui-docs": [
       {

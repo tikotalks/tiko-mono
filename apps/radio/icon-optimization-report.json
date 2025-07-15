@@ -1,0 +1,33 @@
+{
+  "appName": "radio",
+  "timestamp": "2025-07-14T11:19:37.509Z",
+  "analysis": {
+    "totalIconsFound": 18,
+    "icons": [
+      "add-m",
+      "check",
+      "check-m",
+      "clock",
+      "edit",
+      "edit-m",
+      "headphones",
+      "moon",
+      "multiply-m",
+      "music",
+      "pause",
+      "play",
+      "playback-pause",
+      "playback-play",
+      "plus",
+      "volume",
+      "volume-2",
+      "x"
+    ],
+    "potentialSavings": "Could potentially tree-shake 982+ unused icons"
+  },
+  "integration": {
+    "optimizedFile": "src/utils/icons.js",
+    "usage": "import { getIcon } from './utils/icons'",
+    "ticonUpdate": "Update TIcon component to use the optimized loader"
+  }
+}

@@ -21,9 +21,9 @@
 
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
-import { defineProps, ref } from 'vue';
-import { ToolTipPosition } from './ToolTip.model';
-import ToolTip from './ToolTip.vue';
+import { defineProps, ref, type PropType } from 'vue';
+import { ToolTipPosition } from './TToolTip.model';
+import ToolTip from './TToolTip.vue';
 
 const bemm = useBemm('context-tooltip');
 const activeTooltip = ref(false);

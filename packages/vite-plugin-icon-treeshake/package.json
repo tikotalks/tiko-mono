@@ -1,0 +1,23 @@
+{
+  "name": "@tiko/vite-plugin-icon-treeshake",
+  "version": "1.0.0",
+  "description": "Vite plugin for tree-shaking open-icon icons in Tiko apps",
+  "main": "index.js",
+  "type": "module",
+  "keywords": [
+    "vite",
+    "plugin",
+    "tree-shaking",
+    "icons",
+    "open-icon"
+  ],
+  "author": "Tiko Team",
+  "license": "MIT",
+  "peerDependencies": {
+    "vite": "^5.0.0",
+    "open-icon": "*"
+  },
+  "dependencies": {
+    "@rollup/pluginutils": "^5.0.0"
+  }
+}
