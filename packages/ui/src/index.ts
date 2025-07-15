@@ -71,3 +71,7 @@ export * from './utils/splash-screen-config'
 
 // Types
 export * from './types'
+
+// Re-export icon types and utilities for documentation
+export type { Icons } from 'open-icon'
+export { Icons as IconList } from 'open-icon'

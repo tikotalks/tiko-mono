@@ -119,16 +119,15 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useBemm } from 'bemm'
-import { TIcon, TInput } from '@tiko/ui'
-import { Icons } from 'open-icon'
+import { TIcon, TInput, IconList } from '@tiko/ui'
 
 const bemm = useBemm('icons-view')
 
 const searchQuery = ref('')
 const selectedCategory = ref('All')
 
-// Get all available icons from open-icon
-const allIcons = Object.keys(Icons)
+// Get all available icons from the UI package
+const allIcons = Object.keys(IconList)
 
 const categories = ['All', 'Interface', 'Actions', 'Communication', 'Media', 'Navigation', 'Shapes']
 

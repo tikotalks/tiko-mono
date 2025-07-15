@@ -1478,7 +1478,7 @@
         },
         {
           "file": ".github/workflows/build-and-deploy.yml",
-          "hash": "8763917357884591847"
+          "hash": "7523202961735961856"
         },
         {
           "file": ".github/workflows/ios-apps.yml",
@@ -2132,12 +2132,11 @@
         },
         {
           "file": "apps/ui-docs/src/views/IconsView.vue",
-          "hash": "17823522476129107417",
+          "hash": "12324046350888661957",
           "deps": [
             "npm:vue",
             "npm:bemm",
-            "@tiko/ui",
-            "npm:open-icon"
+            "@tiko/ui"
           ]
         },
         {
@@ -3164,7 +3163,10 @@
         },
         {
           "file": "packages/ui/src/index.ts",
-          "hash": "8076083724223042556"
+          "hash": "8610576157812557",
+          "deps": [
+            "npm:open-icon"
+          ]
         },
         {
           "file": "packages/ui/src/styles/app.scss",
@@ -3368,7 +3370,7 @@
         },
         {
           "file": "packages/ui/vite.config.ts",
-          "hash": "11647488239067580653",
+          "hash": "16018388972430959517",
           "deps": [
             "npm:vite",
             "npm:@vitejs/plugin-vue",
