@@ -55,7 +55,7 @@ jobs:
     #   run: pnpm typecheck
 
     - name: Build all apps
-      run: pnpm build
+      run: pnpm build:ci
       env:
         NODE_ENV: production
 
