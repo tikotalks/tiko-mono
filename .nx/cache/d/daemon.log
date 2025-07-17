@@ -27763,3 +27763,6 @@
 [NX Daemon Server] - 2025-07-15T15:13:08.792Z - Done responding to the client recordOutputsHash
 [NX Daemon Server] - 2025-07-15T15:13:08.792Z - Handled RECORD_OUTPUTS_HASH. Handling time: 5. Response time: 0.
 [NX Daemon Server] - 2025-07-15T15:13:08.795Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2025-07-15T18:16:33.652Z - [WATCHER]: Stopping the watcher for /Users/silvandiepen/Repositories/_tiko/tiko-mono (sources)
+[NX Daemon Server] - 2025-07-15T18:16:33.653Z - [WATCHER]: Stopping the watcher for /Users/silvandiepen/Repositories/_tiko/tiko-mono (outputs)
+[NX Daemon Server] - 2025-07-15T18:16:33.653Z - Server stopped because: "10800000ms of inactivity"

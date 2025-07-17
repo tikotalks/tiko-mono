@@ -14,19 +14,19 @@ export * from './components/TParentMode'
 export * from './components/TDraggableList'
 export * from './components/TSplashScreen'
 export * from './components/TFramework'
-export { default as TTikoLogo } from './components/TTikoLogo/TTikoLogo.vue'
+export * from './components/TTikoLogo'
 export * from './components/TSSOButton'
 export * from './components/TSpinner'
 export * from './components/TAlert'
 
-export { default as TInputText } from './components/TForm/TInputText.vue';
-export { default as TInputNumber } from './components/TForm/InputNumber.vue';
+export { default as TInputText } from './components/TForm/inputs/TInputText/TInputText.vue';
+export { default as TInputNumber } from './components/TForm/inputs/TInputNumber/TInputNumber.vue';
 export { default as TInputEmail } from './components/TForm/InputEmail/InputEmail.vue';
 export { default as TInputRange } from './components/TForm/InputRange.vue';
-export { default as TInputSelect } from './components/TForm/InputSelect.vue';
-export { default as TInputCheckbox } from './components/TForm/InputCheckbox.vue';
-export { default as TInputRadio } from './components/TForm/InputRadio.vue';
-export { default as TTextArea } from './components/TForm/InputTextArea.vue';
+export { default as TInputSelect } from './components/TForm/inputs/TInputSelect/TInputSelect.vue';
+export { default as TInputCheckbox } from './components/TForm/inputs/TInputCheckbox/TInputCheckbox.vue';
+export { default as TInputRadio } from './components/TForm/inputs/TInputRadio/TInputRadio.vue';
+export { default as TTextArea } from './components/TForm/inputs/TInputTextArea/TInputTextArea.vue';
 
 
 // TrustCafe-style components with T prefix (temporarily disabled due to import issues)

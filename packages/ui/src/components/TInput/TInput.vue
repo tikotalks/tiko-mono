@@ -72,26 +72,7 @@
 import { computed, ref, nextTick } from 'vue'
 import { useBemm } from 'bemm'
 import TIcon from '../TIcon/TIcon.vue'
-
-export interface TInputProps {
-  modelValue?: string | number
-  type?: 'text' | 'number' | 'email' | 'password' | 'tel' | 'url'
-  label?: string
-  placeholder?: string
-  description?: string
-  error?: string
-  disabled?: boolean
-  readonly?: boolean
-  required?: boolean
-  size?: 'small' | 'medium' | 'large'
-  prefixIcon?: string
-  suffixIcon?: string
-  showSpinners?: boolean
-  min?: number
-  max?: number
-  step?: number
-  ariaLabel?: string
-}
+import type { TInputProps, TInputEmits } from './TInput.model'
 
 const props = withDefaults(defineProps<TInputProps>(), {
   type: 'text',
@@ -99,12 +80,7 @@ const props = withDefaults(defineProps<TInputProps>(), {
   showSpinners: true
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string | number]
-  focus: [event: FocusEvent]
-  blur: [event: FocusEvent]
-  enter: [event: KeyboardEvent]
-}>()
+const emit = defineEmits<TInputEmits>()
 
 // BEM classes
 const bemm = useBemm('input')

@@ -43,34 +43,21 @@
 </template>
 
 <script setup lang="ts">
-import { useBemm } from 'bemm';
-import { TTopBar } from '../TTopBar';
-import type { ContextMenuItem } from '../TContextMenu';
+import { useBemm } from 'bemm'
+import { TTopBar } from '../TTopBar'
+import type { TAppLayoutProps, TAppLayoutEmits } from './TAppLayout.model'
 
-interface Props {
-  title?: string;
-  subtitle?: string;
-  showBackButton?: boolean;
-  backButtonLabel?: string;
-  showUserInfo?: boolean;
-  showOnlineStatus?: boolean;
-  showHeader?: boolean;
-  isUserOnline?: boolean;
-  isLoading?: boolean;
-  customMenuItems?: ContextMenuItem[];
-  appName?: string;
-}
+const props = withDefaults(defineProps<TAppLayoutProps>(), {
+  showBackButton: false,
+  backButtonLabel: 'Back',
+  showUserInfo: true,
+  showOnlineStatus: false,
+  showHeader: true,
+  isUserOnline: true,
+  isLoading: false
+})
 
-interface Emits {
-  (e: 'back'): void;
-  (e: 'profile'): void;
-  (e: 'settings'): void;
-  (e: 'logout'): void;
-  (e: 'menu-item-click', item: ContextMenuItem): void;
-}
-
-defineProps<Props>();
-defineEmits<Emits>();
+defineEmits<TAppLayoutEmits>()
 
 const bemm = useBemm('app-layout');
 </script>

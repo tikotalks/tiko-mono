@@ -242,7 +242,10 @@ onMounted(async () => {
 
   &:has(:hover){
     .yes-no__answer{
-      transform: scale(0.5);
+      transform: scale(0.75);
+      &:hover{
+        transform: scale(1.1);
+      }
     }
   }
 

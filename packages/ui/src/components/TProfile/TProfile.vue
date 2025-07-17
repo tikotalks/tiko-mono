@@ -104,8 +104,8 @@ import { toastService } from '../TToast'
 import TButton from '../TButton/TButton.vue'
 import TButtonGroup from '../TButton/TButtonGroup.vue'
 import TIcon from '../TIcon/TIcon.vue'
-import TInputText from '../TForm/TInputText.vue'
-import TInputSelect from '../TForm/InputSelect.vue'
+import TInputText from '../TForm/inputs/TInputText/TInputText.vue'
+import TInputSelect from '../TForm/inputs/TInputSelect/TInputSelect.vue'
 import type { TProfileProps, UserProfile } from './TProfile.model'
 
 const props = defineProps<TProfileProps>()

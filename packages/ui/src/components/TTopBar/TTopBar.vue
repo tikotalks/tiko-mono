@@ -157,28 +157,9 @@ import { TContextMenu, type ContextMenuItem, type ContextMenuConfig, ContextMenu
 import { useParentMode } from '../../composables/useParentMode'
 import TParentModePinInput from '../TParentMode/TParentModePinInput.vue'
 
-interface Props {
-  title?: string
-  subtitle?: string
-  showBackButton?: boolean
-  backButtonLabel?: string
-  showUserInfo?: boolean
-  showOnlineStatus?: boolean
-  isUserOnline?: boolean
-  isLoading?: boolean
-  customMenuItems?: Partial<ContextMenuItem>[]
-  appName?: string
-}
+import type { TTopBarProps, TTopBarEmits } from './TTopBar.model'
 
-interface Emits {
-  (e: 'back'): void
-  (e: 'profile'): void
-  (e: 'logout'): void
-  (e: 'settings'): void
-  (e: 'menu-item-click', item: ContextMenuItem): void
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<TTopBarProps>(), {
   backButtonLabel: 'Go back',
   showUserInfo: true,
   showOnlineStatus: false,
@@ -186,7 +167,7 @@ const props = withDefaults(defineProps<Props>(), {
   isLoading: false
 })
 
-const emit = defineEmits<Emits>()
+const emit = defineEmits<TTopBarEmits>()
 
 const bemm = useBemm('top-bar')
 const authStore = useAuthStore()

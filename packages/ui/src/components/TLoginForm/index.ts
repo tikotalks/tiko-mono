@@ -1,1 +1,2 @@
-export { default } from './TLoginForm.vue'
+export { default as TLoginForm } from './TLoginForm.vue'
+export * from './TLoginForm.model'

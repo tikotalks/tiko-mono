@@ -4,6 +4,10 @@
     data-name="tiko-logo"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 1193.89 541.78"
+    :style="logoStyles"
+    :aria-label="ariaLabel"
+    :class="{ 'clickable': clickable }"
+    @click="handleClick"
   >
     <path
     fill="currentColor"
@@ -27,3 +31,71 @@
     />
   </svg>
 </template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import type { TTikoLogoProps } from './TTikoLogo.model'
+import { TTikoLogoSizeMap } from './TTikoLogo.model'
+
+const props = withDefaults(defineProps<TTikoLogoProps>(), {
+  size: 'medium',
+  color: 'currentColor',
+  clickable: false,
+  ariaLabel: 'Tiko Logo'
+})
+
+const emit = defineEmits<{
+  click: [event: MouseEvent]
+}>()
+
+const logoStyles = computed(() => {
+  const styles: Record<string, string> = {}
+  
+  // Apply color
+  if (props.color) {
+    styles.color = props.color
+  }
+  
+  // Apply dimensions - custom dimensions override size
+  if (props.width || props.height) {
+    if (props.width) {
+      styles.width = typeof props.width === 'number' ? `${props.width}px` : props.width
+    }
+    if (props.height) {
+      styles.height = typeof props.height === 'number' ? `${props.height}px` : props.height
+    }
+  } else if (props.size) {
+    const sizeConfig = TTikoLogoSizeMap[props.size]
+    styles.width = sizeConfig.width
+    styles.height = sizeConfig.height
+  }
+  
+  // Add cursor pointer for clickable logos
+  if (props.clickable) {
+    styles.cursor = 'pointer'
+  }
+  
+  return styles
+})
+
+const handleClick = (event: MouseEvent) => {
+  if (props.clickable) {
+    emit('click', event)
+  }
+}
+</script>
+
+<style scoped>
+.clickable {
+  transition: opacity 0.2s ease;
+}
+
+.clickable:hover {
+  opacity: 0.8;
+}
+
+.clickable:focus {
+  outline: 2px solid var(--color-primary, #8b5cf6);
+  outline-offset: 2px;
+}
+</style>

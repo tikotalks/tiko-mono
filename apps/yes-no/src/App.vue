@@ -1,11 +1,12 @@
 <template>
-  <TFramework 
-    :config="frameworkConfig" 
+  <TFramework
+    :config="frameworkConfig"
     :background-image="backgroundImage"
     :loading="loading"
   >
     <router-view />
   </TFramework>
+  <TPopup />
 </template>
 
 <script setup lang="ts">
@@ -13,6 +14,7 @@ import { computed, ref } from 'vue'
 import { TFramework, type FrameworkConfig } from '@tiko/ui'
 import tikoConfig from '../tiko.config'
 import backgroundImage from './assets/app-icon-yes-no.png'
+import {TPopup} from '@tiko/ui'
 
 const loading = ref(false)
 

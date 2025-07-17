@@ -7,7 +7,7 @@
 			@click="handleCollapse()"
 		>
 			{{ label }}
-			<Icon :name="value" />
+			<TIcon :name="value" />
 		</label>
 		<div
 			v-if="description"
@@ -16,7 +16,7 @@
 			{{ description }}
 		</div>
 		<div :class="bemm('control-container')">
-			<InputText
+			<TInputText
 				v-model="filterIcons"
 				:placeholder="`Search icons...`"
 				:class="bemm('control-filter')"
@@ -55,7 +55,7 @@
 							:class="bemm('control-preview')"
 							@click="selectIcon(icon.value)"
 						>
-							<Icon :name="icon.value" />
+							<TIcon :name="icon.value" />
 						</div>
 						<input
 							:id="icon.label"
@@ -90,9 +90,9 @@
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
 import type { PropType } from 'vue';
-import { ref, defineProps, defineModel } from 'vue';
-import Icon from '../Icon.vue';
-import InputText from './InputText.vue';
+import { ref, defineProps, defineModel, computed, watch, useId } from 'vue';
+import TIcon from '../TIcon/TIcon.vue';
+import TInputText from './inputs/TInputText/TInputText.vue';
 import { type CollapseOptions, collapseOptions } from './options';
 
 const bemm = useBemm('input-select-icon');
