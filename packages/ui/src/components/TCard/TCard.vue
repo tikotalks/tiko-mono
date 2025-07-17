@@ -51,40 +51,14 @@ import { computed } from 'vue'
 import { useBemm } from 'bemm'
 import TIcon from '../TIcon/TIcon.vue'
 import TButton from '../TButton/TButton.vue'
-import type { ButtonType, ButtonSize, ButtonColor } from '../TButton/TButton.model'
-
-export interface CardAction {
-  label: string
-  action: () => void
-  type?: ButtonType
-  size?: ButtonSize
-  color?: ButtonColor
-  icon?: string
-}
-
-export interface TCardProps {
-  title?: string
-  category?: string
-  categoryIcon?: string
-  emoji?: string
-  icon?: string
-  image?: string
-  imageAlt?: string
-  size?: 'small' | 'medium' | 'large'
-  clickable?: boolean
-  backgroundColor?: string
-  actions?: CardAction[]
-  ariaLabel?: string
-}
+import type { TCardProps, TCardEmits } from './TCard.model'
 
 const props = withDefaults(defineProps<TCardProps>(), {
   size: 'medium',
   clickable: false
 })
 
-const emit = defineEmits<{
-  click: [event: Event]
-}>()
+const emit = defineEmits<TCardEmits>()
 
 // BEM classes
 const bemm = useBemm('card')

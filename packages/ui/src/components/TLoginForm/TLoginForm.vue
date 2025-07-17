@@ -12,8 +12,8 @@
       <div :class="bemm('content')">
 
         <!-- Email Input -->
-        <Form @submit.prevent="handleEmailSubmit">
-          <InputEmail
+        <TForm @submit.prevent="handleEmailSubmit">
+          <TInputEmail
             v-model="email"
             type="email"
             label="Email Address"
@@ -32,7 +32,7 @@
             :loading="isLoading"
             :class="bemm('submit-button')"
           >Send Code</TButton>
-        </Form>
+        </TForm>
 
         <!-- Divider -->
         <div :class="bemm('divider')">
@@ -93,8 +93,8 @@
           </div>
         </div>
 
-        <Form @submit.prevent="handleVerificationSubmit">
-          <InputText
+        <TForm @submit.prevent="handleVerificationSubmit">
+          <TInputText
             v-model="verificationCode"
             type="text"
             label="Verification Code"
@@ -115,7 +115,7 @@
             :loading="isLoading"
             :class="bemm('submit-button')"
           >Verify Code</TButton>
-        </Form>
+        </TForm>
 
         <!-- Actions -->
         <TButtonGroup :class="bemm('actions')">
@@ -146,8 +146,8 @@
         <div  :class="bemm('content')">
 
 
-        <Form @submit.prevent="handleRegisterSubmit">
-          <InputEmail
+        <TForm @submit.prevent="handleRegisterSubmit">
+          <TInputEmail
             v-model="email"
             type="email"
             label="Email Address"
@@ -157,7 +157,7 @@
             :class="bemm('input')"
           />
 
-          <InputText
+          <TInputText
             v-model="fullName"
             type="text"
             label="Full Name (Optional)"
@@ -176,7 +176,7 @@
             :loading="isLoading"
             :class="bemm('submit-button')"
           >Send Code</TButton>
-        </Form>
+        </TForm>
 
         <!-- Back to Login -->
         <div :class="bemm('register')">
@@ -216,38 +216,25 @@ import TButton from '../TButton/TButton.vue'
 import TButtonGroup from '../TButton/TButtonGroup.vue'
 import TInput from '../TInput/TInput.vue'
 import TIcon from '../TIcon/TIcon.vue'
-import Form from '../TForm/Form.vue'
-import InputText from "../TForm/InputText.vue"
-import InputEmail from "../TForm/InputEmail/InputEmail.vue"
+import TForm from '../TForm/TForm.vue'
+import TInputText from '../TForm/inputs/TInputText/TInputText.vue'
+import TInputEmail from '../TForm/InputEmail/InputEmail.vue'
 import TSSOButton from "../TSSOButton/TSSOButton.vue"
+import type { TLoginFormProps, TLoginFormEmits, LoginFormStep } from './TLoginForm.model'
 
-interface Props {
-  isLoading?: boolean
-  error?: string | null
-  appId?: string
-  appName?: string
-  enableSSO?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<TLoginFormProps>(), {
   isLoading: false,
   error: null,
   enableSSO: true
 })
 
-const emit = defineEmits<{
-  appleSignIn: []
-  emailSubmit: [email: string, fullName?: string]
-  verificationSubmit: [email: string, code: string]
-  resendCode: [email: string]
-  clearError: []
-}>()
+const emit = defineEmits<TLoginFormEmits>()
 
 // BEM classes
 const bemm = useBemm('login-form')
 
 // Form state
-const currentStep = ref<'email' | 'verification' | 'register'>('email')
+const currentStep = ref<LoginFormStep>('email')
 const email = ref('')
 const fullName = ref('')
 const verificationCode = ref('')

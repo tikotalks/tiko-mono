@@ -14,7 +14,7 @@
 		</span>
 		<div :class="bemm('controls')">
 			<div :class="bemm('column', 'day')">
-				<InputText
+				<TInputText
 					v-model="daySearch"
 					type="text"
 					:class="bemm('input')"
@@ -45,7 +45,7 @@
 				</div>
 			</div>
 			<div :class="bemm('column', 'month')">
-				<InputText
+				<TInputText
 					v-model="monthSearch"
 					type="text"
 					:class="bemm('input')"
@@ -76,7 +76,7 @@
 				</div>
 			</div>
 			<div :class="bemm('column', 'year')">
-				<InputText
+				<TInputText
 					v-model="yearSearch"
 					type="text"
 					:class="bemm('input')"
@@ -90,21 +90,16 @@
 					v-if="yearOptionsActive"
 					:class="bemm('options')"
 				>
-					<VirtualList
-						:items="filteredYears"
-						:height="160"
-						:item-height="32"
-						:item-key="(year) => year.value"
-					>
-						<template #default="{ item }">
-							<li
-								:class="bemm('option', { active: item.value === yearValue })"
-								@click="selectYear(item)"
-							>
-								{{ item.label }}
-							</li>
-						</template>
-					</VirtualList>
+					<ul :class="bemm('option-list')">
+						<li
+							v-for="year in filteredYears"
+							:key="year.value"
+							:class="bemm('option', { active: year.value === yearValue })"
+							@click="selectYear(year)"
+						>
+							{{ year.label }}
+						</li>
+					</ul>
 				</div>
 			</div>
 		</div>
@@ -125,9 +120,9 @@
 
 <script lang="ts" setup>
 import type { PropType } from 'vue';
-import InputText from './InputText.vue';
-import VirtualList from '@/components/Molecules/VirtualList/VirtualList.vue';
-import { useBemm } from '@/utils/bemm';
+import { ref, computed, watch, shallowRef, nextTick } from 'vue';
+import TInputText from './inputs/TInputText/TInputText.vue';
+import { useBemm } from 'bemm';
 
 interface SelectOption {
 	label: string;

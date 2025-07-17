@@ -67,47 +67,36 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { useBemm } from 'bemm';
-import { useAuthStore } from '@tiko/core';
-import TLoginForm from '../TLoginForm/TLoginForm.vue';
-import TAppLayout from '../TAppLayout/TAppLayout.vue';
-import TSplashScreen from '../TSplashScreen/TSplashScreen.vue';
-import { defaultTikoSplashConfigs } from '../../utils/splash-screen-config';
-import { useTikoConfig } from '../../composables/useTikoConfig';
+import { ref, computed, onMounted } from 'vue'
+import { useBemm } from 'bemm'
+import { useAuthStore } from '@tiko/core'
+import TLoginForm from '../TLoginForm/TLoginForm.vue'
+import TAppLayout from '../TAppLayout/TAppLayout.vue'
+import TSplashScreen from '../TSplashScreen/TSplashScreen.vue'
+import { defaultTikoSplashConfigs } from '../../utils/splash-screen-config'
+import { useTikoConfig } from '../../composables/useTikoConfig'
+import type { TAuthWrapperProps } from './TAuthWrapper.model'
+
+const props = withDefaults(defineProps<TAuthWrapperProps>(), {
+  backgroundVideo: '',
+  backgroundImage: '',
+  title: 'Welcome to Tiko',
+  appName: 'todo'
+})
 
 // BEM classes
-const bemm = useBemm('auth-wrapper');
+const bemm = useBemm('auth-wrapper')
 
 // Store
-const authStore = useAuthStore();
+const authStore = useAuthStore()
 
 // Get Tiko config for theme
-const { config: tikoConfig } = useTikoConfig();
+const { config: tikoConfig } = useTikoConfig()
 
 // Local state
-const isInitializing = ref(true);
-const authLoading = ref(false);
-const authError = ref<string | null>(null);
-
-const props = defineProps({
-  backgroundVideo: {
-    type: String,
-    default: '',
-  },
-  backgroundImage: {
-    type: String,
-    default: '',
-  },
-  title: {
-    type: String,
-    default: 'Welcome to Tiko',
-  },
-  appName: {
-    type: String,
-    default: 'todo'
-  }
-});
+const isInitializing = ref(true)
+const authLoading = ref(false)
+const authError = ref<string | null>(null)
 
 // Computed
 const isAuthenticated = computed(() => authStore.isAuthenticated);
