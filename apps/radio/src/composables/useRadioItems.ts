@@ -1,10 +1,11 @@
 /**
  * Composable for managing radio items CRUD operations
- * Handles data persistence with Supabase and local state management
+ * Handles data persistence with Items service and local state management
  */
 
 import { ref, computed } from 'vue'
 import { useAuthStore, itemService } from '@tiko/core'
+import type { BaseItem } from '@tiko/core'
 import type { 
   RadioItem, 
   CreateRadioItemPayload, 
@@ -16,8 +17,8 @@ import type {
 /**
  * Radio items management composable
  * 
- * Provides CRUD operations for radio items with Supabase integration.
- * Handles data transformation between UI models and database rows.
+ * Provides CRUD operations for radio items using the Items service.
+ * Handles data transformation between UI models and BaseItem format.
  * 
  * @returns Radio items interface with CRUD methods and state
  * 
@@ -66,6 +67,28 @@ export function useRadioItems() {
   )
 
   /**
+   * Transform BaseItem to RadioItem
+   */
+  const transformFromBaseItem = (item: BaseItem): RadioItem => ({
+    id: item.id,
+    userId: item.user_id,
+    title: item.name,
+    description: item.content || undefined,
+    videoUrl: item.metadata?.video_url || '',
+    videoType: (item.metadata?.video_type || 'url') as RadioItem['videoType'],
+    thumbnailUrl: item.metadata?.thumbnail_url || undefined,
+    customThumbnailUrl: item.metadata?.custom_thumbnail_url || undefined,
+    durationSeconds: item.metadata?.duration_seconds || undefined,
+    tags: item.tags || [],
+    isFavorite: item.is_favorite || false,
+    playCount: item.metadata?.play_count || 0,
+    lastPlayedAt: item.metadata?.last_played_at ? new Date(item.metadata.last_played_at) : undefined,
+    sortOrder: item.order_index,
+    createdAt: new Date(item.created_at),
+    updatedAt: new Date(item.updated_at)
+  })
+
+  /**
    * Fetch all radio items for the current user
    */
   const fetchItems = async (): Promise<void> => {
@@ -81,20 +104,15 @@ export function useRadioItems() {
     error.value = null
 
     try {
-      console.log('Querying radio_items table...')
-      const { data, error: fetchError } = await supabase
-        .from('radio_items')
-        .select('*')
-        .eq('user_id', authStore.user.id)
-        .order('sort_order', { ascending: true })
+      console.log('Querying radio items...')
+      const baseItems = await itemService.getItems(authStore.user.id, {
+        app_name: 'radio',
+        type: 'radio_item'
+      })
 
-      console.log('Supabase fetch result:', { data, error: fetchError })
+      console.log('Items service fetch result:', baseItems)
 
-      if (fetchError) {
-        throw fetchError
-      }
-
-      const transformedItems = (data || []).map(transformFromRow)
+      const transformedItems = baseItems.map(transformFromBaseItem)
       items.value = transformedItems
       console.log('Successfully loaded', transformedItems.length, 'radio items:', transformedItems)
     } catch (err) {
@@ -125,34 +143,36 @@ export function useRadioItems() {
       const metadata = await extractVideoMetadata(itemData.videoUrl || '')
       console.log('Extracted metadata:', metadata)
       
-      const payload: CreateRadioItemPayload = {
-        user_id: authStore.user.id,
-        title: itemData.title || metadata.title || 'Untitled Audio',
-        description: itemData.description || '',
-        video_url: itemData.videoUrl || '',
-        video_type: metadata.videoType,
-        thumbnail_url: metadata.thumbnailUrl,
-        custom_thumbnail_url: itemData.customThumbnailUrl,
-        duration_seconds: metadata.durationSeconds,
+      const payload = {
+        app_name: 'radio',
+        type: 'radio_item',
+        name: itemData.title || metadata.title || 'Untitled Audio',
+        content: itemData.description || '',
+        metadata: {
+          video_url: itemData.videoUrl || '',
+          video_type: metadata.videoType,
+          thumbnail_url: metadata.thumbnailUrl,
+          custom_thumbnail_url: itemData.customThumbnailUrl,
+          duration_seconds: metadata.durationSeconds,
+          play_count: 0,
+          last_played_at: null
+        },
         tags: itemData.tags || [],
-        sort_order: items.value.length
+        is_favorite: false,
+        order_index: items.value.length
       }
 
-      console.log('Payload being sent to Supabase:', payload)
+      console.log('Payload being sent to itemService:', payload)
 
-      const { data, error: insertError } = await supabase
-        .from('radio_items')
-        .insert([payload])
-        .select()
-        .single()
+      const result = await itemService.createItem(authStore.user.id, payload)
 
-      console.log('Supabase insert result:', { data, error: insertError })
+      console.log('Item service create result:', result)
 
-      if (insertError) {
-        throw insertError
+      if (!result.success || !result.data) {
+        throw new Error(result.error || 'Failed to create item')
       }
 
-      const newItem = transformFromRow(data)
+      const newItem = transformFromBaseItem(result.data)
       items.value.push(newItem)
       
       console.log('Successfully added item:', newItem)
@@ -179,22 +199,45 @@ export function useRadioItems() {
     error.value = null
 
     try {
-      const { data, error: updateError } = await supabase
-        .from('radio_items')
-        .update(updates)
-        .eq('id', id)
-        .eq('user_id', authStore.user.id)
-        .select()
-        .single()
+      const existingItem = items.value.find(item => item.id === id)
+      if (!existingItem) {
+        throw new Error('Item not found')
+      }
 
-      if (updateError) {
-        throw updateError
+      // Transform updates to BaseItem format
+      const baseItemUpdates: any = {}
+      
+      if (updates.title !== undefined) baseItemUpdates.name = updates.title
+      if (updates.description !== undefined) baseItemUpdates.content = updates.description
+      if (updates.tags !== undefined) baseItemUpdates.tags = updates.tags
+      if (updates.is_favorite !== undefined) baseItemUpdates.is_favorite = updates.is_favorite
+      if (updates.sort_order !== undefined) baseItemUpdates.order_index = updates.sort_order
+
+      // Handle metadata updates
+      if (updates.video_url !== undefined || updates.custom_thumbnail_url !== undefined || 
+          updates.play_count !== undefined || updates.last_played_at !== undefined) {
+        baseItemUpdates.metadata = {
+          ...existingItem,
+          video_url: updates.video_url ?? existingItem.videoUrl,
+          video_type: existingItem.videoType,
+          thumbnail_url: existingItem.thumbnailUrl,
+          custom_thumbnail_url: updates.custom_thumbnail_url ?? existingItem.customThumbnailUrl,
+          duration_seconds: existingItem.durationSeconds,
+          play_count: updates.play_count ?? existingItem.playCount,
+          last_played_at: updates.last_played_at ?? existingItem.lastPlayedAt?.toISOString()
+        }
+      }
+
+      const result = await itemService.updateItem(id, baseItemUpdates)
+
+      if (!result.success || !result.data) {
+        throw new Error(result.error || 'Failed to update item')
       }
 
       // Update local state
       const index = items.value.findIndex(item => item.id === id)
       if (index !== -1) {
-        items.value[index] = transformFromRow(data)
+        items.value[index] = transformFromBaseItem(result.data)
       }
 
       return true
@@ -220,14 +263,10 @@ export function useRadioItems() {
     error.value = null
 
     try {
-      const { error: deleteError } = await supabase
-        .from('radio_items')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', authStore.user.id)
+      const result = await itemService.deleteItem(id)
 
-      if (deleteError) {
-        throw deleteError
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to delete item')
       }
 
       // Update local state
@@ -261,17 +300,21 @@ export function useRadioItems() {
     if (!item) return false
 
     try {
-      const { error: updateError } = await supabase
-        .from('radio_items')
-        .update({
+      const result = await itemService.updateItem(id, {
+        metadata: {
+          ...item,
+          video_url: item.videoUrl,
+          video_type: item.videoType,
+          thumbnail_url: item.thumbnailUrl,
+          custom_thumbnail_url: item.customThumbnailUrl,
+          duration_seconds: item.durationSeconds,
           play_count: item.playCount + 1,
           last_played_at: new Date().toISOString()
-        })
-        .eq('id', id)
-        .eq('user_id', authStore.user?.id)
+        }
+      })
 
-      if (updateError) {
-        throw updateError
+      if (!result.success || !result.data) {
+        throw new Error(result.error || 'Failed to update play count')
       }
 
       // Update local state
@@ -298,18 +341,11 @@ export function useRadioItems() {
     error.value = null
 
     try {
-      // Update sort orders in database
-      const updates = itemIds.map((id, index) => ({
-        id,
-        sort_order: index
-      }))
+      // Use the reorderItems method from itemService
+      const result = await itemService.reorderItems(itemIds)
 
-      for (const update of updates) {
-        await supabase
-          .from('radio_items')
-          .update({ sort_order: update.sort_order })
-          .eq('id', update.id)
-          .eq('user_id', authStore.user.id)
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to reorder items')
       }
 
       // Update local state

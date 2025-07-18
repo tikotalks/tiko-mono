@@ -246,7 +246,6 @@ export interface AuthService {
 export class ManualAuthService implements AuthService {
   private readonly API_URL = 'https://kejvhvszhevfwgsztedf.supabase.co/auth/v1'
   private readonly ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlanZodnN6aGV2Zndnc3p0ZWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4ODg2MTIsImV4cCI6MjA2NzQ2NDYxMn0.xUYXxNodJTpTwChlKbuBSojVJqX9CDW87aVISEUc2rE'
-  private readonly REDIRECT_URL = 'http://localhost:3000/auth/callback'
 
   async signInWithEmail(email: string, password: string): Promise<AuthResult> {
     try {

@@ -12,7 +12,7 @@ import { onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
 import { TSpinner } from '@tiko/ui'
-import { supabase } from '@tiko/core'
+import { authService } from '@tiko/core'
 import { useI18n } from '@tiko/ui'
 
 const bemm = useBemm('auth-callback')
@@ -23,19 +23,8 @@ const { t } = useI18n()
 onMounted(async () => {
   try {
     // Handle auth session from URL hash or query params
-    const { data: { session }, error } = await supabase.auth.getSession()
+    const session = await authService.getSession()
 
-    if (error) {
-      console.error('Auth callback error:', error)
-      router.push({
-        name: 'signin',
-        query: {
-          error: 'auth_failed',
-          return_to: route.query.return_to
-        }
-      })
-      return
-    }
 
     if (!session) {
       router.push({

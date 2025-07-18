@@ -322,5 +322,8 @@ class LocalStorageUserSettingsService implements UserSettingsService {
   }
 }
 
+// Export the class for testing
+export { LocalStorageUserSettingsService }
+
 // Export singleton instance
 export const userSettingsService: UserSettingsService = new LocalStorageUserSettingsService()

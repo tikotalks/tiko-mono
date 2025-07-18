@@ -163,7 +163,7 @@ const handleSettings = () => {
 }
 
 const handleLogout = async () => {
-  await authStore.signOut()
+  await authStore.logout()
   await router.push('/auth/login')
 }
 

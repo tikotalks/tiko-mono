@@ -5,8 +5,8 @@ export * from './services'
 export * from './stores/auth'
 export * from './stores/app'
 
-// Auth API
-export * from './lib/auth-api'
+// Auth API (excluding types that are already exported from services)
+export { authAPI } from './lib/auth-api'
 
 // Composables
 export { useSSO } from './composables/useSSO'
