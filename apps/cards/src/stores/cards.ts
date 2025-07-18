@@ -1,6 +1,16 @@
+/**
+ * Cards Store
+ * 
+ * @module stores/cards
+ * @description
+ * Cards store using the generic item service.
+ * Provides card management functionality for the Cards app.
+ */
+
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useAppStore } from '@tiko/core'
+import { useCards } from '../composables/useCards'
 import type { Card } from '@tiko/ui'
 
 export interface ExtendedCard extends Card {
@@ -19,19 +29,18 @@ export interface CardGroup {
 }
 
 export const useCardsStore = defineStore('cards', () => {
-  // State
-  const cards = ref<ExtendedCard[]>([])
-  const groups = ref<CardGroup[]>([])
+  // Use the cards composable
+  const cardsComposable = useCards()
+  
+  // Additional state for UI
   const selectedCards = ref<string[]>([])
   const editMode = ref(false)
   const searchQuery = ref('')
   const currentView = ref<'grid' | 'groups' | 'search'>('grid')
-  const isLoading = ref(false)
-  const error = ref<string | null>(null)
-
+  
   // App store for settings
   const appStore = useAppStore()
-
+  
   // Settings with defaults
   const settings = computed(() => ({
     cardSize: 'medium' as 'small' | 'medium' | 'large',
@@ -40,7 +49,33 @@ export const useCardsStore = defineStore('cards', () => {
     groupView: false,
     ...appStore.getAppSettings('cards')
   }))
-
+  
+  // Transform composable data to match store API
+  const cards = computed<ExtendedCard[]>(() => {
+    return cardsComposable.cards.value.map(card => ({
+      id: card.id,
+      label: card.metadata?.front_text || card.name,
+      imageUrl: card.metadata?.front_image_url || card.icon,
+      backText: card.metadata?.back_text,
+      backImageUrl: card.metadata?.back_image_url,
+      groupId: card.parent_id,
+      color: card.color,
+      createdAt: new Date(card.created_at),
+      updatedAt: new Date(card.updated_at)
+    }))
+  })
+  
+  const groups = computed<CardGroup[]>(() => {
+    return cardsComposable.decks.value.map(deck => ({
+      id: deck.id,
+      name: deck.name,
+      imageUrl: deck.icon,
+      cardIds: cardsComposable.cardsByDeck.value.get(deck.id)?.map(c => c.id) || [],
+      color: deck.color,
+      createdAt: new Date(deck.created_at)
+    }))
+  })
+  
   // Getters
   const filteredCards = computed(() => {
     if (!searchQuery.value) return cards.value
@@ -48,211 +83,76 @@ export const useCardsStore = defineStore('cards', () => {
     const query = searchQuery.value.toLowerCase()
     return cards.value.filter(card => 
       card.label.toLowerCase().includes(query) ||
-      card.audioText.toLowerCase().includes(query) ||
-      card.tags.some(tag => tag.toLowerCase().includes(query))
+      (card.backText && card.backText.toLowerCase().includes(query))
     )
   })
-
-  const cardsByGroup = computed(() => {
-    const result: Record<string, ExtendedCard[]> = {}
+  
+  const groupedCards = computed(() => {
+    const grouped = new Map<string, ExtendedCard[]>()
     
     cards.value.forEach(card => {
       const groupId = card.groupId || 'ungrouped'
-      if (!result[groupId]) {
-        result[groupId] = []
+      if (!grouped.has(groupId)) {
+        grouped.set(groupId, [])
       }
-      result[groupId].push(card)
+      grouped.get(groupId)!.push(card)
     })
     
-    return result
+    return grouped
   })
-
-  const ungroupedCards = computed(() => 
-    cards.value.filter(card => !card.groupId)
-  )
-
+  
   // Actions
   const loadCards = async () => {
-    isLoading.value = true
-    error.value = null
+    await cardsComposable.refreshItems()
+  }
+  
+  const addCard = async (card: Omit<ExtendedCard, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const groupId = card.groupId || groups.value[0]?.id
     
-    try {
-      // TODO: Replace with actual API call
-      // For now, load from local storage or create demo data
-      const savedCards = localStorage.getItem('tiko-cards')
-      
-      if (savedCards) {
-        cards.value = JSON.parse(savedCards).map((card: any) => ({
-          ...card,
-          createdAt: new Date(card.createdAt),
-          updatedAt: new Date(card.updatedAt)
-        }))
-      } else {
-        // Create some demo cards
-        cards.value = [
-          {
-            id: '1',
-            label: 'Water',
-            audioText: 'I want water',
-            imageUrl: 'https://via.placeholder.com/150/4A90E2/FFFFFF?text=💧',
-            tags: ['drink', 'need'],
-            backgroundColor: '#E3F2FD',
-            createdAt: new Date(),
-            updatedAt: new Date()
-          },
-          {
-            id: '2',
-            label: 'Food',
-            audioText: 'I am hungry',
-            imageUrl: 'https://via.placeholder.com/150/F5A623/FFFFFF?text=🍎',
-            tags: ['food', 'need'],
-            backgroundColor: '#FFF3E0',
-            createdAt: new Date(),
-            updatedAt: new Date()
-          },
-          {
-            id: '3',
-            label: 'Happy',
-            audioText: 'I am happy',
-            imageUrl: 'https://via.placeholder.com/150/50E3C2/FFFFFF?text=😊',
-            tags: ['emotion', 'feeling'],
-            backgroundColor: '#E8F5E8',
-            createdAt: new Date(),
-            updatedAt: new Date()
-          },
-          {
-            id: '4',
-            label: 'Help',
-            audioText: 'I need help',
-            imageUrl: 'https://via.placeholder.com/150/D0021B/FFFFFF?text=🆘',
-            tags: ['need', 'urgent'],
-            backgroundColor: '#FFEBEE',
-            createdAt: new Date(),
-            updatedAt: new Date()
-          }
-        ]
-        
-        // Save demo data
-        await saveCards()
-      }
-      
-      const savedGroups = localStorage.getItem('tiko-card-groups')
-      if (savedGroups) {
-        groups.value = JSON.parse(savedGroups).map((group: any) => ({
-          ...group,
-          createdAt: new Date(group.createdAt)
-        }))
-      }
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to load cards'
-      console.error('Error loading cards:', err)
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  const saveCards = async () => {
-    try {
-      localStorage.setItem('tiko-cards', JSON.stringify(cards.value))
-      localStorage.setItem('tiko-card-groups', JSON.stringify(groups.value))
-      
-      // TODO: Sync with Supabase
-      // await apiClient.post('/cards/sync', { cards: cards.value, groups: groups.value })
-    } catch (err) {
-      console.error('Error saving cards:', err)
-    }
-  }
-
-  const createCard = async (cardData: Omit<Card, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const newCard: ExtendedCard = {
-      ...cardData,
-      id: Date.now().toString(),
-      createdAt: new Date(),
-      updatedAt: new Date()
+    if (!groupId) {
+      // Create default group if none exists
+      const defaultGroup = await cardsComposable.createDeck('Default Group')
+      if (!defaultGroup) return null
     }
     
-    cards.value.push(newCard)
-    await saveCards()
+    const newCard = await cardsComposable.createCard(
+      groupId || groups.value[0].id,
+      card.label,
+      card.backText || '',
+      card.imageUrl,
+      card.backImageUrl
+    )
+    
     return newCard
   }
-
-  const updateCard = async (id: string, updates: Partial<Card>) => {
-    const index = cards.value.findIndex(card => card.id === id)
-    if (index === -1) return
+  
+  const updateCard = async (id: string, updates: Partial<ExtendedCard>) => {
+    const result = await cardsComposable.updateCard(id, {
+      front_text: updates.label,
+      back_text: updates.backText,
+      front_image_url: updates.imageUrl,
+      back_image_url: updates.backImageUrl
+    })
     
-    cards.value[index] = {
-      ...cards.value[index],
-      ...updates,
-      updatedAt: new Date()
+    if (result && updates.color) {
+      await cardsComposable.updateItem(id, { color: updates.color })
     }
     
-    await saveCards()
+    return result
   }
-
+  
   const deleteCard = async (id: string) => {
-    const index = cards.value.findIndex(card => card.id === id)
-    if (index === -1) return
-    
-    cards.value.splice(index, 1)
-    selectedCards.value = selectedCards.value.filter(cardId => cardId !== id)
-    await saveCards()
+    return cardsComposable.deleteItem(id)
   }
-
-  const createGroup = async (name: string, cardIds: string[] = []) => {
-    const newGroup: ExtendedCardGroup = {
-      id: Date.now().toString(),
-      name,
-      cardIds,
-      createdAt: new Date()
-    }
-    
-    groups.value.push(newGroup)
-    
-    // Update cards to belong to this group
-    cardIds.forEach(cardId => {
-      const card = cards.value.find(c => c.id === cardId)
-      if (card) {
-        card.groupId = newGroup.id
-      }
-    })
-    
-    await saveCards()
-    return newGroup
+  
+  const deleteSelectedCards = async () => {
+    const results = await Promise.all(
+      selectedCards.value.map(id => deleteCard(id))
+    )
+    selectedCards.value = []
+    return results.every(r => r)
   }
-
-  const addCardsToGroup = async (groupId: string, cardIds: string[]) => {
-    const group = groups.value.find(g => g.id === groupId)
-    if (!group) return
-    
-    cardIds.forEach(cardId => {
-      if (!group.cardIds.includes(cardId)) {
-        group.cardIds.push(cardId)
-      }
-      
-      const card = cards.value.find(c => c.id === cardId)
-      if (card) {
-        card.groupId = groupId
-      }
-    })
-    
-    await saveCards()
-  }
-
-  const removeCardsFromGroup = async (cardIds: string[]) => {
-    cardIds.forEach(cardId => {
-      const card = cards.value.find(c => c.id === cardId)
-      if (card) {
-        const group = groups.value.find(g => g.id === card.groupId)
-        if (group) {
-          group.cardIds = group.cardIds.filter(id => id !== cardId)
-        }
-        card.groupId = undefined
-      }
-    })
-    
-    await saveCards()
-  }
-
+  
   const toggleCardSelection = (cardId: string) => {
     const index = selectedCards.value.indexOf(cardId)
     if (index === -1) {
@@ -261,37 +161,80 @@ export const useCardsStore = defineStore('cards', () => {
       selectedCards.value.splice(index, 1)
     }
   }
-
+  
+  const selectAllCards = () => {
+    selectedCards.value = cards.value.map(c => c.id)
+  }
+  
   const clearSelection = () => {
     selectedCards.value = []
   }
-
-  const toggleEditMode = () => {
-    editMode.value = !editMode.value
-    if (!editMode.value) {
-      clearSelection()
-    }
+  
+  const createGroup = async (name: string, color?: string, imageUrl?: string) => {
+    return cardsComposable.createDeck(name, undefined, imageUrl, color)
   }
-
+  
+  const updateGroup = async (id: string, updates: Partial<CardGroup>) => {
+    return cardsComposable.updateItem(id, {
+      name: updates.name,
+      icon: updates.imageUrl,
+      color: updates.color
+    })
+  }
+  
+  const deleteGroup = async (id: string) => {
+    return cardsComposable.deleteItem(id)
+  }
+  
+  const moveCardToGroup = async (cardId: string, groupId: string) => {
+    const card = cards.value.find(c => c.id === cardId)
+    if (!card) return false
+    
+    const result = await cardsComposable.updateItem(cardId, {
+      parent_id: groupId
+    })
+    
+    return !!result
+  }
+  
+  const duplicateCard = async (cardId: string) => {
+    const card = cards.value.find(c => c.id === cardId)
+    if (!card) return null
+    
+    return addCard({
+      label: `${card.label} (Copy)`,
+      backText: card.backText,
+      imageUrl: card.imageUrl,
+      backImageUrl: card.backImageUrl,
+      groupId: card.groupId,
+      color: card.color
+    })
+  }
+  
   const updateSettings = async (newSettings: Partial<typeof settings.value>) => {
     await appStore.updateAppSettings('cards', newSettings)
   }
-
-  const speakCard = async (card: ExtendedCard) => {
-    // TODO: Implement text-to-speech
-    try {
-      if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(card.audioText)
-        speechSynthesis.speak(utterance)
-      }
-    } catch (err) {
-      console.error('Error speaking card:', err)
+  
+  const exportCards = () => {
+    return {
+      cards: cards.value,
+      groups: groups.value,
+      exportDate: new Date().toISOString()
     }
   }
-
-  // Initialize
-  loadCards()
-
+  
+  const importCards = async (data: ReturnType<typeof exportCards>) => {
+    // Import groups first
+    for (const group of data.groups) {
+      await createGroup(group.name, group.color, group.imageUrl)
+    }
+    
+    // Import cards
+    for (const card of data.cards) {
+      await addCard(card)
+    }
+  }
+  
   return {
     // State
     cards,
@@ -300,27 +243,30 @@ export const useCardsStore = defineStore('cards', () => {
     editMode,
     searchQuery,
     currentView,
-    isLoading,
-    error,
+    isLoading: cardsComposable.loading,
+    error: cardsComposable.error,
     settings,
     
     // Getters
     filteredCards,
-    cardsByGroup,
-    ungroupedCards,
+    groupedCards,
     
     // Actions
     loadCards,
-    createCard,
+    addCard,
     updateCard,
     deleteCard,
-    createGroup,
-    addCardsToGroup,
-    removeCardsFromGroup,
+    deleteSelectedCards,
     toggleCardSelection,
+    selectAllCards,
     clearSelection,
-    toggleEditMode,
+    createGroup,
+    updateGroup,
+    deleteGroup,
+    moveCardToGroup,
+    duplicateCard,
     updateSettings,
-    speakCard
+    exportCards,
+    importCards
   }
 })

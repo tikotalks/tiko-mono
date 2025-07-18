@@ -1,8 +1,7 @@
-import { useSupabase } from '@tiko/core'
+import { authService } from '@tiko/core'
 import type { TikoApp } from '../types/signin.types'
 
 export function useSignIn() {
-  const supabase = useSupabase()
 
   const getAppInfo = async (appId: string): Promise<TikoApp | null> => {
     // In a real implementation, this would fetch from a database
@@ -69,17 +68,8 @@ export function useSignIn() {
     const redirectTo = `${window.location.origin}/auth/callback?return_to=${encodeURIComponent(returnTo)}`
 
     if (provider === 'apple') {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'apple',
-        options: {
-          redirectTo,
-          scopes: 'email name'
-        }
-      })
-
-      if (error) {
-        throw error
-      }
+      // TODO: Implement OAuth in authService
+      throw new Error('Apple Sign-In not yet implemented in auth service')
     } else if (provider === 'email') {
       // For email sign in, we'd typically show a form
       // For now, let's redirect to a magic link flow
@@ -89,15 +79,10 @@ export function useSignIn() {
         throw new Error('Email is required')
       }
 
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: redirectTo,
-        }
-      })
+      const result = await authService.signInWithMagicLink(email)
 
-      if (error) {
-        throw error
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to send magic link')
       }
 
       // Show success message
