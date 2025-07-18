@@ -13,7 +13,7 @@
         type="ghost"
         size="medium"
         color="secondary"
-        @click="showQuestionInput"
+        @click="() => { console.log('[YesNoView] Edit button clicked'); showQuestionInput(); }"
         aria-label="Edit Question"
       />
     </template>
@@ -127,16 +127,26 @@ const handleAnswer = async (answer: 'yes' | 'no') => {
 };
 
 const showQuestionInput = () => {
-  popupService.open({
-    component: QuestionInputForm,
-    title: 'Edit Question',
-    props: {
-      onApply: async (question: string) => {
-        await yesNoStore.setQuestion(question);
-        popupService.close();
+  console.log('[YesNoView] showQuestionInput called');
+  console.log('[YesNoView] popupService:', popupService);
+  console.log('[YesNoView] QuestionInputForm:', QuestionInputForm);
+  
+  try {
+    popupService.open({
+      component: QuestionInputForm,
+      title: 'Edit Question',
+      props: {
+        onApply: async (question: string) => {
+          console.log('[YesNoView] onApply called with:', question);
+          await yesNoStore.setQuestion(question);
+          popupService.close();
+        },
       },
-    },
-  });
+    });
+    console.log('[YesNoView] Popup opened successfully');
+  } catch (error) {
+    console.error('[YesNoView] Error opening popup:', error);
+  }
 };
 
 const showSettingsPopup = () => {

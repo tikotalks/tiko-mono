@@ -829,7 +829,7 @@
         },
         {
           "file": "apps/yes-no/src/views/YesNoView.vue",
-          "hash": "16005425338106998544",
+          "hash": "9116697208273616118",
           "deps": [
             "npm:vue",
             "npm:bemm",
