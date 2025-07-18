@@ -17,18 +17,39 @@
       />
     </div>
     
-    <div v-if="recentQuestions.length > 0" :class="bemm('recent')">
+    <div v-if="recentQuestionItems.length > 0" :class="bemm('recent')">
       <h4 :class="bemm('recent-title')">Recent Questions</h4>
       
       <div :class="bemm('recent-list')">
-        <button
-          v-for="question in recentQuestions"
-          :key="question"
-          :class="bemm('recent-item')"
-          @click="selectRecentQuestion(question)"
+        <div
+          v-for="item in recentQuestionItems"
+          :key="`${item.id}-${item.is_favorite ? 'fav' : 'not'}`"
+          :class="[
+            bemm('recent-item'),
+            { [bemm('recent-item', 'favorite')]: item.is_favorite }
+          ]"
+          @click="selectRecentQuestion(item.name)"
         >
-          {{ question }}
-        </button>
+          <span :class="bemm('recent-item-text')">{{ item.name }}</span>
+          <div :class="bemm('recent-item-actions')">
+            <TButton
+              :icon="item.is_favorite ? 'star' : 'star-o'"
+              type="ghost"
+              size="small"
+              :color="item.is_favorite ? 'primary' : 'secondary'"
+              @click.stop="() => { console.log('Favorite clicked for', item.id); yesNoStore.toggleFavorite(item.id) }"
+              :aria-label="item.is_favorite ? 'Remove from favorites' : 'Add to favorites'"
+            />
+            <TButton
+              icon="trash"
+              type="ghost"
+              size="small"
+              color="error"
+              @click.stop="() => { console.log('Delete clicked for', item.id); yesNoStore.deleteQuestion(item.id) }"
+              aria-label="Delete question"
+            />
+          </div>
+        </div>
       </div>
       </div>
     </div>
@@ -56,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useBemm } from 'bemm'
 import { TButton } from '@tiko/ui'
 import { useYesNoStore } from '../stores/yesno'
@@ -74,7 +95,7 @@ const bemm = useBemm('question-input-form')
 const yesNoStore = useYesNoStore()
 const inputQuestion = ref('')
 
-const { recentQuestions } = yesNoStore
+const recentQuestionItems = computed(() => yesNoStore.recentQuestionItems)
 
 onMounted(() => {
   inputQuestion.value = yesNoStore.currentQuestion
@@ -91,13 +112,6 @@ const handleSubmit = async () => {
 const selectRecentQuestion = (question: string) => {
   inputQuestion.value = question
 }
-
-// Watch for changes and auto-apply
-watch(inputQuestion, () => {
-  if (inputQuestion.value.trim()) {
-    props.onApply?.(inputQuestion.value)
-  }
-})
 </script>
 
 <style lang="scss" scoped>
@@ -188,24 +202,52 @@ watch(inputQuestion, () => {
   }
   
   &__recent-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     padding: 0.5rem 0.75rem;
     background: var(--color-accent);
     border: 1px solid var(--color-border);
     border-radius: 0.25rem;
-    text-align: left;
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.875rem;
+    position: relative;
+    
+    &--favorite {
+      border-color: var(--color-primary);
+      background: color-mix(in srgb, var(--color-primary), transparent 95%);
+    }
     
     &:hover {
-      background: var(--color-primary);
-      color: white;
+      background: color-mix(in srgb, var(--color-primary), transparent 90%);
+      
+      .question-input-form__recent-item-actions {
+        opacity: 1;
+        pointer-events: auto;
+      }
     }
     
     &:focus-visible {
       outline: 2px solid var(--color-primary);
       outline-offset: 2px;
     }
+  }
+
+  &__recent-item-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__recent-item-actions {
+    display: flex;
+    gap: 0.25rem;
+    margin-left: 0.5rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
   }
 
   &__actions {
