@@ -16,11 +16,14 @@ const mockFetch = vi.fn()
 global.fetch = mockFetch
 
 // Mock crypto.subtle.digest for JWT decoding
-global.crypto = {
-  subtle: {
-    digest: vi.fn()
-  }
-} as any
+Object.defineProperty(global, 'crypto', {
+  value: {
+    subtle: {
+      digest: vi.fn()
+    }
+  },
+  writable: true
+})
 
 describe('AuthService', () => {
   let authService: AuthService

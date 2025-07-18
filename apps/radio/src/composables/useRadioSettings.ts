@@ -4,7 +4,7 @@
  */
 
 import { ref, computed } from 'vue'
-import { useAuthStore, supabase } from '@tiko/core'
+import { useAuthStore, userSettingsService } from '@tiko/core'
 import type { 
   RadioSettings, 
   RadioSettingsPayload, 
@@ -52,27 +52,36 @@ export function useRadioSettings() {
   const settings = ref<RadioSettings>({ ...defaultSettings })
   const loading = ref(false)
   const error = ref<string | null>(null)
+  
+  // Sleep timer state
   const sleepTimer = ref<SleepTimer>({
-    isActive: false,
-    remainingMinutes: 0,
+    enabled: false,
+    minutes: 30,
+    startTime: null,
     endTime: null
   })
 
-  // Sleep timer interval
-  let sleepTimerInterval: NodeJS.Timeout | null = null
-
   // Computed
-  const isLoaded = computed(() => !loading.value && !error.value)
+  const isInitialized = computed(() => 
+    settings.value !== null
+  )
+
+  const sleepTimerRemaining = computed(() => {
+    if (!sleepTimer.value.enabled || !sleepTimer.value.endTime) {
+      return 0
+    }
+
+    const now = Date.now()
+    const remaining = sleepTimer.value.endTime - now
+    return Math.max(0, Math.floor(remaining / 1000 / 60))
+  })
 
   /**
-   * Load settings from Supabase
+   * Load settings from database or create defaults
    */
   const loadSettings = async (): Promise<void> => {
-    console.log('Loading radio settings for user:', authStore.user?.id)
-    
     if (!authStore.user) {
-      error.value = 'User not authenticated'
-      console.error('No authenticated user found')
+      console.warn('No authenticated user, using default settings')
       return
     }
 
@@ -80,67 +89,21 @@ export function useRadioSettings() {
     error.value = null
 
     try {
-      console.log('Attempting to fetch radio settings from Supabase...')
-      const { data, error: fetchError } = await supabase
-        .from('radio_settings')
-        .select('*')
-        .eq('user_id', authStore.user.id)
-        .single()
+      // Get settings from userSettingsService
+      const savedSettings = await userSettingsService.getSettings('radio')
       
-      console.log('Supabase response:', { data, error: fetchError })
-
-      if (fetchError) {
-        if (fetchError.code === 'PGRST116') {
-          // No settings found, create default
-          await createDefaultSettings()
-        } else {
-          throw fetchError
-        }
+      if (savedSettings && savedSettings.settings) {
+        // Merge saved settings with defaults
+        settings.value = { ...defaultSettings, ...savedSettings.settings } as RadioSettings
       } else {
-        settings.value = transformFromRow(data)
+        // Create default settings for new user
+        await createDefaultSettings()
       }
     } catch (err) {
       console.error('Failed to load radio settings:', err)
       error.value = 'Failed to load settings'
-      // Use default settings on error
+      // Use defaults on error
       settings.value = { ...defaultSettings }
-    } finally {
-      loading.value = false
-    }
-  }
-
-  /**
-   * Update settings in Supabase
-   */
-  const updateSettings = async (newSettings: Partial<RadioSettings>): Promise<boolean> => {
-    if (!authStore.user) {
-      error.value = 'User not authenticated'
-      return false
-    }
-
-    loading.value = true
-    error.value = null
-
-    try {
-      const payload = transformToPayload({ ...settings.value, ...newSettings })
-
-      const { error: updateError } = await supabase
-        .from('radio_settings')
-        .update(payload)
-        .eq('user_id', authStore.user.id)
-
-      if (updateError) {
-        throw updateError
-      }
-
-      // Update local state
-      settings.value = { ...settings.value, ...newSettings }
-      
-      return true
-    } catch (err) {
-      console.error('Failed to update radio settings:', err)
-      error.value = 'Failed to save settings'
-      return false
     } finally {
       loading.value = false
     }
@@ -153,86 +116,71 @@ export function useRadioSettings() {
     if (!authStore.user) return
 
     try {
-      const payload = { 
-        user_id: authStore.user.id,
-        ...transformToPayload(defaultSettings) 
-      }
-      
-      console.log('Creating default settings with payload:', payload)
-
-      const { error: insertError } = await supabase
-        .from('radio_settings')
-        .insert([payload])
-
-      if (insertError) {
-        throw insertError
-      }
-
+      await userSettingsService.updateSettings('radio', defaultSettings)
       settings.value = { ...defaultSettings }
     } catch (err) {
       console.error('Failed to create default settings:', err)
-      // Don't throw, just use defaults locally
-      settings.value = { ...defaultSettings }
+      throw err
+    }
+  }
+
+  /**
+   * Update settings
+   */
+  const updateSettings = async (updates: Partial<RadioSettings>): Promise<boolean> => {
+    if (!authStore.user) {
+      error.value = 'User not authenticated'
+      return false
+    }
+
+    loading.value = true
+    error.value = null
+
+    try {
+      const newSettings = { ...settings.value, ...updates }
+      
+      await userSettingsService.updateSettings('radio', newSettings)
+      
+      settings.value = newSettings
+      return true
+    } catch (err) {
+      console.error('Failed to update settings:', err)
+      error.value = 'Failed to update settings'
+      return false
+    } finally {
+      loading.value = false
     }
   }
 
   /**
    * Reset settings to defaults
    */
-  const resetToDefaults = async (): Promise<boolean> => {
+  const resetSettings = async (): Promise<boolean> => {
     return await updateSettings(defaultSettings)
-  }
-
-  /**
-   * Toggle shuffle mode
-   */
-  const toggleShuffle = async (): Promise<void> => {
-    await updateSettings({ shuffleMode: !settings.value.shuffleMode })
-  }
-
-  /**
-   * Toggle repeat mode (none -> one -> all -> none)
-   */
-  const toggleRepeat = async (): Promise<void> => {
-    let nextMode: RadioSettings['repeatMode']
-    
-    switch (settings.value.repeatMode) {
-      case 'none':
-        nextMode = 'one'
-        break
-      case 'one':
-        nextMode = 'all'
-        break
-      case 'all':
-        nextMode = 'none'
-        break
-      default:
-        nextMode = 'none'
-    }
-
-    await updateSettings({ repeatMode: nextMode })
   }
 
   /**
    * Set sleep timer
    */
-  const setSleepTimer = (minutes: number): void => {
-    if (minutes <= 0) {
-      cancelSleepTimer()
+  const setSleepTimer = (minutes: number | null): void => {
+    if (!minutes || minutes <= 0) {
+      // Disable timer
+      sleepTimer.value = {
+        enabled: false,
+        minutes: 30,
+        startTime: null,
+        endTime: null
+      }
       return
     }
 
-    const endTime = new Date()
-    endTime.setMinutes(endTime.getMinutes() + minutes)
-
+    const now = Date.now()
     sleepTimer.value = {
-      isActive: true,
-      remainingMinutes: minutes,
-      endTime
+      enabled: true,
+      minutes,
+      startTime: now,
+      endTime: now + (minutes * 60 * 1000)
     }
-
-    // Start countdown
-    startSleepTimerCountdown()
   }
 
   /**
@@ -240,42 +188,22 @@ export function useRadioSettings() {
    */
   const cancelSleepTimer = (): void => {
     sleepTimer.value = {
-      isActive: false,
-      remainingMinutes: 0,
+      enabled: false,
+      minutes: sleepTimer.value.minutes,
+      startTime: null,
       endTime: null
-    }
-
-    if (sleepTimerInterval) {
-      clearInterval(sleepTimerInterval)
-      sleepTimerInterval = null
     }
   }
 
   /**
-   * Start sleep timer countdown
+   * Check if sleep timer has expired
    */
-  const startSleepTimerCountdown = (): void => {
-    if (sleepTimerInterval) {
-      clearInterval(sleepTimerInterval)
+  const checkSleepTimer = (): boolean => {
+    if (!sleepTimer.value.enabled || !sleepTimer.value.endTime) {
+      return false
     }
 
-    sleepTimerInterval = setInterval(() => {
-      if (!sleepTimer.value.isActive || !sleepTimer.value.endTime) {
-        return
-      }
-
-      const now = new Date()
-      const remaining = sleepTimer.value.endTime.getTime() - now.getTime()
-
-      if (remaining <= 0) {
-        // Timer expired
-        cancelSleepTimer()
-        // Emit sleep timer expired event or pause playback
-        document.dispatchEvent(new CustomEvent('radio:sleep-timer-expired'))
-      } else {
-        sleepTimer.value.remainingMinutes = Math.ceil(remaining / (1000 * 60))
-      }
-    }, 1000)
+    return Date.now() >= sleepTimer.value.endTime
   }
 
   /**
@@ -302,69 +230,23 @@ export function useRadioSettings() {
     repeat_mode: settings.repeatMode
   })
 
-  /**
-   * Update volume setting
-   */
-  const updateVolume = async (volume: number): Promise<void> => {
-    const clampedVolume = Math.max(0, Math.min(1, volume))
-    await updateSettings({ defaultVolume: clampedVolume })
-  }
-
-  /**
-   * Quick toggle for autoplay
-   */
-  const toggleAutoplay = async (): Promise<void> => {
-    await updateSettings({ autoplayNext: !settings.value.autoplayNext })
-  }
-
-  /**
-   * Quick toggle for show titles
-   */
-  const toggleShowTitles = async (): Promise<void> => {
-    await updateSettings({ showTitles: !settings.value.showTitles })
-  }
-
-  /**
-   * Set sleep timer to preset values
-   */
-  const setPresetSleepTimer = (preset: 15 | 30 | 60 | 90): void => {
-    setSleepTimer(preset)
-  }
-
-  // Cleanup on unmount
-  const cleanup = (): void => {
-    if (sleepTimerInterval) {
-      clearInterval(sleepTimerInterval)
-      sleepTimerInterval = null
-    }
-  }
-
   return {
     // State
     settings,
     loading,
     error,
     sleepTimer,
-    
+
     // Computed
-    isLoaded,
-    
+    isInitialized,
+    sleepTimerRemaining,
+
     // Actions
     loadSettings,
     updateSettings,
-    resetToDefaults,
-    toggleShuffle,
-    toggleRepeat,
-    updateVolume,
-    toggleAutoplay,
-    toggleShowTitles,
-    
-    // Sleep timer
+    resetSettings,
     setSleepTimer,
     cancelSleepTimer,
-    setPresetSleepTimer,
-    
-    // Cleanup
-    cleanup
+    checkSleepTimer
   }
 }

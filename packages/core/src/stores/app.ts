@@ -141,12 +141,12 @@ export const useAppStore = defineStore('app', () => {
       if (data) {
         console.log('[AppStore] ✅ Settings found, storing in local state')
         appSettings.value[appName] = {
-          id: data.id,
+          id: data.id || '',
           userId: data.user_id,
           appName: data.app_name,
           settings: data.settings,
-          createdAt: new Date(data.created_at),
-          updatedAt: new Date(data.updated_at)
+          createdAt: data.created_at ? new Date(data.created_at) : new Date(),
+          updatedAt: data.updated_at ? new Date(data.updated_at) : new Date()
         }
         console.log('[AppStore] Stored settings:', appSettings.value[appName])
       } else {
@@ -215,12 +215,12 @@ export const useAppStore = defineStore('app', () => {
         data.forEach(row => {
           console.log(`[AppStore] Processing settings for app: ${row.app_name}`)
           settingsMap[row.app_name] = {
-            id: row.id,
+            id: row.id || '',
             userId: row.user_id,
             appName: row.app_name,
             settings: row.settings,
-            createdAt: new Date(row.created_at),
-            updatedAt: new Date(row.updated_at)
+            createdAt: row.created_at ? new Date(row.created_at) : new Date(),
+            updatedAt: row.updated_at ? new Date(row.updated_at) : new Date()
           }
         })
         

@@ -65,7 +65,6 @@ export function useSignIn() {
     // Store return URL in localStorage as backup
     localStorage.setItem('signin_return_to', returnTo)
 
-    const redirectTo = `${window.location.origin}/auth/callback?return_to=${encodeURIComponent(returnTo)}`
 
     if (provider === 'apple') {
       // TODO: Implement OAuth in authService

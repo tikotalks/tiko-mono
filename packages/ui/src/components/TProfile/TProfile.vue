@@ -114,7 +114,6 @@ const bemm = useBemm('profile')
 const { t, keys, locale, setLocale } = useI18n()
 
 // State
-const userProfile = ref<UserProfile | null>(null)
 const avatarError = ref(false)
 const isSaving = ref(false)
 const fileInput = ref<HTMLInputElement>()
@@ -194,17 +193,8 @@ const languageOptions = computed(() => [
 // Methods
 const loadUserProfile = async () => {
   try {
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('user_id', props.user.id)
-      .single()
-
-    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-      throw error
-    }
-
-    userProfile.value = data
+    // For now, we'll use user metadata as profile data
+    // In the future, this could be replaced with a dedicated profile service
     
     // Initialize form data with user info
     formData.value = {

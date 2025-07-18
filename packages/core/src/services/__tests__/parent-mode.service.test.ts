@@ -12,14 +12,24 @@ import { LocalStorageParentModeService } from '../parent-mode.service'
 import type { ParentModeService, ParentModeSettings, ParentModeData } from '../parent-mode.service'
 
 // Mock crypto.subtle.digest for PIN hashing
-global.crypto = {
-  subtle: {
-    digest: vi.fn().mockImplementation(async () => {
-      // Return a predictable hash for testing
-      return new ArrayBuffer(32)
-    })
-  }
-} as any
+Object.defineProperty(global, 'crypto', {
+  value: {
+    subtle: {
+      digest: vi.fn().mockImplementation(async (algorithm: string, data: ArrayBuffer) => {
+        // Return different hash based on input
+        const decoder = new TextDecoder()
+        const text = decoder.decode(data)
+        // Create a simple hash based on the text
+        const hash = new Uint8Array(32)
+        for (let i = 0; i < text.length; i++) {
+          hash[i % 32] ^= text.charCodeAt(i)
+        }
+        return hash.buffer
+      })
+    }
+  },
+  writable: true
+})
 
 describe('ParentModeService', () => {
   let parentModeService: ParentModeService

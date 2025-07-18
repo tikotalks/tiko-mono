@@ -349,5 +349,8 @@ class LocalStorageParentModeService implements ParentModeService {
   }
 }
 
+// Export the class for testing
+export { LocalStorageParentModeService }
+
 // Export singleton instance
 export const parentModeService: ParentModeService = new LocalStorageParentModeService()
