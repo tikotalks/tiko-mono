@@ -12,15 +12,13 @@
     >
       <router-view />
     </TFramework>
-    
-    <TPopup />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { TFramework, TPopup, type FrameworkConfig } from '@tiko/ui'
+import { TFramework, type FrameworkConfig } from '@tiko/ui'
 import tikoConfig from '../tiko.config'
 import backgroundImage from './assets/app-icon-yes-no.png'
 

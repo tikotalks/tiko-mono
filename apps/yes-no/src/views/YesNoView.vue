@@ -67,9 +67,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive, watch, toRefs } from 'vue';
+import { ref, computed, onMounted, reactive, watch, toRefs, inject } from 'vue';
 import { useBemm } from 'bemm';
-import { /* TAuthWrapper, */ TButton, TIcon, TAppLayout, popupService } from '@tiko/ui';
+import { /* TAuthWrapper, */ TButton, TIcon, TAppLayout } from '@tiko/ui';
 import { useYesNoStore } from '../stores/yesno';
 import YesNoSettingsForm from '../components/YesNoSettingsForm.vue';
 import QuestionInputForm from '../components/QuestionInputForm.vue';
@@ -78,6 +78,9 @@ import backgroundImage from '../assets/app-icon-yes-no.png';
 
 const bemm = useBemm('yes-no');
 const yesNoStore = useYesNoStore();
+
+// Inject the popup service from TFramework
+const popupService = inject<any>('popupService');
 
 // Local state
 const showFeedback = ref(false);
