@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useYesNoStore } from './yesno'
+import { itemService } from '@tiko/core'
 
 // Mock the @tiko/core module
 vi.mock('@tiko/core', () => ({
@@ -9,7 +10,16 @@ vi.mock('@tiko/core', () => ({
     setAppSettings: vi.fn(() => Promise.resolve(true)),
     updateAppSettings: vi.fn(() => Promise.resolve(true)),
     loadAppSettings: vi.fn(() => Promise.resolve(true))
-  }))
+  })),
+  useAuthStore: vi.fn(() => ({
+    user: { id: 'test-user-id' }
+  })),
+  itemService: {
+    getItems: vi.fn(() => Promise.resolve([])),
+    createItem: vi.fn(() => Promise.resolve({ data: null, error: null })),
+    updateItem: vi.fn(() => Promise.resolve({ data: null, error: null })),
+    deleteItem: vi.fn(() => Promise.resolve({ data: null, error: null }))
+  }
 }))
 
 describe('useYesNoStore', () => {
@@ -53,7 +63,25 @@ describe('useYesNoStore', () => {
   it('can clear history', async () => {
     const store = useYesNoStore()
     
+    // Mock itemService to return a question when getItems is called
+    vi.mocked(itemService.getItems).mockResolvedValueOnce([
+      {
+        id: '1',
+        user_id: 'test-user-id',
+        app_name: 'yesno',
+        type: 'question',
+        name: 'Test question',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        is_favorite: false,
+        metadata: {}
+      }
+    ])
+    
     await store.setQuestion('Test question')
+    // Wait for the async operations to complete
+    await new Promise(resolve => setTimeout(resolve, 10))
+    
     expect(store.questionHistory).toHaveLength(1)
     
     await store.clearHistory()
