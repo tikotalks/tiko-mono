@@ -201,15 +201,52 @@ onMounted(async () => {
   console.log('[TAuthWrapper] App name:', props.appName);
   console.log('[TAuthWrapper] Component mounted at:', new Date().toISOString());
 
-  const minDisplayTime = 2000; // Show splash for at least 2 seconds
+  // Check if we're returning from auth callback or if there's already a session
+  const isReturningFromAuth = document.referrer.includes('/auth/callback') || 
+                              window.location.search.includes('from=auth') ||
+                              window.location.hash.includes('access_token');
+  
+  // Quick check for existing session to avoid unnecessary splash screen
+  const hasExistingSession = (() => {
+    try {
+      const sessionStr = localStorage.getItem('tiko_auth_session');
+      if (sessionStr) {
+        const session = JSON.parse(sessionStr);
+        // Check if session is not expired
+        return session.expires_at && Date.now() / 1000 < session.expires_at;
+      }
+    } catch (e) {
+      console.warn('[TAuthWrapper] Failed to check existing session:', e);
+    }
+    return false;
+  })();
+
+  console.log('[TAuthWrapper] Auth context:', {
+    isReturningFromAuth,
+    hasExistingSession,
+    referrer: document.referrer,
+    search: window.location.search,
+    hash: window.location.hash
+  });
+
+  // Skip splash screen if returning from auth with a valid session
+  const shouldSkipSplash = isReturningFromAuth && hasExistingSession;
+  
+  const minDisplayTime = shouldSkipSplash ? 0 : 2000; // Show splash for at least 2 seconds unless skipping
   const maxDisplayTime = 5000; // Maximum time to show splash screen
   const startTime = Date.now();
+
+  // If we should skip splash, hide it immediately
+  if (shouldSkipSplash) {
+    console.log('[TAuthWrapper] Skipping splash screen - returning from auth with valid session');
+    isInitializing.value = false;
+  }
 
   // Set a maximum timeout to prevent infinite splash screen
   const maxTimeoutId = setTimeout(() => {
     console.warn('[TAuthWrapper] ⚠️ Maximum splash screen time reached, forcing hide');
     isInitializing.value = false;
-  }, maxDisplayTime);
+  }, shouldSkipSplash ? 100 : maxDisplayTime); // Short timeout if skipping
 
   try {
     // Set up auth state listener
@@ -246,26 +283,32 @@ onMounted(async () => {
     // Clear the max timeout since we're handling it properly
     clearTimeout(maxTimeoutId);
 
-    // Ensure splash screen shows for minimum time
-    const elapsed = Date.now() - startTime;
-    const remainingTime = Math.max(0, minDisplayTime - elapsed);
+    // Ensure splash screen shows for minimum time (unless we're skipping it)
+    if (!shouldSkipSplash) {
+      const elapsed = Date.now() - startTime;
+      const remainingTime = Math.max(0, minDisplayTime - elapsed);
 
-    console.log('[TAuthWrapper] Splash screen timing:', {
-      elapsed,
-      minDisplayTime,
-      remainingTime,
-      willDelay: remainingTime > 0
-    });
+      console.log('[TAuthWrapper] Splash screen timing:', {
+        elapsed,
+        minDisplayTime,
+        remainingTime,
+        willDelay: remainingTime > 0,
+        shouldSkipSplash
+      });
 
-    if (remainingTime > 0) {
-      console.log(`[TAuthWrapper] Delaying splash screen hide for ${remainingTime}ms`);
-      setTimeout(() => {
+      if (remainingTime > 0) {
+        console.log(`[TAuthWrapper] Delaying splash screen hide for ${remainingTime}ms`);
+        setTimeout(() => {
+          isInitializing.value = false;
+          console.log('[TAuthWrapper] Splash screen hidden (after delay)');
+        }, remainingTime);
+      } else {
         isInitializing.value = false;
-        console.log('[TAuthWrapper] Splash screen hidden (after delay)');
-      }, remainingTime);
+        console.log('[TAuthWrapper] Splash screen hidden (no delay needed)');
+      }
     } else {
-      isInitializing.value = false;
-      console.log('[TAuthWrapper] Splash screen hidden (no delay needed)');
+      // Already hidden if shouldSkipSplash is true
+      console.log('[TAuthWrapper] Splash screen already hidden due to skip logic');
     }
   }
 
@@ -331,10 +374,10 @@ onMounted(async () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: comeUpLogin 0.5s ease-out;
+    animation: comeUpLogin 0.25s cubic-bezier(0.075, 0.82, 0.165, 1);
     @keyframes comeUpLogin {
       from {
-        transform: translateY(50%);
+        transform: translateY(var(--space));
         opacity: 0;
       }
       to {
