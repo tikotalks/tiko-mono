@@ -154,6 +154,12 @@ export function useParentMode(appName?: string) {
       globalParentState.value.isEnabled = true
       globalParentState.value.pinHash = pinHash
 
+      // Automatically unlock after enabling (since we have the PIN)
+      const sessionDuration = globalParentState.value.settings.sessionTimeoutMinutes * 60 * 1000
+      globalParentState.value.sessionExpiresAt = new Date(Date.now() + sessionDuration)
+      globalParentState.value.isUnlocked = true
+      startSessionCheck()
+
       return { success: true }
     } catch (error) {
       console.error('Error enabling parent mode:', error)

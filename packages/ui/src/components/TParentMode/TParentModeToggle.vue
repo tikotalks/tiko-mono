@@ -98,8 +98,7 @@ const handleToggleClick = async () => {
             const result = await parentMode.enable(pin)
             if (result.success) {
               props.popupService.close()
-              // Auto-unlock after setup
-              await parentMode.unlock(pin)
+              // Parent mode is now automatically unlocked after setup
               emit('mode-changed', true)
               toast.value.show({
                 message: 'Parent mode enabled successfully',

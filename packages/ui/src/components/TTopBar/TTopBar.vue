@@ -354,8 +354,7 @@ const showParentModeSetup = () => {
         const result = await parentMode.enable(pin)
         if (result.success) {
           popupService.close()
-          // Automatically unlock after setup
-          await parentMode.unlock(pin)
+          // Parent mode is now automatically unlocked after setup
         } else {
           console.error('Failed to enable parent mode:', result.error)
         }
