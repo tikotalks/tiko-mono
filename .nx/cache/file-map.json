@@ -711,7 +711,7 @@
         },
         {
           "file": "apps/yes-no/src/components/QuestionInputForm.vue",
-          "hash": "6730121888621839510",
+          "hash": "2141808729214257463",
           "deps": [
             "npm:vue",
             "npm:bemm",
@@ -829,7 +829,7 @@
         },
         {
           "file": "apps/yes-no/src/views/YesNoView.vue",
-          "hash": "9116697208273616118",
+          "hash": "5013820093770750314",
           "deps": [
             "npm:vue",
             "npm:bemm",
@@ -2629,7 +2629,7 @@
         },
         {
           "file": "packages/ui/src/components/TPopup/TPopup.vue",
-          "hash": "5699883319159790328",
+          "hash": "17616863813118315861",
           "deps": [
             "npm:bemm",
             "npm:open-icon",
