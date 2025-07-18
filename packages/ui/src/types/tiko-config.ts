@@ -11,6 +11,7 @@ export interface TikoThemeColors {
 }
 
 export interface TikoConfig {
+  id: string
   name: string
   icon?: string
   description?: string
