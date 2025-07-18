@@ -6,6 +6,10 @@ vi.mock('@tiko/core', () => ({
   useAuthStore: vi.fn(() => ({
     user: { value: { id: 'test-user-id' } }
   })),
+  userSettingsService: {
+    getSettings: vi.fn(() => Promise.resolve(null)),
+    updateSettings: vi.fn(() => Promise.resolve({ data: null, error: null }))
+  },
   supabase: {
     from: vi.fn(() => ({
       select: vi.fn(() => ({
@@ -46,32 +50,33 @@ describe('useRadioSettings', () => {
   it('provides sleep timer functionality', () => {
     const { sleepTimer, setSleepTimer } = useRadioSettings()
     
-    expect(sleepTimer.value.isActive).toBe(false)
+    expect(sleepTimer.value.enabled).toBe(false)
     
     setSleepTimer(15)
     
-    expect(sleepTimer.value.isActive).toBe(true)
-    expect(sleepTimer.value.remainingMinutes).toBe(15)
+    expect(sleepTimer.value.enabled).toBe(true)
+    expect(sleepTimer.value.minutes).toBe(15)
   })
 
   it('can clear sleep timer', () => {
     const { sleepTimer, setSleepTimer, cancelSleepTimer } = useRadioSettings()
     
     setSleepTimer(30)
-    expect(sleepTimer.value.isActive).toBe(true)
+    expect(sleepTimer.value.enabled).toBe(true)
     
     cancelSleepTimer()
-    expect(sleepTimer.value.isActive).toBe(false)
+    expect(sleepTimer.value.enabled).toBe(false)
   })
 
   it('calculates remaining time correctly', () => {
-    const { sleepTimer, setSleepTimer } = useRadioSettings()
+    const { sleepTimerRemaining, setSleepTimer } = useRadioSettings()
     
-    expect(sleepTimer.value.remainingMinutes).toBe(0)
+    expect(sleepTimerRemaining.value).toBe(0)
     
     setSleepTimer(10)
     
-    // Should have 10 minutes
-    expect(sleepTimer.value.remainingMinutes).toBe(10)
+    // Should have approximately 10 minutes (might be slightly less due to execution time)
+    expect(sleepTimerRemaining.value).toBeGreaterThanOrEqual(9)
+    expect(sleepTimerRemaining.value).toBeLessThanOrEqual(10)
   })
 })
