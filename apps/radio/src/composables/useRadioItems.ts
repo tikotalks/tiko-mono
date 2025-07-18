@@ -4,7 +4,7 @@
  */
 
 import { ref, computed } from 'vue'
-import { useAuthStore, supabase } from '@tiko/core'
+import { useAuthStore, itemService } from '@tiko/core'
 import type { 
   RadioItem, 
   CreateRadioItemPayload, 
