@@ -290,10 +290,6 @@ const focusNextInput = () => {
 
 const handleInput = (event: Event) => {
 	const inputValue = (event.target as HTMLInputElement).value;
-	console.log('Input value:', inputValue, 'Type:', typeof inputValue);
-	// Validate the input
-	const isValid = validate(inputValue);
-
 	const newValue = props.parseValue(inputValue);
 
 	if (model.value !== undefined) {

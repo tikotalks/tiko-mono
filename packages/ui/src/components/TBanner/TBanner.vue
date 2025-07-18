@@ -25,13 +25,14 @@
 
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
-import { onBeforeUnmount } from 'vue';
+import { onBeforeUnmount, ref, computed, type PropType } from 'vue';
+import type { Icons } from 'open-icon';
 
 import { ButtonSize, ButtonType } from '../TButton/TButton.model';
 import { TButton } from '../TButton';
 import { TIcon } from '../TIcon';
 import { BannerType } from './TBanner.model';
-import type { PropType } from 'vue';
+import { Colors, Size } from '../../types';
 
 const bemm = useBemm('banner');
 
@@ -83,13 +84,13 @@ const bannerIcon = computed(() => {
 		case BannerType.DEFAULT:
 			return null;
 		case BannerType.ERROR:
-			return Icons.CIRCLED_EXCLAMATION_MARK;
+			return 'alert-circle';
 		case BannerType.WARNING:
-			return Icons.TRIANGLED_EXCLAMATION_MARK;
+			return 'alert-triangle';
 		case BannerType.SUCCESS:
-			return Icons.CIRCLED_CHECK;
+			return 'check-circle';
 		case BannerType.INFO:
-			return Icons.CIRCLED_INFO;
+			return 'info';
 		default:
 			return null;
 	}

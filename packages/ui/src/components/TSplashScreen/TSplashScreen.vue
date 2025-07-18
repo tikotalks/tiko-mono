@@ -1,7 +1,7 @@
 <template>
-  <div 
+  <div
     v-if="isVisible"
-    :class="bemm('', { 
+    :class="bemm('', {
       'fade-in': enableTransitions && isVisible,
       'fade-out': enableTransitions && !isVisible
     })"
@@ -60,7 +60,7 @@ import type { TSplashScreenProps, TSplashScreenEmits } from './TSplashScreen.mod
 
 const props = withDefaults(defineProps<TSplashScreenProps>(), {
   theme: 'auto',
-  duration: 3000,
+  duration: 1500,
   showLoading: true,
   loadingText: 'Loading...',
   enableTransitions: true
@@ -75,13 +75,13 @@ let hideTimer: NodeJS.Timeout | null = null
 // Computed styles for custom theming
 const splashStyles = computed(() => {
   const styles: Record<string, string> = {}
-  
+
   // Always use primary color for background
   styles.backgroundColor = 'var(--color-primary)'
-  
+
   // Always use primary text color for text
   styles.color = 'var(--color-primary-text)'
-  
+
   return styles
 })
 
@@ -167,7 +167,7 @@ defineExpose({
     height: 200%;
     background: radial-gradient(
       circle at center,
-      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.25) 0%,
       rgba(255, 255, 255, 0) 70%
     );
     animation: pulseGlow 3s ease-in-out infinite;
@@ -206,23 +206,23 @@ defineExpose({
   &__logo-path {
     opacity: 0;
     transform-origin: center;
-    
+
     &--t {
       animation: letterDrop 0.6s ease-out 0.2s forwards;
     }
-    
+
     &--i {
       animation: letterDrop 0.6s ease-out 0.4s forwards;
     }
-    
+
     &--k {
       animation: letterDrop 0.6s ease-out 0.6s forwards;
     }
-    
+
     &--o {
       animation: letterDrop 0.6s ease-out 0.8s forwards;
     }
-    
+
     &--dot {
       animation: dotBounce 0.8s ease-out 1s forwards;
     }

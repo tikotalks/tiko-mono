@@ -1,9 +1,14 @@
 // Stores
 export * from './stores/auth'
+export * from './stores/auth-direct'
+export * from './stores/auth-new'
 export * from './stores/app'
 
 // Supabase client
 export { supabase } from './lib/supabase'
+
+// Auth API
+export * from './lib/auth-api'
 
 // Composables
 export { useSSO } from './composables/useSSO'

@@ -88,23 +88,21 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const signInWithPasswordlessEmail = async (email: string, fullName?: string, appName?: string) => {
+  const signInWithPasswordlessEmail = async (email: string, fullName?: string) => {
     isLoading.value = true
     error.value = null
 
     try {
-      // Get the app name from window location or default
-      const siteName = appName || window.location.hostname.split('.')[0] || 'Tiko'
-      
       const { data, error: authError } = await supabase.auth.signInWithOtp({
         email,
         options: {
           shouldCreateUser: true,
           emailRedirectTo: getAuthRedirectUrl(),
-          data: {
-            ...(fullName ? { full_name: fullName } : {}),
-            language: 'en',
-            app_name: siteName
+          data: fullName ? {
+            full_name: fullName,
+            language: 'en'
+          } : {
+            language: 'en'
           }
         }
       })
@@ -156,7 +154,7 @@ export const useAuthStore = defineStore('auth', () => {
   const resendEmailOtp = async (email: string) => {
     try {
       const { data, error: authError } = await supabase.auth.resend({
-        type: 'signup',
+        type: 'email',
         email
       })
 
@@ -180,7 +178,7 @@ export const useAuthStore = defineStore('auth', () => {
       const { data, error: authError } = await supabase.auth.signInWithOAuth({
         provider: 'apple',
         options: {
-          redirectTo: getAuthRedirectUrl()
+          redirectTo: window.location.origin
         }
       })
 
@@ -215,63 +213,44 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const initializeFromStorage = async () => {
-    console.log('[AuthStore] Initializing from storage...')
     try {
+      console.log('[Auth Store] initializeFromStorage called')
+      console.log('[Auth Store] Current URL:', window.location.href)
+      console.log('[Auth Store] Supabase client exists?', !!supabase)
+      console.log('[Auth Store] Supabase auth exists?', !!supabase?.auth)
+      console.log('[Auth Store] Calling supabase.auth.getSession()...')
+      
       const { data: { session: currentSession }, error } = await supabase.auth.getSession()
-      console.log('[AuthStore] getSession result:', { hasSession: !!currentSession, error })
+      
+      console.log('[Auth Store] getSession result:', {
+        hasSession: !!currentSession,
+        error,
+        userId: currentSession?.user?.id,
+        email: currentSession?.user?.email
+      })
       
       if (error) {
-        console.error('[AuthStore] Error getting session:', error)
+        console.error('Error getting session:', error)
         return
       }
 
       if (currentSession) {
         user.value = currentSession.user
         session.value = currentSession
-        console.log('[AuthStore] Session restored:', {
-          userId: currentSession.user.id,
-          email: currentSession.user.email,
-          sessionExpiry: currentSession.expires_at
-        })
-      } else {
-        console.log('[AuthStore] No existing session found')
       }
     } catch (err) {
-      console.error('[AuthStore] Failed to initialize auth:', err)
+      console.error('Failed to initialize auth:', err)
     }
   }
 
   const setupAuthListener = () => {
-    supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      console.log('[AuthStore] Auth state changed:', event, { hasSession: !!currentSession })
-      
+    supabase.auth.onAuthStateChange((event, currentSession) => {
       if (event === 'SIGNED_IN' && currentSession) {
         user.value = currentSession.user
         session.value = currentSession
-        console.log('[AuthStore] User signed in:', currentSession.user.id)
-        
-        // Load app settings after sign in
-        try {
-          const { useAppStore } = await import('./app')
-          const appStore = useAppStore()
-          await appStore.loadAllAppSettings()
-          console.log('[AuthStore] App settings loaded after sign in')
-        } catch (err) {
-          console.error('[AuthStore] Failed to load app settings after sign in:', err)
-        }
       } else if (event === 'SIGNED_OUT') {
         user.value = null
         session.value = null
-        console.log('[AuthStore] User signed out')
-        
-        // Clear app data on sign out
-        try {
-          const { useAppStore } = await import('./app')
-          const appStore = useAppStore()
-          appStore.clearAppData()
-        } catch (err) {
-          console.error('[AuthStore] Failed to clear app data:', err)
-        }
       }
     })
   }

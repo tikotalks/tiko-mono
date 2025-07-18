@@ -10373,6 +10373,11 @@
         "source": "yes-no",
         "target": "@tiko/core",
         "type": "static"
+      },
+      {
+        "source": "yes-no",
+        "target": "@tiko/core",
+        "type": "dynamic"
       }
     ],
     "cards": [

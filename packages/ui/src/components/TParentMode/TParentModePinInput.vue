@@ -108,7 +108,7 @@
 
             <button
               type="button"
-              :class="bemm('numpad-button', 'clear')"
+              :class="bemm('numpad-button', ['','clear'])"
               @click="handleClearClick"
               :disabled="confirmValue.length === 0"
             >
@@ -125,7 +125,7 @@
 
             <button
               type="button"
-              :class="bemm('numpad-button', 'submit')"
+              :class="bemm('numpad-button', ['','submit'])"
               @click="handleSubmit"
               :disabled="!canSubmit"
             >
@@ -145,7 +145,7 @@
           </TButton>
 
           <TButton
-            type="submit"
+            html-button-type="submit"
             color="primary"
             :disabled="!canSubmit"
             :loading="isProcessing"

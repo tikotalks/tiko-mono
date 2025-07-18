@@ -1,43 +1,87 @@
 {
   "run": {
-    "command": "nx build tiko",
-    "startTime": "2025-07-15T15:13:08.675Z",
-    "endTime": "2025-07-15T15:13:08.792Z",
+    "command": "nx run-many --target=typecheck --all",
+    "startTime": "2025-07-18T08:13:32.098Z",
+    "endTime": "2025-07-18T08:13:41.068Z",
     "inner": false
   },
   "tasks": [
     {
-      "taskId": "@tiko/core:build",
-      "target": "build",
+      "taskId": "@tiko/core:typecheck",
+      "target": "typecheck",
       "projectName": "@tiko/core",
-      "hash": "770561076093195470",
-      "startTime": "2025-07-15T15:13:08.679Z",
-      "endTime": "2025-07-15T15:13:08.715Z",
+      "hash": "14049701101786655894",
+      "startTime": "2025-07-18T08:13:32.103Z",
+      "endTime": "2025-07-18T08:13:32.747Z",
       "params": "",
-      "cacheStatus": "local-cache-hit",
-      "status": 0
+      "cacheStatus": "cache-miss",
+      "status": 1
     },
     {
-      "taskId": "@tiko/ui:build",
-      "target": "build",
+      "taskId": "@tiko/ui:typecheck",
+      "target": "typecheck",
       "projectName": "@tiko/ui",
-      "hash": "1340857667414594152",
-      "startTime": "2025-07-15T15:13:08.734Z",
-      "endTime": "2025-07-15T15:13:08.752Z",
+      "hash": "17067519906322676659",
+      "startTime": "2025-07-18T08:13:32.103Z",
+      "endTime": "2025-07-18T08:13:32.782Z",
       "params": "",
-      "cacheStatus": "local-cache-hit",
-      "status": 0
+      "cacheStatus": "cache-miss",
+      "status": 1
     },
     {
-      "taskId": "tiko:build:production",
-      "target": "build",
-      "projectName": "tiko",
-      "hash": "562445592131564251",
-      "startTime": "2025-07-15T15:13:08.771Z",
-      "endTime": "2025-07-15T15:13:08.776Z",
+      "taskId": "radio:typecheck",
+      "target": "typecheck",
+      "projectName": "radio",
+      "hash": "9765060780419067230",
+      "startTime": "2025-07-18T08:13:32.782Z",
+      "endTime": "2025-07-18T08:13:34.351Z",
       "params": "",
-      "cacheStatus": "local-cache-hit",
-      "status": 0
+      "cacheStatus": "cache-miss",
+      "status": 1
+    },
+    {
+      "taskId": "ui-docs:typecheck",
+      "target": "typecheck",
+      "projectName": "ui-docs",
+      "hash": "17630992188046347730",
+      "startTime": "2025-07-18T08:13:32.103Z",
+      "endTime": "2025-07-18T08:13:36.926Z",
+      "params": "",
+      "cacheStatus": "cache-miss",
+      "status": 1
+    },
+    {
+      "taskId": "yes-no:typecheck",
+      "target": "typecheck",
+      "projectName": "yes-no",
+      "hash": "6404189246848417584",
+      "startTime": "2025-07-18T08:13:32.747Z",
+      "endTime": "2025-07-18T08:13:37.796Z",
+      "params": "",
+      "cacheStatus": "cache-miss",
+      "status": 1
+    },
+    {
+      "taskId": "timer:typecheck",
+      "target": "typecheck",
+      "projectName": "timer",
+      "hash": "3910054414079764736",
+      "startTime": "2025-07-18T08:13:34.351Z",
+      "endTime": "2025-07-18T08:13:39.417Z",
+      "params": "",
+      "cacheStatus": "cache-miss",
+      "status": 1
+    },
+    {
+      "taskId": "type:typecheck",
+      "target": "typecheck",
+      "projectName": "type",
+      "hash": "4804327883018365593",
+      "startTime": "2025-07-18T08:13:36.926Z",
+      "endTime": "2025-07-18T08:13:41.068Z",
+      "params": "",
+      "cacheStatus": "cache-miss",
+      "status": 1
     }
   ]
 }

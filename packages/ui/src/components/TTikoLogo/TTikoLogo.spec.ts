@@ -21,7 +21,7 @@ describe('TTikoLogo', () => {
     })
     
     const svg = wrapper.find('svg')
-    expect(svg.attributes('style')).toContain('color: #ff0000')
+    expect(svg.attributes('style')).toContain('color: rgb(255, 0, 0)')
   })
 
   it('applies small size correctly', () => {

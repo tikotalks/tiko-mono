@@ -51,7 +51,7 @@ const props = withDefaults(defineProps<TAppLayoutProps>(), {
   showBackButton: false,
   backButtonLabel: 'Back',
   showUserInfo: true,
-  showOnlineStatus: false,
+  showOnlineStatus: true,
   showHeader: true,
   isUserOnline: true,
   isLoading: false

@@ -199,7 +199,7 @@ onUnmounted(() => {
 		max-width: 960px;
 		width: fit-content;
 		animation: containerComeIn .3s var(--bezier) forwards;
-		transform: scale(.75) translateY(var(--spacing));
+		transform: scale(.85) translateY(var(--space));
 		opacity: 0;
 		box-shadow:	.5em .5em 6em rgba(0,0,0,.125), .25em .25em 1em rgba(0,0,0,.125),
 		-0.25em -.25em 1em rgba(255,255,255,.125) inset;
