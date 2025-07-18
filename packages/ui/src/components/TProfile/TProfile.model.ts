@@ -1,7 +1,7 @@
-import type { User } from '@supabase/supabase-js'
+import type { AuthUser } from '@tiko/core'
 
 export interface TProfileProps {
-  user: User
+  user: AuthUser
   onClose?: () => void
   onEditProfile?: () => void
   onChangePassword?: () => void

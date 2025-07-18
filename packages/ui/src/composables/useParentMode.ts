@@ -4,7 +4,7 @@
  */
 
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useAuthStore, supabase } from '@tiko/core'
+import { useAuthStore, parentModeService } from '@tiko/core'
 import type { ParentModeState, ParentModeSettings, ParentModeAppPermissions } from './useParentMode.model'
 
 // Global parent mode state
@@ -88,28 +88,18 @@ export function useParentMode(appName?: string) {
       const user = authStore.user
       if (!user) return
 
-      // Fetch parent mode settings from Supabase user metadata
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('parent_pin_hash, parent_mode_enabled, parent_mode_settings')
-        .eq('user_id', user.id)
-        .maybeSingle()
-
-      if (error) {
-        console.error('Failed to fetch parent mode settings:', error)
-        return
-      }
-
+      // Load parent mode settings using the service
+      const data = await parentModeService.getData(user.id)
+      
       if (data) {
-        globalParentState.value.isEnabled = data.parent_mode_enabled || false
+        globalParentState.value.isEnabled = data.parent_mode_enabled
         globalParentState.value.pinHash = data.parent_pin_hash
-        
-        if (data.parent_mode_settings) {
-          globalParentState.value.settings = {
-            ...globalParentState.value.settings,
-            ...data.parent_mode_settings
-          }
+        globalParentState.value.settings = {
+          ...globalParentState.value.settings,
+          ...data.parent_mode_settings
         }
+        
+        console.log('[Parent Mode] Loaded parent mode data via service:', data)
       }
 
       // Start session check interval
@@ -124,35 +114,21 @@ export function useParentMode(appName?: string) {
    */
   const enable = async (pin: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
-        return { success: false, error: 'PIN must be exactly 4 digits' }
-      }
-
       const user = authStore.user
       if (!user) {
         return { success: false, error: 'User not authenticated' }
       }
 
-      // Hash the PIN using a simple but secure method
-      const pinHash = await hashPin(pin)
-
-      // Save to Supabase
-      const { error } = await supabase
-        .from('user_profiles')
-        .upsert({
-          user_id: user.id,
-          parent_pin_hash: pinHash,
-          parent_mode_enabled: true,
-          parent_mode_settings: globalParentState.value.settings
-        })
-
-      if (error) {
-        console.error('Failed to enable parent mode:', error)
-        return { success: false, error: 'Failed to save parent mode settings' }
+      // Use the service to enable parent mode
+      const result = await parentModeService.enable(user.id, pin, globalParentState.value.settings)
+      
+      if (!result.success) {
+        return result
       }
 
+      // Update local state
       globalParentState.value.isEnabled = true
-      globalParentState.value.pinHash = pinHash
+      globalParentState.value.pinHash = result.data!.parent_pin_hash
 
       // Automatically unlock after enabling (since we have the PIN)
       const sessionDuration = globalParentState.value.settings.sessionTimeoutMinutes * 60 * 1000
@@ -177,18 +153,12 @@ export function useParentMode(appName?: string) {
         return { success: false, error: 'User not authenticated' }
       }
 
-      // Clear from Supabase
-      const { error } = await supabase
-        .from('user_profiles')
-        .update({
-          parent_pin_hash: null,
-          parent_mode_enabled: false
-        })
-        .eq('user_id', user.id)
+      // Clear using service
+      const result = await parentModeService.disable(user.id)
 
-      if (error) {
-        console.error('Failed to disable parent mode:', error)
-        return { success: false, error: 'Failed to disable parent mode' }
+      if (!result.success) {
+        console.error('Failed to disable parent mode:', result.error)
+        return { success: false, error: result.error || 'Failed to disable parent mode' }
       }
 
       // Clear local state
@@ -211,13 +181,16 @@ export function useParentMode(appName?: string) {
    */
   const unlock = async (pin: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      if (!globalParentState.value.isEnabled || !globalParentState.value.pinHash) {
-        return { success: false, error: 'Parent mode is not enabled' }
+      const user = authStore.user
+      if (!user) {
+        return { success: false, error: 'User not authenticated' }
       }
 
-      const isValid = await verifyPin(pin, globalParentState.value.pinHash)
-      if (!isValid) {
-        return { success: false, error: 'Incorrect PIN' }
+      // Use the service to verify PIN
+      const result = await parentModeService.verifyPin(user.id, pin)
+      
+      if (!result.success) {
+        return result
       }
 
       // Set session
@@ -281,17 +254,12 @@ export function useParentMode(appName?: string) {
         ...newSettings
       }
 
-      // Save to Supabase
-      const { error } = await supabase
-        .from('user_profiles')
-        .update({
-          parent_mode_settings: updatedSettings
-        })
-        .eq('user_id', user.id)
+      // Update settings using service
+      const result = await parentModeService.updateSettings(user.id, updatedSettings)
 
-      if (error) {
-        console.error('Failed to update parent mode settings:', error)
-        return { success: false, error: 'Failed to save settings' }
+      if (!result.success) {
+        console.error('Failed to update parent mode settings:', result.error)
+        return { success: false, error: result.error || 'Failed to save settings' }
       }
 
       globalParentState.value.settings = updatedSettings
@@ -326,24 +294,6 @@ export function useParentMode(appName?: string) {
     }
   }
 
-  /**
-   * Hash PIN using Web Crypto API
-   */
-  const hashPin = async (pin: string): Promise<string> => {
-    const encoder = new TextEncoder()
-    const data = encoder.encode(pin + 'tiko_parent_salt')
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
-    const hashArray = Array.from(new Uint8Array(hashBuffer))
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
-  }
-
-  /**
-   * Verify PIN against stored hash
-   */
-  const verifyPin = async (pin: string, storedHash: string): Promise<boolean> => {
-    const pinHash = await hashPin(pin)
-    return pinHash === storedHash
-  }
 
   // Initialize on mount
   onMounted(() => {

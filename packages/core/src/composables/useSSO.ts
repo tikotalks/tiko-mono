@@ -1,7 +1,7 @@
 import { onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
-import { supabase } from '../lib/supabase'
+import { authService } from '../services'
 
 export interface SSOOptions {
   onSuccess?: () => void
@@ -30,28 +30,24 @@ export function useSSO(options: SSOOptions = {}) {
     }
 
     try {
-      // Set the session using the tokens
-      const { data, error } = await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken,
-      })
-
-      if (error) {
-        throw error
-      }
-
-      // Update the auth store
-      if (data.session && data.user) {
-        authStore.user = data.user
-        authStore.session = data.session
-      }
-
-      // Clear the tokens from URL
-      router.replace('/')
-
-      // Call success callback
-      if (options.onSuccess) {
-        options.onSuccess()
+      // TODO: Implement setSession in authService for SSO
+      // For now, we need to get the current session after OAuth redirect
+      const session = await authService.getSession()
+      
+      if (session) {
+        // Update the auth store
+        authStore.user = session.user
+        authStore.session = session
+        
+        // Clear the tokens from URL
+        router.replace('/')
+        
+        // Call success callback
+        if (options.onSuccess) {
+          options.onSuccess()
+        }
+      } else {
+        throw new Error('Failed to establish session')
       }
     } catch (error) {
       console.error('Failed to set session from SSO:', error)

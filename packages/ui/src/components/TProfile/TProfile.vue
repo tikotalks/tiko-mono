@@ -98,7 +98,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useBemm } from 'bemm'
-import { supabase } from '@tiko/core'
+import { authService, fileService } from '@tiko/core'
 import { useI18n } from '../../composables/useI18n'
 import { toastService } from '../TToast'
 import TButton from '../TButton/TButton.vue'
@@ -325,26 +325,18 @@ const handleFileSelect = async (event: Event) => {
 
 const uploadAvatar = async (file: File): Promise<string | null> => {
   try {
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${props.user.id}-${Date.now()}.${fileExt}`
+    const result = await fileService.uploadAvatar(props.user.id, file)
     
-    const { data, error } = await supabase.storage
-      .from('avatars')
-      .upload(fileName, file, {
-        cacheControl: '3600',
-        upsert: true
-      })
-
-    if (error) throw error
-
-    // For private buckets, we create a signed URL that expires
-    const { data: urlData, error: urlError } = await supabase.storage
-      .from('avatars')
-      .createSignedUrl(data.path, 60 * 60 * 24 * 365) // 1 year expiry
-
-    if (urlError) throw urlError
-
-    return urlData.signedUrl
+    if (result.success) {
+      return result.url || null
+    }
+    
+    toastService.show({
+      message: result.error || 'Failed to upload avatar',
+      type: 'error'
+    })
+    
+    return null
   } catch (error) {
     console.error('Error uploading avatar:', error)
     return null
@@ -377,11 +369,11 @@ const handleSave = async () => {
       updateData.avatar_url = avatarUrl
     }
 
-    const { error: authError } = await supabase.auth.updateUser({
-      data: updateData
-    })
+    const result = await authService.updateUserMetadata(updateData)
 
-    if (authError) throw authError
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to update profile')
+    }
 
     // Update locale if changed - this also updates localStorage
     if (formData.value.language !== locale.value) {
@@ -389,7 +381,10 @@ const handleSave = async () => {
     }
 
     // Force refresh of user session to get updated avatar immediately
-    await supabase.auth.refreshSession()
+    const session = await authService.getSession()
+    if (session) {
+      await authService.refreshSession()
+    }
 
     toastService.show({
       message: t(keys.profile.profileUpdated),
