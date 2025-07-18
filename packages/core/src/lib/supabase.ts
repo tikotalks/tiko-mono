@@ -29,15 +29,19 @@ if (supabaseUrl === 'https://placeholder.supabase.co' || supabaseAnonKey === 'pl
 // Get the site URL for auth redirects
 const siteUrl = import.meta.env.VITE_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000')
 
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing required environment variables: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY')
+}
+
 export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co', 
-  supabaseAnonKey || 'placeholder-key',
+  supabaseUrl, 
+  supabaseAnonKey,
   {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      flowType: 'pkce'
+      flowType: 'implicit'
     },
     global: {
       headers: {
