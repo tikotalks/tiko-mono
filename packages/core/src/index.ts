@@ -1,11 +1,9 @@
+// Services (New clean API layer)
+export * from './services'
+
 // Stores
 export * from './stores/auth'
-export * from './stores/auth-direct'
-export * from './stores/auth-new'
 export * from './stores/app'
-
-// Supabase client
-export { supabase } from './lib/supabase'
 
 // Auth API
 export * from './lib/auth-api'
@@ -13,7 +11,8 @@ export * from './lib/auth-api'
 // Composables
 export { useSSO } from './composables/useSSO'
 export type { SSOOptions } from './composables/useSSO'
-export { useSupabase } from './composables/useSupabase'
+export { useItems } from './composables/useItems'
+export type { UseItemsOptions, UseItemsReturn } from './composables/useItems'
 
 // Types
 export * from './types/user'

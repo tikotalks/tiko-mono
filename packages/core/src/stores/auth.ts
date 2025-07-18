@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { User, Session } from '@supabase/supabase-js'
-import { supabase, getAuthRedirectUrl } from '../lib/supabase'
+import { authService } from '../services'
+import type { AuthUser, AuthSession } from '../services/auth.service'
 
 export const useAuthStore = defineStore('auth', () => {
   // State
-  const user = ref<User | null>(null)
-  const session = ref<Session | null>(null)
+  const user = ref<AuthUser | null>(null)
+  const session = ref<AuthSession | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
@@ -20,17 +20,14 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
 
     try {
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
+      const result = await authService.signInWithEmail(email, password)
 
-      if (authError) {
-        throw authError
+      if (!result.success) {
+        throw new Error(result.error || 'Authentication failed')
       }
 
-      user.value = data.user
-      session.value = data.session
+      if (result.user) user.value = result.user
+      if (result.session) session.value = result.session
       
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Authentication failed'
@@ -47,34 +44,22 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       console.log('Attempting sign up with:', { email, hasPassword: !!password, fullName })
       
-      const { data, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            language: 'en'
-          }
-        }
-      })
+      const result = await authService.signUpWithEmail(email, password, fullName)
 
-      console.log('Sign up response:', { data, error: authError })
+      console.log('Sign up response:', result)
 
-      if (authError) {
-        console.error('Supabase auth error:', authError)
-        throw authError
+      if (!result.success) {
+        throw new Error(result.error || 'Sign up failed')
       }
 
       // Don't set user/session here as they need to confirm email first
-      return data
+      return result
       
     } catch (err: any) {
       console.error('Sign up failed:', err)
       
       if (err instanceof TypeError && err.message === 'Failed to fetch') {
         error.value = 'Network error: Cannot connect to authentication service. Please check your internet connection and try again.'
-      } else if (err?.error_code === 'email_address_invalid') {
-        error.value = 'Please enter a valid email address'
       } else if (err?.message?.includes('email')) {
         error.value = 'Email format is invalid. Please use a valid email address.'
       } else if (err?.message?.includes('password')) {
@@ -93,25 +78,13 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
 
     try {
-      const { data, error: authError } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: true,
-          emailRedirectTo: getAuthRedirectUrl(),
-          data: fullName ? {
-            full_name: fullName,
-            language: 'en'
-          } : {
-            language: 'en'
-          }
-        }
-      })
+      const result = await authService.signInWithMagicLink(email, fullName)
 
-      if (authError) {
-        throw authError
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to send verification code')
       }
 
-      return data
+      return result
       
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to send verification code'
@@ -126,22 +99,16 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
 
     try {
-      const { data, error: authError } = await supabase.auth.verifyOtp({
-        email,
-        token,
-        type: 'email'
-      })
+      const result = await authService.verifyOtp(email, token)
 
-      if (authError) {
-        throw authError
+      if (!result.success) {
+        throw new Error(result.error || 'Invalid verification code')
       }
 
-      if (data.user && data.session) {
-        user.value = data.user
-        session.value = data.session
-      }
+      if (result.user) user.value = result.user
+      if (result.session) session.value = result.session
 
-      return data
+      return result
       
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Invalid verification code'
@@ -153,16 +120,13 @@ export const useAuthStore = defineStore('auth', () => {
 
   const resendEmailOtp = async (email: string) => {
     try {
-      const { data, error: authError } = await supabase.auth.resend({
-        type: 'email',
-        email
-      })
+      const result = await authService.resendOtp(email)
 
-      if (authError) {
-        throw authError
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to resend verification code')
       }
 
-      return data
+      return result
       
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to resend verification code'
@@ -175,19 +139,9 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
 
     try {
-      const { data, error: authError } = await supabase.auth.signInWithOAuth({
-        provider: 'apple',
-        options: {
-          redirectTo: window.location.origin
-        }
-      })
-
-      if (authError) {
-        throw authError
-      }
-
-      // OAuth will redirect, so we don't set user/session here
-      return data
+      // TODO: Implement OAuth in authService
+      // For now, throw an error
+      throw new Error('Apple Sign-In not yet implemented in auth service')
       
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Apple Sign-In failed'
@@ -199,9 +153,9 @@ export const useAuthStore = defineStore('auth', () => {
 
   const logout = async () => {
     try {
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        console.warn('Logout error:', error)
+      const result = await authService.signOut()
+      if (!result.success) {
+        console.warn('Logout error:', result.error)
       }
     } catch (err) {
       console.warn('Logout failed:', err)
@@ -216,23 +170,15 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       console.log('[Auth Store] initializeFromStorage called')
       console.log('[Auth Store] Current URL:', window.location.href)
-      console.log('[Auth Store] Supabase client exists?', !!supabase)
-      console.log('[Auth Store] Supabase auth exists?', !!supabase?.auth)
-      console.log('[Auth Store] Calling supabase.auth.getSession()...')
+      console.log('[Auth Store] Calling authService.getSession()...')
       
-      const { data: { session: currentSession }, error } = await supabase.auth.getSession()
+      const currentSession = await authService.getSession()
       
       console.log('[Auth Store] getSession result:', {
         hasSession: !!currentSession,
-        error,
         userId: currentSession?.user?.id,
         email: currentSession?.user?.email
       })
-      
-      if (error) {
-        console.error('Error getting session:', error)
-        return
-      }
 
       if (currentSession) {
         user.value = currentSession.user
@@ -244,31 +190,23 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const setupAuthListener = () => {
-    supabase.auth.onAuthStateChange((event, currentSession) => {
-      if (event === 'SIGNED_IN' && currentSession) {
-        user.value = currentSession.user
-        session.value = currentSession
-      } else if (event === 'SIGNED_OUT') {
-        user.value = null
-        session.value = null
-      }
-    })
+    // TODO: Implement auth state change listener in authService
+    // For now, we'll rely on manual session checks
+    console.log('[Auth Store] Auth listener setup skipped - using authService')
   }
 
   const updateUserMetadata = async (metadata: Record<string, any>) => {
     if (!user.value) return
 
     try {
-      const { data, error: updateError } = await supabase.auth.updateUser({
-        data: metadata
-      })
+      const result = await authService.updateUserMetadata(metadata)
 
-      if (updateError) {
-        throw updateError
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to update user')
       }
 
-      if (data.user) {
-        user.value = data.user
+      if (result.user) {
+        user.value = result.user
       }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to update user'

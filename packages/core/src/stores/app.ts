@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { AppSettings, SyncAction } from '../types/user'
-import { supabase } from '../lib/supabase'
+import { userSettingsService } from '../services'
 import { useAuthStore } from './auth'
 
 export const useAppStore = defineStore('app', () => {
@@ -94,30 +94,12 @@ export const useAppStore = defineStore('app', () => {
         console.log(`[AppStore] Upserting settings for app: ${appName}`)
         console.log('[AppStore] Settings to save:', settings)
         
-        // Upsert user settings in Supabase
-        const { error } = await supabase
-          .from('user_settings')
-          .upsert(
-            {
-              user_id: userId,
-              app_name: appName,
-              settings,
-              updated_at: new Date().toISOString()
-            },
-            {
-              onConflict: 'user_id,app_name'
-            }
-          )
+        // Save user settings using the service
+        const result = await userSettingsService.saveSettings(userId, appName, settings)
         
-        if (error) {
-          console.error('[AppStore] ❌ Failed to upsert settings:', error)
-          console.error('[AppStore] Upsert error details:', {
-            code: error.code,
-            message: error.message,
-            details: error.details,
-            hint: error.hint
-          })
-          throw error
+        if (!result.success) {
+          console.error('[AppStore] ❌ Failed to save settings:', result.error)
+          throw new Error(result.error || 'Failed to save settings')
         } else {
           console.log('[AppStore] ✅ Settings saved successfully')
         }
@@ -150,59 +132,12 @@ export const useAppStore = defineStore('app', () => {
     console.log(`[AppStore] Starting database query...`)
 
     try {
-      // Log the Supabase client state
-      console.log('[AppStore] Supabase client check:', {
-        hasClient: !!supabase,
-        clientType: typeof supabase,
-        hasFrom: typeof supabase?.from === 'function'
-      })
-
-      console.log(`[AppStore] Executing query: SELECT * FROM user_settings WHERE user_id = '${userId}' AND app_name = '${appName}'`)
+      console.log(`[AppStore] Getting settings for app: ${appName}, user: ${userId}`)
       
-      const query = supabase
-        .from('user_settings')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('app_name', appName)
-        .single()
+      const data = await userSettingsService.getSettings(userId, appName)
       
-      console.log('[AppStore] Query object created, executing...')
+      console.log('[AppStore] Service response:', data)
       
-      const { data, error } = await query
-      
-      console.log('[AppStore] Query completed')
-      console.log('[AppStore] Response data:', data)
-      console.log('[AppStore] Response error:', error)
-      
-      if (error) {
-        console.log('[AppStore] Error details:', {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          status: (error as any).status,
-          statusText: (error as any).statusText
-        })
-      }
-
-      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-        console.error('[AppStore] ❌ Database error (not a "no rows" error):', error)
-        console.error('[AppStore] This might indicate:', {
-          possibleCauses: [
-            '1. Table does not exist',
-            '2. User does not have permission to read from table',
-            '3. Row Level Security (RLS) is blocking access',
-            '4. Authentication token is invalid or expired',
-            '5. Network/connection issue'
-          ]
-        })
-        throw error
-      }
-      
-      if (error && error.code === 'PGRST116') {
-        console.log('[AppStore] ℹ️ No existing settings found for this app/user combination (this is normal for first-time users)')
-      }
-
       if (data) {
         console.log('[AppStore] ✅ Settings found, storing in local state')
         appSettings.value[appName] = {
@@ -214,6 +149,8 @@ export const useAppStore = defineStore('app', () => {
           updatedAt: new Date(data.updated_at)
         }
         console.log('[AppStore] Stored settings:', appSettings.value[appName])
+      } else {
+        console.log('[AppStore] ℹ️ No existing settings found for this app/user combination (this is normal for first-time users)')
       }
     } catch (err: any) {
       console.error('[AppStore] ❌ EXCEPTION caught while loading app settings')
@@ -262,30 +199,14 @@ export const useAppStore = defineStore('app', () => {
     console.log(`[AppStore] Loading all settings for user: ${userId}`)
 
     try {
-      console.log('[AppStore] Executing query: SELECT * FROM user_settings WHERE user_id = ?')
+      console.log('[AppStore] Getting all settings for user:', userId)
       
-      const { data, error } = await supabase
-        .from('user_settings')
-        .select('*')
-        .eq('user_id', userId)
+      const data = await userSettingsService.getAllUserSettings(userId)
 
-      console.log('[AppStore] Query completed:', {
+      console.log('[AppStore] Service response:', {
         hasData: !!data,
-        dataLength: data?.length || 0,
-        hasError: !!error,
-        error: error
+        dataLength: data?.length || 0
       })
-
-      if (error) {
-        console.error('[AppStore] ❌ Database error:', error)
-        console.error('[AppStore] Error details:', {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint
-        })
-        throw error
-      }
 
       if (data && data.length > 0) {
         console.log(`[AppStore] ✅ Found ${data.length} app settings`)
