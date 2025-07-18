@@ -78,7 +78,7 @@
             <!-- Online indicator -->
             <div
               v-if="showOnlineStatus"
-              :class="bemm('online-indicator', { online: isUserOnline })"
+              :class="bemm('online-indicator', ['', isUserOnline ? 'online' : 'offline' ])"
               :aria-label="isUserOnline ? 'Online' : 'Offline'"
             />
           </div>
@@ -525,9 +525,9 @@ onUnmounted(() => {
 
   &__avatar {
     position: relative;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 50%;
+    width: var(--space-xl);
+    height: var(--space-xl);
+    border-radius: var(--border-radius);
     overflow: hidden;
     flex-shrink: 0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -557,6 +557,7 @@ onUnmounted(() => {
     right: 0;
     width: 0.75rem;
     height: 0.75rem;
+    border: 1px solid red;
     border-radius: 50%;
     border: 2px solid var(--color-accent);
     background: var(--color-text-secondary);

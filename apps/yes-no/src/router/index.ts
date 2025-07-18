@@ -20,4 +20,10 @@ const router = createRouter({
   routes
 })
 
+// Debug routing
+router.beforeEach((to, from, next) => {
+  console.log('[Router] Navigating to:', to.path, to.name)
+  next()
+})
+
 export default router

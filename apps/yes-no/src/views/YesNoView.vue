@@ -1,5 +1,5 @@
 <template>
-  <TAuthWrapper :backgroundImage="backgroundImage" :title="'Yes/No'">
+  <!-- <TAuthWrapper :backgroundImage="backgroundImage" :title="'Yes/No'"> -->
     <TAppLayout
     title="Yes or No"
     :show-header="true"
@@ -63,13 +63,13 @@
       </div>
     </div>
   </TAppLayout>
-  </TAuthWrapper>
+  <!-- </TAuthWrapper> -->
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive, watch, toRefs } from 'vue';
 import { useBemm } from 'bemm';
-import { TAuthWrapper, TButton, TIcon, TAppLayout, popupService } from '@tiko/ui';
+import { /* TAuthWrapper, */ TButton, TIcon, TAppLayout, popupService } from '@tiko/ui';
 import { useYesNoStore } from '../stores/yesno';
 import YesNoSettingsForm from '../components/YesNoSettingsForm.vue';
 import QuestionInputForm from '../components/QuestionInputForm.vue';

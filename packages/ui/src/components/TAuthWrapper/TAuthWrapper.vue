@@ -103,19 +103,29 @@ const isAuthenticated = computed(() => authStore.isAuthenticated);
 
 // Splash screen configuration
 const splashConfig = computed(() => {
+  console.log('[TAuthWrapper] Computing splash config for app:', props.appName);
+  console.log('[TAuthWrapper] Available configs:', Object.keys(defaultTikoSplashConfigs));
+
   const config = defaultTikoSplashConfigs[props.appName as keyof typeof defaultTikoSplashConfigs] || defaultTikoSplashConfigs.todo;
-  
+
+  console.log('[TAuthWrapper] Selected config:', config);
+  console.log('[TAuthWrapper] Config app name:', config.appName);
+
   // Get primary color from Tiko config
   const primaryColor = tikoConfig.value?.theme?.primary;
   const backgroundColor = primaryColor ? `var(--color-${primaryColor})` : config.backgroundColor;
-  
-  return {
+
+  const finalConfig = {
     ...config,
     loadingText: 'Preparing your app...',
     version: '1.0.0',
     theme: 'auto' as const,
     backgroundColor
   };
+
+  console.log('[TAuthWrapper] Final splash config:', finalConfig);
+
+  return finalConfig;
 });
 
 // Methods
@@ -187,42 +197,86 @@ const handleSplashComplete = () => {
 
 // Initialize authentication
 onMounted(async () => {
-  console.log('[TAuthWrapper] Initializing authentication...');
+  console.log('[TAuthWrapper] ========== INITIALIZING AUTHENTICATION ==========');
+  console.log('[TAuthWrapper] App name:', props.appName);
+  console.log('[TAuthWrapper] Component mounted at:', new Date().toISOString());
+
   const minDisplayTime = 2000; // Show splash for at least 2 seconds
+  const maxDisplayTime = 5000; // Maximum time to show splash screen
   const startTime = Date.now();
-  
+
+  // Set a maximum timeout to prevent infinite splash screen
+  const maxTimeoutId = setTimeout(() => {
+    console.warn('[TAuthWrapper] ⚠️ Maximum splash screen time reached, forcing hide');
+    isInitializing.value = false;
+  }, maxDisplayTime);
+
   try {
     // Set up auth state listener
+    console.log('[TAuthWrapper] Setting up auth state listener...');
     authStore.setupAuthListener();
-    console.log('[TAuthWrapper] Auth listener set up');
+    console.log('[TAuthWrapper] ✅ Auth listener set up');
 
     // Try to restore session
+    console.log('[TAuthWrapper] Attempting to restore session from storage...');
     await authStore.initializeFromStorage();
-    console.log('[TAuthWrapper] Auth initialized:', { 
-      isAuthenticated: authStore.isAuthenticated, 
+
+    console.log('[TAuthWrapper] Auth initialization complete:', {
+      isAuthenticated: authStore.isAuthenticated,
       hasUser: !!authStore.user,
-      userId: authStore.user?.id 
+      userId: authStore.user?.id,
+      userEmail: authStore.user?.email,
+      sessionExists: !!authStore.session,
+      sessionExpiry: authStore.session?.expires_at
     });
-  } catch (error) {
-    console.error('Failed to initialize auth:', error);
+
+    if (authStore.isAuthenticated) {
+      console.log('[TAuthWrapper] ✅ User is authenticated');
+    } else {
+      console.log('[TAuthWrapper] ℹ️ User is not authenticated, showing login form');
+    }
+  } catch (error: any) {
+    console.error('[TAuthWrapper] ❌ Failed to initialize auth:', error);
+    console.error('[TAuthWrapper] Error details:', {
+      message: error?.message,
+      stack: error?.stack,
+      type: error?.constructor?.name
+    });
   } finally {
+    // Clear the max timeout since we're handling it properly
+    clearTimeout(maxTimeoutId);
+
     // Ensure splash screen shows for minimum time
     const elapsed = Date.now() - startTime;
     const remainingTime = Math.max(0, minDisplayTime - elapsed);
-    
+
+    console.log('[TAuthWrapper] Splash screen timing:', {
+      elapsed,
+      minDisplayTime,
+      remainingTime,
+      willDelay: remainingTime > 0
+    });
+
     if (remainingTime > 0) {
+      console.log(`[TAuthWrapper] Delaying splash screen hide for ${remainingTime}ms`);
       setTimeout(() => {
         isInitializing.value = false;
+        console.log('[TAuthWrapper] Splash screen hidden (after delay)');
       }, remainingTime);
     } else {
       isInitializing.value = false;
+      console.log('[TAuthWrapper] Splash screen hidden (no delay needed)');
     }
   }
 
-    const video = document.getElementById('backgroundVideo') as HTMLVideoElement;
-    if(video){
-      video.playbackRate = 0.75;
-    }
+  // Video playback setup
+  const video = document.getElementById('backgroundVideo') as HTMLVideoElement;
+  if(video){
+    video.playbackRate = 0.75;
+    console.log('[TAuthWrapper] Background video playback rate set to 0.75');
+  }
+
+  console.log('[TAuthWrapper] ========== END AUTHENTICATION INITIALIZATION ==========');
 });
 </script>
 

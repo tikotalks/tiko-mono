@@ -37,5 +37,8 @@ export const createViteConfig = (appDir: string, defaultPort: number, pwaConfig?
         },
       },
     },
+    optimizeDeps: {
+      include: ['@supabase/supabase-js']
+    }
   })
 }

@@ -145,7 +145,7 @@ describe('TCard', () => {
       } as TCardProps
     })
     
-    expect(wrapper.find('.card').attributes('style')).toContain('background-color: #ff0000')
+    expect(wrapper.find('.card').attributes('style')).toContain('background-color: rgb(255, 0, 0)')
   })
 
   it('renders action buttons', async () => {

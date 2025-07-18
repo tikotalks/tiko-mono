@@ -19,18 +19,9 @@ const authStore = useAuthStore()
 const statusMessage = ref('Processing authentication...')
 
 onMounted(async () => {
-  console.log('[AuthCallback] Component mounted')
-  console.log('[AuthCallback] URL:', window.location.href)
-  
-  // Wait a moment to ensure we're the only one processing
-  await new Promise(resolve => setTimeout(resolve, 100))
-  
   try {
     // Initialize auth from URL params (for magic link / OAuth callbacks)
-    console.log('[AuthCallback] Calling initializeFromStorage...')
     await authStore.initializeFromStorage()
-    
-    console.log('[AuthCallback] initializeFromStorage completed, checking auth state...')
     
     // Check if we have a session
     if (authStore.isAuthenticated) {

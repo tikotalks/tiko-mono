@@ -6,7 +6,7 @@ A comprehensive application layout component that provides a consistent structur
 
 ```vue
 <template>
-  <TAppLayout 
+  <TAppLayout
     title="My App"
     subtitle="Welcome back!"
     @back="handleBack"
@@ -37,7 +37,7 @@ const handleBack = () => {
 | `showBackButton` | `boolean` | `false` | Show/hide the back button |
 | `backButtonLabel` | `string` | `'Back'` | Custom label for back button |
 | `showUserInfo` | `boolean` | `true` | Show/hide user information |
-| `showOnlineStatus` | `boolean` | `false` | Show/hide online status indicator |
+| `showOnlineStatus` | `boolean` | `true` | Show/hide online status indicator |
 | `showHeader` | `boolean` | `true` | Show/hide the entire header |
 | `isUserOnline` | `boolean` | `true` | Current online status |
 | `isLoading` | `boolean` | `false` | Loading state for the app |
@@ -125,7 +125,7 @@ const router = useRouter()
 
 ```vue
 <template>
-  <TAppLayout 
+  <TAppLayout
     title="Loading Data"
     :is-loading="isLoading"
   >
@@ -193,12 +193,12 @@ onMounted(() => {
 import { TAppLayout } from '@tiko/ui'
 
 const customItems = [
-  { 
+  {
     id: 'export',
     label: 'Export Data',
     icon: 'download'
   },
-  { 
+  {
     id: 'import',
     label: 'Import Data',
     icon: 'upload'
@@ -254,10 +254,10 @@ const handleMenuItem = (item) => {
     </template>
 
     <template #top-bar-actions>
-      <TButton 
-        icon="search" 
-        type="ghost" 
-        @click="toggleSearch" 
+      <TButton
+        icon="search"
+        type="ghost"
+        @click="toggleSearch"
       />
     </template>
 
@@ -271,7 +271,7 @@ const handleMenuItem = (item) => {
 
     <template #footer>
       <TBanner v-if="hasUpdate" type="info">
-        New version available! 
+        New version available!
         <TButton size="small" @click="updateApp">Update Now</TButton>
       </TBanner>
     </template>
