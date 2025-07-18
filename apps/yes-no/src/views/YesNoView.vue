@@ -27,7 +27,7 @@
           data-cy="question-display"
           :disabled="isPlaying"
         >
-          <div :class="bemm('question-text')">
+          <div :class="bemm('question-text')" @click="sayQuestion">
             {{ currentQuestion }}
           </div>
 
@@ -172,15 +172,20 @@ const handleLogout = () => {
   // The auth store handles the logout, this is just for any cleanup
 };
 
+const sayQuestion = () => {
+  if (settings.value.autoSpeak) {
+    yesNoStore.speakQuestion();
+  }
+};
+
 // Initialize
 onMounted(async () => {
-  await yesNoStore.loadState();
-
-  // Auto-speak question if enabled
-  if (settings.value.autoSpeak) {
-    setTimeout(() => {
-      speakQuestion();
-    }, 500);
+  console.log('[YesNoView] Component mounted, loading state...');
+  try {
+    await yesNoStore.loadState();
+    console.log('[YesNoView] State loaded successfully');
+  } catch (error) {
+    console.error('[YesNoView] Failed to load state:', error);
   }
 });
 </script>
