@@ -117,20 +117,32 @@ export const useAppStore = defineStore('app', () => {
   const loadAppSettings = async (appName: string) => {
     const userId = authStore.user?.id
     if (!userId) {
-      console.warn('No user ID available for loading settings')
+      console.error('[AppStore] Cannot load settings - No user ID available. User:', authStore.user)
+      console.error('[AppStore] Auth state:', { isAuthenticated: authStore.isAuthenticated, session: authStore.session })
       return
     }
+    
+    console.log(`[AppStore] Loading settings for app: ${appName}, user: ${userId}`)
 
     try {
+      console.log(`[AppStore] Querying user_settings table for user_id: ${userId}, app_name: ${appName}`)
+      
       const { data, error } = await supabase
         .from('user_settings')
         .select('*')
         .eq('user_id', userId)
         .eq('app_name', appName)
         .single()
+      
+      console.log('[AppStore] Query result:', { data, error })
 
       if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        console.error('[AppStore] Database error:', error)
         throw error
+      }
+      
+      if (error && error.code === 'PGRST116') {
+        console.log('[AppStore] No existing settings found for this app/user combination')
       }
 
       if (data) {
@@ -144,7 +156,12 @@ export const useAppStore = defineStore('app', () => {
         }
       }
     } catch (err) {
-      console.error('Failed to load app settings:', err)
+      console.error('[AppStore] Failed to load app settings:', err)
+      console.error('[AppStore] Error details:', {
+        appName,
+        userId,
+        error: err
+      })
     }
   }
 

@@ -133,14 +133,24 @@ export const useYesNoStore = defineStore('yesno', () => {
   }
 
   const loadState = async () => {
+    console.log('[YesNoStore] Loading state...')
     await appStore.loadAppSettings('yes-no')
     
     const appSettings = appStore.getAppSettings('yes-no')
-    if (appSettings.currentQuestion) {
+    console.log('[YesNoStore] Retrieved settings:', appSettings)
+    
+    if (appSettings?.currentQuestion) {
       currentQuestion.value = appSettings.currentQuestion
+      console.log('[YesNoStore] Loaded question:', appSettings.currentQuestion)
+    } else {
+      console.log('[YesNoStore] No saved question found, using default')
     }
-    if (appSettings.questionHistory) {
+    
+    if (appSettings?.questionHistory) {
       questionHistory.value = appSettings.questionHistory
+      console.log('[YesNoStore] Loaded question history:', appSettings.questionHistory)
+    } else {
+      console.log('[YesNoStore] No question history found')
     }
   }
 

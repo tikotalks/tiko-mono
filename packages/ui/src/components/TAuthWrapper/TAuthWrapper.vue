@@ -187,15 +187,22 @@ const handleSplashComplete = () => {
 
 // Initialize authentication
 onMounted(async () => {
+  console.log('[TAuthWrapper] Initializing authentication...');
   const minDisplayTime = 2000; // Show splash for at least 2 seconds
   const startTime = Date.now();
   
   try {
     // Set up auth state listener
     authStore.setupAuthListener();
+    console.log('[TAuthWrapper] Auth listener set up');
 
     // Try to restore session
     await authStore.initializeFromStorage();
+    console.log('[TAuthWrapper] Auth initialized:', { 
+      isAuthenticated: authStore.isAuthenticated, 
+      hasUser: !!authStore.user,
+      userId: authStore.user?.id 
+    });
   } catch (error) {
     console.error('Failed to initialize auth:', error);
   } finally {
