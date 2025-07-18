@@ -135,6 +135,11 @@ const showQuestionInput = () => {
     popupService.open({
       component: QuestionInputForm,
       title: 'Edit Question',
+      config: {
+        background: true,
+        position: 'center',
+        canClose: true
+      },
       props: {
         onApply: async (question: string) => {
           console.log('[YesNoView] onApply called with:', question);

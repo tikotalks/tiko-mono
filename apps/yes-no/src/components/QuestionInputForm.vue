@@ -110,6 +110,8 @@ watch(inputQuestion, () => {
   padding: 1.5rem;
   background: var(--color-background);
   border-radius: 0.75rem;
+  position: relative;
+  z-index: 1000;
   
   &__header {
     padding-bottom: 1rem;

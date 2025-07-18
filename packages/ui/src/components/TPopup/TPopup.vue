@@ -87,7 +87,7 @@ import { Icons } from 'open-icon';
 import TButton from '../TButton/TButton.vue';
 import { computed, useSlots, onMounted, onUnmounted } from 'vue';
 
-const bemm = useBemm('popup');
+const bemm = useBemm('t-popup');
 
 const popups = computed(() => {
 	return popupService.popups.value;
@@ -143,7 +143,7 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.popup {
+.t-popup {
 	$b: &;
 	position: fixed;
 	z-index: 100;
