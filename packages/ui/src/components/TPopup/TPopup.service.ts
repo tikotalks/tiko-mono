@@ -49,11 +49,21 @@ export interface PopupInstance {
 
 const usePopupService = () => {
 	const popups = ref<PopupInstance[]>([]);
+	const instanceId = crypto.randomUUID();
+
+	console.log('[PopupService] Creating new popup service instance:', instanceId);
 
 	const showPopup = (opts: PopupOptions) => {
 
 		const options = { ...defaultPopupOptions, ...opts };
 		const id = options.id || crypto.randomUUID();
+
+		console.log(`[PopupService ${instanceId}] Opening popup:`, {
+			popupId: id,
+			title: options.title,
+			component: options.component?.name || 'Unknown',
+			currentPopupCount: popups.value.length
+		});
 
 		if (options.closePopups) {
 			closeAllPopups(id);
@@ -88,6 +98,11 @@ const usePopupService = () => {
 
 		nextTick(() => {
 			popups.value.push(newPopup);
+			console.log(`[PopupService ${instanceId}] Popup added to array:`, {
+				popupId: id,
+				totalPopups: popups.value.length,
+				popupIds: popups.value.map(p => p.id)
+			});
 		});
 		return id;
 	};
@@ -118,6 +133,7 @@ const usePopupService = () => {
 	};
 
 	return {
+		instanceId,
 		popups,
 		showPopup,
 		closePopup,
