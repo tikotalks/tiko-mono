@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useAppStore } from '@tiko/core'
+import { useAppStore, useAuthStore, itemService } from '@tiko/core'
 
 export interface YesNoSettings {
   buttonSize: 'small' | 'medium' | 'large'
@@ -10,10 +10,12 @@ export interface YesNoSettings {
 
 export const useYesNoStore = defineStore('yesno', () => {
   const appStore = useAppStore()
+  const authStore = useAuthStore()
   
   // State
   const currentQuestion = ref<string>('Do you want to play?')
-  const questionHistory = ref<string[]>([])
+  const questionHistory = ref<string[]>([]) // This will be populated from Items
+  const questionItems = ref<any[]>([]) // Full item objects for advanced features
   const isPlaying = ref(false)
 
   // Settings with defaults
@@ -33,23 +35,51 @@ export const useYesNoStore = defineStore('yesno', () => {
     return questionHistory.value.slice(-5).reverse()
   })
 
+  const recentQuestionItems = computed(() => {
+    // Sort with favorites first, then by created date
+    return [...questionItems.value].sort((a, b) => {
+      // Favorites first
+      if (a.is_favorite && !b.is_favorite) return -1
+      if (!a.is_favorite && b.is_favorite) return 1
+      
+      // Then by created date (newest first)
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    }).slice(0, 10)
+  })
+
   // Actions
   const setQuestion = async (question: string) => {
     if (!question.trim()) return
 
     currentQuestion.value = question.trim()
     
-    // Add to history if not already present
+    // Save current question to settings
+    await saveState()
+    
+    // Save as an item if not already present
     if (!questionHistory.value.includes(question.trim())) {
-      questionHistory.value.push(question.trim())
-      
-      // Keep only last 20 questions
-      if (questionHistory.value.length > 20) {
-        questionHistory.value = questionHistory.value.slice(-20)
+      try {
+        const userId = authStore.user?.id
+        if (!userId) {
+          console.error('[YesNoStore] No user ID available')
+          return
+        }
+        
+        await itemService.createItem(userId, {
+          app_name: 'yesno',
+          type: 'question',
+          name: question.trim(),
+          metadata: {
+            created_from: 'question_input',
+            timestamp: new Date().toISOString()
+          }
+        })
+        
+        // Reload questions from items
+        await loadQuestionsFromItems()
+      } catch (error) {
+        console.error('[YesNoStore] Failed to save question as item:', error)
       }
-      
-      // Save to app store
-      await saveState()
     }
   }
 
@@ -127,9 +157,39 @@ export const useYesNoStore = defineStore('yesno', () => {
   const saveState = async () => {
     await appStore.updateAppSettings('yes-no', {
       ...settings.value,
-      currentQuestion: currentQuestion.value,
-      questionHistory: questionHistory.value
+      currentQuestion: currentQuestion.value
+      // questionHistory is now stored in Items, not in settings
     })
+  }
+
+  const loadQuestionsFromItems = async () => {
+    try {
+      const userId = authStore.user?.id
+      if (!userId) {
+        console.log('[YesNoStore] No user ID available, skipping item load')
+        return
+      }
+      
+      const items = await itemService.getItems(userId, { 
+        app_name: 'yesno',
+        type: 'question' 
+      })
+      console.log('[YesNoStore] Loaded questions from items:', items.length)
+      
+      // Store full items
+      questionItems.value = items
+      
+      // Sort by created_at and get the last 20
+      const sortedItems = items.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )
+      
+      questionHistory.value = sortedItems.slice(0, 20).map(item => item.name).reverse()
+    } catch (error) {
+      console.error('[YesNoStore] Failed to load questions from items:', error)
+      questionHistory.value = []
+      questionItems.value = []
+    }
   }
 
   const loadState = async () => {
@@ -146,28 +206,81 @@ export const useYesNoStore = defineStore('yesno', () => {
       console.log('[YesNoStore] No saved question found, using default')
     }
     
-    if (appSettings?.questionHistory) {
-      questionHistory.value = appSettings.questionHistory
-      console.log('[YesNoStore] Loaded question history:', appSettings.questionHistory)
-    } else {
-      console.log('[YesNoStore] No question history found')
+    // Load questions from Items service
+    await loadQuestionsFromItems()
+  }
+
+  const toggleFavorite = async (itemId: string) => {
+    console.log('[YesNoStore] toggleFavorite called for:', itemId)
+    try {
+      const item = questionItems.value.find(q => q.id === itemId)
+      if (!item) {
+        console.error('[YesNoStore] Item not found:', itemId)
+        return
+      }
+      
+      console.log('[YesNoStore] Toggling favorite from', item.is_favorite, 'to', !item.is_favorite)
+      
+      const result = await itemService.updateItem(itemId, {
+        is_favorite: !item.is_favorite
+      })
+      
+      console.log('[YesNoStore] Update result:', result)
+      
+      // Reload to reflect changes
+      await loadQuestionsFromItems()
+    } catch (error) {
+      console.error('[YesNoStore] Failed to toggle favorite:', error)
+    }
+  }
+
+  const deleteQuestion = async (itemId: string) => {
+    console.log('[YesNoStore] deleteQuestion called for:', itemId)
+    try {
+      const result = await itemService.deleteItem(itemId)
+      console.log('[YesNoStore] Delete result:', result)
+      
+      // Reload to reflect changes
+      await loadQuestionsFromItems()
+    } catch (error) {
+      console.error('[YesNoStore] Failed to delete question:', error)
     }
   }
 
   const clearHistory = async () => {
-    questionHistory.value = []
-    await saveState()
+    try {
+      const userId = authStore.user?.id
+      if (!userId) {
+        console.error('[YesNoStore] No user ID available')
+        return
+      }
+      
+      // Delete all question items for this user
+      const items = await itemService.getItems(userId, { 
+        app_name: 'yesno',
+        type: 'question' 
+      })
+      for (const item of items) {
+        await itemService.deleteItem(item.id)
+      }
+      questionHistory.value = []
+      questionItems.value = []
+    } catch (error) {
+      console.error('[YesNoStore] Failed to clear question history:', error)
+    }
   }
 
   return {
     // State
     currentQuestion,
     questionHistory,
+    questionItems,
     isPlaying,
     
     // Getters
     settings,
     recentQuestions,
+    recentQuestionItems,
     
     // Actions
     setQuestion,
@@ -177,6 +290,8 @@ export const useYesNoStore = defineStore('yesno', () => {
     updateSettings,
     saveState,
     loadState,
+    toggleFavorite,
+    deleteQuestion,
     clearHistory
   }
 })
