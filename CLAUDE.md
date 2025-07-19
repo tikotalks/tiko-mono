@@ -577,3 +577,28 @@ When updating existing code, prioritize in this order:
 7. Add JSDoc documentation
 
 These standards ensure consistency, maintainability, and scalability across the entire Tiko codebase.
+
+## Git Commit Standards
+
+### Commit Message Format
+- **NEVER include "Co-Authored-By: Claude" in commit messages**
+- **DO NOT add any AI-related attribution or Claude references**
+- **Always commit as the user who is making the commits**
+- Keep commit messages professional and focused on the changes made
+- Use conventional commit format: `type(scope): description`
+- Do not mention AI assistance or tools used in commit messages
+
+Examples:
+```bash
+# ✅ Good
+git commit -m "fix(ui): update button styling for accessibility"
+git commit -m "feat(radio): add shuffle functionality"
+
+# ❌ Bad - Never do this
+git commit -m "fix(ui): update button styling
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+
+# ❌ Bad - No AI references
+git commit -m "fix(ui): AI-generated fix for button styling"
+```
