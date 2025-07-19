@@ -97,6 +97,9 @@ describe('TAuthWrapper.vue', () => {
   })
 
   it('shows login form when not authenticated', async () => {
+    mockAuthStore.isAuthenticated = false
+    mockAuthStore.user = null
+    
     const wrapper = mount(TAuthWrapper, {
       props: {
         title: 'Test App',
@@ -107,8 +110,8 @@ describe('TAuthWrapper.vue', () => {
     // Wait for initialization
     await wrapper.vm.$nextTick()
     
-    // Advance timers to complete splash screen minimum time
-    vi.advanceTimersByTime(2000)
+    // Wait for initializeFromStorage to resolve
+    await vi.runAllTimersAsync()
     await wrapper.vm.$nextTick()
     
     expect(wrapper.findComponent({ name: 'TLoginForm' }).exists()).toBe(true)
@@ -132,8 +135,8 @@ describe('TAuthWrapper.vue', () => {
     // Wait for initialization
     await wrapper.vm.$nextTick()
     
-    // Advance timers to complete splash screen
-    vi.advanceTimersByTime(2000)
+    // Wait for initializeFromStorage to resolve
+    await vi.runAllTimersAsync()
     await wrapper.vm.$nextTick()
     
     expect(wrapper.text()).toContain('Main app content')
@@ -184,6 +187,9 @@ describe('TAuthWrapper.vue', () => {
   })
 
   it('passes correct props to TLoginForm', async () => {
+    mockAuthStore.isAuthenticated = false
+    mockAuthStore.user = null
+    
     const wrapper = mount(TAuthWrapper, {
       props: {
         title: 'Test App',
@@ -193,10 +199,11 @@ describe('TAuthWrapper.vue', () => {
     
     // Wait for initialization and splash screen
     await wrapper.vm.$nextTick()
-    vi.advanceTimersByTime(2000)
+    await vi.runAllTimersAsync()
     await wrapper.vm.$nextTick()
     
     const loginForm = wrapper.findComponent({ name: 'TLoginForm' })
+    expect(loginForm.exists()).toBe(true)
     expect(loginForm.props('appId')).toBe('test-app')
   })
 
@@ -215,6 +222,9 @@ describe('TAuthWrapper.vue', () => {
   })
 
   it('handles splash completion correctly', async () => {
+    mockAuthStore.isAuthenticated = false
+    mockAuthStore.user = null
+    
     const wrapper = mount(TAuthWrapper, {
       props: {
         title: 'Test App',
@@ -226,7 +236,7 @@ describe('TAuthWrapper.vue', () => {
     
     // Wait for auth initialization and splash screen timing
     await wrapper.vm.$nextTick()
-    vi.advanceTimersByTime(2000)
+    await vi.runAllTimersAsync()
     await wrapper.vm.$nextTick()
     
     // Should transition to login form
@@ -234,6 +244,9 @@ describe('TAuthWrapper.vue', () => {
   })
 
   it('shows title when provided', async () => {
+    mockAuthStore.isAuthenticated = false
+    mockAuthStore.user = null
+    
     const wrapper = mount(TAuthWrapper, {
       props: {
         title: 'Custom App Title',
@@ -243,7 +256,7 @@ describe('TAuthWrapper.vue', () => {
     
     // Wait for initialization and splash screen
     await wrapper.vm.$nextTick()
-    vi.advanceTimersByTime(2000)
+    await vi.runAllTimersAsync()
     await wrapper.vm.$nextTick()
     
     const titleElement = wrapper.find('.auth-wrapper__title')
@@ -252,6 +265,8 @@ describe('TAuthWrapper.vue', () => {
   })
 
   it('handles login success correctly', async () => {
+    mockAuthStore.isAuthenticated = false
+    mockAuthStore.user = null
     mockAuthStore.signInWithPasswordlessEmail.mockResolvedValue({ user: { id: '123' } })
     
     const wrapper = mount(TAuthWrapper, {
@@ -263,10 +278,11 @@ describe('TAuthWrapper.vue', () => {
     
     // Wait for initialization and splash screen
     await wrapper.vm.$nextTick()
-    vi.advanceTimersByTime(2000)
+    await vi.runAllTimersAsync()
     await wrapper.vm.$nextTick()
     
     const loginForm = wrapper.findComponent({ name: 'TLoginForm' })
+    expect(loginForm.exists()).toBe(true)
     
     // Trigger email submission
     await loginForm.vm.$emit('emailSubmit', 'test@example.com')
@@ -276,6 +292,8 @@ describe('TAuthWrapper.vue', () => {
   })
 
   it('handles login error correctly', async () => {
+    mockAuthStore.isAuthenticated = false
+    mockAuthStore.user = null
     mockAuthStore.signInWithPasswordlessEmail.mockRejectedValue(new Error('Login failed'))
     
     const wrapper = mount(TAuthWrapper, {
@@ -287,10 +305,11 @@ describe('TAuthWrapper.vue', () => {
     
     // Wait for initialization and splash screen
     await wrapper.vm.$nextTick()
-    vi.advanceTimersByTime(2000)
+    await vi.runAllTimersAsync()
     await wrapper.vm.$nextTick()
     
     const loginForm = wrapper.findComponent({ name: 'TLoginForm' })
+    expect(loginForm.exists()).toBe(true)
     
     // Trigger email submit which will cause an error
     await loginForm.vm.$emit('emailSubmit', 'test@example.com')
@@ -312,6 +331,9 @@ describe('TAuthWrapper.vue', () => {
   })
 
   it('handles video autoplay attributes correctly', () => {
+    mockAuthStore.isAuthenticated = false
+    mockAuthStore.user = null
+    
     const wrapper = mount(TAuthWrapper, {
       props: {
         title: 'Test App',

@@ -69,17 +69,14 @@ describe('TInputNumber', () => {
     const wrapper = mount(TInputNumber)
     const inputBase = wrapper.findComponent(InputBase)
     
-    // Simulate input change with multiple numbers
-    await inputBase.vm.$emit('change', '123 456')
+    // Find the actual input element inside InputBase
+    const input = wrapper.find('input')
+    
+    // Simulate typing multiple numbers
+    await input.setValue('123 456')
     await wrapper.vm.$nextTick()
     
-    // Check that parseValue was called and error was set
-    const parseValue = inputBase.props('parseValue') as Function
-    const result = parseValue('123 456')
-    
-    // The parseValue function should handle the validation
-    // and the error should be visible in the component
-    await wrapper.vm.$nextTick()
+    // The component should have detected multiple numbers and set error
     expect(inputBase.props('error')).toEqual(['Only one number is allowed'])
   })
 
