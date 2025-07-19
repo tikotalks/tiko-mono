@@ -10,6 +10,14 @@ export default defineConfig({
       '@tiko/core': resolve(__dirname, '../core/src')
     }
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: 'modern-compiler',
+        additionalData: `@use "${resolve(__dirname, 'src/styles/global.scss')}" as global;`
+      }
+    }
+  },
   test: {
     globals: true,
     environment: 'jsdom',

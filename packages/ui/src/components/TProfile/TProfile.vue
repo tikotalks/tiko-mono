@@ -78,14 +78,14 @@
     <div :class="bemm('footer')">
       <TButtonGroup direction="row" fluid>
         <TButton
-          variant="outline"
+          type="outline"
           @click="handleClose"
         >
           {{ t(keys.common.cancel) }}
         </TButton>
         <TButton
           color="primary"
-          :loading="isSaving"
+          :status="isSaving ? 'loading' : 'idle'"
           @click="handleSave"
         >
           {{ t(keys.common.save) }}
