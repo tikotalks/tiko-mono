@@ -19,6 +19,8 @@ const props = withDefaults(defineProps<TInputSelectProps>(), {
 	size: Size.MEDIUM,
 	allowNull: false,
 	nullLabel: 'Please select...',
+	disabled: false,
+	options: () => [],
 });
 
 const emit = defineEmits<TInputSelectEmits>()
@@ -40,6 +42,7 @@ const toOptions = (option: string | Option): Option => {
 };
 
 const hasOptionGroups = (options: AcceptedOptions): boolean => {
+	if (!options || !Array.isArray(options)) return false;
 	return options.some((option) => {
 		return typeof option === 'object' && 'title' in option && 'options' in option;
 	});
@@ -75,6 +78,7 @@ const handleChange = (value: string | null) => {
 		:description="description"
 		:error="error"
 		:size="size"
+		:disabled="disabled"
 		@change="handleChange"
 		@touched="$emit('touched', $event)"
 	>
@@ -130,6 +134,7 @@ const handleChange = (value: string | null) => {
 		:description="description"
 		:error="error"
 		:size="size"
+		:disabled="disabled"
 		@change="handleChange"
 		@touched="$emit('touched', $event)"
 	>

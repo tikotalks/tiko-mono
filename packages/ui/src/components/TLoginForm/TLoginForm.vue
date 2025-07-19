@@ -194,22 +194,22 @@
             </button>
           </div>
         </div>
-
-        <!-- Error Message -->
-        <div v-if="error" :class="bemm('error')">
-          <TIcon name="alert-circle" :class="bemm('error-icon')" />
-          <p :class="bemm('error-message')">{{ error }}</p>
-          <TButton
-            label="Try Again"
-            type="ghost"
-            color="secondary"
-            size="small"
-            @click="clearError"
-            :class="bemm('error-button')"
-            >Try Again</TButton
-          >
-        </div>
       </template>
+
+      <!-- Error Message (shown for all steps) -->
+      <div v-if="error" :class="bemm('error')">
+        <TIcon name="alert-circle" :class="bemm('error-icon')" />
+        <p :class="bemm('error-message')">{{ error }}</p>
+        <TButton
+          label="Try Again"
+          type="ghost"
+          color="secondary"
+          size="small"
+          @click="clearError"
+          :class="bemm('error-button')"
+          >Try Again</TButton
+        >
+      </div>
     </div>
   </div>
 </template>

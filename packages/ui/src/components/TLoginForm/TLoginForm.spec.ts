@@ -482,9 +482,9 @@ describe('TLoginForm.vue', () => {
         }
       })
       
-      const errorIcon = wrapper.find('.login-form__error-icon')
+      const errorIcon = wrapper.findComponent({ name: 'TIcon' })
       expect(errorIcon.exists()).toBe(true)
-      expect(errorIcon.text()).toContain('alert-circle')
+      expect(errorIcon.props('name')).toBe('alert-circle')
     })
 
     it('shows try again button with error', () => {

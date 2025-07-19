@@ -6,6 +6,7 @@
 		:block="block"
 		:label="label"
 		:description="description"
+		:disabled="disabled"
 		@change="handleChange"
 		@touched="$emit('touched', $event)"
 	>
@@ -33,6 +34,7 @@
 		:block="block"
 		:label="label"
 		:description="description"
+		:disabled="disabled"
 		@change="handleChange"
 		@touched="$emit('touched', $event)"
 	>

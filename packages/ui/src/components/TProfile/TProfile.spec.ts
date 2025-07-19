@@ -86,8 +86,8 @@ vi.mock('../TForm/TForm.vue', () => ({
 vi.mock('../TForm/inputs/TInputText/TInputText.vue', () => ({
   default: {
     name: 'TInputText',
-    template: '<input class="t-input-text" />',
-    props: ['modelValue', 'label', 'placeholder', 'required', 'disabled', 'error'],
+    template: '<input class="t-input-text" :value="modelValue" />',
+    props: ['modelValue', 'label', 'placeholder', 'required', 'disabled', 'error', 'readonly'],
     emits: ['update:modelValue']
   }
 }))
@@ -95,7 +95,7 @@ vi.mock('../TForm/inputs/TInputText/TInputText.vue', () => ({
 vi.mock('../TForm/inputs/TInputSelect/TInputSelect.vue', () => ({
   default: {
     name: 'TInputSelect',
-    template: '<select class="t-input-select"><option></option></select>',
+    template: '<select class="t-input-select" :value="modelValue"><option></option></select>',
     props: ['modelValue', 'label', 'options', 'required', 'disabled'],
     emits: ['update:modelValue']
   }

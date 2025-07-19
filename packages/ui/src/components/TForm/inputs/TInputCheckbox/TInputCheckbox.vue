@@ -4,6 +4,7 @@
 		v-model="model"
 		:block="block"
 		:label="label"
+		:disabled="disabled"
 		@change="handleChange"
 		@touched="$emit('touched', $event)"
 	>
@@ -35,6 +36,7 @@
 		:value="value"
 		:block="block"
 		:label="label"
+		:disabled="disabled"
 		@change="handleChange"
 		@touched="$emit('touched', $event)"
 	>
@@ -73,6 +75,7 @@ const props = withDefaults(defineProps<TInputCheckboxProps>(), {
 	value: false,
 	label: '',
 	error: () => [],
+	disabled: false,
 });
 
 const emit = defineEmits<TInputCheckboxEmits>()
