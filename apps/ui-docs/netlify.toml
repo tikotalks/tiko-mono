@@ -1,6 +1,6 @@
 [build]
   base = "."
-  command = "pnpm install && pnpm build --filter=ui-docs"
+  command = "pnpm install && pnpm build ui-docs"
   publish = "dist/apps/ui-docs"
   ignore = "bash ./scripts/ignore-build-ui-docs.sh"
 

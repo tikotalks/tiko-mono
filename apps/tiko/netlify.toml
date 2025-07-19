@@ -1,6 +1,6 @@
 [build]
   publish = "dist/apps/tiko"
-  command = "pnpm install && pnpm build --filter=tiko"
+  command = "pnpm install && pnpm build tiko"
   ignore = "bash ./scripts/ignore-build-tiko.sh"
 
 [build.environment]

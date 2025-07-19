@@ -1,6 +1,6 @@
 [build]
   publish = "apps/radio/dist"
-  command = "pnpm install && pnpm build --filter=radio"
+  command = "pnpm install && pnpm build radio"
   ignore = "bash ./scripts/ignore-build-radio.sh"
 
 [build.environment]
