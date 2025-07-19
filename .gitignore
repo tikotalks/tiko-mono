@@ -1,7 +1,11 @@
 node_modules
 .env
 .env.backup
-.nx/cache/**/*
+
+# Nx cache
+.nx/cache/
+.nx/workspace-data/
+.nx/
 
 # Build outputs
 dist/
