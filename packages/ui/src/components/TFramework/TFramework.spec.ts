@@ -3,10 +3,17 @@ import { describe, it, expect, vi } from 'vitest'
 import { ref } from 'vue'
 import TFramework from './TFramework.vue'
 
+// Mock services - define before using in vi.mock
+const mockPopupService = {
+  open: vi.fn(),
+  close: vi.fn()
+}
+
 // Mock the stores
 const mockAuthStore = {
   user: ref(null),
-  signOut: vi.fn()
+  signOut: vi.fn(),
+  logout: vi.fn()
 }
 
 const mockAppStore = {
@@ -120,14 +127,11 @@ vi.mock('./TSettings.vue', () => ({
   }
 }))
 
-// Mock services
-const mockPopupService = {
-  open: vi.fn(),
-  close: vi.fn()
-}
-
 vi.mock('../TPopup', () => ({
-  popupService: mockPopupService
+  popupService: {
+    open: vi.fn(),
+    close: vi.fn()
+  }
 }))
 
 vi.mock('../TToast', () => ({
@@ -203,7 +207,7 @@ describe('TFramework.vue', () => {
   })
 
   it('handles profile action correctly', async () => {
-    mockAuthStore.user = { id: 'user-123', email: 'test@example.com' }
+    mockAuthStore.user.value = { id: 'user-123', email: 'test@example.com' }
     
     const wrapper = mount(TFramework, {
       props: {
@@ -213,6 +217,8 @@ describe('TFramework.vue', () => {
     
     const appLayout = wrapper.findComponent({ name: 'TAppLayout' })
     await appLayout.vm.$emit('profile')
+    
+    await wrapper.vm.$nextTick()
     
     // Should open profile popup
     const { popupService } = await import('../TPopup')
@@ -252,7 +258,7 @@ describe('TFramework.vue', () => {
     const appLayout = wrapper.findComponent({ name: 'TAppLayout' })
     await appLayout.vm.$emit('logout')
     
-    expect(mockAuthStore.signOut).toHaveBeenCalled()
+    expect(mockAuthStore.logout).toHaveBeenCalled()
     expect(mockRouter.push).toHaveBeenCalledWith('/auth/login')
   })
 
