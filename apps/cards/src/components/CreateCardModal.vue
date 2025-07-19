@@ -3,13 +3,13 @@
     <div :class="bemm('dialog')" role="dialog" aria-labelledby="modal-title">
       <!-- Header -->
       <header :class="bemm('header')">
-        <h2 id="modal-title" :class="bemm('title')">Create New Card</h2>
+        <h2 id="modal-title" :class="bemm('title')">{{ t(keys.cards.createCard) }}</h2>
         <TButton
           :class="bemm('close-button')"
           color="secondary"
           icon="x"
           @click="$emit('close')"
-          aria-label="Close modal"
+          :aria-label="t(keys.cards.closeModal)"
         />
       </header>
 
@@ -17,7 +17,7 @@
       <form :class="bemm('form')" @submit.prevent="handleSubmit">
         <!-- Card Preview -->
         <div :class="bemm('preview-section')">
-          <h3 :class="bemm('section-title')">Preview</h3>
+          <h3 :class="bemm('section-title')">{{ t(keys.common.preview) }}</h3>
           <div :class="bemm('preview')">
             <TCardCommunication
               :card="previewCard"
@@ -29,11 +29,11 @@
 
         <!-- Basic Information -->
         <div :class="bemm('section')">
-          <h3 :class="bemm('section-title')">Basic Information</h3>
+          <h3 :class="bemm('section-title')">{{ t(keys.cards.basicInformation) }}</h3>
 
           <TInputText
             v-model="form.label"
-            label="Card Label"
+            :label="t(keys.cards.cardLabel)"
             placeholder="e.g., Water, Happy, Help"
             required
             :class="bemm('field')"
@@ -41,15 +41,15 @@
 
           <TInputText
             v-model="form.audioText"
-            label="Audio Text"
-            placeholder="What should be spoken when tapped"
+            :label="t(keys.cards.audioText)"
+            :placeholder="t(keys.cards.whatShouldBeSpoken)"
             required
             :class="bemm('field')"
           />
 
           <TInputText
             v-model="tagInput"
-            label="Tags"
+            :label="t(keys.cards.tags)"
             placeholder="e.g., food, emotion, need (comma separated)"
             :class="bemm('field')"
             @blur="updateTags"
@@ -76,7 +76,7 @@
 
         <!-- Image -->
         <div :class="bemm('section')">
-          <h3 :class="bemm('section-title')">Image</h3>
+          <h3 :class="bemm('section-title')">{{ t(keys.cards.image) }}</h3>
 
           <div :class="bemm('image-options')">
             <input
@@ -92,7 +92,7 @@
               icon="upload"
               @click="$refs.fileInput?.click()"
             >
-              Upload Image
+              {{ t(keys.cards.uploadImage) }}
             </TButton>
 
             <TButton
@@ -100,14 +100,14 @@
               icon="link"
               @click="showUrlInput = !showUrlInput"
             >
-              Use URL
+              {{ t(keys.cards.useUrl) }}
             </TButton>
           </div>
 
           <TInputText
             v-if="showUrlInput"
             v-model="form.imageUrl"
-            label="Image URL"
+            :label="t(keys.cards.imageUrl)"
             placeholder="https://example.com/image.jpg"
             :class="bemm('field')"
           />
@@ -115,10 +115,10 @@
 
         <!-- Styling -->
         <div :class="bemm('section')">
-          <h3 :class="bemm('section-title')">Styling</h3>
+          <h3 :class="bemm('section-title')">{{ t(keys.cards.styling) }}</h3>
 
           <div :class="bemm('color-picker')">
-            <label :class="bemm('color-label')">Background Color</label>
+            <label :class="bemm('color-label')">{{ t(keys.cards.backgroundColor) }}</label>
             <div :class="bemm('color-options')">
               <button
                 v-for="color in colorOptions"
@@ -149,7 +149,7 @@
             color="secondary"
             @click="$emit('close')"
           >
-            Cancel
+            {{ t(keys.common.cancel) }}
           </TButton>
 
           <TButton
@@ -159,7 +159,7 @@
             :disabled="!isFormValid"
             :loading="isCreating"
           >
-            Create Card
+            {{ t(keys.cards.createCard) }}
           </TButton>
         </footer>
       </form>
@@ -170,7 +170,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TInputText, TCardCommunication, type Card } from '@tiko/ui'
+import { TButton, TInputText, TCardCommunication, type Card, useI18n } from '@tiko/ui'
 import { useCardsStore } from '../stores/cards'
 
 interface Emits {
@@ -182,6 +182,7 @@ const emit = defineEmits<Emits>()
 
 const bemm = useBemm('create-card-modal')
 const { createCard } = useCardsStore()
+const { t, keys } = useI18n()
 
 // Form state
 const form = reactive({

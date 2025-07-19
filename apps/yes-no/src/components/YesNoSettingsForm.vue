@@ -1,11 +1,11 @@
 <template>
   <div :class="bemm()">
     <div :class="bemm('group')">
-      <label :class="bemm('label')">Button Size</label>
+      <label :class="bemm('label')">{{ t(keys.yesno.buttonSize) }}</label>
       <select v-model="localSettings.buttonSize" :class="bemm('select')">
-        <option value="small">Small</option>
-        <option value="medium">Medium</option>
-        <option value="large">Large</option>
+        <option value="small">{{ t(keys.yesno.small) }}</option>
+        <option value="medium">{{ t(keys.yesno.medium) }}</option>
+        <option value="large">{{ t(keys.yesno.large) }}</option>
       </select>
     </div>
 
@@ -13,7 +13,7 @@
 
       <TInputCheckbox
         v-model="localSettings.autoSpeak"
-        :label="'Auto-speak answers'"
+        :label="t(keys.yesno.autoSpeakAnswers)"
         :class="bemm('checkbox')"
       />
     </div>
@@ -21,7 +21,7 @@
     <div :class="bemm('group')">
       <TInputCheckbox
         v-model="localSettings.hapticFeedback"
-        :label="'Haptic feedback'"
+        :label="t(keys.yesno.hapticFeedback)"
         :class="bemm('checkbox')"
       />
     </div>
@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TInputCheckbox } from '@tiko/ui'
+import { TButton, TInputCheckbox, useI18n } from '@tiko/ui'
 
 interface YesNoSettings {
   buttonSize: 'small' | 'medium' | 'large'
@@ -50,6 +50,7 @@ const emit = defineEmits<{
 }>()
 
 const bemm = useBemm('yes-no-settings-form')
+const { t, keys } = useI18n()
 
 // Local state
 const localSettings = reactive({ ...props.settings })
@@ -61,7 +62,7 @@ const handleApply = () => {
 }
 
 // Add title and actions
-const title = 'Settings'
+const title = t(keys.common.settings)
 
 // Watch for changes and call onApply
 watch(localSettings, () => {

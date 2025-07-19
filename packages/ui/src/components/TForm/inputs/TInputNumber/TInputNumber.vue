@@ -36,6 +36,7 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
+import { useI18n } from '../../../../composables/useI18n'
 import InputBase from '../../InputBase.vue'
 import type { TInputNumberProps, TInputNumberEmits } from './TInputNumber.model'
 import { parseNumericValue, formatNumericValue } from './TInputNumber.model'
@@ -53,6 +54,7 @@ const props = withDefaults(defineProps<TInputNumberProps>(), {
 })
 
 const emit = defineEmits<TInputNumberEmits>()
+const { t, keys } = useI18n()
 
 const block = 'input-number';
 const errors = ref<string[]>([]);
@@ -63,7 +65,7 @@ const parseValue = (value: string): number | undefined => {
 	// Check for multiple numbers in input
 	const matches = value.replace(/[^\d.-]/g, '').match(/-?\d+\.?\d*/g)
 	if (matches && matches.length > 1) {
-		errors.value = ['Only one number is allowed']
+		errors.value = [t(keys.validation.onlyOneNumberAllowed)]
 	} else {
 		errors.value = []
 	}

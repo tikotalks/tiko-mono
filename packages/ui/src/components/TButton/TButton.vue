@@ -18,7 +18,7 @@
       </span>
     </div>
     <div v-if="status !== ButtonStatus.IDLE" :class="bemm('status')">
-      <span v-if="status === ButtonStatus.LOADING">Loading...</span>
+      <span v-if="status === ButtonStatus.LOADING">{{ t(keys.common.loading) }}</span>
       <TIcon
         v-if="status === ButtonStatus.SUCCESS || status === ButtonStatus.SUCCESS_ALT"
         name="check"
@@ -40,6 +40,7 @@
 <script setup lang="ts">
 import { computed, useSlots, ref, watch } from 'vue'
 import { useBemm } from 'bemm'
+import { useI18n } from '../../composables/useI18n'
 import { TIcon } from '../TIcon'
 import { ButtonType, ButtonSize, ButtonColor, ButtonStatus, type TButtonProps } from './TButton.model'
 
@@ -63,6 +64,7 @@ const props = withDefaults(defineProps<TButtonProps>(), {
 })
 
 const bemm = useBemm('button')
+const { t, keys } = useI18n()
 const slots = useSlots()
 
 const blockClasses = computed(() => {

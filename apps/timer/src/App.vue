@@ -12,7 +12,7 @@
         type="icon-only"
         size="medium"
         @click="start"
-        :aria-label="'Start timer'"
+        :aria-label="t(keys.timer.start)"
       />
       <TButton
         v-else
@@ -21,7 +21,7 @@
         color="success"
         size="medium"
         @click="pause"
-        :aria-label="'Pause timer'"
+        :aria-label="t(keys.timer.pause)"
       />
 
       <TButton
@@ -29,7 +29,7 @@
         type="icon-only"
         size="medium"
         @click="reset"
-        :aria-label="'Reset timer'"
+        :aria-label="t(keys.timer.reset)"
       />
 
       <!-- Edit Timer Button -->
@@ -38,7 +38,7 @@
         type="icon-only"
         size="medium"
         @click="showEditSettings"
-        :aria-label="'Edit timer settings'"
+        :aria-label="t(keys.settings.title)"
       />
 
       <!-- Mode Toggle -->
@@ -47,7 +47,7 @@
         type="icon-only"
         size="medium"
         @click="toggleMode"
-        :aria-label="`Switch to ${mode === 'up' ? 'countdown' : 'count up'} mode`"
+        :aria-label="mode === 'up' ? t(keys.timer.countDown) : t(keys.timer.countUp)"
       />
     </template>
 
@@ -57,7 +57,7 @@
 
 <script setup lang="ts">
 import { computed, inject, ref } from 'vue'
-import { TFramework, TButton, type FrameworkConfig, popupService as importedPopupService } from '@tiko/ui'
+import { TFramework, TButton, type FrameworkConfig, popupService as importedPopupService, useI18n } from '@tiko/ui'
 import { useTimer } from './composables/useTimer'
 import TimerSettingsForm from './components/TimerSettingsForm.vue'
 import tikoConfig from '../tiko.config'
@@ -76,6 +76,9 @@ const {
   toggleMode,
   updateSettings
 } = useTimer()
+
+// i18n
+const { t, keys } = useI18n()
 
 // Local state for time settings
 const minutes = ref(5)
@@ -101,7 +104,7 @@ const frameworkConfig = computed<FrameworkConfig>(() => ({
     sections: [
       {
         id: 'timer-settings',
-        title: 'Timer Settings',
+        title: t(keys.settings.title),
         icon: 'clock',
         order: 10,
         component: TimerSettingsForm,
@@ -127,7 +130,7 @@ const showEditSettings = () => {
   if (popupService) {
     popupService.open({
       component: TimerSettingsForm,
-      title: 'Timer Settings',
+      title: t(keys.settings.title),
       props: {
         mode: mode.value,
         minutes: minutes.value,

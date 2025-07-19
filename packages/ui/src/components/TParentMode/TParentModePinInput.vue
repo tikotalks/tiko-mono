@@ -69,7 +69,7 @@
 
         <!-- Confirmation PIN for setup mode -->
         <div v-if="mode === 'setup' && pinValue.length === 4" :class="bemm('confirm-section')">
-          <p :class="bemm('confirm-label')">Confirm your PIN</p>
+          <p :class="bemm('confirm-label')">{{ t(keys.parentMode.confirmYourPin) }}</p>
           <div :class="bemm('pin-container')">
             <div :class="bemm('pin-display')">
               <div
@@ -141,7 +141,7 @@
             color="secondary"
             @click="handleClosePopup"
           >
-            Cancel
+            {{ t(keys.common.cancel) }}
           </TButton>
 
           <TButton
@@ -162,7 +162,7 @@
             :icon="showNumbers ? 'eye-off' : 'eye'"
             @click="toggleNumberVisibility"
           >
-            {{ showNumbers ? 'Hide' : 'Show' }} Numbers
+            {{ showNumbers ? t(keys.parentMode.hideNumbers) : t(keys.parentMode.showNumbers) }}
           </TButton>
         </div>
 
@@ -177,6 +177,7 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, watch } from 'vue'
 import { useBemm } from 'bemm'
+import { useI18n } from '../../composables/useI18n'
 import TButton from '../TButton/TButton.vue'
 import TIcon from '../TIcon/TIcon.vue'
 import type { ParentModePinInputProps } from '../../composables/useParentMode.model'
@@ -199,6 +200,7 @@ const emit = defineEmits<{
 }>()
 
 const bemm = useBemm('parent-mode-pin-input')
+const { t, keys } = useI18n()
 
 // Refs
 const pinInput = ref<HTMLInputElement | null>(null)
@@ -224,7 +226,7 @@ const canSubmit = computed(() => {
 })
 
 const submitLabel = computed(() => {
-  return props.mode === 'setup' ? 'Set PIN' : 'Unlock'
+  return props.mode === 'setup' ? t(keys.parentMode.setPin) : t(keys.parentMode.unlock)
 })
 
 /**
@@ -310,13 +312,13 @@ const handleSubmit = async () => {
   try {
     // Validate PIN format
     if (!/^\d{4}$/.test(pinValue.value)) {
-      error.value = 'PIN must be exactly 4 digits'
+      error.value = t(keys.parentMode.pinMustBe4Digits)
       return
     }
 
     // For setup mode, ensure PINs match
     if (props.mode === 'setup' && pinValue.value !== confirmValue.value) {
-      error.value = 'PINs do not match'
+      error.value = t(keys.parentMode.pinMismatch)
       return
     }
 
@@ -328,7 +330,7 @@ const handleSubmit = async () => {
       props.onPinEntered(pinValue.value)
     }
   } catch (err) {
-    error.value = 'An error occurred. Please try again.'
+    error.value = t(keys.common.error)
     console.error('PIN input error:', err)
   } finally {
     isProcessing.value = false

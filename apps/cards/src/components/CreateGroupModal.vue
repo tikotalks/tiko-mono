@@ -3,13 +3,13 @@
     <div :class="bemm('dialog')" role="dialog" aria-labelledby="modal-title">
       <!-- Header -->
       <header :class="bemm('header')">
-        <h2 id="modal-title" :class="bemm('title')">Create Card Group</h2>
+        <h2 id="modal-title" :class="bemm('title')">{{ t(keys.cards.createCardGroup) }}</h2>
         <TButton
           :class="bemm('close-button')"
           color="secondary"
           icon="x"
           @click="$emit('close')"
-          aria-label="Close modal"
+          :aria-label="t(keys.cards.closeModal)"
         />
       </header>
 
@@ -19,8 +19,8 @@
         <div :class="bemm('section')">
           <TInput
             v-model="form.name"
-            label="Group Name"
-            placeholder="e.g., Food, Emotions, Daily Needs"
+            :label="t(keys.cards.groupName)"
+            :placeholder="'e.g., Food, Emotions, Daily Needs'"
             required
             :class="bemm('field')"
           />
@@ -29,7 +29,7 @@
         <!-- Selected Cards Preview -->
         <div v-if="selectedCards.length" :class="bemm('section')">
           <h3 :class="bemm('section-title')">
-            Selected Cards ({{ selectedCards.length }})
+            {{ t(keys.cards.selectedCards) }} ({{ selectedCards.length }})
           </h3>
 
           <div :class="bemm('selected-cards')">
@@ -54,7 +54,7 @@
             color="secondary"
             @click="$emit('close')"
           >
-            Cancel
+            {{ t(keys.common.cancel) }}
           </TButton>
 
           <TButton
@@ -64,7 +64,7 @@
             :disabled="!isFormValid"
             :loading="isCreating"
           >
-            Create Group
+            {{ t(keys.cards.createGroup) }}
           </TButton>
         </footer>
       </form>
@@ -75,7 +75,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TInput, TCardCommunication } from '@tiko/ui'
+import { TButton, TInput, TCardCommunication, useI18n } from '@tiko/ui'
 import { useCardsStore } from '../stores/cards'
 import type { CardGroup } from '../stores/cards'
 
@@ -93,6 +93,7 @@ const emit = defineEmits<Emits>()
 
 const bemm = useBemm('create-group-modal')
 const { createGroup, cards } = useCardsStore()
+const { t, keys } = useI18n()
 
 // Form state
 const form = reactive({

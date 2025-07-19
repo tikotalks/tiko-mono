@@ -13,7 +13,7 @@
         size="small"
         @click="handleToggleEditMode"
       >
-        {{ editMode ? 'Done' : 'Edit' }}
+        {{ editMode ? t(keys.cards.done) : t(keys.common.edit) }}
       </TButton>
 
       <TButton
@@ -24,7 +24,7 @@
         size="small"
         @click="showCreateModal"
       >
-        Add Card
+        {{ t(keys.cards.addCard) }}
       </TButton>
     </template>
 
@@ -34,7 +34,7 @@
 
 <script setup lang="ts">
 import { computed, inject, ref } from 'vue'
-import { TFramework, TButton, type FrameworkConfig, useParentMode } from '@tiko/ui'
+import { TFramework, TButton, type FrameworkConfig, useParentMode, useI18n } from '@tiko/ui'
 import { useCardsStore } from './stores/cards'
 import CreateCardModal from './components/CreateCardModal.vue'
 import tikoConfig from '../tiko.config'
@@ -43,6 +43,7 @@ import backgroundImage from './assets/app-icon-cards.png'
 const cardsStore = useCardsStore()
 const { editMode, isLoading, toggleEditMode } = cardsStore
 const parentMode = useParentMode('cards')
+const { t, keys } = useI18n()
 
 // Framework configuration
 const frameworkConfig = computed<FrameworkConfig>(() => ({
@@ -51,14 +52,14 @@ const frameworkConfig = computed<FrameworkConfig>(() => ({
     showUser: true,
     showTitle: true,
     showSubtitle: true,
-    subtitle: editMode.value ? 'Select cards to organize or delete' : 'Tap cards to speak'
+    subtitle: editMode.value ? t(keys.cards.selectCardsToOrganize) : t(keys.cards.tapCardsToSpeak)
   },
   settings: {
     enabled: true,
     sections: [
       {
         id: 'cards-settings',
-        title: 'Cards Settings',
+        title: t(keys.cards.cardsSettings),
         icon: 'cards',
         order: 10
         // component: CardsSettings // Add custom settings component if needed

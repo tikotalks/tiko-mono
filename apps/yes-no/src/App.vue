@@ -18,12 +18,13 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { TFramework, type FrameworkConfig } from '@tiko/ui'
+import { TFramework, type FrameworkConfig, useI18n } from '@tiko/ui'
 import tikoConfig from '../tiko.config'
 import backgroundImage from './assets/app-icon-yes-no.png'
 
 const route = useRoute()
 const loading = ref(false)
+const { t, keys } = useI18n()
 
 // Check if current route is auth callback
 const isAuthCallbackRoute = computed(() => {
@@ -59,7 +60,7 @@ const frameworkConfig = computed<FrameworkConfig>(() => ({
     sections: [
       {
         id: 'yes-no-settings',
-        title: 'Yes/No Settings',
+        title: t(keys.yesno.yesnoSettings),
         icon: 'circle-question',
         order: 10
         // component: YesNoSettings // Add custom settings component if needed

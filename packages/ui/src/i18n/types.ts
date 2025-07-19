@@ -41,6 +41,27 @@ export interface TranslationSchema {
     enabled: string
     disabled: string
     comingSoon: string
+    required: string
+    optional: string
+    dragDropHere: string
+    increaseValue: string
+    decreaseValue: string
+    online: string
+    offline: string
+    expandGroup: string
+    collapseGroup: string
+    applicationLoading: string
+    day: string
+    month: string
+    searchIcons: string
+    backgroundImage: string
+    preview: string
+    justNow: string
+    minutesAgo: string
+    hoursAgo: string
+    daysAgo: string
+    more: string
+    dismiss: string
   }
   auth: {
     login: string
@@ -70,6 +91,36 @@ export interface TranslationSchema {
     verifyEmail: string
     emailSent: string
     checkEmail: string
+    loginToAccount: string
+    emailAddress: string
+    enterEmail: string
+    sendCode: string
+    or: string
+    loginWithApple: string
+    dontHaveAccount: string
+    register: string
+    option1MagicLink: string
+    option2EnterCode: string
+    verificationCode: string
+    enterDigitCode: string
+    verifyCode: string
+    didntReceiveCode: string
+    resendCode: string
+    useDifferentEmail: string
+    createAccount: string
+    fullNameOptional: string
+    enterFullName: string
+    alreadyHaveAccount: string
+    tryAgain: string
+    pleaseEnterValidEmail: string
+    pleaseEnterValidCode: string
+    preparingApp: string
+    welcomeToTiko: string
+    signInToAccess: string
+    appleSignInFailed: string
+    failedToSendCode: string
+    invalidVerificationCode: string
+    failedToResendCode: string
   }
   settings: {
     title: string
@@ -80,6 +131,7 @@ export interface TranslationSchema {
     darkTheme: string
     autoTheme: string
     language: string
+    region: string
     voiceAndSound: string
     voiceEnabled: string
     voice: string
@@ -144,12 +196,37 @@ export interface TranslationSchema {
     groupCreatedSuccessfully: string
     deleteSelectedCards: string
     clear: string
+    done: string
+    selectCardsToOrganize: string
+    tapCardsToSpeak: string
+    cardsSettings: string
+    selected: string
+    closeModal: string
+    whatShouldBeSpoken: string
   }
   type: {
     typeToSpeak: string
     speak: string
     clearText: string
     characters: string
+    typeGameSettings: string
+    typeAndSpeak: string
+    typeTextAndHearItSpoken: string
+    textToSpeak: string
+    stop: string
+    pause: string
+    voice: string
+    loadingVoices: string
+    selectAVoice: string
+    recent: string
+    speakThisText: string
+    copyToInput: string
+    showAllHistory: string
+    voiceSettings: string
+    speechRate: string
+    pitch: string
+    volume: string
+    saveToHistoryAutomatically: string
   }
   yesno: {
     setQuestion: string
@@ -159,6 +236,19 @@ export interface TranslationSchema {
     yes: string
     no: string
     yesOrNo: string
+    yesnoSettings: string
+    typeYourQuestion: string
+    typeYourQuestionPlaceholder: string
+    typeYourQuestionOrSelect: string
+    removeFromFavorites: string
+    addToFavorites: string
+    deleteQuestion: string
+    buttonSize: string
+    small: string
+    medium: string
+    large: string
+    autoSpeakAnswers: string
+    hapticFeedback: string
   }
   todo: {
     groups: string
@@ -274,6 +364,20 @@ export interface TranslationSchema {
     favorite: string
     tags: string
     add: string
+    clear: string
+    tryAgain: string
+    editAudioItem: string
+    audioTrackTitle: string
+    plays: string
+    noAudioSelected: string
+    sleepIn: string
+    searchingFor: string
+    resultsFound: string
+    searchingCollection: string
+    tryDifferentKeywords: string
+    play: string
+    playAllResults: string
+    searchAudioPlaceholder: string
   }
   parentMode: {
     title: string
@@ -290,6 +394,26 @@ export interface TranslationSchema {
     permissionDenied: string
     setupTitle: string
     setupSuccess: string
+    enableParentMode: string
+    setUpParentMode: string
+    enterParentPin: string
+    createPinDescription: string
+    enterPinDescription: string
+    parentModeEnabled: string
+    failedToEnable: string
+    disableParentMode: string
+    disableConfirmMessage: string
+    yesDisable: string
+    parentModeDisabled: string
+    failedToDisable: string
+    cannotDisableNoPopup: string
+    insufficientPermissions: string
+    parentModeUnlocked: string
+    enterYourPin: string
+    confirmYourPin: string
+    pinMustBe4Digits: string
+    hideNumbers: string
+    showNumbers: string
   }
   profile: {
     title: string
@@ -334,6 +458,93 @@ export interface TranslationSchema {
   }
   sso: {
     signInWithTiko: string
+  }
+  validation: {
+    onlyOneNumberAllowed: string
+  }
+  languageNames: {
+    // Base languages
+    bulgarian: string
+    czech: string
+    welsh: string
+    danish: string
+    german: string
+    greek: string
+    english: string
+    spanish: string
+    estonian: string
+    finnish: string
+    french: string
+    irish: string
+    croatian: string
+    hungarian: string
+    armenian: string
+    icelandic: string
+    italian: string
+    lithuanian: string
+    latvian: string
+    maltese: string
+    dutch: string
+    norwegian: string
+    polish: string
+    portuguese: string
+    romanian: string
+    russian: string
+    slovak: string
+    slovenian: string
+    swedish: string
+    // Regional variants
+    germanGermany: string
+    germanAustria: string
+    germanSwitzerland: string
+    englishUK: string
+    englishUS: string
+    englishAustralia: string
+    englishCanada: string
+    spanishSpain: string
+    spanishMexico: string
+    spanishArgentina: string
+    frenchFrance: string
+    frenchCanada: string
+    frenchBelgium: string
+    dutchNetherlands: string
+    dutchBelgium: string
+    portuguesePortugal: string
+    portugueseBrazil: string
+  }
+  uiDocs: {
+    documentationSettings: string
+    buttons: string
+    buttonsDocumentation: string
+    cards: string
+    cardsDocumentation: string
+    colors: string
+    colorsDocumentation: string
+    icons: string
+    iconsDocumentation: string
+    inputs: string
+    inputsDocumentation: string
+    welcomeToUIDocumentation: string
+    exploreComponents: string
+    comingSoon: string
+    tikoUIDocumentation: string
+    completeDocumentationAndTesting: string
+    interactiveButtonComponents: string
+    completeIconLibrary: string
+    inputComponents: string
+    formInputsSelectsTextareas: string
+    contentContainersAndLayouts: string
+    colorSystem: string
+    colorPaletteThemes: string
+    quickStart: string
+    documentationAppShowcase: string
+    codeExamples: string
+    seeWorkingExamples: string
+    livePreviews: string
+    interactiveComponentPreviews: string
+    documentation: string
+    completePropAndUsage: string
+    items: string
   }
 }
 

@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "strict": false,
+    "allowJs": true,
+    "outDir": "/Users/silvandiepen/Repositories/_tiko/tiko-mono/.temp-i18n-validation/dist",
+    "rootDir": "/Users/silvandiepen/Repositories/_tiko/tiko-mono/packages/ui/src",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": [
+    "/Users/silvandiepen/Repositories/_tiko/tiko-mono/packages/ui/src/i18n/**/*"
+  ]
+}

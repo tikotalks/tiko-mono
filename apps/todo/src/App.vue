@@ -109,7 +109,7 @@ const routeTitle = computed(() => {
   if (route.name === 'group') {
     const groupId = route.params.id as string
     const group = groups.value.find(g => g.id === groupId)
-    return group?.title || 'Todo List'
+    return group?.title || t(keys.common.loading)
   }
   return ''
 })

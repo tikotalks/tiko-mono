@@ -1,14 +1,14 @@
 <template>
   <div :class="bemm()">
-    <h2 :class="bemm('title')">Search Audio</h2>
+    <h2 :class="bemm('title')">{{ t(keys.radio.searchAudio) }}</h2>
     
     <!-- Search Input -->
     <div :class="bemm('search-header')">
       <TInputText
         ref="searchInput"
         v-model="localSearchQuery"
-        label="Search"
-        placeholder="Search audio by title, description, or tags..."
+        :label="t(keys.common.search)"
+        :placeholder="t(keys.radio.searchAudioPlaceholder)"
         icon="search"
         :class="bemm('search-input')"
         @input="handleSearchInput"
@@ -17,10 +17,10 @@
 
     <div v-if="localSearchQuery.trim()" :class="bemm('search-info')">
       <p :class="bemm('query')">
-        Searching for: <strong>"{{ localSearchQuery }}"</strong>
+        {{ t(keys.radio.searchingFor) }}: <strong>"{{ localSearchQuery }}"</strong>
       </p>
       <p :class="bemm('count')">
-        {{ results.length }} {{ results.length === 1 ? 'result' : 'results' }} found
+        {{ t(keys.radio.resultsFound, { count: results.length }) }}
       </p>
     </div>
 
@@ -28,15 +28,15 @@
       <!-- Loading State -->
       <div v-if="loading" :class="bemm('loading')">
         <div :class="bemm('spinner')" />
-        <p>Searching your audio collection...</p>
+        <p>{{ t(keys.radio.searchingCollection) }}</p>
       </div>
 
       <!-- No Results -->
       <div v-else-if="results.length === 0" :class="bemm('no-results')">
         <TIcon name="search" :class="bemm('no-results-icon')" />
-        <h3 :class="bemm('no-results-title')">No results found</h3>
+        <h3 :class="bemm('no-results-title')">{{ t(keys.radio.noResultsFound) }}</h3>
         <p :class="bemm('no-results-description')">
-          Try searching with different keywords or check your spelling.
+          {{ t(keys.radio.tryDifferentKeywords) }}
         </p>
       </div>
 
@@ -71,7 +71,7 @@
                   {{ tag }}
                 </span>
                 <span v-if="item.tags.length > 3" :class="bemm('result-tag-more')">
-                  +{{ item.tags.length - 3 }} more
+                  +{{ item.tags.length - 3 }} {{ t(keys.common.more) }}
                 </span>
               </div>
               
@@ -80,7 +80,7 @@
                   {{ formatDuration(item.durationSeconds) }}
                 </span>
                 <span v-if="item.playCount > 0" :class="bemm('result-plays')">
-                  {{ item.playCount }} {{ item.playCount === 1 ? 'play' : 'plays' }}
+                  {{ item.playCount }} {{ item.playCount === 1 ? t(keys.radio.play) : t(keys.radio.plays) }}
                 </span>
                 <TIcon
                   v-if="item.isFavorite"
@@ -119,7 +119,7 @@
         type="ghost"
         @click="emit('close')"
       >
-        Close
+        {{ t(keys.common.close) }}
       </TButton>
       
       <TButton
@@ -127,7 +127,7 @@
         color="primary"
         @click="playAll"
       >
-        Play All Results
+        {{ t(keys.radio.playAllResults) }}
       </TButton>
     </div>
   </div>
@@ -136,7 +136,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TIcon, TInputText } from '@tiko/ui'
+import { TButton, TIcon, TInputText, useI18n } from '@tiko/ui'
 import type { RadioItem } from '../types/radio.types'
 
 interface Props {
@@ -164,6 +164,7 @@ const emit = defineEmits<{
 }>()
 
 const bemm = useBemm('search-results-modal')
+const { t, keys } = useI18n()
 
 // Refs
 const searchInput = ref<InstanceType<typeof TInputText> | null>(null)

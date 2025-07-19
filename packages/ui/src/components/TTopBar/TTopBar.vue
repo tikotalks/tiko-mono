@@ -577,7 +577,7 @@ onUnmounted(() => {
   &__user-name {
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--color-primary-text);
+    color: var(--color-foreground);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

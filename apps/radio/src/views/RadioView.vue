@@ -50,7 +50,7 @@
               @click="clearTagFilters"
               :class="bemm('clear-filters')"
             >
-              Clear
+              {{ t(keys.radio.clear) }}
             </TButton>
           </div>
         </div>
@@ -65,7 +65,7 @@
             size="small"
             @click="activeFilter = 'all'"
           >
-            All ({{ items.length }})
+            {{ t(keys.radio.all) }} ({{ items.length }})
           </TButton>
 
           <TButton
@@ -73,7 +73,7 @@
             size="small"
             @click="activeFilter = 'favorites'"
           >
-            Favorites ({{ favoriteItems.length }})
+            {{ t(keys.radio.favorites) }} ({{ favoriteItems.length }})
           </TButton>
 
           <TButton
@@ -81,29 +81,29 @@
             size="small"
             @click="activeFilter = 'recent'"
           >
-            Recent ({{ recentItems.length }})
+            {{ t(keys.radio.recent) }} ({{ recentItems.length }})
           </TButton>
         </div>
 
         <!-- Loading State -->
         <div v-if="loading" :class="bemm('loading')">
           <div :class="bemm('spinner')" />
-          <p>Loading your audio collection...</p>
+          <p>{{ t(keys.radio.loadingAudioCollection) }}</p>
         </div>
 
         <!-- Error State -->
         <div v-else-if="error" :class="bemm('error')">
           <TIcon name="alert-circle" :class="bemm('error-icon')" />
           <p :class="bemm('error-text')">{{ error }}</p>
-          <TButton @click="fetchItems">Try Again</TButton>
+          <TButton @click="fetchItems">{{ t(keys.radio.tryAgain) }}</TButton>
         </div>
 
         <!-- Empty State -->
         <div v-else-if="filteredItems.length === 0 && items.length === 0" :class="bemm('empty')">
           <TIcon name="music" :class="bemm('empty-icon')" />
-          <h3 :class="bemm('empty-title')">No audio tracks yet</h3>
+          <h3 :class="bemm('empty-title')">{{ t(keys.radio.noAudioTracksYet) }}</h3>
           <p :class="bemm('empty-description')">
-            Start building your audio collection by adding your first track
+            {{ t(keys.radio.startBuildingCollection) }}
           </p>
           <TButton
             v-if="parentMode.canManageContent.value"
@@ -111,18 +111,18 @@
             icon="plus"
             @click="handleAddClick"
           >
-            Add Your First Audio
+            {{ t(keys.radio.addYourFirstAudio) }}
           </TButton>
         </div>
 
         <!-- No Search Results -->
         <div v-else-if="filteredItems.length === 0" :class="bemm('no-results')">
           <TIcon name="search" :class="bemm('no-results-icon')" />
-          <h3 :class="bemm('no-results-title')">No results found</h3>
+          <h3 :class="bemm('no-results-title')">{{ t(keys.radio.noResultsFound) }}</h3>
           <p :class="bemm('no-results-description')">
-            Try adjusting your search or filters
+            {{ t(keys.radio.tryAdjustingSearch) }}
           </p>
-          <TButton @click="clearFilters">Clear All Filters</TButton>
+          <TButton @click="clearFilters">{{ t(keys.radio.clearAllFilters) }}</TButton>
         </div>
 
         <!-- Audio Grid -->
@@ -210,6 +210,7 @@ import {
   TIcon,
   useParentMode,
   useEventBus,
+  useI18n,
   type PopupService,
   type ToastService
 } from '@tiko/ui'
@@ -229,6 +230,7 @@ const parentMode = useParentMode('radio')
 const popupService = inject('popupService')!
 const toastService = inject('toastService')!
 const eventBus = useEventBus()
+const { t, keys } = useI18n()
 
 // Composables
 const radioItems = useRadioItems()
@@ -350,7 +352,7 @@ const editItem = (item: RadioItem) => {
   console.log('Edit item clicked - opening EditItemModal for:', item.title)
   popupService.showPopup({
     component: EditItemModal,
-    title: 'Edit Audio Item',
+    title: t(keys.radio.editAudioItem),
     props: {
       item: item,
       onSubmit: (itemId: string, updates: Partial<RadioItem>) => handleEditItem(itemId, updates)
@@ -359,7 +361,7 @@ const editItem = (item: RadioItem) => {
 }
 
 const deleteItem = async (item: RadioItem) => {
-  if (confirm(`Are you sure you want to delete "${item.title}"?`)) {
+  if (confirm(t(keys.radio.deleteTrackConfirm, { title: item.title }))) {
     await removeItem(item.id)
   }
 }

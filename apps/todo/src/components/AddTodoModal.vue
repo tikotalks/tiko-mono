@@ -1,7 +1,7 @@
 <template>
   <div :class="bemm()">
     <div :class="bemm('header')">
-      <h2>{{ isEditing ? 'Edit Todo Item' : 'Add Todo Item' }}</h2>
+      <h2>{{ isEditing ? t(keys.todo.editItem) : t(keys.todo.addTodoItem) }}</h2>
       <TButton
         icon="multiply"
         type="ghost"
@@ -12,16 +12,16 @@
 
     <form :class="bemm('form')" @submit.prevent="handleSubmit">
       <div :class="bemm('field')">
-        <label>Item Title</label>
+        <label>{{ t(keys.todo.itemTitle) }}</label>
         <TInputText
           v-model="formData.title"
-          placeholder="What needs to be done?"
+          :placeholder="t(keys.todo.whatNeedsDone)"
           required
         />
       </div>
 
       <div :class="bemm('field')">
-        <label>Image (optional)</label>
+        <label>{{ t(keys.todo.imageOptional) }}</label>
         <div :class="bemm('image-upload')">
           <div v-if="formData.imageUrl" :class="bemm('image-preview')">
             <img :src="formData.imageUrl" alt="Preview" />
@@ -35,7 +35,7 @@
           </div>
           <div v-else :class="bemm('image-placeholder')">
             <TIcon name="image" size="2rem" />
-            <p>Click to add an image</p>
+            <p>{{ t(keys.todo.clickToAddImage) }}</p>
             <input
               type="file"
               accept="image/*"
@@ -44,7 +44,7 @@
           </div>
         </div>
         <p :class="bemm('help-text')">
-          Upload an image to make the todo item more visual
+          {{ t(keys.todo.uploadImagePrompt) }}
         </p>
       </div>
 
@@ -54,7 +54,7 @@
           color="secondary"
           @click="$emit('close')"
         >
-          Cancel
+          {{ t(keys.common.cancel) }}
         </TButton>
         <TButton
           type="default"
@@ -62,7 +62,7 @@
           :disabled="!formData.title"
           @click="handleSubmit"
         >
-          {{ isEditing ? 'Save Changes' : 'Add Item' }}
+          {{ isEditing ? t(keys.todo.saveChanges) : t(keys.todo.addItem) }}
         </TButton>
       </div>
     </form>
@@ -72,7 +72,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TIcon, TInputText } from '@tiko/ui'
+import { TButton, TIcon, TInputText, useI18n } from '@tiko/ui'
 import { useTodoStore } from '../stores/todo'
 import type { TodoItem } from '../types/todo.types'
 
@@ -90,6 +90,7 @@ const emit = defineEmits<{
 
 const bemm = useBemm('add-todo-modal')
 const todoStore = useTodoStore()
+const { t, keys } = useI18n()
 
 const isEditing = computed(() => !!props.item)
 

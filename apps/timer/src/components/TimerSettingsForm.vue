@@ -3,7 +3,7 @@
     <div :class="bemm('content')">
       <!-- Timer Duration (countdown only) -->
     <div v-if="mode === 'down'" :class="bemm('group')">
-      <label :class="bemm('label')">Timer Duration</label>
+      <label :class="bemm('label')">{{ t(keys.timer.timerDuration) }}</label>
       <div :class="bemm('time-inputs')">
         <TInputNumber
           v-model="localMinutes"
@@ -39,13 +39,13 @@
     <!-- Notifications -->
      <TInputCheckbox
       v-model="localSettings.soundEnabled"
-      :label="'Sound notification'"
+      :label="t(keys.timer.soundNotification)"
       :class="bemm('checkbox')"
     />
 
     <TInputCheckbox
       v-model="localSettings.vibrationEnabled"
-      :label="'Vibration notification'"
+      :label="t(keys.timer.vibrationNotification)"
       :class="bemm('checkbox')"
     />
 
@@ -56,7 +56,7 @@
         @click="handleClose"
         size="medium"
       >
-        Close
+        {{ t(keys.common.close) }}
       </TButton>
     </div>
   </div>
@@ -66,7 +66,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TInputCheckbox, TInputNumber } from '@tiko/ui'
+import { TButton, TInputCheckbox, TInputNumber, useI18n } from '@tiko/ui'
 import type { TimerMode, TimerSettings } from '../composables/useTimer'
 
 interface Props {
@@ -83,6 +83,7 @@ const emit = defineEmits<{
 }>()
 
 const bemm = useBemm('timer-settings-form')
+const { t, keys } = useI18n()
 
 // Local state
 const localMinutes = ref(props.minutes)

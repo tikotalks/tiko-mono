@@ -5,7 +5,7 @@
       <template v-if="currentStep === 'email'">
         <!-- Header -->
         <div :class="bemm('header')">
-          <h4 :class="bemm('title')">Login to your account</h4>
+          <h4 :class="bemm('title')">{{ t(keys.auth.loginToAccount) }}</h4>
         </div>
         <!-- Email Step -->
         <div :class="bemm('content')">
@@ -14,28 +14,28 @@
             <TInputEmail
               v-model="email"
               type="email"
-              label="Email Address"
-              placeholder="Enter your email"
+              :label="t(keys.auth.emailAddress)"
+              :placeholder="t(keys.auth.enterEmail)"
               :disabled="isLoading"
               required
               :class="bemm('input')"
             />
 
             <TButton
-              label="Send Code"
+              :label="t(keys.auth.sendCode)"
               color="primary"
               size="large"
               @click="handleEmailSubmit"
               :disabled="!isEmailValid || isLoading"
               :loading="isLoading"
               :class="bemm('submit-button')"
-              >Send Code</TButton
+              >{{ t(keys.auth.sendCode) }}</TButton
             >
           </TForm>
 
           <!-- Divider -->
           <div :class="bemm('divider')">
-            <span :class="bemm('divider-text')">or</span>
+            <span :class="bemm('divider-text')">{{ t(keys.auth.or) }}</span>
           </div>
 
           <!-- SSO Button (only show if not in Tiko app and SSO is enabled) -->
@@ -56,18 +56,18 @@
             @click="handleAppleSignIn"
             :disabled="isLoading"
             :class="bemm('apple-button')"
-            >Login with Apple</TButton
+            >{{ t(keys.auth.loginWithApple) }}</TButton
           >
 
           <!-- Register Link -->
           <div :class="bemm('register')">
-            <span :class="bemm('register-text')">Don't have an account?</span>
+            <span :class="bemm('register-text')">{{ t(keys.auth.dontHaveAccount) }}</span>
             <button
               type="button"
               :class="bemm('register-link')"
               @click="toggleMode"
             >
-              Register
+              {{ t(keys.auth.register) }}
             </button>
           </div>
         </div>
@@ -84,11 +84,10 @@
             </p>
             <div :class="bemm('verification-options')">
               <p :class="bemm('option')">
-                <strong>Option 1:</strong> Click the magic link in your email
+                {{ t(keys.auth.option1MagicLink) }}
               </p>
               <p :class="bemm('option')">
-                <strong>Option 2:</strong> Enter the {{ codeLength }}-digit code
-                below
+                {{ t(keys.auth.option2EnterCode, { codeLength }) }}
               </p>
             </div>
           </div>
@@ -97,8 +96,8 @@
             <TInputText
               v-model="verificationCode"
               type="text"
-              label="Verification Code"
-              :placeholder="`Enter ${codeLength}-digit code`"
+              :label="t(keys.auth.verificationCode)"
+              :placeholder="t(keys.auth.enterDigitCode, { codeLength })"
               :error="verificationError ? [verificationError] : undefined"
               :disabled="isLoading"
               :maxlength="codeLength"
@@ -107,14 +106,14 @@
             />
 
             <TButton
-              label="Verify Code"
+              :label="t(keys.auth.verifyCode)"
               color="primary"
               size="large"
               @click="handleVerificationSubmit"
               :disabled="!isVerificationValid || isLoading"
               :loading="isLoading"
               :class="bemm('submit-button')"
-              >Verify Code</TButton
+              >{{ t(keys.auth.verifyCode) }}</TButton
             >
           </TForm>
 
@@ -128,7 +127,7 @@
               {{
                 resendCooldown > 0
                   ? `Resend in ${resendCooldown}s`
-                  : "Didn't receive code? Resend"
+                  : t(keys.auth.didntReceiveCode) + ' ' + t(keys.auth.resendCode)
               }}
             </TButton>
 
@@ -137,7 +136,7 @@
               @click="goBackToEmail"
               :disabled="isLoading"
             >
-              Use different email
+              {{ t(keys.auth.useDifferentEmail) }}
             </TButton>
           </TButtonGroup>
         </div>
@@ -146,15 +145,15 @@
       <!-- Register Step -->
       <template v-else-if="currentStep === 'register'">
         <div :class="bemm('header')">
-          <h2 :class="bemm('title')">Create your account</h2>
+          <h2 :class="bemm('title')">{{ t(keys.auth.createAccount) }}</h2>
         </div>
         <div :class="bemm('content')">
           <TForm @submit.prevent="handleRegisterSubmit">
             <TInputEmail
               v-model="email"
               type="email"
-              label="Email Address"
-              placeholder="Enter your email"
+              :label="t(keys.auth.emailAddress)"
+              :placeholder="t(keys.auth.enterEmail)"
               :disabled="isLoading"
               required
               :class="bemm('input')"
@@ -163,14 +162,14 @@
             <TInputText
               v-model="fullName"
               type="text"
-              label="Full Name (Optional)"
-              placeholder="Enter your full name"
+              :label="t(keys.auth.fullNameOptional)"
+              :placeholder="t(keys.auth.enterFullName)"
               :disabled="isLoading"
               :class="bemm('input')"
             />
 
             <TButton
-              label="Send Code"
+              :label="t(keys.auth.sendCode)"
               type="fancy"
               color="primary"
               size="large"
@@ -178,19 +177,19 @@
               :disabled="!isEmailValid || isLoading"
               :loading="isLoading"
               :class="bemm('submit-button')"
-              >Send Code</TButton
+              >{{ t(keys.auth.sendCode) }}</TButton
             >
           </TForm>
 
           <!-- Back to Login -->
           <div :class="bemm('register')">
-            <span :class="bemm('register-text')">Already have an account?</span>
+            <span :class="bemm('register-text')">{{ t(keys.auth.alreadyHaveAccount) }}</span>
             <button
               type="button"
               :class="bemm('register-link')"
               @click="toggleMode"
             >
-              Login
+              {{ t(keys.auth.login) }}
             </button>
           </div>
         </div>
@@ -201,13 +200,13 @@
         <TIcon name="alert-circle" :class="bemm('error-icon')" />
         <p :class="bemm('error-message')">{{ error }}</p>
         <TButton
-          label="Try Again"
+          :label="t(keys.auth.tryAgain)"
           type="ghost"
           color="secondary"
           size="small"
           @click="clearError"
           :class="bemm('error-button')"
-          >Try Again</TButton
+          >{{ t(keys.auth.tryAgain) }}</TButton
         >
       </div>
     </div>
@@ -217,6 +216,7 @@
 <script setup lang="ts">
 import { ref, computed, onUnmounted } from 'vue';
 import { useBemm } from 'bemm';
+import { useI18n } from '../../composables/useI18n';
 import TButton from '../TButton/TButton.vue';
 import TButtonGroup from '../TButton/TButtonGroup.vue';
 import TIcon from '../TIcon/TIcon.vue';
@@ -240,6 +240,9 @@ const emit = defineEmits<TLoginFormEmits>();
 
 // BEM classes
 const bemm = useBemm('login-form');
+
+// i18n
+const { t, keys } = useI18n();
 
 // Form state
 const currentStep = ref<LoginFormStep>('email');
@@ -274,7 +277,7 @@ const handleAppleSignIn = () => {
 
 const handleEmailSubmit = () => {
   if (!isEmailValid.value) {
-    emailError.value = 'Please enter a valid email address';
+    emailError.value = t(keys.auth.pleaseEnterValidEmail);
     return;
   }
 
@@ -288,7 +291,7 @@ const handleEmailSubmit = () => {
 
 const handleRegisterSubmit = () => {
   if (!isEmailValid.value) {
-    emailError.value = 'Please enter a valid email address';
+    emailError.value = t(keys.auth.pleaseEnterValidEmail);
     return;
   }
 
@@ -302,7 +305,7 @@ const handleRegisterSubmit = () => {
 
 const handleVerificationSubmit = () => {
   if (!isVerificationValid.value) {
-    verificationError.value = `Please enter a valid ${codeLength}-digit code`;
+    verificationError.value = t(keys.auth.pleaseEnterValidCode, { codeLength });
     return;
   }
 

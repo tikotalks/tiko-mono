@@ -1,7 +1,7 @@
 <template>
   <div :class="bemm()">
     <div :class="bemm('header')">
-      <h2>{{ isEditing ? 'Edit Todo List' : 'Create Todo List' }}</h2>
+      <h2>{{ isEditing ? t(keys.todo.editTodoList) : t(keys.todo.createTodoList) }}</h2>
       <TButton
         icon="multiply"
         type="ghost"
@@ -12,16 +12,16 @@
 
     <form :class="bemm('form')" @submit.prevent="handleSubmit">
       <div :class="bemm('field')">
-        <label>List Name</label>
+        <label>{{ t(keys.todo.listName) }}</label>
         <TInputText
           v-model="formData.title"
-          placeholder="Enter list name"
+          :placeholder="t(keys.todo.enterListName)"
           required
         />
       </div>
 
       <div :class="bemm('field')">
-        <label>Icon (optional)</label>
+        <label>{{ t(keys.todo.iconOptional) }}</label>
         <div :class="bemm('icon-grid')">
           <div
             v-for="icon in availableIcons"
@@ -35,7 +35,7 @@
       </div>
 
       <div :class="bemm('field')">
-        <label>Color (optional)</label>
+        <label>{{ t(keys.todo.colorOptional) }}</label>
         <div :class="bemm('color-grid')">
           <div
             v-for="color in availableColors"
@@ -53,7 +53,7 @@
           color="secondary"
           @click="$emit('close')"
         >
-          Cancel
+          {{ t(keys.common.cancel) }}
         </TButton>
         <TButton
           type="default"
@@ -61,7 +61,7 @@
           :disabled="!formData.title"
           @click="handleSubmit"
         >
-          {{ isEditing ? 'Save Changes' : 'Create List' }}
+          {{ isEditing ? t(keys.todo.saveChanges) : t(keys.todo.createGroup) }}
         </TButton>
       </div>
     </form>
@@ -71,7 +71,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TIcon, TInputText } from '@tiko/ui'
+import { TButton, TIcon, TInputText, useI18n } from '@tiko/ui'
 import { useTodoStore } from '../stores/todo'
 import type { TodoGroup } from '../types/todo.types'
 
@@ -88,6 +88,7 @@ const emit = defineEmits<{
 
 const bemm = useBemm('add-group-modal')
 const todoStore = useTodoStore()
+const { t, keys } = useI18n()
 
 const isEditing = computed(() => !!props.group)
 

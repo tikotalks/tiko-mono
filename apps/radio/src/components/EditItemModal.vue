@@ -1,12 +1,12 @@
 <template>
   <div :class="bemm()">
-    <h2 :class="bemm('title')">Edit Audio Track</h2>
+    <h2 :class="bemm('title')">{{ t(keys.radio.editAudioTrack) }}</h2>
     <form @submit.prevent="handleSubmit" :class="bemm('form')">
       <div :class="bemm('field')">
         <TInputText
           v-model="form.title"
-          label="Title"
-          placeholder="Audio track title"
+          :label="t(keys.radio.title)"
+          :placeholder="t(keys.radio.audioTrackTitle)"
           required
           :error="errors.title"
           :class="bemm('input')"
@@ -17,8 +17,8 @@
       <div :class="bemm('field')">
         <TTextArea
           v-model="form.description"
-          label="Description"
-          placeholder="Optional description..."
+          :label="t(keys.radio.description)"
+          :placeholder="t(keys.radio.descriptionPlaceholder)"
           :class="bemm('textarea')"
           :error="errors.description"
         />
@@ -28,25 +28,25 @@
       <div :class="bemm('field')">
         <TInputText
           v-model="form.customThumbnailUrl"
-          label="Custom Thumbnail"
-          placeholder="https://example.com/thumbnail.jpg"
+          :label="t(keys.radio.customThumbnailUrl)"
+          :placeholder="t(keys.radio.thumbnailPlaceholder)"
           type="url"
           :error="errors.customThumbnailUrl"
           :class="bemm('input')"
         />
         <p :class="bemm('help')">
-          Leave empty to use automatically detected thumbnail
+          {{ t(keys.radio.leaveEmptyThumbnail) }}
         </p>
       </div>
 
       <!-- Tags Input -->
       <div :class="bemm('field')">
-        <label :class="bemm('label')">Tags</label>
+        <label :class="bemm('label')">{{ t(keys.radio.tags) }}</label>
         <div :class="bemm('tags-input')">
           <TInputText
             v-model="tagInput"
-            label="Tags"
-            placeholder="Add a tag and press Enter"
+            :label="t(keys.radio.tags)"
+            :placeholder="t(keys.radio.addTag)"
             @keydown.enter.prevent="addTag"
             :class="bemm('tag-input')"
           />
@@ -57,7 +57,7 @@
             @click="addTag"
             :disabled="!tagInput.trim()"
           >
-            Add
+            {{ t(keys.radio.add) }}
           </TButton>
         </div>
 
@@ -92,13 +92,13 @@
             :name="form.isFavorite ? 'heart' : 'heart'"
             :class="bemm('checkbox-icon', { active: form.isFavorite })"
           />
-          Mark as favorite
+          {{ t(keys.radio.markAsFavorite) }}
         </label>
       </div>
 
       <!-- Preview Section -->
       <div :class="bemm('preview')">
-        <h3 :class="bemm('preview-title')">Preview</h3>
+        <h3 :class="bemm('preview-title')">{{ t(keys.common.preview) }}</h3>
         <div :class="bemm('preview-content')">
           <img
             :src="previewThumbnail"
@@ -107,7 +107,7 @@
             @error="handleThumbnailError"
           />
           <div :class="bemm('preview-info')">
-            <h4 :class="bemm('preview-name')">{{ form.title || 'Untitled' }}</h4>
+            <h4 :class="bemm('preview-name')">{{ form.title || t(keys.radio.untitled) }}</h4>
             <p v-if="form.description" :class="bemm('preview-description')">
               {{ form.description }}
             </p>
@@ -122,7 +122,7 @@
                 {{ formatPlayCount(item.playCount) }}
               </span>
               <span v-if="form.isFavorite" :class="bemm('preview-favorite')">
-                <TIcon name="heart" /> Favorite
+                <TIcon name="heart" /> {{ t(keys.radio.favorite) }}
               </span>
             </div>
           </div>
@@ -131,7 +131,7 @@
 
       <!-- Video URL Display (Read-only) -->
       <div :class="bemm('field')">
-        <label :class="bemm('label')">Video URL (Read-only)</label>
+        <label :class="bemm('label')">{{ t(keys.radio.videoUrlReadonly) }}</label>
         <div :class="bemm('readonly-url')">
           <span :class="bemm('url-text')">{{ item.videoUrl }}</span>
           <TButton
@@ -140,11 +140,11 @@
             icon="external-link"
             @click="openUrl(item.videoUrl)"
           >
-            Open
+            {{ t(keys.radio.openUrl) }}
           </TButton>
         </div>
         <p :class="bemm('help')">
-          Video URL cannot be changed. Create a new item to use a different URL.
+          {{ t(keys.radio.videoUrlCannotChange) }}
         </p>
       </div>
 
@@ -161,7 +161,7 @@
           @click="emit('close')"
           :disabled="submitting"
         >
-          Cancel
+          {{ t(keys.common.cancel) }}
         </TButton>
 
         <TButton
@@ -169,7 +169,7 @@
           :loading="submitting"
           :disabled="!isFormValid || !hasChanges"
         >
-          Save Changes
+          {{ t(keys.todo.saveChanges) }}
         </TButton>
       </div>
     </form>
@@ -179,7 +179,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useBemm } from 'bemm'
-import { TInputText, TButton, TIcon, TTextArea } from '@tiko/ui'
+import { TInputText, TButton, TIcon, TTextArea, useI18n } from '@tiko/ui'
 
 // Local utility function for formatting duration
 const formatDuration = (seconds: number): string => {
@@ -207,6 +207,7 @@ const emit = defineEmits<{
 }>()
 
 const bemm = useBemm('edit-item-modal')
+const { t, keys } = useI18n()
 
 // Form state
 const form = ref({
@@ -281,11 +282,11 @@ const removeTag = (index: number) => {
  * Format play count for display
  */
 const formatPlayCount = (count: number): string => {
-  if (count === 0) return 'Never played'
-  if (count === 1) return '1 play'
-  if (count < 1000) return `${count} plays`
-  if (count < 1000000) return `${Math.floor(count / 100) / 10}K plays`
-  return `${Math.floor(count / 100000) / 10}M plays`
+  if (count === 0) return t(keys.radio.neverPlayed)
+  if (count === 1) return t(keys.radio.onePlay)
+  if (count < 1000) return `${count} ${t(keys.radio.plays)}`
+  if (count < 1000000) return `${Math.floor(count / 100) / 10}K ${t(keys.radio.plays)}`
+  return `${Math.floor(count / 100000) / 10}M ${t(keys.radio.plays)}`
 }
 
 /**
@@ -311,7 +312,7 @@ const validateForm = (): boolean => {
 
   // Validate title
   if (!form.value.title.trim()) {
-    errors.value.title = 'Title is required'
+    errors.value.title = t(keys.radio.titleRequired)
   }
 
   // Validate custom thumbnail URL if provided
@@ -319,7 +320,7 @@ const validateForm = (): boolean => {
     try {
       new URL(form.value.customThumbnailUrl)
     } catch {
-      errors.value.customThumbnailUrl = 'Please enter a valid thumbnail URL'
+      errors.value.customThumbnailUrl = t(keys.radio.pleaseEnterValidThumbnailUrl)
     }
   }
 
@@ -366,7 +367,7 @@ const handleSubmit = async () => {
     }
   } catch (err) {
     console.error('Failed to submit form:', err)
-    submitError.value = 'Failed to save changes. Please try again.'
+    submitError.value = t(keys.radio.failedToSaveChanges)
   } finally {
     submitting.value = false
   }

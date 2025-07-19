@@ -1,12 +1,12 @@
 <template>
   <div :class="bemm()">
-    <h2 :class="bemm('title')">Add Audio Track</h2>
+    <h2 :class="bemm('title')">{{ t(keys.radio.addAudioTrack) }}</h2>
     <form @submit.prevent="handleSubmit" :class="bemm('form')">
       <div :class="bemm('field')">
         <TInputText
-          label="Video URL"
+          :label="t(keys.radio.videoUrl)"
           v-model="form.videoUrl"
-          placeholder="https://youtube.com/watch?v=... or https://vimeo.com/..."
+          :placeholder="t(keys.radio.videoUrlPlaceholder)"
           type="url"
           required
           :error="errors.videoUrl"
@@ -14,16 +14,16 @@
           @blur="extractMetadata"
         />
         <p :class="bemm('help')">
-          Paste a YouTube, Vimeo, or direct video URL. Audio will be extracted for playback.
+          {{ t(keys.radio.pasteUrlPrompt) }}
         </p>
       </div>
 
       <!-- Title Input -->
       <div :class="bemm('field')">
         <TInputText
-          label="title"
+          :label="t(keys.radio.title)"
           v-model="form.title"
-          placeholder="My awesome audio track"
+          :placeholder="t(keys.radio.titlePlaceholder)"
           required
           :error="errors.title"
           :class="bemm('input')"
@@ -34,8 +34,8 @@
       <div :class="bemm('field')">
         <TTextArea
           v-model="form.description"
-          label="Description"
-          placeholder="Optional description..."
+          :label="t(keys.radio.description)"
+          :placeholder="t(keys.radio.descriptionPlaceholder)"
           :class="bemm('textarea')"
           :error="errors.description"
         />
@@ -44,14 +44,14 @@
       <!-- Custom Thumbnail URL -->
       <div :class="bemm('field')">
         <TInputText
-          label="Custom Thumbnail URL"
+          :label="t(keys.radio.customThumbnailUrl)"
           v-model="form.customThumbnailUrl"
-          placeholder="https://example.com/thumbnail.jpg"
+          :placeholder="t(keys.radio.thumbnailPlaceholder)"
           type="url"
           :class="bemm('input')"
         />
         <p :class="bemm('help')">
-          Leave empty to use automatically detected thumbnail
+          {{ t(keys.radio.leaveEmptyThumbnail) }}
         </p>
       </div>
 
@@ -59,9 +59,9 @@
       <div :class="bemm('field')">
         <div :class="bemm('tags-input')">
           <TInputText
-            label="Tags"
+            :label="t(keys.radio.tags)"
             v-model="tagInput"
-            placeholder="Add a tag and press Enter"
+            :placeholder="t(keys.radio.addTag)"
             @keydown.enter.prevent="addTag"
             :class="bemm('tag-input')"
           />
@@ -72,7 +72,7 @@
             @click="addTag"
             :disabled="!tagInput.trim()"
           >
-            Add
+            {{ t(keys.radio.add) }}
           </TButton>
         </div>
 
@@ -97,7 +97,7 @@
 
       <!-- Preview Section -->
       <div v-if="showPreview" :class="bemm('preview')">
-        <h3 :class="bemm('preview-title')">Preview</h3>
+        <h3 :class="bemm('preview-title')">{{ t(keys.common.preview) }}</h3>
         <div :class="bemm('preview-content')">
           <img
             v-if="previewThumbnail"
@@ -107,7 +107,7 @@
             @error="handleThumbnailError"
           />
           <div :class="bemm('preview-info')">
-            <h4 :class="bemm('preview-name')">{{ form.title || 'Untitled' }}</h4>
+            <h4 :class="bemm('preview-name')">{{ form.title || t(keys.radio.untitled) }}</h4>
             <p v-if="form.description" :class="bemm('preview-description')">
               {{ form.description }}
             </p>
@@ -136,7 +136,7 @@
           @click="emit('close')"
           :disabled="submitting"
         >
-          Cancel
+          {{ t(keys.common.cancel) }}
         </TButton>
 
         <TButton
@@ -145,7 +145,7 @@
           :loading="submitting"
           :disabled="!isFormValid"
         >
-          Add Audio Track
+          {{ t(keys.radio.addAudioTrack) }}
         </TButton>
       </div>
     </form>
@@ -155,7 +155,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useBemm } from 'bemm'
-import { TInputText, TButton, TIcon, TTextArea } from '@tiko/ui'
+import { TInputText, TButton, TIcon, TTextArea, useI18n } from '@tiko/ui'
 
 // Local utility function for formatting duration
 const formatDuration = (seconds: number): string => {
@@ -182,6 +182,7 @@ const emit = defineEmits<{
 }>()
 
 const bemm = useBemm('add-item-modal')
+const { t, keys } = useI18n()
 
 // Form state
 const form = ref<AddRadioItemForm>({
@@ -313,17 +314,17 @@ const validateForm = (): boolean => {
 
   // Validate title
   if (!form.value.title.trim()) {
-    errors.value.title = 'Title is required'
+    errors.value.title = t(keys.radio.titleRequired)
   }
 
   // Validate video URL
   if (!form.value.videoUrl.trim()) {
-    errors.value.videoUrl = 'Video URL is required'
+    errors.value.videoUrl = t(keys.radio.videoUrlRequired)
   } else {
     try {
       new URL(form.value.videoUrl)
     } catch {
-      errors.value.videoUrl = 'Please enter a valid URL'
+      errors.value.videoUrl = t(keys.radio.pleaseEnterValidUrl)
     }
   }
 
@@ -332,7 +333,7 @@ const validateForm = (): boolean => {
     try {
       new URL(form.value.customThumbnailUrl)
     } catch {
-      errors.value.customThumbnailUrl = 'Please enter a valid thumbnail URL'
+      errors.value.customThumbnailUrl = t(keys.radio.pleaseEnterValidThumbnailUrl)
     }
   }
 
@@ -370,7 +371,7 @@ const handleSubmit = async () => {
     }
   } catch (err) {
     console.error('Failed to submit form:', err)
-    submitError.value = 'Failed to add audio track. Please try again.'
+    submitError.value = t(keys.radio.failedToAddAudioTrack)
   } finally {
     submitting.value = false
   }

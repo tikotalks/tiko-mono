@@ -21,14 +21,14 @@
     <div v-if="isExpired" :class="bemm('expired')">
       <div :class="bemm('expired-content')">
         <TIcon name="clock" size="4rem" />
-        <h2 :class="bemm('expired-title')">Time's Up!</h2>
+        <h2 :class="bemm('expired-title')">{{ t(keys.timer.timesUp) }}</h2>
         <TButton
           type="default"
           color="primary"
           @click="reset"
           size="large"
         >
-          Dismiss
+          {{ t(keys.timer.dismiss) }}
         </TButton>
       </div>
     </div>
@@ -46,11 +46,12 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TIcon } from '@tiko/ui'
+import { TButton, TIcon, useI18n } from '@tiko/ui'
 import { useTimer } from '../composables/useTimer'
 import TimeDisplay from '../components/TimeDisplay.vue'
 
 const bemm = useBemm('timer-view')
+const { t, keys } = useI18n()
 const {
   mode,
   isRunning,

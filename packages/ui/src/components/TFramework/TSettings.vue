@@ -95,15 +95,31 @@
             <label :class="bemm('setting-label')">{{ t('settings.language') }}</label>
             <select
               :class="bemm('select')"
-              :value="currentLanguage"
-              @change="handleLanguageChange"
+              :value="selectedBaseLanguage"
+              @change="handleBaseLanguageChange"
             >
               <option
-                v-for="loc in availableLocales"
-                :key="loc"
-                :value="loc"
+                v-for="group in languageGroups"
+                :key="group.baseCode"
+                :value="group.baseCode"
               >
-                {{ localeNames[loc] }}
+                {{ getTranslatedLanguageName(group.translationKey) }}
+              </option>
+            </select>
+          </div>
+          <div v-if="selectedLanguageGroup && selectedLanguageGroup.variants.length > 1" :class="bemm('setting-row')">
+            <label :class="bemm('setting-label')">{{ t('settings.region') }}</label>
+            <select
+              :class="bemm('select')"
+              :value="currentLanguage"
+              @change="handleLanguageVariantChange"
+            >
+              <option
+                v-for="variant in selectedLanguageGroup.variants"
+                :key="variant.code"
+                :value="variant.code"
+              >
+                {{ getTranslatedLanguageName(variant.translationKey) }}
               </option>
             </select>
           </div>
@@ -161,6 +177,7 @@ import TIcon from '../TIcon/TIcon.vue'
 import { toastService } from '../TToast'
 import { useLocalStorage } from '../../composables/useLocalStorage'
 import { useI18n } from '../../composables/useI18n'
+import { getLanguageGroups, findLanguageGroupByLocale, getBaseLanguageCode } from '../../utils/languageGroups'
 import type { FrameworkConfig, SettingsSection } from './TFramework.model'
 import type { Locale } from '../../i18n/types'
 
@@ -192,7 +209,31 @@ const selectedVoice = useLocalStorage('tiko-voice', '')
 const availableVoices = ref<SpeechSynthesisVoice[]>([])
 
 // Language settings
-const currentLanguage = useLocalStorage('tiko-language', 'en')
+const currentLanguage = useLocalStorage('tiko-language', 'en-GB')
+const languageGroups = getLanguageGroups()
+
+// Current language group state
+const selectedBaseLanguage = ref('')
+const selectedLanguageGroup = computed(() => {
+  return languageGroups.find(group => group.baseCode === selectedBaseLanguage.value)
+})
+
+// Initialize selected base language from current language
+const initializeLanguageSelection = () => {
+  const currentGroup = findLanguageGroupByLocale(currentLanguage.value as Locale)
+  if (currentGroup) {
+    selectedBaseLanguage.value = currentGroup.baseCode
+  } else {
+    // Fallback to English if current language not found
+    selectedBaseLanguage.value = 'en'
+    currentLanguage.value = 'en-GB'
+  }
+}
+
+// Helper function to get translated language names
+const getTranslatedLanguageName = (translationKey: string) => {
+  return t(`languageNames.${translationKey}`)
+}
 
 // Pending changes
 const pendingChanges = ref<Record<string, any>>({})
@@ -259,7 +300,23 @@ const handleVoiceChange = (event: Event) => {
   pendingChanges.value.voice = target.value
 }
 
-const handleLanguageChange = (event: Event) => {
+const handleBaseLanguageChange = (event: Event) => {
+  const target = event.target as HTMLSelectElement
+  const baseCode = target.value
+  selectedBaseLanguage.value = baseCode
+  
+  // Get the language group and select the first variant
+  const group = languageGroups.find(g => g.baseCode === baseCode)
+  if (group && group.variants.length > 0) {
+    const firstVariant = group.variants[0].code
+    currentLanguage.value = firstVariant
+    pendingChanges.value.language = firstVariant
+    // Update i18n locale immediately
+    setLocale(firstVariant as Locale)
+  }
+}
+
+const handleLanguageVariantChange = (event: Event) => {
   const target = event.target as HTMLSelectElement
   currentLanguage.value = target.value
   pendingChanges.value.language = target.value
@@ -291,6 +348,9 @@ const loadVoices = () => {
 }
 
 onMounted(() => {
+  // Initialize language selection
+  initializeLanguageSelection()
+
   // Load voices
   if (speechSynthesis.onvoiceschanged !== undefined) {
     speechSynthesis.onvoiceschanged = loadVoices
@@ -310,6 +370,8 @@ onMounted(() => {
     if (savedSettings.language) {
       currentLanguage.value = savedSettings.language
       setLocale(savedSettings.language as Locale)
+      // Re-initialize language selection with saved language
+      initializeLanguageSelection()
     }
 
     if (savedSettings.voiceEnabled !== undefined) {

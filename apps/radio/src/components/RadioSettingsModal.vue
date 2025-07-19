@@ -1,9 +1,9 @@
 <template>
   <div :class="bemm()">
-    <h2 :class="bemm('title')">Radio Settings</h2>
+    <h2 :class="bemm('title')">{{ t(keys.radio.radioSettings) }}</h2>
     <form @submit.prevent="handleSubmit" :class="bemm('form')">
       <div :class="bemm('section')">
-        <h3 :class="bemm('section-title')">Playback</h3>
+        <h3 :class="bemm('section-title')">{{ t(keys.radio.playback) }}</h3>
 
         <!-- Autoplay Next -->
         <div :class="bemm('field')">
@@ -17,9 +17,9 @@
               <TIcon v-if="form.autoplayNext" name="check" :class="bemm('checkbox-icon')" />
             </div>
             <div :class="bemm('checkbox-content')">
-              <span :class="bemm('checkbox-title')">Autoplay Next Track</span>
+              <span :class="bemm('checkbox-title')">{{ t(keys.radio.autoplayNext) }}</span>
               <p :class="bemm('checkbox-description')">
-                Automatically play the next track when current track ends
+                {{ t(keys.radio.autoplayDescription) }}
               </p>
             </div>
           </label>
@@ -37,9 +37,9 @@
               <TIcon v-if="form.showTitles" name="check" :class="bemm('checkbox-icon')" />
             </div>
             <div :class="bemm('checkbox-content')">
-              <span :class="bemm('checkbox-title')">Show Track Titles</span>
+              <span :class="bemm('checkbox-title')">{{ t(keys.radio.showTrackTitles) }}</span>
               <p :class="bemm('checkbox-description')">
-                Display track titles in the player interface
+                {{ t(keys.radio.showTrackTitlesDescription) }}
               </p>
             </div>
           </label>
@@ -48,7 +48,7 @@
         <!-- Default Volume -->
         <div :class="bemm('field')">
           <label :class="bemm('label')">
-            Default Volume: {{ Math.round(form.defaultVolume * 100) }}%
+            {{ t(keys.radio.defaultVolume) }}: {{ Math.round(form.defaultVolume * 100) }}%
           </label>
           <div :class="bemm('volume-slider')">
             <TIcon name="volume" :class="bemm('volume-icon')" />
@@ -66,7 +66,7 @@
 
         <!-- Repeat Mode -->
         <div :class="bemm('field')">
-          <label :class="bemm('label')">Repeat Mode</label>
+          <label :class="bemm('label')">{{ t(keys.radio.repeatMode) }}</label>
           <div :class="bemm('radio-group')">
             <label :class="bemm('radio-label')">
               <input
@@ -78,7 +78,7 @@
               <div :class="bemm('radio-visual')">
                 <div v-if="form.repeatMode === 'none'" :class="bemm('radio-dot')" />
               </div>
-              <span>No Repeat</span>
+              <span>{{ t(keys.radio.noRepeat) }}</span>
             </label>
 
             <label :class="bemm('radio-label')">
@@ -91,7 +91,7 @@
               <div :class="bemm('radio-visual')">
                 <div v-if="form.repeatMode === 'one'" :class="bemm('radio-dot')" />
               </div>
-              <span>Repeat One</span>
+              <span>{{ t(keys.radio.repeatOne) }}</span>
             </label>
 
             <label :class="bemm('radio-label')">
@@ -104,7 +104,7 @@
               <div :class="bemm('radio-visual')">
                 <div v-if="form.repeatMode === 'all'" :class="bemm('radio-dot')" />
               </div>
-              <span>Repeat All</span>
+              <span>{{ t(keys.radio.repeatAll) }}</span>
             </label>
           </div>
         </div>
@@ -121,9 +121,9 @@
               <TIcon v-if="form.shuffleMode" name="check" :class="bemm('checkbox-icon')" />
             </div>
             <div :class="bemm('checkbox-content')">
-              <span :class="bemm('checkbox-title')">Shuffle Mode</span>
+              <span :class="bemm('checkbox-title')">{{ t(keys.radio.shuffleMode) }}</span>
               <p :class="bemm('checkbox-description')">
-                Play tracks in random order
+                {{ t(keys.radio.shuffleDescription) }}
               </p>
             </div>
           </label>
@@ -132,12 +132,12 @@
 
       <!-- Sleep Timer Settings -->
       <div :class="bemm('section')">
-        <h3 :class="bemm('section-title')">Sleep Timer</h3>
+        <h3 :class="bemm('section-title')">{{ t(keys.radio.sleepTimer) }}</h3>
 
         <!-- Default Sleep Timer Duration -->
         <div :class="bemm('field')">
           <label :class="bemm('label')">
-            Default Duration: {{ form.sleepTimerMinutes }} minutes
+            {{ t(keys.radio.defaultDuration) }}: {{ form.sleepTimerMinutes }} {{ t(keys.timer.minutes) }}
           </label>
           <div :class="bemm('timer-options')">
             <TButton
@@ -164,9 +164,9 @@
 
       <!-- Danger Zone -->
       <div :class="bemm('section', 'danger')">
-        <h3 :class="bemm('section-title')">Reset Settings</h3>
+        <h3 :class="bemm('section-title')">{{ t(keys.radio.resetSettings) }}</h3>
         <p :class="bemm('danger-description')">
-          Reset all settings to their default values. This action cannot be undone.
+          {{ t(keys.radio.resetSettingsDescription) }}
         </p>
         <TButton
           type="ghost"
@@ -175,7 +175,7 @@
           @click="resetToDefaults"
           :disabled="submitting"
         >
-          Reset to Defaults
+          {{ t(keys.radio.resetToDefaults) }}
         </TButton>
       </div>
 
@@ -192,7 +192,7 @@
           @click="emit('close')"
           :disabled="submitting"
         >
-          Cancel
+          {{ t(keys.common.cancel) }}
         </TButton>
 
         <TButton
@@ -201,7 +201,7 @@
           :loading="submitting"
           :disabled="!hasChanges"
         >
-          Save Settings
+          {{ t(keys.radio.saveSettings) }}
         </TButton>
       </div>
     </form>
@@ -211,7 +211,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TIcon } from '@tiko/ui'
+import { TButton, TIcon, useI18n } from '@tiko/ui'
 import type { RadioSettings } from '../types/radio.types'
 
 interface Props {
@@ -227,6 +227,7 @@ const emit = defineEmits<{
 }>()
 
 const bemm = useBemm('radio-settings-modal')
+const { t, keys } = useI18n()
 
 // Sleep timer presets
 const sleepTimerPresets = [15, 30, 45, 60, 90]
@@ -262,7 +263,7 @@ const initializeForm = () => {
  * Reset settings to defaults
  */
 const resetToDefaults = () => {
-  if (confirm('Are you sure you want to reset all settings to their defaults? This cannot be undone.')) {
+  if (confirm(t(keys.radio.resetConfirm))) {
     form.value = {
       autoplayNext: true,
       showTitles: true,
@@ -291,7 +292,7 @@ const handleSubmit = async () => {
     }
   } catch (err) {
     console.error('Failed to update settings:', err)
-    submitError.value = 'Failed to save settings. Please try again.'
+    submitError.value = t(keys.radio.failedToSaveSettings)
   } finally {
     submitting.value = false
   }

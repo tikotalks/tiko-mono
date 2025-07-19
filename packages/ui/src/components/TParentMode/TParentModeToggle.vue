@@ -14,6 +14,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useBemm } from 'bemm'
+import { useI18n } from '../../composables/useI18n'
 import { useParentMode } from '../../composables/useParentMode'
 import { useEventBus } from '../../composables/useEventBus'
 import { toastService as defaultToastService, ToastSettings } from '../TToast'
@@ -42,6 +43,7 @@ const emit = defineEmits<{
 }>()
 
 const bemm = useBemm('parent-mode-toggle')
+const { t, keys } = useI18n()
 const parentMode = useParentMode(props.appName)
 const eventBus = useEventBus()
 
@@ -57,17 +59,17 @@ const isUnlocked = computed(() => parentMode.canManageContent.value)
 
 const toggleLabel = computed(() => {
   if (props.label) return props.label
-  return isUnlocked.value ? 'Parent Mode' : 'Enable Parent Mode'
+  return isUnlocked.value ? t(keys.parentMode.title) : t(keys.parentMode.enableParentMode)
 })
 
 const pinInputTitle = computed(() => {
-  return pinInputMode.value === 'setup' ? 'Set Up Parent Mode' : 'Enter Parent PIN'
+  return pinInputMode.value === 'setup' ? t(keys.parentMode.setUpParentMode) : t(keys.parentMode.enterParentPin)
 })
 
 const pinInputDescription = computed(() => {
   return pinInputMode.value === 'setup'
-    ? 'Create a 4-digit PIN to protect parental controls'
-    : 'Enter your 4-digit PIN to access parent controls'
+    ? t(keys.parentMode.createPinDescription)
+    : t(keys.parentMode.enterPinDescription)
 })
 
 
@@ -90,8 +92,8 @@ const handleToggleClick = async () => {
       console.log('Showing setup modal via popup service')
       props.popupService.open({
         component: TParentModePinInput,
-        title: 'Set Up Parent Mode',
-        description: 'Create a 4-digit PIN to protect parental controls',
+        title: t(keys.parentMode.setUpParentMode),
+        description: t(keys.parentMode.createPinDescription),
         props: {
           mode: 'setup',
           onPinEntered: async (pin: string) => {
@@ -101,12 +103,12 @@ const handleToggleClick = async () => {
               // Parent mode is now automatically unlocked after setup
               emit('mode-changed', true)
               toast.value.show({
-                message: 'Parent mode enabled successfully',
+                message: t(keys.parentMode.parentModeEnabled),
                 type: 'success'
               })
             } else {
               toast.value.show({
-                message: result.error || 'Failed to enable parent mode',
+                message: result.error || t(keys.parentMode.failedToEnable),
                 type: 'error'
               })
             }
@@ -126,13 +128,13 @@ const handleToggleClick = async () => {
     if (props.popupService) {
       props.popupService.open({
         component: ConfirmDialog,
-        title: 'Disable Parent Mode',
+        title: t(keys.parentMode.disableParentMode),
         props: {
-          title: 'Disable Parent Mode',
-          message: 'Are you sure you want to disable Parent Mode? This will remove all parental controls.',
+          title: t(keys.parentMode.disableParentMode),
+          message: t(keys.parentMode.disableConfirmMessage),
           icon: 'shield-off',
-          confirmLabel: 'Yes, Disable',
-          cancelLabel: 'Cancel',
+          confirmLabel: t(keys.parentMode.yesDisable),
+          cancelLabel: t(keys.common.cancel),
           confirmColor: 'warning',
           onConfirm: async () => {
             console.log('User confirmed - disabling parent mode...')
@@ -151,12 +153,12 @@ const handleToggleClick = async () => {
               })
               emit('mode-changed', false)
               toast.value.show({
-                message: 'Parent mode disabled',
+                message: t(keys.parentMode.parentModeDisabled),
                 type: 'success'
               })
             } else {
               toast.value.show({
-                message: result.error || 'Failed to disable parent mode',
+                message: result.error || t(keys.parentMode.failedToDisable),
                 type: 'error'
               })
             }
@@ -169,7 +171,7 @@ const handleToggleClick = async () => {
     } else {
       // Fallback to simple toast if no popup service
       toast.value.show({
-        message: 'Cannot disable parent mode - no popup service available',
+        message: t(keys.parentMode.cannotDisableNoPopup),
         type: 'error'
       })
     }
@@ -184,7 +186,7 @@ const handleToggleClick = async () => {
     if (props.requiredPermission && !parentMode.hasPermission(props.appName, props.requiredPermission)) {
       emit('permission-denied', props.requiredPermission)
       toast.value.show({
-        message: 'Insufficient permissions for this action',
+        message: t(keys.parentMode.insufficientPermissions),
         type: 'warning'
       })
       return
@@ -196,8 +198,8 @@ const handleToggleClick = async () => {
       try {
         props.popupService.open({
           component: TParentModePinInput,
-          title: 'Enter Parent PIN',
-          description: 'Enter your 4-digit PIN to access parent controls',
+          title: t(keys.parentMode.enterParentPin),
+          description: t(keys.parentMode.enterPinDescription),
           props: {
             mode: 'unlock',
             onPinEntered: handlePinEntered,
@@ -226,12 +228,12 @@ const handlePinEntered = async (pin: string) => {
       showPinInput.value = false
       emit('mode-changed', true)
       toast.value.show({
-        message: 'Parent mode unlocked',
+        message: t(keys.parentMode.parentModeUnlocked),
         type: 'success'
       })
     } else {
       toast.value.show({
-        message: result.error || 'Incorrect PIN',
+        message: result.error || t(keys.parentMode.incorrectPin),
         type: 'error'
       })
     }

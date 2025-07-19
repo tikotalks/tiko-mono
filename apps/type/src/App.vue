@@ -9,10 +9,11 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { TFramework, type FrameworkConfig } from '@tiko/ui'
+import { TFramework, type FrameworkConfig, useI18n } from '@tiko/ui'
 import tikoConfig from '../tiko.config'
 
 const loading = ref(false)
+const { t, keys } = useI18n()
 
 // Framework configuration
 const frameworkConfig = computed<FrameworkConfig>(() => ({
@@ -28,7 +29,7 @@ const frameworkConfig = computed<FrameworkConfig>(() => ({
     sections: [
       {
         id: 'type-settings',
-        title: 'Type Game Settings',
+        title: t(keys.type.typeGameSettings),
         icon: 'keyboard',
         order: 10
         // component: TypeSettings // Add custom settings component if needed

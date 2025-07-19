@@ -5,7 +5,7 @@
       <img
         v-if="props.backgroundImage"
         :src="props.backgroundImage"
-        alt="Background Image"
+        :alt="t(keys.common.backgroundImage)"
         :class="bemm('image')"
       />
     </div>
@@ -27,8 +27,8 @@
     <!-- Login Form within App Layout -->
     <TAppLayout
       v-else-if="!isAuthenticated"
-      title="Welcome to Tiko"
-      subtitle="Sign in to access your communication apps"
+      :title="t(keys.auth.welcomeToTiko)"
+      :subtitle="t(keys.auth.signInToAccess)"
       :showHeader="false"
     >
       <div :class="bemm('title')" v-if="title">{{title}}</div>
@@ -59,6 +59,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useBemm } from 'bemm'
 import { useAuthStore } from '@tiko/core'
+import { useI18n } from '../../composables/useI18n'
 import TLoginForm from '../TLoginForm/TLoginForm.vue'
 import TAppLayout from '../TAppLayout/TAppLayout.vue'
 import TSplashScreen from '../TSplashScreen/TSplashScreen.vue'
@@ -74,6 +75,9 @@ const props = withDefaults(defineProps<TAuthWrapperProps>(), {
 
 // BEM classes
 const bemm = useBemm('auth-wrapper')
+
+// i18n
+const { t, keys } = useI18n()
 
 // Store
 const authStore = useAuthStore()
@@ -105,7 +109,7 @@ const splashConfig = computed(() => {
 
   const finalConfig = {
     ...config,
-    loadingText: 'Preparing your app...',
+    loadingText: t(keys.auth.preparingApp),
     version: '1.0.0',
     theme: 'auto' as const,
     backgroundColor
@@ -125,7 +129,7 @@ const handleAppleSignIn = async () => {
     await authStore.signInWithApple();
   } catch (error) {
     authError.value =
-      error instanceof Error ? error.message : 'Apple Sign-In failed';
+      error instanceof Error ? error.message : t(keys.auth.appleSignInFailed);
   } finally {
     authLoading.value = false;
   }
@@ -143,7 +147,7 @@ const handleEmailSubmit = async (email: string, fullName?: string) => {
     authError.value =
       error instanceof Error
         ? error.message
-        : 'Failed to send verification code';
+        : t(keys.auth.failedToSendCode);
   } finally {
     authLoading.value = false;
   }
@@ -157,7 +161,7 @@ const handleVerificationSubmit = async (email: string, code: string) => {
     await authStore.verifyEmailOtp(email, code);
   } catch (error) {
     authError.value =
-      error instanceof Error ? error.message : 'Invalid verification code';
+      error instanceof Error ? error.message : t(keys.auth.invalidVerificationCode);
   } finally {
     authLoading.value = false;
   }
@@ -170,7 +174,7 @@ const handleResendCode = async (email: string) => {
     await authStore.resendEmailOtp(email);
   } catch (error) {
     authError.value =
-      error instanceof Error ? error.message : 'Failed to resend code';
+      error instanceof Error ? error.message : t(keys.auth.failedToResendCode);
   }
 };
 

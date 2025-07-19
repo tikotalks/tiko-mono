@@ -3,11 +3,11 @@
     <!-- Empty State -->
     <div v-if="items.length === 0" :class="bemm('empty')">
       <TIcon name="clipboard" />
-      <h2>No items yet</h2>
+      <h2>{{ t(keys.todo.noItemsYet) }}</h2>
       <p v-if="!parentMode.canManageContent.value">
-        Ask a parent to add items to this list!
+        {{ t(keys.todo.askParentAddItems) }}
       </p>
-      <p v-else>Add your first todo item to get started</p>
+      <p v-else>{{ t(keys.todo.addFirstTodoItem) }}</p>
     </div>
 
     <!-- Items Grid -->
@@ -38,7 +38,7 @@
         />
       </div>
       <span :class="bemm('progress-text')">
-        {{ completedCount }} / {{ items.length }} completed
+        {{ t(keys.todo.completedCount, { completed: completedCount, total: items.length }) }}
       </span>
     </div>
   </div>
@@ -59,17 +59,20 @@ import {
   TIcon,
   TDraggableList,
   useParentMode,
+  useI18n,
 } from '@tiko/ui';
 import { storeToRefs } from 'pinia';
 import { useTodoStore } from '../stores/todo';
 import TodoItemCard from '../components/TodoItemCard.vue';
 import CheckOffAnimation from '../components/CheckOffAnimation.vue';
+import AddTodoModal from '../components/AddTodoModal.vue';
 import type { TodoItem } from '../types/todo.types';
 
 const bemm = useBemm('todo-items');
 const route = useRoute();
 const todoStore = useTodoStore();
 const parentMode = useParentMode('todo');
+const { t, keys } = useI18n();
 
 // Get injected services from Framework
 const popupService = inject<any>('popupService');
@@ -123,23 +126,23 @@ const confirmDeleteItem = (item: TodoItem) => {
   popupService.open({
     component: 'notification',
     props: {
-      title: 'Delete Item?',
-      message: `Are you sure you want to delete "${item.title}"?`,
+      title: t(keys.todo.deleteItem),
+      message: t(keys.todo.deleteItemConfirm, { title: item.title }),
       type: 'warning',
       actions: [
         {
-          label: 'Cancel',
+          label: t(keys.common.cancel),
           color: 'secondary',
           handler: () => popupService.close(),
         },
         {
-          label: 'Delete',
+          label: t(keys.common.delete),
           color: 'error',
           handler: () => {
             todoStore.deleteItem(item.id);
             popupService.close();
             toastService.show({
-              message: 'Item deleted',
+              message: t(keys.todo.itemDeleted),
               type: 'success',
             });
           },

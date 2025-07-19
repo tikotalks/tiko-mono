@@ -1,15 +1,15 @@
 <template>
   <div :class="bemm()">
     <div :class="bemm('header')">
-      <h3 :class="bemm('title')">Set Your Question</h3>
-      <p :class="bemm('subtitle')">Type your question or select from recent questions</p>
+      <h3 :class="bemm('title')">{{ t(keys.yesno.setQuestion) }}</h3>
+      <p :class="bemm('subtitle')">{{ t(keys.yesno.typeYourQuestionOrSelect) }}</p>
     </div>
     
     <div :class="bemm('content')">
       <div :class="bemm('form')">
       <textarea
         v-model="inputQuestion"
-        placeholder="Type your question here..."
+        :placeholder="t(keys.yesno.typeYourQuestionPlaceholder)"
         :rows="3"
         :maxlength="200"
         @keydown.enter.prevent="handleSubmit"
@@ -18,7 +18,7 @@
     </div>
     
     <div v-if="recentQuestionItems.length > 0" :class="bemm('recent')">
-      <h4 :class="bemm('recent-title')">Recent Questions</h4>
+      <h4 :class="bemm('recent-title')">{{ t(keys.yesno.recentQuestions) }}</h4>
       
       <div :class="bemm('recent-list')">
         <div
@@ -38,7 +38,7 @@
               size="small"
               :color="item.is_favorite ? 'primary' : 'secondary'"
               @click.stop="() => { console.log('Favorite clicked for', item.id); yesNoStore.toggleFavorite(item.id) }"
-              :aria-label="item.is_favorite ? 'Remove from favorites' : 'Add to favorites'"
+              :aria-label="item.is_favorite ? t(keys.yesno.removeFromFavorites) : t(keys.yesno.addToFavorites)"
             />
             <TButton
               icon="trash"
@@ -46,7 +46,7 @@
               size="small"
               color="error"
               @click.stop="() => { console.log('Delete clicked for', item.id); yesNoStore.deleteQuestion(item.id) }"
-              aria-label="Delete question"
+              :aria-label="t(keys.yesno.deleteQuestion)"
             />
           </div>
         </div>
@@ -61,7 +61,7 @@
         @click="emit('close')"
         size="medium"
       >
-        Cancel
+        {{ t(keys.common.cancel) }}
       </TButton>
       <TButton
         type="default"
@@ -70,7 +70,7 @@
         :disabled="!inputQuestion.trim()"
         size="medium"
       >
-        Save Question
+        {{ t(keys.yesno.saveQuestion) }}
       </TButton>
     </div>
   </div>
@@ -79,7 +79,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton } from '@tiko/ui'
+import { TButton, useI18n } from '@tiko/ui'
 import { useYesNoStore } from '../stores/yesno'
 
 interface Props {
@@ -94,6 +94,7 @@ const emit = defineEmits<{
 const bemm = useBemm('question-input-form')
 const yesNoStore = useYesNoStore()
 const inputQuestion = ref('')
+const { t, keys } = useI18n()
 
 const recentQuestionItems = computed(() => yesNoStore.recentQuestionItems)
 

@@ -14,7 +14,7 @@
         icon="plus"
         @click="handleAddClick"
       >
-        Add Audio
+        {{ t(keys.radio.addAudio) }}
       </TButton>
 
       <!-- Settings -->
@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 import { computed, ref, inject } from 'vue'
-import { TFramework, TButton, type FrameworkConfig, useParentMode, useEventBus } from '@tiko/ui'
+import { TFramework, TButton, type FrameworkConfig, useParentMode, useEventBus, useI18n } from '@tiko/ui'
 import tikoConfig from '../tiko.config'
 import backgroundImage from './assets/app-icon-radio.png'
 
@@ -43,6 +43,9 @@ const parentMode = useParentMode('radio')
 
 // Event bus for communication with RadioView
 const eventBus = useEventBus()
+
+// I18n
+const { t, keys } = useI18n()
 
 // Get injected services (will be available after TFramework mounts)
 let popupService: any
@@ -71,14 +74,14 @@ const frameworkConfig = computed<FrameworkConfig>(() => ({
     showTitle: true,
     showSubtitle: false,
     showSearch: true,
-    searchPlaceholder: 'Search audio...'
+    searchPlaceholder: t(keys.radio.searchAudio)
   },
   settings: {
     enabled: true,
     sections: [
       {
         id: 'radio-settings',
-        title: 'Radio Settings',
+        title: t(keys.radio.radioSettings),
         icon: 'music',
         order: 10
       }

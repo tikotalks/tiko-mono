@@ -3,12 +3,12 @@
         <!-- Empty State -->
         <div v-if="groups.length === 0" :class="bemm('empty')">
           <TIcon name="clipboard" size="4rem" />
-          <h2>No todo lists yet</h2>
+          <h2>{{ t(keys.todo.noTodoListsYet) }}</h2>
           <p v-if="!parentMode.canManageContent.value">
-            Ask a parent to create your first todo list!
+            {{ t(keys.todo.askParentCreate) }}
           </p>
           <p v-else>
-            Create your first todo list to get started
+            {{ t(keys.todo.createFirstTodoList) }}
           </p>
         </div>
 
@@ -41,7 +41,8 @@ import { useBemm } from 'bemm'
 import { 
   TIcon, 
   TDraggableList,
-  useParentMode
+  useParentMode,
+  useI18n
 } from '@tiko/ui'
 import { storeToRefs } from 'pinia'
 import { useTodoStore } from '../stores/todo'
@@ -53,6 +54,7 @@ const bemm = useBemm('todo-groups')
 const router = useRouter()
 const todoStore = useTodoStore()
 const parentMode = useParentMode('todo')
+const { t, keys } = useI18n()
 
 // Get injected services from Framework
 const popupService = inject<any>('popupService')
@@ -84,23 +86,23 @@ const editGroup = (group: TodoGroup) => {
 
 const confirmDeleteGroup = (group: TodoGroup) => {
   popupService.showNotification({
-    title: 'Delete Todo List?',
-    message: `Are you sure you want to delete "${group.title}" and all its items?`,
+    title: t(keys.todo.deleteTodoList),
+    message: t(keys.todo.deleteTodoListConfirm, { title: group.title }),
     type: 'warning',
     actions: [
       {
-        label: 'Cancel',
+        label: t(keys.common.cancel),
         color: 'secondary',
         handler: () => popupService.close()
       },
       {
-        label: 'Delete',
+        label: t(keys.common.delete),
         color: 'error',
         handler: () => {
           todoStore.deleteGroup(group.id)
           popupService.close()
           toastService.show({
-            message: 'Todo list deleted',
+            message: t(keys.todo.todoListDeleted),
             type: 'success'
           })
         }

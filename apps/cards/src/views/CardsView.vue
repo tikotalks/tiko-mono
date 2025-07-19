@@ -5,7 +5,7 @@
       <TInput
         :class="bemm('search')"
         v-model="searchQuery"
-        placeholder="Search cards..."
+        :placeholder="t(keys.cards.searchCards)"
         icon="search"
       />
 
@@ -15,23 +15,23 @@
           color="secondary"
           icon="board-multi"
           @click="handleViewChange('grid')"
-          title="Grid View"
-          tooltip="Grid View"
+          :title="t(keys.cards.gridView)"
+          :tooltip="t(keys.cards.gridView)"
         />
         <TButton
           :class="bemm('view-button', { active: currentView === 'groups' })"
           color="secondary"
           icon="folder"
           @click="handleViewChange('groups')"
-          title="Groups View"
-          tooltip="Groups View"
+          :title="t(keys.cards.groupsView)"
+          :tooltip="t(keys.cards.groupsView)"
         />
       </div>
     </div>
 
     <!-- Selection Actions -->
     <div v-if="editMode && selectedCards.length > 0" :class="bemm('selection-bar')">
-      <span :class="bemm('selection-count')">{{ selectedCards.length }} selected</span>
+      <span :class="bemm('selection-count')">{{ selectedCards.length }} {{ t(keys.cards.selected) }}</span>
 
       <div :class="bemm('selection-actions')">
         <TButton
@@ -39,21 +39,21 @@
           icon="folder-plus"
           @click="showCreateGroupModal"
         >
-          Create Group
+          {{ t(keys.cards.createCardGroup) }}
         </TButton>
         <TButton
           color="danger"
           icon="trash"
           @click="deleteSelectedCards"
         >
-          Delete
+          {{ t(keys.common.delete) }}
         </TButton>
         <TButton
           color="secondary"
           icon="x"
           @click="clearSelection"
         >
-          Clear
+          {{ t(keys.cards.clear) }}
         </TButton>
       </div>
     </div>
@@ -62,22 +62,22 @@
     <main :class="bemm('content')">
       <!-- Loading State -->
       <div v-if="isLoading" :class="bemm('loading')">
-        <p>Loading cards...</p>
+        <p>{{ t(keys.cards.loadingCards) }}</p>
       </div>
 
       <!-- Error State -->
       <div v-else-if="error" :class="bemm('error')">
         <p>{{ error }}</p>
-        <TButton color="primary" @click="loadCards">Try Again</TButton>
+        <TButton color="primary" @click="loadCards">{{ t(keys.cards.tryAgain) }}</TButton>
       </div>
 
       <!-- Empty State -->
       <div v-else-if="!cards.length" :class="bemm('empty')">
         <div :class="bemm('empty-content')">
           <TIcon name="card" :class="bemm('empty-icon')" />
-          <h2 :class="bemm('empty-title')">No cards yet</h2>
+          <h2 :class="bemm('empty-title')">{{ t(keys.cards.noCardsYet) }}</h2>
           <p :class="bemm('empty-description')">
-            Create your first communication card to get started
+            {{ t(keys.cards.createFirstCardPrompt) }}
           </p>
           <TButton
             v-if="parentMode.canManageContent.value"
@@ -85,7 +85,7 @@
             icon="plus"
             @click="showCreateCardModal"
           >
-            Create First Card
+            {{ t(keys.cards.createFirstCard) }}
           </TButton>
         </div>
       </div>
@@ -94,16 +94,16 @@
       <div v-else-if="searchQuery && !filteredCards.length" :class="bemm('empty')">
         <div :class="bemm('empty-content')">
           <TIcon name="search" :class="bemm('empty-icon')" />
-          <h2 :class="bemm('empty-title')">No cards found</h2>
+          <h2 :class="bemm('empty-title')">{{ t(keys.cards.noCardsFound) }}</h2>
           <p :class="bemm('empty-description')">
-            Try a different search term or create a new card
+            {{ t(keys.cards.tryDifferentSearch) }}
           </p>
           <TButton
             color="secondary"
             icon="x"
             @click="searchQuery = ''"
           >
-            Clear Search
+            {{ t(keys.cards.clearSearch) }}
           </TButton>
         </div>
       </div>
@@ -130,7 +130,7 @@
           @click="showCreateCardModal"
         >
           <TIcon name="plus" :class="bemm('add-icon')" />
-          <span :class="bemm('add-text')">Add Card</span>
+          <span :class="bemm('add-text')">{{ t(keys.cards.addCard) }}</span>
         </div>
       </div>
 
@@ -161,7 +161,7 @@
 
         <!-- Ungrouped Cards -->
         <div v-if="ungroupedCards.length" :class="bemm('group')">
-          <h3 :class="bemm('group-title')">Ungrouped Cards</h3>
+          <h3 :class="bemm('group-title')">{{ t(keys.cards.ungroupedCards) }}</h3>
           <div :class="bemm('group-cards')">
             <TCardCommunication
               v-for="card in ungroupedCards"
@@ -186,13 +186,14 @@
 <script setup lang="ts">
 import { ref, computed, inject } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TInput, TIcon, TCardCommunication, useParentMode } from '@tiko/ui'
+import { TButton, TInput, TIcon, TCardCommunication, useParentMode, useI18n } from '@tiko/ui'
 import { useCardsStore } from '../stores/cards'
 import CreateCardModal from '../components/CreateCardModal.vue'
 import CreateGroupModal from '../components/CreateGroupModal.vue'
 
 const bemm = useBemm('cards-view')
 const parentMode = useParentMode('cards')
+const { t, keys } = useI18n()
 
 // Store
 const store = useCardsStore()

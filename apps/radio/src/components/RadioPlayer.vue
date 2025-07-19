@@ -19,7 +19,7 @@
       <div :class="bemm('thumbnail-container')">
         <img
           :src="displayThumbnail"
-          :alt="currentItem?.title || 'No audio selected'"
+          :alt="currentItem?.title || t(keys.radio.noAudioSelected)"
           :class="bemm('thumbnail', { spinning: isPlaying })"
           @error="handleImageError"
         />
@@ -158,7 +158,7 @@
           @click="$emit('back-to-grid')"
           :class="bemm('back-button')"
         >
-          Back
+          {{ t(keys.common.back) }}
         </TButton>
       </div>
 
@@ -166,7 +166,7 @@
       <div v-if="sleepTimer.isActive" :class="bemm('sleep-timer')">
         <TIcon name="moon" :class="bemm('sleep-icon')" />
         <span :class="bemm('sleep-text')">
-          Sleep in {{ sleepTimer.remainingMinutes }}m
+          {{ t(keys.radio.sleepIn, { minutes: sleepTimer.remainingMinutes }) }}
         </span>
         <TButton
           icon="x"
@@ -188,7 +188,7 @@
         @click="clearError"
         :class="bemm('error-dismiss')"
       >
-        Dismiss
+        {{ t(keys.common.dismiss) }}
       </TButton>
     </div>
   </div>
@@ -197,7 +197,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TIcon } from '@tiko/ui'
+import { TButton, TIcon, useI18n } from '@tiko/ui'
 import { formatDuration } from '@tiko/ui'
 import type { RadioItem, SleepTimer } from '../types/radio.types'
 
@@ -228,6 +228,7 @@ const emit = defineEmits<{
 }>()
 
 const bemm = useBemm('radio-player')
+const { t, keys } = useI18n()
 
 // Refs
 const videoElement = ref<HTMLVideoElement | null>(null)

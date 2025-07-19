@@ -5,12 +5,21 @@
 
 import { computed } from 'vue'
 import { useLocalStorage } from './useLocalStorage'
-import { translations } from '../i18n/locales'
+import { getTranslations } from '../i18n/locales'
 import { translationKeys } from '../i18n/keys'
 import type { Locale, TranslationKey, TranslationFunction } from '../i18n/types'
 
 // Global locale state - shared across all components
 const [globalLocale, setGlobalLocale] = useLocalStorage<Locale>('tiko-language', 'en-GB')
+
+// Lazy load translations only when needed
+let _translations: ReturnType<typeof getTranslations> | null = null
+function getTranslationsCache() {
+  if (!_translations) {
+    _translations = getTranslations()
+  }
+  return _translations
+}
 
 /**
  * Get nested translation value by dot notation key
@@ -54,6 +63,7 @@ export function useI18n() {
     const fallbackText = typeof params === 'string' ? params : undefined
     
     // Try to get translation in current locale
+    const translations = getTranslationsCache()
     let translation = getNestedValue(translations[globalLocale.value], key)
     
     // If not found and not English GB, try English GB as fallback
@@ -76,6 +86,7 @@ export function useI18n() {
    * @returns True if translation exists
    */
   const exists = (key: TranslationKey): boolean => {
+    const translations = getTranslationsCache()
     return getNestedValue(translations[globalLocale.value], key) !== key
   }
 
@@ -95,7 +106,7 @@ export function useI18n() {
   /**
    * Get available locales
    */
-  const availableLocales = computed(() => Object.keys(translations) as Locale[])
+  const availableLocales = computed(() => Object.keys(getTranslationsCache()) as Locale[])
 
   /**
    * Get locale display names - translated in each language

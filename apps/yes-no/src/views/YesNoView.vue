@@ -1,7 +1,7 @@
 <template>
   <!-- <TAuthWrapper :backgroundImage="backgroundImage" :title="'Yes/No'"> -->
     <TAppLayout
-    title="Yes or No"
+    :title="t(keys.yesno.yesOrNo)"
     :show-header="true"
     @profile="handleProfile"
     @settings="handleSettings"
@@ -14,7 +14,7 @@
         size="medium"
         color="secondary"
         @click="() => { console.log('[YesNoView] Edit button clicked'); showQuestionInput(); }"
-        aria-label="Edit Question"
+        :aria-label="t(keys.yesno.editQuestion)"
       />
     </template>
 
@@ -69,7 +69,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive, watch, toRefs, inject } from 'vue';
 import { useBemm } from 'bemm';
-import { /* TAuthWrapper, */ TButton, TIcon, TAppLayout } from '@tiko/ui';
+import { /* TAuthWrapper, */ TButton, TIcon, TAppLayout, useI18n } from '@tiko/ui';
 import { useYesNoStore } from '../stores/yesno';
 import YesNoSettingsForm from '../components/YesNoSettingsForm.vue';
 import QuestionInputForm from '../components/QuestionInputForm.vue';
@@ -78,6 +78,7 @@ import backgroundImage from '../assets/app-icon-yes-no.png';
 
 const bemm = useBemm('yes-no');
 const yesNoStore = useYesNoStore();
+const { t, keys } = useI18n();
 
 // Inject the popup service from TFramework
 const popupService = inject<any>('popupService');
@@ -100,7 +101,7 @@ const feedbackIcon = computed(() =>
   feedbackType.value === 'yes' ? 'check-m' : 'multiply-m',
 );
 const feedbackText = computed(() =>
-  feedbackType.value === 'yes' ? 'Yes!' : 'No!',
+  feedbackType.value === 'yes' ? t(keys.yesno.yes) : t(keys.yesno.no),
 );
 
 // Watch settings and update local copy
@@ -137,7 +138,7 @@ const showQuestionInput = () => {
   try {
     popupService.open({
       component: QuestionInputForm,
-      title: 'Edit Question',
+      title: t(keys.yesno.editQuestion),
       config: {
         background: true,
         position: 'center',
@@ -160,7 +161,7 @@ const showQuestionInput = () => {
 const showSettingsPopup = () => {
   popupService.open({
     component: YesNoSettingsForm,
-    title: 'Settings',
+    title: t(keys.common.settings),
     props: {
       settings: settings.value,
       onApply: async (newSettings: any) => {

@@ -12,7 +12,7 @@
         @click="$router.go(-1)"
         v-if="$route.name !== 'home'"
       >
-        Back
+        {{ t(keys.common.back) }}
       </TButton>
     </template>
 
@@ -46,7 +46,7 @@ const frameworkConfig = computed(() => ({
     sections: [
       {
         id: 'ui-docs-settings',
-        title: 'Documentation Settings',
+        title: t(keys.uiDocs.documentationSettings),
         icon: 'code-brackets',
         order: 10
       }

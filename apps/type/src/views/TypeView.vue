@@ -1,8 +1,8 @@
 <template>
-  <TAuthWrapper :backgroundVideo="backgroundVideoUrl" title="Type">
+  <TAuthWrapper :backgroundVideo="backgroundVideoUrl" :title="t(keys.type.typeAndSpeak)">
     <TAppLayout
-    title="Type & Speak"
-    subtitle="Type text and hear it spoken aloud"
+    :title="t(keys.type.typeAndSpeak)"
+    :subtitle="t(keys.type.typeTextAndHearItSpoken)"
     :show-header="true"
     @profile="handleProfile"
     @settings="handleSettings"
@@ -17,8 +17,8 @@
           <textarea
             v-model="currentText"
             class="type-textarea"
-            placeholder="Type what you want to hear..."
-            aria-label="Text to speak"
+            :placeholder="t(keys.type.typeToSpeak)"
+            :aria-label="t(keys.type.textToSpeak)"
             :disabled="isSpeaking"
             @keydown="handleKeydown"
           />
@@ -31,11 +31,11 @@
               size="small"
               color="secondary"
               @click="clearText"
-              aria-label="Clear text"
+              :aria-label="t(keys.type.clearText)"
             />
 
             <span class="type-character-count">
-              {{ currentText.length }} characters
+              {{ currentText.length }} {{ t(keys.type.characters) }}
             </span>
           </div>
         </div>
@@ -52,7 +52,7 @@
           :disabled="!canSpeak && !isSpeaking"
           class="type-speak-button"
         >
-          {{ isSpeaking ? 'Stop' : 'Speak' }}
+          {{ isSpeaking ? t(keys.type.stop) : t(keys.type.speak) }}
         </TButton>
 
         <div class="type-secondary-controls">
@@ -64,14 +64,14 @@
             @click="pause"
             size="medium"
           >
-            Pause
+            {{ t(keys.type.pause) }}
           </TButton>
         </div>
       </div>
 
       <!-- Voice Selection -->
       <div class="type-voice-section">
-        <h3 class="type-section-title">Voice</h3>
+        <h3 class="type-section-title">{{ t(keys.type.voice) }}</h3>
         <TInputSelect
           :options="availableVoices.map((voice, index) => ({
             label: `${voice.name} (${voice.lang})`,
@@ -206,7 +206,7 @@
         <div class="type-settings__group">
           <TInputCheckbox
             v-model="localSettings.autoSave"
-            label="Save to history automatically"
+            :label="t(keys.type.saveToHistoryAutomatically)"
             @change="updateSettings"
           />
           <!-- <label class="type-settings__checkbox">
@@ -221,7 +221,7 @@
 
         <div class="type-settings__actions">
           <TButton
-            label="Close"
+            :label="t(keys.common.close)"
             type="default"
             color="primary"
             :action="hideSettings"
@@ -241,7 +241,7 @@
         <div class="type-settings__group">
           <TInputRange
             v-model.number="localSettings.rate"
-            label="Speech Rate"
+            :label="t(keys.type.speechRate)"
             :min="0.1"
             :max="3"
             :step="0.1"
@@ -265,7 +265,7 @@
         <div class="type-settings__group">
           <TInputRange
             v-model.number="localSettings.pitch"
-            label="Pitch"
+            :label="t(keys.type.pitch)"
             :min="0"
             :max="2"
             :step="0.1"
@@ -289,7 +289,7 @@
         <div class="type-settings__group">
           <TInputRange
             v-model.number="localSettings.volume"
-            label="Volume"
+            :label="t(keys.type.volume)"
             :min="0"
             :max="1"
             :step="0.1"
@@ -313,7 +313,7 @@
         <div class="type-settings__group">
           <TInputCheckbox
             v-model="localSettings.autoSave"
-            label="Save to history automatically"
+            :label="t(keys.type.saveToHistoryAutomatically)"
             @change="updateSettings"
             />
           <!-- <label class="type-settings__checkbox">
@@ -329,7 +329,7 @@
 
         <div class="type-settings__actions">
           <TButton
-            label="Close"
+            :label="t(keys.common.close)"
             type="default"
             color="primary"
             :action="hideSettings"
@@ -346,7 +346,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, reactive, watch, toRefs } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TAppLayout, TAuthWrapper, TInputRange, TInputCheckbox, TInputSelect } from '@tiko/ui'
+import { TButton, TAppLayout, TAuthWrapper, TInputRange, TInputCheckbox, TInputSelect, useI18n } from '@tiko/ui'
 import { useTypeStore } from '../stores/type'
 import backgroundVideoUrl from '../assets/login-background.mp4'
 
@@ -354,6 +354,7 @@ import backgroundVideoUrl from '../assets/login-background.mp4'
 const bemm = useBemm('type-view')
 
 const typeStore = useTypeStore()
+const { t, keys } = useI18n()
 
 // Local state
 const showSettings = ref(false)

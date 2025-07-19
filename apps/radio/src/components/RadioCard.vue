@@ -80,7 +80,7 @@
           :class="bemm('admin-button')"
           @click.stop="editItem"
         >
-          Edit
+          {{ t(keys.common.edit) }}
         </TButton>
 
         <TButton
@@ -91,7 +91,7 @@
           :class="bemm('admin-button')"
           @click.stop="deleteItem"
         >
-          Delete
+          {{ t(keys.common.delete) }}
         </TButton>
       </div>
     </div>
@@ -101,7 +101,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TIcon, useParentMode } from '@tiko/ui'
+import { TButton, TIcon, useParentMode, useI18n } from '@tiko/ui'
 import { formatDuration } from '@tiko/ui'
 import type { RadioItem } from '../types/radio.types'
 
@@ -130,6 +130,7 @@ const emit = defineEmits<{
 
 const bemm = useBemm('radio-card')
 const parentMode = useParentMode('radio')
+const { t, keys } = useI18n()
 
 // Computed properties
 const canManageContent = computed(() =>
@@ -204,11 +205,11 @@ const deleteItem = () => {
  * Format play count for display
  */
 const formatPlayCount = (count: number): string => {
-  if (count === 0) return 'Never played'
-  if (count === 1) return '1 play'
-  if (count < 1000) return `${count} plays`
-  if (count < 1000000) return `${Math.floor(count / 100) / 10}K plays`
-  return `${Math.floor(count / 100000) / 10}M plays`
+  if (count === 0) return t(keys.radio.neverPlayed)
+  if (count === 1) return t(keys.radio.onePlay)
+  if (count < 1000) return `${count} ${t(keys.radio.plays)}`
+  if (count < 1000000) return `${Math.floor(count / 100) / 10}K ${t(keys.radio.plays)}`
+  return `${Math.floor(count / 100000) / 10}M ${t(keys.radio.plays)}`
 }
 
 /**
@@ -221,10 +222,10 @@ const formatLastPlayed = (date: Date): string => {
   const diffHours = Math.floor(diffMins / 60)
   const diffDays = Math.floor(diffHours / 24)
 
-  if (diffMins < 1) return 'Just now'
-  if (diffMins < 60) return `${diffMins}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  if (diffDays < 7) return `${diffDays}d ago`
+  if (diffMins < 1) return t(keys.common.justNow)
+  if (diffMins < 60) return t(keys.common.minutesAgo, { count: diffMins })
+  if (diffHours < 24) return t(keys.common.hoursAgo, { count: diffHours })
+  if (diffDays < 7) return t(keys.common.daysAgo, { count: diffDays })
 
   // For older dates, just show the date
   return date.toLocaleDateString()

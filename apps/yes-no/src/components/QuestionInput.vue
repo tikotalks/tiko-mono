@@ -1,12 +1,12 @@
 <template>
   <div class="question-input">
-    <h2 class="question-input__title">Set Your Question</h2>
+    <h2 class="question-input__title">{{ t(keys.yesno.setQuestion) }}</h2>
 
     <div class="question-input__form">
       <textarea
         v-model="inputQuestion"
         class="question-input__textarea"
-        placeholder="Type your question here..."
+        :placeholder="t(keys.yesno.typeYourQuestionPlaceholder)"
         rows="3"
         maxlength="200"
         @keydown.enter.prevent="handleSubmit"
@@ -20,7 +20,7 @@
           @click="handleCancel"
           size="medium"
         >
-          Cancel
+          {{ t(keys.common.cancel) }}
         </TButton>
 
         <TButton
@@ -31,13 +31,13 @@
           size="medium"
           data-cy="save-question"
         >
-          Save Question
+          {{ t(keys.yesno.saveQuestion) }}
         </TButton>
       </div>
     </div>
 
     <div v-if="recentQuestions.length > 0" class="question-input__recent">
-      <h3 class="question-input__recent-title">Recent Questions</h3>
+      <h3 class="question-input__recent-title">{{ t(keys.yesno.recentQuestions) }}</h3>
 
       <div class="question-input__recent-list">
         <button
@@ -55,7 +55,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { TButton } from '@tiko/ui'
+import { TButton, useI18n } from '@tiko/ui'
 import { useYesNoStore } from '../stores/yesno'
 
 const emit = defineEmits<{
@@ -64,6 +64,7 @@ const emit = defineEmits<{
 
 const yesNoStore = useYesNoStore()
 const inputQuestion = ref('')
+const { t, keys } = useI18n()
 
 const { recentQuestions } = yesNoStore
 
