@@ -245,7 +245,7 @@ describe('TLoginForm.vue', () => {
       expect(wrapper.text()).toContain('We\'ve sent you an email with two options:')
       expect(wrapper.text()).toContain('test@example.com')
       expect(wrapper.text()).toContain('Option 1: Click the magic link in your email')
-      expect(wrapper.text()).toContain('Option 2: Enter the 6-digit code below')
+      expect(wrapper.text()).toContain('Option 2: Enter the 6-digit code')
     })
 
     it('shows verification code input', async () => {

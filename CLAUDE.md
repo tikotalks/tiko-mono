@@ -580,6 +580,20 @@ These standards ensure consistency, maintainability, and scalability across the 
 
 ## Git Commit Standards
 
+### Pre-Push Requirements
+**ALWAYS before pushing changes:**
+1. **Run tests** - Ensure all tests pass
+2. **Run builds** - Ensure all affected packages build successfully
+3. **Fix any failures** - Do not push broken code
+
+```bash
+# Required steps before pushing:
+npm test                          # Run all tests
+npm run build                     # Run builds
+# Only if both succeed:
+git push origin master
+```
+
 ### Commit Message Format
 - **NEVER include "Co-Authored-By: Claude" in commit messages**
 - **DO NOT add any AI-related attribution or Claude references**
@@ -601,4 +615,24 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 # ❌ Bad - No AI references
 git commit -m "fix(ui): AI-generated fix for button styling"
+```
+
+### Complete Push Workflow
+```bash
+# 1. Stage changes
+git add <relevant files>
+
+# 2. Run tests
+npm test
+
+# 3. Run builds
+npm run build
+
+# 4. If tests and builds pass, commit
+git commit -m "type(scope): description"
+
+# 5. Push to remote
+git push origin master
+
+# If tests or builds fail, fix them first!
 ```
