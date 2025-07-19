@@ -548,21 +548,11 @@ export interface TranslationSchema {
   }
 }
 
-// Available locales with regional variants
-export type Locale = 
-  | 'en-GB' 
-  | 'en-US' 
-  | 'es' 
-  | 'fr' 
-  | 'de' 
-  | 'pt' 
-  | 'it' 
-  | 'nl' 
-  | 'pl' 
-  | 'ro' 
-  | 'sv' 
-  | 'el' 
-  | 'ru'
+// Import available locales from the locales index
+import type { LocaleCode } from './locales'
+
+// Available locales - now uses the actual available locales from the system
+export type Locale = LocaleCode
 
 // Type for translation functions with interpolation support
 export type TranslationFunction = (key: TranslationKey, params?: Record<string, any> | string) => string

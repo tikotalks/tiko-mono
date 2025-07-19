@@ -50,13 +50,10 @@
 
       <!-- Language Field -->
       <div :class="bemm('field')">
-        <label :class="bemm('field-label')" for="profile-language">
-          {{ t(keys.profile.language) }}
-        </label>
-        <TInputSelect
+        <TChooseLanguage
           id="profile-language"
           v-model="formData.language"
-          :options="languageOptions"
+          :label="t(keys.profile.language)"
           :class="bemm('field-input')"
         />
       </div>
@@ -105,7 +102,7 @@ import TButton from '../TButton/TButton.vue'
 import TButtonGroup from '../TButton/TButtonGroup.vue'
 import TIcon from '../TIcon/TIcon.vue'
 import TInputText from '../TForm/inputs/TInputText/TInputText.vue'
-import TInputSelect from '../TForm/inputs/TInputSelect/TInputSelect.vue'
+import TChooseLanguage from '../TChooseLanguage/TChooseLanguage.vue'
 import type { TProfileProps, UserProfile } from './TProfile.model'
 
 const props = defineProps<TProfileProps>()
@@ -176,19 +173,6 @@ const joinedDate = computed(() => {
     day: 'numeric'
   })
 })
-
-const languageOptions = computed(() => [
-  { value: 'en', label: 'English' },
-  { value: 'es', label: 'Español' },
-  { value: 'fr', label: 'Français' },
-  { value: 'de', label: 'Deutsch' },
-  { value: 'it', label: 'Italiano' },
-  { value: 'pt', label: 'Português' },
-  { value: 'nl', label: 'Nederlands' },
-  { value: 'pl', label: 'Polski' },
-  { value: 'ru', label: 'Русский' },
-  { value: 'sv', label: 'Svenska' }
-])
 
 // Methods
 const loadUserProfile = async () => {
