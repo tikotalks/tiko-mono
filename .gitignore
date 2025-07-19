@@ -2,7 +2,13 @@ node_modules
 .env
 .env.backup
 .nx/cache/**/*
-dist
+
+# Build outputs
+dist/
+**/dist/
+apps/*/dist/
+packages/*/dist/
+
 coverage
 .vscode
 .idea
