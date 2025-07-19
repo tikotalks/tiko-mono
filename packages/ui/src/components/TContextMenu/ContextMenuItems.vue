@@ -11,7 +11,7 @@
                     :class="bemm('item', ['', 'normal', item.items?.length ? 'has-submenu' : ''])"
                     :type="'ghost'"
                     :color="'foreground'"
-                    :href="getItemLink(item) || ''"
+                    :href="getItemLink(item)"
                     @click="handleClick($event, item)"
                 >
                     {{ item.label }}
@@ -41,7 +41,7 @@
             <template v-if="item.type == 'icon-tile'">
                 <a
                     :class="bemm('item', ['', 'icon-tile'])"
-                    :href="getItemLink(item) || ''"
+                    :href="getItemLink(item)"
                     @click="handleClick($event, item)"
                 >
                     <TIcon

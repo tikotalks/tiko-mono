@@ -5,7 +5,7 @@
       <div v-if="showBackButton" :class="bemm('back')">
         <TButton
           icon="arrow-left"
-          variant="ghost"
+          type="ghost"
           size="medium"
           @click="handleBackClick"
           :aria-label="backButtonLabel"

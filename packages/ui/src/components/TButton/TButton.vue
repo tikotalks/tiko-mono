@@ -1,10 +1,10 @@
 <template>
   <component
-    :is="to ? 'a' : element"
-    :href="to || href"
+    :is="componentTag"
+    :href="linkHref"
     :class="blockClasses"
     :disabled="isDisabled"
-    :type="htmlButtonType === 'auto' ? 'button' : htmlButtonType"
+    :type="buttonType"
     :style="buttonStyles"
     v-bind="$attrs"
   >
@@ -52,8 +52,8 @@ const props = withDefaults(defineProps<TButtonProps>(), {
   color: ButtonColor.PRIMARY,
   count: -1,
   disabled: false,
-  to: '',
-  href: '',
+  to: undefined,
+  href: undefined,
   element: 'button',
   tooltip: '',
   shadow: false,
@@ -103,6 +103,24 @@ watch(
 )
 
 const hasSlot = computed(() => !!slots?.default)
+
+// Computed properties for component rendering
+const componentTag = computed(() => {
+  if (props.to || props.href) return 'a'
+  return props.element || 'button'
+})
+
+const linkHref = computed(() => {
+  // Only return href if there's actually a value
+  const href = props.to || props.href
+  return href ? href : undefined
+})
+
+const buttonType = computed(() => {
+  // Only set type attribute for button elements
+  if (componentTag.value !== 'button') return undefined
+  return props.htmlButtonType === 'auto' ? 'button' : props.htmlButtonType
+})
 
 const buttonStyles = computed(() => {
   if(props.type == ButtonType.GHOST){
