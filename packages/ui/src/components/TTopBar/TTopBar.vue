@@ -156,6 +156,8 @@ import TIcon from '../TIcon/TIcon.vue'
 import { TContextMenu, type ContextMenuItem, type ContextMenuConfig, ContextMenuConfigDefault } from '../TContextMenu'
 import { useParentMode } from '../../composables/useParentMode'
 import TParentModePinInput from '../TParentMode/TParentModePinInput.vue'
+import TProfile from '../TProfile/TProfile.vue'
+import { useI18n } from '../../composables/useI18n'
 
 import type { TTopBarProps, TTopBarEmits } from './TTopBar.model'
 
@@ -172,6 +174,7 @@ const emit = defineEmits<TTopBarEmits>()
 const bemm = useBemm('top-bar')
 const authStore = useAuthStore()
 const parentMode = useParentMode(props.appName || 'default')
+const { t, keys } = useI18n()
 
 // Inject services
 const popupService = inject<any>('popupService')
@@ -239,7 +242,7 @@ const defaultMenuItems = computed<Partial<ContextMenuItem>[]>(() => [
     id: 'profile',
     label: 'Profile',
     icon: 'user',
-    action: () => emit('profile'),
+    action: handleProfile,
     type: 'default'
   },
   {
@@ -291,6 +294,22 @@ const handleAvatarKeyDown = (event: KeyboardEvent) => {
 
 const handleBackClick = () => {
   emit('back')
+}
+
+const handleProfile = () => {
+  if (!user.value || !popupService) {
+    console.error('Cannot open profile: user or popupService not available')
+    return
+  }
+
+  popupService.open({
+    component: TProfile,
+    title: t(keys.profile.editProfile),
+    props: {
+      user: user.value,
+      onClose: () => popupService.close()
+    }
+  })
 }
 
 const handleLogout = async () => {
