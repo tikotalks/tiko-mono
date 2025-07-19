@@ -7,6 +7,31 @@ This document contains the comprehensive coding standards and conventions for th
 - BEM methodology with `bemm` package for CSS
 - Supabase for authentication and data
 - Monorepo structure with packages/ui and apps/*
+- **pnpm** as the package manager (NOT npm or yarn)
+
+## Package Manager - ALWAYS USE pnpm
+
+**NEVER use `npm` or `yarn` commands in this project!**
+
+This project uses `pnpm` for:
+- Better performance
+- Efficient disk space usage
+- Proper monorepo workspace support
+- Consistent lock file (`pnpm-lock.yaml`)
+
+```bash
+# ✅ Good - Always use pnpm
+pnpm install
+pnpm test
+pnpm build
+pnpm add <package>
+pnpm remove <package>
+
+# ❌ Bad - Never use npm or yarn
+npm install      # WRONG!
+npm test         # WRONG!
+yarn add         # WRONG!
+```
 
 ## Component Architecture Standards
 
@@ -444,25 +469,25 @@ Always run these commands before pushing code:
 
 ```bash
 # Run tests (from monorepo root)
-npm test
+pnpm test
 
 # Run tests for specific package
-npm test --workspace=packages/ui
-npm test --workspace=packages/core
+pnpm test --filter=@tiko/ui
+pnpm test --filter=@tiko/core
 
 # Run builds
-npm run build --workspace=packages/ui
-npm run build --workspace=packages/core
-npm run build --workspace=apps/radio
+pnpm build --filter=@tiko/ui
+pnpm build --filter=@tiko/core
+pnpm build --filter=radio
 
 # Run linting (if configured)
-npm run lint --workspace=packages/ui
+pnpm lint --filter=@tiko/ui
 
 # Run type checking
-npm run typecheck --workspace=packages/ui
+pnpm typecheck --filter=@tiko/ui
 
 # Build all packages
-npm run build:all
+pnpm build:all
 ```
 
 **IMPORTANT**: Before pushing any changes:
@@ -489,10 +514,10 @@ This includes:
 
 ```bash
 # Example workflow - DO NOT STOP until all succeed:
-npm test --workspace=packages/ui  # Fix any failures
-npm run build --workspace=packages/ui  # Fix any errors
-npm test --workspace=packages/core  # Fix any failures
-npm run build --workspace=packages/core  # Fix any errors
+pnpm test --filter=@tiko/ui  # Fix any failures
+pnpm build --filter=@tiko/ui  # Fix any errors
+pnpm test --filter=@tiko/core  # Fix any failures
+pnpm build --filter=@tiko/core  # Fix any errors
 
 # If any command fails, fix it and run ALL commands again
 # Continue until every single command succeeds
@@ -588,8 +613,8 @@ These standards ensure consistency, maintainability, and scalability across the 
 
 ```bash
 # Required steps before pushing:
-npm test                          # Run all tests
-npm run build                     # Run builds
+pnpm test                         # Run all tests
+pnpm build                        # Run builds
 # Only if both succeed:
 git push origin master
 ```
@@ -623,10 +648,10 @@ git commit -m "fix(ui): AI-generated fix for button styling"
 git add <relevant files>
 
 # 2. Run tests
-npm test
+pnpm test
 
 # 3. Run builds
-npm run build
+pnpm build
 
 # 4. If tests and builds pass, commit
 git commit -m "type(scope): description"
