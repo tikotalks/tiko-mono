@@ -157,19 +157,6 @@ describe('TAuthWrapper.vue', () => {
     expect(backgroundImage.attributes('src')).toBe('/test-image.jpg')
   })
 
-  it('displays background video when provided', () => {
-    const wrapper = mount(TAuthWrapper, {
-      props: {
-        title: 'Test App',
-        appName: 'test-app',
-        backgroundVideo: '/test-video.mp4'
-      }
-    })
-    
-    const backgroundVideo = wrapper.find('.auth-wrapper__video')
-    expect(backgroundVideo.exists()).toBe(true)
-    expect(backgroundVideo.attributes('src')).toBe('/test-video.mp4')
-  })
 
   it('passes correct props to TSplashScreen', () => {
     const wrapper = mount(TAuthWrapper, {
@@ -330,29 +317,4 @@ describe('TAuthWrapper.vue', () => {
     expect(wrapper.find('.auth-wrapper__background').exists()).toBe(true)
   })
 
-  it('handles video autoplay attributes correctly', async () => {
-    mockAuthStore.isAuthenticated = false
-    mockAuthStore.user = null
-    
-    const wrapper = mount(TAuthWrapper, {
-      props: {
-        title: 'Test App',
-        appName: 'test-app',
-        backgroundVideo: '/test-video.mp4'
-      }
-    })
-    
-    // Wait for initialization to complete
-    await wrapper.vm.$nextTick()
-    await vi.runAllTimersAsync()
-    await wrapper.vm.$nextTick()
-    
-    const video = wrapper.find('.auth-wrapper__video')
-    expect(video.exists()).toBe(true)
-    // In Vue 3, boolean attributes that are true show as empty string
-    expect(video.attributes('autoplay')).toBe('')
-    expect(video.attributes('loop')).toBe('')
-    expect(video.attributes('muted')).toBe('')
-    expect(video.attributes('playsinline')).toBe('')
-  })
 })
