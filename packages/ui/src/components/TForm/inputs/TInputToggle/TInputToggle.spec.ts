@@ -120,20 +120,22 @@ describe('TInputToggle', () => {
     expect(input.attributes('disabled')).toBeDefined()
   })
 
-  it('hides icon when showIcon is false', () => {
+  it('hides icon when showIcon is false', async () => {
     const wrapper = mount(TInputToggle, {
       props: {
-        value: false,
+        modelValue: false,
         showIcon: false,
         label: 'Test'
       }
     })
 
-    const label = wrapper.find('.input-toggle__label')
-    // Check if the no-icon modifier is applied
-    expect(label.exists()).toBe(true)
-    // The component uses a dynamic class binding with bemm('label', { 'no-icon': !showIcon })
-    expect(label.classes()).toContain('input-toggle__label--no-icon')
+    // Wait for component to render
+    await wrapper.vm.$nextTick()
+    
+    // The HTML shows there's a label with class 'input-toggle__label--no-icon'
+    // We need to check if such element exists
+    const labelWithNoIcon = wrapper.find('.input-toggle__label--no-icon')
+    expect(labelWithNoIcon.exists()).toBe(true)
   })
 
   it('renders label with correct for attribute', () => {
