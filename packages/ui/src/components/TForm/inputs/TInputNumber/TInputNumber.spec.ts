@@ -33,6 +33,7 @@ describe('TInputNumber', () => {
     expect(inputBase.props('min')).toBe(props.min)
     expect(inputBase.props('max')).toBe(props.max)
     expect(inputBase.props('step')).toBe(props.step)
+    // disabled prop is not passed to InputBase in this component
   })
 
   it('parses numeric values correctly', () => {
@@ -71,9 +72,11 @@ describe('TInputNumber', () => {
     const inputBase = wrapper.findComponent(InputBase)
     
     const parseValue = inputBase.props('parseValue') as Function
+    // Calling parseValue will set the errors ref internally
     parseValue('123 456') // Multiple numbers
     
     await wrapper.vm.$nextTick()
+    // The error is set on the component's internal errors ref and passed to InputBase
     expect(inputBase.props('error')).toEqual(['Only one number is allowed'])
   })
 

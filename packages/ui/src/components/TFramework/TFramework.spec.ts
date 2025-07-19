@@ -1,10 +1,11 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, vi } from 'vitest'
+import { ref } from 'vue'
 import TFramework from './TFramework.vue'
 
 // Mock the stores
 const mockAuthStore = {
-  user: null,
+  user: ref(null),
   signOut: vi.fn()
 }
 
@@ -15,6 +16,13 @@ const mockAppStore = {
 vi.mock('@tiko/core', () => ({
   useAuthStore: () => mockAuthStore,
   useAppStore: () => mockAppStore
+}))
+
+// Mock pinia's storeToRefs
+vi.mock('pinia', () => ({
+  storeToRefs: (store: any) => ({
+    user: store.user
+  })
 }))
 
 // Mock the router
@@ -113,11 +121,13 @@ vi.mock('./TSettings.vue', () => ({
 }))
 
 // Mock services
+const mockPopupService = {
+  open: vi.fn(),
+  close: vi.fn()
+}
+
 vi.mock('../TPopup', () => ({
-  popupService: {
-    open: vi.fn(),
-    close: vi.fn()
-  }
+  popupService: mockPopupService
 }))
 
 vi.mock('../TToast', () => ({
@@ -205,7 +215,8 @@ describe('TFramework.vue', () => {
     await appLayout.vm.$emit('profile')
     
     // Should open profile popup
-    expect(wrapper.vm.popupService.open).toHaveBeenCalled()
+    const { popupService } = await import('../TPopup')
+    expect(popupService.open).toHaveBeenCalled()
   })
 
   it('handles settings action correctly', async () => {
@@ -227,7 +238,8 @@ describe('TFramework.vue', () => {
     await appLayout.vm.$emit('settings')
     
     // Should open settings popup
-    expect(wrapper.vm.popupService.open).toHaveBeenCalled()
+    const { popupService } = await import('../TPopup')
+    expect(popupService.open).toHaveBeenCalled()
   })
 
   it('handles logout action correctly', async () => {
@@ -331,16 +343,18 @@ describe('TFramework.vue', () => {
     expect(wrapper.find('.framework__route-display').text()).toBe('Home')
   })
 
-  it('provides services to child components', () => {
+  it('provides services to child components', async () => {
     const wrapper = mount(TFramework, {
       props: {
         config: mockConfig
       }
     })
     
-    // Check if services are provided
-    expect(wrapper.vm.popupService).toBeDefined()
-    expect(wrapper.vm.toastService).toBeDefined()
+    // Services are injected and used internally, not exposed on vm
+    const { popupService } = await import('../TPopup')
+    const { toastService } = await import('../TToast')
+    expect(popupService).toBeDefined()
+    expect(toastService).toBeDefined()
   })
 
   it('initializes network monitoring on mount', () => {

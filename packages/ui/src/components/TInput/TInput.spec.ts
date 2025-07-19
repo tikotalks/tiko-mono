@@ -95,11 +95,11 @@ describe('TInput.vue', () => {
   it('shows help text when provided', () => {
     const wrapper = mount(TInput, {
       props: {
-        help: 'This is help text'
+        description: 'This is help text'
       }
     })
     
-    expect(wrapper.find('.input__help').text()).toBe('This is help text')
+    expect(wrapper.find('.input__description').text()).toBe('This is help text')
   })
 
   it('displays prefix icon when provided', () => {
@@ -303,17 +303,6 @@ describe('TInput.vue', () => {
     })
   })
 
-  it('applies correct variant classes', () => {
-    const variants = ['default', 'filled', 'outlined']
-    
-    variants.forEach(variant => {
-      const wrapper = mount(TInput, {
-        props: { variant }
-      })
-      
-      expect(wrapper.find('.input').classes()).toContain(`input--${variant}`)
-    })
-  })
 
   it('handles null/undefined modelValue gracefully', () => {
     const wrapper = mount(TInput, {

@@ -94,7 +94,11 @@ describe('TInputToggle', () => {
   })
 
   it('applies correct BEM classes', () => {
-    const wrapper = mount(TInputToggle)
+    const wrapper = mount(TInputToggle, {
+      props: {
+        label: 'Test Toggle' // Label is required for check-control elements to be rendered
+      }
+    })
 
     expect(wrapper.find('.input-toggle__control').exists()).toBe(true)
     expect(wrapper.find('.input-toggle__control-container').exists()).toBe(true)
@@ -106,23 +110,29 @@ describe('TInputToggle', () => {
   it('disables toggle when disabled prop is true', () => {
     const wrapper = mount(TInputToggle, {
       props: {
-        disabled: true
+        modelValue: false,
+        disabled: true,
+        label: 'Disabled Toggle'
       }
     })
 
-    const input = wrapper.find('input[type="checkbox"]')
+    const input = wrapper.find('.input-toggle__control')
     expect(input.attributes('disabled')).toBeDefined()
   })
 
   it('hides icon when showIcon is false', () => {
     const wrapper = mount(TInputToggle, {
       props: {
+        modelValue: false,
         showIcon: false,
         label: 'Test'
       }
     })
 
     const label = wrapper.find('.input-toggle__label')
+    // Check if the no-icon modifier is applied
+    expect(label.exists()).toBe(true)
+    // The component uses a dynamic class binding with bemm('label', { 'no-icon': !showIcon })
     expect(label.classes()).toContain('input-toggle__label--no-icon')
   })
 

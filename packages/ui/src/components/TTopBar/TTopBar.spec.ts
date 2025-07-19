@@ -45,6 +45,18 @@ vi.mock('../../composables/useParentMode', () => ({
   })
 }))
 
+// Mock popupService
+const mockPopupService = {
+  open: vi.fn()
+}
+
+// Provide popupService in global
+const global = {
+  provide: {
+    popupService: mockPopupService
+  }
+}
+
 // Mock child components
 vi.mock('../TButton/TButton.vue', () => ({
   default: {
@@ -91,14 +103,23 @@ vi.mock('../TSpinner/TSpinner.vue', () => ({
 describe('TTopBar.vue', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockPopupService.open.mockClear()
   })
 
+  const createWrapper = (props = {}) => {
+    return mount(TTopBar, {
+      props,
+      global: {
+        provide: {
+          popupService: mockPopupService
+        }
+    })
+  }
+
   it('renders correctly with basic props', () => {
-    const wrapper = mount(TTopBar, {
-      props: {
-        title: 'Test App',
-        appName: 'test-app'
-      }
+    const wrapper = createWrapper({
+      title: 'Test App',
+      appName: 'test-app'
     })
     
     expect(wrapper.html()).toBeTruthy()
@@ -107,24 +128,20 @@ describe('TTopBar.vue', () => {
   })
 
   it('displays subtitle when provided', () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         subtitle: 'Test Subtitle',
         appName: 'test-app'
-      }
     })
     
     expect(wrapper.find('.top-bar__subtitle').text()).toBe('Test Subtitle')
   })
 
   it('shows back button when showBackButton is true', () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         showBackButton: true,
         appName: 'test-app'
-      }
     })
     
     const backButton = wrapper.find('.top-bar__back')
@@ -132,12 +149,10 @@ describe('TTopBar.vue', () => {
   })
 
   it('hides back button when showBackButton is false', () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         showBackButton: false,
         appName: 'test-app'
-      }
     })
     
     const backButton = wrapper.find('.top-bar__back')
@@ -145,12 +160,10 @@ describe('TTopBar.vue', () => {
   })
 
   it('emits back event when back button is clicked', async () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         showBackButton: true,
         appName: 'test-app'
-      }
     })
     
     const backButton = wrapper.findComponent({ name: 'TButton' })
@@ -161,13 +174,11 @@ describe('TTopBar.vue', () => {
   })
 
   it('uses custom back button label', () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         showBackButton: true,
         backButtonLabel: 'Go Back',
         appName: 'test-app'
-      }
     })
     
     const backButton = wrapper.findComponent({ name: 'TButton' })
@@ -175,12 +186,10 @@ describe('TTopBar.vue', () => {
   })
 
   it('shows user info when showUserInfo is true', () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         showUserInfo: true,
         appName: 'test-app'
-      }
     })
     
     expect(wrapper.find('.top-bar__user').exists()).toBe(true)
@@ -188,24 +197,20 @@ describe('TTopBar.vue', () => {
   })
 
   it('hides user info when showUserInfo is false', () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         showUserInfo: false,
         appName: 'test-app'
-      }
     })
     
     expect(wrapper.find('.top-bar__user').exists()).toBe(false)
   })
 
   it('displays user avatar when available', () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         showUserInfo: true,
         appName: 'test-app'
-      }
     })
     
     const avatar = wrapper.find('.top-bar__user-avatar img')
@@ -216,12 +221,10 @@ describe('TTopBar.vue', () => {
   it('shows user initials when no avatar is available', () => {
     mockAuthStore.user.user_metadata.avatar_url = null
     
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         showUserInfo: true,
         appName: 'test-app'
-      }
     })
     
     const avatar = wrapper.find('.top-bar__user-avatar')
@@ -229,25 +232,21 @@ describe('TTopBar.vue', () => {
   })
 
   it('shows online status when showOnlineStatus is true', () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         showOnlineStatus: true,
         appName: 'test-app'
-      }
     })
     
     expect(wrapper.find('.top-bar__status').exists()).toBe(true)
   })
 
   it('applies correct online status styling', () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         showOnlineStatus: true,
         isUserOnline: true,
         appName: 'test-app'
-      }
     })
     
     const status = wrapper.find('.top-bar__status')
@@ -255,13 +254,11 @@ describe('TTopBar.vue', () => {
   })
 
   it('applies correct offline status styling', () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         showOnlineStatus: true,
         isUserOnline: false,
         appName: 'test-app'
-      }
     })
     
     const status = wrapper.find('.top-bar__status')
@@ -269,47 +266,39 @@ describe('TTopBar.vue', () => {
   })
 
   it('shows loading spinner when isLoading is true', () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         isLoading: true,
         appName: 'test-app'
-      }
     })
     
     expect(wrapper.findComponent({ name: 'TSpinner' }).exists()).toBe(true)
   })
 
   it('hides loading spinner when isLoading is false', () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         isLoading: false,
         appName: 'test-app'
-      }
     })
     
     expect(wrapper.findComponent({ name: 'TSpinner' }).exists()).toBe(false)
   })
 
   it('shows parent mode toggle when appropriate', () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         appName: 'test-app'
-      }
     })
     
     expect(wrapper.findComponent({ name: 'TParentModeToggle' }).exists()).toBe(true)
   })
 
   it('shows context menu with user actions', () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         showUserInfo: true,
         appName: 'test-app'
-      }
     })
     
     expect(wrapper.findComponent({ name: 'TContextMenu' }).exists()).toBe(true)
@@ -320,12 +309,10 @@ describe('TTopBar.vue', () => {
       { id: 'custom', label: 'Custom Action', icon: 'star' }
     ]
     
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         customMenuItems: customItems,
         appName: 'test-app'
-      }
     })
     
     const contextMenu = wrapper.findComponent({ name: 'TContextMenu' })
@@ -338,12 +325,10 @@ describe('TTopBar.vue', () => {
   })
 
   it('emits profile event when profile menu item is clicked', async () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         showUserInfo: true,
         appName: 'test-app'
-      }
     })
     
     const contextMenu = wrapper.findComponent({ name: 'TContextMenu' })
@@ -353,12 +338,10 @@ describe('TTopBar.vue', () => {
   })
 
   it('emits settings event when settings menu item is clicked', async () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         showUserInfo: true,
         appName: 'test-app'
-      }
     })
     
     const contextMenu = wrapper.findComponent({ name: 'TContextMenu' })
@@ -368,12 +351,10 @@ describe('TTopBar.vue', () => {
   })
 
   it('emits logout event when logout menu item is clicked', async () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         showUserInfo: true,
         appName: 'test-app'
-      }
     })
     
     const contextMenu = wrapper.findComponent({ name: 'TContextMenu' })
@@ -387,12 +368,10 @@ describe('TTopBar.vue', () => {
       { id: 'custom', label: 'Custom Action', icon: 'star' }
     ]
     
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         customMenuItems: customItems,
         appName: 'test-app'
-      }
     })
     
     const contextMenu = wrapper.findComponent({ name: 'TContextMenu' })
@@ -403,39 +382,33 @@ describe('TTopBar.vue', () => {
   })
 
   it('renders center slot content', () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         appName: 'test-app'
       },
       slots: {
         center: '<div class="custom-center">Center Content</div>'
-      }
     })
     
     expect(wrapper.html()).toContain('<div class="custom-center">Center Content</div>')
   })
 
   it('renders actions slot content', () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         appName: 'test-app'
       },
       slots: {
         actions: '<button class="custom-action">Action</button>'
-      }
     })
     
     expect(wrapper.html()).toContain('<button class="custom-action">Action</button>')
   })
 
   it('applies correct CSS classes structure', () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         appName: 'test-app'
-      }
     })
     
     expect(wrapper.find('.top-bar').exists()).toBe(true)
@@ -447,12 +420,10 @@ describe('TTopBar.vue', () => {
   it('generates consistent avatar color based on user email', () => {
     mockAuthStore.user.user_metadata.avatar_url = null
     
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         showUserInfo: true,
         appName: 'test-app'
-      }
     })
     
     const avatar = wrapper.find('.top-bar__user-avatar')
@@ -462,12 +433,10 @@ describe('TTopBar.vue', () => {
   it('handles user without metadata gracefully', () => {
     mockAuthStore.user.user_metadata = null
     
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         showUserInfo: true,
         appName: 'test-app'
-      }
     })
     
     expect(wrapper.find('.top-bar__user').exists()).toBe(true)
@@ -476,23 +445,19 @@ describe('TTopBar.vue', () => {
   })
 
   it('applies loading class when loading', () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         isLoading: true,
         appName: 'test-app'
-      }
     })
     
     expect(wrapper.find('.top-bar').classes()).toContain('top-bar--loading')
   })
 
   it('maintains responsive design', () => {
-    const wrapper = mount(TTopBar, {
-      props: {
+    const wrapper = createWrapper({
         title: 'Test App',
         appName: 'test-app'
-      }
     })
     
     expect(wrapper.find('.top-bar').classes()).toContain('top-bar--responsive')
