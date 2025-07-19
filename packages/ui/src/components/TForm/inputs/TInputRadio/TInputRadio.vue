@@ -4,6 +4,7 @@
 		v-model="model"
 		:block="block"
 		:label="label"
+		:disabled="disabled"
 		@change="handleChange"
 		@touched="$emit('touched', $event)"
 	>
@@ -33,6 +34,7 @@
 		:value="modelValue"
 		:block="block"
 		:label="label"
+		:disabled="disabled"
 		@change="handleChange"
 		@touched="$emit('touched', $event)"
 	>
@@ -69,6 +71,7 @@ const model = defineModel<string>({
 const props = withDefaults(defineProps<TInputRadioProps>(), {
 	modelValue: '',
 	error: () => [],
+	disabled: false,
 });
 
 const emit = defineEmits<TInputRadioEmits>()

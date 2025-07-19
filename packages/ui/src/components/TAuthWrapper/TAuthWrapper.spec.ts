@@ -64,8 +64,13 @@ vi.mock('../TLoginForm/TLoginForm.vue', () => ({
 describe('TAuthWrapper.vue', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.useFakeTimers()
     mockAuthStore.user = null
     mockAuthStore.isAuthenticated = false
+  })
+  
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   it('renders correctly with default props', () => {
@@ -99,8 +104,12 @@ describe('TAuthWrapper.vue', () => {
       }
     })
     
-    // Simulate splash completion
-    await wrapper.findComponent({ name: 'TSplashScreen' }).vm.$emit('complete')
+    // Wait for initialization
+    await wrapper.vm.$nextTick()
+    
+    // Advance timers to complete splash screen minimum time
+    vi.advanceTimersByTime(2000)
+    await wrapper.vm.$nextTick()
     
     expect(wrapper.findComponent({ name: 'TLoginForm' }).exists()).toBe(true)
     expect(wrapper.findComponent({ name: 'TAppLayout' }).exists()).toBe(true)
@@ -120,8 +129,12 @@ describe('TAuthWrapper.vue', () => {
       }
     })
     
-    // Simulate splash completion
-    await wrapper.findComponent({ name: 'TSplashScreen' }).vm.$emit('complete')
+    // Wait for initialization
+    await wrapper.vm.$nextTick()
+    
+    // Advance timers to complete splash screen
+    vi.advanceTimersByTime(2000)
+    await wrapper.vm.$nextTick()
     
     expect(wrapper.text()).toContain('Main app content')
     expect(wrapper.findComponent({ name: 'TLoginForm' }).exists()).toBe(false)
@@ -178,14 +191,16 @@ describe('TAuthWrapper.vue', () => {
       }
     })
     
-    // Simulate splash completion
-    await wrapper.findComponent({ name: 'TSplashScreen' }).vm.$emit('complete')
+    // Wait for initialization and splash screen
+    await wrapper.vm.$nextTick()
+    vi.advanceTimersByTime(2000)
+    await wrapper.vm.$nextTick()
     
     const loginForm = wrapper.findComponent({ name: 'TLoginForm' })
     expect(loginForm.props('appId')).toBe('test-app')
   })
 
-  it('initializes auth store on mount', () => {
+  it('initializes auth store on mount', async () => {
     mount(TAuthWrapper, {
       props: {
         title: 'Test App',
@@ -193,7 +208,10 @@ describe('TAuthWrapper.vue', () => {
       }
     })
     
-    expect(mockAuthStore.initialize).toHaveBeenCalled()
+    await vi.runAllTimersAsync()
+    
+    expect(mockAuthStore.setupAuthListener).toHaveBeenCalled()
+    expect(mockAuthStore.initializeFromStorage).toHaveBeenCalled()
   })
 
   it('handles splash completion correctly', async () => {
@@ -206,7 +224,10 @@ describe('TAuthWrapper.vue', () => {
     
     expect(wrapper.findComponent({ name: 'TSplashScreen' }).exists()).toBe(true)
     
-    await wrapper.findComponent({ name: 'TSplashScreen' }).vm.$emit('complete')
+    // Wait for auth initialization and splash screen timing
+    await wrapper.vm.$nextTick()
+    vi.advanceTimersByTime(2000)
+    await wrapper.vm.$nextTick()
     
     // Should transition to login form
     expect(wrapper.findComponent({ name: 'TLoginForm' }).exists()).toBe(true)
@@ -220,14 +241,19 @@ describe('TAuthWrapper.vue', () => {
       }
     })
     
-    // Simulate splash completion
-    await wrapper.findComponent({ name: 'TSplashScreen' }).vm.$emit('complete')
+    // Wait for initialization and splash screen
+    await wrapper.vm.$nextTick()
+    vi.advanceTimersByTime(2000)
     await wrapper.vm.$nextTick()
     
-    expect(wrapper.find('.auth-wrapper__title').text()).toBe('Custom App Title')
+    const titleElement = wrapper.find('.auth-wrapper__title')
+    expect(titleElement.exists()).toBe(true)
+    expect(titleElement.text()).toBe('Custom App Title')
   })
 
   it('handles login success correctly', async () => {
+    mockAuthStore.signInWithPasswordlessEmail.mockResolvedValue({ user: { id: '123' } })
+    
     const wrapper = mount(TAuthWrapper, {
       props: {
         title: 'Test App',
@@ -235,21 +261,23 @@ describe('TAuthWrapper.vue', () => {
       }
     })
     
-    // Simulate splash completion
-    await wrapper.findComponent({ name: 'TSplashScreen' }).vm.$emit('complete')
+    // Wait for initialization and splash screen
+    await wrapper.vm.$nextTick()
+    vi.advanceTimersByTime(2000)
     await wrapper.vm.$nextTick()
     
     const loginForm = wrapper.findComponent({ name: 'TLoginForm' })
     
-    // Mock successful sign in
-    mockAuthStore.signInWithPasswordlessEmail = vi.fn().mockResolvedValue({ user: { id: '123' } })
-    await loginForm.vm.$emit('email-submit', 'test@example.com')
+    // Trigger email submission
+    await loginForm.vm.$emit('emailSubmit', 'test@example.com')
     await wrapper.vm.$nextTick()
     
     expect(mockAuthStore.signInWithPasswordlessEmail).toHaveBeenCalled()
   })
 
   it('handles login error correctly', async () => {
+    mockAuthStore.signInWithPasswordlessEmail.mockRejectedValue(new Error('Login failed'))
+    
     const wrapper = mount(TAuthWrapper, {
       props: {
         title: 'Test App',
@@ -257,21 +285,17 @@ describe('TAuthWrapper.vue', () => {
       }
     })
     
-    // Simulate splash completion
-    await wrapper.findComponent({ name: 'TSplashScreen' }).vm.$emit('complete')
+    // Wait for initialization and splash screen
     await wrapper.vm.$nextTick()
-    
-    // Mock auth store to throw error
-    mockAuthStore.signInWithPasswordlessEmail = vi.fn().mockRejectedValue(new Error('Login failed'))
+    vi.advanceTimersByTime(2000)
+    await wrapper.vm.$nextTick()
     
     const loginForm = wrapper.findComponent({ name: 'TLoginForm' })
     
     // Trigger email submit which will cause an error
-    await loginForm.vm.$emit('email-submit', 'test@example.com')
+    await loginForm.vm.$emit('emailSubmit', 'test@example.com')
     await wrapper.vm.$nextTick()
     
-    // Component should handle the error internally
-    // Note: authError is a ref inside the component, not exposed on vm
     expect(mockAuthStore.signInWithPasswordlessEmail).toHaveBeenCalled()
   })
 
@@ -297,6 +321,7 @@ describe('TAuthWrapper.vue', () => {
     })
     
     const video = wrapper.find('.auth-wrapper__video')
+    expect(video.exists()).toBe(true)
     // In Vue 3, boolean attributes that are true show as empty string
     expect(video.attributes('autoplay')).toBe('')
     expect(video.attributes('loop')).toBe('')

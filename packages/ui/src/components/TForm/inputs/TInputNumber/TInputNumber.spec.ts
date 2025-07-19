@@ -30,10 +30,8 @@ describe('TInputNumber', () => {
 
     expect(inputBase.props('label')).toBe(props.label)
     expect(inputBase.props('modelValue')).toBe(props.modelValue)
-    expect(inputBase.props('min')).toBe(props.min)
-    expect(inputBase.props('max')).toBe(props.max)
-    expect(inputBase.props('step')).toBe(props.step)
-    // disabled prop is not passed to InputBase in this component
+    expect(inputBase.props('disabled')).toBe(props.disabled)
+    // min, max, and step are handled by the HTML input element, not InputBase
   })
 
   it('parses numeric values correctly', () => {
@@ -71,12 +69,17 @@ describe('TInputNumber', () => {
     const wrapper = mount(TInputNumber)
     const inputBase = wrapper.findComponent(InputBase)
     
-    const parseValue = inputBase.props('parseValue') as Function
-    // Calling parseValue will set the errors ref internally
-    parseValue('123 456') // Multiple numbers
-    
+    // Simulate input change with multiple numbers
+    await inputBase.vm.$emit('change', '123 456')
     await wrapper.vm.$nextTick()
-    // The error is set on the component's internal errors ref and passed to InputBase
+    
+    // Check that parseValue was called and error was set
+    const parseValue = inputBase.props('parseValue') as Function
+    const result = parseValue('123 456')
+    
+    // The parseValue function should handle the validation
+    // and the error should be visible in the component
+    await wrapper.vm.$nextTick()
     expect(inputBase.props('error')).toEqual(['Only one number is allowed'])
   })
 

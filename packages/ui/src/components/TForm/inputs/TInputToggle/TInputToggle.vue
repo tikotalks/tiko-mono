@@ -6,6 +6,7 @@
 		v-model="model"
 		:block="block"
 		:label="label"
+		:disabled="disabled"
 		@change="handleChange"
 		@touched="$emit('touched', $event)"
 	>
@@ -41,6 +42,7 @@
 		:value="value"
 		:block="block"
 		:label="label"
+		:disabled="disabled"
 		@change="handleChange"
 		@touched="$emit('touched', $event)"
 	>
@@ -64,7 +66,11 @@
 			<label
 				v-if="label"
 				:for="id"
-				:class="bemm('label')"
+				:class="
+					bemm('label', {
+						'no-icon': !showIcon,
+					})
+				"
 			>
 				<div :class="bemm('check-control')">
 					<div :class="bemm('check-control-dot')" />

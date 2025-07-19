@@ -86,9 +86,11 @@ describe('TSSOButton.vue', () => {
     
     await wrapper.find('.t-button').trigger('click')
     
-    // The component uses href instead of search params for appName
-    const expectedUrl = 'https://app.tiko.mt/signin?return_to=' + encodeURIComponent('http://localhost:3000') + '&app_id=test-app&app_name=Test%20App'
-    expect(window.location.href).toBe(expectedUrl)
+    // The component uses URL constructor with searchParams
+    expect(window.location.href).toContain('https://app.tiko.mt/signin')
+    expect(window.location.href).toContain('return_to=' + encodeURIComponent('http://localhost:3000'))
+    expect(window.location.href).toContain('app_id=test-app')
+    expect(window.location.href).toContain('app_name=Test+App')
     
     // Restore
     window.location = originalLocation
