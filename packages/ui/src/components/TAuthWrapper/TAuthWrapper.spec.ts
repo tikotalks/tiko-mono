@@ -330,7 +330,7 @@ describe('TAuthWrapper.vue', () => {
     expect(wrapper.find('.auth-wrapper__background').exists()).toBe(true)
   })
 
-  it('handles video autoplay attributes correctly', () => {
+  it('handles video autoplay attributes correctly', async () => {
     mockAuthStore.isAuthenticated = false
     mockAuthStore.user = null
     
@@ -341,6 +341,11 @@ describe('TAuthWrapper.vue', () => {
         backgroundVideo: '/test-video.mp4'
       }
     })
+    
+    // Wait for initialization to complete
+    await wrapper.vm.$nextTick()
+    await vi.runAllTimersAsync()
+    await wrapper.vm.$nextTick()
     
     const video = wrapper.find('.auth-wrapper__video')
     expect(video.exists()).toBe(true)
