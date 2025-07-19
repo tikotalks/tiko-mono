@@ -168,7 +168,8 @@ describe('TSplashScreen.vue', () => {
     const wrapper = mount(TSplashScreen, {
       props: {
         appName: 'Test App',
-        duration: 1000
+        duration: 1000,
+        enableTransitions: false // Disable transitions for cleaner testing
       }
     })
     
@@ -342,7 +343,8 @@ describe('TSplashScreen.vue', () => {
     const wrapper = mount(TSplashScreen, {
       props: {
         appName: 'Test App',
-        duration: 50 // Very short duration
+        duration: 50, // Very short duration
+        enableTransitions: false
       }
     })
     

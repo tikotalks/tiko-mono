@@ -190,13 +190,17 @@ describe('TProfile.vue', () => {
     expect(avatar.text()).toBe('JD') // John Doe initials
   })
 
-  it('prefills form with user data', () => {
+  it('prefills form with user data', async () => {
     const wrapper = mount(TProfile, {
       props: {
         user: mockUser,
         onClose: mockOnClose
       }
     })
+    
+    // Wait for onMounted and loadUserProfile to complete
+    await wrapper.vm.$nextTick()
+    await vi.runAllTimersAsync()
     
     const nameInput = wrapper.findComponent({ name: 'TInputText' })
     expect(nameInput.props('modelValue')).toBe('John Doe')
@@ -303,7 +307,7 @@ describe('TProfile.vue', () => {
   })
 
   it('updates user metadata on form submission', async () => {
-    mockAuthStore.updateUserMetadata.mockResolvedValue({})
+    mockAuthService.updateUserMetadata.mockResolvedValue({})
     
     const wrapper = mount(TProfile, {
       props: {
@@ -311,6 +315,10 @@ describe('TProfile.vue', () => {
         onClose: mockOnClose
       }
     })
+    
+    // Wait for initialization
+    await wrapper.vm.$nextTick()
+    await vi.runAllTimersAsync()
     
     // Click save button to trigger save
     const saveButton = wrapper.findAll('.t-button').find(btn => btn.text() === 'Save')
@@ -319,11 +327,12 @@ describe('TProfile.vue', () => {
     await wrapper.vm.$nextTick()
     
     // The component should have called updateUserMetadata
-    expect(mockAuthStore.updateUserMetadata).toHaveBeenCalled()
+    expect(mockAuthService.updateUserMetadata).toHaveBeenCalled()
   })
 
   it('shows loading state during form submission', async () => {
-    mockAuthStore.updateUserMetadata.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)))
+    let resolveUpdate: () => void
+    mockAuthService.updateUserMetadata.mockImplementation(() => new Promise(resolve => { resolveUpdate = resolve }))
     
     const wrapper = mount(TProfile, {
       props: {
@@ -332,18 +341,28 @@ describe('TProfile.vue', () => {
       }
     })
     
+    // Wait for initialization
+    await wrapper.vm.$nextTick()
+    await vi.runAllTimersAsync()
+    
     // Click save button
     const saveButton = wrapper.findAll('.t-button').find(btn => btn.text() === 'Save')
     await saveButton.trigger('click')
+    await wrapper.vm.$nextTick()
     
     // Check if button has loading prop
     const buttonComponent = wrapper.findAllComponents({ name: 'TButton' })
       .find(button => button.element.textContent.includes('Save'))
     expect(buttonComponent.props('loading')).toBe(true)
+    
+    // Resolve and check loading is gone
+    resolveUpdate!()
+    await wrapper.vm.$nextTick()
+    expect(buttonComponent.props('loading')).toBe(false)
   })
 
   it('shows error message on update failure', async () => {
-    mockAuthStore.updateUserMetadata.mockRejectedValue(new Error('Update failed'))
+    mockAuthService.updateUserMetadata.mockRejectedValue(new Error('Update failed'))
     
     const wrapper = mount(TProfile, {
       props: {
@@ -352,11 +371,16 @@ describe('TProfile.vue', () => {
       }
     })
     
+    // Wait for initialization
+    await wrapper.vm.$nextTick()
+    await vi.runAllTimersAsync()
+    
+    const saveButton = wrapper.findAll('.t-button').find(btn => btn.text() === 'Save')
+    await saveButton.trigger('click')
     
     await wrapper.vm.$nextTick()
     
-    // Check if error is shown (the component might show error differently)
-    expect(mockAuthStore.updateUserMetadata).toHaveBeenCalled()
+    expect(mockToastService.error).toHaveBeenCalled()
   })
 
   it('calls onClose when cancel button is clicked', async () => {
@@ -375,7 +399,7 @@ describe('TProfile.vue', () => {
   })
 
   it('calls onClose after successful update', async () => {
-    mockAuthStore.updateUserMetadata.mockResolvedValue({})
+    mockAuthService.updateUserMetadata.mockResolvedValue({})
     
     const wrapper = mount(TProfile, {
       props: {
@@ -384,6 +408,12 @@ describe('TProfile.vue', () => {
       }
     })
     
+    // Wait for initialization
+    await wrapper.vm.$nextTick()
+    await vi.runAllTimersAsync()
+    
+    const saveButton = wrapper.findAll('.t-button').find(btn => btn.text() === 'Save')
+    await saveButton.trigger('click')
     
     await wrapper.vm.$nextTick()
     

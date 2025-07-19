@@ -123,7 +123,7 @@ describe('TInputToggle', () => {
   it('hides icon when showIcon is false', () => {
     const wrapper = mount(TInputToggle, {
       props: {
-        modelValue: false,
+        value: false,
         showIcon: false,
         label: 'Test'
       }
@@ -133,7 +133,6 @@ describe('TInputToggle', () => {
     // Check if the no-icon modifier is applied
     expect(label.exists()).toBe(true)
     // The component uses a dynamic class binding with bemm('label', { 'no-icon': !showIcon })
-    // The second template (v-else) now also has the no-icon class binding
     expect(label.classes()).toContain('input-toggle__label--no-icon')
   })
 
