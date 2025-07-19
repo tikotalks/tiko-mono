@@ -55,6 +55,8 @@ describe('TInputCheckbox', () => {
     })
 
     const input = wrapper.find('input[type="checkbox"]')
+    // Simulate checking the checkbox
+    ;(input.element as HTMLInputElement).checked = true
     await input.trigger('input')
 
     expect(wrapper.emitted('change')).toBeTruthy()
@@ -117,7 +119,8 @@ describe('TInputCheckbox', () => {
     })
 
     const input = wrapper.find('input[type="checkbox"]')
-    expect(input.attributes('disabled')).toBeDefined()
+    // In Vue 3, boolean attributes that are true show as empty string
+    expect(input.attributes('disabled')).toBe('')
   })
 
   it('renders label element with correct for attribute', () => {

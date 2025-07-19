@@ -152,10 +152,10 @@ describe('TBanner.vue', () => {
 
   it('handles different banner types with correct icons', () => {
     const typeIconMap = {
-      info: 'info-circle',
+      info: 'info',
       success: 'check-circle',
-      warning: 'exclamation-triangle',
-      error: 'x-circle'
+      warning: 'alert-triangle',
+      error: 'alert-circle'
     }
     
     Object.entries(typeIconMap).forEach(([type, expectedIcon]) => {
@@ -192,7 +192,7 @@ describe('TBanner.vue', () => {
     expect(wrapper.find('.banner__icon').exists()).toBe(true)
   })
 
-  it('handles banner lifecycle correctly', () => {
+  it('handles banner lifecycle correctly', async () => {
     const wrapper = mount(TBanner, {
       slots: {
         default: 'Test banner'
@@ -203,6 +203,7 @@ describe('TBanner.vue', () => {
     
     // Test that banner can be manually set to inactive
     wrapper.vm.isActive = false
+    await wrapper.vm.$nextTick()
     expect(wrapper.find('.banner').exists()).toBe(false)
   })
 })

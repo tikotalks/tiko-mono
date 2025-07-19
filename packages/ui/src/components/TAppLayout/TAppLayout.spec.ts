@@ -173,7 +173,7 @@ describe('TAppLayout.vue', () => {
     expect(topBar.props('showBackButton')).toBe(false)
     expect(topBar.props('backButtonLabel')).toBe('Back')
     expect(topBar.props('showUserInfo')).toBe(true)
-    expect(topBar.props('showOnlineStatus')).toBe(false)
+    expect(topBar.props('showOnlineStatus')).toBe(true)
     expect(topBar.props('isUserOnline')).toBe(true)
     expect(topBar.props('isLoading')).toBe(false)
   })

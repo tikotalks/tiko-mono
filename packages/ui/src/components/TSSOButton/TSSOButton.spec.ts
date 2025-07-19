@@ -20,114 +20,97 @@ vi.mock('../TIcon/TIcon.vue', () => ({
   }
 }))
 
+// Mock useI18n
+vi.mock('../../composables/useI18n', () => ({
+  useI18n: () => ({
+    t: (key: string) => {
+      if (key === 'sso.signInWithTiko') return 'Sign in with Tiko'
+      return key
+    }
+  })
+}))
+
 describe('TSSOButton.vue', () => {
-  it('renders correctly with Google provider', () => {
+  it('renders correctly with default props', () => {
     const wrapper = mount(TSSOButton, {
       props: {
-        provider: 'google'
+        appId: 'test-app'
       }
     })
     
     expect(wrapper.html()).toBeTruthy()
-    expect(wrapper.find('.sso-button').exists()).toBe(true)
-    expect(wrapper.text()).toContain('Continue with Google')
+    expect(wrapper.find('.t-sso-button').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Sign in with Tiko')
   })
 
-  it('renders correctly with GitHub provider', () => {
+  it('passes correct props to TButton', () => {
     const wrapper = mount(TSSOButton, {
       props: {
-        provider: 'github'
+        appId: 'test-app',
+        size: 'large',
+        type: 'primary',
+        disabled: true
       }
     })
     
-    expect(wrapper.text()).toContain('Continue with GitHub')
+    const button = wrapper.findComponent({ name: 'TButton' })
+    expect(button.props('size')).toBe('large')
+    expect(button.props('type')).toBe('primary')
+    expect(button.props('disabled')).toBe(true)
   })
 
-  it('renders correctly with Microsoft provider', () => {
+  it('renders Tiko icon', () => {
     const wrapper = mount(TSSOButton, {
       props: {
-        provider: 'microsoft'
+        appId: 'test-app'
       }
     })
     
-    expect(wrapper.text()).toContain('Continue with Microsoft')
+    const icon = wrapper.findComponent({ name: 'TIcon' })
+    expect(icon.exists()).toBe(true)
+    expect(icon.props('name')).toBe('tiko')
   })
 
-  it('renders correctly with Apple provider', () => {
+  it('handles click event correctly for web', async () => {
     const wrapper = mount(TSSOButton, {
       props: {
-        provider: 'apple'
+        appId: 'test-app',
+        appName: 'Test App'
       }
     })
     
-    expect(wrapper.text()).toContain('Continue with Apple')
+    // Mock window.location
+    const originalLocation = window.location
+    delete (window as any).location
+    window.location = { href: 'http://localhost:3000' } as any
+    
+    await wrapper.find('.t-button').trigger('click')
+    
+    // The component uses href instead of search params for appName
+    const expectedUrl = 'https://app.tiko.mt/signin?return_to=' + encodeURIComponent('http://localhost:3000') + '&app_id=test-app&app_name=Test%20App'
+    expect(window.location.href).toBe(expectedUrl)
+    
+    // Restore
+    window.location = originalLocation
   })
 
-  it('renders correctly with Facebook provider', () => {
+  it('renders custom slot content when provided', () => {
     const wrapper = mount(TSSOButton, {
       props: {
-        provider: 'facebook'
+        appId: 'test-app'
+      },
+      slots: {
+        default: 'Custom Sign In Text'
       }
     })
     
-    expect(wrapper.text()).toContain('Continue with Facebook')
-  })
-
-  it('renders correctly with Twitter provider', () => {
-    const wrapper = mount(TSSOButton, {
-      props: {
-        provider: 'twitter'
-      }
-    })
-    
-    expect(wrapper.text()).toContain('Continue with Twitter')
-  })
-
-  it('displays correct icon for each provider', () => {
-    const providerIcons = {
-      google: 'brand-google',
-      github: 'brand-github',
-      microsoft: 'brand-microsoft',
-      apple: 'brand-apple',
-      facebook: 'brand-facebook',
-      twitter: 'brand-twitter'
-    }
-    
-    Object.entries(providerIcons).forEach(([provider, expectedIcon]) => {
-      const wrapper = mount(TSSOButton, {
-        props: { provider }
-      })
-      
-      const icon = wrapper.findComponent({ name: 'TIcon' })
-      expect(icon.exists()).toBe(true)
-      expect(icon.props('name')).toBe(expectedIcon)
-    })
-  })
-
-  it('applies correct color for each provider', () => {
-    const providerColors = {
-      google: 'default',
-      github: 'dark',
-      microsoft: 'primary',
-      apple: 'dark',
-      facebook: 'primary',
-      twitter: 'info'
-    }
-    
-    Object.entries(providerColors).forEach(([provider, expectedColor]) => {
-      const wrapper = mount(TSSOButton, {
-        props: { provider }
-      })
-      
-      const button = wrapper.findComponent({ name: 'TButton' })
-      expect(button.props('color')).toBe(expectedColor)
-    })
+    expect(wrapper.text()).toContain('Custom Sign In Text')
   })
 
   it('applies disabled state correctly', () => {
     const wrapper = mount(TSSOButton, {
       props: {
-        provider: 'google',
+        appId: 'test-app',
         disabled: true
       }
     })
@@ -136,202 +119,79 @@ describe('TSSOButton.vue', () => {
     expect(button.props('disabled')).toBe(true)
   })
 
-  it('applies loading state correctly', () => {
+  it('uses default values for props', () => {
     const wrapper = mount(TSSOButton, {
       props: {
-        provider: 'google',
-        loading: true
+        appId: 'test-app'
       }
     })
     
     const button = wrapper.findComponent({ name: 'TButton' })
-    expect(button.props('loading')).toBe(true)
+    expect(button.props('size')).toBe('medium')
+    expect(button.props('type')).toBe('default')
+    expect(button.props('disabled')).toBe(false)
   })
 
-  it('applies full width correctly', () => {
+  it('handles Capacitor mobile app environment', async () => {
+    // Mock Capacitor
+    ;(window as any).Capacitor = {
+      isNativePlatform: () => true,
+      Plugins: {
+        App: {
+          openUrl: vi.fn()
+        }
+      }
+    }
+    
     const wrapper = mount(TSSOButton, {
       props: {
-        provider: 'google',
-        full: true
+        appId: 'test-app',
+        appName: 'Test App'
       }
     })
     
-    const button = wrapper.findComponent({ name: 'TButton' })
-    expect(button.props('full')).toBe(true)
+    await wrapper.find('.t-button').trigger('click')
+    
+    expect(window.Capacitor.Plugins.App.openUrl).toHaveBeenCalledWith({
+      url: expect.stringContaining('tiko://signin')
+    })
+    
+    // Cleanup
+    delete (window as any).Capacitor
   })
 
-  it('applies correct size', () => {
+  it('falls back to web signin when Capacitor app open fails', async () => {
+    // Mock Capacitor with failing App.openUrl
+    ;(window as any).Capacitor = {
+      isNativePlatform: () => true,
+      Plugins: {
+        App: {
+          openUrl: vi.fn().mockRejectedValue(new Error('Failed'))
+        }
+      }
+    }
+    
+    const originalLocation = window.location
+    delete (window as any).location
+    window.location = { href: 'http://localhost:3000' } as any
+    
     const wrapper = mount(TSSOButton, {
       props: {
-        provider: 'google',
-        size: 'large'
+        appId: 'test-app',
+        appName: 'Test App'
       }
     })
     
-    const button = wrapper.findComponent({ name: 'TButton' })
-    expect(button.props('size')).toBe('large')
-  })
-
-  it('emits click event when clicked', async () => {
-    const wrapper = mount(TSSOButton, {
-      props: {
-        provider: 'google'
-      }
-    })
+    await wrapper.find('.t-button').trigger('click')
     
-    const button = wrapper.findComponent({ name: 'TButton' })
-    await button.trigger('click')
+    // Wait for async fallback
+    await new Promise(resolve => setTimeout(resolve, 10))
     
-    expect(wrapper.emitted('click')).toBeTruthy()
-    expect(wrapper.emitted('click')).toHaveLength(1)
-  })
-
-  it('does not emit click when disabled', async () => {
-    const wrapper = mount(TSSOButton, {
-      props: {
-        provider: 'google',
-        disabled: true
-      }
-    })
+    expect(window.location.href).toContain('https://app.tiko.mt/signin')
+    expect(window.location.href).toContain('mobile=true')
     
-    const button = wrapper.findComponent({ name: 'TButton' })
-    await button.trigger('click')
-    
-    expect(wrapper.emitted('click')).toBeFalsy()
-  })
-
-  it('uses outline button type by default', () => {
-    const wrapper = mount(TSSOButton, {
-      props: {
-        provider: 'google'
-      }
-    })
-    
-    const button = wrapper.findComponent({ name: 'TButton' })
-    expect(button.props('type')).toBe('outline')
-  })
-
-  it('applies correct CSS classes', () => {
-    const wrapper = mount(TSSOButton, {
-      props: {
-        provider: 'google'
-      }
-    })
-    
-    expect(wrapper.find('.sso-button').exists()).toBe(true)
-    expect(wrapper.find('.sso-button--google').exists()).toBe(true)
-  })
-
-  it('applies loading class when loading', () => {
-    const wrapper = mount(TSSOButton, {
-      props: {
-        provider: 'google',
-        loading: true
-      }
-    })
-    
-    expect(wrapper.find('.sso-button--loading').exists()).toBe(true)
-  })
-
-  it('applies disabled class when disabled', () => {
-    const wrapper = mount(TSSOButton, {
-      props: {
-        provider: 'google',
-        disabled: true
-      }
-    })
-    
-    expect(wrapper.find('.sso-button--disabled').exists()).toBe(true)
-  })
-
-  it('shows loading text when loading', () => {
-    const wrapper = mount(TSSOButton, {
-      props: {
-        provider: 'google',
-        loading: true
-      }
-    })
-    
-    expect(wrapper.text()).toContain('Signing in...')
-  })
-
-  it('handles custom text prop', () => {
-    const wrapper = mount(TSSOButton, {
-      props: {
-        provider: 'google',
-        text: 'Sign in with Google'
-      }
-    })
-    
-    expect(wrapper.text()).toContain('Sign in with Google')
-  })
-
-  it('handles unknown provider gracefully', () => {
-    const wrapper = mount(TSSOButton, {
-      props: {
-        provider: 'unknown'
-      }
-    })
-    
-    expect(wrapper.text()).toContain('Continue with Unknown')
-  })
-
-  it('applies correct accessibility attributes', () => {
-    const wrapper = mount(TSSOButton, {
-      props: {
-        provider: 'google'
-      }
-    })
-    
-    const button = wrapper.findComponent({ name: 'TButton' })
-    expect(button.attributes('aria-label')).toBe('Continue with Google')
-  })
-
-  it('displays icon with correct size', () => {
-    const wrapper = mount(TSSOButton, {
-      props: {
-        provider: 'google'
-      }
-    })
-    
-    const icon = wrapper.findComponent({ name: 'TIcon' })
-    expect(icon.props('size')).toBe('1.2em')
-  })
-
-  it('maintains brand consistency', () => {
-    const wrapper = mount(TSSOButton, {
-      props: {
-        provider: 'google'
-      }
-    })
-    
-    const button = wrapper.findComponent({ name: 'TButton' })
-    expect(button.props('type')).toBe('outline')
-    expect(button.props('full')).toBe(true)
-  })
-
-  it('handles provider capitalization correctly', () => {
-    const wrapper = mount(TSSOButton, {
-      props: {
-        provider: 'GOOGLE'
-      }
-    })
-    
-    expect(wrapper.text()).toContain('Continue with Google')
-  })
-
-  it('emits provider information with click event', async () => {
-    const wrapper = mount(TSSOButton, {
-      props: {
-        provider: 'google'
-      }
-    })
-    
-    const button = wrapper.findComponent({ name: 'TButton' })
-    await button.trigger('click')
-    
-    const emittedEvents = wrapper.emitted('click')
-    expect(emittedEvents).toBeTruthy()
-    expect(emittedEvents[0]).toEqual([{ provider: 'google' }])
+    // Cleanup
+    delete (window as any).Capacitor
+    window.location = originalLocation
   })
 })

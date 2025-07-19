@@ -177,7 +177,6 @@ describe('TLoginForm.vue', () => {
       const submitButton = wrapper.find('.login-form__submit-button')
       expect(submitButton.attributes('disabled')).toBeDefined()
       
-      const submitButton = wrapper.find('.login-form__submit-button')
       await submitButton.trigger('click')
       
       expect(wrapper.emitted('emailSubmit')).toBeFalsy()

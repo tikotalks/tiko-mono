@@ -76,6 +76,7 @@ const props = withDefaults(defineProps<TInputTextAreaProps>(), {
 	allowResize: false,
 	minRows: 3,
 	maxRows: 10,
+	disabled: false,
 });
 
 const emit = defineEmits<TInputTextAreaEmits>()

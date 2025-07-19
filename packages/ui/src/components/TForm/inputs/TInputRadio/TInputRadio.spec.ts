@@ -90,7 +90,8 @@ describe('TInputRadio', () => {
     })
 
     const input = wrapper.find('input[type="radio"]')
-    expect(input.attributes('disabled')).toBeDefined()
+    // In Vue 3, boolean attributes that are true show as empty string
+    expect(input.attributes('disabled')).toBe('')
   })
 
   it('applies correct BEM classes', () => {
