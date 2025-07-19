@@ -28,6 +28,7 @@ function getTranslationsCache() {
  * @returns Translation value or undefined if not found
  */
 function getNestedValue(obj: any, path: string): string | undefined {
+  if (!path || typeof path !== 'string') return undefined
   const result = path.split('.').reduce((current, key) => current?.[key], obj)
   return typeof result === 'string' ? result : undefined
 }

@@ -39,7 +39,7 @@ const selectedLanguage = ref(props.modelValue || locale.value)
 
 // Computed label and placeholder
 const computedLabel = computed(() => props.label || t(keys.profile.language))
-const computedPlaceholder = computed(() => props.placeholder || t(keys.common.selectOption))
+const computedPlaceholder = computed(() => props.placeholder || '')
 
 // Get native names for each locale
 const getNativeLanguageName = (localeCode: LocaleCode | string): string => {
