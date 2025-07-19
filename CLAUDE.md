@@ -609,13 +609,15 @@ These standards ensure consistency, maintainability, and scalability across the 
 **ALWAYS before pushing changes:**
 1. **Run tests** - Ensure all tests pass
 2. **Run builds** - Ensure all affected packages build successfully
-3. **Fix any failures** - Do not push broken code
+3. **Validate i18n** - Ensure no missing translation keys
+4. **Fix any failures** - Do not push broken code
 
 ```bash
 # Required steps before pushing:
 pnpm test                         # Run all tests
 pnpm build                        # Run builds
-# Only if both succeed:
+pnpm run check:i18n              # Check i18n completeness
+# Only if all succeed:
 git push origin master
 ```
 
@@ -653,13 +655,16 @@ pnpm test
 # 3. Run builds
 pnpm build
 
-# 4. If tests and builds pass, commit
+# 4. Validate i18n completeness
+pnpm run check:i18n
+
+# 5. If all checks pass, commit
 git commit -m "type(scope): description"
 
-# 5. Push to remote
+# 6. Push to remote
 git push origin master
 
-# If tests or builds fail, fix them first!
+# If any step fails, fix issues first!
 ```
 
 ## Build Triggers for Netlify Deployments
@@ -700,3 +705,88 @@ By default, apps will only build if:
 3. There are changes in root dependencies (package.json, pnpm-lock.yaml)
 
 The commit message triggers override this default behavior.
+
+## I18n Validation and Management
+
+The project includes a comprehensive i18n validation system to ensure translation completeness across all supported languages.
+
+### Running I18n Validation
+
+```bash
+# Basic validation with colored output
+pnpm run check:i18n
+
+# JSON output for CI/automation
+pnpm run check:i18n:json
+
+# Show help
+node scripts/check-i18n.js --help
+```
+
+### What the Script Validates
+
+The i18n validation script checks for:
+
+1. **Missing Keys** (❌ ERRORS): Keys defined in `keys.ts` but not in a locale file
+2. **Duplicate Keys** (❌ ERRORS): Same key appears multiple times in a locale
+3. **Extra Keys** (⚠️ WARNINGS): Keys in locale files but not in `keys.ts` reference
+4. **Empty Values** (⚠️ WARNINGS): Keys with empty string values
+
+### Understanding the Output
+
+```bash
+=== Summary ===
+Validated 13 locales with 457 reference keys
+❌ Total missing keys: 1353
+✅ No duplicate keys found
+✅ No extra keys found  
+✅ No empty values found
+
+✅ Perfect locales (4): el, en-GB, en-US, es
+❌ Locales with errors (9): de, fr, it, nl, pl, pt, ro, ru, sv
+```
+
+### Exit Codes
+
+- **Exit 0**: All validations passed (no missing keys, no duplicates)
+- **Exit 1**: Validation failed (missing keys or duplicates found)
+
+### CI Integration
+
+The script should be integrated into the CI pipeline:
+
+```yaml
+# Add to GitHub Actions or similar
+- name: Validate i18n completeness
+  run: pnpm run check:i18n:json
+```
+
+### Translation Workflow
+
+1. **Add new keys** to `packages/ui/src/i18n/keys.ts` first
+2. **Run validation** to see which locales need updates:
+   ```bash
+   pnpm run check:i18n
+   ```
+3. **Update locale files** in `packages/ui/src/i18n/locales/` 
+4. **Verify completeness** by running validation again
+5. **Goal**: 0 missing keys, 0 duplicates across all locales
+
+### Required for Production
+
+**IMPORTANT**: All locale files must have 0 missing keys and 0 duplicates before production deployment. The CI should fail if there are any missing keys or duplicates.
+
+### Adding New Languages
+
+1. Create new locale file: `packages/ui/src/i18n/locales/{language-code}.ts`
+2. Copy structure from `en-GB.ts`
+3. Translate all values
+4. Run validation to ensure completeness
+5. Add to supported languages list in app configuration
+
+### Maintaining Translations
+
+- **Always run** `pnpm run check:i18n` before committing i18n changes
+- **Keep keys.ts as source of truth** - all new keys must be added there first
+- **Use semantic key names** that clearly indicate their purpose
+- **Group related keys** logically (by app, feature, or component)

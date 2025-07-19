@@ -17,6 +17,8 @@
     "ios": "node scripts/ios-app-interactive.js",
     "analyze-icons": "node scripts/analyze-icons-accurate.js",
     "analyze-icons:all": "for app in apps/*; do echo \"\\n=== Analyzing $app ===\"; node scripts/analyze-icons-accurate.js \"$app\"; done",
+    "check:i18n": "node scripts/check-i18n.js",
+    "check:i18n:json": "node scripts/check-i18n.js --json",
     "dev": "nx run-many --target=serve --all --parallel",
     "lint": "nx run-many --target=lint --all",
     "typecheck": "nx run-many --target=typecheck --all",

@@ -1,0 +1,93 @@
+name: I18n Validation
+
+on:
+  push:
+    branches: [ master, develop ]
+    paths:
+      - 'packages/ui/src/i18n/**'
+      - 'scripts/check-i18n.js'
+      - '.github/workflows/i18n-validation.yml'
+  pull_request:
+    branches: [ master, develop ]
+    paths:
+      - 'packages/ui/src/i18n/**'
+      - 'scripts/check-i18n.js'
+
+jobs:
+  validate-i18n:
+    name: Validate I18n Completeness
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8.15.0
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Validate I18n completeness
+        run: pnpm run check:i18n:json
+        id: i18n-check
+      
+      - name: Comment PR with results
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Get the output from the failed step
+            const { execSync } = require('child_process');
+            try {
+              const result = execSync('pnpm run check:i18n:json', { encoding: 'utf8' });
+              const i18nData = JSON.parse(result.split('\n').find(line => line.startsWith('{')));
+              
+              let comment = `## 🌍 I18n Validation Failed\n\n`;
+              comment += `**Summary:**\n`;
+              comment += `- Total locales: ${i18nData.summary.totalLocales}\n`;
+              comment += `- Reference keys: ${i18nData.summary.totalReferenceKeys}\n`;
+              comment += `- Missing keys: **${i18nData.summary.totalMissing}** ❌\n`;
+              comment += `- Duplicate keys: **${i18nData.summary.totalDuplicates}** ❌\n`;
+              comment += `- Extra keys: ${i18nData.summary.totalExtra} ⚠️\n`;
+              comment += `- Empty values: ${i18nData.summary.totalEmpty} ⚠️\n\n`;
+              
+              if (i18nData.summary.totalMissing > 0 || i18nData.summary.totalDuplicates > 0) {
+                comment += `**Action Required:** Please fix missing keys and duplicates before merging.\n\n`;
+                
+                const problemLocales = i18nData.results.filter(r => r.missing.length > 0 || r.duplicates.length > 0);
+                if (problemLocales.length > 0) {
+                  comment += `**Locales with errors:**\n`;
+                  problemLocales.forEach(locale => {
+                    comment += `- **${locale.locale}**: ${locale.missing.length} missing, ${locale.duplicates.length} duplicates\n`;
+                  });
+                }
+                
+                comment += `\n**To fix:** Run \`pnpm run check:i18n\` locally to see detailed error list.\n`;
+              }
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            } catch (error) {
+              console.error('Failed to parse i18n results:', error);
+            }
+      
+      - name: Fail if validation errors
+        if: failure()
+        run: |
+          echo "❌ I18n validation failed!"
+          echo "Missing keys or duplicates found."
+          echo "Run 'pnpm run check:i18n' locally to see detailed results."
+          exit 1
