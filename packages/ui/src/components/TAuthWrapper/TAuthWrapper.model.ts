@@ -1,10 +1,5 @@
 export interface TAuthWrapperProps {
   /**
-   * Background video URL for the login screen
-   */
-  backgroundVideo?: string
-  
-  /**
    * Background image URL for the login screen
    */
   backgroundImage?: string

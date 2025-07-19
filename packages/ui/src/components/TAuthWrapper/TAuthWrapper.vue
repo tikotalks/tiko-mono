@@ -2,17 +2,6 @@
   <div :class="bemm()">
 
     <div :class="bemm('background')" v-if="!isAuthenticated">
-      <video
-        v-if="props.backgroundVideo"
-        id="backgroundVideo"
-        :src="props.backgroundVideo"
-        autoplay
-        loop
-        muted
-        playsinline
-        playback
-        :class="bemm('video')"
-      ></video>
       <img
         v-if="props.backgroundImage"
         :src="props.backgroundImage"
@@ -78,7 +67,6 @@ import { useTikoConfig } from '../../composables/useTikoConfig'
 import type { TAuthWrapperProps } from './TAuthWrapper.model'
 
 const props = withDefaults(defineProps<TAuthWrapperProps>(), {
-  backgroundVideo: '',
   backgroundImage: '',
   title: 'Welcome to Tiko',
   appName: 'todo'
@@ -312,12 +300,6 @@ onMounted(async () => {
     }
   }
 
-  // Video playback setup
-  const video = document.getElementById('backgroundVideo') as HTMLVideoElement;
-  if(video){
-    video.playbackRate = 0.75;
-    console.log('[TAuthWrapper] Background video playback rate set to 0.75');
-  }
 
   console.log('[TAuthWrapper] ========== END AUTHENTICATION INITIALIZATION ==========');
 });
@@ -342,16 +324,6 @@ onMounted(async () => {
     background-color: var(--color-primary);
   }
 
-  &__video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    mix-blend-mode: multiply;
-    transform: scale(1.25);
-    filter: blur(5px);
-    opacity: 0.5;
-  }
   &__image {
     width: 100%;
     height: 100%;
