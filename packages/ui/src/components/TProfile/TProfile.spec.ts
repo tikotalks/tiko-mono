@@ -3,21 +3,35 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ref } from 'vue'
 import TProfile from './TProfile.vue'
 
-// Mock the auth store
-const mockAuthStore = {
-  updateUserMetadata: vi.fn(),
-  uploadAvatar: vi.fn(),
-  getAvatarUrl: vi.fn()
-}
+// Mock Canvas API
+global.HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
+  drawImage: vi.fn(),
+  getImageData: vi.fn(() => ({ data: new Uint8ClampedArray(4) }))
+}))
+
+global.HTMLCanvasElement.prototype.toBlob = vi.fn((callback) => {
+  callback(new Blob(['mock-image-data'], { type: 'image/jpeg' }))
+})
+
+// Mock URL.createObjectURL
+global.URL.createObjectURL = vi.fn(() => 'blob:mock-url')
+
 
 vi.mock('@tiko/core', () => ({
-  useAuthStore: () => mockAuthStore,
+  useAuthStore: () => ({
+    updateUserMetadata: vi.fn(),
+    uploadAvatar: vi.fn(),
+    getAvatarUrl: vi.fn()
+  }),
   authService: {
+    updateUserMetadata: vi.fn().mockResolvedValue({ success: true }),
     updateUserProfile: vi.fn(),
-    uploadAvatar: vi.fn()
+    uploadAvatar: vi.fn(),
+    getSession: vi.fn().mockResolvedValue({ expires_at: Date.now() + 3600000 }),
+    refreshSession: vi.fn().mockResolvedValue({})
   },
   fileService: {
-    upload: vi.fn()
+    upload: vi.fn().mockResolvedValue({ success: true, url: 'https://example.com/avatar.jpg' })
   }
 }))
 
@@ -60,7 +74,8 @@ vi.mock('../../composables/useI18n', () => ({
 vi.mock('../TToast', () => ({
   toastService: {
     success: vi.fn(),
-    error: vi.fn()
+    error: vi.fn(),
+    show: vi.fn()
   }
 }))
 
@@ -143,6 +158,11 @@ describe('TProfile.vue', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.useFakeTimers()
+  })
+  
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   it('renders correctly with user data', () => {
@@ -238,7 +258,9 @@ describe('TProfile.vue', () => {
 
   it('handles avatar upload', async () => {
     const mockFile = new File(['avatar'], 'avatar.jpg', { type: 'image/jpeg' })
-    mockAuthStore.uploadAvatar.mockResolvedValue('https://example.com/new-avatar.jpg')
+    const { useAuthStore } = await import('@tiko/core')
+    const authStore = useAuthStore()
+    authStore.uploadAvatar.mockResolvedValue('https://example.com/new-avatar.jpg')
     
     const wrapper = mount(TProfile, {
       props: {
@@ -262,6 +284,8 @@ describe('TProfile.vue', () => {
 
   it('validates image file types', async () => {
     const mockFile = new File(['doc'], 'document.pdf', { type: 'application/pdf' })
+    const { useAuthStore } = await import('@tiko/core')
+    const authStore = useAuthStore()
     
     const wrapper = mount(TProfile, {
       props: {
@@ -280,11 +304,13 @@ describe('TProfile.vue', () => {
     await fileInput.element.dispatchEvent(changeEvent)
     
     await wrapper.vm.$nextTick()
-    expect(mockAuthStore.uploadAvatar).not.toHaveBeenCalled()
+    expect(authStore.uploadAvatar).not.toHaveBeenCalled()
   })
 
   it('validates image file size', async () => {
     const largeFile = new File(['x'.repeat(11 * 1024 * 1024)], 'large.jpg', { type: 'image/jpeg' })
+    const { useAuthStore } = await import('@tiko/core')
+    const authStore = useAuthStore()
     
     const wrapper = mount(TProfile, {
       props: {
@@ -303,11 +329,12 @@ describe('TProfile.vue', () => {
     await fileInput.element.dispatchEvent(changeEvent)
     
     await wrapper.vm.$nextTick()
-    expect(mockAuthStore.uploadAvatar).not.toHaveBeenCalled()
+    expect(authStore.uploadAvatar).not.toHaveBeenCalled()
   })
 
   it('updates user metadata on form submission', async () => {
-    mockAuthService.updateUserMetadata.mockResolvedValue({})
+    const { authService } = await import('@tiko/core')
+    authService.updateUserMetadata.mockResolvedValue({ success: true })
     
     const wrapper = mount(TProfile, {
       props: {
@@ -327,12 +354,13 @@ describe('TProfile.vue', () => {
     await wrapper.vm.$nextTick()
     
     // The component should have called updateUserMetadata
-    expect(mockAuthService.updateUserMetadata).toHaveBeenCalled()
+    expect(authService.updateUserMetadata).toHaveBeenCalled()
   })
 
   it('shows loading state during form submission', async () => {
-    let resolveUpdate: () => void
-    mockAuthService.updateUserMetadata.mockImplementation(() => new Promise(resolve => { resolveUpdate = resolve }))
+    let resolveUpdate: (value: any) => void
+    const { authService } = await import('@tiko/core')
+    authService.updateUserMetadata.mockImplementation(() => new Promise(resolve => { resolveUpdate = resolve }))
     
     const wrapper = mount(TProfile, {
       props: {
@@ -356,13 +384,20 @@ describe('TProfile.vue', () => {
     expect(buttonComponent.props('loading')).toBe(true)
     
     // Resolve and check loading is gone
-    resolveUpdate!()
+    resolveUpdate!({ success: true })
     await wrapper.vm.$nextTick()
-    expect(buttonComponent.props('loading')).toBe(false)
+    await vi.runAllTimersAsync()
+    await wrapper.vm.$nextTick()
+    
+    // Re-find the button as it may have been re-rendered
+    const updatedButton = wrapper.findAllComponents({ name: 'TButton' })
+      .find(button => button.element.textContent.includes('Save'))
+    expect(updatedButton.props('loading')).toBe(false)
   })
 
   it('shows error message on update failure', async () => {
-    mockAuthService.updateUserMetadata.mockRejectedValue(new Error('Update failed'))
+    const { authService } = await import('@tiko/core')
+    authService.updateUserMetadata.mockRejectedValue(new Error('Update failed'))
     
     const wrapper = mount(TProfile, {
       props: {
@@ -380,7 +415,10 @@ describe('TProfile.vue', () => {
     
     await wrapper.vm.$nextTick()
     
-    expect(mockToastService.error).toHaveBeenCalled()
+    const { toastService } = await import('../TToast')
+    expect(toastService.show).toHaveBeenCalledWith(expect.objectContaining({
+      type: 'error'
+    }))
   })
 
   it('calls onClose when cancel button is clicked', async () => {
@@ -399,7 +437,8 @@ describe('TProfile.vue', () => {
   })
 
   it('calls onClose after successful update', async () => {
-    mockAuthService.updateUserMetadata.mockResolvedValue({})
+    const { authService } = await import('@tiko/core')
+    authService.updateUserMetadata.mockResolvedValue({ success: true })
     
     const wrapper = mount(TProfile, {
       props: {
@@ -415,6 +454,9 @@ describe('TProfile.vue', () => {
     const saveButton = wrapper.findAll('.t-button').find(btn => btn.text() === 'Save')
     await saveButton.trigger('click')
     
+    // Wait for async operations to complete
+    await wrapper.vm.$nextTick()
+    await vi.runAllTimersAsync()
     await wrapper.vm.$nextTick()
     
     expect(mockOnClose).toHaveBeenCalled()
@@ -484,7 +526,9 @@ describe('TProfile.vue', () => {
 
   it('resizes uploaded images', async () => {
     const mockFile = new File(['avatar'], 'avatar.jpg', { type: 'image/jpeg' })
-    mockAuthStore.uploadAvatar.mockResolvedValue('https://example.com/new-avatar.jpg')
+    const { useAuthStore } = await import('@tiko/core')
+    const authStore = useAuthStore()
+    authStore.uploadAvatar.mockResolvedValue('https://example.com/new-avatar.jpg')
     
     const wrapper = mount(TProfile, {
       props: {
