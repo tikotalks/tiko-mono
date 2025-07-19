@@ -72,6 +72,7 @@ This document contains the comprehensive coding standards and conventions for th
 - **ALL components must use `bemm` package** for CSS class generation
 - Follow BEM naming: Block__Element--Modifier
 - Use `useBemm()` composable in all Vue components
+- Import from 'bemm' package, not '@tiko/ui'
 
 ```vue
 <template>
@@ -87,6 +88,12 @@ import { useBemm } from 'bemm'
 const bemm = useBemm('my-component')
 </script>
 ```
+
+This generates classes like:
+- `my-component` (block)
+- `my-component__button` (element)
+- `my-component__button--primary` (modifier)
+- `my-component__button--active` (conditional modifier)
 
 ### 5. TypeScript Standards
 - **ALL component props must be defined in `.model.ts` files**
@@ -125,21 +132,57 @@ const props = withDefaults(defineProps<TButtonProps>(), {
 </script>
 ```
 
-### 6. Internationalization (i18n)
-- **NO hardcoded text strings in components**
-- Create proper i18n system for all user-facing text
-- Use translation keys for all text content
-- Text should be passed via slots or translation functions
+### 6. Internationalization (i18n) - MANDATORY
+- **ABSOLUTELY NO hardcoded text strings anywhere** - Not in components, not in apps, not in error messages
+- **EVERY string must be translatable** - No exceptions
+- **Update translation files when adding ANY text**
+- Use translation keys for ALL text content including:
+  - Button labels
+  - Error messages
+  - Success messages
+  - Tooltips
+  - Placeholders
+  - Validation messages
+  - Toast notifications
+  - Dialog titles
+  - Any user-facing text
 
 ```vue
-<!-- ❌ Bad -->
+<!-- ❌ Bad - NEVER do this -->
 <TButton>Save Changes</TButton>
+<div>Loading...</div>
+<span>{{ error ? 'An error occurred' : 'Success!' }}</span>
 
-<!-- ✅ Good -->
+toastService.show({ message: 'Settings saved' })
+throw new Error('Invalid input')
+
+<!-- ✅ Good - ALWAYS do this -->
 <TButton>{{ t('common.save') }}</TButton>
-<!-- or -->
-<TButton><slot /></TButton>
+<div>{{ t('common.loading') }}</div>
+<span>{{ error ? t('errors.generic') : t('common.success') }}</span>
+
+toastService.show({ message: t('settings.saved') })
+throw new Error(t('validation.invalidInput'))
 ```
+
+```typescript
+// ❌ Bad - Hardcoded strings
+const errorMessage = 'Please enter a valid email'
+const successText = 'Your changes have been saved'
+
+// ✅ Good - Using i18n
+const errorMessage = t('validation.email.invalid')
+const successText = t('common.changesSaved')
+
+// ✅ Good - Dynamic translations with parameters
+const welcomeMessage = t('user.welcome', { name: userName })
+// Translation: "Welcome, {name}!"
+```
+
+**When adding ANY new text:**
+1. Add the translation key to the language files
+2. Use the translation key in your component
+3. Never use plain strings as placeholders - even temporary ones
 
 ### 7. Component Composition
 - **Keep components small and focused** - Single responsibility principle
@@ -184,7 +227,24 @@ export function formatDuration(seconds: number, format: 'short' | 'long' = 'shor
 - **Make functions pure** when possible
 - **Add comprehensive JSDoc** to all utility functions
 
-### 10. EventBus for Cross-Component Communication
+### 10. Icons
+- **Always use Icons from the enum/const import** `import { Icons } from 'open-icon'`
+- **Never hardcode icon names** - Always use the Icons enum
+- Icons should be used consistently across all components
+
+```typescript
+// ✅ Good
+import { Icons } from 'open-icon'
+
+<TIcon :name="Icons.SETTINGS" />
+<TButton :icon="Icons.SAVE" />
+
+// ❌ Bad
+<TIcon name="settings" />
+<TButton icon="save" />
+```
+
+### 11. EventBus for Cross-Component Communication
 - **Use `useEventBus` composable** for component communication
 - **Define typed event interfaces** extending `TikoEvents`
 - **Clean up event listeners** in component unmount
@@ -230,7 +290,7 @@ Available TikoEvents include:
 - App State: `app:ready`, `app:error`, `app:focus`, `app:blur`
 - Parent Mode: `parent:unlocked`, `parent:locked`, `parent:permission-denied`
 
-### 11. Parent Mode System (Global Feature)
+### 12. Parent Mode System (Global Feature)
 - **Use `useParentMode` composable** for secure parental controls across all apps
 - **PIN-protected access** to administrative features (4-digit numeric PIN)
 - **Session management** with configurable timeouts and auto-lock
@@ -271,6 +331,188 @@ Security Features:
 - No plaintext PIN storage or logging
 - Rate limiting for PIN attempts
 - Cross-app permission system
+
+### 13. TypeScript Standards - NO ANY!
+- **NEVER use `any` type** - Always use proper types
+- **Use `unknown` when type is truly unknown** and add type guards
+- **Define interfaces for all data structures**
+- **Use type inference where possible** but be explicit with function returns
+
+```typescript
+// ❌ Bad
+const handleData = (data: any) => {
+  return data.value
+}
+
+// ✅ Good
+interface DataType {
+  value: string
+  id: number
+}
+
+const handleData = (data: DataType): string => {
+  return data.value
+}
+
+// ✅ Good - unknown with type guard
+const processUnknown = (data: unknown): string => {
+  if (typeof data === 'object' && data !== null && 'value' in data) {
+    return (data as { value: string }).value
+  }
+  throw new Error('Invalid data structure')
+}
+```
+
+### 14. Testing Standards
+- **Use stubs and mocks** instead of real implementations
+- **Test behavior, not implementation**
+- **Each component should have comprehensive tests**
+- **Update tests when modifying components**
+
+```typescript
+// ✅ Good - Using mocks
+import { vi } from 'vitest'
+
+const mockAuthService = {
+  signIn: vi.fn().mockResolvedValue({ success: true }),
+  signOut: vi.fn().mockResolvedValue({ success: true }),
+  getSession: vi.fn().mockResolvedValue(null)
+}
+
+// ❌ Bad - Using real services in tests
+import { authService } from '@tiko/core' // Don't use real services!
+```
+
+### 15. Service Usage via Injection
+- **PopupService and ToastService** are provided by TFramework
+- **Use inject() to access services** in child components
+- **Never import services directly** when inside TFramework
+
+```typescript
+// ✅ Good - Using injected services
+import { inject } from 'vue'
+import type { PopupService, ToastService } from '@tiko/ui'
+
+const popupService = inject<PopupService>('popupService')
+const toastService = inject<ToastService>('toastService')
+
+// Show a toast
+toastService?.show({
+  message: 'Settings saved',
+  type: 'success',
+  duration: 3000
+})
+
+// Open a popup
+popupService?.open({
+  component: MyComponent,
+  title: 'Edit Settings',
+  props: { /* component props */ }
+})
+```
+
+### 16. Component Documentation
+- **Every component must have proper documentation**
+- **Document all props, slots, and events**
+- **Include usage examples**
+- **Keep documentation up-to-date when making changes**
+
+```vue
+<script setup lang="ts">
+/**
+ * TButton Component
+ * 
+ * A versatile button component with multiple styles and states
+ * 
+ * @example
+ * <TButton type="primary" @click="handleClick">
+ *   Save Changes
+ * </TButton>
+ * 
+ * @example With icon
+ * <TButton :icon="Icons.SAVE" :loading="isSaving">
+ *   Save
+ * </TButton>
+ */
+
+// Component implementation...
+</script>
+```
+
+### 17. Build and Test Commands
+Always run these commands before pushing code:
+
+```bash
+# Run tests (from monorepo root)
+npm test
+
+# Run tests for specific package
+npm test --workspace=packages/ui
+npm test --workspace=packages/core
+
+# Run builds
+npm run build --workspace=packages/ui
+npm run build --workspace=packages/core
+npm run build --workspace=apps/radio
+
+# Run linting (if configured)
+npm run lint --workspace=packages/ui
+
+# Run type checking
+npm run typecheck --workspace=packages/ui
+
+# Build all packages
+npm run build:all
+```
+
+**IMPORTANT**: Before pushing any changes:
+1. Run tests to ensure nothing is broken
+2. Run builds to ensure TypeScript compiles
+3. Fix any type errors or test failures
+4. Update documentation if you changed component behavior
+5. Update tests if you changed component logic
+
+### 18. Fix Tests and Builds - DO NOT STOP
+**When asked to "fix the tests and builds", this means:**
+- **DO NOT STOP until ALL tests pass**
+- **DO NOT STOP until ALL builds succeed**
+- **DO NOT give up or say "I've made progress but..."**
+- **KEEP FIXING until everything works**
+
+This includes:
+1. Run the tests/builds
+2. If they fail, fix the errors
+3. Run again
+4. If they still fail, fix more errors
+5. Repeat until EVERYTHING passes
+6. No partial fixes - complete the job
+
+```bash
+# Example workflow - DO NOT STOP until all succeed:
+npm test --workspace=packages/ui  # Fix any failures
+npm run build --workspace=packages/ui  # Fix any errors
+npm test --workspace=packages/core  # Fix any failures
+npm run build --workspace=packages/core  # Fix any errors
+
+# If any command fails, fix it and run ALL commands again
+# Continue until every single command succeeds
+```
+
+When fixing tests:
+- Update mock data if interfaces changed
+- Fix type errors in test files
+- Update expectations if behavior changed
+- Add missing test cases
+- Remove obsolete tests
+
+When fixing builds:
+- Resolve all TypeScript errors
+- Fix import issues
+- Update type definitions
+- Ensure all dependencies are installed
+- Fix any configuration issues
+
+**The job is NOT done until you can run all test and build commands successfully with zero errors.**
 
 ## File Structure Standards
 
