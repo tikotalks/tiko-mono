@@ -44,12 +44,17 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = result.user
         
         // Load user settings from metadata if available
-        if (result.user.user_metadata?.settings) {
-          userSettings.value = {
-            ...result.user.user_metadata.settings,
-            ...userSettings.value // localStorage takes precedence
+        try {
+          if (result.user.user_metadata?.settings) {
+            userSettings.value = {
+              ...result.user.user_metadata.settings,
+              ...userSettings.value // localStorage takes precedence
+            }
+            saveSettingsToStorage()
           }
-          saveSettingsToStorage()
+        } catch (err) {
+          console.error('[Auth Store] Error loading user settings:', err)
+          // Continue without settings - don't break auth flow
         }
       }
       if (result.session) session.value = result.session
@@ -134,12 +139,17 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = result.user
         
         // Load user settings from metadata if available
-        if (result.user.user_metadata?.settings) {
-          userSettings.value = {
-            ...result.user.user_metadata.settings,
-            ...userSettings.value // localStorage takes precedence
+        try {
+          if (result.user.user_metadata?.settings) {
+            userSettings.value = {
+              ...result.user.user_metadata.settings,
+              ...userSettings.value // localStorage takes precedence
+            }
+            saveSettingsToStorage()
           }
-          saveSettingsToStorage()
+        } catch (err) {
+          console.error('[Auth Store] Error loading user settings:', err)
+          // Continue without settings - don't break auth flow
         }
       }
       if (result.session) session.value = result.session
@@ -209,7 +219,6 @@ export const useAuthStore = defineStore('auth', () => {
       const stored = localStorage.getItem(SETTINGS_STORAGE_KEY)
       if (stored) {
         const parsed = JSON.parse(stored)
-        console.log('[Auth Store] Loaded settings from localStorage:', parsed)
         userSettings.value = parsed
       }
     } catch (err) {
@@ -221,7 +230,6 @@ export const useAuthStore = defineStore('auth', () => {
   const saveSettingsToStorage = () => {
     try {
       localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(userSettings.value))
-      console.log('[Auth Store] Saved settings to localStorage:', userSettings.value)
     } catch (err) {
       console.error('[Auth Store] Failed to save settings to localStorage:', err)
     }
@@ -232,7 +240,6 @@ export const useAuthStore = defineStore('auth', () => {
     if (!user.value) return
     
     try {
-      console.log('[Auth Store] Syncing settings to API:', userSettings.value)
       await updateUserMetadata({ settings: userSettings.value })
     } catch (err) {
       console.error('[Auth Store] Failed to sync settings to API:', err)
@@ -241,7 +248,6 @@ export const useAuthStore = defineStore('auth', () => {
   
   // Update a specific setting
   const updateSetting = async (key: keyof UserSettings, value: any) => {
-    console.log(`[Auth Store] Updating setting ${key}:`, value)
     
     // Update the reactive state
     userSettings.value = {
@@ -260,7 +266,6 @@ export const useAuthStore = defineStore('auth', () => {
   
   // Update multiple settings at once
   const updateSettings = async (settings: Partial<UserSettings>) => {
-    console.log('[Auth Store] Updating multiple settings:', settings)
     
     // Update the reactive state
     userSettings.value = {
@@ -279,7 +284,6 @@ export const useAuthStore = defineStore('auth', () => {
   
   const initializeFromStorage = async () => {
     try {
-      console.log('[Auth Store] initializeFromStorage called')
       
       // First, load settings from localStorage for immediate use
       loadSettingsFromStorage()
@@ -287,11 +291,7 @@ export const useAuthStore = defineStore('auth', () => {
       // Then check for authenticated session
       const currentSession = await authService.getSession()
       
-      console.log('[Auth Store] getSession result:', {
-        hasSession: !!currentSession,
-        userId: currentSession?.user?.id,
-        email: currentSession?.user?.email
-      })
+      // Session loaded successfully
 
       if (currentSession) {
         user.value = currentSession.user
@@ -301,7 +301,6 @@ export const useAuthStore = defineStore('auth', () => {
         // localStorage takes precedence as it may have more recent changes
         if (currentSession.user?.user_metadata?.settings) {
           const apiSettings = currentSession.user.user_metadata.settings
-          console.log('[Auth Store] Found settings in user metadata:', apiSettings)
           
           // Merge API settings with localStorage settings
           // localStorage values take precedence
@@ -315,7 +314,6 @@ export const useAuthStore = defineStore('auth', () => {
           
           // If settings differ from API, sync back to API
           if (JSON.stringify(apiSettings) !== JSON.stringify(userSettings.value)) {
-            console.log('[Auth Store] Settings differ from API, syncing...')
             await syncSettingsToAPI()
           }
         }
