@@ -60,6 +60,7 @@ import { ref, computed, inject } from 'vue'
 import { useBemm } from 'bemm'
 import { useI18n } from '../../composables/useI18n'
 import { useAuthStore } from '@tiko/core'
+import { storeToRefs } from 'pinia'
 import TButton from '../TButton/TButton.vue'
 import TIcon from '../TIcon/TIcon.vue'
 import TChooseLanguage from '../TChooseLanguage/TChooseLanguage.vue'
@@ -71,17 +72,18 @@ const props = defineProps<TUserSettingsProps>()
 const emit = defineEmits<TUserSettingsEmits>()
 
 const bemm = useBemm('user-settings')
-const { t, keys, locale, setLocale, availableLocales } = useI18n()
+const { t, keys, locale, availableLocales } = useI18n()
 const authStore = useAuthStore()
+const { userSettings } = storeToRefs(authStore)
 
 // Inject services
 const popupService = inject<PopupService>('popupService')
 const toastService = inject<ToastService>('toastService')
 
-// Form data
+// Form data - initialize from store settings
 const formData = ref<UserSettings>({
-  language: props.user.user_metadata?.settings?.language || locale.value,
-  theme: props.user.user_metadata?.settings?.theme || 'auto'
+  language: userSettings.value.language || locale.value,
+  theme: userSettings.value.theme || 'auto'
 })
 
 const isSaving = ref(false)
@@ -121,37 +123,15 @@ const handleSave = async () => {
   isSaving.value = true
 
   try {
-    // Update user metadata
-    await authStore.updateUserMetadata({
-      ...props.user.user_metadata,
-      settings: {
-        ...props.user.user_metadata?.settings,
-        ...formData.value
-      }
+    // Update settings through the auth store
+    // This will automatically:
+    // 1. Update the reactive state
+    // 2. Save to localStorage
+    // 3. Sync to API
+    await authStore.updateSettings({
+      language: formData.value.language,
+      theme: formData.value.theme
     })
-
-    // Apply language change immediately
-    if (formData.value.language !== locale.value) {
-      setLocale(formData.value.language as Locale)
-      // Don't need to manually update localStorage, setLocale handles it
-    }
-
-    // Apply theme change
-    if (formData.value.theme !== props.user.user_metadata?.settings?.theme) {
-      // Apply theme immediately
-      const themeValue = formData.value.theme
-      document.documentElement.setAttribute('data-theme', themeValue)
-      localStorage.setItem('tiko-theme', themeValue)
-      
-      // Also update the CSS custom property for color mode
-      if (themeValue === 'dark') {
-        document.documentElement.style.setProperty('color-scheme', 'dark')
-      } else if (themeValue === 'light') {
-        document.documentElement.style.setProperty('color-scheme', 'light')
-      } else {
-        document.documentElement.style.removeProperty('color-scheme')
-      }
-    }
 
     // Show success message
     toastService?.show({

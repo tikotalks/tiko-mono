@@ -192,7 +192,7 @@ const props = defineProps<Props>()
 
 const bemm = useBemm('settings')
 const authStore = useAuthStore()
-const { user } = storeToRefs(authStore)
+const { user, userSettings, currentTheme, currentLanguage } = storeToRefs(authStore)
 const { t, locale, setLocale, availableLocales, localeNames } = useI18n()
 
 // Theme settings
@@ -201,15 +201,11 @@ const themes = computed(() => [
   { id: 'dark', name: t('settings.darkTheme') },
   { id: 'auto', name: t('settings.autoTheme') }
 ])
-const currentTheme = useLocalStorage('tiko-theme', 'auto')
 
-// Voice settings
-const voiceEnabled = useLocalStorage('tiko-voice-enabled', true)
-const selectedVoice = useLocalStorage('tiko-voice', '')
+// Voice settings - get from user settings
+const voiceEnabled = ref(userSettings.value.voiceEnabled ?? true)
+const selectedVoice = ref(userSettings.value.voice ?? '')
 const availableVoices = ref<SpeechSynthesisVoice[]>([])
-
-// Language settings - use the locale from useI18n composable
-const currentLanguage = locale
 const languageGroups = getLanguageGroups()
 
 // Current language group state
@@ -251,17 +247,13 @@ const handleClose = () => {
 
 const handleSave = async () => {
   try {
-    // Save settings to Supabase user metadata
-    const settingsToSave = {
+    // Save all settings through the auth store
+    await authStore.updateSettings({
       theme: currentTheme.value,
       language: currentLanguage.value,
       voiceEnabled: voiceEnabled.value,
       voice: selectedVoice.value,
       ...pendingChanges.value
-    }
-
-    await authStore.updateUserMetadata({
-      settings: settingsToSave
     })
 
     // Apply all pending changes
@@ -283,9 +275,9 @@ const handleSave = async () => {
   }
 }
 
-const handleThemeChange = (theme: string) => {
-  currentTheme.value = theme
-  document.documentElement.setAttribute('data-theme', theme)
+const handleThemeChange = async (theme: string) => {
+  // Update through auth store for immediate effect
+  await authStore.updateTheme(theme as 'light' | 'dark' | 'auto')
   pendingChanges.value.theme = theme
 }
 
@@ -300,7 +292,7 @@ const handleVoiceChange = (event: Event) => {
   pendingChanges.value.voice = target.value
 }
 
-const handleBaseLanguageChange = (event: Event) => {
+const handleBaseLanguageChange = async (event: Event) => {
   const target = event.target as HTMLSelectElement
   const baseCode = target.value
   selectedBaseLanguage.value = baseCode
@@ -309,16 +301,16 @@ const handleBaseLanguageChange = (event: Event) => {
   const group = languageGroups.find(g => g.baseCode === baseCode)
   if (group && group.variants.length > 0) {
     const firstVariant = group.variants[0].code
-    // Update i18n locale immediately - this also updates currentLanguage
-    setLocale(firstVariant as Locale)
+    // Update through auth store for immediate effect
+    await authStore.updateLanguage(firstVariant)
     pendingChanges.value.language = firstVariant
   }
 }
 
-const handleLanguageVariantChange = (event: Event) => {
+const handleLanguageVariantChange = async (event: Event) => {
   const target = event.target as HTMLSelectElement
-  // Update i18n locale immediately - this also updates currentLanguage
-  setLocale(target.value as Locale)
+  // Update through auth store for immediate effect
+  await authStore.updateLanguage(target.value)
   pendingChanges.value.language = target.value
 }
 
@@ -355,36 +347,10 @@ onMounted(() => {
   }
   loadVoices()
 
-  // Load settings from user metadata
-  if (user.value?.user_metadata?.settings) {
-    const savedSettings = user.value.user_metadata.settings
-
-    // Apply saved settings
-    if (savedSettings.theme) {
-      currentTheme.value = savedSettings.theme
-      document.documentElement.setAttribute('data-theme', savedSettings.theme)
-    }
-
-    if (savedSettings.language) {
-      currentLanguage.value = savedSettings.language
-      setLocale(savedSettings.language as Locale)
-      // Re-initialize language selection with saved language
-      initializeLanguageSelection()
-    }
-
-    if (savedSettings.voiceEnabled !== undefined) {
-      voiceEnabled.value = savedSettings.voiceEnabled
-    }
-
-    if (savedSettings.voice) {
-      selectedVoice.value = savedSettings.voice
-    }
-  } else {
-    // Set initial theme from localStorage as fallback
-    if (currentTheme.value) {
-      document.documentElement.setAttribute('data-theme', currentTheme.value)
-    }
-  }
+  // Settings are already loaded from the auth store
+  // Just sync local refs with current store values
+  voiceEnabled.value = userSettings.value.voiceEnabled ?? true
+  selectedVoice.value = userSettings.value.voice ?? ''
 })
 </script>
 
