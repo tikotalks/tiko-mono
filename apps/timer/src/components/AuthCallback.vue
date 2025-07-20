@@ -11,29 +11,56 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@tiko/core'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const statusMessage = ref('Processing authentication...')
 
 onMounted(async () => {
   try {
-    console.log('[AuthCallback] Starting OAuth callback processing...')
+    console.log('[AuthCallback] Starting authentication callback processing...')
     console.log('[AuthCallback] Current URL:', window.location.href)
+    console.log('[AuthCallback] URL hash:', window.location.hash)
     console.log('[AuthCallback] URL params:', window.location.search)
     
     statusMessage.value = 'Processing authentication...'
     
-    // First ensure the auth listener is set up
-    if (!authStore.session) {
-      console.log('[AuthCallback] No session found, setting up auth listener...')
-      authStore.setupAuthListener()
+    // Check if we have magic link tokens in the URL hash or route hash
+    const hash = route.hash || window.location.hash
+    const hashParams = new URLSearchParams(hash.substring(1))
+    const accessToken = hashParams.get('access_token')
+    const refreshToken = hashParams.get('refresh_token')
+    
+    if (accessToken && refreshToken) {
+      console.log('[AuthCallback] Magic link tokens found in URL')
+      
+      // Process the magic link
+      const result = await authStore.handleMagicLinkCallback()
+      
+      if (result.success) {
+        console.log('[AuthCallback] Magic link processed successfully!')
+        statusMessage.value = 'Authentication successful! Redirecting...'
+        setTimeout(() => {
+          router.push('/')
+        }, 1000)
+        return
+      } else {
+        console.error('[AuthCallback] Magic link processing failed:', result.error)
+        statusMessage.value = 'Authentication failed. Redirecting to login...'
+        setTimeout(() => {
+          router.push('/')
+        }, 2000)
+        return
+      }
     }
     
-    // Give Supabase time to process the OAuth callback from the URL
-    // The detectSessionInUrl: true should handle this, but we need to wait for it
+    // Otherwise, check for OAuth callback or existing session
+    console.log('[AuthCallback] No magic link tokens, checking for session...')
+    
+    // Give auth time to process any OAuth callbacks
     let attempts = 0
     const maxAttempts = 10
     const checkInterval = 500
@@ -56,11 +83,6 @@ onMounted(async () => {
       
       if (attempts >= maxAttempts) {
         console.warn('[AuthCallback] Max attempts reached, no session found')
-        console.log('[AuthCallback] Auth state:', {
-          isAuthenticated: authStore.isAuthenticated,
-          hasUser: !!authStore.user,
-          hasSession: !!authStore.session
-        })
         statusMessage.value = 'Authentication failed. Redirecting to login...'
         setTimeout(() => {
           router.push('/')

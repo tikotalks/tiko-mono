@@ -20,4 +20,19 @@ const router = createRouter({
   routes
 })
 
+// Handle magic link tokens in URL hash
+router.beforeEach((to, from, next) => {
+  // Check if we have magic link tokens in the hash
+  if (window.location.hash && window.location.hash.includes('access_token')) {
+    console.log('[Router] Magic link detected, redirecting to auth callback')
+    // Preserve the hash when redirecting
+    next({ 
+      path: '/auth/callback',
+      hash: window.location.hash
+    })
+  } else {
+    next()
+  }
+})
+
 export default router

@@ -207,6 +207,13 @@ export interface AuthService {
   getSession(): Promise<AuthSession | null>
   
   /**
+   * Handle magic link callback from URL
+   * 
+   * @returns {Promise<AuthResult>} Session if tokens are valid
+   */
+  handleMagicLinkCallback(): Promise<AuthResult>
+  
+  /**
    * Refresh an expired session
    * 
    * @param {string} refreshToken - The refresh token from the expired session
@@ -402,6 +409,7 @@ export class ManualAuthService implements AuthService {
 
   async getSession(): Promise<AuthSession | null> {
     try {
+      // Check localStorage for existing session
       const sessionStr = localStorage.getItem('tiko_auth_session')
       if (!sessionStr) return null
 
@@ -426,6 +434,40 @@ export class ManualAuthService implements AuthService {
     } catch (error) {
       console.error('Error getting session:', error)
       return null
+    }
+  }
+  
+  async handleMagicLinkCallback(): Promise<AuthResult> {
+    try {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1))
+      const accessToken = hashParams.get('access_token')
+      const refreshToken = hashParams.get('refresh_token')
+      const expiresIn = hashParams.get('expires_in')
+      
+      if (!accessToken || !refreshToken) {
+        return { success: false, error: 'No tokens found in URL' }
+      }
+      
+      // Decode the JWT to get user info
+      const user = this.decodeJWT(accessToken)
+      
+      // Create session object
+      const session: AuthSession = {
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        expires_at: expiresIn ? Date.now() / 1000 + parseInt(expiresIn) : Date.now() / 1000 + 3600,
+        user
+      }
+      
+      // Store the session
+      this.storeSession(session)
+      
+      // Clear the URL hash to prevent reprocessing
+      window.history.replaceState(null, '', window.location.pathname + window.location.search)
+      
+      return { success: true, session, user }
+    } catch (error) {
+      return { success: false, error: 'Failed to process magic link' }
     }
   }
 

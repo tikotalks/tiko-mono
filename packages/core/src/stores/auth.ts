@@ -111,6 +111,10 @@ export const useAuthStore = defineStore('auth', () => {
       const result = await authService.signInWithMagicLink(email, fullName)
 
       if (!result.success) {
+        // Handle rate limiting with a user-friendly message
+        if (result.error?.includes('rate_limit') || result.error?.includes('24 seconds')) {
+          throw new Error('Too many attempts. Please wait a moment before trying again.')
+        }
         throw new Error(result.error || 'Failed to send verification code')
       }
 
@@ -368,8 +372,36 @@ export const useAuthStore = defineStore('auth', () => {
   watch(userSettings, () => {
     // This is handled in updateSetting/updateSettings methods
     // This watcher is just for debugging
-    console.log('[Auth Store] Settings changed:', userSettings.value)
   }, { deep: true })
+  
+  const handleMagicLinkCallback = async () => {
+    try {
+      const result = await authService.handleMagicLinkCallback()
+      
+      if (result.success && result.user && result.session) {
+        user.value = result.user
+        session.value = result.session
+        
+        // Load user settings if available
+        try {
+          if (result.user.user_metadata?.settings) {
+            userSettings.value = {
+              ...result.user.user_metadata.settings,
+              ...userSettings.value // localStorage takes precedence
+            }
+            saveSettingsToStorage()
+          }
+        } catch (err) {
+          console.error('[Auth Store] Error loading user settings:', err)
+        }
+      }
+      
+      return result
+    } catch (err) {
+      console.error('[Auth Store] Error handling magic link:', err)
+      return { success: false, error: 'Failed to process magic link' }
+    }
+  }
 
   return {
     // State
@@ -398,6 +430,7 @@ export const useAuthStore = defineStore('auth', () => {
     updateLanguage,
     updateTheme,
     updateSetting,
-    updateSettings
+    updateSettings,
+    handleMagicLinkCallback
   }
 })
