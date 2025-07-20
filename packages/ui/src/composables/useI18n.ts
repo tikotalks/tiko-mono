@@ -14,6 +14,7 @@ const [globalLocale, setGlobalLocale] = useLocalStorage<Locale>('tiko-language',
 
 // Log initial locale on load
 console.log('[useI18n] Initial locale from localStorage:', globalLocale.value)
+console.log('[useI18n] Raw localStorage value:', localStorage.getItem('tiko-language'))
 
 // Lazy load translations only when needed
 let _translations: ReturnType<typeof getTranslations> | null = null
@@ -107,6 +108,7 @@ export function useI18n() {
     console.log('[useI18n] Setting locale to:', newLocale)
     setGlobalLocale(newLocale)
     console.log('[useI18n] Locale set, localStorage should now have:', newLocale)
+    console.log('[useI18n] Actual localStorage value after set:', localStorage.getItem('tiko-language'))
   }
 
   /**

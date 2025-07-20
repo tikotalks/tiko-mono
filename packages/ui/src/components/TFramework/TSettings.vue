@@ -193,7 +193,7 @@ const props = defineProps<Props>()
 const bemm = useBemm('settings')
 const authStore = useAuthStore()
 const { user } = storeToRefs(authStore)
-const { t, setLocale, availableLocales, localeNames } = useI18n()
+const { t, locale, setLocale, availableLocales, localeNames } = useI18n()
 
 // Theme settings
 const themes = computed(() => [
@@ -208,8 +208,8 @@ const voiceEnabled = useLocalStorage('tiko-voice-enabled', true)
 const selectedVoice = useLocalStorage('tiko-voice', '')
 const availableVoices = ref<SpeechSynthesisVoice[]>([])
 
-// Language settings
-const currentLanguage = useLocalStorage('tiko-language', 'en-GB')
+// Language settings - use the locale from useI18n composable
+const currentLanguage = locale
 const languageGroups = getLanguageGroups()
 
 // Current language group state
@@ -226,7 +226,7 @@ const initializeLanguageSelection = () => {
   } else {
     // Fallback to English if current language not found
     selectedBaseLanguage.value = 'en'
-    currentLanguage.value = 'en-GB'
+    setLocale('en-GB' as Locale)
   }
 }
 
@@ -309,19 +309,17 @@ const handleBaseLanguageChange = (event: Event) => {
   const group = languageGroups.find(g => g.baseCode === baseCode)
   if (group && group.variants.length > 0) {
     const firstVariant = group.variants[0].code
-    currentLanguage.value = firstVariant
-    pendingChanges.value.language = firstVariant
-    // Update i18n locale immediately
+    // Update i18n locale immediately - this also updates currentLanguage
     setLocale(firstVariant as Locale)
+    pendingChanges.value.language = firstVariant
   }
 }
 
 const handleLanguageVariantChange = (event: Event) => {
   const target = event.target as HTMLSelectElement
-  currentLanguage.value = target.value
-  pendingChanges.value.language = target.value
-  // Update i18n locale immediately
+  // Update i18n locale immediately - this also updates currentLanguage
   setLocale(target.value as Locale)
+  pendingChanges.value.language = target.value
 }
 
 const handleChangePassword = () => {
