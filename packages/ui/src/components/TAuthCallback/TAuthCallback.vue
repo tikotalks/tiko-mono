@@ -1,8 +1,8 @@
 <template>
-  <div class="auth-callback">
-    <div class="auth-callback__container">
-      <div class="auth-callback__loading">
-        <div class="auth-callback__spinner"></div>
+  <div :class="bemm()">
+    <div :class="bemm('container')">
+      <div :class="bemm('loading')">
+        <div :class="bemm('spinner')"></div>
         <p>{{ statusMessage }}</p>
       </div>
     </div>
@@ -13,7 +13,9 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@tiko/core'
+import { useBemm } from 'bemm'
 
+const bemm = useBemm('t-auth-callback')
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
@@ -93,20 +95,20 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
-.auth-callback {
+.t-auth-callback {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
   
   &__container {
-    background: white;
-    border-radius: 16px;
-    padding: 2rem;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    background: var(--color-background);
+    border-radius: var(--border-radius-lg);
+    padding: var(--space-lg);
+    box-shadow: 0 1.25em 2.5em rgba(0, 0, 0, 0.1);
     text-align: center;
-    max-width: 400px;
+    max-width: 25em;
     width: 90%;
   }
   
@@ -114,20 +116,20 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: var(--space);
     
     p {
       margin: 0;
-      font-size: 1.1rem;
-      color: #666;
+      font-size: 1.1em;
+      color: var(--color-foreground);
     }
   }
   
   &__spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #667eea;
+    width: 2.5em;
+    height: 2.5em;
+    border: 0.25em solid var(--color-accent);
+    border-top: 0.25em solid var(--color-primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }

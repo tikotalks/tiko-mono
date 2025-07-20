@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createAppRouter } from '@tiko/ui'
 import HomeView from '../views/HomeView.vue'
 
 const routes = [
@@ -40,8 +40,7 @@ const routes = [
   }
 ]
 
-const router = createRouter({
-  history: createWebHistory('/'),
+const router = createAppRouter({
   routes
 })
 

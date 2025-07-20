@@ -1,23 +1,14 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createAppRouter } from '@tiko/ui'
 import CardsView from '../views/CardsView.vue'
-import AuthCallback from '../components/AuthCallback.vue'
 
-const routes = [
-  {
-    path: '/',
-    name: 'Cards',
-    component: CardsView
-  },
-  {
-    path: '/auth/callback',
-    name: 'AuthCallback',
-    component: AuthCallback
-  }
-]
-
-const router = createRouter({
-  history: createWebHistory(),
-  routes
+const router = createAppRouter({
+  routes: [
+    {
+      path: '/',
+      name: 'Cards',
+      component: CardsView
+    }
+  ]
 })
 
 export default router

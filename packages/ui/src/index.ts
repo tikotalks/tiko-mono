@@ -20,6 +20,7 @@ export * from './components/TSpinner'
 export * from './components/TAlert'
 export * from './components/TChooseLanguage'
 export * from './components/TUserSettings'
+export * from './components/TAuthCallback'
 
 export { default as TInputText } from './components/TForm/inputs/TInputText/TInputText.vue';
 export { default as TInputNumber } from './components/TForm/inputs/TInputNumber/TInputNumber.vue';
@@ -78,3 +79,7 @@ export * from './types'
 // Re-export icon types and utilities for documentation
 export type { Icons } from 'open-icon'
 export { Icons as IconList } from 'open-icon'
+
+// Router utilities
+export { createAppRouter } from './router/createAppRouter'
+export type { AppRouterOptions } from './router/createAppRouter'
