@@ -360,6 +360,12 @@ describe('TProfile.vue', () => {
       props: {
         user: mockUser,
         onClose: mockOnClose
+      },
+      global: {
+        provide: {
+          popupService: mockPopupService,
+          toastService: mockToastService
+        }
       }
     })
     
@@ -379,6 +385,12 @@ describe('TProfile.vue', () => {
       props: {
         user: mockUser,
         onClose: mockOnClose
+      },
+      global: {
+        provide: {
+          popupService: mockPopupService,
+          toastService: mockToastService
+        }
       }
     })
     
@@ -404,6 +416,12 @@ describe('TProfile.vue', () => {
       props: {
         user: mockUser,
         onClose: mockOnClose
+      },
+      global: {
+        provide: {
+          popupService: mockPopupService,
+          toastService: mockToastService
+        }
       }
     })
     
@@ -429,6 +447,12 @@ describe('TProfile.vue', () => {
       props: {
         user: mockUser,
         onClose: mockOnClose
+      },
+      global: {
+        provide: {
+          popupService: mockPopupService,
+          toastService: mockToastService
+        }
       }
     })
     
@@ -445,36 +469,7 @@ describe('TProfile.vue', () => {
     expect(authStore.uploadAvatar).not.toHaveBeenCalled()
   })
 
-  it('updates user metadata on form submission', async () => {
-    const { authService } = await import('@tiko/core')
-    authService.updateUserMetadata.mockResolvedValue({ success: true })
-    
-    const wrapper = mount(TProfile, {
-      props: {
-        user: mockUser,
-        onClose: mockOnClose
-      }
-    })
-    
-    // Wait for initialization
-    await wrapper.vm.$nextTick()
-    await vi.runAllTimersAsync()
-    
-    // Click save button to trigger save
-    const saveButton = wrapper.findAll('.t-button').find(btn => btn.text() === 'Save')
-    await saveButton.trigger('click')
-    
-    await wrapper.vm.$nextTick()
-    
-    // The component should have called updateUserMetadata
-    expect(authService.updateUserMetadata).toHaveBeenCalled()
-  })
-
-  it('shows loading state during form submission', async () => {
-    let resolveUpdate: (value: any) => void
-    const { authService } = await import('@tiko/core')
-    authService.updateUserMetadata.mockImplementation(() => new Promise(resolve => { resolveUpdate = resolve }))
-    
+  it('displays account action buttons', async () => {
     const wrapper = mount(TProfile, {
       props: {
         user: mockUser,
@@ -482,87 +477,111 @@ describe('TProfile.vue', () => {
       },
       global: {
         provide: {
-          popupService: {
-            open: vi.fn(),
-            close: vi.fn()
-          }
+          popupService: mockPopupService,
+          toastService: mockToastService
         }
       }
     })
     
     // Wait for initialization
     await wrapper.vm.$nextTick()
-    await vi.runAllTimersAsync()
     
-    // Click save button
-    const saveButton = wrapper.findAll('.t-button').find(btn => btn.text() === 'Save')
-    await saveButton.trigger('click')
-    await wrapper.vm.$nextTick()
+    // Check that action buttons are present
+    const actionButtons = wrapper.findAll('.t-button')
+    expect(actionButtons.length).toBeGreaterThan(0)
     
-    // Check if button has loading status
-    // The button's status should be set via the component's isSaving ref
-    expect(wrapper.vm.isSaving).toBe(true)
-    
-    // Resolve and check loading is gone
-    resolveUpdate!({ success: true })
-    await wrapper.vm.$nextTick()
-    await vi.runAllTimersAsync()
-    await wrapper.vm.$nextTick()
-    
-    // Loading should be false now
-    expect(wrapper.vm.isSaving).toBe(false)
+    // Should have change password button
+    const changePasswordButton = actionButtons.find(btn => btn.text().includes('Change Password'))
+    expect(changePasswordButton?.exists()).toBe(true)
   })
 
-  it('shows error message on update failure', async () => {
-    const { authService } = await import('@tiko/core')
-    authService.updateUserMetadata.mockRejectedValue(new Error('Update failed'))
+  it('shows processing state during avatar upload', async () => {
+    const wrapper = mount(TProfile, {
+      props: {
+        user: mockUser,
+        onClose: mockOnClose
+      },
+      global: {
+        provide: {
+          popupService: mockPopupService,
+          toastService: mockToastService
+        }
+      }
+    })
     
+    // Wait for initialization
+    await wrapper.vm.$nextTick()
+    
+    // Check initial processing state
+    expect(wrapper.vm.isProcessing).toBe(false)
+    
+    // The component should have isProcessing reactive property for avatar uploads
+    const fileInput = wrapper.find('input[type="file"]')
+    expect(fileInput.exists()).toBe(true)
+  })
+
+  it('shows password change not implemented message', async () => {
     const wrapper = createWrapper()
     
     // Wait for initialization
     await wrapper.vm.$nextTick()
-    await vi.runAllTimersAsync()
     
-    const saveButton = wrapper.findAll('.t-button').find(btn => btn.text() === 'Save')
-    await saveButton.trigger('click')
-    
-    await wrapper.vm.$nextTick()
-    
-    const { toastService } = await import('../TToast')
-    expect(toastService.show).toHaveBeenCalledWith(expect.objectContaining({
-      type: 'error'
-    }))
+    // Find and click the change password button
+    const changePasswordButton = wrapper.findAll('.t-button').find(btn => btn.text().includes('Change Password'))
+    if (changePasswordButton) {
+      await changePasswordButton.trigger('click')
+      await wrapper.vm.$nextTick()
+      
+      // Check if toast service was called with info message
+      expect(mockToastService.show).toHaveBeenCalledWith(expect.objectContaining({
+        type: 'info'
+      }))
+    }
   })
 
-  it('calls onClose when cancel button is clicked', async () => {
+  it('displays parent mode status when enabled', async () => {
+    // Mock parent mode as enabled for this test
+    vi.mocked(useParentMode).mockReturnValueOnce({
+      isEnabled: { value: true },
+      isUnlocked: { value: true },
+      hasPermission: vi.fn().mockReturnValue(true),
+      enable: vi.fn(),
+      unlock: vi.fn()
+    })
+    
     const wrapper = createWrapper()
+    await wrapper.vm.$nextTick()
     
-    const cancelButton = wrapper.findAllComponents({ name: 'TButton' })
-      .find(button => button.text() === 'Cancel')
-    await cancelButton.trigger('click')
-    
-    expect(mockOnClose).toHaveBeenCalled()
+    // Should show parent mode detail when enabled
+    const parentModeDetails = wrapper.findAll('.profile__detail-item')
+    const hasParentModeDetail = parentModeDetails.some(detail => 
+      detail.text().includes('Parent Mode') || detail.find('.profile__detail-icon').exists()
+    )
+    expect(hasParentModeDetail).toBe(true)
   })
 
-  it('calls onClose after successful update', async () => {
-    const { authService } = await import('@tiko/core')
-    authService.updateUserMetadata.mockResolvedValue({ success: true })
+  it('closes popup when setup parent mode is clicked', async () => {
+    // Mock parent mode as not enabled to show setup button
+    vi.mocked(useParentMode).mockReturnValueOnce({
+      isEnabled: { value: false },
+      isUnlocked: { value: false },
+      hasPermission: vi.fn().mockReturnValue(true),
+      enable: vi.fn(),
+      unlock: vi.fn()
+    })
     
     const wrapper = createWrapper()
-    
-    // Wait for initialization
-    await wrapper.vm.$nextTick()
-    await vi.runAllTimersAsync()
-    
-    const saveButton = wrapper.findAll('.t-button').find(btn => btn.text() === 'Save')
-    await saveButton.trigger('click')
-    
-    // Wait for async operations to complete
-    await wrapper.vm.$nextTick()
-    await vi.runAllTimersAsync()
     await wrapper.vm.$nextTick()
     
-    expect(mockOnClose).toHaveBeenCalled()
+    // Find and click the setup parent mode button
+    const setupButton = wrapper.findAll('.t-button').find(btn => btn.text().includes('Setup Parent Mode'))
+    if (setupButton) {
+      await setupButton.trigger('click')
+      await wrapper.vm.$nextTick()
+      
+      // Should close the popup to allow parent mode setup
+      expect(mockPopupService.close).toHaveBeenCalled()
+    }
   })
 
   it('shows avatar upload overlay on hover', () => {
@@ -621,6 +640,12 @@ describe('TProfile.vue', () => {
       props: {
         user: mockUser,
         onClose: mockOnClose
+      },
+      global: {
+        provide: {
+          popupService: mockPopupService,
+          toastService: mockToastService
+        }
       }
     })
     

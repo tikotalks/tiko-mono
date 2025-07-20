@@ -382,14 +382,16 @@ describe('TTopBar.vue', () => {
   })
 
   it('shows context menu with user actions', () => {
-    // Mock parent mode to be unlocked so context menu shows
-    vi.mocked(useParentMode).mockReturnValue({
+    // Temporarily override the parent mode mock for this test
+    const originalMock = vi.mocked(useParentMode)
+    const mockReturnValue = {
       isUnlocked: { value: true },
       hasPermission: vi.fn().mockReturnValue(true),
       isEnabled: { value: false },
       enable: vi.fn(),
       unlock: vi.fn()
-    })
+    }
+    originalMock.mockReturnValueOnce(mockReturnValue)
     
     const wrapper = createWrapper({
         title: 'Test App',

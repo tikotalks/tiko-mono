@@ -84,7 +84,7 @@ const defaultTikoSplashConfigs = {
   }
 }
 
-vi.mock('../../constants/defaultTikoSplashConfigs', () => ({
+vi.mock('../../utils/splash-screen-config', () => ({
   defaultTikoSplashConfigs
 }))
 
@@ -181,7 +181,7 @@ describe('TAuthWrapper.vue', () => {
     })
     
     const splashScreen = wrapper.findComponent({ name: 'TSplashScreen' })
-    expect(splashScreen.props('appName')).toBe('Test App') // Uses the props from defaultTikoSplashConfigs
+    expect(splashScreen.props('appName')).toBe('Test App') // Uses the props from defaultTikoSplashConfigs for test-app
     expect(splashScreen.props('showLoading')).toBe(true)
     expect(splashScreen.props('duration')).toBe(0)
     expect(splashScreen.props('enableTransitions')).toBe(true)
@@ -290,7 +290,7 @@ describe('TAuthWrapper.vue', () => {
     
     await wrapper.vm.$nextTick()
     
-    expect(mockAuthStore.signInWithPasswordlessEmail).toHaveBeenCalledWith('test@example.com', undefined)
+    expect(mockAuthStore.signInWithPasswordlessEmail).toHaveBeenCalledWith('test@example.com', undefined, 'Test App')
   })
 
   it('handles login error correctly', async () => {
