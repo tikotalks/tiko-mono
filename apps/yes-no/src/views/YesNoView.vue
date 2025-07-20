@@ -7,7 +7,8 @@
     @settings="handleSettings"
     @logout="handleLogout"
   >
-    <template #top-bar-actions>
+    <template #app-controls>
+      <!-- App-specific controls on the left -->
       <TButton
         icon="edit"
         type="ghost"
@@ -15,6 +16,17 @@
         color="secondary"
         @click="() => { console.log('[YesNoView] Edit button clicked'); showQuestionInput(); }"
         :aria-label="t(keys.yesno.editQuestion)"
+      />
+      
+      <!-- App settings button (only visible in parent mode) -->
+      <TButton
+        v-if="parentMode.isUnlocked.value"
+        icon="settings"
+        type="ghost"
+        size="medium"
+        color="secondary"
+        @click="handleAppSettings"
+        :aria-label="t(keys.yesno.yesnoSettings)"
       />
     </template>
 
@@ -69,7 +81,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive, watch, toRefs, inject } from 'vue';
 import { useBemm } from 'bemm';
-import { /* TAuthWrapper, */ TButton, TIcon, TAppLayout, useI18n } from '@tiko/ui';
+import { /* TAuthWrapper, */ TButton, TIcon, TAppLayout, useI18n, useParentMode } from '@tiko/ui';
 import { useYesNoStore } from '../stores/yesno';
 import YesNoSettingsForm from '../components/YesNoSettingsForm.vue';
 import QuestionInputForm from '../components/QuestionInputForm.vue';
@@ -79,6 +91,7 @@ import backgroundImage from '../assets/app-icon-yes-no.png';
 const bemm = useBemm('yes-no');
 const yesNoStore = useYesNoStore();
 const { t, keys } = useI18n();
+const parentMode = useParentMode('yes-no');
 
 // Inject the popup service from TFramework
 const popupService = inject<any>('popupService');
@@ -158,10 +171,10 @@ const showQuestionInput = () => {
   }
 };
 
-const showSettingsPopup = () => {
+const handleAppSettings = () => {
   popupService.open({
     component: YesNoSettingsForm,
-    title: t(keys.common.settings),
+    title: t(keys.yesno.yesnoSettings),
     props: {
       settings: settings.value,
       onApply: async (newSettings: any) => {

@@ -20,6 +20,10 @@
         @logout="$emit('logout')"
         @menu-item-click="$emit('menu-item-click', $event)"
       >
+        <template #app-controls>
+          <slot name="app-controls" />
+        </template>
+        
         <template #center>
           <slot name="top-bar-center" />
         </template>

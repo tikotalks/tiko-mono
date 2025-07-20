@@ -23,15 +23,17 @@ vi.mock('@tiko/core', () => ({
     uploadAvatar: vi.fn(),
     getAvatarUrl: vi.fn()
   }),
+  fileService: {
+    upload: vi.fn().mockResolvedValue({ success: true, url: 'https://example.com/avatar.jpg' }),
+    uploadAvatar: vi.fn().mockResolvedValue('https://example.com/avatar.jpg')
+  },
   authService: {
+    updateUser: vi.fn().mockResolvedValue({ data: {}, error: null }),
     updateUserMetadata: vi.fn().mockResolvedValue({ success: true }),
     updateUserProfile: vi.fn(),
     uploadAvatar: vi.fn(),
     getSession: vi.fn().mockResolvedValue({ expires_at: Date.now() + 3600000 }),
     refreshSession: vi.fn().mockResolvedValue({})
-  },
-  fileService: {
-    upload: vi.fn().mockResolvedValue({ success: true, url: 'https://example.com/avatar.jpg' })
   }
 }))
 
@@ -46,6 +48,18 @@ vi.mock('../../composables/useI18n', () => ({
         'profile.language': 'Language',
         'profile.email': 'Email',
         'profile.memberSince': 'Member since',
+        'profile.changePassword': 'Change Password',
+        'profile.setupParentMode': 'Setup Parent Mode',
+        'profile.accountActions': 'Account Actions',
+        'profile.parentMode': 'Parent Mode',
+        'profile.profileUpdated': 'Profile updated',
+        'profile.updateFailed': 'Update failed',
+        'profile.invalidFileType': 'Invalid file type',
+        'profile.fileTooLarge': 'File too large',
+        'profile.imageProcessingFailed': 'Image processing failed',
+        'settings.passwordChangeNotImplemented': 'Password change not implemented',
+        'common.enabled': 'Enabled',
+        'common.disabled': 'Disabled',
         'common.cancel': 'Cancel',
         'common.save': 'Save',
         'languageNames.english': 'English',
@@ -63,11 +77,25 @@ vi.mock('../../composables/useI18n', () => ({
         enterName: 'profile.enterName',
         language: 'profile.language',
         email: 'profile.email',
-        memberSince: 'profile.memberSince'
+        memberSince: 'profile.memberSince',
+        changePassword: 'profile.changePassword',
+        setupParentMode: 'profile.setupParentMode',
+        accountActions: 'profile.accountActions',
+        parentMode: 'profile.parentMode',
+        profileUpdated: 'profile.profileUpdated',
+        updateFailed: 'profile.updateFailed',
+        invalidFileType: 'profile.invalidFileType',
+        fileTooLarge: 'profile.fileTooLarge',
+        imageProcessingFailed: 'profile.imageProcessingFailed'
+      },
+      settings: {
+        passwordChangeNotImplemented: 'settings.passwordChangeNotImplemented'
       },
       common: {
         cancel: 'common.cancel',
-        save: 'common.save'
+        save: 'common.save',
+        enabled: 'common.enabled',
+        disabled: 'common.disabled'
       },
       languageNames: {
         bulgarian: 'languageNames.bulgarian',
@@ -102,7 +130,23 @@ vi.mock('../../composables/useI18n', () => ({
       }
     },
     locale: ref('en'),
-    setLocale: vi.fn()
+    setLocale: vi.fn(),
+    availableLocales: ref([
+      { code: 'en-GB', name: 'English' },
+      { code: 'nl-NL', name: 'Dutch' },
+      { code: 'de-DE', name: 'German' },
+      { code: 'fr-FR', name: 'French' }
+    ])
+  })
+}))
+
+// Mock useParentMode
+vi.mock('../../composables/useParentMode', () => ({
+  useParentMode: () => ({
+    isEnabled: ref(false),
+    isUnlocked: ref(false),
+    unlock: vi.fn(),
+    lock: vi.fn()
   })
 }))
 

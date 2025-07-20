@@ -87,6 +87,11 @@ export interface TTopBarEmits {
 
 export interface TTopBarSlots {
   /**
+   * Content for the app controls section (left side, after title)
+   */
+  'app-controls': {}
+  
+  /**
    * Content for the center section of the top bar
    */
   center: {}

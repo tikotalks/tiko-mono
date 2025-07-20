@@ -17,6 +17,11 @@
         <h1 v-if="title" :class="bemm('title')">{{ title }}</h1>
         <p v-if="subtitle" :class="bemm('subtitle')">{{ subtitle }}</p>
       </div>
+
+      <!-- App-specific controls slot -->
+      <div v-if="$slots['app-controls']" :class="bemm('app-controls')">
+        <slot name="app-controls" />
+      </div>
     </div>
 
     <!-- Center Section -->
@@ -157,6 +162,7 @@ import { TContextMenu, type ContextMenuItem, type ContextMenuConfig, ContextMenu
 import { useParentMode } from '../../composables/useParentMode'
 import TParentModePinInput from '../TParentMode/TParentModePinInput.vue'
 import TProfile from '../TProfile/TProfile.vue'
+import TUserSettings from '../TUserSettings/TUserSettings.vue'
 import { useI18n } from '../../composables/useI18n'
 
 import type { TTopBarProps, TTopBarEmits } from './TTopBar.model'
@@ -249,7 +255,7 @@ const defaultMenuItems = computed<Partial<ContextMenuItem>[]>(() => [
     id: 'settings',
     label: t(keys.settings.title),
     icon: 'settings',
-    action: () => emit('settings'),
+    action: handleSettings,
     type: 'default'
   },
   {
@@ -304,7 +310,23 @@ const handleProfile = () => {
 
   popupService.open({
     component: TProfile,
-    title: t(keys.profile.editProfile),
+    title: t(keys.profile.title),
+    props: {
+      user: user.value,
+      onClose: () => popupService.close()
+    }
+  })
+}
+
+const handleSettings = () => {
+  if (!user.value || !popupService) {
+    console.error('Cannot open settings: user or popupService not available')
+    return
+  }
+
+  popupService.open({
+    component: TUserSettings,
+    title: t(keys.settings.userSettings),
     props: {
       user: user.value,
       onClose: () => popupService.close()
@@ -468,6 +490,13 @@ onUnmounted(() => {
 
   &__title-section {
     min-width: 0;
+    flex-shrink: 0;
+  }
+
+  &__app-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
     flex: 1;
   }
 

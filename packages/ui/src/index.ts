@@ -19,6 +19,7 @@ export * from './components/TSSOButton'
 export * from './components/TSpinner'
 export * from './components/TAlert'
 export * from './components/TChooseLanguage'
+export * from './components/TUserSettings'
 
 export { default as TInputText } from './components/TForm/inputs/TInputText/TInputText.vue';
 export { default as TInputNumber } from './components/TForm/inputs/TInputNumber/TInputNumber.vue';
