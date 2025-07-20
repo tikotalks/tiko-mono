@@ -1,7 +1,14 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { authService } from '../services'
 import type { AuthUser, AuthSession } from '../services/auth.service'
+
+// User settings interface
+export interface UserSettings {
+  theme?: 'light' | 'dark' | 'auto'
+  language?: string
+  [key: string]: any // Allow app-specific settings
+}
 
 export const useAuthStore = defineStore('auth', () => {
   // State
@@ -9,10 +16,17 @@ export const useAuthStore = defineStore('auth', () => {
   const session = ref<AuthSession | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
+  
+  // User settings state - this is the single source of truth
+  const userSettings = ref<UserSettings>({})
+  
+  // Storage key for settings
+  const SETTINGS_STORAGE_KEY = 'tiko-user-settings'
 
   // Getters
   const isAuthenticated = computed(() => !!user.value && !!session.value)
-  const currentLanguage = computed(() => user.value?.user_metadata?.language || 'en')
+  const currentLanguage = computed(() => userSettings.value.language || 'en-GB')
+  const currentTheme = computed(() => userSettings.value.theme || 'auto')
 
   // Actions
   const signInWithEmail = async (email: string, password: string) => {
@@ -26,7 +40,18 @@ export const useAuthStore = defineStore('auth', () => {
         throw new Error(result.error || 'Authentication failed')
       }
 
-      if (result.user) user.value = result.user
+      if (result.user) {
+        user.value = result.user
+        
+        // Load user settings from metadata if available
+        if (result.user.user_metadata?.settings) {
+          userSettings.value = {
+            ...result.user.user_metadata.settings,
+            ...userSettings.value // localStorage takes precedence
+          }
+          saveSettingsToStorage()
+        }
+      }
       if (result.session) session.value = result.session
       
     } catch (err) {
@@ -105,7 +130,18 @@ export const useAuthStore = defineStore('auth', () => {
         throw new Error(result.error || 'Invalid verification code')
       }
 
-      if (result.user) user.value = result.user
+      if (result.user) {
+        user.value = result.user
+        
+        // Load user settings from metadata if available
+        if (result.user.user_metadata?.settings) {
+          userSettings.value = {
+            ...result.user.user_metadata.settings,
+            ...userSettings.value // localStorage takes precedence
+          }
+          saveSettingsToStorage()
+        }
+      }
       if (result.session) session.value = result.session
 
       return result
@@ -163,15 +199,92 @@ export const useAuthStore = defineStore('auth', () => {
       // Clear local state
       user.value = null
       session.value = null
+      // Don't clear settings - keep them for next login
     }
   }
 
+  // Load settings from localStorage
+  const loadSettingsFromStorage = () => {
+    try {
+      const stored = localStorage.getItem(SETTINGS_STORAGE_KEY)
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        console.log('[Auth Store] Loaded settings from localStorage:', parsed)
+        userSettings.value = parsed
+      }
+    } catch (err) {
+      console.error('[Auth Store] Failed to load settings from localStorage:', err)
+    }
+  }
+  
+  // Save settings to localStorage
+  const saveSettingsToStorage = () => {
+    try {
+      localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(userSettings.value))
+      console.log('[Auth Store] Saved settings to localStorage:', userSettings.value)
+    } catch (err) {
+      console.error('[Auth Store] Failed to save settings to localStorage:', err)
+    }
+  }
+  
+  // Sync settings to API (user metadata)
+  const syncSettingsToAPI = async () => {
+    if (!user.value) return
+    
+    try {
+      console.log('[Auth Store] Syncing settings to API:', userSettings.value)
+      await updateUserMetadata({ settings: userSettings.value })
+    } catch (err) {
+      console.error('[Auth Store] Failed to sync settings to API:', err)
+    }
+  }
+  
+  // Update a specific setting
+  const updateSetting = async (key: keyof UserSettings, value: any) => {
+    console.log(`[Auth Store] Updating setting ${key}:`, value)
+    
+    // Update the reactive state
+    userSettings.value = {
+      ...userSettings.value,
+      [key]: value
+    }
+    
+    // Save to localStorage immediately for persistence
+    saveSettingsToStorage()
+    
+    // Sync to API if user is authenticated
+    if (user.value) {
+      await syncSettingsToAPI()
+    }
+  }
+  
+  // Update multiple settings at once
+  const updateSettings = async (settings: Partial<UserSettings>) => {
+    console.log('[Auth Store] Updating multiple settings:', settings)
+    
+    // Update the reactive state
+    userSettings.value = {
+      ...userSettings.value,
+      ...settings
+    }
+    
+    // Save to localStorage immediately
+    saveSettingsToStorage()
+    
+    // Sync to API if user is authenticated
+    if (user.value) {
+      await syncSettingsToAPI()
+    }
+  }
+  
   const initializeFromStorage = async () => {
     try {
       console.log('[Auth Store] initializeFromStorage called')
-      console.log('[Auth Store] Current URL:', window.location.href)
-      console.log('[Auth Store] Calling authService.getSession()...')
       
+      // First, load settings from localStorage for immediate use
+      loadSettingsFromStorage()
+      
+      // Then check for authenticated session
       const currentSession = await authService.getSession()
       
       console.log('[Auth Store] getSession result:', {
@@ -183,6 +296,29 @@ export const useAuthStore = defineStore('auth', () => {
       if (currentSession) {
         user.value = currentSession.user
         session.value = currentSession
+        
+        // If user has settings in metadata, merge them with localStorage
+        // localStorage takes precedence as it may have more recent changes
+        if (currentSession.user?.user_metadata?.settings) {
+          const apiSettings = currentSession.user.user_metadata.settings
+          console.log('[Auth Store] Found settings in user metadata:', apiSettings)
+          
+          // Merge API settings with localStorage settings
+          // localStorage values take precedence
+          userSettings.value = {
+            ...apiSettings,
+            ...userSettings.value
+          }
+          
+          // Save the merged settings back to localStorage
+          saveSettingsToStorage()
+          
+          // If settings differ from API, sync back to API
+          if (JSON.stringify(apiSettings) !== JSON.stringify(userSettings.value)) {
+            console.log('[Auth Store] Settings differ from API, syncing...')
+            await syncSettingsToAPI()
+          }
+        }
       }
     } catch (err) {
       console.error('Failed to initialize auth:', err)
@@ -215,8 +351,27 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const updateLanguage = async (language: string) => {
-    await updateUserMetadata({ language })
+    await updateSetting('language', language)
+    
+    // Also update the i18n locale directly in localStorage
+    // This ensures immediate UI update
+    try {
+      localStorage.setItem('tiko-language', JSON.stringify(language))
+    } catch (err) {
+      console.error('[Auth Store] Failed to update i18n locale:', err)
+    }
   }
+  
+  const updateTheme = async (theme: 'light' | 'dark' | 'auto') => {
+    await updateSetting('theme', theme)
+  }
+  
+  // Watch for settings changes to auto-save
+  watch(userSettings, () => {
+    // This is handled in updateSetting/updateSettings methods
+    // This watcher is just for debugging
+    console.log('[Auth Store] Settings changed:', userSettings.value)
+  }, { deep: true })
 
   return {
     // State
@@ -224,10 +379,12 @@ export const useAuthStore = defineStore('auth', () => {
     session,
     isLoading,
     error,
+    userSettings,
     
     // Getters
     isAuthenticated,
     currentLanguage,
+    currentTheme,
     
     // Actions
     signInWithEmail,
@@ -240,6 +397,9 @@ export const useAuthStore = defineStore('auth', () => {
     initializeFromStorage,
     setupAuthListener,
     updateUserMetadata,
-    updateLanguage
+    updateLanguage,
+    updateTheme,
+    updateSetting,
+    updateSettings
   }
 })
