@@ -12,10 +12,6 @@ import type { Locale, TranslationKey, TranslationFunction } from '../i18n/types'
 // Global locale state - shared across all components
 const [globalLocale, setGlobalLocale] = useLocalStorage<Locale>('tiko-language', 'en-GB')
 
-// Log initial locale on load
-console.log('[useI18n] Initial locale from localStorage:', globalLocale.value)
-console.log('[useI18n] Raw localStorage value:', localStorage.getItem('tiko-language'))
-
 // Lazy load translations only when needed
 let _translations: ReturnType<typeof getTranslations> | null = null
 function getTranslationsCache() {
@@ -107,8 +103,6 @@ export function useI18n() {
   const setLocale = (newLocale: Locale) => {
     console.log('[useI18n] Setting locale to:', newLocale)
     setGlobalLocale(newLocale)
-    console.log('[useI18n] Locale set, localStorage should now have:', newLocale)
-    console.log('[useI18n] Actual localStorage value after set:', localStorage.getItem('tiko-language'))
   }
 
   /**
