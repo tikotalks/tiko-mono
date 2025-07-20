@@ -283,24 +283,10 @@ onMounted(async () => {
     if (savedLanguage !== locale.value) {
       console.log('[TFramework] Applying saved language from user data:', savedLanguage)
       setLocale(savedLanguage as Locale)
-      // Also update localStorage to keep it in sync
-      localStorage.setItem('tiko-language', JSON.stringify(savedLanguage))
-    }
-  } else if (!user.value) {
-    // No user logged in, check if we have a stored preference
-    const storedLocale = localStorage.getItem('tiko-language')
-    if (storedLocale) {
-      try {
-        const parsedLocale = JSON.parse(storedLocale) as Locale
-        if (parsedLocale !== locale.value) {
-          console.log('[TFramework] No user, applying stored locale:', parsedLocale)
-          setLocale(parsedLocale)
-        }
-      } catch (e) {
-        console.error('[TFramework] Error parsing stored locale:', e)
-      }
+      // setLocale already updates localStorage through useLocalStorage
     }
   }
+  // Note: useI18n already handles localStorage persistence for language
 
   // Initialize route title
   updateRouteTitle()

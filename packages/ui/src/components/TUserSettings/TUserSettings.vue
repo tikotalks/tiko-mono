@@ -133,7 +133,7 @@ const handleSave = async () => {
     // Apply language change immediately
     if (formData.value.language !== locale.value) {
       setLocale(formData.value.language as Locale)
-      localStorage.setItem('tiko-language', JSON.stringify(formData.value.language))
+      // Don't need to manually update localStorage, setLocale handles it
     }
 
     // Apply theme change
