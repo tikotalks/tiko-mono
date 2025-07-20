@@ -190,6 +190,18 @@ onMounted(async () => {
                               window.location.search.includes('from=auth') ||
                               window.location.hash.includes('access_token');
   
+  // If we have magic link tokens in the URL, process them immediately
+  if (window.location.hash && window.location.hash.includes('access_token')) {
+    try {
+      const result = await authStore.handleMagicLinkCallback()
+      if (!result.success && result.error) {
+        console.error('[TAuthWrapper] Failed to process magic link:', result.error)
+      }
+    } catch (err) {
+      console.error('[TAuthWrapper] Error processing magic link:', err)
+    }
+  }
+  
   // Quick check for existing session to avoid unnecessary splash screen
   const hasExistingSession = (() => {
     try {

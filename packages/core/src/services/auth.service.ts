@@ -449,13 +449,16 @@ export class ManualAuthService implements AuthService {
       }
       
       // Decode the JWT to get user info
-      const user = this.decodeJWT(accessToken)
+      const user = this.decodeJwtUser(accessToken)
       
       // Create session object
+      const expiresInSeconds = expiresIn ? parseInt(expiresIn) : 3600
       const session: AuthSession = {
         access_token: accessToken,
         refresh_token: refreshToken,
-        expires_at: expiresIn ? Date.now() / 1000 + parseInt(expiresIn) : Date.now() / 1000 + 3600,
+        expires_at: Date.now() / 1000 + expiresInSeconds,
+        expires_in: expiresInSeconds,
+        token_type: 'bearer',
         user
       }
       
@@ -467,6 +470,7 @@ export class ManualAuthService implements AuthService {
       
       return { success: true, session, user }
     } catch (error) {
+      console.error('[AuthService] Error processing magic link:', error)
       return { success: false, error: 'Failed to process magic link' }
     }
   }
