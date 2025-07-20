@@ -1,17 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useAuthStore } from './auth'
 
-// Mock auth service
-const mockAuthService = {
-  handleMagicLinkCallback: vi.fn(),
-  getSession: vi.fn(),
-  updateUserMetadata: vi.fn()
-}
-
+// Mock auth service before importing the store
 vi.mock('../services', () => ({
-  authService: mockAuthService
+  authService: {
+    handleMagicLinkCallback: vi.fn(),
+    getSession: vi.fn(),
+    updateUserMetadata: vi.fn()
+  }
 }))
+
+import { useAuthStore } from './auth'
+import { authService } from '../services'
+
+// Get the mocked service
+const mockAuthService = authService as any
 
 // Mock localStorage
 const mockLocalStorage = {
@@ -123,15 +126,14 @@ describe('AuthStore - Magic Link Flow', () => {
     expect(authStore.isAuthenticated).toBe(false)
   })
 
-  it('should handle settings loading error gracefully', async () => {
+  it('should handle missing user metadata gracefully', async () => {
     const authStore = useAuthStore()
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     
     const mockUser = {
       id: 'user-123',
       email: 'test@example.com',
       user_metadata: {
-        settings: null // This will cause an error when spreading
+        settings: null // No settings
       }
     }
 
@@ -143,17 +145,12 @@ describe('AuthStore - Magic Link Flow', () => {
 
     const result = await authStore.handleMagicLinkCallback()
 
-    // Should still succeed even if settings fail to load
+    // Should still succeed
     expect(result.success).toBe(true)
     expect(authStore.user).toEqual(mockUser)
     
-    // Should log error
-    expect(consoleSpy).toHaveBeenCalledWith(
-      '[Auth Store] Error loading user settings:',
-      expect.any(Error)
-    )
-
-    consoleSpy.mockRestore()
+    // Settings should remain unchanged when null
+    expect(authStore.userSettings).toEqual({})
   })
 
   it('should handle service exception', async () => {

@@ -17,15 +17,25 @@ Object.defineProperty(window, 'location', {
   configurable: true
 })
 
-// Mock auth store
-const mockAuthStore = {
-  user: null,
-  isAuthenticated: false,
-  session: null,
-  handleMagicLinkCallback: vi.fn(),
-  setupAuthListener: vi.fn(),
-  initializeFromStorage: vi.fn().mockResolvedValue(undefined)
+import { ref } from 'vue'
+
+// Create reactive auth store mock
+const createMockAuthStore = () => {
+  const user = ref(null)
+  const isAuthenticated = ref(false)
+  const session = ref(null)
+  
+  return {
+    user,
+    isAuthenticated,
+    session,
+    handleMagicLinkCallback: vi.fn(),
+    setupAuthListener: vi.fn(),
+    initializeFromStorage: vi.fn().mockResolvedValue(undefined)
+  }
 }
+
+let mockAuthStore: ReturnType<typeof createMockAuthStore>
 
 // Mock stores
 vi.mock('@tiko/core', () => ({
@@ -70,9 +80,7 @@ describe('TAuthWrapper - Magic Link Authentication', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.useFakeTimers()
-    mockAuthStore.user = null
-    mockAuthStore.isAuthenticated = false
-    mockAuthStore.session = null
+    mockAuthStore = createMockAuthStore()
     mockLocation.hash = ''
   })
 
@@ -138,8 +146,8 @@ describe('TAuthWrapper - Magic Link Authentication', () => {
 
     // Update auth state after magic link processing
     mockAuthStore.handleMagicLinkCallback.mockImplementation(async () => {
-      mockAuthStore.isAuthenticated = true
-      mockAuthStore.user = { id: 'user-123', email: 'test@example.com' }
+      mockAuthStore.isAuthenticated.value = true
+      mockAuthStore.user.value = { id: 'user-123', email: 'test@example.com' }
       return { success: true }
     })
 
@@ -221,7 +229,7 @@ describe('TAuthWrapper - Magic Link Authentication', () => {
 
     // Mock successful magic link processing
     mockAuthStore.handleMagicLinkCallback.mockResolvedValue({ success: true })
-    mockAuthStore.isAuthenticated = true
+    mockAuthStore.isAuthenticated.value = true
 
     const wrapper = mount(TAuthWrapper, {
       props: {
