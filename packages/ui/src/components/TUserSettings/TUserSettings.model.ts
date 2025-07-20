@@ -19,11 +19,6 @@ export interface TUserSettingsProps {
    * Callback when settings are saved
    */
   onSave?: (settings: UserSettings) => void
-  
-  /**
-   * Callback when popup should close
-   */
-  onClose?: () => void
 }
 
 export interface UserSettings {

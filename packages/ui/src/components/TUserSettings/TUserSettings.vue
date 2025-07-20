@@ -138,9 +138,19 @@ const handleSave = async () => {
 
     // Apply theme change
     if (formData.value.theme !== props.user.user_metadata?.settings?.theme) {
-      // Emit theme change event or apply directly
-      document.documentElement.setAttribute('data-theme', formData.value.theme)
-      localStorage.setItem('tiko-theme', formData.value.theme)
+      // Apply theme immediately
+      const themeValue = formData.value.theme
+      document.documentElement.setAttribute('data-theme', themeValue)
+      localStorage.setItem('tiko-theme', themeValue)
+      
+      // Also update the CSS custom property for color mode
+      if (themeValue === 'dark') {
+        document.documentElement.style.setProperty('color-scheme', 'dark')
+      } else if (themeValue === 'light') {
+        document.documentElement.style.setProperty('color-scheme', 'light')
+      } else {
+        document.documentElement.style.removeProperty('color-scheme')
+      }
     }
 
     // Show success message
@@ -172,9 +182,6 @@ const handleSave = async () => {
 
 const handleCancel = () => {
   emit('close')
-  if (props.onClose) {
-    props.onClose()
-  }
 }
 </script>
 

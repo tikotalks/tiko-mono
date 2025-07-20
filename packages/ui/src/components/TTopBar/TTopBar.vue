@@ -312,8 +312,10 @@ const handleProfile = () => {
     component: TProfile,
     title: t(keys.profile.title),
     props: {
-      user: user.value,
-      onClose: () => popupService.close()
+      user: user.value
+    },
+    on: {
+      'close': () => popupService.close()
     }
   })
 }
@@ -328,8 +330,10 @@ const handleSettings = () => {
     component: TUserSettings,
     title: t(keys.settings.userSettings),
     props: {
-      user: user.value,
-      onClose: () => popupService.close()
+      user: user.value
+    },
+    on: {
+      'close': () => popupService.close()
     }
   })
 }

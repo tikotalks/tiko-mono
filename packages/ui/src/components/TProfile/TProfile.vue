@@ -257,9 +257,8 @@ const handleChangePassword = () => {
 
 const handleSetupParentMode = () => {
   // This will be handled by TTopBar's parent mode setup
-  if (props.onClose) {
-    props.onClose()
-  }
+  // Close the profile popup to let parent mode setup open
+  popupService?.close()
 }
 </script>
 
