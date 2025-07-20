@@ -122,17 +122,13 @@ const handleSave = async () => {
 
   try {
     // Update user metadata
-    const { data, error } = await authStore.updateUser({
-      user_metadata: {
-        ...props.user.user_metadata,
-        settings: {
-          ...props.user.user_metadata?.settings,
-          ...formData.value
-        }
+    await authStore.updateUserMetadata({
+      ...props.user.user_metadata,
+      settings: {
+        ...props.user.user_metadata?.settings,
+        ...formData.value
       }
     })
-
-    if (error) throw error
 
     // Apply language change immediately
     if (formData.value.language !== locale.value) {

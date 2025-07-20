@@ -109,7 +109,7 @@ import { ref, computed, inject } from 'vue'
 import { useBemm } from 'bemm'
 import { useI18n } from '../../composables/useI18n'
 import { useParentMode } from '../../composables/useParentMode'
-import { fileService, authService } from '@tiko/core'
+import { fileService, useAuthStore } from '@tiko/core'
 import TIcon from '../TIcon/TIcon.vue'
 import TButton from '../TButton/TButton.vue'
 import type { TProfileProps } from './TProfile.model'
@@ -121,6 +121,7 @@ const props = defineProps<TProfileProps>()
 const bemm = useBemm('profile')
 const { t, keys, locale, availableLocales } = useI18n()
 const parentMode = useParentMode('profile')
+const authStore = useAuthStore()
 
 // Inject services
 const popupService = inject<PopupService>('popupService')
@@ -224,14 +225,10 @@ const handleFileSelect = async (event: Event) => {
     const uploadedUrl = await fileService.uploadAvatar(file, props.user.id)
     
     // Update user metadata
-    const { error } = await authService.updateUser({
-      user_metadata: {
-        ...props.user.user_metadata,
-        avatar_url: uploadedUrl
-      }
+    await authStore.updateUserMetadata({
+      ...props.user.user_metadata,
+      avatar_url: uploadedUrl
     })
-    
-    if (error) throw error
     
     toastService?.show({
       message: t(keys.profile.profileUpdated),
