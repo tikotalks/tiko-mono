@@ -1,5 +1,5 @@
 <template>
-  <div :class="bemm()">
+  <div :class="bemm()" data-cy="login-form">
     <!-- Login Card -->
     <div :class="bemm('card')">
       <template v-if="currentStep === 'email'">

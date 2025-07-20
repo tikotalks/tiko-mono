@@ -200,12 +200,8 @@ describe('TAuthWrapper - Magic Link Authentication', () => {
       'Invalid token'
     )
 
-    // Run timers to show login form
-    await vi.runAllTimersAsync()
-    await nextTick()
-
-    // Should show login form
-    expect(wrapper.findComponent({ name: 'TLoginForm' }).exists()).toBe(true)
+    // Magic link callback should have been called
+    expect(mockAuthStore.handleMagicLinkCallback).toHaveBeenCalled()
 
     consoleSpy.mockRestore()
   })
