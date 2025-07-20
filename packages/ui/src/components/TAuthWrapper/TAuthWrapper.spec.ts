@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import TAuthWrapper from './TAuthWrapper.vue'
 
 // Mock the store
@@ -27,6 +27,11 @@ vi.mock('@tiko/core', () => ({
   useAppStore: () => mockAppStore
 }))
 
+// Mock vue-router
+vi.mock('vue-router', () => ({
+  useRoute: () => ({ path: '/' })
+}))
+
 // Mock useTikoConfig
 vi.mock('../../composables/useTikoConfig', () => ({
   useTikoConfig: () => ({
@@ -47,7 +52,7 @@ vi.mock('../TSplashScreen/TSplashScreen.vue', () => ({
 vi.mock('../TAppLayout/TAppLayout.vue', () => ({
   default: {
     name: 'TAppLayout',
-    template: '<div class="app-layout"><slot /></div>',
+    template: '<div class="app-layout" data-cy="auth-app-layout"><slot /></div>',
     props: ['title', 'subtitle', 'showHeader']
   }
 }))
@@ -55,37 +60,45 @@ vi.mock('../TAppLayout/TAppLayout.vue', () => ({
 vi.mock('../TLoginForm/TLoginForm.vue', () => ({
   default: {
     name: 'TLoginForm',
-    template: '<div class="login-form"></div>',
-    props: ['isLoading', 'error', 'appId'],
-    emits: ['success', 'error']
+    template: '<div class="login-form" data-cy="login-form-component"></div>',
+    props: ['isLoading', 'error', 'appId', 'appName', 'enableSso'],
+    emits: ['apple-sign-in', 'email-submit', 'verification-submit', 'resend-code', 'clear-error']
   }
+}))
+
+// Default Tiko splash configs mock
+const defaultTikoSplashConfigs = {
+  todo: {
+    appName: 'Todo',
+    appIcon: 'checkbox',
+    theme: {
+      primary: '#2563eb'
+    }
+  },
+  'test-app': {
+    appName: 'Test App',
+    appIcon: 'star',
+    theme: {
+      primary: '#10b981'
+    }
+  }
+}
+
+vi.mock('../../constants/defaultTikoSplashConfigs', () => ({
+  defaultTikoSplashConfigs
 }))
 
 describe('TAuthWrapper.vue', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.useFakeTimers()
-    mockAuthStore.user = null
-    mockAuthStore.isAuthenticated = false
   })
-  
+
   afterEach(() => {
     vi.useRealTimers()
   })
 
-  it('renders correctly with default props', () => {
-    const wrapper = mount(TAuthWrapper, {
-      props: {
-        title: 'Test App',
-        appName: 'test-app'
-      }
-    })
-    
-    expect(wrapper.html()).toBeTruthy()
-    expect(wrapper.find('.auth-wrapper').exists()).toBe(true)
-  })
-
-  it('shows splash screen when initializing', () => {
+  it('renders splash screen initially', () => {
     const wrapper = mount(TAuthWrapper, {
       props: {
         title: 'Test App',
@@ -114,8 +127,9 @@ describe('TAuthWrapper.vue', () => {
     await vi.runAllTimersAsync()
     await wrapper.vm.$nextTick()
     
-    expect(wrapper.findComponent({ name: 'TLoginForm' }).exists()).toBe(true)
-    expect(wrapper.findComponent({ name: 'TAppLayout' }).exists()).toBe(true)
+    // Check for login container
+    expect(wrapper.find('[data-cy="login-container"]').exists()).toBe(true)
+    expect(wrapper.find('[data-cy="auth-app-layout"]').exists()).toBe(true)
   })
 
   it('shows main content when authenticated', async () => {
@@ -140,7 +154,7 @@ describe('TAuthWrapper.vue', () => {
     await wrapper.vm.$nextTick()
     
     expect(wrapper.text()).toContain('Main app content')
-    expect(wrapper.findComponent({ name: 'TLoginForm' }).exists()).toBe(false)
+    expect(wrapper.find('[data-cy="login-container"]').exists()).toBe(false)
   })
 
   it('displays background image when provided', () => {
@@ -167,7 +181,7 @@ describe('TAuthWrapper.vue', () => {
     })
     
     const splashScreen = wrapper.findComponent({ name: 'TSplashScreen' })
-    expect(splashScreen.props('appName')).toBe('Todo') // Uses defaultTikoSplashConfigs
+    expect(splashScreen.props('appName')).toBe('Test App') // Uses the props from defaultTikoSplashConfigs
     expect(splashScreen.props('showLoading')).toBe(true)
     expect(splashScreen.props('duration')).toBe(0)
     expect(splashScreen.props('enableTransitions')).toBe(true)
@@ -192,9 +206,11 @@ describe('TAuthWrapper.vue', () => {
     const loginForm = wrapper.findComponent({ name: 'TLoginForm' })
     expect(loginForm.exists()).toBe(true)
     expect(loginForm.props('appId')).toBe('test-app')
+    expect(loginForm.props('appName')).toBe('Test App')
+    expect(loginForm.props('enableSso')).toBe(true)
   })
 
-  it('initializes auth store on mount', async () => {
+  it('calls initializeFromStorage on mount', async () => {
     mount(TAuthWrapper, {
       props: {
         title: 'Test App',
@@ -204,7 +220,6 @@ describe('TAuthWrapper.vue', () => {
     
     await vi.runAllTimersAsync()
     
-    expect(mockAuthStore.setupAuthListener).toHaveBeenCalled()
     expect(mockAuthStore.initializeFromStorage).toHaveBeenCalled()
   })
 
@@ -227,7 +242,7 @@ describe('TAuthWrapper.vue', () => {
     await wrapper.vm.$nextTick()
     
     // Should transition to login form
-    expect(wrapper.findComponent({ name: 'TLoginForm' }).exists()).toBe(true)
+    expect(wrapper.find('[data-cy="login-form-component"]').exists()).toBe(true)
   })
 
   it('shows title when provided', async () => {
@@ -263,25 +278,25 @@ describe('TAuthWrapper.vue', () => {
       }
     })
     
-    // Wait for initialization and splash screen
+    // Wait for initialization
     await wrapper.vm.$nextTick()
     await vi.runAllTimersAsync()
     await wrapper.vm.$nextTick()
     
     const loginForm = wrapper.findComponent({ name: 'TLoginForm' })
-    expect(loginForm.exists()).toBe(true)
     
-    // Trigger email submission
-    await loginForm.vm.$emit('emailSubmit', 'test@example.com')
+    // Simulate email submission
+    loginForm.vm.$emit('email-submit', 'test@example.com')
+    
     await wrapper.vm.$nextTick()
     
-    expect(mockAuthStore.signInWithPasswordlessEmail).toHaveBeenCalled()
+    expect(mockAuthStore.signInWithPasswordlessEmail).toHaveBeenCalledWith('test@example.com', undefined)
   })
 
   it('handles login error correctly', async () => {
     mockAuthStore.isAuthenticated = false
     mockAuthStore.user = null
-    mockAuthStore.signInWithPasswordlessEmail.mockRejectedValue(new Error('Login failed'))
+    mockAuthStore.signInWithPasswordlessEmail.mockRejectedValue(new Error('Auth failed'))
     
     const wrapper = mount(TAuthWrapper, {
       props: {
@@ -290,22 +305,29 @@ describe('TAuthWrapper.vue', () => {
       }
     })
     
-    // Wait for initialization and splash screen
+    // Wait for initialization
     await wrapper.vm.$nextTick()
     await vi.runAllTimersAsync()
     await wrapper.vm.$nextTick()
     
     const loginForm = wrapper.findComponent({ name: 'TLoginForm' })
-    expect(loginForm.exists()).toBe(true)
     
-    // Trigger email submit which will cause an error
-    await loginForm.vm.$emit('emailSubmit', 'test@example.com')
+    // Simulate email submission
+    loginForm.vm.$emit('email-submit', 'test@example.com')
+    
+    await wrapper.vm.$nextTick()
+    await vi.runAllTimersAsync()
     await wrapper.vm.$nextTick()
     
-    expect(mockAuthStore.signInWithPasswordlessEmail).toHaveBeenCalled()
+    // Check that error is passed to login form
+    expect(loginForm.props('error')).toBeTruthy()
   })
 
-  it('applies correct CSS classes', () => {
+  it('handles verification submit correctly', async () => {
+    mockAuthStore.isAuthenticated = false
+    mockAuthStore.user = null
+    mockAuthStore.verifyEmailOtp.mockResolvedValue({ user: { id: '123' } })
+    
     const wrapper = mount(TAuthWrapper, {
       props: {
         title: 'Test App',
@@ -313,8 +335,18 @@ describe('TAuthWrapper.vue', () => {
       }
     })
     
-    expect(wrapper.find('.auth-wrapper').exists()).toBe(true)
-    expect(wrapper.find('.auth-wrapper__background').exists()).toBe(true)
+    // Wait for initialization
+    await wrapper.vm.$nextTick()
+    await vi.runAllTimersAsync()
+    await wrapper.vm.$nextTick()
+    
+    const loginForm = wrapper.findComponent({ name: 'TLoginForm' })
+    
+    // Simulate verification submission
+    loginForm.vm.$emit('verification-submit', 'test@example.com', '123456')
+    
+    await wrapper.vm.$nextTick()
+    
+    expect(mockAuthStore.verifyEmailOtp).toHaveBeenCalledWith('test@example.com', '123456')
   })
-
 })

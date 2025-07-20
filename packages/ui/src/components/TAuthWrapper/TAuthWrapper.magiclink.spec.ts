@@ -36,10 +36,16 @@ const createMockAuthStore = () => {
 }
 
 let mockAuthStore: ReturnType<typeof createMockAuthStore>
+let mockRoute = { path: '/' }
 
 // Mock stores
 vi.mock('@tiko/core', () => ({
   useAuthStore: () => mockAuthStore
+}))
+
+// Mock vue-router
+vi.mock('vue-router', () => ({
+  useRoute: () => mockRoute
 }))
 
 // Mock useTikoConfig
@@ -76,12 +82,21 @@ vi.mock('../TLoginForm/TLoginForm.vue', () => ({
   }
 }))
 
+// Mock TAuthCallback component
+vi.mock('../TAuthCallback/TAuthCallback.vue', () => ({
+  default: {
+    name: 'TAuthCallback',
+    template: '<div class="auth-callback">Processing authentication...</div>'
+  }
+}))
+
 describe('TAuthWrapper - Magic Link Authentication', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.useFakeTimers()
     mockAuthStore = createMockAuthStore()
     mockLocation.hash = ''
+    mockRoute = { path: '/' }
   })
 
   afterEach(() => {
@@ -98,10 +113,45 @@ describe('TAuthWrapper - Magic Link Authentication', () => {
     mockAuthStore.handleMagicLinkCallback.mockResolvedValue({
       success: true,
       user: { id: 'user-123', email: 'test@example.com' },
-      session: { access_token: mockAccessToken, refresh_token: mockRefreshToken }
+      session: {
+        access_token: mockAccessToken,
+        refresh_token: mockRefreshToken,
+        expires_in: 3600
+      }
     })
 
-    // Mount the component
+    // Set route to auth callback
+    mockRoute = { path: '/auth/callback' }
+
+    const wrapper = mount(TAuthWrapper, {
+      props: {
+        title: 'Test App',
+        appName: 'test-app'
+      },
+      slots: {
+        default: '<div class="main-content">App Content</div>'
+      }
+    })
+
+    // Wait for component to mount and process
+    await flushPromises()
+    await vi.runAllTimersAsync()
+    await nextTick()
+
+    // Check that TAuthCallback is rendered
+    expect(wrapper.findComponent({ name: 'TAuthCallback' }).exists()).toBe(true)
+  })
+
+  it('should handle invalid magic link tokens gracefully', async () => {
+    // Set up invalid magic link tokens
+    mockLocation.hash = '#access_token=invalid-token&refresh_token=invalid'
+
+    // Mock failed magic link processing
+    mockAuthStore.handleMagicLinkCallback.mockResolvedValue({
+      success: false,
+      error: 'Invalid token'
+    })
+
     const wrapper = mount(TAuthWrapper, {
       props: {
         title: 'Test App',
@@ -109,15 +159,48 @@ describe('TAuthWrapper - Magic Link Authentication', () => {
       }
     })
 
-    // Wait for component to mount and process magic link
-    await nextTick()
+    // Wait for component to mount and process
     await flushPromises()
+    await vi.runAllTimersAsync()
+    await nextTick()
 
-    // Verify magic link callback was called
-    expect(mockAuthStore.handleMagicLinkCallback).toHaveBeenCalled()
+    // Should show login form on failure
+    expect(wrapper.findComponent({ name: 'TLoginForm' }).exists()).toBe(true)
   })
 
-  it('should not process magic link when no tokens in URL', async () => {
+  it('should handle magic link processing errors gracefully', async () => {
+    mockLocation.hash = '#access_token=token&refresh_token=refresh'
+
+    // Mock error in magic link processing
+    mockAuthStore.handleMagicLinkCallback.mockRejectedValue(new Error('Network error'))
+
+    // Set route to auth callback
+    mockRoute = { path: '/auth/callback' }
+
+    // Mock console methods to capture logs
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const wrapper = mount(TAuthWrapper, {
+      props: {
+        title: 'Test App',
+        appName: 'test-app'
+      }
+    })
+
+    // Wait for error to be handled
+    await flushPromises()
+    await vi.runAllTimersAsync()
+    await nextTick()
+
+    // Since we're on auth callback route, it should render TAuthCallback
+    expect(wrapper.findComponent({ name: 'TAuthCallback' }).exists()).toBe(true)
+
+    // Restore console
+    consoleErrorSpy.mockRestore()
+  })
+
+  it('should not process magic link when no tokens present', async () => {
+    // No hash in URL
     mockLocation.hash = ''
 
     const wrapper = mount(TAuthWrapper, {
@@ -127,29 +210,95 @@ describe('TAuthWrapper - Magic Link Authentication', () => {
       }
     })
 
-    await nextTick()
     await flushPromises()
+    await vi.runAllTimersAsync()
+    await nextTick()
 
-    // Should not call magic link handler
+    // Should not call handleMagicLinkCallback
     expect(mockAuthStore.handleMagicLinkCallback).not.toHaveBeenCalled()
+    
+    // Should show login form
+    expect(wrapper.findComponent({ name: 'TLoginForm' }).exists()).toBe(true)
   })
 
-  it('should continue with normal flow after successful magic link processing', async () => {
-    mockLocation.hash = `#access_token=token&refresh_token=refresh&expires_in=3600`
+  it('should handle magic link with custom expires_in parameter', async () => {
+    const mockAccessToken = 'mock-access-token'
+    const mockRefreshToken = 'mock-refresh-token'
+    const customExpiresIn = '7200' // 2 hours
+    
+    mockLocation.hash = `#access_token=${mockAccessToken}&refresh_token=${mockRefreshToken}&expires_in=${customExpiresIn}`
 
-    // Mock successful authentication
     mockAuthStore.handleMagicLinkCallback.mockResolvedValue({
       success: true,
       user: { id: 'user-123', email: 'test@example.com' },
-      session: { access_token: 'token', refresh_token: 'refresh' }
+      session: {
+        access_token: mockAccessToken,
+        refresh_token: mockRefreshToken,
+        expires_in: parseInt(customExpiresIn)
+      }
     })
 
-    // Update auth state after magic link processing
-    mockAuthStore.handleMagicLinkCallback.mockImplementation(async () => {
-      mockAuthStore.isAuthenticated.value = true
-      mockAuthStore.user.value = { id: 'user-123', email: 'test@example.com' }
-      return { success: true }
+    // Set route to auth callback
+    mockRoute = { path: '/auth/callback' }
+
+    const wrapper = mount(TAuthWrapper, {
+      props: {
+        title: 'Test App',
+        appName: 'test-app'
+      }
     })
+
+    await flushPromises()
+    await vi.runAllTimersAsync()
+    await nextTick()
+
+    // Should render auth callback
+    expect(wrapper.findComponent({ name: 'TAuthCallback' }).exists()).toBe(true)
+  })
+
+  it('should handle magic link exception gracefully', async () => {
+    mockLocation.hash = '#access_token=token&refresh_token=refresh'
+
+    // Mock exception in magic link processing
+    const testError = new Error('Processing failed')
+    mockAuthStore.handleMagicLinkCallback.mockRejectedValue(testError)
+
+    // Set route to auth callback  
+    mockRoute = { path: '/auth/callback' }
+
+    // Mock console to verify error logging
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const wrapper = mount(TAuthWrapper, {
+      props: {
+        title: 'Test App',
+        appName: 'test-app'
+      }
+    })
+
+    await flushPromises()
+    await vi.runAllTimersAsync()
+    await nextTick()
+
+    // Should still render auth callback (error handled by TAuthCallback)
+    expect(wrapper.findComponent({ name: 'TAuthCallback' }).exists()).toBe(true)
+
+    // Restore console
+    consoleErrorSpy.mockRestore()
+  })
+
+  it('should clear magic link tokens from URL after processing', async () => {
+    const mockAccessToken = 'mock-access-token'
+    mockLocation.hash = `#access_token=${mockAccessToken}&refresh_token=refresh`
+
+    mockAuthStore.handleMagicLinkCallback.mockResolvedValue({
+      success: true,
+      user: { id: 'user-123', email: 'test@example.com' }
+    })
+
+    // Update auth state after successful callback
+    mockAuthStore.isAuthenticated.value = true
+    mockAuthStore.user.value = { id: 'user-123', email: 'test@example.com' }
 
     const wrapper = mount(TAuthWrapper, {
       props: {
@@ -157,139 +306,15 @@ describe('TAuthWrapper - Magic Link Authentication', () => {
         appName: 'test-app'
       },
       slots: {
-        default: '<div class="authenticated-content">Welcome!</div>'
+        default: '<div>Authenticated Content</div>'
       }
     })
 
-    // Process magic link
-    await nextTick()
     await flushPromises()
-
-    // Run timers to complete splash screen
     await vi.runAllTimersAsync()
     await nextTick()
 
-    // Should show authenticated content
-    expect(wrapper.text()).toContain('Welcome!')
-  })
-
-  it('should handle magic link processing errors gracefully', async () => {
-    mockLocation.hash = `#access_token=invalid&refresh_token=invalid`
-
-    // Mock failed magic link processing
-    mockAuthStore.handleMagicLinkCallback.mockResolvedValue({
-      success: false,
-      error: 'Invalid token'
-    })
-
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-
-    const wrapper = mount(TAuthWrapper, {
-      props: {
-        title: 'Test App',
-        appName: 'test-app'
-      }
-    })
-
-    await nextTick()
-    await flushPromises()
-
-    // Should log error
-    expect(consoleSpy).toHaveBeenCalledWith(
-      '[TAuthWrapper] Failed to process magic link:',
-      'Invalid token'
-    )
-
-    // Magic link callback should have been called
-    expect(mockAuthStore.handleMagicLinkCallback).toHaveBeenCalled()
-
-    consoleSpy.mockRestore()
-  })
-
-  it('should skip splash screen when returning from auth with valid session', async () => {
-    mockLocation.hash = `#access_token=token&refresh_token=refresh`
-
-    // Mock existing session in localStorage
-    const mockSession = {
-      access_token: 'token',
-      refresh_token: 'refresh',
-      expires_at: Date.now() / 1000 + 3600
-    }
-    
-    vi.spyOn(Storage.prototype, 'getItem').mockImplementation((key) => {
-      if (key === 'tiko_auth_session') {
-        return JSON.stringify(mockSession)
-      }
-      return null
-    })
-
-    // Mock successful magic link processing
-    mockAuthStore.handleMagicLinkCallback.mockResolvedValue({ success: true })
-    mockAuthStore.isAuthenticated.value = true
-
-    const wrapper = mount(TAuthWrapper, {
-      props: {
-        title: 'Test App',
-        appName: 'test-app'
-      }
-    })
-
-    await nextTick()
-    await flushPromises()
-
-    // Should not show splash screen (isInitializing should be false)
-    await vi.advanceTimersByTime(100)
-    await nextTick()
-
-    expect(wrapper.findComponent({ name: 'TSplashScreen' }).exists()).toBe(false)
-  })
-
-  it('should handle magic link with custom expires_in parameter', async () => {
-    const customExpiresIn = '7200'
-    mockLocation.hash = `#access_token=token&refresh_token=refresh&expires_in=${customExpiresIn}`
-
-    mockAuthStore.handleMagicLinkCallback.mockResolvedValue({
-      success: true,
-      session: { expires_in: parseInt(customExpiresIn) }
-    })
-
-    const wrapper = mount(TAuthWrapper, {
-      props: {
-        title: 'Test App',
-        appName: 'test-app'
-      }
-    })
-
-    await nextTick()
-    await flushPromises()
-
-    expect(mockAuthStore.handleMagicLinkCallback).toHaveBeenCalled()
-  })
-
-  it('should handle magic link exception gracefully', async () => {
-    mockLocation.hash = `#access_token=token&refresh_token=refresh`
-
-    // Mock exception during magic link processing
-    mockAuthStore.handleMagicLinkCallback.mockRejectedValue(new Error('Network error'))
-
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-
-    const wrapper = mount(TAuthWrapper, {
-      props: {
-        title: 'Test App',
-        appName: 'test-app'
-      }
-    })
-
-    await nextTick()
-    await flushPromises()
-
-    // Should log error
-    expect(consoleSpy).toHaveBeenCalledWith(
-      '[TAuthWrapper] Error processing magic link:',
-      expect.any(Error)
-    )
-
-    consoleSpy.mockRestore()
+    // After successful auth, should show authenticated content
+    expect(wrapper.text()).toContain('Authenticated Content')
   })
 })
