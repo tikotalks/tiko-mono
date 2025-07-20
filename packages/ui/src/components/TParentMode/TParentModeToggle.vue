@@ -97,7 +97,14 @@ const handleToggleClick = async () => {
         props: {
           mode: 'setup',
           onPinEntered: async (pin: string) => {
+            console.log('PIN entered for setup:', pin)
             const result = await parentMode.enable(pin)
+            console.log('Enable result:', result)
+            console.log('Parent mode state after enable:', {
+              isEnabled: parentMode.isEnabled.value,
+              isUnlocked: parentMode.isUnlocked.value,
+              canManageContent: parentMode.canManageContent.value
+            })
             if (result.success) {
               props.popupService.close()
               // Parent mode is now automatically unlocked after setup
@@ -106,6 +113,8 @@ const handleToggleClick = async () => {
                 message: t(keys.parentMode.parentModeEnabled),
                 type: 'success'
               })
+              // Force re-initialization to ensure state is synced
+              await parentMode.initialize()
             } else {
               toast.value.show({
                 message: result.error || t(keys.parentMode.failedToEnable),

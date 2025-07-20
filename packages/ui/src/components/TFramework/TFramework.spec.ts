@@ -13,7 +13,8 @@ const mockPopupService = {
 const mockAuthStore = {
   user: ref(null),
   signOut: vi.fn(),
-  logout: vi.fn()
+  logout: vi.fn(),
+  initializeFromStorage: vi.fn().mockResolvedValue(undefined)
 }
 
 const mockAppStore = {
@@ -292,12 +293,16 @@ describe('TFramework.vue', () => {
     expect(mockRouter.push).toHaveBeenCalledWith('/')
   })
 
-  it('emits ready event on mount', () => {
+  it('emits ready event on mount', async () => {
     const wrapper = mount(TFramework, {
       props: {
         config: mockConfig
       }
     })
+    
+    // Wait for the async operations in onMounted to complete
+    await wrapper.vm.$nextTick()
+    await new Promise(resolve => setTimeout(resolve, 0))
     
     expect(wrapper.emitted()).toHaveProperty('ready')
   })

@@ -47,7 +47,12 @@ vi.mock('../../composables/useI18n', () => ({
         'profile.email': 'Email',
         'profile.memberSince': 'Member since',
         'common.cancel': 'Cancel',
-        'common.save': 'Save'
+        'common.save': 'Save',
+        'languageNames.english': 'English',
+        'languageNames.dutch': 'Dutch',
+        'languageNames.german': 'German',
+        'languageNames.french': 'French',
+        'languageNames.spanish': 'Spanish'
       }
       return translations[key] || key
     },
@@ -63,6 +68,37 @@ vi.mock('../../composables/useI18n', () => ({
       common: {
         cancel: 'common.cancel',
         save: 'common.save'
+      },
+      languageNames: {
+        bulgarian: 'languageNames.bulgarian',
+        czech: 'languageNames.czech',
+        welsh: 'languageNames.welsh',
+        danish: 'languageNames.danish',
+        german: 'languageNames.german',
+        greek: 'languageNames.greek',
+        english: 'languageNames.english',
+        spanish: 'languageNames.spanish',
+        estonian: 'languageNames.estonian',
+        finnish: 'languageNames.finnish',
+        french: 'languageNames.french',
+        irish: 'languageNames.irish',
+        croatian: 'languageNames.croatian',
+        hungarian: 'languageNames.hungarian',
+        armenian: 'languageNames.armenian',
+        icelandic: 'languageNames.icelandic',
+        italian: 'languageNames.italian',
+        lithuanian: 'languageNames.lithuanian',
+        latvian: 'languageNames.latvian',
+        maltese: 'languageNames.maltese',
+        dutch: 'languageNames.dutch',
+        norwegian: 'languageNames.norwegian',
+        polish: 'languageNames.polish',
+        portuguese: 'languageNames.portuguese',
+        romanian: 'languageNames.romanian',
+        russian: 'languageNames.russian',
+        slovak: 'languageNames.slovak',
+        slovenian: 'languageNames.slovenian',
+        swedish: 'languageNames.swedish'
       }
     },
     locale: ref('en'),
@@ -85,6 +121,35 @@ vi.mock('../TIcon/TIcon.vue', () => ({
     name: 'TIcon',
     template: '<i class="t-icon"></i>',
     props: ['name', 'size']
+  }
+}))
+
+// Mock TButton
+vi.mock('../TButton/TButton.vue', () => ({
+  default: {
+    name: 'TButton',
+    template: '<button class="t-button" :data-status="status"><slot /></button>',
+    props: ['type', 'size', 'color', 'icon', 'iconPosition', 'status', 'disabled'],
+    emits: ['click']
+  }
+}))
+
+// Mock TButtonGroup
+vi.mock('../TButton/TButtonGroup.vue', () => ({
+  default: {
+    name: 'TButtonGroup',
+    template: '<div class="t-button-group"><slot /></div>',
+    props: ['direction', 'fluid']
+  }
+}))
+
+// Mock TChooseLanguage
+vi.mock('../TChooseLanguage/TChooseLanguage.vue', () => ({
+  default: {
+    name: 'TChooseLanguage',
+    template: '<div class="t-choose-language"></div>',
+    props: ['modelValue'],
+    emits: ['update:modelValue', 'select']
   }
 }))
 
@@ -155,6 +220,26 @@ describe('TProfile.vue', () => {
   }
 
   const mockOnClose = vi.fn()
+  
+  const mockPopupService = {
+    open: vi.fn(),
+    close: vi.fn()
+  }
+  
+  const createWrapper = (props = {}) => {
+    return mount(TProfile, {
+      props: {
+        user: mockUser,
+        onClose: mockOnClose,
+        ...props
+      },
+      global: {
+        provide: {
+          popupService: mockPopupService
+        }
+      }
+    })
+  }
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -166,12 +251,7 @@ describe('TProfile.vue', () => {
   })
 
   it('renders correctly with user data', () => {
-    const wrapper = mount(TProfile, {
-      props: {
-        user: mockUser,
-        onClose: mockOnClose
-      }
-    })
+    const wrapper = createWrapper()
     
     expect(wrapper.html()).toBeTruthy()
     expect(wrapper.find('.profile').exists()).toBe(true)
@@ -225,8 +305,10 @@ describe('TProfile.vue', () => {
     const nameInput = wrapper.findComponent({ name: 'TInputText' })
     expect(nameInput.props('modelValue')).toBe('John Doe')
     
-    const languageSelect = wrapper.findComponent({ name: 'TInputSelect' })
-    expect(languageSelect.props('modelValue')).toBe('en')
+    // Language is now displayed in a button, not a select
+    const languageButton = wrapper.find('.profile__field-button')
+    expect(languageButton.exists()).toBe(true)
+    expect(languageButton.text()).toContain('English')
   })
 
   it('displays user email as readonly', () => {
@@ -366,6 +448,14 @@ describe('TProfile.vue', () => {
       props: {
         user: mockUser,
         onClose: mockOnClose
+      },
+      global: {
+        provide: {
+          popupService: {
+            open: vi.fn(),
+            close: vi.fn()
+          }
+        }
       }
     })
     
@@ -378,10 +468,9 @@ describe('TProfile.vue', () => {
     await saveButton.trigger('click')
     await wrapper.vm.$nextTick()
     
-    // Check if button has loading prop
-    const buttonComponent = wrapper.findAllComponents({ name: 'TButton' })
-      .find(button => button.element.textContent.includes('Save'))
-    expect(buttonComponent.props('loading')).toBe(true)
+    // Check if button has loading status
+    // The button's status should be set via the component's isSaving ref
+    expect(wrapper.vm.isSaving).toBe(true)
     
     // Resolve and check loading is gone
     resolveUpdate!({ success: true })
@@ -389,10 +478,8 @@ describe('TProfile.vue', () => {
     await vi.runAllTimersAsync()
     await wrapper.vm.$nextTick()
     
-    // Re-find the button as it may have been re-rendered
-    const updatedButton = wrapper.findAllComponents({ name: 'TButton' })
-      .find(button => button.element.textContent.includes('Save'))
-    expect(updatedButton.props('loading')).toBe(false)
+    // Loading should be false now
+    expect(wrapper.vm.isSaving).toBe(false)
   })
 
   it('shows error message on update failure', async () => {
@@ -490,7 +577,7 @@ describe('TProfile.vue', () => {
     }
   })
 
-  it('provides language options', () => {
+  it('provides language options', async () => {
     const wrapper = mount(TProfile, {
       props: {
         user: mockUser,
@@ -498,11 +585,15 @@ describe('TProfile.vue', () => {
       }
     })
     
-    const languageSelect = wrapper.findComponent({ name: 'TInputSelect' })
-    const options = languageSelect.props('options')
-    expect(options).toBeInstanceOf(Array)
-    expect(options.length).toBeGreaterThan(0)
-    expect(options).toContainEqual(expect.objectContaining({ value: 'en', label: 'English' }))
+    // Wait for onMounted and loadUserProfile to complete
+    await wrapper.vm.$nextTick()
+    await vi.runAllTimersAsync()
+    
+    // Language options are now provided via a button that opens a popup
+    const languageButton = wrapper.find('.profile__field-button')
+    expect(languageButton.exists()).toBe(true)
+    // The button should show the current language
+    expect(languageButton.text()).toContain('English')
   })
 
   it('handles user without metadata gracefully', () => {

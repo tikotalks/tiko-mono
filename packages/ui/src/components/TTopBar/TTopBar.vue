@@ -40,7 +40,7 @@
           icon="shield"
           :class="bemm('parent-mode-indicator')"
         >
-          Parent Mode
+          {{ t(keys.parentMode.parentMode) }}
         </TButton>
 
         <!-- User Avatar -->
@@ -234,20 +234,20 @@ const userRole = computed(() => {
 })
 
 const userMenuLabel = computed(() =>
-  `User menu for ${userDisplayName.value}`
+  `${t(keys.common.menu)} - ${userDisplayName.value}`
 )
 
 const defaultMenuItems = computed<Partial<ContextMenuItem>[]>(() => [
   {
     id: 'profile',
-    label: 'Profile',
+    label: t(keys.profile.title),
     icon: 'user',
     action: handleProfile,
     type: 'default'
   },
   {
     id: 'settings',
-    label: 'Settings',
+    label: t(keys.settings.title),
     icon: 'settings',
     action: () => emit('settings'),
     type: 'default'
@@ -258,7 +258,7 @@ const defaultMenuItems = computed<Partial<ContextMenuItem>[]>(() => [
   },
   {
     id: 'logout',
-    label: 'Sign Out',
+    label: t(keys.auth.logout),
     icon: 'arrow-right',
     action: handleLogout,
     type: 'default'
@@ -357,8 +357,8 @@ const handleParentModeEnable = async () => {
 const showParentModeSetup = () => {
   popupService.open({
     component: TParentModePinInput,
-    title: 'Set Up Parent Mode',
-    description: 'Create a 4-digit PIN to enable secure parental controls',
+    title: t(keys.parentMode.setUpParentMode),
+    description: t(keys.parentMode.createPinDescription),
     props: {
       mode: 'setup',
     },
@@ -391,8 +391,8 @@ const showParentModeSetup = () => {
 const showParentModeUnlock = () => {
   popupService.open({
     component: TParentModePinInput,
-    title: 'Enter Parent Mode',
-      description: 'Enter your 4-digit PIN to access parent controls',
+    title: t(keys.parentMode.enterParentPin),
+    description: t(keys.parentMode.enterPinDescription),
     props: {
       mode: 'unlock',
     },

@@ -175,7 +175,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, watch } from 'vue'
+import { ref, computed, nextTick, watch, onMounted } from 'vue'
 import { useBemm } from 'bemm'
 import { useI18n } from '../../composables/useI18n'
 import TButton from '../TButton/TButton.vue'
@@ -306,6 +306,8 @@ const handleConfirmKeydown = (event: KeyboardEvent) => {
 const handleSubmit = async () => {
   if (!canSubmit.value || isProcessing.value) return
 
+  // Submitting PIN
+  
   isProcessing.value = true
   error.value = ''
 
@@ -313,21 +315,26 @@ const handleSubmit = async () => {
     // Validate PIN format
     if (!/^\d{4}$/.test(pinValue.value)) {
       error.value = t(keys.parentMode.pinMustBe4Digits)
+      isProcessing.value = false
       return
     }
 
     // For setup mode, ensure PINs match
     if (props.mode === 'setup' && pinValue.value !== confirmValue.value) {
       error.value = t(keys.parentMode.pinMismatch)
+      isProcessing.value = false
       return
     }
+
+    // PIN validation passed
 
     // Emit event for v-model usage
     emit('pin-entered', pinValue.value)
 
     // Call callback prop for popup service usage
     if (props.onPinEntered) {
-      props.onPinEntered(pinValue.value)
+      // Call onPinEntered callback
+      await props.onPinEntered(pinValue.value)
     }
   } catch (err) {
     error.value = t(keys.common.error)
@@ -348,17 +355,21 @@ const toggleNumberVisibility = () => {
  * Handle number pad click
  */
 const handleNumberClick = (num: string) => {
+  // Number clicked
+  
   // Determine which field is active
   if (props.mode === 'setup' && pinValue.value.length === 4 && confirmValue.value.length < 4) {
     // Add to confirm field
     confirmValue.value += num
     if (confirmValue.value.length === 4 && confirmValue.value === pinValue.value) {
+      // PINs match, auto-submit
       handleSubmit()
     }
   } else if (pinValue.value.length < 4) {
     // Add to pin field
     pinValue.value += num
     if (props.mode === 'unlock' && pinValue.value.length === 4) {
+      // 4 digits entered, auto-submit
       handleSubmit()
     } else if (props.mode === 'setup' && pinValue.value.length === 4) {
       nextTick(() => {
@@ -399,6 +410,8 @@ const handleClosePopup = () => {
     props.onClose()
   }
 }
+
+// Component is ready
 
 // Watch for mode changes to reset form
 watch(() => props.mode, () => {

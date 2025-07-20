@@ -71,11 +71,17 @@ const usePopupService = () => {
 
 		const wrappedProps = {
 			...options.props,
-			...(options.on && Object.entries(options.on).reduce((acc, [event, handler]) => ({
-				...acc,
-				[`onUpdate:${event}`]: handler,
-				[`on${event.charAt(0).toUpperCase() + event.slice(1)}`]: handler,
-			}), {})),
+			...(options.on && Object.entries(options.on).reduce((acc, [event, handler]) => {
+				// Convert kebab-case to camelCase for event handlers
+				const camelCaseEvent = event.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+				const capitalizedEvent = camelCaseEvent.charAt(0).toUpperCase() + camelCaseEvent.slice(1);
+				
+				return {
+					...acc,
+					[`onUpdate:${event}`]: handler,
+					[`on${capitalizedEvent}`]: handler,
+				};
+			}, {})),
 		};
 
 		const newPopup: PopupInstance = {

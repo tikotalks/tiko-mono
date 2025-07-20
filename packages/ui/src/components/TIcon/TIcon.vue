@@ -40,6 +40,16 @@ const iconName = computed(()=>{
 			return 'playback-play';
 		case 'pause':
 			return 'playback-pause';
+    case 'arrow-left':
+      return 'arrow-left-m';
+    case 'eye':
+      return 'view-m';
+    case 'eye-off':
+      return 'view-off-m';
+    case 'lock':
+      return 'lock-m';
+    case 'lock-open':
+      return 'lock-open-m';
     default:
       return props.name;
   }

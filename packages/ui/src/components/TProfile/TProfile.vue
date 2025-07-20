@@ -50,12 +50,16 @@
 
       <!-- Language Field -->
       <div :class="bemm('field')">
-        <TChooseLanguage
-          id="profile-language"
-          v-model="formData.language"
-          :label="t(keys.profile.language)"
-          :class="bemm('field-input')"
-        />
+        <label :class="bemm('field-label')">{{ t(keys.profile.language) }}</label>
+        <TButton
+          type="outline"
+          :icon="Icons.CHEVRON_DOWN"
+          icon-position="right"
+          :class="bemm('field-button')"
+          @click="openLanguageSelector"
+        >
+          {{ getCurrentLanguageName() }}
+        </TButton>
       </div>
 
       <!-- Email Field (Read-only) -->
@@ -93,7 +97,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, inject } from 'vue'
 import { useBemm } from 'bemm'
 import { authService, fileService } from '@tiko/core'
 import { useI18n } from '../../composables/useI18n'
@@ -104,11 +108,14 @@ import TIcon from '../TIcon/TIcon.vue'
 import TInputText from '../TForm/inputs/TInputText/TInputText.vue'
 import TChooseLanguage from '../TChooseLanguage/TChooseLanguage.vue'
 import type { TProfileProps, UserProfile } from './TProfile.model'
+import type { PopupService } from '../TPopup/TPopup.model'
+import { Icons } from 'open-icon'
 
 const props = defineProps<TProfileProps>()
 
 const bemm = useBemm('profile')
 const { t, keys, locale, setLocale } = useI18n()
+const popupService = inject<PopupService>('popupService')
 
 // State
 const avatarError = ref(false)
@@ -117,10 +124,10 @@ const fileInput = ref<HTMLInputElement>()
 const avatarPreview = ref<string | null>(null)
 const selectedFile = ref<File | null>(null)
 
-// Form data
+// Form data - initialize with empty values, will be set in loadUserProfile
 const formData = ref({
   name: '',
-  language: locale.value
+  language: ''
 })
 
 // Computed properties
@@ -180,12 +187,18 @@ const loadUserProfile = async () => {
     // For now, we'll use user metadata as profile data
     // In the future, this could be replaced with a dedicated profile service
     
+    // Get saved language from user metadata
+    const savedLanguage = props.user.user_metadata?.settings?.language
+    
+    // Don't apply language here - let TFramework handle it
+    // The profile should only show the current state
+    
     // Initialize form data with user info
     formData.value = {
       name: props.user.user_metadata?.full_name || 
             props.user.user_metadata?.name || 
             '',
-      language: props.user.user_metadata?.settings?.language || locale.value
+      language: savedLanguage || locale.value
     }
   } catch (error) {
     console.error('Error loading user profile:', error)
@@ -334,8 +347,8 @@ const handleSave = async () => {
     const updateData: any = {
       full_name: formData.value.name,
       settings: {
-        language: formData.value.language,
-        ...props.user.user_metadata?.settings
+        ...props.user.user_metadata?.settings,
+        language: formData.value.language  // Language MUST come after spread to override
       }
     }
 
@@ -383,6 +396,97 @@ const handleClose = () => {
   if (typeof props.onClose === 'function') {
     props.onClose()
   }
+}
+
+// Get current language display name
+const getCurrentLanguageName = () => {
+  const currentLang = formData.value.language
+  const baseCode = currentLang.split('-')[0]
+  
+  // Map base codes to translation keys
+  const languageKeys: Record<string, string> = {
+    'bg': keys.languageNames.bulgarian,
+    'cs': keys.languageNames.czech,
+    'cy': keys.languageNames.welsh,
+    'da': keys.languageNames.danish,
+    'de': keys.languageNames.german,
+    'el': keys.languageNames.greek,
+    'en': keys.languageNames.english,
+    'es': keys.languageNames.spanish,
+    'et': keys.languageNames.estonian,
+    'fi': keys.languageNames.finnish,
+    'fr': keys.languageNames.french,
+    'ga': keys.languageNames.irish,
+    'hr': keys.languageNames.croatian,
+    'hu': keys.languageNames.hungarian,
+    'hy': keys.languageNames.armenian,
+    'is': keys.languageNames.icelandic,
+    'it': keys.languageNames.italian,
+    'lt': keys.languageNames.lithuanian,
+    'lv': keys.languageNames.latvian,
+    'mt': keys.languageNames.maltese,
+    'nl': keys.languageNames.dutch,
+    'no': keys.languageNames.norwegian,
+    'pl': keys.languageNames.polish,
+    'pt': keys.languageNames.portuguese,
+    'ro': keys.languageNames.romanian,
+    'ru': keys.languageNames.russian,
+    'sk': keys.languageNames.slovak,
+    'sl': keys.languageNames.slovenian,
+    'sv': keys.languageNames.swedish
+  }
+  
+  const translationKey = languageKeys[baseCode]
+  const name = translationKey ? t(translationKey) : baseCode.toUpperCase()
+  
+  // Always show the full locale code in parentheses
+  return `${name} (${currentLang})`
+}
+
+// Open language selector popup
+const openLanguageSelector = () => {
+  if (!popupService) {
+    console.error('Popup service not available')
+    return
+  }
+  
+  popupService.open({
+    component: TChooseLanguage,
+    title: t(keys.profile.language),
+    props: {
+      modelValue: formData.value.language,
+      'onUpdate:modelValue': (language: string) => {
+        formData.value.language = language
+      },
+      onSelect: async (language: string) => {
+        formData.value.language = language
+        
+        // Apply language change immediately
+        formData.value.language = language
+        
+        // Update the locale using the composable
+        setLocale(language as any)
+        
+        // Save to user metadata
+        try {
+          const updateData = {
+            ...props.user.user_metadata,
+            settings: {
+              ...props.user.user_metadata?.settings,
+              language: language
+            }
+          }
+          await authService.updateUserMetadata(updateData)
+        } catch (error) {
+          console.error('Error saving language preference:', error)
+        }
+        
+        // Close popup
+        popupService.close()
+      }
+    },
+    size: 'medium'
+  })
 }
 
 // Lifecycle
@@ -496,6 +600,11 @@ onMounted(() => {
 
   &__field-input {
     width: 100%;
+  }
+
+  &__field-button {
+    width: 100%;
+    justify-content: space-between;
   }
 
   &__field-value {

@@ -198,18 +198,55 @@ watch(() => route.fullPath, updateRouteTitle, { immediate: true })
 // Watch for user metadata changes (including language)
 watch(() => user.value?.user_metadata?.settings?.language, (newLanguage) => {
   if (newLanguage && newLanguage !== locale.value) {
+    console.log('[TFramework] Language changed in user metadata:', newLanguage)
     setLocale(newLanguage as Locale)
   }
-}, { immediate: false })
+}, { immediate: true })
+
+// Additional watcher for when user first becomes available (handles refresh timing)
+watch(() => authStore.user, (newUser, oldUser) => {
+  // Only apply if user just became available (was null/undefined before)
+  if (newUser && !oldUser && newUser.user_metadata?.settings?.language) {
+    const savedLanguage = newUser.user_metadata.settings.language
+    if (savedLanguage !== locale.value) {
+      console.log('[TFramework] User authenticated, applying saved language:', savedLanguage)
+      setLocale(savedLanguage as Locale)
+    }
+  }
+}, { immediate: true })
 
 // Initialize
 onMounted(async () => {
   // Initialize network monitoring
   appStore.initializeNetworkMonitoring()
 
-  // Initialize language from user settings
+  // Initialize auth from storage first
+  console.log('[TFramework] Initializing auth from storage...')
+  await authStore.initializeFromStorage()
+  
+  // After auth is initialized, check if we need to apply saved language
   if (user.value?.user_metadata?.settings?.language) {
-    setLocale(user.value.user_metadata.settings.language as Locale)
+    const savedLanguage = user.value.user_metadata.settings.language
+    if (savedLanguage !== locale.value) {
+      console.log('[TFramework] Applying saved language from user data:', savedLanguage)
+      setLocale(savedLanguage as Locale)
+      // Also update localStorage to keep it in sync
+      localStorage.setItem('tiko-language', JSON.stringify(savedLanguage))
+    }
+  } else if (!user.value) {
+    // No user logged in, check if we have a stored preference
+    const storedLocale = localStorage.getItem('tiko-language')
+    if (storedLocale) {
+      try {
+        const parsedLocale = JSON.parse(storedLocale) as Locale
+        if (parsedLocale !== locale.value) {
+          console.log('[TFramework] No user, applying stored locale:', parsedLocale)
+          setLocale(parsedLocale)
+        }
+      } catch (e) {
+        console.error('[TFramework] Error parsing stored locale:', e)
+      }
+    }
   }
 
   // Initialize route title
