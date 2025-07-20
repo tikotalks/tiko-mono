@@ -94,20 +94,11 @@ const popups = computed(() => {
 });
 
 onMounted(()=>{
-	console.log('[TPopup] Component mounted');
-	console.log('[TPopup] Using popup service instance:', popupService.instanceId);
-	console.log('[TPopup] Current popups count:', popups.value.length);
-	console.log('[TPopup] Current popup IDs:', popups.value.map(p => p.id));
 })
 
 // Watch for changes to popups array
 watch(popups, (newPopups, oldPopups) => {
-	console.log(`[TPopup ${popupService.instanceId}] Popups array changed:`, {
-		oldCount: oldPopups?.length || 0,
-		newCount: newPopups.length,
-		newPopupIds: newPopups.map(p => p.id),
-		serviceInstanceId: popupService.instanceId
-	});
+	// Popups array changed
 }, { deep: true, immediate: true });
 
 // // Handle escape key and event bus

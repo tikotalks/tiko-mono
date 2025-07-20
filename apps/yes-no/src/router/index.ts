@@ -22,7 +22,6 @@ const router = createRouter({
 
 // Debug routing
 router.beforeEach((to, from, next) => {
-  console.log('[Router] Navigating to:', to.path, to.name)
   next()
 })
 

@@ -72,11 +72,7 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
 
     try {
-      console.log('Attempting sign up with:', { email, hasPassword: !!password, fullName })
-      
       const result = await authService.signUpWithEmail(email, password, fullName)
-
-      console.log('Sign up response:', result)
 
       if (!result.success) {
         throw new Error(result.error || 'Sign up failed')
@@ -330,7 +326,6 @@ export const useAuthStore = defineStore('auth', () => {
   const setupAuthListener = () => {
     // TODO: Implement auth state change listener in authService
     // For now, we'll rely on manual session checks
-    console.log('[Auth Store] Auth listener setup skipped - using authService')
   }
 
   const updateUserMetadata = async (metadata: Record<string, any>) => {
@@ -368,10 +363,9 @@ export const useAuthStore = defineStore('auth', () => {
     await updateSetting('theme', theme)
   }
   
-  // Watch for settings changes to auto-save
+  // Watch for settings changes
   watch(userSettings, () => {
     // This is handled in updateSetting/updateSettings methods
-    // This watcher is just for debugging
   }, { deep: true })
   
   const handleMagicLinkCallback = async () => {

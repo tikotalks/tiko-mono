@@ -33,17 +33,10 @@ const isAuthCallbackRoute = computed(() => {
 
 // Make sure TAuthWrapper doesn't initialize on auth callback
 if (isAuthCallbackRoute.value) {
-  console.log('[App.vue] Auth callback route detected, skipping TAuthWrapper initialization')
 }
 
 // Debug app initialization
 onMounted(() => {
-  console.log('[App.vue] ========== APP MOUNTED ==========');
-  console.log('[App.vue] tikoConfig:', tikoConfig);
-  console.log('[App.vue] App ID:', tikoConfig.id);
-  console.log('[App.vue] App Name:', tikoConfig.name);
-  console.log('[App.vue] Background image:', backgroundImage);
-  console.log('[App.vue] ========== END APP MOUNTED ==========');
 })
 
 // Framework configuration

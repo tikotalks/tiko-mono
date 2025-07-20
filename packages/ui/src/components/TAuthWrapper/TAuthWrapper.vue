@@ -95,13 +95,9 @@ const isAuthenticated = computed(() => authStore.isAuthenticated);
 
 // Splash screen configuration
 const splashConfig = computed(() => {
-  console.log('[TAuthWrapper] Computing splash config for app:', props.appName);
-  console.log('[TAuthWrapper] Available configs:', Object.keys(defaultTikoSplashConfigs));
 
   const config = defaultTikoSplashConfigs[props.appName as keyof typeof defaultTikoSplashConfigs] || defaultTikoSplashConfigs.todo;
 
-  console.log('[TAuthWrapper] Selected config:', config);
-  console.log('[TAuthWrapper] Config app name:', config.appName);
 
   // Get primary color from Tiko config
   const primaryColor = tikoConfig.value?.theme?.primary;
@@ -115,7 +111,6 @@ const splashConfig = computed(() => {
     backgroundColor
   };
 
-  console.log('[TAuthWrapper] Final splash config:', finalConfig);
 
   return finalConfig;
 });
@@ -189,9 +184,6 @@ const handleSplashComplete = () => {
 
 // Initialize authentication
 onMounted(async () => {
-  console.log('[TAuthWrapper] ========== INITIALIZING AUTHENTICATION ==========');
-  console.log('[TAuthWrapper] App name:', props.appName);
-  console.log('[TAuthWrapper] Component mounted at:', new Date().toISOString());
 
   // Check if we're returning from auth callback or if there's already a session
   const isReturningFromAuth = document.referrer.includes('/auth/callback') || 
@@ -213,13 +205,7 @@ onMounted(async () => {
     return false;
   })();
 
-  console.log('[TAuthWrapper] Auth context:', {
-    isReturningFromAuth,
-    hasExistingSession,
-    referrer: document.referrer,
-    search: window.location.search,
-    hash: window.location.hash
-  });
+  // Auth context determined
 
   // Skip splash screen if returning from auth with a valid session
   const shouldSkipSplash = isReturningFromAuth && hasExistingSession;
@@ -230,7 +216,6 @@ onMounted(async () => {
 
   // If we should skip splash, hide it immediately
   if (shouldSkipSplash) {
-    console.log('[TAuthWrapper] Skipping splash screen - returning from auth with valid session');
     isInitializing.value = false;
   }
 
@@ -242,27 +227,15 @@ onMounted(async () => {
 
   try {
     // Set up auth state listener
-    console.log('[TAuthWrapper] Setting up auth state listener...');
     authStore.setupAuthListener();
-    console.log('[TAuthWrapper] ✅ Auth listener set up');
 
     // Try to restore session
-    console.log('[TAuthWrapper] Attempting to restore session from storage...');
     await authStore.initializeFromStorage();
 
-    console.log('[TAuthWrapper] Auth initialization complete:', {
-      isAuthenticated: authStore.isAuthenticated,
-      hasUser: !!authStore.user,
-      userId: authStore.user?.id,
-      userEmail: authStore.user?.email,
-      sessionExists: !!authStore.session,
-      sessionExpiry: authStore.session?.expires_at
-    });
+    // Auth initialization complete
 
     if (authStore.isAuthenticated) {
-      console.log('[TAuthWrapper] ✅ User is authenticated');
     } else {
-      console.log('[TAuthWrapper] ℹ️ User is not authenticated, showing login form');
     }
   } catch (error: any) {
     console.error('[TAuthWrapper] ❌ Failed to initialize auth:', error);
@@ -280,32 +253,21 @@ onMounted(async () => {
       const elapsed = Date.now() - startTime;
       const remainingTime = Math.max(0, minDisplayTime - elapsed);
 
-      console.log('[TAuthWrapper] Splash screen timing:', {
-        elapsed,
-        minDisplayTime,
-        remainingTime,
-        willDelay: remainingTime > 0,
-        shouldSkipSplash
-      });
+      // Calculate splash screen timing
 
       if (remainingTime > 0) {
-        console.log(`[TAuthWrapper] Delaying splash screen hide for ${remainingTime}ms`);
         setTimeout(() => {
           isInitializing.value = false;
-          console.log('[TAuthWrapper] Splash screen hidden (after delay)');
         }, remainingTime);
       } else {
         isInitializing.value = false;
-        console.log('[TAuthWrapper] Splash screen hidden (no delay needed)');
       }
     } else {
       // Already hidden if shouldSkipSplash is true
-      console.log('[TAuthWrapper] Splash screen already hidden due to skip logic');
     }
   }
 
 
-  console.log('[TAuthWrapper] ========== END AUTHENTICATION INITIALIZATION ==========');
 });
 </script>
 

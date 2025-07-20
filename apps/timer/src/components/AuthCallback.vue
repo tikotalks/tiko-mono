@@ -21,11 +21,6 @@ const statusMessage = ref('Processing authentication...')
 
 onMounted(async () => {
   try {
-    console.log('[AuthCallback] Starting authentication callback processing...')
-    console.log('[AuthCallback] Current URL:', window.location.href)
-    console.log('[AuthCallback] URL hash:', window.location.hash)
-    console.log('[AuthCallback] URL params:', window.location.search)
-    
     statusMessage.value = 'Processing authentication...'
     
     // Check if we have magic link tokens in the URL hash or route hash
@@ -35,20 +30,16 @@ onMounted(async () => {
     const refreshToken = hashParams.get('refresh_token')
     
     if (accessToken && refreshToken) {
-      console.log('[AuthCallback] Magic link tokens found in URL')
-      
       // Process the magic link
       const result = await authStore.handleMagicLinkCallback()
       
       if (result.success) {
-        console.log('[AuthCallback] Magic link processed successfully!')
         statusMessage.value = 'Authentication successful! Redirecting...'
         setTimeout(() => {
           router.push('/')
         }, 1000)
         return
       } else {
-        console.error('[AuthCallback] Magic link processing failed:', result.error)
         statusMessage.value = 'Authentication failed. Redirecting to login...'
         setTimeout(() => {
           router.push('/')
@@ -58,8 +49,6 @@ onMounted(async () => {
     }
     
     // Otherwise, check for OAuth callback or existing session
-    console.log('[AuthCallback] No magic link tokens, checking for session...')
-    
     // Give auth time to process any OAuth callbacks
     let attempts = 0
     const maxAttempts = 10
@@ -67,13 +56,11 @@ onMounted(async () => {
     
     const checkAuth = async () => {
       attempts++
-      console.log(`[AuthCallback] Check attempt ${attempts}/${maxAttempts}`)
       
       // Try to get the latest session
       await authStore.initializeFromStorage()
       
       if (authStore.isAuthenticated) {
-        console.log('[AuthCallback] Authentication successful!')
         statusMessage.value = 'Authentication successful! Redirecting...'
         setTimeout(() => {
           router.push('/')
@@ -82,7 +69,6 @@ onMounted(async () => {
       }
       
       if (attempts >= maxAttempts) {
-        console.warn('[AuthCallback] Max attempts reached, no session found')
         statusMessage.value = 'Authentication failed. Redirecting to login...'
         setTimeout(() => {
           router.push('/')
@@ -98,7 +84,6 @@ onMounted(async () => {
     await checkAuth()
     
   } catch (error) {
-    console.error('[AuthCallback] Error processing callback:', error)
     statusMessage.value = 'Authentication error. Redirecting to login...'
     setTimeout(() => {
       router.push('/')

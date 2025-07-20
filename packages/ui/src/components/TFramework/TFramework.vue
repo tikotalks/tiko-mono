@@ -198,15 +198,12 @@ watch(() => route.fullPath, updateRouteTitle, { immediate: true })
 // Watch for language changes in user settings
 watch(currentLanguage, (newLanguage) => {
   if (newLanguage && newLanguage !== locale.value) {
-    console.log('[TFramework] Language changed in user settings:', newLanguage)
     setLocale(newLanguage as Locale)
   }
 }, { immediate: true })
 
 // Apply theme to DOM
 const applyTheme = (theme: string) => {
-  console.log('[TFramework] Applying theme:', theme)
-  
   // Apply the theme
   document.documentElement.setAttribute('data-theme', theme)
   
@@ -223,7 +220,6 @@ const applyTheme = (theme: string) => {
 // Watch for theme changes in user settings
 watch(currentTheme, (newTheme) => {
   if (newTheme) {
-    console.log('[TFramework] Theme changed in user settings:', newTheme)
     applyTheme(newTheme)
   }
 }, { immediate: true })
@@ -234,15 +230,7 @@ onMounted(async () => {
   appStore.initializeNetworkMonitoring()
 
   // Initialize auth from storage - this loads settings from localStorage and API
-  console.log('[TFramework] Initializing auth from storage...')
   await authStore.initializeFromStorage()
-  
-  console.log('[TFramework] User settings after init:', {
-    hasUser: !!user.value,
-    settings: userSettings.value,
-    theme: currentTheme.value,
-    language: currentLanguage.value
-  })
   
   // The theme and language are now automatically applied via watchers
   // No need for manual initialization here

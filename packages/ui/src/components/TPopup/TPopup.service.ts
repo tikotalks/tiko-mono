@@ -51,7 +51,6 @@ const usePopupService = () => {
 	const popups = ref<PopupInstance[]>([]);
 	const instanceId = crypto.randomUUID();
 
-	console.log('[PopupService] Creating new popup service instance:', instanceId);
 
 	const showPopup = (opts: PopupOptions) => {
 

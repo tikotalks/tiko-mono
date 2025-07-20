@@ -101,7 +101,6 @@ export function useI18n() {
    * @param newLocale - New locale to set
    */
   const setLocale = (newLocale: Locale) => {
-    console.log('[useI18n] Setting locale to:', newLocale)
     setGlobalLocale(newLocale)
   }
 
