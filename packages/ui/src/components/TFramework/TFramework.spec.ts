@@ -14,7 +14,10 @@ const mockAuthStore = {
   user: ref(null),
   signOut: vi.fn(),
   logout: vi.fn(),
-  initializeFromStorage: vi.fn().mockResolvedValue(undefined)
+  initializeFromStorage: vi.fn().mockResolvedValue(undefined),
+  userSettings: ref({}),
+  currentTheme: ref('auto'),
+  currentLanguage: ref('en-GB')
 }
 
 const mockAppStore = {
@@ -29,7 +32,10 @@ vi.mock('@tiko/core', () => ({
 // Mock pinia's storeToRefs
 vi.mock('pinia', () => ({
   storeToRefs: (store: any) => ({
-    user: store.user
+    user: store.user,
+    userSettings: store.userSettings,
+    currentTheme: store.currentTheme,
+    currentLanguage: store.currentLanguage
   })
 }))
 

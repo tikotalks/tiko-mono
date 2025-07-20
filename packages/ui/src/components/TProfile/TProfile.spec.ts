@@ -270,6 +270,12 @@ describe('TProfile.vue', () => {
     close: vi.fn()
   }
   
+  const mockToastService = {
+    show: vi.fn(),
+    success: vi.fn(),
+    error: vi.fn()
+  }
+  
   const createWrapper = (props = {}) => {
     return mount(TProfile, {
       props: {
@@ -279,7 +285,8 @@ describe('TProfile.vue', () => {
       },
       global: {
         provide: {
-          popupService: mockPopupService
+          popupService: mockPopupService,
+          toastService: mockToastService
         }
       }
     })
@@ -302,12 +309,7 @@ describe('TProfile.vue', () => {
   })
 
   it('displays user avatar', () => {
-    const wrapper = mount(TProfile, {
-      props: {
-        user: mockUser,
-        onClose: mockOnClose
-      }
-    })
+    const wrapper = createWrapper()
     
     const avatar = wrapper.find('.profile__avatar')
     expect(avatar.exists()).toBe(true)
@@ -323,24 +325,14 @@ describe('TProfile.vue', () => {
       }
     }
     
-    const wrapper = mount(TProfile, {
-      props: {
-        user: userWithoutAvatar,
-        onClose: mockOnClose
-      }
-    })
+    const wrapper = createWrapper({ user: userWithoutAvatar })
     
     const avatar = wrapper.find('.profile__avatar')
     expect(avatar.text()).toBe('JD') // John Doe initials
   })
 
   it('prefills form with user data', async () => {
-    const wrapper = mount(TProfile, {
-      props: {
-        user: mockUser,
-        onClose: mockOnClose
-      }
-    })
+    const wrapper = createWrapper()
     
     // Wait for onMounted and loadUserProfile to complete
     await wrapper.vm.$nextTick()
@@ -356,12 +348,7 @@ describe('TProfile.vue', () => {
   })
 
   it('displays user email as readonly', () => {
-    const wrapper = mount(TProfile, {
-      props: {
-        user: mockUser,
-        onClose: mockOnClose
-      }
-    })
+    const wrapper = createWrapper()
     
     // Email is displayed as a readonly div, not an input
     const emailField = wrapper.find('.profile__field-value--readonly')
@@ -530,12 +517,7 @@ describe('TProfile.vue', () => {
     const { authService } = await import('@tiko/core')
     authService.updateUserMetadata.mockRejectedValue(new Error('Update failed'))
     
-    const wrapper = mount(TProfile, {
-      props: {
-        user: mockUser,
-        onClose: mockOnClose
-      }
-    })
+    const wrapper = createWrapper()
     
     // Wait for initialization
     await wrapper.vm.$nextTick()
@@ -553,12 +535,7 @@ describe('TProfile.vue', () => {
   })
 
   it('calls onClose when cancel button is clicked', async () => {
-    const wrapper = mount(TProfile, {
-      props: {
-        user: mockUser,
-        onClose: mockOnClose
-      }
-    })
+    const wrapper = createWrapper()
     
     const cancelButton = wrapper.findAllComponents({ name: 'TButton' })
       .find(button => button.text() === 'Cancel')
@@ -571,12 +548,7 @@ describe('TProfile.vue', () => {
     const { authService } = await import('@tiko/core')
     authService.updateUserMetadata.mockResolvedValue({ success: true })
     
-    const wrapper = mount(TProfile, {
-      props: {
-        user: mockUser,
-        onClose: mockOnClose
-      }
-    })
+    const wrapper = createWrapper()
     
     // Wait for initialization
     await wrapper.vm.$nextTick()
@@ -594,24 +566,14 @@ describe('TProfile.vue', () => {
   })
 
   it('shows avatar upload overlay on hover', () => {
-    const wrapper = mount(TProfile, {
-      props: {
-        user: mockUser,
-        onClose: mockOnClose
-      }
-    })
+    const wrapper = createWrapper()
     
     const avatar = wrapper.find('.profile__avatar')
     expect(avatar.find('.profile__avatar-overlay').exists()).toBe(true)
   })
 
   it('generates consistent avatar color based on email', () => {
-    const wrapper = mount(TProfile, {
-      props: {
-        user: mockUser,
-        onClose: mockOnClose
-      }
-    })
+    const wrapper = createWrapper()
     
     // Check for avatar fallback when no avatar URL
     const avatarFallback = wrapper.find('.profile__avatar-fallback')
@@ -622,12 +584,7 @@ describe('TProfile.vue', () => {
   })
 
   it('provides language options', async () => {
-    const wrapper = mount(TProfile, {
-      props: {
-        user: mockUser,
-        onClose: mockOnClose
-      }
-    })
+    const wrapper = createWrapper()
     
     // Wait for onMounted and loadUserProfile to complete
     await wrapper.vm.$nextTick()
@@ -646,12 +603,7 @@ describe('TProfile.vue', () => {
       user_metadata: null
     }
     
-    const wrapper = mount(TProfile, {
-      props: {
-        user: userWithoutMetadata,
-        onClose: mockOnClose
-      }
-    })
+    const wrapper = createWrapper({ user: userWithoutMetadata })
     
     expect(wrapper.find('.profile').exists()).toBe(true)
     
