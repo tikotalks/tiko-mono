@@ -324,8 +324,34 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const setupAuthListener = () => {
-    // TODO: Implement auth state change listener in authService
-    // For now, we'll rely on manual session checks
+    // Listen for storage events to handle external session changes
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'tiko_auth_session') {
+        if (!e.newValue) {
+          // Session was cleared externally
+          user.value = null
+          session.value = null
+        } else {
+          try {
+            const newSession = JSON.parse(e.newValue)
+            session.value = newSession
+            user.value = newSession.user
+          } catch (err) {
+            console.error('[Auth Store] Failed to parse session from storage event:', err)
+          }
+        }
+      }
+    })
+    
+    // Also check for session changes periodically (for same-tab changes)
+    setInterval(() => {
+      const storedSession = localStorage.getItem('tiko_auth_session')
+      if (!storedSession && session.value) {
+        // Session was cleared
+        user.value = null
+        session.value = null
+      }
+    }, 1000)
   }
 
   const updateUserMetadata = async (metadata: Record<string, any>) => {

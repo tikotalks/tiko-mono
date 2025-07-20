@@ -14,13 +14,13 @@ Cypress.Commands.add('loginWithMagicLink', (email: string) => {
   cy.visit('/')
   
   // Wait for the login form to appear
-  cy.get('[data-cy=login-form]', { timeout: 10000 }).should('be.visible')
+  cy.get('[data-cy="login-form"]', { timeout: 10000 }).should('be.visible')
   
   // Enter email
-  cy.get('[data-cy=email-input]').type(email)
+  cy.get('[data-cy="email-input"]').type(email)
   
   // Submit the form
-  cy.get('[data-cy=submit-button]').click()
+  cy.get('[data-cy="submit-email-button"]').click()
   
   // Wait for success message or verification screen
   cy.contains('Check your email', { timeout: 10000 }).should('be.visible')

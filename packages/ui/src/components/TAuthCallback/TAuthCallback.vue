@@ -1,9 +1,9 @@
 <template>
-  <div :class="bemm()">
+  <div :class="bemm()" data-cy="auth-callback">
     <div :class="bemm('container')">
       <div :class="bemm('loading')">
-        <div :class="bemm('spinner')"></div>
-        <p>{{ statusMessage }}</p>
+        <div :class="bemm('spinner')" data-cy="auth-spinner"></div>
+        <p data-cy="auth-status-message">{{ statusMessage }}</p>
       </div>
     </div>
   </div>

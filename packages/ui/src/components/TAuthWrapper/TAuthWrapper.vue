@@ -1,5 +1,5 @@
 <template>
-  <div :class="bemm()">
+  <div :class="bemm()" data-cy="auth-wrapper">
 
     <div :class="bemm('background')" v-if="!isAuthenticated">
       <img
@@ -26,13 +26,14 @@
 
     <!-- Login Form within App Layout -->
     <TAppLayout
-      v-else-if="!isAuthenticated"
+      v-else-if="!isAuthenticated && !isAuthCallbackRoute"
       :title="t(keys.auth.welcomeToTiko)"
       :subtitle="t(keys.auth.signInToAccess)"
       :showHeader="false"
+      data-cy="auth-app-layout"
     >
       <div :class="bemm('title')" v-if="title">{{title}}</div>
-      <div :class="bemm('login')">
+      <div :class="bemm('login')" data-cy="login-container">
         <TLoginForm
           :is-loading="authLoading"
           :error="authError"
@@ -48,8 +49,8 @@
       </div>
     </TAppLayout>
 
-    <!-- Authenticated Content -->
-    <div v-else :class="bemm('app')">
+    <!-- Authenticated Content or Auth Callback Route -->
+    <div v-else :class="bemm('app')" data-cy="authenticated-content">
       <slot />
     </div>
   </div>
@@ -57,6 +58,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useBemm } from 'bemm'
 import { useAuthStore } from '@tiko/core'
 import { useI18n } from '../../composables/useI18n'
@@ -76,6 +78,9 @@ const props = withDefaults(defineProps<TAuthWrapperProps>(), {
 // BEM classes
 const bemm = useBemm('auth-wrapper')
 
+// Router
+const route = useRoute()
+
 // i18n
 const { t, keys } = useI18n()
 
@@ -92,6 +97,9 @@ const authError = ref<string | null>(null)
 
 // Computed
 const isAuthenticated = computed(() => authStore.isAuthenticated);
+
+// Check if we're on the auth callback route
+const isAuthCallbackRoute = computed(() => route.path === '/auth/callback');
 
 // Splash screen configuration
 const splashConfig = computed(() => {
@@ -190,17 +198,8 @@ onMounted(async () => {
                               window.location.search.includes('from=auth') ||
                               window.location.hash.includes('access_token');
   
-  // If we have magic link tokens in the URL, process them immediately
-  if (window.location.hash && window.location.hash.includes('access_token')) {
-    try {
-      const result = await authStore.handleMagicLinkCallback()
-      if (!result.success && result.error) {
-        console.error('[TAuthWrapper] Failed to process magic link:', result.error)
-      }
-    } catch (err) {
-      console.error('[TAuthWrapper] Error processing magic link:', err)
-    }
-  }
+  // Magic link tokens are handled by the router which redirects to /auth/callback
+  // We don't need to process them here anymore
   
   // Quick check for existing session to avoid unnecessary splash screen
   const hasExistingSession = (() => {

@@ -5,12 +5,12 @@
       <template v-if="currentStep === 'email'">
         <!-- Header -->
         <div :class="bemm('header')">
-          <h4 :class="bemm('title')">{{ t(keys.auth.loginToAccount) }}</h4>
+          <h4 :class="bemm('title')" data-cy="login-title">{{ t(keys.auth.loginToAccount) }}</h4>
         </div>
         <!-- Email Step -->
         <div :class="bemm('content')">
           <!-- Email Input -->
-          <TForm @submit.prevent="handleEmailSubmit">
+          <TForm @submit.prevent="handleEmailSubmit" data-cy="email-form">
             <TInputEmail
               v-model="email"
               type="email"
@@ -19,6 +19,7 @@
               :disabled="isLoading"
               required
               :class="bemm('input')"
+              data-cy="email-input"
             />
 
             <TButton
@@ -29,6 +30,7 @@
               :disabled="!isEmailValid || isLoading"
               :loading="isLoading"
               :class="bemm('submit-button')"
+              data-cy="submit-email-button"
               >{{ t(keys.auth.sendCode) }}</TButton
             >
           </TForm>
@@ -66,6 +68,7 @@
               type="button"
               :class="bemm('register-link')"
               @click="toggleMode"
+              data-cy="toggle-register"
             >
               {{ t(keys.auth.register) }}
             </button>
@@ -76,11 +79,11 @@
       <template v-else-if="currentStep === 'verification'">
         <!-- Verification Code Step -->
         <div :class="bemm('content')">
-          <div :class="bemm('verification-info')">
+          <div :class="bemm('verification-info')" data-cy="verification-info">
             <TIcon name="mail" :class="bemm('verification-icon')" />
-            <p :class="bemm('verification-text')">
+            <p :class="bemm('verification-text')" data-cy="verification-message">
               We've sent you an email with two options:<br />
-              <strong>{{ email }}</strong>
+              <strong data-cy="verification-email">{{ email }}</strong>
             </p>
             <div :class="bemm('verification-options')">
               <p :class="bemm('option')">
@@ -92,7 +95,7 @@
             </div>
           </div>
 
-          <TForm @submit.prevent="handleVerificationSubmit">
+          <TForm @submit.prevent="handleVerificationSubmit" data-cy="verification-form">
             <TInputText
               v-model="verificationCode"
               type="text"
@@ -103,6 +106,7 @@
               :maxlength="codeLength"
               required
               :class="bemm('code-input')"
+              data-cy="verification-code-input"
             />
 
             <TButton
@@ -113,6 +117,7 @@
               :disabled="!isVerificationValid || isLoading"
               :loading="isLoading"
               :class="bemm('submit-button')"
+              data-cy="verify-code-button"
               >{{ t(keys.auth.verifyCode) }}</TButton
             >
           </TForm>
@@ -123,6 +128,7 @@
               :class="bemm('action-link')"
               @click="handleResendCode"
               :disabled="isLoading || resendCooldown > 0"
+              data-cy="resend-code-button"
             >
               {{
                 resendCooldown > 0
@@ -135,6 +141,7 @@
               :class="bemm('action-link')"
               @click="goBackToEmail"
               :disabled="isLoading"
+              data-cy="back-to-email-button"
             >
               {{ t(keys.auth.useDifferentEmail) }}
             </TButton>
@@ -145,10 +152,10 @@
       <!-- Register Step -->
       <template v-else-if="currentStep === 'register'">
         <div :class="bemm('header')">
-          <h2 :class="bemm('title')">{{ t(keys.auth.createAccount) }}</h2>
+          <h2 :class="bemm('title')" data-cy="register-title">{{ t(keys.auth.createAccount) }}</h2>
         </div>
         <div :class="bemm('content')">
-          <TForm @submit.prevent="handleRegisterSubmit">
+          <TForm @submit.prevent="handleRegisterSubmit" data-cy="register-form">
             <TInputEmail
               v-model="email"
               type="email"
@@ -157,6 +164,7 @@
               :disabled="isLoading"
               required
               :class="bemm('input')"
+              data-cy="register-email-input"
             />
 
             <TInputText
@@ -166,6 +174,7 @@
               :placeholder="t(keys.auth.enterFullName)"
               :disabled="isLoading"
               :class="bemm('input')"
+              data-cy="register-name-input"
             />
 
             <TButton
@@ -177,6 +186,7 @@
               :disabled="!isEmailValid || isLoading"
               :loading="isLoading"
               :class="bemm('submit-button')"
+              data-cy="register-submit-button"
               >{{ t(keys.auth.sendCode) }}</TButton
             >
           </TForm>
@@ -188,6 +198,7 @@
               type="button"
               :class="bemm('register-link')"
               @click="toggleMode"
+              data-cy="toggle-login"
             >
               {{ t(keys.auth.login) }}
             </button>
@@ -196,7 +207,7 @@
       </template>
 
       <!-- Error Message (shown for all steps) -->
-      <div v-if="error" :class="bemm('error')">
+      <div v-if="error" :class="bemm('error')" data-cy="error-message">
         <TIcon name="alert-circle" :class="bemm('error-icon')" />
         <p :class="bemm('error-message')">{{ error }}</p>
         <TButton

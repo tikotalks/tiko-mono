@@ -35,11 +35,17 @@ export function createAppRouter(options: AppRouterOptions = {}): Router {
   router.beforeEach((to, from, next) => {
     // Check if we have magic link tokens in the hash
     if (window.location.hash && window.location.hash.includes('access_token')) {
-      // Preserve the hash when redirecting
-      next({ 
-        path: '/auth/callback',
-        hash: window.location.hash
-      })
+      // Only redirect to auth callback if we're not already there
+      if (to.path !== '/auth/callback') {
+        // Preserve the hash when redirecting
+        next({ 
+          path: '/auth/callback',
+          hash: window.location.hash
+        })
+      } else {
+        // Already at auth callback, continue
+        next()
+      }
     } else {
       next()
     }
