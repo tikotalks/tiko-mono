@@ -16,8 +16,14 @@ describe('Real Email Magic Link Authentication', () => {
     // Generate unique test email
     const timestamp = Date.now()
     const randomId = Math.random().toString(36).substring(7)
-    const serverId = Cypress.env('MAILOSAUR_SERVER_ID') || 'e6scudsz'
-    testEmail = `test-${timestamp}-${randomId}@${serverId}.mailosaur.net`
+    const serverId = Cypress.env('MAILOSAUR_SERVER_ID')
+    
+    if (!serverId) {
+      testEmail = `test-${timestamp}-${randomId}@example.com`
+      cy.log('Mailosaur server ID not configured - using example.com for test')
+    } else {
+      testEmail = `test-${timestamp}-${randomId}@${serverId}.mailosaur.net`
+    }
     
     cy.visit('/')
     cy.wait(2000) // Wait for app initialization
@@ -50,8 +56,13 @@ describe('Real Email Magic Link Authentication', () => {
     cy.log(`Waiting for email to ${testEmail}`)
     
     // Use Mailosaur to get the email
-    const serverId = Cypress.env('MAILOSAUR_SERVER_ID') || 'e6scudsz'
-    const apiKey = Cypress.env('MAILOSAUR_API_KEY') || 'BPSl2Lgm8HE0Ybqy5jjrCxpm4gwthZz2'
+    const serverId = Cypress.env('MAILOSAUR_SERVER_ID')
+    const apiKey = Cypress.env('MAILOSAUR_API_KEY')
+    
+    if (!serverId || !apiKey) {
+      cy.log('Mailosaur credentials not configured - skipping real email test')
+      return
+    }
     
     cy.request({
       method: 'GET',
