@@ -219,16 +219,19 @@ watch(() => authStore.user, (newUser, oldUser) => {
 const initializeTheme = () => {
   let themeToApply = 'auto'
   
-  // First check user metadata if available
+  // First check localStorage (for immediate feedback)
+  const storedTheme = localStorage.getItem('tiko-theme')
+  if (storedTheme) {
+    themeToApply = storedTheme
+    console.log('[TFramework] Applying theme from localStorage:', themeToApply)
+  }
+  
+  // Then check user metadata if available (this takes precedence if different)
   if (user.value?.user_metadata?.settings?.theme) {
-    themeToApply = user.value.user_metadata.settings.theme
-    console.log('[TFramework] Applying theme from user data:', themeToApply)
-  } else {
-    // Fall back to localStorage
-    const storedTheme = localStorage.getItem('tiko-theme')
-    if (storedTheme) {
-      themeToApply = storedTheme
-      console.log('[TFramework] Applying theme from localStorage:', themeToApply)
+    const userTheme = user.value.user_metadata.settings.theme
+    if (userTheme !== themeToApply) {
+      themeToApply = userTheme
+      console.log('[TFramework] Overriding with theme from user data:', themeToApply)
     }
   }
   
@@ -274,19 +277,44 @@ onMounted(async () => {
   console.log('[TFramework] Initializing auth from storage...')
   await authStore.initializeFromStorage()
   
-  // Initialize theme (do this early for immediate visual feedback)
+  console.log('[TFramework] User data after init:', {
+    hasUser: !!user.value,
+    hasMetadata: !!user.value?.user_metadata,
+    hasSettings: !!user.value?.user_metadata?.settings,
+    settings: user.value?.user_metadata?.settings
+  })
+  
+  // Initialize theme - localStorage takes precedence for immediate feedback
   initializeTheme()
   
-  // After auth is initialized, check if we need to apply saved language
+  // Language is already initialized from localStorage by useI18n
+  // Only override if user has a different saved preference in metadata
   if (user.value?.user_metadata?.settings?.language) {
     const savedLanguage = user.value.user_metadata.settings.language
-    if (savedLanguage !== locale.value) {
+    const currentLocale = locale.value
+    
+    // Check if localStorage has a more recent value
+    const localStorageRaw = localStorage.getItem('tiko-language')
+    let localStorageLocale = null
+    try {
+      localStorageLocale = localStorageRaw ? JSON.parse(localStorageRaw) : null
+    } catch (e) {
+      console.error('[TFramework] Error parsing localStorage language:', e)
+    }
+    
+    console.log('[TFramework] Language comparison:', {
+      userMetadata: savedLanguage,
+      currentLocale: currentLocale,
+      localStorage: localStorageLocale
+    })
+    
+    // Only apply user metadata language if localStorage doesn't have a value
+    // This assumes localStorage is more recent if it exists
+    if (!localStorageLocale && savedLanguage !== currentLocale) {
       console.log('[TFramework] Applying saved language from user data:', savedLanguage)
       setLocale(savedLanguage as Locale)
-      // setLocale already updates localStorage through useLocalStorage
     }
   }
-  // Note: useI18n already handles localStorage persistence for language
 
   // Initialize route title
   updateRouteTitle()
