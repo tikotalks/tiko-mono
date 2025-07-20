@@ -93,28 +93,18 @@ export const useYesNoStore = defineStore('yesno', () => {
     isPlaying.value = true
 
     try {
-      // Use Web Speech API if available
-      if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(currentQuestion.value)
-        utterance.rate = 0.8
-        utterance.pitch = 1.0
-        utterance.volume = 1.0
-        
-        utterance.onend = () => {
-          isPlaying.value = false
-        }
-        
-        utterance.onerror = () => {
-          isPlaying.value = false
-        }
-
-        speechSynthesis.speak(utterance)
-      } else {
-        // Fallback - just mark as complete
-        setTimeout(() => {
-          isPlaying.value = false
-        }, 1000)
-      }
+      // Import useTextToSpeech dynamically to avoid circular dependencies
+      const { useTextToSpeech } = await import('@tiko/ui')
+      const tts = useTextToSpeech()
+      
+      // Speak with language-aware voice
+      await tts.speak(currentQuestion.value, {
+        rate: 0.8,
+        pitch: 1.0,
+        volume: 1.0
+      })
+      
+      isPlaying.value = false
     } catch (error) {
       console.error('Failed to speak question:', error)
       isPlaying.value = false
@@ -137,13 +127,25 @@ export const useYesNoStore = defineStore('yesno', () => {
   }
 
   const speakAnswer = async (answer: 'yes' | 'no') => {
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(answer === 'yes' ? 'Yes!' : 'No!')
-      utterance.rate = 0.8
-      utterance.pitch = 1.2
-      utterance.volume = 1.0
+    try {
+      // Import useTextToSpeech and useI18n dynamically
+      const { useTextToSpeech, useI18n } = await import('@tiko/ui')
+      const tts = useTextToSpeech()
+      const { t, keys } = useI18n()
       
-      speechSynthesis.speak(utterance)
+      // Get translated answer
+      const translatedAnswer = answer === 'yes' 
+        ? t(keys.common.yes) 
+        : t(keys.common.no)
+      
+      // Speak with language-aware voice
+      await tts.speak(translatedAnswer, {
+        rate: 0.8,
+        pitch: 1.2,
+        volume: 1.0
+      })
+    } catch (error) {
+      console.error('Failed to speak answer:', error)
     }
   }
 

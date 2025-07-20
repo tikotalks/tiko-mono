@@ -205,9 +205,8 @@ const handleLogout = () => {
 };
 
 const sayQuestion = () => {
-  if (settings.value.autoSpeak) {
-    yesNoStore.speakQuestion();
-  }
+  // Always speak when clicked, regardless of autoSpeak setting
+  yesNoStore.speakQuestion();
 };
 
 // Initialize

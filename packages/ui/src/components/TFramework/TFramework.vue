@@ -215,6 +215,56 @@ watch(() => authStore.user, (newUser, oldUser) => {
   }
 }, { immediate: true })
 
+// Initialize theme
+const initializeTheme = () => {
+  let themeToApply = 'auto'
+  
+  // First check user metadata if available
+  if (user.value?.user_metadata?.settings?.theme) {
+    themeToApply = user.value.user_metadata.settings.theme
+    console.log('[TFramework] Applying theme from user data:', themeToApply)
+  } else {
+    // Fall back to localStorage
+    const storedTheme = localStorage.getItem('tiko-theme')
+    if (storedTheme) {
+      themeToApply = storedTheme
+      console.log('[TFramework] Applying theme from localStorage:', themeToApply)
+    }
+  }
+  
+  // Apply the theme
+  document.documentElement.setAttribute('data-theme', themeToApply)
+  
+  // Also update the CSS custom property for color mode
+  if (themeToApply === 'dark') {
+    document.documentElement.style.setProperty('color-scheme', 'dark')
+  } else if (themeToApply === 'light') {
+    document.documentElement.style.setProperty('color-scheme', 'light')  
+  } else {
+    document.documentElement.style.removeProperty('color-scheme')
+  }
+  
+  // Keep localStorage in sync
+  localStorage.setItem('tiko-theme', themeToApply)
+}
+
+// Watch for theme changes in user metadata
+watch(() => user.value?.user_metadata?.settings?.theme, (newTheme) => {
+  if (newTheme) {
+    console.log('[TFramework] Theme changed in user metadata:', newTheme)
+    initializeTheme()
+  }
+})
+
+// Additional watcher for when user first becomes available (handles refresh timing for theme)
+watch(() => authStore.user, (newUser, oldUser) => {
+  // Only apply if user just became available (was null/undefined before)
+  if (newUser && !oldUser && newUser.user_metadata?.settings?.theme) {
+    console.log('[TFramework] User authenticated, applying saved theme:', newUser.user_metadata.settings.theme)
+    initializeTheme()
+  }
+}, { immediate: true })
+
 // Initialize
 onMounted(async () => {
   // Initialize network monitoring
@@ -223,6 +273,9 @@ onMounted(async () => {
   // Initialize auth from storage first
   console.log('[TFramework] Initializing auth from storage...')
   await authStore.initializeFromStorage()
+  
+  // Initialize theme (do this early for immediate visual feedback)
+  initializeTheme()
   
   // After auth is initialized, check if we need to apply saved language
   if (user.value?.user_metadata?.settings?.language) {

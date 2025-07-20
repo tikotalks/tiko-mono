@@ -46,6 +46,7 @@ export type { Card } from './components/TCard/TCardCommunication.vue'
 export { useI18n } from './composables/useI18n'
 export type { TranslationKey } from './i18n/types'
 export { useEventBus, createEventBus } from './composables/useEventBus'
+export { useTextToSpeech } from './composables/useTextToSpeech'
 export type {
   EventMap,
   EventHandler,
