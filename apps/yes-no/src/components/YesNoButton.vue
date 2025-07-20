@@ -1,5 +1,5 @@
 <template>
-  <button :class="bemm('',['', current ? 'x' : 'v'])">
+  <button :class="bemm('',['', current ? 'x' : 'v', size])">
     <div :class="bemm('char', ['', current ? 'x' : 'v'])">
       <div :class="bemm('char-leg', ['', '1'])"></div>
       <div :class="bemm('char-leg', ['', '2'])"></div>
@@ -21,6 +21,11 @@ const props = defineProps({
   toggleMode: {
     type: Boolean,
     default: false,
+  },
+  size: {
+    type: String,
+    default: 'large',
+    validator: (value: string) => ['small', 'medium', 'large'].includes(value)
   }
 });
 
@@ -44,6 +49,19 @@ const toggle = () => {
  border-radius: var(--border-radius-s); position: relative;
   padding: .25em;
   border: none;
+  
+  // Size variants
+  &--small {
+    font-size: 3em;
+  }
+  
+  &--medium {
+    font-size: 5em;
+  }
+  
+  &--large {
+    font-size: 8em;
+  }
 
   --inner-shadow-size: 0.25em;
   --inner-shadow-offset: 0.025em;

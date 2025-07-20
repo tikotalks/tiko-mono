@@ -4,7 +4,7 @@
       <!-- Language Selection -->
       <div :class="bemm('section')">
         <h3 :class="bemm('section-title')">{{ t(keys.settings.language) }}</h3>
-        <div :class="bemm('language-selector')" @click="openLanguageSelector">
+        <div :class="bemm('language-selector')" @click.stop="openLanguageSelector">
           <div :class="bemm('language-display')">
             <TIcon name="globe" :class="bemm('language-icon')" />
             <span :class="bemm('language-text')">{{ currentLanguageDisplay }}</span>

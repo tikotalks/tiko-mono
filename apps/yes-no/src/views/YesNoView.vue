@@ -39,27 +39,41 @@
           data-cy="question-display"
           :disabled="isPlaying"
         >
-          <div :class="bemm('question-text')" @click="sayQuestion">
+          <div :class="bemm('question-text')">
             {{ currentQuestion }}
           </div>
 
-          <TIcon
-            :name="isPlaying ? 'volume-2' : 'volume-1'"
-            :class="bemm('question-icon')"
-            size="large"
-          />
+          <div :class="bemm('question-controls')">
+            <TButton
+              v-if="parentMode.isUnlocked.value"
+              :icon="'edit'"
+              type="ghost"
+              size="small"
+              @click.stop="showQuestionInput"
+              :aria-label="t(keys.yesno.editQuestion)"
+            />
+            <TButton
+              :icon="isPlaying ? 'volume-2' : 'volume-1'"
+              type="ghost"
+              size="small"
+              @click.stop="speakQuestion"
+              :aria-label="t(keys.common.speak)"
+            />
+          </div>
         </div>
 
         <!-- Answer buttons -->
-        <div :class="bemm('answers')">
+        <div :class="bemm('answers', ['', localSettings.buttonSize])">
           <YesNoButton
           :class="bemm('answer',['','yes'])"
             :mode="0"
+            :size="localSettings.buttonSize"
             @click="() => handleAnswer('yes')"
           ></YesNoButton>
           <YesNoButton
           :class="bemm('answer',['','no'])"
             :mode="1"
+            :size="localSettings.buttonSize"
             @click="() => handleAnswer('no')"
           ></YesNoButton>
         </div>
@@ -102,7 +116,7 @@ const feedbackType = ref<'yes' | 'no'>('yes');
 
 // Local settings copy for immediate UI updates
 const localSettings = reactive({
-  buttonSize: 'large' as const,
+  buttonSize: 'large' as 'small' | 'medium' | 'large',
   autoSpeak: true,
   hapticFeedback: true,
 });
@@ -135,7 +149,17 @@ const handleAnswer = async (answer: 'yes' | 'no') => {
   feedbackType.value = answer;
   showFeedback.value = true;
 
+  // Haptic feedback if enabled
+  if (localSettings.hapticFeedback && 'vibrate' in navigator) {
+    navigator.vibrate(50);
+  }
+
   await yesNoStore.handleAnswer(answer);
+
+  // Speak answer if autoSpeak is enabled
+  if (localSettings.autoSpeak) {
+    yesNoStore.speakText(answer === 'yes' ? t(keys.yesno.yes) : t(keys.yesno.no));
+  }
 
   // Hide feedback after 1.5 seconds
   setTimeout(() => {
@@ -196,7 +220,7 @@ const handleProfile = () => {
 };
 
 const handleSettings = () => {
-  showSettingsPopup();
+  handleAppSettings();
 };
 
 const handleLogout = () => {
@@ -204,10 +228,6 @@ const handleLogout = () => {
   // The auth store handles the logout, this is just for any cleanup
 };
 
-const sayQuestion = () => {
-  // Always speak when clicked, regardless of autoSpeak setting
-  yesNoStore.speakQuestion();
-};
 
 // Initialize
 onMounted(async () => {
@@ -274,6 +294,18 @@ onMounted(async () => {
     width: 100%;
     justify-content: center;
     font-size: 20vmin;
+    
+    &--small {
+      font-size: 10vmin;
+    }
+    
+    &--medium {
+      font-size: 15vmin;
+    }
+    
+    &--large {
+      font-size: 20vmin;
+    }
   }
 
   &:has(:hover){
@@ -289,8 +321,30 @@ onMounted(async () => {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-direction: column;
+    gap: var(--space);
+    cursor: pointer;
+    padding: var(--space);
+    border-radius: var(--border-radius);
+    transition: background-color 0.2s ease;
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
     &-text {
       font-size: 2em;
+      text-align: center;
+    }
+    
+    &-controls {
+      display: flex;
+      gap: var(--space-s);
+      opacity: 0.8;
+      
+      .yes-no__question:hover & {
+        opacity: 1;
+      }
     }
   }
 

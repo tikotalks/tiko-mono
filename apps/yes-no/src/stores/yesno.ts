@@ -149,6 +149,23 @@ export const useYesNoStore = defineStore('yesno', () => {
     }
   }
 
+  const speakText = async (text: string) => {
+    try {
+      // Import useTextToSpeech dynamically
+      const { useTextToSpeech } = await import('@tiko/ui')
+      const tts = useTextToSpeech()
+      
+      // Speak with language-aware voice
+      await tts.speak(text, {
+        rate: 0.8,
+        pitch: 1.0,
+        volume: 1.0
+      })
+    } catch (error) {
+      console.error('Failed to speak text:', error)
+    }
+  }
+
   const updateSettings = async (newSettings: Partial<YesNoSettings>) => {
     const currentSettings = settings.value
     const updatedSettings = { ...currentSettings, ...newSettings }
@@ -288,6 +305,7 @@ export const useYesNoStore = defineStore('yesno', () => {
     setQuestion,
     selectQuestion,
     speakQuestion,
+    speakText,
     handleAnswer,
     updateSettings,
     saveState,
