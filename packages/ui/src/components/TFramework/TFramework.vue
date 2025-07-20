@@ -80,8 +80,8 @@ const { setLocale, t, keys, locale } = useI18n()
 // Set config and get theme styles
 const { themeStyles } = useTikoConfig(props.config)
 
-// Get user state
-const { user } = storeToRefs(authStore)
+// Get user state and settings
+const { user, userSettings, currentTheme, currentLanguage } = storeToRefs(authStore)
 
 // TopBar configuration with defaults
 const topBar = computed(() => ({
@@ -195,76 +195,36 @@ const updateRouteTitle = () => {
 // Watch route changes
 watch(() => route.fullPath, updateRouteTitle, { immediate: true })
 
-// Watch for user metadata changes (including language)
-watch(() => user.value?.user_metadata?.settings?.language, (newLanguage) => {
+// Watch for language changes in user settings
+watch(currentLanguage, (newLanguage) => {
   if (newLanguage && newLanguage !== locale.value) {
-    console.log('[TFramework] Language changed in user metadata:', newLanguage)
+    console.log('[TFramework] Language changed in user settings:', newLanguage)
     setLocale(newLanguage as Locale)
   }
 }, { immediate: true })
 
-// Additional watcher for when user first becomes available (handles refresh timing)
-watch(() => authStore.user, (newUser, oldUser) => {
-  // Only apply if user just became available (was null/undefined before)
-  if (newUser && !oldUser && newUser.user_metadata?.settings?.language) {
-    const savedLanguage = newUser.user_metadata.settings.language
-    if (savedLanguage !== locale.value) {
-      console.log('[TFramework] User authenticated, applying saved language:', savedLanguage)
-      setLocale(savedLanguage as Locale)
-    }
-  }
-}, { immediate: true })
-
-// Initialize theme
-const initializeTheme = () => {
-  let themeToApply = 'auto'
-  
-  // First check localStorage (for immediate feedback)
-  const storedTheme = localStorage.getItem('tiko-theme')
-  if (storedTheme) {
-    themeToApply = storedTheme
-    console.log('[TFramework] Applying theme from localStorage:', themeToApply)
-  }
-  
-  // Then check user metadata if available (this takes precedence if different)
-  if (user.value?.user_metadata?.settings?.theme) {
-    const userTheme = user.value.user_metadata.settings.theme
-    if (userTheme !== themeToApply) {
-      themeToApply = userTheme
-      console.log('[TFramework] Overriding with theme from user data:', themeToApply)
-    }
-  }
+// Apply theme to DOM
+const applyTheme = (theme: string) => {
+  console.log('[TFramework] Applying theme:', theme)
   
   // Apply the theme
-  document.documentElement.setAttribute('data-theme', themeToApply)
+  document.documentElement.setAttribute('data-theme', theme)
   
   // Also update the CSS custom property for color mode
-  if (themeToApply === 'dark') {
+  if (theme === 'dark') {
     document.documentElement.style.setProperty('color-scheme', 'dark')
-  } else if (themeToApply === 'light') {
+  } else if (theme === 'light') {
     document.documentElement.style.setProperty('color-scheme', 'light')  
   } else {
     document.documentElement.style.removeProperty('color-scheme')
   }
-  
-  // Keep localStorage in sync
-  localStorage.setItem('tiko-theme', themeToApply)
 }
 
-// Watch for theme changes in user metadata
-watch(() => user.value?.user_metadata?.settings?.theme, (newTheme) => {
+// Watch for theme changes in user settings
+watch(currentTheme, (newTheme) => {
   if (newTheme) {
-    console.log('[TFramework] Theme changed in user metadata:', newTheme)
-    initializeTheme()
-  }
-})
-
-// Additional watcher for when user first becomes available (handles refresh timing for theme)
-watch(() => authStore.user, (newUser, oldUser) => {
-  // Only apply if user just became available (was null/undefined before)
-  if (newUser && !oldUser && newUser.user_metadata?.settings?.theme) {
-    console.log('[TFramework] User authenticated, applying saved theme:', newUser.user_metadata.settings.theme)
-    initializeTheme()
+    console.log('[TFramework] Theme changed in user settings:', newTheme)
+    applyTheme(newTheme)
   }
 }, { immediate: true })
 
@@ -273,48 +233,19 @@ onMounted(async () => {
   // Initialize network monitoring
   appStore.initializeNetworkMonitoring()
 
-  // Initialize auth from storage first
+  // Initialize auth from storage - this loads settings from localStorage and API
   console.log('[TFramework] Initializing auth from storage...')
   await authStore.initializeFromStorage()
   
-  console.log('[TFramework] User data after init:', {
+  console.log('[TFramework] User settings after init:', {
     hasUser: !!user.value,
-    hasMetadata: !!user.value?.user_metadata,
-    hasSettings: !!user.value?.user_metadata?.settings,
-    settings: user.value?.user_metadata?.settings
+    settings: userSettings.value,
+    theme: currentTheme.value,
+    language: currentLanguage.value
   })
   
-  // Initialize theme - localStorage takes precedence for immediate feedback
-  initializeTheme()
-  
-  // Language is already initialized from localStorage by useI18n
-  // Only override if user has a different saved preference in metadata
-  if (user.value?.user_metadata?.settings?.language) {
-    const savedLanguage = user.value.user_metadata.settings.language
-    const currentLocale = locale.value
-    
-    // Check if localStorage has a more recent value
-    const localStorageRaw = localStorage.getItem('tiko-language')
-    let localStorageLocale = null
-    try {
-      localStorageLocale = localStorageRaw ? JSON.parse(localStorageRaw) : null
-    } catch (e) {
-      console.error('[TFramework] Error parsing localStorage language:', e)
-    }
-    
-    console.log('[TFramework] Language comparison:', {
-      userMetadata: savedLanguage,
-      currentLocale: currentLocale,
-      localStorage: localStorageLocale
-    })
-    
-    // Only apply user metadata language if localStorage doesn't have a value
-    // This assumes localStorage is more recent if it exists
-    if (!localStorageLocale && savedLanguage !== currentLocale) {
-      console.log('[TFramework] Applying saved language from user data:', savedLanguage)
-      setLocale(savedLanguage as Locale)
-    }
-  }
+  // The theme and language are now automatically applied via watchers
+  // No need for manual initialization here
 
   // Initialize route title
   updateRouteTitle()
