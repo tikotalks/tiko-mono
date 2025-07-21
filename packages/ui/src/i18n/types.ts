@@ -414,6 +414,7 @@ export interface TranslationSchema {
     pinMustBe4Digits: string
     hideNumbers: string
     showNumbers: string
+    parentMode: string
   }
   profile: {
     title: string

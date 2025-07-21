@@ -411,7 +411,8 @@ export const is: TranslationSchema = {
     confirmYourPin: 'Staðfestu PIN þinn',
     pinMustBe4Digits: 'PIN verður að vera nákvæmlega 4 tölustafir',
     hideNumbers: 'Fela tölur',
-    showNumbers: 'Sýna tölur'
+    showNumbers: 'Sýna tölur',
+    parentMode: 'Parent Mode'
   },
   profile: {
     title: 'Prófíll',

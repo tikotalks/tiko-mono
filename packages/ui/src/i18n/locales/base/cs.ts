@@ -339,7 +339,8 @@ export const cs: TranslationSchema = {
     confirmYourPin: 'Potvrďte svůj PIN',
     pinMustBe4Digits: 'PIN musí mít přesně 4 čísla',
     hideNumbers: 'Skrýt čísla',
-    showNumbers: 'Zobrazit čísla'
+    showNumbers: 'Zobrazit čísla',
+    parentMode: 'Parent Mode'
   },
 
   radio: {

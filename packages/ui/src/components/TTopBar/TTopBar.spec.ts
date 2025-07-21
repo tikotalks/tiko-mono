@@ -1,7 +1,12 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { ref } from 'vue'
 import TTopBar from './TTopBar.vue'
 import { useParentMode } from '../../composables/useParentMode'
+
+// Import i18n data for mocking
+import { en } from '../../i18n/locales/base/en'
+import { keys } from '../../i18n/keys'
 
 // Mock TButtonGroup
 vi.mock('../TButton/TButtonGroup.vue', () => ({
@@ -39,30 +44,41 @@ vi.mock('@tiko/core', () => ({
 
 // Mock composables
 vi.mock('../../composables/useI18n', () => ({
-  useI18n: () => ({
-    t: (key: string) => key,
+  useI18n: vi.fn(() => ({
+    t: vi.fn((key: string) => key),
     keys: {
       common: {
-        back: 'common.back',
-        profile: 'common.profile',
-        settings: 'common.settings',
-        logout: 'common.logout'
+        menu: 'common.menu'
       },
       profile: {
-        profile: 'profile.profile',
-        editProfile: 'profile.editProfile'
+        title: 'profile.title',
+        parentMode: 'profile.parentMode'
+      },
+      parentMode: {
+        parentMode: 'parentMode.parentMode',
+        setupTitle: 'parentMode.setupTitle',
+        setUpParentMode: 'parentMode.setUpParentMode',
+        createPinDescription: 'parentMode.createPinDescription',
+        enterParentPin: 'parentMode.enterParentPin',
+        enterPinDescription: 'parentMode.enterPinDescription'
       },
       settings: {
-        title: 'settings.title'
+        title: 'settings.title',
+        userSettings: 'settings.userSettings'
       },
       auth: {
-        signOut: 'auth.signOut'
-      },
-      topBar: {
-        userMenuLabel: 'topBar.userMenuLabel'
+        logout: 'auth.logout'
       }
-    }
-  })
+    },
+    locale: ref('en'),
+    setLocale: vi.fn(),
+    availableLocales: ref([
+      { code: 'en-GB', name: 'English' },
+      { code: 'nl-NL', name: 'Dutch' },
+      { code: 'de-DE', name: 'German' },
+      { code: 'fr-FR', name: 'French' }
+    ])
+  }))
 }))
 
 vi.mock('../../composables/useParentMode', () => ({

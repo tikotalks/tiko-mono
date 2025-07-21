@@ -413,6 +413,7 @@ export const fr: TranslationSchema = {
     pinMustBe4Digits: 'Le PIN doit comporter exactement 4 chiffres ',
     hideNumbers: 'Masquer les chiffres ',
     showNumbers: 'Afficher les chiffres ',
+    parentMode: 'Parent Mode'
   },
   profile: {
     title: 'Profil',

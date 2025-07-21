@@ -411,7 +411,8 @@ export const mt: TranslationSchema = {
     confirmYourPin: 'Confirm your PIN ',
     pinMustBe4Digits: 'PIN must be exactly 4 digits ',
     hideNumbers: 'Hide Numbers ',
-    showNumbers: 'Show Numbers '
+    showNumbers: 'Show Numbers ',
+    parentMode: 'Parent Mode'
   },
   profile: {
     title: 'Profil',

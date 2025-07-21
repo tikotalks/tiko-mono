@@ -328,7 +328,8 @@ export const fi: TranslationSchema = {
     confirmYourPin: 'Vahvista PIN-koodi',
     pinMustBe4Digits: 'PIN-koodin on oltava tarkalleen 4 numeroa',
     hideNumbers: 'Piilota numerot',
-    showNumbers: 'Näytä numerot'
+    showNumbers: 'Näytä numerot',
+    parentMode: 'Parent Mode'
   },
   radio: {
     radioSettings: 'Radion asetukset',

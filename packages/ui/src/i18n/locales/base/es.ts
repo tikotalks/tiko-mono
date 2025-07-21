@@ -412,7 +412,8 @@ export const es: TranslationSchema = {
     confirmYourPin: 'Confirma tu PIN',
     pinMustBe4Digits: 'El PIN debe tener exactamente 4 dígitos',
     hideNumbers: 'Ocultar números',
-    showNumbers: 'Mostrar números'
+    showNumbers: 'Mostrar números',
+    parentMode: 'Parent Mode',
   },
   profile: {
     title: 'Perfil',

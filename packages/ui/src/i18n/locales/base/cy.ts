@@ -411,7 +411,8 @@ export const cy: TranslationSchema = {
     confirmYourPin: 'Cadarnhewch eich PIN',
     pinMustBe4Digits: 'Rhaid i\'r PIN fod yn union 4 digid',
     hideNumbers: 'Cuddio Rhifau',
-    showNumbers: 'Dangos Rhifau'
+    showNumbers: 'Dangos Rhifau',
+    parentMode: 'Parent Mode'
   },
   profile: {
     title: 'Proffil',

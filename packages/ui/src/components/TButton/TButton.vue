@@ -123,7 +123,7 @@ const buttonType = computed(() => {
 })
 
 const buttonStyles = computed(() => {
-  if(props.type == ButtonType.GHOST){
+  if([ButtonType.GHOST, ButtonType.OUTLINE].includes(props.type)){
     return {
       '--button-color': `var(--color-${props.color})`,
     }
@@ -185,6 +185,8 @@ const buttonStyles = computed(() => {
   &--outline {
     --button-background: transparent;
     --button-color-text: var(--button-color);
+    --button-border-width: 2px;
+    --button-border-color: color-mix(in srgb, var(--button-color), transparent 50%);
 
     &:hover:not(:disabled) {
       --button-background: var(--button-color);
@@ -224,6 +226,8 @@ const buttonStyles = computed(() => {
     align-items: center;
     justify-content: center;
     gap: var(--space-xs, 0.5em);
+    border-radius: inherit;
+    box-shadow: 0 0 0 var(--button-border-width, 0) var(--button-border-color, transparent) inset;
 
     &--direction-reverse {
       flex-direction: row-reverse;

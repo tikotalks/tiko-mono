@@ -1,38 +1,131 @@
 <template>
   <div :class="bemm()">
-      <form @submit.prevent="handleSubmit">
+    <form @submit.prevent="handleSubmit">
+      <div :class="bemm('pin-container')">
+        <!-- PIN Input Dots -->
+        <div :class="bemm('pin-display')">
+          <div
+            v-for="(_, index) in 4"
+            :key="index"
+            :class="
+              bemm('pin-dot', {
+                filled: index < pinValue.length,
+                active: index === pinValue.length,
+              })
+            "
+          >
+            <span v-if="showNumbers && pinValue[index]">{{
+              pinValue[index]
+            }}</span>
+          </div>
+        </div>
+
+        <!-- Hidden input for actual value -->
+        <input
+          ref="pinInput"
+          v-model="pinValue"
+          type="text"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          maxlength="4"
+          :class="bemm('pin-input')"
+          @input="handleInput"
+          @keydown="handleKeydown"
+          autofocus
+        />
+      </div>
+
+      <!-- Number Pad -->
+      <div
+        v-if="mode === 'unlock' || (mode === 'setup' && pinValue.length < 4)"
+        :class="bemm('numpad')"
+      >
+        <button
+          v-for="num in [1, 2, 3, 4, 5, 6, 7, 8, 9]"
+          :key="num"
+          type="button"
+          :class="bemm('numpad-button')"
+          @click="handleNumberClick(num.toString())"
+        >
+          {{ num }}
+        </button>
+
+        <button
+          type="button"
+          :class="bemm('numpad-button', ['', 'clear'])"
+          @click="handleClearClick"
+          :disabled="(confirmValue ? confirmValue : pinValue).length === 0"
+        >
+          <TIcon :name="Icons.ARROW_LEFT" />
+        </button>
+
+        <button
+          type="button"
+          :class="bemm('numpad-button')"
+          @click="handleNumberClick('0')"
+        >
+          0
+        </button>
+
+        <button
+          type="button"
+          :class="bemm('numpad-button', ['', 'submit'])"
+          @click="handleSubmit"
+          :disabled="!canSubmit"
+        >
+          <TIcon :name="Icons.CHECK_M" />
+        </button>
+      </div>
+
+      <!-- Confirmation PIN for setup mode -->
+      <div
+        v-if="mode === 'setup' && pinValue.length === 4"
+        :class="bemm('confirm-section')"
+      >
+        <p :class="bemm('confirm-label')">
+          {{ t(keys.parentMode.confirmYourPin) }}
+        </p>
         <div :class="bemm('pin-container')">
-          <!-- PIN Input Dots -->
           <div :class="bemm('pin-display')">
             <div
               v-for="(_, index) in 4"
-              :key="index"
-              :class="bemm('pin-dot', { filled: index < pinValue.length, active: index === pinValue.length })"
+              :key="'confirm-' + index"
+              :class="
+                bemm('pin-dot', {
+                  filled: index < confirmValue.length,
+                  active: index === confirmValue.length,
+                })
+              "
             >
-              <span v-if="showNumbers && pinValue[index]">{{ pinValue[index] }}</span>
+              <span v-if="showNumbers && confirmValue[index]">{{
+                confirmValue[index]
+              }}</span>
             </div>
           </div>
 
-          <!-- Hidden input for actual value -->
           <input
-            ref="pinInput"
-            v-model="pinValue"
+            ref="confirmInput"
+            v-model="confirmValue"
             type="text"
             inputmode="numeric"
             pattern="[0-9]*"
             maxlength="4"
             :class="bemm('pin-input')"
-            @input="handleInput"
-            @keydown="handleKeydown"
-            autofocus
+            @input="handleConfirmInput"
+            @keydown="handleConfirmKeydown"
           />
         </div>
 
-        <!-- Number Pad -->
-        <div v-if="mode === 'unlock' || (mode === 'setup' && pinValue.length < 4)" :class="bemm('numpad')">
+        <!-- Number Pad for Confirm -->
+        <div
+          v-if="
+            mode === 'setup' && pinValue.length === 4 && confirmValue.length < 4
+          "
+          :class="bemm('numpad')"
+        >
           <button
             v-for="num in [1, 2, 3, 4, 5, 6, 7, 8, 9]"
-            :key="num"
+            :key="`confirm-${num}`"
             type="button"
             :class="bemm('numpad-button')"
             @click="handleNumberClick(num.toString())"
@@ -42,11 +135,11 @@
 
           <button
             type="button"
-            :class="bemm('numpad-button', ['','clear'])"
+            :class="bemm('numpad-button', ['', 'clear'])"
             @click="handleClearClick"
-            :disabled="(confirmValue ? confirmValue : pinValue).length === 0"
+            :disabled="confirmValue.length === 0"
           >
-            <TIcon name="arrow-left" />
+            <TIcon :name="Icons.ARROW_LEFT" />
           </button>
 
           <button
@@ -59,88 +152,50 @@
 
           <button
             type="button"
-            :class="bemm('numpad-button', ['','submit'])"
+            :class="bemm('numpad-button', ['', 'submit'])"
             @click="handleSubmit"
             :disabled="!canSubmit"
           >
-            <TIcon name="check" />
+            <TIcon :name="Icons.CHECK_M" />
           </button>
         </div>
+      </div>
 
-        <!-- Confirmation PIN for setup mode -->
-        <div v-if="mode === 'setup' && pinValue.length === 4" :class="bemm('confirm-section')">
-          <p :class="bemm('confirm-label')">{{ t(keys.parentMode.confirmYourPin) }}</p>
-          <div :class="bemm('pin-container')">
-            <div :class="bemm('pin-display')">
-              <div
-                v-for="(_, index) in 4"
-                :key="'confirm-' + index"
-                :class="bemm('pin-dot', { filled: index < confirmValue.length, active: index === confirmValue.length })"
-              >
-                <span v-if="showNumbers && confirmValue[index]">{{ confirmValue[index] }}</span>
-              </div>
-            </div>
+      <!-- Toggle number visibility -->
+      <div :class="bemm('options')">
+        <TButton
+          type="outline"
+          :icon="showNumbers ? Icons.EYE_SLASH : Icons.EYE"
+          @click="toggleNumberVisibility"
+        >
+          {{
+            showNumbers
+              ? t(keys.parentMode.hideNumbers)
+              : t(keys.parentMode.showNumbers)
+          }}
+        </TButton>
+      </div>
 
-            <input
-              ref="confirmInput"
-              v-model="confirmValue"
-              type="text"
-              inputmode="numeric"
-              pattern="[0-9]*"
-              maxlength="4"
-              :class="bemm('pin-input')"
-              @input="handleConfirmInput"
-              @keydown="handleConfirmKeydown"
-            />
-          </div>
-
-          <!-- Number Pad for Confirm -->
-          <div v-if="mode === 'setup' && pinValue.length === 4 && confirmValue.length < 4" :class="bemm('numpad')">
-            <button
-              v-for="num in [1, 2, 3, 4, 5, 6, 7, 8, 9]"
-              :key="`confirm-${num}`"
-              type="button"
-              :class="bemm('numpad-button')"
-              @click="handleNumberClick(num.toString())"
-            >
-              {{ num }}
-            </button>
-
-            <button
-              type="button"
-              :class="bemm('numpad-button', ['','clear'])"
-              @click="handleClearClick"
-              :disabled="confirmValue.length === 0"
-            >
-              <TIcon name="arrow-left" />
-            </button>
-
-            <button
-              type="button"
-              :class="bemm('numpad-button')"
-              @click="handleNumberClick('0')"
-            >
-              0
-            </button>
-
-            <button
-              type="button"
-              :class="bemm('numpad-button', ['','submit'])"
-              @click="handleSubmit"
-              :disabled="!canSubmit"
-            >
-              <TIcon name="check" />
-            </button>
-          </div>
-        </div>
-
-        <!-- Actions -->
-        <div :class="bemm('actions')">
-          <TButton
-            type="ghost"
-            color="secondary"
-            @click="handleClosePopup"
-          >
+      <!-- Actions -->
+      <div :class="[bemm('actions'), 'popup-footer']">
+        <TButtonGroup
+          :class="bemm('button-group')"
+          :buttons="[
+            {
+              label: t(keys.common.cancel),
+              type: 'ghost',
+              action: handleClosePopup,
+            },
+            {
+              label: submitLabel,
+              type: 'primary',
+              action: handleSubmit,
+              disabled: !canSubmit,
+              loading: isProcessing,
+            },
+          ]"
+        >
+          <TButton type="outline" @click="handleClosePopup">
             {{ t(keys.common.cancel) }}
           </TButton>
 
@@ -152,125 +207,120 @@
           >
             {{ submitLabel }}
           </TButton>
-        </div>
+        </TButtonGroup>
+      </div>
 
-        <!-- Toggle number visibility -->
-        <div :class="bemm('options')">
-          <TButton
-            type="ghost"
-            size="small"
-            :icon="showNumbers ? 'eye-off' : 'eye'"
-            @click="toggleNumberVisibility"
-          >
-            {{ showNumbers ? t(keys.parentMode.hideNumbers) : t(keys.parentMode.showNumbers) }}
-          </TButton>
-        </div>
-
-        <!-- Error message -->
-        <div v-if="error" :class="bemm('error')">
-          {{ error }}
-        </div>
-      </form>
+      <!-- Error message -->
+      <div v-if="error" :class="bemm('error')">
+        {{ error }}
+      </div>
+    </form>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, watch, onMounted } from 'vue'
-import { useBemm } from 'bemm'
-import { useI18n } from '../../composables/useI18n'
-import TButton from '../TButton/TButton.vue'
-import TIcon from '../TIcon/TIcon.vue'
-import type { ParentModePinInputProps } from '../../composables/useParentMode.model'
+import { ref, computed, nextTick, watch, onMounted } from 'vue';
+import { useBemm } from 'bemm';
+import { useI18n } from '../../composables/useI18n';
+import TButton from '../TButton/TButton.vue';
+import TIcon from '../TIcon/TIcon.vue';
+import type { ParentModePinInputProps } from '../../composables/useParentMode.model';
+import { Icons } from 'open-icon';
+import TButtonGroup from '../TButton/TButtonGroup.vue';
 
 interface ExtendedProps extends ParentModePinInputProps {
-  onPinEntered?: (pin: string) => void
-  onClose?: () => void
+  onPinEntered?: (pin: string) => void;
+  onClose?: () => void;
 }
 
 const props = withDefaults(defineProps<ExtendedProps>(), {
   showConfirmation: true,
   autoFocus: true,
   title: '',
-  description: ''
-})
+  description: '',
+});
 
 const emit = defineEmits<{
-  'pin-entered': [pin: string]
-  'close': []
-}>()
+  'pin-entered': [pin: string];
+  close: [];
+}>();
 
-const bemm = useBemm('parent-mode-pin-input')
-const { t, keys } = useI18n()
+const bemm = useBemm('parent-mode-pin-input');
+const { t, keys } = useI18n();
 
 // Refs
-const pinInput = ref<HTMLInputElement | null>(null)
-const confirmInput = ref<HTMLInputElement | null>(null)
+const pinInput = ref<HTMLInputElement | null>(null);
+const confirmInput = ref<HTMLInputElement | null>(null);
 
 // Local state
-const pinValue = ref('')
-const confirmValue = ref('')
-const showNumbers = ref(false)
-const isProcessing = ref(false)
-const error = ref('')
+const pinValue = ref('');
+const confirmValue = ref('');
+const showNumbers = ref(false);
+const isProcessing = ref(false);
+const error = ref('');
 
 // Computed properties
 const canSubmit = computed(() => {
   if (props.mode === 'unlock') {
-    return pinValue.value.length === 4 && /^\d{4}$/.test(pinValue.value)
+    return pinValue.value.length === 4 && /^\d{4}$/.test(pinValue.value);
   } else {
-    return pinValue.value.length === 4 &&
-           confirmValue.value.length === 4 &&
-           pinValue.value === confirmValue.value &&
-           /^\d{4}$/.test(pinValue.value)
+    return (
+      pinValue.value.length === 4 &&
+      confirmValue.value.length === 4 &&
+      pinValue.value === confirmValue.value &&
+      /^\d{4}$/.test(pinValue.value)
+    );
   }
-})
+});
 
 const submitLabel = computed(() => {
-  return props.mode === 'setup' ? t(keys.parentMode.setPin) : t(keys.parentMode.unlock)
-})
+  return props.mode === 'setup'
+    ? t(keys.parentMode.setPin)
+    : t(keys.parentMode.unlock);
+});
 
 /**
  * Handle PIN input
  */
 const handleInput = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const value = target.value.replace(/\D/g, '') // Only allow digits
+  const target = event.target as HTMLInputElement;
+  const value = target.value.replace(/\D/g, ''); // Only allow digits
 
   if (value.length <= 4) {
-    pinValue.value = value
-    error.value = ''
+    pinValue.value = value;
+    error.value = '';
 
     // Auto-submit for unlock mode when 4 digits entered
     if (props.mode === 'unlock' && value.length === 4) {
-      handleSubmit()
+      handleSubmit();
     }
 
     // Focus confirm input for setup mode
     if (props.mode === 'setup' && value.length === 4) {
       nextTick(() => {
-        confirmInput.value?.focus()
-      })
+        confirmInput.value?.focus();
+      });
     }
   }
-}
+};
 
 /**
  * Handle confirmation input
  */
 const handleConfirmInput = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const value = target.value.replace(/\D/g, '') // Only allow digits
+  const target = event.target as HTMLInputElement;
+  const value = target.value.replace(/\D/g, ''); // Only allow digits
 
   if (value.length <= 4) {
-    confirmValue.value = value
-    error.value = ''
+    confirmValue.value = value;
+    error.value = '';
 
     // Auto-submit when both PINs match and are 4 digits
     if (value.length === 4 && value === pinValue.value) {
-      handleSubmit()
+      handleSubmit();
     }
   }
-}
+};
 
 /**
  * Handle keydown events
@@ -278,162 +328,177 @@ const handleConfirmInput = (event: Event) => {
 const handleKeydown = (event: KeyboardEvent) => {
   // Allow backspace, delete, tab, escape, enter
   if ([8, 9, 27, 13, 46].includes(event.keyCode)) {
-    return
+    return;
   }
 
   // Allow Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
   if (event.ctrlKey === true && [65, 67, 86, 88].includes(event.keyCode)) {
-    return
+    return;
   }
 
   // Ensure that it is a number and stop the keypress
-  if ((event.shiftKey || (event.keyCode < 48 || event.keyCode > 57)) &&
-      (event.keyCode < 96 || event.keyCode > 105)) {
-    event.preventDefault()
+  if (
+    (event.shiftKey || event.keyCode < 48 || event.keyCode > 57) &&
+    (event.keyCode < 96 || event.keyCode > 105)
+  ) {
+    event.preventDefault();
   }
-}
+};
 
 /**
  * Handle confirm keydown events
  */
 const handleConfirmKeydown = (event: KeyboardEvent) => {
-  handleKeydown(event)
-}
+  handleKeydown(event);
+};
 
 /**
  * Handle form submission
  */
 const handleSubmit = async () => {
-  if (!canSubmit.value || isProcessing.value) return
+  if (!canSubmit.value || isProcessing.value) return;
 
   // Submitting PIN
-  
-  isProcessing.value = true
-  error.value = ''
+
+  isProcessing.value = true;
+  error.value = '';
 
   try {
     // Validate PIN format
     if (!/^\d{4}$/.test(pinValue.value)) {
-      error.value = t(keys.parentMode.pinMustBe4Digits)
-      isProcessing.value = false
-      return
+      error.value = t(keys.parentMode.pinMustBe4Digits);
+      isProcessing.value = false;
+      return;
     }
 
     // For setup mode, ensure PINs match
     if (props.mode === 'setup' && pinValue.value !== confirmValue.value) {
-      error.value = t(keys.parentMode.pinMismatch)
-      isProcessing.value = false
-      return
+      error.value = t(keys.parentMode.pinMismatch);
+      isProcessing.value = false;
+      return;
     }
 
     // PIN validation passed
 
     // Emit event for v-model usage
-    emit('pin-entered', pinValue.value)
+    emit('pin-entered', pinValue.value);
 
     // Call callback prop for popup service usage
     if (props.onPinEntered) {
       // Call onPinEntered callback
-      await props.onPinEntered(pinValue.value)
+      await props.onPinEntered(pinValue.value);
     }
   } catch (err) {
-    error.value = t(keys.common.error)
-    console.error('PIN input error:', err)
+    error.value = t(keys.common.error);
+    console.error('PIN input error:', err);
   } finally {
-    isProcessing.value = false
+    isProcessing.value = false;
   }
-}
+};
 
 /**
  * Toggle number visibility
  */
 const toggleNumberVisibility = () => {
-  showNumbers.value = !showNumbers.value
-}
+  showNumbers.value = !showNumbers.value;
+};
 
 /**
  * Handle number pad click
  */
 const handleNumberClick = (num: string) => {
   // Number clicked
-  
+
   // Determine which field is active
-  if (props.mode === 'setup' && pinValue.value.length === 4 && confirmValue.value.length < 4) {
+  if (
+    props.mode === 'setup' &&
+    pinValue.value.length === 4 &&
+    confirmValue.value.length < 4
+  ) {
     // Add to confirm field
-    confirmValue.value += num
-    if (confirmValue.value.length === 4 && confirmValue.value === pinValue.value) {
+    confirmValue.value += num;
+    if (
+      confirmValue.value.length === 4 &&
+      confirmValue.value === pinValue.value
+    ) {
       // PINs match, auto-submit
-      handleSubmit()
+      handleSubmit();
     }
   } else if (pinValue.value.length < 4) {
     // Add to pin field
-    pinValue.value += num
+    pinValue.value += num;
     if (props.mode === 'unlock' && pinValue.value.length === 4) {
       // 4 digits entered, auto-submit
-      handleSubmit()
+      handleSubmit();
     } else if (props.mode === 'setup' && pinValue.value.length === 4) {
       nextTick(() => {
-        confirmInput.value?.focus()
-      })
+        confirmInput.value?.focus();
+      });
     }
   }
-}
+};
 
 /**
  * Handle clear button click
  */
 const handleClearClick = () => {
   // Determine which field to clear from
-  if (props.mode === 'setup' && pinValue.value.length === 4 && confirmValue.value.length > 0) {
-    confirmValue.value = confirmValue.value.slice(0, -1)
+  if (
+    props.mode === 'setup' &&
+    pinValue.value.length === 4 &&
+    confirmValue.value.length > 0
+  ) {
+    confirmValue.value = confirmValue.value.slice(0, -1);
   } else if (pinValue.value.length > 0) {
-    pinValue.value = pinValue.value.slice(0, -1)
+    pinValue.value = pinValue.value.slice(0, -1);
   }
-}
+};
 
 /**
  * Reset form
  */
 const reset = () => {
-  pinValue.value = ''
-  confirmValue.value = ''
-  error.value = ''
-  isProcessing.value = false
-}
+  pinValue.value = '';
+  confirmValue.value = '';
+  error.value = '';
+  isProcessing.value = false;
+};
 
 /**
  * Handle popup close
  */
 const handleClosePopup = () => {
-  emit('close')
+  emit('close');
   if (props.onClose) {
-    props.onClose()
+    props.onClose();
   }
-}
+};
 
 // Component is ready
 
 // Watch for mode changes to reset form
-watch(() => props.mode, () => {
-  reset()
-})
+watch(
+  () => props.mode,
+  () => {
+    reset();
+  },
+);
 
 // Auto-focus on mount
 watch(pinInput, (input) => {
   if (input && props.autoFocus) {
     nextTick(() => {
-      input.focus()
-    })
+      input.focus();
+    });
   }
-})
+});
 </script>
 
 <style lang="scss" scoped>
 .parent-mode-pin-input {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg, 1.5em);
-  padding: var(--space-lg, 1.5em);
+  gap: var(--space);
   max-width: 400px;
   margin: 0 auto;
 
@@ -479,7 +544,8 @@ watch(pinInput, (input) => {
   &__pin-dot {
     width: 3em;
     height: 3em;
-    border: 2px solid color-mix(in srgb, var(--color-foreground), transparent 70%);
+    border: 2px solid
+      color-mix(in srgb, var(--color-foreground), transparent 70%);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -504,7 +570,8 @@ watch(pinInput, (input) => {
 
     &--active {
       border-color: var(--color-primary);
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary), transparent 80%);
+      box-shadow: 0 0 0 2px
+        color-mix(in srgb, var(--color-primary), transparent 80%);
     }
   }
 
@@ -564,7 +631,8 @@ watch(pinInput, (input) => {
   &__numpad-button {
     aspect-ratio: 1;
     min-height: 3.5em;
-    border: 1px solid color-mix(in srgb, var(--color-foreground), transparent 80%);
+    border: 1px solid
+      color-mix(in srgb, var(--color-foreground), transparent 80%);
     border-radius: var(--border-radius);
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -593,7 +661,8 @@ watch(pinInput, (input) => {
     }
 
     &--clear {
-      background-color: var(--color-background-secondary);
+      background-color: var(--color-secondary);
+      color: var(--color-secondary-text);
     }
 
     &--submit {
@@ -607,7 +676,7 @@ watch(pinInput, (input) => {
       }
     }
 
-    .icon{
+    .icon {
       font-size: 2em;
     }
   }

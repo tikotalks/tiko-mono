@@ -22,7 +22,6 @@
 				<div :class="bemm('wrapper')">
 					<div :class="bemm('container')" @click.stop>
 
-
 					<header
 						v-if="hasSlot('header')"
 						:class="bemm('header')"
@@ -36,23 +35,29 @@
 						<div :class="bemm('description')" v-if="popup.description">
 							{{ popup.description }}
 						</div>
+						<span
 
-						<TButton
-							v-if="popup.config.canClose"
+						v-if="popup.config.canClose"
 							:class="bemm('close')"
+					>
+						<TButton
 							:icon="Icons.MULTIPLY_M"
 							:size="ButtonSize.SMALL"
 							@click="popupService.closePopup(popup.id)"
 						/>
+						</span>
 					</header>
 
-					<TButton
+					<span
 						v-if="popup.config.canClose && !popup.title"
 						:class="bemm('close')"
-						:icon="Icons.MULTIPLY_M"
-						:size="ButtonSize.SMALL"
-						@click="popupService.closePopup(popup.id)"
-					/>
+					>
+						<TButton
+							:icon="Icons.MULTIPLY_M"
+							:size="ButtonSize.SMALL"
+							@click="popupService.closePopup(popup.id)"
+						/>
+					</span>
 
 					<main :class="bemm('content')">
 						<component
@@ -150,7 +155,7 @@ onUnmounted(() => {
 });
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .t-popup {
 	$b: &;
 	position: fixed;
@@ -164,6 +169,8 @@ onUnmounted(() => {
 	width: 100svw;
 	height: 100svh;
 	border: none;
+
+	--int-popup-padding: var(--popup-padding, var(--space));
 
 	// Stack popups using their unique IDs
 	&--stack {
@@ -182,7 +189,7 @@ onUnmounted(() => {
 		width: 100vw;
 		margin: auto;
 		overflow: scroll;
-		padding: var(--popup-padding, var(--spacing));
+		padding:  var(--int-popup-padding);
 		max-height: 100vh;
 		height: 100vh;
 		display: flex;
@@ -226,7 +233,8 @@ onUnmounted(() => {
 	&__close {
 		position: absolute;
 		z-index: 5;
-		top: calc(var(--space) / 2);
+		border: 1px solid red;
+		top: calc(var(--space) / 3);
 		right: calc(var(--space) / 2);
 		--button-background-color: var(--color-accent);
 		--button-background-color_hover: var(--color-tertiary);
@@ -276,5 +284,14 @@ onUnmounted(() => {
 		transform: scale(1) translateY(0);
 		opacity: 1;
 	}
+}
+
+.popup-footer{
+	margin: calc(var(--int-popup-padding) * -1);
+	border-top: 1px solid var(--color-accent);
+	margin-top: var(--int-popup-padding);
+	padding: var(--int-popup-padding);
+	// background-color: var(--color-accent);
+	// border-radius: var(--popup-border-radius, var(--border-radius));
 }
 </style>

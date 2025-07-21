@@ -1,11 +1,25 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, vi } from 'vitest'
+import { ref } from 'vue'
 import TAlert from './TAlert.vue'
 
-// Mock the useI18n composable
+// Mock i18n - simple mock that returns keys
 vi.mock('../../composables/useI18n', () => ({
   useI18n: () => ({
-    t: (key: string) => key
+    t: vi.fn((key: string) => key),
+    keys: {
+      common: {
+        close: 'common.close'
+      }
+    },
+    locale: ref('en'),
+    setLocale: vi.fn(),
+    availableLocales: ref([
+      { code: 'en-GB', name: 'English' },
+      { code: 'nl-NL', name: 'Dutch' },
+      { code: 'de-DE', name: 'German' },
+      { code: 'fr-FR', name: 'French' }
+    ])
   })
 }))
 

@@ -76,15 +76,26 @@ vi.mock('../../composables/useEventBus', () => ({
   })
 }))
 
+// Mock i18n
 vi.mock('../../composables/useI18n', () => ({
   useI18n: () => ({
-    t: (key: string) => key,
+    t: vi.fn((key: string) => key),
     keys: {
-      profile: { editProfile: 'profile.edit' },
-      settings: { title: 'settings.title' }
+      profile: {
+        editProfile: 'profile.editProfile'
+      },
+      settings: {
+        title: 'settings.title'
+      }
     },
-    locale: { value: 'en' },
-    setLocale: vi.fn()
+    locale: ref('en'),
+    setLocale: vi.fn(),
+    availableLocales: ref([
+      { code: 'en-GB', name: 'English' },
+      { code: 'nl-NL', name: 'Dutch' },
+      { code: 'de-DE', name: 'German' },
+      { code: 'fr-FR', name: 'French' }
+    ])
   })
 }))
 

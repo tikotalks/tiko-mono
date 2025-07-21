@@ -1,7 +1,8 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { ref } from 'vue'
 import TProfile from './TProfile.vue'
+import { useParentMode } from '../../composables/useParentMode'
 
 // Mock Canvas API
 global.HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
@@ -15,7 +16,6 @@ global.HTMLCanvasElement.prototype.toBlob = vi.fn((callback) => {
 
 // Mock URL.createObjectURL
 global.URL.createObjectURL = vi.fn(() => 'blob:mock-url')
-
 
 vi.mock('@tiko/core', () => ({
   useAuthStore: () => ({
@@ -37,117 +37,58 @@ vi.mock('@tiko/core', () => ({
   }
 }))
 
+// Define mock objects before vi.mock calls
+const mockI18n = {
+  t: vi.fn((key: string) => key),
+  keys: {
+    profile: {
+      memberSince: 'profile.memberSince',
+      language: 'profile.language',
+      parentMode: 'profile.parentMode',
+      accountActions: 'profile.accountActions',
+      changePassword: 'profile.changePassword',
+      setupParentMode: 'profile.setupParentMode',
+      invalidFileType: 'profile.invalidFileType',
+      fileTooLarge: 'profile.fileTooLarge',
+      imageProcessingFailed: 'profile.imageProcessingFailed',
+      profileUpdated: 'profile.profileUpdated',
+      updateFailed: 'profile.updateFailed'
+    },
+    common: {
+      enabled: 'common.enabled',
+      disabled: 'common.disabled'
+    },
+    settings: {
+      passwordChangeNotImplemented: 'settings.passwordChangeNotImplemented'
+    }
+  },
+  locale: ref('en'),
+  setLocale: vi.fn(),
+  availableLocales: ref([
+    { code: 'en-GB', name: 'English' },
+    { code: 'nl-NL', name: 'Dutch' },
+    { code: 'de-DE', name: 'German' },
+    { code: 'fr-FR', name: 'French' }
+  ])
+}
+
+const mockParentMode = {
+  isEnabled: ref(false),
+  isUnlocked: ref(false),
+  unlock: vi.fn(),
+  lock: vi.fn(),
+  hasPermission: vi.fn().mockReturnValue(true),
+  enable: vi.fn()
+}
+
 // Mock i18n
 vi.mock('../../composables/useI18n', () => ({
-  useI18n: () => ({
-    t: (key: string) => {
-      const translations: Record<string, string> = {
-        'profile.clickToChangeAvatar': 'Click to change avatar',
-        'profile.name': 'Name',
-        'profile.enterName': 'Enter your name',
-        'profile.language': 'Language',
-        'profile.email': 'Email',
-        'profile.memberSince': 'Member since',
-        'profile.changePassword': 'Change Password',
-        'profile.setupParentMode': 'Setup Parent Mode',
-        'profile.accountActions': 'Account Actions',
-        'profile.parentMode': 'Parent Mode',
-        'profile.profileUpdated': 'Profile updated',
-        'profile.updateFailed': 'Update failed',
-        'profile.invalidFileType': 'Invalid file type',
-        'profile.fileTooLarge': 'File too large',
-        'profile.imageProcessingFailed': 'Image processing failed',
-        'settings.passwordChangeNotImplemented': 'Password change not implemented',
-        'common.enabled': 'Enabled',
-        'common.disabled': 'Disabled',
-        'common.cancel': 'Cancel',
-        'common.save': 'Save',
-        'languageNames.english': 'English',
-        'languageNames.dutch': 'Dutch',
-        'languageNames.german': 'German',
-        'languageNames.french': 'French',
-        'languageNames.spanish': 'Spanish'
-      }
-      return translations[key] || key
-    },
-    keys: {
-      profile: {
-        clickToChangeAvatar: 'profile.clickToChangeAvatar',
-        name: 'profile.name',
-        enterName: 'profile.enterName',
-        language: 'profile.language',
-        email: 'profile.email',
-        memberSince: 'profile.memberSince',
-        changePassword: 'profile.changePassword',
-        setupParentMode: 'profile.setupParentMode',
-        accountActions: 'profile.accountActions',
-        parentMode: 'profile.parentMode',
-        profileUpdated: 'profile.profileUpdated',
-        updateFailed: 'profile.updateFailed',
-        invalidFileType: 'profile.invalidFileType',
-        fileTooLarge: 'profile.fileTooLarge',
-        imageProcessingFailed: 'profile.imageProcessingFailed'
-      },
-      settings: {
-        passwordChangeNotImplemented: 'settings.passwordChangeNotImplemented'
-      },
-      common: {
-        cancel: 'common.cancel',
-        save: 'common.save',
-        enabled: 'common.enabled',
-        disabled: 'common.disabled'
-      },
-      languageNames: {
-        bulgarian: 'languageNames.bulgarian',
-        czech: 'languageNames.czech',
-        welsh: 'languageNames.welsh',
-        danish: 'languageNames.danish',
-        german: 'languageNames.german',
-        greek: 'languageNames.greek',
-        english: 'languageNames.english',
-        spanish: 'languageNames.spanish',
-        estonian: 'languageNames.estonian',
-        finnish: 'languageNames.finnish',
-        french: 'languageNames.french',
-        irish: 'languageNames.irish',
-        croatian: 'languageNames.croatian',
-        hungarian: 'languageNames.hungarian',
-        armenian: 'languageNames.armenian',
-        icelandic: 'languageNames.icelandic',
-        italian: 'languageNames.italian',
-        lithuanian: 'languageNames.lithuanian',
-        latvian: 'languageNames.latvian',
-        maltese: 'languageNames.maltese',
-        dutch: 'languageNames.dutch',
-        norwegian: 'languageNames.norwegian',
-        polish: 'languageNames.polish',
-        portuguese: 'languageNames.portuguese',
-        romanian: 'languageNames.romanian',
-        russian: 'languageNames.russian',
-        slovak: 'languageNames.slovak',
-        slovenian: 'languageNames.slovenian',
-        swedish: 'languageNames.swedish'
-      }
-    },
-    locale: ref('en'),
-    setLocale: vi.fn(),
-    availableLocales: ref([
-      { code: 'en-GB', name: 'English' },
-      { code: 'nl-NL', name: 'Dutch' },
-      { code: 'de-DE', name: 'German' },
-      { code: 'fr-FR', name: 'French' }
-    ])
-  })
+  useI18n: () => mockI18n
 }))
 
 // Mock useParentMode
 vi.mock('../../composables/useParentMode', () => ({
-  useParentMode: () => ({
-    isEnabled: ref(false),
-    isUnlocked: ref(false),
-    unlock: vi.fn(),
-    lock: vi.fn()
-  })
+  useParentMode: vi.fn(() => mockParentMode)
 }))
 
 // Mock toast service
@@ -331,27 +272,29 @@ describe('TProfile.vue', () => {
     expect(avatar.text()).toBe('JD') // John Doe initials
   })
 
-  it('prefills form with user data', async () => {
+  it('displays user information correctly', async () => {
     const wrapper = createWrapper()
     
-    // Wait for onMounted and loadUserProfile to complete
     await wrapper.vm.$nextTick()
-    await vi.runAllTimersAsync()
     
-    const nameInput = wrapper.findComponent({ name: 'TInputText' })
-    expect(nameInput.props('modelValue')).toBe('John Doe')
+    // Check name display
+    const name = wrapper.find('.profile__name')
+    expect(name.text()).toBe('John Doe')
     
-    // Language is now displayed in a button, not a select
-    const languageButton = wrapper.find('.profile__field-button')
-    expect(languageButton.exists()).toBe(true)
-    expect(languageButton.text()).toContain('English')
+    // Check email display
+    const email = wrapper.find('.profile__email')
+    expect(email.text()).toBe('test@example.com')
+    
+    // Check language display
+    const languageDetail = wrapper.findAll('.profile__detail-value')[1] // Second detail is language
+    expect(languageDetail.text()).toBe('en')
   })
 
   it('displays user email as readonly', () => {
     const wrapper = createWrapper()
     
-    // Email is displayed as a readonly div, not an input
-    const emailField = wrapper.find('.profile__field-value--readonly')
+    // Email is displayed in the info section
+    const emailField = wrapper.find('.profile__email')
     expect(emailField.text()).toBe('test@example.com')
   })
 
@@ -369,9 +312,8 @@ describe('TProfile.vue', () => {
       }
     })
     
-    // Look for the readonly field containing the date
-    const dateFields = wrapper.findAll('.profile__field-value--readonly')
-    const dateField = dateFields[dateFields.length - 1] // Last readonly field is the date
+    // Member since is in the first detail-value
+    const dateField = wrapper.findAll('.profile__detail-value')[0]
     expect(dateField.text()).toContain('2023')
   })
 
@@ -491,7 +433,7 @@ describe('TProfile.vue', () => {
     expect(actionButtons.length).toBeGreaterThan(0)
     
     // Should have change password button
-    const changePasswordButton = actionButtons.find(btn => btn.text().includes('Change Password'))
+    const changePasswordButton = actionButtons.find(btn => btn.text().includes('profile.changePassword'))
     expect(changePasswordButton?.exists()).toBe(true)
   })
 
@@ -527,7 +469,7 @@ describe('TProfile.vue', () => {
     await wrapper.vm.$nextTick()
     
     // Find and click the change password button
-    const changePasswordButton = wrapper.findAll('.t-button').find(btn => btn.text().includes('Change Password'))
+    const changePasswordButton = wrapper.findAll('.t-button').find(btn => btn.text().includes('profile.changePassword'))
     if (changePasswordButton) {
       await changePasswordButton.trigger('click')
       await wrapper.vm.$nextTick()
@@ -541,13 +483,8 @@ describe('TProfile.vue', () => {
 
   it('displays parent mode status when enabled', async () => {
     // Mock parent mode as enabled for this test
-    vi.mocked(useParentMode).mockReturnValueOnce({
-      isEnabled: { value: true },
-      isUnlocked: { value: true },
-      hasPermission: vi.fn().mockReturnValue(true),
-      enable: vi.fn(),
-      unlock: vi.fn()
-    })
+    mockParentMode.isEnabled.value = true
+    mockParentMode.isUnlocked.value = true
     
     const wrapper = createWrapper()
     await wrapper.vm.$nextTick()
@@ -555,26 +492,25 @@ describe('TProfile.vue', () => {
     // Should show parent mode detail when enabled
     const parentModeDetails = wrapper.findAll('.profile__detail-item')
     const hasParentModeDetail = parentModeDetails.some(detail => 
-      detail.text().includes('Parent Mode') || detail.find('.profile__detail-icon').exists()
+      detail.text().includes('profile.parentMode') || detail.find('.profile__detail-icon').exists()
     )
     expect(hasParentModeDetail).toBe(true)
+    
+    // Reset mock state
+    mockParentMode.isEnabled.value = false
+    mockParentMode.isUnlocked.value = false
   })
 
   it('closes popup when setup parent mode is clicked', async () => {
     // Mock parent mode as not enabled to show setup button
-    vi.mocked(useParentMode).mockReturnValueOnce({
-      isEnabled: { value: false },
-      isUnlocked: { value: false },
-      hasPermission: vi.fn().mockReturnValue(true),
-      enable: vi.fn(),
-      unlock: vi.fn()
-    })
+    mockParentMode.isEnabled.value = false
+    mockParentMode.isUnlocked.value = false
     
     const wrapper = createWrapper()
     await wrapper.vm.$nextTick()
     
     // Find and click the setup parent mode button
-    const setupButton = wrapper.findAll('.t-button').find(btn => btn.text().includes('Setup Parent Mode'))
+    const setupButton = wrapper.findAll('.t-button').find(btn => btn.text().includes('profile.setupParentMode'))
     if (setupButton) {
       await setupButton.trigger('click')
       await wrapper.vm.$nextTick()
@@ -584,11 +520,14 @@ describe('TProfile.vue', () => {
     }
   })
 
-  it('shows avatar upload overlay on hover', () => {
+  it('shows avatar upload overlay', () => {
     const wrapper = createWrapper()
     
-    const avatar = wrapper.find('.profile__avatar')
-    expect(avatar.find('.profile__avatar-overlay').exists()).toBe(true)
+    // The overlay is inside the avatar-upload label
+    const avatarUpload = wrapper.find('.profile__avatar-upload')
+    expect(avatarUpload.exists()).toBe(true)
+    const overlay = avatarUpload.find('.profile__avatar-overlay')
+    expect(overlay.exists()).toBe(true)
   })
 
   it('generates consistent avatar color based on email', () => {
@@ -602,18 +541,15 @@ describe('TProfile.vue', () => {
     }
   })
 
-  it('provides language options', async () => {
+  it('displays current language', async () => {
     const wrapper = createWrapper()
     
-    // Wait for onMounted and loadUserProfile to complete
     await wrapper.vm.$nextTick()
-    await vi.runAllTimersAsync()
     
-    // Language options are now provided via a button that opens a popup
-    const languageButton = wrapper.find('.profile__field-button')
-    expect(languageButton.exists()).toBe(true)
-    // The button should show the current language
-    expect(languageButton.text()).toContain('English')
+    // Language is displayed in the details section
+    const languageDetail = wrapper.findAll('.profile__detail-value')[1]
+    expect(languageDetail.exists()).toBe(true)
+    expect(languageDetail.text()).toBe('en')
   })
 
   it('handles user without metadata gracefully', () => {
@@ -626,8 +562,9 @@ describe('TProfile.vue', () => {
     
     expect(wrapper.find('.profile').exists()).toBe(true)
     
-    const nameInput = wrapper.findComponent({ name: 'TInputText' })
-    expect(nameInput.props('modelValue')).toBe('')
+    // Should show email instead of name when no metadata
+    const name = wrapper.find('.profile__name')
+    expect(name.text()).toBe('test') // Fallback to email prefix
   })
 
   it('resizes uploaded images', async () => {

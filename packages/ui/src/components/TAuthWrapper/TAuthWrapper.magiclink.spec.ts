@@ -40,7 +40,13 @@ let mockRoute = { path: '/' }
 
 // Mock stores
 vi.mock('@tiko/core', () => ({
-  useAuthStore: () => mockAuthStore
+  useAuthStore: () => ({
+    ...mockAuthStore,
+    // Add getter for isAuthenticated
+    get isAuthenticated() {
+      return mockAuthStore.isAuthenticated.value
+    }
+  })
 }))
 
 // Mock vue-router
@@ -147,6 +153,10 @@ describe('TAuthWrapper - Magic Link Authentication', () => {
     // Set up invalid magic link tokens
     mockLocation.hash = '#access_token=invalid-token&refresh_token=invalid'
 
+    // Ensure user is not authenticated
+    mockAuthStore.isAuthenticated.value = false
+    mockAuthStore.user.value = null
+
     // Mock failed magic link processing
     mockAuthStore.handleMagicLinkCallback.mockResolvedValue({
       success: false,
@@ -162,8 +172,16 @@ describe('TAuthWrapper - Magic Link Authentication', () => {
 
     // Wait for component to mount and process
     await flushPromises()
+    
+    // Manually trigger splash complete to skip the splash screen
+    const splashScreen = wrapper.findComponent({ name: 'TSplashScreen' })
+    if (splashScreen.exists()) {
+      await splashScreen.vm.$emit('complete')
+    }
+    
     await vi.runAllTimersAsync()
     await nextTick()
+    await wrapper.vm.$nextTick()
 
     // Should show login form on failure (not authenticated and not on callback route)
     expect(wrapper.findComponent({ name: 'TLoginForm' }).exists()).toBe(true)
@@ -204,6 +222,10 @@ describe('TAuthWrapper - Magic Link Authentication', () => {
     // No hash in URL
     mockLocation.hash = ''
 
+    // Ensure user is not authenticated
+    mockAuthStore.isAuthenticated.value = false
+    mockAuthStore.user.value = null
+
     const wrapper = mount(TAuthWrapper, {
       props: {
         title: 'Test App',
@@ -212,8 +234,16 @@ describe('TAuthWrapper - Magic Link Authentication', () => {
     })
 
     await flushPromises()
+    
+    // Manually trigger splash complete to skip the splash screen
+    const splashScreen = wrapper.findComponent({ name: 'TSplashScreen' })
+    if (splashScreen.exists()) {
+      await splashScreen.vm.$emit('complete')
+    }
+    
     await vi.runAllTimersAsync()
     await nextTick()
+    await wrapper.vm.$nextTick()
 
     // Should not call handleMagicLinkCallback
     expect(mockAuthStore.handleMagicLinkCallback).not.toHaveBeenCalled()

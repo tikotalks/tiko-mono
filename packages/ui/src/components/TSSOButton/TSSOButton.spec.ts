@@ -1,5 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, vi } from 'vitest'
+import { ref } from 'vue'
 import TSSOButton from './TSSOButton.vue'
 
 // Mock TButton component
@@ -20,13 +21,23 @@ vi.mock('../TIcon/TIcon.vue', () => ({
   }
 }))
 
-// Mock useI18n
+// Mock i18n
 vi.mock('../../composables/useI18n', () => ({
   useI18n: () => ({
-    t: (key: string) => {
-      if (key === 'sso.signInWithTiko') return 'Sign in with Tiko'
-      return key
-    }
+    t: vi.fn((key: string) => key),
+    keys: {
+      sso: {
+        signInWithTiko: 'sso.signInWithTiko'
+      }
+    },
+    locale: ref('en'),
+    setLocale: vi.fn(),
+    availableLocales: ref([
+      { code: 'en-GB', name: 'English' },
+      { code: 'nl-NL', name: 'Dutch' },
+      { code: 'de-DE', name: 'German' },
+      { code: 'fr-FR', name: 'French' }
+    ])
   })
 }))
 
@@ -40,7 +51,7 @@ describe('TSSOButton.vue', () => {
     
     expect(wrapper.html()).toBeTruthy()
     expect(wrapper.find('.t-sso-button').exists()).toBe(true)
-    expect(wrapper.text()).toContain('Sign in with Tiko')
+    expect(wrapper.text()).toContain('sso.signInWithTiko')
   })
 
   it('passes correct props to TButton', () => {

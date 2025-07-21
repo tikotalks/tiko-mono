@@ -339,7 +339,8 @@ export const da: TranslationSchema = {
     confirmYourPin: 'Bekræft din PIN',
     pinMustBe4Digits: 'PIN skal være præcis 4 cifre',
     hideNumbers: 'Skjul tal',
-    showNumbers: 'Vis tal'
+    showNumbers: 'Vis tal',
+    parentMode: 'Parent Mode'
   },
 
   radio: {

@@ -11,18 +11,18 @@
       <!-- App-specific controls on the left -->
       <TButton
         icon="edit"
-        type="ghost"
+        type="outline"
         size="medium"
         color="secondary"
         @click="() => { console.log('[YesNoView] Edit button clicked'); showQuestionInput(); }"
         :aria-label="t(keys.yesno.editQuestion)"
       />
-      
+
       <!-- App settings button (only visible in parent mode) -->
       <TButton
         v-if="parentMode.isUnlocked.value"
         icon="settings"
-        type="ghost"
+        type="outline"
         size="medium"
         color="secondary"
         @click="handleAppSettings"
@@ -47,14 +47,14 @@
             <TButton
               v-if="parentMode.isUnlocked.value"
               :icon="'edit'"
-              type="ghost"
+              type="default"
               size="small"
               @click.stop="showQuestionInput"
               :aria-label="t(keys.yesno.editQuestion)"
             />
             <TButton
               :icon="isPlaying ? 'volume-2' : 'volume-1'"
-              type="ghost"
+              type="default"
               size="small"
               @click.stop="speakQuestion"
               :aria-label="t(keys.common.speak)"
@@ -171,7 +171,7 @@ const showQuestionInput = () => {
   console.log('[YesNoView] showQuestionInput called');
   console.log('[YesNoView] popupService:', popupService);
   console.log('[YesNoView] QuestionInputForm:', QuestionInputForm);
-  
+
   try {
     popupService.open({
       component: QuestionInputForm,
@@ -294,18 +294,18 @@ onMounted(async () => {
     width: 100%;
     justify-content: center;
     font-size: 20vmin;
-    
-    &--small {
-      font-size: 10vmin;
-    }
-    
-    &--medium {
-      font-size: 15vmin;
-    }
-    
-    &--large {
-      font-size: 20vmin;
-    }
+
+    // &--small {
+    //   font-size: 10vmin;
+    // }
+
+    // &--medium {
+    //   font-size: 15vmin;
+    // }
+
+    // &--large {
+    //   font-size: 20vmin;
+    // }
   }
 
   &:has(:hover){
@@ -327,21 +327,21 @@ onMounted(async () => {
     padding: var(--space);
     border-radius: var(--border-radius);
     transition: background-color 0.2s ease;
-    
+
     &:hover {
       background-color: rgba(255, 255, 255, 0.1);
     }
-    
+
     &-text {
       font-size: 2em;
       text-align: center;
     }
-    
+
     &-controls {
       display: flex;
       gap: var(--space-s);
       opacity: 0.8;
-      
+
       .yes-no__question:hover & {
         opacity: 1;
       }

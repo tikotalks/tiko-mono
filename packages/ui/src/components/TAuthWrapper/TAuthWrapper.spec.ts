@@ -66,26 +66,23 @@ vi.mock('../TLoginForm/TLoginForm.vue', () => ({
   }
 }))
 
-// Default Tiko splash configs mock
-const defaultTikoSplashConfigs = {
-  todo: {
-    appName: 'Todo',
-    appIcon: 'checkbox',
-    theme: {
-      primary: '#2563eb'
-    }
-  },
-  'test-app': {
-    appName: 'Test App',
-    appIcon: 'star',
-    theme: {
-      primary: '#10b981'
+vi.mock('../../utils/splash-screen-config', () => ({
+  defaultTikoSplashConfigs: {
+    todo: {
+      appName: 'Todo',
+      appIcon: 'checkbox',
+      theme: {
+        primary: '#2563eb'
+      }
+    },
+    'test-app': {
+      appName: 'Test App',
+      appIcon: 'star',
+      theme: {
+        primary: '#10b981'
+      }
     }
   }
-}
-
-vi.mock('../../utils/splash-screen-config', () => ({
-  defaultTikoSplashConfigs
 }))
 
 describe('TAuthWrapper.vue', () => {
@@ -157,7 +154,10 @@ describe('TAuthWrapper.vue', () => {
     expect(wrapper.find('[data-cy="login-container"]').exists()).toBe(false)
   })
 
-  it('displays background image when provided', () => {
+  it('displays background image when provided', async () => {
+    mockAuthStore.isAuthenticated = false
+    mockAuthStore.user = null
+    
     const wrapper = mount(TAuthWrapper, {
       props: {
         title: 'Test App',
@@ -166,7 +166,12 @@ describe('TAuthWrapper.vue', () => {
       }
     })
     
-    const backgroundImage = wrapper.find('.auth-wrapper__image')
+    // Wait for initialization
+    await wrapper.vm.$nextTick()
+    await vi.runAllTimersAsync()
+    await wrapper.vm.$nextTick()
+    
+    const backgroundImage = wrapper.find('.auth-wrapper__background img')
     expect(backgroundImage.exists()).toBe(true)
     expect(backgroundImage.attributes('src')).toBe('/test-image.jpg')
   })
@@ -181,7 +186,7 @@ describe('TAuthWrapper.vue', () => {
     })
     
     const splashScreen = wrapper.findComponent({ name: 'TSplashScreen' })
-    expect(splashScreen.props('appName')).toBe('Test App') // Uses the props from defaultTikoSplashConfigs for test-app
+    expect(splashScreen.props('appName')).toBe('Test App') // Uses the props from mocked config for test-app
     expect(splashScreen.props('showLoading')).toBe(true)
     expect(splashScreen.props('duration')).toBe(0)
     expect(splashScreen.props('enableTransitions')).toBe(true)

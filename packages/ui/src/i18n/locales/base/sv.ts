@@ -411,6 +411,7 @@ export const sv: TranslationSchema = {
     pinMustBe4Digits: 'PIN måste vara 4 siffror',
     hideNumbers: 'Dölj siffror',
     showNumbers: 'Visa siffror',
+    parentMode: 'Parent Mode'
   },
   profile: {
     title: 'Profil',

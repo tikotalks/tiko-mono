@@ -337,7 +337,8 @@ export const bg: TranslationSchema = {
     confirmYourPin: 'Потвърди своя ПИН',
     pinMustBe4Digits: 'ПИН трябва да е точно 4 цифри',
     hideNumbers: 'Скрий числата',
-    showNumbers: 'Покажи числата'
+    showNumbers: 'Покажи числата',
+    parentMode: 'Parent Mode',
   },
   radio: {
     radioSettings: 'Настройки на радиото',

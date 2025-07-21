@@ -17,8 +17,14 @@
       <div :class="bemm('section')">
         <h3 :class="bemm('section-title')">{{ t(keys.settings.theme) }}</h3>
         <div :class="bemm('theme-options')">
-          <label 
-            v-for="theme in themeOptions" 
+          <InputOptions :options="themeOptions" :multi="false" :model-value="formData.theme" @update:model-value="value => formData.theme = value">
+            <template #option="{ option }">
+              <TIcon :name="option.icon" :class="bemm('theme-icon')" />
+              <span :class="bemm('theme-label')">{{ t(option.label) }}</span>
+            </template>
+          </InputOptions>
+          <!-- <label
+            v-for="theme in themeOptions"
             :key="theme.value"
             :class="bemm('theme-option', { active: formData.theme === theme.value })"
           >
@@ -30,12 +36,12 @@
             />
             <TIcon :name="theme.icon" :class="bemm('theme-icon')" />
             <span :class="bemm('theme-label')">{{ t(theme.label) }}</span>
-          </label>
+          </label> -->
         </div>
       </div>
 
       <!-- Actions -->
-      <div :class="bemm('actions')">
+      <div :class="[bemm('actions'), 'popup-footer']">
         <TButton
           type="ghost"
           color="secondary"
@@ -66,7 +72,9 @@ import TIcon from '../TIcon/TIcon.vue'
 import TChooseLanguage from '../TChooseLanguage/TChooseLanguage.vue'
 import type { TUserSettingsProps, TUserSettingsEmits, UserSettings } from './TUserSettings.model'
 import type { PopupService, ToastService } from '../../types'
+import InputOptions from '../TForm/InputOptions.vue'
 import type { Locale } from '../../i18n/types'
+import { Icons } from 'open-icon'
 
 const props = defineProps<TUserSettingsProps>()
 const emit = defineEmits<TUserSettingsEmits>()
@@ -90,9 +98,9 @@ const isSaving = ref(false)
 
 // Theme options
 const themeOptions = [
-  { value: 'light', icon: 'sun', label: keys.settings.lightTheme },
-  { value: 'dark', icon: 'moon', label: keys.settings.darkTheme },
-  { value: 'auto', icon: 'monitor', label: keys.settings.autoTheme }
+  { value: 'light', icon: Icons.SUN, label: t(keys.settings.lightTheme) },
+  { value: 'dark', icon: Icons.MOON01, label: t(keys.settings.darkTheme) },
+  { value: 'auto', icon: Icons.MOON_DARK_MODE, label: t(keys.settings.autoTheme) }
 ]
 
 // Computed
@@ -167,23 +175,21 @@ const handleCancel = () => {
 
 <style lang="scss" scoped>
 .user-settings {
-  padding: var(--space);
-  
   &__section {
     margin-bottom: var(--space-lg);
-    
+
     &:last-child {
       margin-bottom: 0;
     }
   }
-  
+
   &__section-title {
     font-size: 1rem;
     font-weight: 600;
     color: var(--color-foreground);
     margin: 0 0 var(--space-s) 0;
   }
-  
+
   &__language-selector {
     padding: var(--space-s) var(--space);
     background: var(--color-background);
@@ -191,41 +197,41 @@ const handleCancel = () => {
     border-radius: var(--border-radius);
     cursor: pointer;
     transition: all 0.2s ease;
-    
+
     &:hover {
       border-color: var(--color-primary);
       background: var(--color-background-hover);
     }
   }
-  
+
   &__language-display {
     display: flex;
     align-items: center;
     gap: var(--space-s);
   }
-  
+
   &__language-icon {
     color: var(--color-primary);
     font-size: 1.25rem;
   }
-  
+
   &__language-text {
     flex: 1;
     font-size: 0.925rem;
     color: var(--color-foreground);
   }
-  
+
   &__language-chevron {
     color: var(--color-text-secondary);
     font-size: 1rem;
   }
-  
+
   &__theme-options {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: var(--space-s);
   }
-  
+
   &__theme-option {
     position: relative;
     display: flex;
@@ -238,41 +244,39 @@ const handleCancel = () => {
     border-radius: var(--border-radius);
     cursor: pointer;
     transition: all 0.2s ease;
-    
+
     &:hover {
       border-color: var(--color-primary);
       background: var(--color-background-hover);
     }
-    
+
     &--active {
       border-color: var(--color-primary);
       background: var(--color-primary-bg);
     }
   }
-  
+
   &__theme-radio {
     position: absolute;
     opacity: 0;
     pointer-events: none;
   }
-  
+
   &__theme-icon {
     font-size: 2rem;
     color: var(--color-primary);
   }
-  
+
   &__theme-label {
     font-size: 0.875rem;
     color: var(--color-foreground);
     text-align: center;
   }
-  
+
   &__actions {
     display: flex;
     gap: var(--space-s);
     justify-content: flex-end;
-    margin-top: var(--space-lg);
-    padding-top: var(--space-lg);
     border-top: 1px solid var(--color-border);
   }
 }
@@ -283,13 +287,13 @@ const handleCancel = () => {
     &__theme-options {
       grid-template-columns: 1fr;
     }
-    
+
     &__theme-option {
       flex-direction: row;
       justify-content: flex-start;
       gap: var(--space);
     }
-    
+
     &__actions {
       flex-direction: column-reverse;
     }

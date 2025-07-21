@@ -411,6 +411,7 @@ export const nl: TranslationSchema = {
     pinMustBe4Digits: 'PIN moet 4 cijfers zijn',
     hideNumbers: 'Verberg nummers',
     showNumbers: 'Toon nummers',
+    parentMode: 'Parent Mode',
   },
   profile: {
     title: 'Profiel',

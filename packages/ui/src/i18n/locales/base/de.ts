@@ -413,6 +413,7 @@ export const de: TranslationSchema = {
     setUpParentMode: 'Elternmodus einrichten',
     showNumbers: 'Zahlen anzeigen',
     yesDisable: 'Ja, deaktivieren',
+    parentMode: 'Parent Mode',
   },
   profile: {
     title: 'Profil',

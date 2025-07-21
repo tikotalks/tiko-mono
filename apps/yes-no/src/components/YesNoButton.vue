@@ -49,18 +49,18 @@ const toggle = () => {
  border-radius: var(--border-radius-s); position: relative;
   padding: .25em;
   border: none;
-  
+
   // Size variants
   &--small {
-    font-size: 3em;
+    font-size: .5em;
   }
-  
+
   &--medium {
-    font-size: 5em;
+    font-size: .75em;
   }
-  
+
   &--large {
-    font-size: 8em;
+    font-size: 1em;
   }
 
   --inner-shadow-size: 0.25em;

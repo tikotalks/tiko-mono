@@ -40,12 +40,12 @@
         <!-- Parent Mode Enabled Indicator -->
         <TButton
           v-if="parentMode.isUnlocked.value"
-          type="ghost"
-          size="small"
+          type="outline"
+          size="medium"
           icon="shield"
           :class="bemm('parent-mode-indicator')"
         >
-          {{ t(keys.parentMode.parentMode) }}
+          {{ t(keys.parentMode.parentmode) }}
         </TButton>
 
         <!-- User Avatar -->
@@ -545,14 +545,14 @@ onUnmounted(() => {
   }
 
   &__parent-mode-indicator {
-    font-size: 0.75rem;
-    color: var(--color-success);
-    border-color: var(--color-success);
+    // font-size: 0.75rem;
+    // color: var(--color-success);
+    // border-color: var(--color-success);
 
-    &:hover {
-      background: var(--color-success);
-      color: white;
-    }
+    // &:hover {
+    //   background: var(--color-success);
+    //   color: white;
+    // }
   }
 
   &__user {
@@ -580,7 +580,6 @@ onUnmounted(() => {
     width: var(--space-xl);
     height: var(--space-xl);
     flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 
   &__avatar-image {
@@ -588,6 +587,7 @@ onUnmounted(() => {
     height: 100%;
     object-fit: cover;
     border-radius: var(--border-radius);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 
   &__avatar-fallback {
@@ -713,19 +713,6 @@ onUnmounted(() => {
     &__online-indicator {
       width: 0.625rem;
       height: 0.625rem;
-    }
-  }
-}
-
-// Tablet responsive
-@media (max-width: 1024px) {
-  .top-bar {
-    &__user-name {
-      max-width: 100px;
-    }
-
-    &__user-role {
-      max-width: 100px;
     }
   }
 }

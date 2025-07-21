@@ -332,7 +332,8 @@ export const et: TranslationSchema = {
       confirmYourPin: 'Kinnita oma PIN',
       pinMustBe4Digits: 'PIN peab olema täpselt 4 numbrit',
       hideNumbers: 'Peida numbrid',
-      showNumbers: 'Näita numbreid'
+      showNumbers: 'Näita numbreid',
+    parentMode: 'Parent Mode'
     },
     radio: {
       radioSettings: 'Raadio seaded',
