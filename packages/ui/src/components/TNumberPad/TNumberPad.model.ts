@@ -40,6 +40,16 @@ export interface TNumberPadProps {
    * Visual variant
    */
   variant?: 'default' | 'compact' | 'rounded' | 'flat'
+
+  /**
+   * Icon to use for the clear button
+   */
+  clearIcon?: IconName | string
+
+  /**
+   * Icon to use for the submit button
+   */
+  submitIcon?: IconName | string
 }
 
 export interface TNumberPadEmits {

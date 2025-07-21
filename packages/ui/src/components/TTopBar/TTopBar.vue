@@ -45,7 +45,7 @@
           icon="shield"
           :class="bemm('parent-mode-indicator')"
         >
-          {{ t(keys.parentMode.parentmode) }}
+          {{ t(keys.parentMode.parentMode) }}
         </TButton>
 
         <!-- User Avatar -->

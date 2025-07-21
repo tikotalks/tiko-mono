@@ -19,7 +19,7 @@
       @click="handleClearClick"
     >
       <slot name="clear">
-        <TIcon :name="Icons.ARROW_LEFT" />
+        <TIcon :name="clearIcon" />
       </slot>
     </button>
 
@@ -40,7 +40,7 @@
       @click="handleSubmitClick"
     >
       <slot name="submit">
-        <TIcon :name="Icons.ARROW_RIGHT" />
+        <TIcon :name="submitIcon" />
       </slot>
     </button>
   </div>
@@ -60,7 +60,7 @@ const props = withDefaults(defineProps<TNumberPadProps>(), {
   disableClear: false,
   disableSubmit: false,
   clearIcon: Icons.ARROW_LEFT,
-  submitIcon: Icons.CHECK_M,
+  submitIcon: Icons.ARROW_RIGHT,
   size: 'medium',
   variant: 'default'
 })
