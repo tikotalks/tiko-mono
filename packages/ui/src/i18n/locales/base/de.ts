@@ -36,6 +36,8 @@ export const de: TranslationSchema = {
     undo: 'Rückgängig',
     redo: 'Wiederherstellen',
     welcome: 'Willkommen {name}!',
+    menu: 'Speisekarte',
+    showMore: 'Mehr anzeigen',
     itemsSelected: '{count} Elemente ausgewählt',
     enabled: 'Aktiviert',
     disabled: 'Deaktiviert',
@@ -60,7 +62,7 @@ export const de: TranslationSchema = {
     hoursAgo: 'vor {count}h',
     daysAgo: 'vor {count}d',
     more: 'mehr',
-    showMore: 'Mehr anzeigen',
+    speak: 'Sprechen',
     dismiss: 'Schließen'
   },
   auth: {
@@ -414,7 +416,7 @@ export const de: TranslationSchema = {
     setUpParentMode: 'Elternmodus einrichten',
     showNumbers: 'Zahlen anzeigen',
     yesDisable: 'Ja, deaktivieren',
-    parentMode: 'Parent Mode',
+    parentMode: 'Elternmodus',
   },
   profile: {
     title: 'Profil',

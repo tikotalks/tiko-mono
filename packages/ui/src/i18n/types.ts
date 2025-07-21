@@ -62,6 +62,9 @@ export interface TranslationSchema {
     daysAgo: string
     more: string
     dismiss: string
+    showMore: string
+    speak: string
+    menu: string
   }
   auth: {
     login: string

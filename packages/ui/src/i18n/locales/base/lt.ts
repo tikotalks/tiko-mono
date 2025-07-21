@@ -38,6 +38,8 @@ export const lt: TranslationSchema = {
     undo: 'Atšaukti',
     redo: 'Pakartoti',
     welcome: 'Welcome {name}!',
+    menu: 'Meniu',
+    showMore: 'Rodyti daugiau',
     itemsSelected: '{count} items selected',
     enabled: 'Enabled',
     disabled: 'Disabled',
@@ -62,7 +64,7 @@ export const lt: TranslationSchema = {
     hoursAgo: '{count}h ago',
     daysAgo: '{count}d ago',
     more: 'more',
-    showMore: 'Rodyti daugiau',
+    speak: 'Kalbėti',
     dismiss: 'Dismiss'
   },
   auth: {
@@ -334,7 +336,7 @@ export const lt: TranslationSchema = {
     pinMustBe4Digits: 'PIN must be exactly 4 digits',
     hideNumbers: 'Hide Numbers',
     showNumbers: 'Show Numbers',
-    parentMode: 'Parent Mode'
+    parentMode: 'Tėvų režimas'
   },
   radio: {
     radioSettings: 'Radio Settings',

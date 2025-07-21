@@ -38,6 +38,8 @@ export const ga: TranslationSchema = {
     undo: 'Cealaigh',
     redo: 'Athdhéan',
     welcome: 'Welcome {name}!',
+    menu: 'Roghchlár',
+    showMore: 'Taispeáin níos mó',
     itemsSelected: '{count} items selected',
     enabled: 'Enabled',
     disabled: 'Disabled',
@@ -62,7 +64,7 @@ export const ga: TranslationSchema = {
     hoursAgo: '{count}h ago',
     daysAgo: '{count}d ago',
     more: 'more',
-    showMore: 'Taispeáin níos mó',
+    speak: 'Labhair',
     dismiss: 'Dismiss'
   },
   auth: {
@@ -334,7 +336,7 @@ export const ga: TranslationSchema = {
     pinMustBe4Digits: 'PIN must be exactly 4 digits',
     hideNumbers: 'Hide Numbers',
     showNumbers: 'Show Numbers',
-    parentMode: 'Parent Mode'
+    parentMode: 'Mód Tuismitheoir'
   },
   radio: {
     radioSettings: 'Radio Settings',

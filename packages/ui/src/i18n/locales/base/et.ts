@@ -38,6 +38,8 @@ export const et: TranslationSchema = {
       undo: 'Võta tagasi',
       redo: 'Tee uuesti',
       welcome: 'Tere tulemast {name}!',
+    menu: 'Menüü',
+    showMore: 'Näita rohkem',
       itemsSelected: '{count} üksust valitud',
       enabled: 'Lubatud',
       disabled: 'Keelatud',
@@ -62,7 +64,7 @@ export const et: TranslationSchema = {
       hoursAgo: '{count}h tagasi',
       daysAgo: '{count}p tagasi',
       more: 'rohkem',
-      showMore: 'Näita rohkem',
+          speak: 'Rääkima',
       dismiss: 'Sulge'
     },
     auth: {
@@ -334,7 +336,7 @@ export const et: TranslationSchema = {
       pinMustBe4Digits: 'PIN peab olema täpselt 4 numbrit',
       hideNumbers: 'Peida numbrid',
       showNumbers: 'Näita numbreid',
-    parentMode: 'Parent Mode'
+    parentMode: 'Vanemrežiim'
     },
     radio: {
       radioSettings: 'Raadio seaded',

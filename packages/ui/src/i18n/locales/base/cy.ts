@@ -35,6 +35,8 @@ export const cy: TranslationSchema = {
     undo: 'Dadwneud',
     redo: 'Ailwneud',
     welcome: 'Croeso {name}!',
+    menu: 'Dewislen',
+    showMore: 'Dangos mwy',
     itemsSelected: '{count} eitem wedi\'u dewis',
     enabled: 'Wedi\'i alluogi',
     disabled: 'Wedi\'i analluogi',
@@ -59,7 +61,7 @@ export const cy: TranslationSchema = {
     hoursAgo: '{count}a yn ôl',
     daysAgo: '{count}d yn ôl',
     more: 'mwy',
-    showMore: 'Dangos mwy',
+    speak: 'Siarad',
     dismiss: 'Diystyru'
   },
   auth: {
@@ -413,7 +415,7 @@ export const cy: TranslationSchema = {
     pinMustBe4Digits: 'Rhaid i\'r PIN fod yn union 4 digid',
     hideNumbers: 'Cuddio Rhifau',
     showNumbers: 'Dangos Rhifau',
-    parentMode: 'Parent Mode'
+    parentMode: 'Modd Rhiant'
   },
   profile: {
     title: 'Proffil',

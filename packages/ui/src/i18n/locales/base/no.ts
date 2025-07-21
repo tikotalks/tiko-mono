@@ -38,6 +38,8 @@ export const no: TranslationSchema = {
     undo: 'Angre',
     redo: 'Gjør om',
     welcome: 'Welcome {name}!',
+    menu: 'Meny',
+    showMore: 'Vis mer',
     itemsSelected: '{count} items selected',
     enabled: 'Enabled',
     disabled: 'Disabled',
@@ -62,7 +64,7 @@ export const no: TranslationSchema = {
     hoursAgo: '{count}h ago',
     daysAgo: '{count}d ago',
     more: 'more',
-    showMore: 'Vis mer',
+    speak: 'Snakke',
     dismiss: 'Dismiss'
   },
   auth: {
@@ -334,7 +336,7 @@ export const no: TranslationSchema = {
     pinMustBe4Digits: 'PIN must be exactly 4 digits',
     hideNumbers: 'Hide Numbers',
     showNumbers: 'Show Numbers',
-    parentMode: 'Parent Mode'
+    parentMode: 'Foreldremodus'
   },
   radio: {
     radioSettings: 'Radio Settings',

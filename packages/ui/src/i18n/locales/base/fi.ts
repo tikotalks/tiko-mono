@@ -34,6 +34,8 @@ export const fi: TranslationSchema = {
     undo: 'Kumoa',
     redo: 'Tee uudelleen',
     welcome: 'Tervetuloa {name}!',
+    menu: 'Valikko',
+    showMore: 'Näytä lisää',
     itemsSelected: '{count} kohdetta valittu',
     enabled: 'Käytössä',
     disabled: 'Pois käytöstä',
@@ -58,7 +60,7 @@ export const fi: TranslationSchema = {
     hoursAgo: '{count} h sitten',
     daysAgo: '{count} pv sitten',
     more: 'lisää',
-    showMore: 'Näytä lisää',
+    speak: 'Puhua',
     dismiss: 'Sulje'
   },
   auth: {
@@ -330,7 +332,7 @@ export const fi: TranslationSchema = {
     pinMustBe4Digits: 'PIN-koodin on oltava tarkalleen 4 numeroa',
     hideNumbers: 'Piilota numerot',
     showNumbers: 'Näytä numerot',
-    parentMode: 'Parent Mode'
+    parentMode: 'Vanhempi tila'
   },
   radio: {
     radioSettings: 'Radion asetukset',

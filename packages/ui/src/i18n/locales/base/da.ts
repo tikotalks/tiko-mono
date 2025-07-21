@@ -38,6 +38,8 @@ export const da: TranslationSchema = {
     undo: 'Fortryd',
     redo: 'Gentag',
     welcome: 'Velkommen {name}!',
+    menu: 'Menu',
+    showMore: 'Vis mere',
     itemsSelected: '{count} element(er) valgt',
     enabled: 'Aktiveret',
     disabled: 'Deaktiveret',
@@ -62,7 +64,7 @@ export const da: TranslationSchema = {
     hoursAgo: '{count} t siden',
     daysAgo: '{count} d siden',
     more: 'mere',
-    showMore: 'Vis mere',
+    speak: 'Tale',
     dismiss: 'Luk'
   },
 
@@ -341,7 +343,7 @@ export const da: TranslationSchema = {
     pinMustBe4Digits: 'PIN skal være præcis 4 cifre',
     hideNumbers: 'Skjul tal',
     showNumbers: 'Vis tal',
-    parentMode: 'Parent Mode'
+    parentMode: 'Forældretilstand'
   },
 
   radio: {

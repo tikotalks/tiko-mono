@@ -34,6 +34,8 @@ export const pl: TranslationSchema = {
     undo: 'Cofnij',
     redo: 'Ponów',
     welcome: 'Witaj {name}!',
+    menu: 'Menu',
+    showMore: 'Pokaż więcej',
     itemsSelected: 'Wybrano {count} elementów',
     enabled: 'Włączony',
     disabled: 'Wyłączony',
@@ -58,7 +60,7 @@ export const pl: TranslationSchema = {
     hoursAgo: '{count}g temu',
     daysAgo: '{count}d temu',
     more: 'więcej',
-    showMore: 'Pokaż więcej',
+    speak: 'Mówić',
     dismiss: 'Zamknij'
   },
   auth: {
@@ -412,7 +414,7 @@ export const pl: TranslationSchema = {
     pinMustBe4Digits: 'PIN musi mieć 4 cyfry',
     hideNumbers: 'Ukryj numery',
     showNumbers: 'Pokaż numery',
-    parentMode: 'Parent Mode'
+    parentMode: 'Tryb rodzicielski'
   },
   profile: {
     title: 'Profil',

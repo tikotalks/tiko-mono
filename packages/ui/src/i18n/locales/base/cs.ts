@@ -38,6 +38,8 @@ export const cs: TranslationSchema = {
     undo: 'Zpět',
     redo: 'Znovu',
     welcome: 'Vítej, {name}!',
+    menu: 'Nabídka',
+    showMore: 'Zobrazit více',
     itemsSelected: '{count} vybraných položek',
     enabled: 'Povoleno',
     disabled: 'Zakázáno',
@@ -62,7 +64,7 @@ export const cs: TranslationSchema = {
     hoursAgo: 'před {count} h',
     daysAgo: 'před {count} dny',
     more: 'více',
-    showMore: 'Zobrazit více',
+    speak: 'Mluvit',
     dismiss: 'Zavřít'
   },
 
@@ -341,7 +343,7 @@ export const cs: TranslationSchema = {
     pinMustBe4Digits: 'PIN musí mít přesně 4 čísla',
     hideNumbers: 'Skrýt čísla',
     showNumbers: 'Zobrazit čísla',
-    parentMode: 'Parent Mode'
+    parentMode: 'Rodičovský režim'
   },
 
   radio: {

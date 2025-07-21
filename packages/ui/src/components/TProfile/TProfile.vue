@@ -21,7 +21,7 @@
               {{ initials }}
             </div>
           </div>
-          
+
           <!-- Upload overlay - only visible on hover -->
           <label :class="bemm('avatar-upload')">
             <input
@@ -37,12 +37,12 @@
             </div>
           </label>
         </div>
-        
+
         <div v-if="uploadError" :class="bemm('error')">
           {{ uploadError }}
         </div>
       </div>
-      
+
       <!-- User Basic Info -->
       <div :class="bemm('info')">
         <h2 :class="bemm('name')">{{ displayName }}</h2>
@@ -57,20 +57,20 @@
         <span :class="bemm('detail-label')">{{ t(keys.profile.memberSince) }}</span>
         <span :class="bemm('detail-value')">{{ memberSinceDate }}</span>
       </div>
-      
+
       <!-- Language -->
       <div :class="bemm('detail-item')">
         <span :class="bemm('detail-label')">{{ t(keys.profile.language) }}</span>
         <span :class="bemm('detail-value')">{{ currentLanguageDisplay }}</span>
       </div>
-      
+
       <!-- Parent Mode Status -->
       <div v-if="parentMode.isEnabled.value" :class="bemm('detail-item')">
         <span :class="bemm('detail-label')">{{ t(keys.profile.parentMode) }}</span>
         <span :class="bemm('detail-value')">
-          <TIcon 
-            :name="parentMode.isUnlocked.value ? 'shield' : 'lock'" 
-            :class="bemm('detail-icon', parentMode.isUnlocked.value ? 'active' : 'inactive')" 
+          <TIcon
+            :name="parentMode.isUnlocked.value ? 'shield' : 'lock'"
+            :class="bemm('detail-icon', parentMode.isUnlocked.value ? 'active' : 'inactive')"
           />
           {{ parentMode.isUnlocked.value ? t(keys.common.enabled) : t(keys.common.disabled) }}
         </span>
@@ -89,7 +89,7 @@
         >
           {{ t(keys.profile.changePassword) }}
         </TButton>
-        
+
         <TButton
           v-if="!parentMode.isEnabled.value"
           type="outline"
@@ -113,8 +113,11 @@ import { fileService, useAuthStore } from '@tiko/core'
 import TIcon from '../TIcon/TIcon.vue'
 import TButton from '../TButton/TButton.vue'
 import type { TProfileProps } from './TProfile.model'
-import type { PopupService, ToastService } from '../../types'
-import type { Locale } from '../../i18n/types'
+import type { popupService } from '../TPopup'
+import type { toastService } from '../TToast'
+
+type PopupService = typeof popupService
+type ToastService = typeof toastService
 
 const props = defineProps<TProfileProps>()
 
@@ -160,18 +163,18 @@ const avatarColor = computed(() => {
     '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4',
     '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'
   ]
-  
+
   const hash = (props.user.email || 'default').split('').reduce((a, b) => {
     a = ((a << 5) - a) + b.charCodeAt(0)
     return a & a
   }, 0)
-  
+
   return colors[Math.abs(hash) % colors.length]
 })
 
 const memberSinceDate = computed(() => {
   if (!props.user.created_at) return ''
-  
+
   const date = new Date(props.user.created_at)
   return date.toLocaleDateString(locale.value, {
     year: 'numeric',
@@ -194,25 +197,25 @@ const handleAvatarError = () => {
 const handleFileSelect = async (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
-  
+
   if (!file) return
-  
+
   // Validate file type
   if (!file.type.startsWith('image/')) {
     uploadError.value = t(keys.profile.invalidFileType)
     return
   }
-  
+
   // Validate file size (max 5MB)
   const maxSize = 5 * 1024 * 1024
   if (file.size > maxSize) {
     uploadError.value = t(keys.profile.fileTooLarge)
     return
   }
-  
+
   uploadError.value = ''
   isProcessing.value = true
-  
+
   try {
     // Create preview
     const reader = new FileReader()
@@ -220,16 +223,16 @@ const handleFileSelect = async (event: Event) => {
       avatarPreview.value = e.target?.result as string
     }
     reader.readAsDataURL(file)
-    
+
     // Upload file
     const uploadedUrl = await fileService.uploadAvatar(file, props.user.id)
-    
+
     // Update user metadata
     await authStore.updateUserMetadata({
       ...props.user.user_metadata,
       avatar_url: uploadedUrl
     })
-    
+
     toastService?.show({
       message: t(keys.profile.profileUpdated),
       type: 'success'
@@ -238,7 +241,7 @@ const handleFileSelect = async (event: Event) => {
     console.error('Failed to upload avatar:', error)
     uploadError.value = t(keys.profile.imageProcessingFailed)
     avatarPreview.value = ''
-    
+
     toastService?.show({
       message: t(keys.profile.updateFailed),
       type: 'error'
@@ -268,7 +271,7 @@ const handleSetupParentMode = () => {
   flex-direction: column;
   gap: var(--space-lg);
   padding: var(--space);
-  
+
   &__header {
     display: flex;
     align-items: center;
@@ -276,17 +279,17 @@ const handleSetupParentMode = () => {
     padding-bottom: var(--space-lg);
     border-bottom: 1px solid var(--color-border);
   }
-  
+
   &__avatar-section {
     position: relative;
   }
-  
+
   &__avatar-wrapper {
     position: relative;
     width: 6rem;
     height: 6rem;
   }
-  
+
   &__avatar {
     width: 100%;
     height: 100%;
@@ -295,13 +298,13 @@ const handleSetupParentMode = () => {
     background: var(--color-background);
     border: 3px solid var(--color-border);
   }
-  
+
   &__avatar-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-  
+
   &__avatar-fallback {
     width: 100%;
     height: 100%;
@@ -313,7 +316,7 @@ const handleSetupParentMode = () => {
     color: white;
     text-transform: uppercase;
   }
-  
+
   &__avatar-upload {
     position: absolute;
     top: 0;
@@ -321,12 +324,12 @@ const handleSetupParentMode = () => {
     width: 100%;
     height: 100%;
     cursor: pointer;
-    
+
     &:hover .profile__avatar-overlay {
       opacity: 1;
     }
   }
-  
+
   &__avatar-input {
     position: absolute;
     width: 0;
@@ -334,7 +337,7 @@ const handleSetupParentMode = () => {
     opacity: 0;
     pointer-events: none;
   }
-  
+
   &__avatar-overlay {
     position: absolute;
     top: 0;
@@ -349,12 +352,12 @@ const handleSetupParentMode = () => {
     opacity: 0;
     transition: opacity 0.2s ease;
   }
-  
+
   &__avatar-icon {
     font-size: 2rem;
     color: white;
   }
-  
+
   &__error {
     position: absolute;
     top: 100%;
@@ -368,42 +371,42 @@ const handleSetupParentMode = () => {
     border-radius: var(--border-radius-sm);
     text-align: center;
   }
-  
+
   &__info {
     flex: 1;
   }
-  
+
   &__name {
     margin: 0 0 var(--space-xs) 0;
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--color-foreground);
   }
-  
+
   &__email {
     margin: 0;
     font-size: 1rem;
     color: var(--color-text-secondary);
   }
-  
+
   &__details {
     display: flex;
     flex-direction: column;
     gap: var(--space);
   }
-  
+
   &__detail-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: var(--space-s) 0;
   }
-  
+
   &__detail-label {
     font-size: 0.875rem;
     color: var(--color-text-secondary);
   }
-  
+
   &__detail-value {
     font-size: 0.875rem;
     font-weight: 500;
@@ -412,38 +415,38 @@ const handleSetupParentMode = () => {
     align-items: center;
     gap: var(--space-xs);
   }
-  
+
   &__detail-icon {
     font-size: 1rem;
-    
+
     &--active {
       color: var(--color-success);
     }
-    
+
     &--inactive {
       color: var(--color-text-secondary);
     }
   }
-  
+
   &__actions {
     margin-top: var(--space);
     padding-top: var(--space-lg);
     border-top: 1px solid var(--color-border);
   }
-  
+
   &__actions-title {
     margin: 0 0 var(--space) 0;
     font-size: 1rem;
     font-weight: 600;
     color: var(--color-foreground);
   }
-  
+
   &__actions-list {
     display: flex;
     flex-direction: column;
     gap: var(--space-s);
   }
-  
+
   &__action-button {
     justify-content: flex-start;
   }
@@ -456,7 +459,7 @@ const handleSetupParentMode = () => {
       flex-direction: column;
       text-align: center;
     }
-    
+
     &__detail-item {
       flex-direction: column;
       align-items: flex-start;

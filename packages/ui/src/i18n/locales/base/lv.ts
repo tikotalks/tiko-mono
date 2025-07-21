@@ -38,6 +38,8 @@ export const lv: TranslationSchema = {
     undo: 'Atsaukt',
     redo: 'Atkārtot',
     welcome: 'Welcome {name}!',
+    menu: 'Izvēlne',
+    showMore: 'Rādīt vairāk',
     itemsSelected: '{count} items selected',
     enabled: 'Enabled',
     disabled: 'Disabled',
@@ -62,7 +64,7 @@ export const lv: TranslationSchema = {
     hoursAgo: '{count}h ago',
     daysAgo: '{count}d ago',
     more: 'more',
-    showMore: 'Rādīt vairāk',
+    speak: 'Runāt',
     dismiss: 'Dismiss'
   },
   auth: {
@@ -334,7 +336,7 @@ export const lv: TranslationSchema = {
     pinMustBe4Digits: 'PIN must be exactly 4 digits',
     hideNumbers: 'Hide Numbers',
     showNumbers: 'Show Numbers',
-    parentMode: 'Parent Mode'
+    parentMode: 'Vecāku režīms'
   },
   radio: {
     radioSettings: 'Radio Settings',

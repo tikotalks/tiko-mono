@@ -35,6 +35,8 @@ export const mt: TranslationSchema = {
     undo: 'Skarta',
     redo: 'Redin',
     welcome: 'Merħba {name}!',
+    menu: 'Menu',
+    showMore: 'Uri aktar',
     itemsSelected: '{count} oġġetti magħżula',
     enabled: 'Attivat',
     disabled: 'Diżattivat',
@@ -59,7 +61,7 @@ export const mt: TranslationSchema = {
     hoursAgo: '{count}h ago ',
     daysAgo: '{count}d ago ',
     more: 'more ',
-    showMore: 'Uri iktar',
+    speak: 'Tkellim',
     dismiss: 'Dismiss '
   },
   auth: {
@@ -413,7 +415,7 @@ export const mt: TranslationSchema = {
     pinMustBe4Digits: 'PIN must be exactly 4 digits ',
     hideNumbers: 'Hide Numbers ',
     showNumbers: 'Show Numbers ',
-    parentMode: 'Parent Mode'
+    parentMode: 'Modalità tal-ġenituri'
   },
   profile: {
     title: 'Profil',

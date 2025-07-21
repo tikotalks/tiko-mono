@@ -35,6 +35,8 @@ export const hy: TranslationSchema = {
     undo: 'Չեղարկել',
     redo: 'Կրկնել',
     welcome: 'Բարի գալուստ {name}!',
+    menu: 'Մենյու',
+    showMore: 'Ցուցադրել ավելին',
     itemsSelected: '{count} տարր ընտրված',
     enabled: 'Միացված',
     disabled: 'Անջատված',
@@ -59,7 +61,7 @@ export const hy: TranslationSchema = {
     hoursAgo: '{count}h ago ',
     daysAgo: '{count}d ago ',
     more: 'more ',
-    showMore: 'Ցույց տալ ավելին',
+    speak: 'Խոսել',
     dismiss: 'Dismiss '
   },
   auth: {
@@ -413,7 +415,7 @@ export const hy: TranslationSchema = {
     pinMustBe4Digits: 'PIN must be exactly 4 digits ',
     hideNumbers: 'Hide Numbers ',
     showNumbers: 'Show Numbers ',
-    parentMode: 'Parent Mode'
+    parentMode: 'ծնողական ռեժիմ'
   },
   profile: {
     title: 'Պրոֆիլ',

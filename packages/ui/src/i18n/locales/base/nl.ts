@@ -34,6 +34,8 @@ export const nl: TranslationSchema = {
     undo: 'Ongedaan maken',
     redo: 'Opnieuw',
     welcome: 'Welkom {name}!',
+    menu: 'Menu',
+    showMore: 'Meer tonen',
     itemsSelected: '{count} items geselecteerd',
     enabled: 'Ingeschakeld',
     disabled: 'Uitgeschakeld',
@@ -58,7 +60,7 @@ export const nl: TranslationSchema = {
     hoursAgo: '{count}u geleden',
     daysAgo: '{count}d geleden',
     more: 'meer',
-    showMore: 'Meer tonen',
+    speak: 'Spreken',
     dismiss: 'Sluiten'
   },
   auth: {
@@ -412,7 +414,7 @@ export const nl: TranslationSchema = {
     pinMustBe4Digits: 'PIN moet 4 cijfers zijn',
     hideNumbers: 'Verberg nummers',
     showNumbers: 'Toon nummers',
-    parentMode: 'Parent Mode',
+    parentMode: 'Oudermodus',
   },
   profile: {
     title: 'Profiel',

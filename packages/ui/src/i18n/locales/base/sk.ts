@@ -38,6 +38,8 @@ export const sk: TranslationSchema = {
     undo: 'Späť',
     redo: 'Znova',
     welcome: 'Welcome {name}!',
+    menu: 'Ponuka',
+    showMore: 'Zobraziť viac',
     itemsSelected: '{count} items selected',
     enabled: 'Enabled',
     disabled: 'Disabled',
@@ -62,7 +64,7 @@ export const sk: TranslationSchema = {
     hoursAgo: '{count}h ago',
     daysAgo: '{count}d ago',
     more: 'more',
-    showMore: 'Zobraziť viac',
+    speak: 'Hovoriť',
     dismiss: 'Dismiss'
   },
   auth: {
@@ -334,7 +336,7 @@ export const sk: TranslationSchema = {
     pinMustBe4Digits: 'PIN must be exactly 4 digits',
     hideNumbers: 'Hide Numbers',
     showNumbers: 'Show Numbers',
-    parentMode: 'Parent Mode'
+    parentMode: 'Rodičovský režim'
   },
   radio: {
     radioSettings: 'Radio Settings',

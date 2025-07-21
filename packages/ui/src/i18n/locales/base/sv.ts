@@ -34,6 +34,8 @@ export const sv: TranslationSchema = {
     undo: 'Ångra',
     redo: 'Gör om',
     welcome: 'Välkommen {name}!',
+    menu: 'Meny',
+    showMore: 'Visa mer',
     itemsSelected: '{count} objekt valda',
     enabled: 'Aktiverad',
     disabled: 'Inaktiverad',
@@ -58,7 +60,7 @@ export const sv: TranslationSchema = {
     hoursAgo: '{count}h sedan',
     daysAgo: '{count}d sedan',
     more: 'mer',
-    showMore: 'Visa mer',
+    speak: 'Tala',
     dismiss: 'Avfärda'
   },
   auth: {
@@ -412,7 +414,7 @@ export const sv: TranslationSchema = {
     pinMustBe4Digits: 'PIN måste vara 4 siffror',
     hideNumbers: 'Dölj siffror',
     showNumbers: 'Visa siffror',
-    parentMode: 'Parent Mode'
+    parentMode: 'Föräldraläge'
   },
   profile: {
     title: 'Profil',

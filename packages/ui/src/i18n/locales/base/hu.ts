@@ -38,6 +38,8 @@ export const hu: TranslationSchema = {
     undo: 'Visszavonás',
     redo: 'Ismét',
     welcome: 'Welcome {name}!',
+    menu: 'Menü',
+    showMore: 'Többet mutat',
     itemsSelected: '{count} items selected',
     enabled: 'Enabled',
     disabled: 'Disabled',
@@ -62,7 +64,7 @@ export const hu: TranslationSchema = {
     hoursAgo: '{count}h ago',
     daysAgo: '{count}d ago',
     more: 'more',
-    showMore: 'Több megjelenítése',
+    speak: 'Beszél',
     dismiss: 'Dismiss'
   },
   auth: {
@@ -334,7 +336,7 @@ export const hu: TranslationSchema = {
     pinMustBe4Digits: 'PIN must be exactly 4 digits',
     hideNumbers: 'Hide Numbers',
     showNumbers: 'Show Numbers',
-    parentMode: 'Parent Mode'
+    parentMode: 'Szülői mód'
   },
   radio: {
     radioSettings: 'Radio Settings',

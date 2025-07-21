@@ -34,6 +34,8 @@ export const el: TranslationSchema = {
     undo: 'Αναίρεση',
     redo: 'Επανάληψη',
     welcome: 'Καλώς ήρθες {name}!',
+    menu: 'Μενού',
+    showMore: 'Δείτε περισσότερα',
     itemsSelected: '{count} στοιχεία επιλεγμένα',
     enabled: 'Ενεργοποιημένο',
     disabled: 'Απενεργοποιημένο',
@@ -58,7 +60,7 @@ export const el: TranslationSchema = {
     hoursAgo: '{count}h ago ',
     daysAgo: '{count}d ago ',
     more: 'more ',
-    showMore: 'Εμφάνιση περισσότερων',
+    speak: 'Μιλώ',
     dismiss: 'Dismiss ',
   },
   auth: {
@@ -412,7 +414,7 @@ export const el: TranslationSchema = {
     pinMustBe4Digits: 'PIN must be exactly 4 digits ',
     hideNumbers: 'Hide Numbers ',
     showNumbers: 'Show Numbers ',
-    parentMode: 'Parent Mode'
+    parentMode: 'Λειτουργία γονέα'
   },
   profile: {
     title: 'Προφίλ',

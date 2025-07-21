@@ -34,6 +34,8 @@ export const ru: TranslationSchema = {
     undo: 'Отменить',
     redo: 'Повторить',
     welcome: 'Добро пожаловать, {name}!',
+    menu: 'Меню',
+    showMore: 'Показать больше',
     itemsSelected: 'Выбрано элементов: {count}',
     enabled: 'Включено',
     disabled: 'Отключено',
@@ -58,7 +60,7 @@ export const ru: TranslationSchema = {
     hoursAgo: '{count}ч назад',
     daysAgo: '{count}д назад',
     more: 'ещё',
-    showMore: 'Показать больше',
+    speak: 'Говорить',
     dismiss: 'Закрыть'
   },
   auth: {
@@ -412,7 +414,7 @@ export const ru: TranslationSchema = {
     pinMustBe4Digits: 'PIN должен быть 4 цифры',
     hideNumbers: 'Скрыть цифры',
     showNumbers: 'Показать цифры',
-    parentMode: 'Parent Mode'
+    parentMode: 'Родительский режим'
   },
   profile: {
     title: 'Профиль',

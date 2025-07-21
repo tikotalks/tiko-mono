@@ -38,6 +38,8 @@ export const sl: TranslationSchema = {
     undo: 'Razveljavi',
     redo: 'Ponovi',
     welcome: 'Welcome {name}!',
+    menu: 'Meni',
+    showMore: 'Prikaži več',
     itemsSelected: '{count} items selected',
     enabled: 'Enabled',
     disabled: 'Disabled',
@@ -62,7 +64,7 @@ export const sl: TranslationSchema = {
     hoursAgo: '{count}h ago',
     daysAgo: '{count}d ago',
     more: 'more',
-    showMore: 'Prikaži več',
+    speak: 'Govoriti',
     dismiss: 'Dismiss'
   },
   auth: {
@@ -334,7 +336,7 @@ export const sl: TranslationSchema = {
     pinMustBe4Digits: 'PIN must be exactly 4 digits',
     hideNumbers: 'Hide Numbers',
     showNumbers: 'Show Numbers',
-    parentMode: 'Parent Mode'
+    parentMode: 'Starševski način'
   },
   radio: {
     radioSettings: 'Radio Settings',

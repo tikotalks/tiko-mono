@@ -34,6 +34,8 @@ export const en: TranslationSchema = {
     undo: 'Undo',
     redo: 'Redo',
     welcome: 'Welcome {name}!',
+    menu: 'Menu',
+    showMore: 'Show More',
     itemsSelected: '{count} items selected',
     enabled: 'Enabled',
     disabled: 'Disabled',
@@ -58,7 +60,7 @@ export const en: TranslationSchema = {
     hoursAgo: '{count}h ago',
     daysAgo: '{count}d ago',
     more: 'more',
-    showMore: 'Show more',
+    speak: 'Speak',
     dismiss: 'Dismiss'
   },
   auth: {

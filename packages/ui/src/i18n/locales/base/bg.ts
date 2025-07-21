@@ -35,6 +35,8 @@ export const bg: TranslationSchema = {
     undo: 'Отмени',
     redo: 'Повтори',
     welcome: 'Добре дошъл, {name}!',
+    menu: 'Меню',
+    showMore: 'Покажи повече',
     itemsSelected: '{count} избрани елемента',
     enabled: 'Активирано',
     disabled: 'Деактивирано',
@@ -59,7 +61,7 @@ export const bg: TranslationSchema = {
     hoursAgo: 'преди {count} ч',
     daysAgo: 'преди {count} дни',
     more: 'още',
-    showMore: 'Покажи повече',
+    speak: 'Говоря',
     dismiss: 'Затвори'
   },
 
@@ -339,7 +341,7 @@ export const bg: TranslationSchema = {
     pinMustBe4Digits: 'ПИН трябва да е точно 4 цифри',
     hideNumbers: 'Скрий числата',
     showNumbers: 'Покажи числата',
-    parentMode: 'Parent Mode',
+    parentMode: 'Родителски режим',
   },
   radio: {
     radioSettings: 'Настройки на радиото',

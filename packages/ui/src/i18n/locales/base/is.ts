@@ -35,6 +35,8 @@ export const is: TranslationSchema = {
     undo: 'Afturkalla',
     redo: 'Endurtaka',
     welcome: 'Velkomin(n) {name}!',
+    menu: 'Valmynd',
+    showMore: 'Sýna meira',
     itemsSelected: '{count} atriði valin',
     enabled: 'Virkt',
     disabled: 'Óvirkt',
@@ -59,7 +61,7 @@ export const is: TranslationSchema = {
     hoursAgo: '{count}klst síðan',
     daysAgo: '{count}d síðan',
     more: 'meira',
-    showMore: 'Sýna meira',
+    speak: 'Tala',
     dismiss: 'Hunsa'
   },
   auth: {
@@ -413,7 +415,7 @@ export const is: TranslationSchema = {
     pinMustBe4Digits: 'PIN verður að vera nákvæmlega 4 tölustafir',
     hideNumbers: 'Fela tölur',
     showNumbers: 'Sýna tölur',
-    parentMode: 'Parent Mode'
+    parentMode: 'Foreldrahamur'
   },
   profile: {
     title: 'Prófíll',

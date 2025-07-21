@@ -37,7 +37,9 @@ export const hr: TranslationSchema = {
     paste: 'Zalijepi',
     undo: 'Poništi',
     redo: 'Ponovi',
-    welcome: 'Welcome {name}!',
+    welcome: 'Dobrodošli {name}!',
+    menu: 'Izbornik',
+    showMore: 'Prikaži više',
     itemsSelected: '{count} items selected',
     enabled: 'Enabled',
     disabled: 'Disabled',
@@ -62,7 +64,7 @@ export const hr: TranslationSchema = {
     hoursAgo: '{count}h ago',
     daysAgo: '{count}d ago',
     more: 'more',
-    showMore: 'Prikaži više',
+    speak: 'Govoriti',
     dismiss: 'Dismiss'
   },
   auth: {
@@ -334,7 +336,7 @@ export const hr: TranslationSchema = {
     pinMustBe4Digits: 'PIN must be exactly 4 digits',
     hideNumbers: 'Hide Numbers',
     showNumbers: 'Show Numbers',
-    parentMode: 'Parent Mode'
+    parentMode: 'Roditeljski način'
   },
   radio: {
     radioSettings: 'Radio Settings',

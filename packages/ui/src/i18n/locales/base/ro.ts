@@ -38,6 +38,8 @@ export const ro: TranslationSchema = {
     undo: 'Anulează',
     redo: 'Refă',
     welcome: 'Welcome {name}!',
+    menu: 'Meniu',
+    showMore: 'Arată mai mult',
     itemsSelected: '{count} items selected',
     enabled: 'Enabled',
     disabled: 'Disabled',
@@ -62,7 +64,7 @@ export const ro: TranslationSchema = {
     hoursAgo: '{count}h ago',
     daysAgo: '{count}d ago',
     more: 'more',
-    showMore: 'Arată mai mult',
+    speak: 'Vorbi',
     dismiss: 'Dismiss'
   },
   auth: {
@@ -334,7 +336,7 @@ export const ro: TranslationSchema = {
     pinMustBe4Digits: 'PIN must be exactly 4 digits',
     hideNumbers: 'Hide Numbers',
     showNumbers: 'Show Numbers',
-    parentMode: 'Parent Mode'
+    parentMode: 'Modul părinte'
   },
   radio: {
     radioSettings: 'Radio Settings',
