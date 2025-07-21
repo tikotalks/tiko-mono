@@ -59,6 +59,7 @@ export const hy: TranslationSchema = {
     hoursAgo: '{count}h ago ',
     daysAgo: '{count}d ago ',
     more: 'more ',
+    showMore: 'Ցույց տալ ավելին',
     dismiss: 'Dismiss '
   },
   auth: {

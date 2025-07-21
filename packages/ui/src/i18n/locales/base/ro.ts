@@ -62,6 +62,7 @@ export const ro: TranslationSchema = {
     hoursAgo: '{count}h ago',
     daysAgo: '{count}d ago',
     more: 'more',
+    showMore: 'Arată mai mult',
     dismiss: 'Dismiss'
   },
   auth: {

@@ -60,6 +60,7 @@ export const fr: TranslationSchema = {
     hoursAgo: 'Il y a {count}h ',
     daysAgo: 'Il y a {count}j ',
     more: 'plus ',
+    showMore: 'Afficher plus',
     dismiss: 'Ignorer ',
   },
   auth: {

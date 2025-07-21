@@ -59,6 +59,7 @@ export const bg: TranslationSchema = {
     hoursAgo: 'преди {count} ч',
     daysAgo: 'преди {count} дни',
     more: 'още',
+    showMore: 'Покажи повече',
     dismiss: 'Затвори'
   },
 

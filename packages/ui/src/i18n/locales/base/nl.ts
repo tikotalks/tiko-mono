@@ -58,6 +58,7 @@ export const nl: TranslationSchema = {
     hoursAgo: '{count}u geleden',
     daysAgo: '{count}d geleden',
     more: 'meer',
+    showMore: 'Meer tonen',
     dismiss: 'Sluiten'
   },
   auth: {

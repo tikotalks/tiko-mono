@@ -4,10 +4,10 @@
       <h3 :class="bemm('title')">{{ t(keys.yesno.setQuestion) }}</h3>
       <p :class="bemm('subtitle')">{{ t(keys.yesno.typeYourQuestionOrSelect) }}</p>
     </div>
-    
+
     <div :class="bemm('content')">
       <div :class="bemm('form')">
-      <textarea
+      <TInputTextArea
         v-model="inputQuestion"
         :placeholder="t(keys.yesno.typeYourQuestionPlaceholder)"
         :rows="3"
@@ -16,26 +16,24 @@
         :class="bemm('textarea')"
       />
     </div>
-    
+
     <div v-if="recentQuestionItems.length > 0" :class="bemm('recent')">
       <h4 :class="bemm('recent-title')">{{ t(keys.yesno.recentQuestions) }}</h4>
-      
+
       <div :class="bemm('recent-list')">
         <div
           v-for="item in recentQuestionItems"
           :key="`${item.id}-${item.is_favorite ? 'fav' : 'not'}`"
-          :class="[
-            bemm('recent-item'),
-            { [bemm('recent-item', 'favorite')]: item.is_favorite }
-          ]"
+          :class="bemm('recent-item', ['',item.is_favorite ? 'favorite' : ''])"
           @click="selectRecentQuestion(item.name)"
         >
           <span :class="bemm('recent-item-text')">{{ item.name }}</span>
           <div :class="bemm('recent-item-actions')">
             <TButton
-              :icon="item.is_favorite ? 'star' : 'star-o'"
+              :icon="Icons.STAR_M"
               type="ghost"
               size="small"
+              :class="bemm('recent-item-favorite', ['', item.is_favorite ? 'active' : ''])"
               :color="item.is_favorite ? 'primary' : 'secondary'"
               @click.stop="() => { console.log('Favorite clicked for', item.id); yesNoStore.toggleFavorite(item.id) }"
               :aria-label="item.is_favorite ? t(keys.yesno.removeFromFavorites) : t(keys.yesno.addToFavorites)"
@@ -50,10 +48,21 @@
             />
           </div>
         </div>
+        <TButton
+          v-if="hasMoreQuestions"
+          :icon="Icons.CHEVRON_DOWN"
+          type="ghost"
+          size="small"
+          @click="showMore()"
+          :aria-label="t(keys.common.showMore)"
+          :class="bemm('load-more')"
+        >
+          {{ t(keys.common.showMore) }}
+        </TButton>
       </div>
       </div>
     </div>
-    
+
     <div :class="bemm('actions')">
       <TButton
         type="outline"
@@ -77,14 +86,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, useI18n } from '@tiko/ui'
+import { Icons } from 'open-icon'
+import { TButton, useI18n, TInputTextArea } from '@tiko/ui'
 import { useYesNoStore } from '../stores/yesno'
 
 interface Props {
   onApply?: (question: string) => void
 }
+
+const maxShowRecentItems = ref(4)
 
 const props = defineProps<Props>()
 const emit = defineEmits<{
@@ -96,7 +108,12 @@ const yesNoStore = useYesNoStore()
 const inputQuestion = ref('')
 const { t, keys } = useI18n()
 
-const recentQuestionItems = computed(() => yesNoStore.recentQuestionItems)
+const recentQuestionItems = computed(() => yesNoStore.recentQuestionItems.splice(0, maxShowRecentItems.value))
+const hasMoreQuestions = computed(() => yesNoStore.recentQuestionItems.length > 4)
+
+const showMore = () => {
+  maxShowRecentItems.value += 4
+}
 
 onMounted(() => {
   inputQuestion.value = yesNoStore.currentQuestion
@@ -104,7 +121,7 @@ onMounted(() => {
 
 const handleSubmit = async () => {
   if (!inputQuestion.value.trim()) return
-  
+
   await yesNoStore.setQuestion(inputQuestion.value)
   props.onApply?.(inputQuestion.value)
   emit('close')
@@ -127,7 +144,7 @@ const selectRecentQuestion = (question: string) => {
   border-radius: 0.75rem;
   position: relative;
   z-index: 1000;
-  
+
   &__header {
     padding-bottom: 1rem;
     border-bottom: 1px solid var(--color-border);
@@ -154,13 +171,13 @@ const selectRecentQuestion = (question: string) => {
     flex-direction: column;
     gap: 1.5rem;
   }
-  
+
   &__form {
     display: flex;
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   &__textarea {
     width: 100%;
     padding: 1rem;
@@ -171,64 +188,62 @@ const selectRecentQuestion = (question: string) => {
     line-height: 1.5;
     resize: vertical;
     min-height: 120px;
-    
+
     &:focus {
       outline: none;
       border-color: var(--color-primary);
     }
-    
+
     &::placeholder {
       color: var(--color-text-secondary);
     }
   }
-  
+
   &__recent {
     border-top: 1px solid var(--color-border);
     padding-top: 1rem;
   }
-  
+
   &__recent-title {
     margin: 0 0 0.75rem;
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--color-primary-text);
   }
-  
+
   &__recent-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    max-height: 150px;
-    overflow-y: auto;
+    gap: var(--space-s);
   }
-  
+
   &__recent-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.5rem 0.75rem;
+    padding: var(--space-s) var(--space);
     background: var(--color-accent);
     border: 1px solid var(--color-border);
-    border-radius: 0.25rem;
+    border-radius: var(--border-radius);
     cursor: pointer;
     transition: all 0.2s ease;
-    font-size: 0.875rem;
+    font-size: 0.875em;
     position: relative;
-    
+
     &--favorite {
-      border-color: var(--color-primary);
+      --color-border: var(--color-primary);
       background: color-mix(in srgb, var(--color-primary), transparent 95%);
     }
-    
+
     &:hover {
       background: color-mix(in srgb, var(--color-primary), transparent 90%);
-      
+
       .question-input-form__recent-item-actions {
         opacity: 1;
         pointer-events: auto;
       }
     }
-    
+
     &:focus-visible {
       outline: 2px solid var(--color-primary);
       outline-offset: 2px;
@@ -249,6 +264,13 @@ const selectRecentQuestion = (question: string) => {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease;
+  }
+  &__recent-item-favorite {
+    color: var(--color-primary);
+
+    &.active {
+      fill: red;
+    }
   }
 
   &__actions {

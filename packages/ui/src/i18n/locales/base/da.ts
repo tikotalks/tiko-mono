@@ -62,6 +62,7 @@ export const da: TranslationSchema = {
     hoursAgo: '{count} t siden',
     daysAgo: '{count} d siden',
     more: 'mere',
+    showMore: 'Vis mere',
     dismiss: 'Luk'
   },
 

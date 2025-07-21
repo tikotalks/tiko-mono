@@ -62,6 +62,7 @@ export const ga: TranslationSchema = {
     hoursAgo: '{count}h ago',
     daysAgo: '{count}d ago',
     more: 'more',
+    showMore: 'Taispeáin níos mó',
     dismiss: 'Dismiss'
   },
   auth: {

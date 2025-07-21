@@ -62,6 +62,7 @@ export const et: TranslationSchema = {
       hoursAgo: '{count}h tagasi',
       daysAgo: '{count}p tagasi',
       more: 'rohkem',
+      showMore: 'Näita rohkem',
       dismiss: 'Sulge'
     },
     auth: {

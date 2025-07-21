@@ -58,6 +58,7 @@ export const fi: TranslationSchema = {
     hoursAgo: '{count} h sitten',
     daysAgo: '{count} pv sitten',
     more: 'lisää',
+    showMore: 'Näytä lisää',
     dismiss: 'Sulje'
   },
   auth: {

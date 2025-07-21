@@ -12,9 +12,8 @@
       <TButton
         icon="edit"
         type="outline"
-        size="medium"
         color="secondary"
-        @click="() => { console.log('[YesNoView] Edit button clicked'); showQuestionInput(); }"
+        @click="showQuestionInput()"
         :aria-label="t(keys.yesno.editQuestion)"
       />
 
@@ -23,7 +22,6 @@
         v-if="parentMode.isUnlocked.value"
         icon="settings"
         type="outline"
-        size="medium"
         color="secondary"
         @click="handleAppSettings"
         :aria-label="t(keys.yesno.yesnoSettings)"
@@ -39,23 +37,21 @@
           data-cy="question-display"
           :disabled="isPlaying"
         >
-          <div :class="bemm('question-text')">
+          <div :class="bemm('question-text')"
+          @click.stop="speakQuestion">
             {{ currentQuestion }}
           </div>
 
           <div :class="bemm('question-controls')">
             <TButton
-              v-if="parentMode.isUnlocked.value"
               :icon="'edit'"
-              type="default"
-              size="small"
+              type="outline"
               @click.stop="showQuestionInput"
               :aria-label="t(keys.yesno.editQuestion)"
             />
             <TButton
-              :icon="isPlaying ? 'volume-2' : 'volume-1'"
-              type="default"
-              size="small"
+              :icon="isPlaying ? Icons.VOLUME_MUTE : Icons.VOLUME_III"
+              type="outline"
               @click.stop="speakQuestion"
               :aria-label="t(keys.common.speak)"
             />
@@ -95,12 +91,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive, watch, toRefs, inject } from 'vue';
 import { useBemm } from 'bemm';
-import { /* TAuthWrapper, */ TButton, TIcon, TAppLayout, useI18n, useParentMode } from '@tiko/ui';
+import { TButton, TIcon, TAppLayout, useI18n, useParentMode } from '@tiko/ui';
+import { Icons } from 'open-icon';
 import { useYesNoStore } from '../stores/yesno';
 import YesNoSettingsForm from '../components/YesNoSettingsForm.vue';
 import QuestionInputForm from '../components/QuestionInputForm.vue';
 import YesNoButton from '../components/YesNoButton.vue';
-import backgroundImage from '../assets/app-icon-yes-no.png';
 
 const bemm = useBemm('yes-no');
 const yesNoStore = useYesNoStore();

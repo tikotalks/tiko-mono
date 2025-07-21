@@ -233,7 +233,6 @@ onUnmounted(() => {
 	&__close {
 		position: absolute;
 		z-index: 5;
-		border: 1px solid red;
 		top: calc(var(--space) / 3);
 		right: calc(var(--space) / 2);
 		--button-background-color: var(--color-accent);

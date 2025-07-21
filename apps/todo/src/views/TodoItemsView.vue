@@ -200,9 +200,6 @@ onMounted(async () => {
       margin: 0;
       opacity: 0.7;
     }
-    .icon{
-      border: 1px solid red;
-    }
   }
 
   &__grid {

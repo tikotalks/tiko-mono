@@ -58,6 +58,7 @@ export const ru: TranslationSchema = {
     hoursAgo: '{count}ч назад',
     daysAgo: '{count}д назад',
     more: 'ещё',
+    showMore: 'Показать больше',
     dismiss: 'Закрыть'
   },
   auth: {

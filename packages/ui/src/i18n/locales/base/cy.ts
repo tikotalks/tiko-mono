@@ -59,6 +59,7 @@ export const cy: TranslationSchema = {
     hoursAgo: '{count}a yn ôl',
     daysAgo: '{count}d yn ôl',
     more: 'mwy',
+    showMore: 'Dangos mwy',
     dismiss: 'Diystyru'
   },
   auth: {

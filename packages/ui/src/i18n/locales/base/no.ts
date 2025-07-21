@@ -62,6 +62,7 @@ export const no: TranslationSchema = {
     hoursAgo: '{count}h ago',
     daysAgo: '{count}d ago',
     more: 'more',
+    showMore: 'Vis mer',
     dismiss: 'Dismiss'
   },
   auth: {

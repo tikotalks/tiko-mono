@@ -95,7 +95,6 @@ const dismiss = (id: string) => {
 	@keyframes ToastfadeIn {
 		to {
 			opacity: 1;
-			border: 1px solid red;
 			transform: translateY(var(--toast-translate-y-to, var(--toast-translate-y-initial, 0)))
 				translateX(var(--toast-translate-x-to, var(--toast-translate-x-initial, 0)));
 		}

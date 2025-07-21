@@ -13,7 +13,7 @@ export { default as TInputSelect } from './inputs/TInputSelect/TInputSelect.vue'
 export { default as TInputSwitch } from './inputs/TInputSwitch/TInputSwitch.vue'
 export { default as TInputRadio } from './inputs/TInputRadio/TInputRadio.vue'
 export { default as TInputRange } from './InputRange.vue'
-export { default as TInputPassword } from './InputPassword.vue'
+export { default as TInputPassword } from './InputPassword/InputPassword.vue'
 export { default as TInputDate } from './InputDate.vue'
 export { default as TInputColor } from './InputColor.vue'
 export { default as TInputOptions } from './InputOptions.vue'
@@ -28,7 +28,7 @@ export { default as TInputVerificationCode } from './InputVerificationCode.vue'
 // Email input with its own folder
 export { default as TInputEmail } from './InputEmail/InputEmail.vue'
 
-// DatePicker with its own folder  
+// DatePicker with its own folder
 export { default as TDatePicker } from './DatePicker/DatePicker.vue'
 
 // Types and utilities

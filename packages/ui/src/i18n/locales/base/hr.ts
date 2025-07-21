@@ -62,6 +62,7 @@ export const hr: TranslationSchema = {
     hoursAgo: '{count}h ago',
     daysAgo: '{count}d ago',
     more: 'more',
+    showMore: 'Prikaži više',
     dismiss: 'Dismiss'
   },
   auth: {

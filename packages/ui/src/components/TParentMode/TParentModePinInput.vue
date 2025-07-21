@@ -1,81 +1,30 @@
 <template>
   <div :class="bemm()">
     <form @submit.prevent="handleSubmit">
+      <!-- PIN Input -->
       <div :class="bemm('pin-container')">
-        <!-- PIN Input Dots -->
-        <div :class="bemm('pin-display')">
-          <div
-            v-for="(_, index) in 4"
-            :key="index"
-            :class="
-              bemm('pin-dot', {
-                filled: index < pinValue.length,
-                active: index === pinValue.length,
-              })
-            "
-          >
-            <span v-if="showNumbers && pinValue[index]">{{
-              pinValue[index]
-            }}</span>
-          </div>
-        </div>
-
-        <!-- Hidden input for actual value -->
-        <input
-          ref="pinInput"
+        <TPinInput
+          ref="pinInputRef"
           v-model="pinValue"
-          type="text"
-          inputmode="numeric"
-          pattern="[0-9]*"
-          maxlength="4"
-          :class="bemm('pin-input')"
-          @input="handleInput"
-          @keydown="handleKeydown"
-          autofocus
+          :length="4"
+          :show-value="showNumbers"
+          :auto-focus="autoFocus && mode === 'unlock'"
+          :auto-submit="mode === 'unlock'"
+          :error="!!error"
+          @complete="handlePinComplete"
         />
       </div>
 
       <!-- Number Pad -->
-      <div
+      <TNumberPad
         v-if="mode === 'unlock' || (mode === 'setup' && pinValue.length < 4)"
         :class="bemm('numpad')"
-      >
-        <button
-          v-for="num in [1, 2, 3, 4, 5, 6, 7, 8, 9]"
-          :key="num"
-          type="button"
-          :class="bemm('numpad-button')"
-          @click="handleNumberClick(num.toString())"
-        >
-          {{ num }}
-        </button>
-
-        <button
-          type="button"
-          :class="bemm('numpad-button', ['', 'clear'])"
-          @click="handleClearClick"
-          :disabled="(confirmValue ? confirmValue : pinValue).length === 0"
-        >
-          <TIcon :name="Icons.ARROW_LEFT" />
-        </button>
-
-        <button
-          type="button"
-          :class="bemm('numpad-button')"
-          @click="handleNumberClick('0')"
-        >
-          0
-        </button>
-
-        <button
-          type="button"
-          :class="bemm('numpad-button', ['', 'submit'])"
-          @click="handleSubmit"
-          :disabled="!canSubmit"
-        >
-          <TIcon :name="Icons.CHECK_M" />
-        </button>
-      </div>
+        :disable-clear="pinValue.length === 0"
+        :disable-submit="!canSubmitPin"
+        @number="handleNumberClick"
+        @clear="handleClearClick"
+        @submit="handleSubmit"
+      />
 
       <!-- Confirmation PIN for setup mode -->
       <div
@@ -86,79 +35,28 @@
           {{ t(keys.parentMode.confirmYourPin) }}
         </p>
         <div :class="bemm('pin-container')">
-          <div :class="bemm('pin-display')">
-            <div
-              v-for="(_, index) in 4"
-              :key="'confirm-' + index"
-              :class="
-                bemm('pin-dot', {
-                  filled: index < confirmValue.length,
-                  active: index === confirmValue.length,
-                })
-              "
-            >
-              <span v-if="showNumbers && confirmValue[index]">{{
-                confirmValue[index]
-              }}</span>
-            </div>
-          </div>
-
-          <input
-            ref="confirmInput"
+          <TPinInput
+            ref="confirmInputRef"
             v-model="confirmValue"
-            type="text"
-            inputmode="numeric"
-            pattern="[0-9]*"
-            maxlength="4"
-            :class="bemm('pin-input')"
-            @input="handleConfirmInput"
-            @keydown="handleConfirmKeydown"
+            :length="4"
+            :show-value="showNumbers"
+            :auto-focus="true"
+            :auto-submit="true"
+            :error="!!error"
+            @complete="handleConfirmComplete"
           />
         </div>
 
         <!-- Number Pad for Confirm -->
-        <div
-          v-if="
-            mode === 'setup' && pinValue.length === 4 && confirmValue.length < 4
-          "
+        <TNumberPad
+          v-if="confirmValue.length < 4"
           :class="bemm('numpad')"
-        >
-          <button
-            v-for="num in [1, 2, 3, 4, 5, 6, 7, 8, 9]"
-            :key="`confirm-${num}`"
-            type="button"
-            :class="bemm('numpad-button')"
-            @click="handleNumberClick(num.toString())"
-          >
-            {{ num }}
-          </button>
-
-          <button
-            type="button"
-            :class="bemm('numpad-button', ['', 'clear'])"
-            @click="handleClearClick"
-            :disabled="confirmValue.length === 0"
-          >
-            <TIcon :name="Icons.ARROW_LEFT" />
-          </button>
-
-          <button
-            type="button"
-            :class="bemm('numpad-button')"
-            @click="handleNumberClick('0')"
-          >
-            0
-          </button>
-
-          <button
-            type="button"
-            :class="bemm('numpad-button', ['', 'submit'])"
-            @click="handleSubmit"
-            :disabled="!canSubmit"
-          >
-            <TIcon :name="Icons.CHECK_M" />
-          </button>
-        </div>
+          :disable-clear="confirmValue.length === 0"
+          :disable-submit="!canSubmit"
+          @number="handleConfirmNumberClick"
+          @clear="handleConfirmClearClick"
+          @submit="handleSubmit"
+        />
       </div>
 
       <!-- Toggle number visibility -->
@@ -219,11 +117,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, watch, onMounted } from 'vue';
+import { ref, computed, nextTick, watch } from 'vue';
 import { useBemm } from 'bemm';
 import { useI18n } from '../../composables/useI18n';
 import TButton from '../TButton/TButton.vue';
 import TIcon from '../TIcon/TIcon.vue';
+import TPinInput from '../TPinInput/TPinInput.vue';
+import TNumberPad from '../TNumberPad/TNumberPad.vue';
 import type { ParentModePinInputProps } from '../../composables/useParentMode.model';
 import { Icons } from 'open-icon';
 import TButtonGroup from '../TButton/TButtonGroup.vue';
@@ -249,8 +149,8 @@ const bemm = useBemm('parent-mode-pin-input');
 const { t, keys } = useI18n();
 
 // Refs
-const pinInput = ref<HTMLInputElement | null>(null);
-const confirmInput = ref<HTMLInputElement | null>(null);
+const pinInputRef = ref<InstanceType<typeof TPinInput> | null>(null);
+const confirmInputRef = ref<InstanceType<typeof TPinInput> | null>(null);
 
 // Local state
 const pinValue = ref('');
@@ -260,9 +160,13 @@ const isProcessing = ref(false);
 const error = ref('');
 
 // Computed properties
+const canSubmitPin = computed(() => {
+  return pinValue.value.length === 4 && /^\d{4}$/.test(pinValue.value);
+});
+
 const canSubmit = computed(() => {
   if (props.mode === 'unlock') {
-    return pinValue.value.length === 4 && /^\d{4}$/.test(pinValue.value);
+    return canSubmitPin.value;
   } else {
     return (
       pinValue.value.length === 4 &&
@@ -280,76 +184,25 @@ const submitLabel = computed(() => {
 });
 
 /**
- * Handle PIN input
+ * Handle PIN complete
  */
-const handleInput = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const value = target.value.replace(/\D/g, ''); // Only allow digits
-
-  if (value.length <= 4) {
-    pinValue.value = value;
-    error.value = '';
-
-    // Auto-submit for unlock mode when 4 digits entered
-    if (props.mode === 'unlock' && value.length === 4) {
-      handleSubmit();
-    }
-
-    // Focus confirm input for setup mode
-    if (props.mode === 'setup' && value.length === 4) {
-      nextTick(() => {
-        confirmInput.value?.focus();
-      });
-    }
+const handlePinComplete = (value: string) => {
+  if (props.mode === 'unlock') {
+    handleSubmit();
+  } else if (props.mode === 'setup') {
+    nextTick(() => {
+      confirmInputRef.value?.focus();
+    });
   }
 };
 
 /**
- * Handle confirmation input
+ * Handle confirm PIN complete
  */
-const handleConfirmInput = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const value = target.value.replace(/\D/g, ''); // Only allow digits
-
-  if (value.length <= 4) {
-    confirmValue.value = value;
-    error.value = '';
-
-    // Auto-submit when both PINs match and are 4 digits
-    if (value.length === 4 && value === pinValue.value) {
-      handleSubmit();
-    }
+const handleConfirmComplete = (value: string) => {
+  if (value === pinValue.value) {
+    handleSubmit();
   }
-};
-
-/**
- * Handle keydown events
- */
-const handleKeydown = (event: KeyboardEvent) => {
-  // Allow backspace, delete, tab, escape, enter
-  if ([8, 9, 27, 13, 46].includes(event.keyCode)) {
-    return;
-  }
-
-  // Allow Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
-  if (event.ctrlKey === true && [65, 67, 86, 88].includes(event.keyCode)) {
-    return;
-  }
-
-  // Ensure that it is a number and stop the keypress
-  if (
-    (event.shiftKey || event.keyCode < 48 || event.keyCode > 57) &&
-    (event.keyCode < 96 || event.keyCode > 105)
-  ) {
-    event.preventDefault();
-  }
-};
-
-/**
- * Handle confirm keydown events
- */
-const handleConfirmKeydown = (event: KeyboardEvent) => {
-  handleKeydown(event);
 };
 
 /**
@@ -404,53 +257,42 @@ const toggleNumberVisibility = () => {
 };
 
 /**
- * Handle number pad click
+ * Handle number pad click for PIN
  */
 const handleNumberClick = (num: string) => {
-  // Number clicked
-
-  // Determine which field is active
-  if (
-    props.mode === 'setup' &&
-    pinValue.value.length === 4 &&
-    confirmValue.value.length < 4
-  ) {
-    // Add to confirm field
-    confirmValue.value += num;
-    if (
-      confirmValue.value.length === 4 &&
-      confirmValue.value === pinValue.value
-    ) {
-      // PINs match, auto-submit
-      handleSubmit();
-    }
-  } else if (pinValue.value.length < 4) {
-    // Add to pin field
+  if (pinValue.value.length < 4) {
     pinValue.value += num;
-    if (props.mode === 'unlock' && pinValue.value.length === 4) {
-      // 4 digits entered, auto-submit
-      handleSubmit();
-    } else if (props.mode === 'setup' && pinValue.value.length === 4) {
-      nextTick(() => {
-        confirmInput.value?.focus();
-      });
-    }
+    error.value = '';
   }
 };
 
 /**
- * Handle clear button click
+ * Handle clear button click for PIN
  */
 const handleClearClick = () => {
-  // Determine which field to clear from
-  if (
-    props.mode === 'setup' &&
-    pinValue.value.length === 4 &&
-    confirmValue.value.length > 0
-  ) {
-    confirmValue.value = confirmValue.value.slice(0, -1);
-  } else if (pinValue.value.length > 0) {
+  if (pinValue.value.length > 0) {
     pinValue.value = pinValue.value.slice(0, -1);
+    error.value = '';
+  }
+};
+
+/**
+ * Handle number pad click for confirm PIN
+ */
+const handleConfirmNumberClick = (num: string) => {
+  if (confirmValue.value.length < 4) {
+    confirmValue.value += num;
+    error.value = '';
+  }
+};
+
+/**
+ * Handle clear button click for confirm PIN
+ */
+const handleConfirmClearClick = () => {
+  if (confirmValue.value.length > 0) {
+    confirmValue.value = confirmValue.value.slice(0, -1);
+    error.value = '';
   }
 };
 
@@ -483,15 +325,6 @@ watch(
     reset();
   },
 );
-
-// Auto-focus on mount
-watch(pinInput, (input) => {
-  if (input && props.autoFocus) {
-    nextTick(() => {
-      input.focus();
-    });
-  }
-});
 </script>
 
 <style lang="scss" scoped>
@@ -530,62 +363,9 @@ watch(pinInput, (input) => {
   }
 
   &__pin-container {
-    position: relative;
     display: flex;
     justify-content: center;
-    margin-bottom: var(--space-md, 1em);
-  }
-
-  &__pin-display {
-    display: flex;
-    gap: var(--space-s, 0.75em);
-  }
-
-  &__pin-dot {
-    width: 3em;
-    height: 3em;
-    border: 2px solid
-      color-mix(in srgb, var(--color-foreground), transparent 70%);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.125em;
-    font-weight: 600;
-    transition: all 0.2s ease;
-    background: var(--color-background);
-
-    &--filled {
-      border-color: var(--color-primary);
-      background: color-mix(in srgb, var(--color-primary), transparent 90%);
-      color: var(--color-primary);
-
-      &:not(:has(span)) {
-        &::after {
-          content: '•';
-          font-size: 1.5em;
-        }
-      }
-    }
-
-    &--active {
-      border-color: var(--color-primary);
-      box-shadow: 0 0 0 2px
-        color-mix(in srgb, var(--color-primary), transparent 80%);
-    }
-  }
-
-  &__pin-input {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    pointer-events: none;
-    border: none;
-    outline: none;
-    background: transparent;
+    margin-bottom: var(--space);
   }
 
   &__confirm-section {
@@ -621,78 +401,13 @@ watch(pinInput, (input) => {
   }
 
   &__numpad {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-s);
-    max-width: 300px;
     margin: 0 auto var(--space);
-  }
-
-  &__numpad-button {
-    aspect-ratio: 1;
-    min-height: 3.5em;
-    border: 1px solid
-      color-mix(in srgb, var(--color-foreground), transparent 80%);
-    border-radius: var(--border-radius);
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-    font-size: 1.25rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    &:hover:not(:disabled) {
-      background-color: var(--color-primary);
-      border-color: var(--color-primary);
-      color: var(--color-primary-text);
-      transform: scale(1.05);
-    }
-
-    &:active:not(:disabled) {
-      transform: scale(0.95);
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    &--clear {
-      background-color: var(--color-secondary);
-      color: var(--color-secondary-text);
-    }
-
-    &--submit {
-      background-color: var(--color-success);
-      border-color: var(--color-success);
-      color: var(--color-success-text);
-
-      &:hover:not(:disabled) {
-        background-color: var(--color-success);
-        opacity: 0.9;
-      }
-    }
-
-    .icon {
-      font-size: 2em;
-    }
   }
 }
 
 // Mobile responsiveness
 @media (max-width: 480px) {
   .parent-mode-pin-input {
-    padding: var(--space-md, 1em);
-
-    &__pin-dot {
-      width: 2.5em;
-      height: 2.5em;
-      font-size: 1em;
-    }
-
     &__actions {
       flex-direction: column;
     }

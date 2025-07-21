@@ -58,6 +58,7 @@ export const sv: TranslationSchema = {
     hoursAgo: '{count}h sedan',
     daysAgo: '{count}d sedan',
     more: 'mer',
+    showMore: 'Visa mer',
     dismiss: 'Avfärda'
   },
   auth: {

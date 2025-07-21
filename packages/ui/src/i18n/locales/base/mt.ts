@@ -59,6 +59,7 @@ export const mt: TranslationSchema = {
     hoursAgo: '{count}h ago ',
     daysAgo: '{count}d ago ',
     more: 'more ',
+    showMore: 'Uri iktar',
     dismiss: 'Dismiss '
   },
   auth: {

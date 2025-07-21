@@ -58,6 +58,7 @@ export const pl: TranslationSchema = {
     hoursAgo: '{count}g temu',
     daysAgo: '{count}d temu',
     more: 'więcej',
+    showMore: 'Pokaż więcej',
     dismiss: 'Zamknij'
   },
   auth: {

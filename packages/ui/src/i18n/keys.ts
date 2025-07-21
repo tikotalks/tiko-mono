@@ -89,7 +89,8 @@ export const translationKeys: TranslationKeys = createKeysObject<TranslationSche
     hoursAgo: '',
     daysAgo: '',
     dismiss: '',
-    more: ''
+    more: '',
+    showMore: ''
   },
   auth: {
     login: '',

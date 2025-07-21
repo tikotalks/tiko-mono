@@ -60,6 +60,7 @@ export const es: TranslationSchema = {
     hoursAgo: 'hace {count}h',
     daysAgo: 'hace {count}d',
     more: 'más',
+    showMore: 'Mostrar más',
     dismiss: 'Descartar'
   },
   auth: {

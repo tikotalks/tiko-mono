@@ -21,11 +21,14 @@ export * from './components/TAlert'
 export * from './components/TChooseLanguage'
 export * from './components/TUserSettings'
 export * from './components/TAuthCallback'
+export * from './components/TPinInput'
+export * from './components/TNumberPad'
 
 export { default as TInputText } from './components/TForm/inputs/TInputText/TInputText.vue';
 export { default as TInputNumber } from './components/TForm/inputs/TInputNumber/TInputNumber.vue';
 export { default as TInputEmail } from './components/TForm/InputEmail/InputEmail.vue';
 export { default as TInputRange } from './components/TForm/InputRange.vue';
+export { default as TInputTextArea } from './components/TForm/InputTextArea.vue';
 export { default as TInputSelect } from './components/TForm/inputs/TInputSelect/TInputSelect.vue';
 export { default as TInputCheckbox } from './components/TForm/inputs/TInputCheckbox/TInputCheckbox.vue';
 export { default as TInputRadio } from './components/TForm/inputs/TInputRadio/TInputRadio.vue';

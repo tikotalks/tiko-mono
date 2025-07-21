@@ -608,7 +608,6 @@ onUnmounted(() => {
     right: 0;
     width: 0.75rem;
     height: 0.75rem;
-    border: 1px solid red;
     border-radius: 50%;
     border: 2px solid var(--color-accent);
     background: var(--color-text-secondary);

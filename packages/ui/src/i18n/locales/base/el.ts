@@ -58,6 +58,7 @@ export const el: TranslationSchema = {
     hoursAgo: '{count}h ago ',
     daysAgo: '{count}d ago ',
     more: 'more ',
+    showMore: 'Εμφάνιση περισσότερων',
     dismiss: 'Dismiss ',
   },
   auth: {

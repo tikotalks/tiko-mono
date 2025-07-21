@@ -184,7 +184,7 @@ const buttonStyles = computed(() => {
 
   &--outline {
     --button-background: transparent;
-    --button-color-text: var(--button-color);
+    --button-color-text: color-mix(in srgb, var(--button-color), var(--color-foreground) 25%);
     --button-border-width: 2px;
     --button-border-color: color-mix(in srgb, var(--button-color), transparent 50%);
 

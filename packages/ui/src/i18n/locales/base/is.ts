@@ -59,6 +59,7 @@ export const is: TranslationSchema = {
     hoursAgo: '{count}klst síðan',
     daysAgo: '{count}d síðan',
     more: 'meira',
+    showMore: 'Sýna meira',
     dismiss: 'Hunsa'
   },
   auth: {

@@ -62,6 +62,7 @@ export const cs: TranslationSchema = {
     hoursAgo: 'před {count} h',
     daysAgo: 'před {count} dny',
     more: 'více',
+    showMore: 'Zobrazit více',
     dismiss: 'Zavřít'
   },
 

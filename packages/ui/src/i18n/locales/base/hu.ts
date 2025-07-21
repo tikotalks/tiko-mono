@@ -62,6 +62,7 @@ export const hu: TranslationSchema = {
     hoursAgo: '{count}h ago',
     daysAgo: '{count}d ago',
     more: 'more',
+    showMore: 'Több megjelenítése',
     dismiss: 'Dismiss'
   },
   auth: {

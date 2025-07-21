@@ -1,12 +1,27 @@
 <template>
   <div :class="bemm()">
     <div :class="bemm('group')">
-      <label :class="bemm('label')">{{ t(keys.yesno.buttonSize) }}</label>
-      <select v-model="localSettings.buttonSize" :class="bemm('select')">
+      <TInputSelect v-model="localSettings.buttonSize" :options="[
+        {
+          label: t(keys.yesno.small),
+          value: 'small'
+        },
+        {
+          label: t(keys.yesno.medium),
+          value: 'medium'
+        },
+        {
+          label: t(keys.yesno.large),
+          value: 'large'
+        }
+      ]">
+      </TInputSelect>
+      <!-- <label :class="bemm('label')">{{ t(keys.yesno.buttonSize) }}</label>
+      <select  :class="bemm('select')">
         <option value="small">{{ t(keys.yesno.small) }}</option>
         <option value="medium">{{ t(keys.yesno.medium) }}</option>
         <option value="large">{{ t(keys.yesno.large) }}</option>
-      </select>
+      </select> -->
     </div>
 
     <div :class="bemm('group')">
@@ -31,7 +46,7 @@
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TInputCheckbox, useI18n } from '@tiko/ui'
+import { TButton, TInputSelect, TInputCheckbox, useI18n } from '@tiko/ui'
 
 interface YesNoSettings {
   buttonSize: 'small' | 'medium' | 'large'

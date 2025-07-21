@@ -37,6 +37,18 @@ const routes = [
     name: 'colors',
     component: () => import('../views/ColorsView.vue'),
     meta: { title: 'Color System' }
+  },
+  {
+    path: '/pin-input',
+    name: 'pin-input',
+    component: () => import('../views/PinInputView.vue'),
+    meta: { title: 'PIN Input' }
+  },
+  {
+    path: '/number-pad',
+    name: 'number-pad',
+    component: () => import('../views/NumberPadView.vue'),
+    meta: { title: 'Number Pad' }
   }
 ]
 

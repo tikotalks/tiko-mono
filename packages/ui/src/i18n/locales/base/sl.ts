@@ -62,6 +62,7 @@ export const sl: TranslationSchema = {
     hoursAgo: '{count}h ago',
     daysAgo: '{count}d ago',
     more: 'more',
+    showMore: 'Prikaži več',
     dismiss: 'Dismiss'
   },
   auth: {

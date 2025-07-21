@@ -97,6 +97,22 @@ const categories = [
     icon: 'art-supplies',
     route: '/colors',
     count: 50
+  },
+  {
+    id: 'pin-input',
+    title: 'PIN Input',
+    description: 'Secure PIN entry component with visual feedback',
+    icon: 'lock',
+    route: '/pin-input',
+    count: 1
+  },
+  {
+    id: 'number-pad',
+    title: 'Number Pad',
+    description: 'Touch-friendly numeric keypad for number input',
+    icon: 'keyboard',
+    route: '/number-pad',
+    count: 1
   }
 ]
 </script>
