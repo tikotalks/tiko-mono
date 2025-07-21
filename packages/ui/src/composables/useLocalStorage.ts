@@ -9,12 +9,21 @@ import { ref, watch, Ref } from 'vue'
 export function useLocalStorage<T>(
   key: string,
   defaultValue: T
-): [Ref<T>, (value: T) => void] {
+) {
   // Get initial value from localStorage
   const storedValue = localStorage.getItem(key)
-  const initialValue = storedValue !== null 
-    ? JSON.parse(storedValue) 
-    : defaultValue
+  let initialValue: T
+  
+  if (storedValue !== null) {
+    try {
+      initialValue = JSON.parse(storedValue)
+    } catch (error) {
+      console.warn(`Failed to parse localStorage value for key "${key}":`, error)
+      initialValue = defaultValue
+    }
+  } else {
+    initialValue = defaultValue
+  }
 
   // Create reactive ref
   const data = ref<T>(initialValue)
@@ -33,7 +42,7 @@ export function useLocalStorage<T>(
     data.value = value
   }
 
-  return [data, setData]
+  return [data, setData] as const
 }
 
 /**

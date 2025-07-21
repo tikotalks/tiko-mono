@@ -6,9 +6,6 @@ export const deAT: TranslationSchema = extendLocale(de, {
   // Austrian German specific overrides
   common: {
     ...de.common,
-    month: {
-      ...de.common.month,
-      january: 'Jänner', // Austrian variant
-    },
+    month: 'Monat', // Keep the same as German base
   },
 })

@@ -18,8 +18,8 @@ export function useSSO(options: SSOOptions = {}) {
     if (route.path !== '/auth/callback') return
 
     // Get tokens from URL
-    const accessToken = route.query.access_token as string
-    const refreshToken = route.query.refresh_token as string
+    const accessToken = route.query['access_token'] as string
+    const refreshToken = route.query['refresh_token'] as string
 
     if (!accessToken || !refreshToken) {
       console.error('Missing tokens in SSO callback')

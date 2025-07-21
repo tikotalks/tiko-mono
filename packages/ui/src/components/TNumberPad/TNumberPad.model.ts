@@ -1,4 +1,4 @@
-import type { IconName } from 'open-icon'
+import { Icons } from 'open-icon'
 
 export interface TNumberPadProps {
   /**
@@ -44,12 +44,12 @@ export interface TNumberPadProps {
   /**
    * Icon to use for the clear button
    */
-  clearIcon?: IconName | string
+  clearIcon?: Icons | string;
 
   /**
    * Icon to use for the submit button
    */
-  submitIcon?: IconName | string
+  submitIcon?: Icons | string;
 }
 
 export interface TNumberPadEmits {

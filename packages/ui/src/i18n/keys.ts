@@ -444,7 +444,8 @@ export const translationKeys: TranslationKeys = createKeysObject<TranslationSche
     confirmYourPin: '',
     pinMustBe4Digits: '',
     hideNumbers: '',
-    showNumbers: ''
+    showNumbers: '',
+    parentMode: ''
   },
   profile: {
     title: '',

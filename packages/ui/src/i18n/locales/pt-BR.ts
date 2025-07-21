@@ -33,7 +33,6 @@ export const ptBR: TranslationSchema = extendLocale(pt, {
   settings: {
     title: 'Configurações',
     userSettings: 'Configurações do usuário', // Brazil uses 'usuário' instead of 'utilizador'
-    changePassword: 'Alterar senha',
     failedToSave: 'Falha ao salvar configurações',
     passwordChangeNotImplemented: 'Alteração de senha ainda não implementada'
   },
@@ -41,14 +40,12 @@ export const ptBR: TranslationSchema = extendLocale(pt, {
     reset: 'Reiniciar', // Brazil uses 'reiniciar' instead of 'repor'
   },
   cards: {
-    delete: 'Excluir',
     deleteCard: 'Excluir cartão',
     deleteThisCard: 'Excluir este cartão?',
     deleteSelectedCards: 'Excluir {count} cartões?',
     uploadImage: 'Enviar imagem', // Brazil uses 'enviar' for upload
   },
   todo: {
-    delete: 'Excluir',
     deleteGroup: 'Excluir grupo',
     deleteItem: 'Excluir item',
     deleteItemQuestion: 'Excluir item?',

@@ -25,7 +25,6 @@ export const esAR: TranslationSchema = extendLocale(es, {
   },
   type: {
     typeToSpeak: 'Escribí para hablar...', // vos form: escribí
-    typeYourQuestion: 'Escribí tu pregunta',
   },
   yesno: {
     typeYourQuestion: 'Escribí tu pregunta',

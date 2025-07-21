@@ -3,8 +3,8 @@ import { ref, computed, watch } from 'vue'
 import { authService } from '../services'
 import type { AuthUser, AuthSession } from '../services/auth.service'
 
-// User settings interface
-export interface UserSettings {
+// User profile settings interface (for auth store)
+export interface UserProfileSettings {
   theme?: 'light' | 'dark' | 'auto'
   language?: string
   [key: string]: any // Allow app-specific settings
@@ -18,7 +18,7 @@ export const useAuthStore = defineStore('auth', () => {
   const error = ref<string | null>(null)
   
   // User settings state - this is the single source of truth
-  const userSettings = ref<UserSettings>({})
+  const userSettings = ref<UserProfileSettings>({})
   
   // Storage key for settings
   const SETTINGS_STORAGE_KEY = 'tiko-user-settings'
@@ -45,9 +45,9 @@ export const useAuthStore = defineStore('auth', () => {
         
         // Load user settings from metadata if available
         try {
-          if (result.user.user_metadata?.settings) {
+          if (result.user.user_metadata?.['settings']) {
             userSettings.value = {
-              ...result.user.user_metadata.settings,
+              ...result.user.user_metadata['settings'],
               ...userSettings.value // localStorage takes precedence
             }
             saveSettingsToStorage()
@@ -140,9 +140,9 @@ export const useAuthStore = defineStore('auth', () => {
         
         // Load user settings from metadata if available
         try {
-          if (result.user.user_metadata?.settings) {
+          if (result.user.user_metadata?.['settings']) {
             userSettings.value = {
-              ...result.user.user_metadata.settings,
+              ...result.user.user_metadata['settings'],
               ...userSettings.value // localStorage takes precedence
             }
             saveSettingsToStorage()
@@ -247,7 +247,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
   
   // Update a specific setting
-  const updateSetting = async (key: keyof UserSettings, value: any) => {
+  const updateSetting = async (key: keyof UserProfileSettings, value: any) => {
     
     // Update the reactive state
     userSettings.value = {
@@ -265,7 +265,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
   
   // Update multiple settings at once
-  const updateSettings = async (settings: Partial<UserSettings>) => {
+  const updateSettings = async (settings: Partial<UserProfileSettings>) => {
     
     // Update the reactive state
     userSettings.value = {
@@ -299,8 +299,8 @@ export const useAuthStore = defineStore('auth', () => {
         
         // If user has settings in metadata, merge them with localStorage
         // localStorage takes precedence as it may have more recent changes
-        if (currentSession.user?.user_metadata?.settings) {
-          const apiSettings = currentSession.user.user_metadata.settings
+        if (currentSession.user?.user_metadata?.['settings']) {
+          const apiSettings = currentSession.user.user_metadata['settings']
           
           // Merge API settings with localStorage settings
           // localStorage values take precedence
@@ -404,9 +404,9 @@ export const useAuthStore = defineStore('auth', () => {
         
         // Load user settings if available
         try {
-          if (result.user.user_metadata?.settings) {
+          if (result.user.user_metadata?.['settings']) {
             userSettings.value = {
-              ...result.user.user_metadata.settings,
+              ...result.user.user_metadata['settings'],
               ...userSettings.value // localStorage takes precedence
             }
             saveSettingsToStorage()

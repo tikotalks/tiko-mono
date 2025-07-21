@@ -44,7 +44,7 @@ export * from './components/TToast'
 
 // Specialized Components
 export { default as TCardCommunication } from './components/TCard/TCardCommunication.vue'
-export type { Card } from './components/TCard/TCardCommunication.vue'
+export type { Card } from './components/TCard/TCardCommunication.ts'
 
 // Composables
 export { useI18n } from './composables/useI18n'

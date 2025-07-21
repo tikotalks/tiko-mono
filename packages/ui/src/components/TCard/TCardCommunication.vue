@@ -72,16 +72,7 @@ import { ref, computed } from 'vue'
 import { useBemm } from 'bemm'
 import TIcon from '../TIcon/TIcon.vue'
 import TButton from '../TButton/TButton.vue'
-
-export interface Card {
-  id: string
-  label: string
-  audioText: string
-  imageUrl?: string
-  animatedImageUrl?: string
-  backgroundColor?: string
-  tags?: string[]
-}
+import type { Card } from './TCardCommunication.model'
 
 interface Props {
   card: Card

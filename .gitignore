@@ -17,3 +17,7 @@ coverage
 .vscode
 .idea
 .DS_Store
+
+# Temporary files and folders
+.temp*
+scripts/.temp/

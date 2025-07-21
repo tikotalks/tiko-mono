@@ -41,9 +41,6 @@ export const esMX: TranslationSchema = extendLocale(es, {
     email: 'Correo electrónico',
     phone: 'Teléfono', // Mexico uses 'teléfono'
   },
-  radio: {
-    upload: 'Subir',
-  },
   todo: {
     uploadImagePrompt: 'Sube una imagen para hacer la tarea más visual',
   }

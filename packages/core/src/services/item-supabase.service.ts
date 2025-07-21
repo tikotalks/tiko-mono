@@ -26,8 +26,8 @@ export class SupabaseItemService implements ItemService {
   private supabaseKey: string
 
   constructor() {
-    this.supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-    this.supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+    this.supabaseUrl = import.meta.env['VITE_SUPABASE_URL']
+    this.supabaseKey = import.meta.env['VITE_SUPABASE_ANON_KEY']
     
     if (!this.supabaseUrl || !this.supabaseKey) {
       throw new Error('Supabase URL and anon key are required')

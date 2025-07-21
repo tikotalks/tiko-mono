@@ -19,7 +19,7 @@ export function createTikoApp(app: App, options: TikoAppOptions = {}) {
   }
 
   // Add global properties or configurations
-  app.config.globalProperties.$tiko = {
+  app.config.globalProperties['$tiko'] = {
     version: '1.0.0'
   }
 
