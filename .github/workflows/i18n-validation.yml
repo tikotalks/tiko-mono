@@ -5,13 +5,13 @@ on:
     branches: [ master, develop ]
     paths:
       - 'packages/ui/src/i18n/**'
-      - 'scripts/check-i18n.js'
+      - 'scripts/check-i18n.mjs'
       - '.github/workflows/i18n-validation.yml'
   pull_request:
     branches: [ master, develop ]
     paths:
       - 'packages/ui/src/i18n/**'
-      - 'scripts/check-i18n.js'
+      - 'scripts/check-i18n.mjs'
 
 jobs:
   validate-i18n:
@@ -26,7 +26,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
       
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
