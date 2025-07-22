@@ -29,13 +29,15 @@ describe('TIcon.vue', () => {
     expect(iconDiv.classes().join(' ')).toContain('icon--home')
   })
 
-  it('applies animation class when animation prop is true', () => {
+  it('applies animation class when animation prop is true', async () => {
     const wrapper = mount(TIcon, {
       props: { 
         name: 'home',
         animation: true 
       }
     })
+    
+    await flushPromises()
     
     const iconDiv = wrapper.find('.icon')
     expect(iconDiv.classes().join(' ')).toContain('icon--animated')
@@ -129,14 +131,18 @@ describe('TIcon.vue', () => {
       }
     })
     
+    await flushPromises()
+    
     let iconDiv = wrapper.find('.icon')
     expect(iconDiv.classes().join(' ')).not.toContain('icon--animated')
     
     await wrapper.setProps({ animation: true })
+    await flushPromises()
     iconDiv = wrapper.find('.icon')
     expect(iconDiv.classes().join(' ')).toContain('icon--animated')
     
     await wrapper.setProps({ animation: false })
+    await flushPromises()
     iconDiv = wrapper.find('.icon')
     expect(iconDiv.classes().join(' ')).not.toContain('icon--animated')
   })

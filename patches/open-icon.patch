@@ -1,0 +1,19 @@
+diff --git a/lib/icons/index.ts b/lib/icons/index.ts
+index 91ba52dbc07bfa91d5d0547dd87ddcbb333b43e7..dd49dcf0434aa0dc485291d605688f82c88e599d 100644
+--- a/lib/icons/index.ts
++++ b/lib/icons/index.ts
+@@ -3232,12 +3232,12 @@ export const searchIcon = (
+     tag: string[];
+     description: string;
+ }[] | undefined => {
+-    const meta = {};
++    const meta: Record<string, any> = {};
+ 
+     const mergedIcons = Object.keys(Icons).map(key => ({
+         id: key,
+         name: Icons[key as keyof typeof Icons],
+-        ...meta[key as keyof typeof Icons]
++        ...(meta[key as keyof typeof Icons] || {})
+     }));
+ 
+     const searchFields = searchIn ? [searchIn] : ['name', 'category', 'tag', 'description', 'title'];

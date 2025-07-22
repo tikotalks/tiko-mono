@@ -1,88 +1,135 @@
 // Type overrides for open-icon library to fix TypeScript compilation errors
 declare module 'open-icon' {
   export enum Icons {
-    // Properly formatted enum names from the rebuilt library
-    G_BUTTON_IN = "g-button-in",
-    G_BUTTON = "g-button",
-    G_CIRCLE_IN = "g-circle-in",
-    G_FILE_IN = "g-file-in",
-    G_FILE = "g-file",
-    G_FOLDER_IN = "g-folder-in",
-    G_FOLDER = "g-folder",
-    G_NOTE2 = "g-note2",
-    G_NOTE = "g-note",
-    G_SPEECH_BUBBLE_IN = "g-speech-bubble-in",
-    G_SQUARE_IN = "g-square-in",
-    G_TRIANGLE_IN = "g-triangle-in",
-    G_BROKEN_HEART = "g-broken-heart",
-    G_CHECK = "g-check",
-    G_EDIT = "g-edit",
-    G_EXCLAMATION_MARK = "g-exclamation-mark",
-    G_HEART = "g-heart",
-    G_HIDDEN = "g-hidden",
-    G_INFO = "g-info",
-    G_MINUS = "g-minus",
-    G_MULTIPLY = "g-multiply",
-    G_PLUS = "g-plus",
-    G_QUESTION_MARK = "g-question-mark",
-    G_SEARCH = "g-search",
-    G_STAR = "g-star",
-    G_USER = "g-user",
-    G_VISIBLE = "g-visible",
-    
     // Animal icons
-    ANIMAL_STEP = "animal-step",
-    BUTTERFLY = "butterfly",
-    CAT_HEAD = "cat-head",
-    CAT_HEAD2 = "cat-head2",
-    CAT = "cat",
-    CAT2 = "cat2",
-    CAT3 = "cat3",
-    FISH = "fish",
-    FISH2 = "fish2",
-    JELLYFISH = "jellyfish",
-    LOBSTER = "lobster",
-    PUFFERFISH = "pufferfish",
-    SEA_STAR = "sea-star",
-    SQUID = "squid",
-    STINGRAY = "stingray",
-    TURTLE = "turtle",
-    WHALE = "whale",
+    ANIMAL_STEP = "ANIMAL_STEP",
+    BUTTERFLY = "BUTTERFLY",
+    CAT_HEAD = "CAT_HEAD",
+    CAT_HEAD2 = "CAT_HEAD2",
+    CAT = "CAT",
+    CAT2 = "CAT2",
+    CAT3 = "CAT3",
+    FISH = "FISH",
+    FISH2 = "FISH2",
+    JELLYFISH = "JELLYFISH",
+    LOBSTER = "LOBSTER",
+    PUFFERFISH = "PUFFERFISH",
+    SEA_STAR = "SEA_STAR",
+    SQUID = "SQUID",
+    STINGRAY = "STINGRAY",
+    TURTLE = "TURTLE",
+    WHALE = "WHALE",
     
     // Arrow icons
-    ARROW_CORNER_DOWN = "arrow-corner-down",
-    ARROW_CORNER_LEFT = "arrow-corner-left",
-    ARROW_CORNER_RIGHT = "arrow-corner-right",
-    ARROW_CORNER_UP = "arrow-corner-up",
-    ARROW_DIAGONAL_BL_TR_STOP = "arrow-diagonal-bl-tr-stop",
-    ARROW_DIAGONAL_BR_TL_STOP = "arrow-diagonal-br-tl-stop",
-    ARROW_DIAGONAL_IN_LT_BR = "arrow-diagonal-in-lt-br",
-    ARROW_DIAGONAL_IN_TR_BL = "arrow-diagonal-in-tr-bl",
-    ARROW_DIAGONAL_TL_BR_SPLIT = "arrow-diagonal-tl-br-split",
-    ARROW_DIAGONAL_TL_BR_STOP = "arrow-diagonal-tl-br-stop",
-    ARROW_DIAGONAL_TL_BR = "arrow-diagonal-tl-br",
-    ARROW_DIAGONAL_TR_BL_SPLIT = "arrow-diagonal-tr-bl-split",
+    ARROW_CORNER_DOWN = "ARROW_CORNER_DOWN",
+    ARROW_CORNER_LEFT = "ARROW_CORNER_LEFT",
+    ARROW_CORNER_RIGHT = "ARROW_CORNER_RIGHT",
+    ARROW_CORNER_UP = "ARROW_CORNER_UP",
+    ARROW_DIAGONAL_BL_TR_STOP = "ARROW_DIAGONAL_BL_TR_STOP",
+    ARROW_DIAGONAL_BR_TL_STOP = "ARROW_DIAGONAL_BR_TL_STOP",
+    ARROW_DIAGONAL_IN_LT_BR = "ARROW_DIAGONAL_IN_LT_BR",
+    ARROW_DIAGONAL_IN_TR_BL = "ARROW_DIAGONAL_IN_TR_BL",
+    ARROW_DIAGONAL_TL_BR_SPLIT = "ARROW_DIAGONAL_TL_BR_SPLIT",
+    ARROW_DIAGONAL_TL_BR_STOP = "ARROW_DIAGONAL_TL_BR_STOP",
+    ARROW_DIAGONAL_TL_BR = "ARROW_DIAGONAL_TL_BR",
+    ARROW_DIAGONAL_TR_BL_SPLIT = "ARROW_DIAGONAL_TR_BL_SPLIT",
     
-    // Common UI icons (using proper enum names)
-    SETTINGS = "settings",
-    DELETE = "delete",
-    EDIT = "edit",
-    SAVE = "save",
-    SEARCH = "search",
-    MENU = "menu",
-    ADD = "add",
-    MINUS = "minus",
-    PLAY = "play",
-    PAUSE = "pause",
-    STOP = "stop",
-    VOLUME = "volume",
-    HEART = "heart",
-    STAR = "star",
-    INFO = "info",
+    // Basic UI icons (common ones likely to be used)
+    CLOSE = "CLOSE",
+    BACK = "BACK",
+    HOME = "HOME",
+    SETTINGS = "SETTINGS",
+    DELETE = "DELETE",
+    EDIT = "EDIT",
+    SAVE = "SAVE",
+    SEARCH = "SEARCH",
+    MENU = "MENU",
+    ADD = "ADD",
+    MINUS = "MINUS",
+    PLAY = "PLAY",
+    PAUSE = "PAUSE",
+    STOP = "STOP",
+    SKIP_FORWARD = "SKIP_FORWARD",
+    SKIP_BACKWARD = "SKIP_BACKWARD",
+    VOLUME = "VOLUME",
+    MUTE = "MUTE",
+    SHUFFLE = "SHUFFLE",
+    REPEAT = "REPEAT",
+    SHARE = "SHARE",
+    FAVORITE = "FAVORITE",
+    HEART = "HEART",
+    STAR = "STAR",
+    BOOKMARK = "BOOKMARK",
+    FLAG = "FLAG",
+    INFO = "INFO",
+    WARNING = "WARNING",
+    ERROR = "ERROR",
+    SUCCESS = "SUCCESS",
+    QUESTION = "QUESTION",
+    HELP = "HELP",
+    LOCK = "LOCK",
+    UNLOCK = "UNLOCK",
+    VISIBILITY = "VISIBILITY",
+    VISIBILITY_OFF = "VISIBILITY_OFF",
+    REFRESH = "REFRESH",
+    SYNC = "SYNC",
+    DOWNLOAD = "DOWNLOAD",
+    UPLOAD = "UPLOAD",
+    COPY = "COPY",
+    CUT = "CUT",
+    PASTE = "PASTE",
+    UNDO = "UNDO",
+    REDO = "REDO",
     
-    // Generic fallback for any other icons
-    [key: string]: string
+    // Other common icons
+    G_BUTTON_IN = "G_BUTTON_IN",
+    G_BUTTON = "G_BUTTON",
+    G_CIRCLE_IN = "G_CIRCLE_IN",
+    G_FILE_IN = "G_FILE_IN",
+    G_FILE = "G_FILE",
+    G_FOLDER_IN = "G_FOLDER_IN",
+    G_FOLDER = "G_FOLDER",
+    G_NOTE2 = "G_NOTE2",
+    G_NOTE = "G_NOTE",
+    G_SPEECH_BUBBLE_IN = "G_SPEECH_BUBBLE_IN",
+    G_SQUARE_IN = "G_SQUARE_IN",
+    G_TRIANGLE_IN = "G_TRIANGLE_IN",
+    G_BROKEN_HEART = "G_BROKEN_HEART",
+    G_CHECK = "G_CHECK",
+    G_EDIT = "G_EDIT",
+    G_EXCLAMATION_MARK = "G_EXCLAMATION_MARK",
+    G_HEART = "G_HEART",
+    G_HIDDEN = "G_HIDDEN",
+    G_INFO = "G_INFO",
+    G_MINUS = "G_MINUS",
+    G_MULTIPLY = "G_MULTIPLY",
+    G_PLUS = "G_PLUS",
+    G_QUESTION_MARK = "G_QUESTION_MARK",
+    G_SEARCH = "G_SEARCH",
+    G_STAR = "G_STAR",
+    G_USER = "G_USER",
+    G_VISIBLE = "G_VISIBLE"
   }
 
-  export function getIcon(icon: Icons): Promise<string>
+  // Extended Icons type that allows any string key
+  export interface IconsMap {
+    [key: string]: string;
+  }
+  
+  export const IconsExtended: IconsMap & typeof Icons;
+  
+  export function getIcon(icon: Icons | string): Promise<string>
+  
+  // Fix the searchIcons function that has the type error
+  export function searchIcons(query: string, searchIn?: 'name' | 'category' | 'tag' | 'description' | 'title'): Array<{
+    id: string;
+    name: string;
+    category?: string;
+    tag?: string;
+    description?: string;
+    title?: string;
+  }>
+  
+  // Additional exports to fix type issues
+  export const meta: Record<string, any>
 }

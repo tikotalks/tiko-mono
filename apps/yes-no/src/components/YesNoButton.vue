@@ -1,5 +1,5 @@
 <template>
-  <button :class="bemm('',['', current ? 'x' : 'v', size])">
+  <button :class="bemm('', ['', current ? 'x' : 'v', size])">
     <div :class="bemm('char', ['', current ? 'x' : 'v'])">
       <div :class="bemm('char-leg', ['', '1'])"></div>
       <div :class="bemm('char-leg', ['', '2'])"></div>
@@ -25,8 +25,8 @@ const props = defineProps({
   size: {
     type: String,
     default: 'large',
-    validator: (value: string) => ['small', 'medium', 'large'].includes(value)
-  }
+    validator: (value: string) => ['small', 'medium', 'large'].includes(value),
+  },
 });
 
 const current = ref(props.mode || 0);
@@ -44,25 +44,6 @@ const toggle = () => {
 .yes-no-button {
   $b: &;
 
-  background-color: var(--color-primary);
- display: block;
- border-radius: var(--border-radius-s); position: relative;
-  padding: .25em;
-  border: none;
-
-  // Size variants
-  &--small {
-    font-size: .5em;
-  }
-
-  &--medium {
-    font-size: .75em;
-  }
-
-  &--large {
-    font-size: 1em;
-  }
-
   --inner-shadow-size: 0.25em;
   --inner-shadow-offset: 0.025em;
   --inner-shadow-color-light: rgba(255, 255, 255, 0.5);
@@ -70,33 +51,54 @@ const toggle = () => {
 
   --outer-shadow-size: 0.025em;
 
-
-  --light-color:color-mix(in srgb, var(--color), white 25%);
+  --light-color: color-mix(in srgb, var(--color), white 25%);
   --dark-color: color-mix(in srgb, var(--color), black 25%);
 
-  background-image: linear-gradient(to top, var(--light-color), var(--dark-color));
+  background-color: var(--color-primary);
+  display: block;
+  border-radius: var(--border-radius-s);
+  position: relative;
+  padding: 0.25em;
+  border: none;
 
-  box-shadow: 0 .025em 0 var(--light-color) inset, 0 -.025em 0 var(--dark-color) inset,
-  .025em .025em .025em rgba(0, 0, 0, 0.25),
-  .25em .25em .25em rgba(0, 0, 0, 0.5);
 
-      // box-shadow: var(--inner-shadow-offset) var(--inner-shadow-offset) var(--inner-shadow-size) var(--inner-shadow-color-dark) inset, calc(var(--inner-shadow-offset) * -1) calc(var(--inner-shadow-offset) * -1) var(--inner-shadow-offset) var(--inner-shadow-color-light) inset;
+  background-image: linear-gradient(
+    to top,
+    var(--light-color),
+    var(--dark-color)
+  );
+
+  box-shadow:
+    0 0.025em 0 var(--light-color) inset,
+    0 -0.025em 0 var(--dark-color) inset,
+    0.025em 0.025em 0.025em rgba(0, 0, 0, 0.25),
+    0.25em 0.25em 0.25em rgba(0, 0, 0, 0.5);
+
+  transition: all 0.2s ease-in-out;
 
 
-      transition: all .2s ease-in-out;
+  // Size variants
+  &--small {
+    font-size: 0.5em;
+  }
 
-  &--x{
+  &--medium {
+    font-size: 0.75em;
+  }
+
+  &--large {
+    font-size: 1em;
+  }
+
+  &--x {
     --color: var(--color-red);
   }
-  &--v{
+  &--v {
     --color: var(--color-green);
   }
-  &:focus{
-
+  &:focus {
     --color: var(--color-purple);
   }
-
-
 
   &__char {
     position: relative;

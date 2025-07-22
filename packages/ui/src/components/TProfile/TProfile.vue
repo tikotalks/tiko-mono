@@ -113,11 +113,8 @@ import { fileService, useAuthStore } from '@tiko/core'
 import TIcon from '../TIcon/TIcon.vue'
 import TButton from '../TButton/TButton.vue'
 import type { TProfileProps } from './TProfile.model'
-import type { popupService } from '../TPopup'
-import type { toastService } from '../TToast'
-
-type PopupService = typeof popupService
-type ToastService = typeof toastService
+import type { PopupService } from '../TPopup/TPopup.service'
+import type { ToastService } from '../TToast/TToast.service'
 
 const props = defineProps<TProfileProps>()
 

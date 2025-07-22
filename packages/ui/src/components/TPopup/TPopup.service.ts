@@ -74,7 +74,7 @@ const usePopupService = () => {
 				// Convert kebab-case to camelCase for event handlers
 				const camelCaseEvent = event.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
 				const capitalizedEvent = camelCaseEvent.charAt(0).toUpperCase() + camelCaseEvent.slice(1);
-				
+
 				return {
 					...acc,
 					[`onUpdate:${event}`]: handler,
@@ -151,3 +151,4 @@ const usePopupService = () => {
 };
 
 export const popupService = usePopupService();
+export type PopupService = ReturnType<typeof usePopupService>;

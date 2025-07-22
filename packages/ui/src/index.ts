@@ -2,6 +2,10 @@
 export * from './components/TButton'
 export * from './components/TIcon'
 export * from './components/TCard'
+
+// Icon Registry for tree-shaking
+export { IconRegistryPlugin, useIconRegistry } from './icons'
+export type { IconRegistry, IconRegistryPluginOptions } from './icons'
 export * from './components/TInput'
 export * from './components/TLoginForm'
 export * from './components/TAuthWrapper'

@@ -95,3 +95,4 @@ const useToastService = () => {
 };
 
 export const toastService = useToastService();
+export type ToastService = ReturnType<typeof useToastService>;

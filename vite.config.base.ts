@@ -39,6 +39,14 @@ export const createViteConfig = (appDir: string, defaultPort: number, pwaConfig?
     },
     optimizeDeps: {
       include: ['@supabase/supabase-js']
+    },
+    esbuild: {
+      // Skip type checking for faster builds
+      tsconfigRaw: {
+        compilerOptions: {
+          skipLibCheck: true
+        }
+      }
     }
   })
 }
