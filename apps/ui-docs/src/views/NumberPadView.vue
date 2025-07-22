@@ -153,7 +153,7 @@
 
       <div :class="bemm('code')">
         <h4>Usage</h4>
-        <pre><code>import { Icons } from 'open-icon'
+        <pre><code>import type { Icons } from '@tiko/ui'
 
 &lt;TNumberPad 
   :clear-icon="Icons.TRASH"
@@ -398,7 +398,7 @@
 import { ref, reactive } from 'vue'
 import { useBemm } from 'bemm'
 import { TNumberPad } from '@tiko/ui'
-import { Icons } from 'open-icon'
+import type { Icons } from '@tiko/ui'
 
 const bemm = useBemm('number-pad-view')
 

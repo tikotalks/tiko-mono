@@ -6,6 +6,8 @@ export * from './components/TCard'
 // Icon Registry for tree-shaking
 export { IconRegistryPlugin, useIconRegistry } from './icons'
 export type { IconRegistry, IconRegistryPluginOptions } from './icons'
+// Re-export Icons type to avoid direct open-icon imports in apps
+export type { Icons } from 'open-icon'
 export * from './components/TInput'
 export * from './components/TLoginForm'
 export * from './components/TAuthWrapper'

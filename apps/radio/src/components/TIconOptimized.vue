@@ -10,7 +10,7 @@
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
 import { ref, watch, computed, type PropType } from 'vue';
-import type { Icons } from 'open-icon';
+import type { Icons } from '@tiko/ui';
 import { getIcon } from '../utils/icons'; // Use optimized icon loader
 
 const bemm = useBemm('icon');
