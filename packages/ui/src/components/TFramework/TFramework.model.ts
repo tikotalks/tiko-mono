@@ -30,6 +30,7 @@ export interface TFrameworkProps {
   config: FrameworkConfig
   backgroundImage?: string
   loading?: boolean
+  isApp?: boolean
 }
 
 export interface TFrameworkEmits {

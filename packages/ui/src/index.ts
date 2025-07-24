@@ -29,6 +29,12 @@ export * from './components/TUserSettings'
 export * from './components/TAuthCallback'
 export * from './components/TPinInput'
 export * from './components/TNumberPad'
+export * from './components/TChip'
+// export * from './components/TMediaTile'
+// export * from './components/TList'
+// export * from './components/TListItem'
+// export * from './components/TGrid'
+export * from './components/TViewToggle'
 
 export { default as TInputText } from './components/TForm/inputs/TInputText/TInputText.vue';
 export { default as TInputNumber } from './components/TForm/inputs/TInputNumber/TInputNumber.vue';
@@ -39,7 +45,7 @@ export { default as TInputSelect } from './components/TForm/inputs/TInputSelect/
 export { default as TInputCheckbox } from './components/TForm/inputs/TInputCheckbox/TInputCheckbox.vue';
 export { default as TInputRadio } from './components/TForm/inputs/TInputRadio/TInputRadio.vue';
 export { default as TTextArea } from './components/TForm/inputs/TInputTextArea/TInputTextArea.vue';
-
+export { default as TFormGroup } from './components/TForm/TFormGroup.vue';
 
 // TrustCafe-style components with T prefix (temporarily disabled due to import issues)
 // export * from './components/TForm'

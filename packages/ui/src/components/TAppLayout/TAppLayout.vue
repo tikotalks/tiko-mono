@@ -1,5 +1,5 @@
 <template>
-  <div :class="bemm()">
+  <div :class="bemm('',['', config?.isApp ? 'is-app' : 'is-website'])">
     <!-- Top Bar -->
     <header :class="bemm('header')">
       <TTopBar
@@ -23,7 +23,7 @@
         <template #app-controls>
           <slot name="app-controls" />
         </template>
-        
+
         <template #center>
           <slot name="top-bar-center" />
         </template>
@@ -47,11 +47,11 @@
 </template>
 
 <script setup lang="ts">
-import { useBemm } from 'bemm'
-import { TTopBar } from '../TTopBar'
-import type { TAppLayoutProps, TAppLayoutEmits } from './TAppLayout.model'
+import { useBemm } from 'bemm';
+import { TTopBar } from '../TTopBar';
+import type { TAppLayoutProps, TAppLayoutEmits } from './TAppLayout.model';
 
-const props = withDefaults(defineProps<TAppLayoutProps>(), {
+withDefaults(defineProps<TAppLayoutProps>(), {
   showBackButton: false,
   backButtonLabel: 'Back',
   showUserInfo: true,
@@ -59,37 +59,45 @@ const props = withDefaults(defineProps<TAppLayoutProps>(), {
   showHeader: true,
   isUserOnline: true,
   isLoading: false
-})
+});
 
-defineEmits<TAppLayoutEmits>()
+defineEmits<TAppLayoutEmits>();
 
 const bemm = useBemm('app-layout');
 </script>
 
 <style lang="scss" scoped>
 .app-layout {
-  height: 100vh;
   width: 100vw;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  overflow: auto;
-
   &__header {
     width: calc(100% - (var(--space) * 2));
     top: 0;
-    position: fixed;
+    position: sticky;
     z-index: 10;
     left: var(--space);
     border-radius: 0 0 var(--border-radius-s) var(--border-radius-s);
+  }
+
+  &--is-app {
+    height: 100vh;
+    overflow: auto;
+
+    .app-layout__header {
+      position: fixed;
+    }
+  }
+
+  &--is-website {
   }
 
   &__content {
     width: 100%;
     position: relative;
     height: fit-content;
-
   }
 
   &__footer {

@@ -7,8 +7,8 @@
 <script lang="ts" setup>
 import { type PropType, computed } from 'vue';
 import { useBemm } from 'bemm';
-import type { ChipGroupType } from './ChipGroup.model';
-import { useGroup, groupProps } from '@/composables/useGroup';
+import type { ChipGroupType } from './TChipGroup.model';
+import { useGroup, groupProps } from '../../composables/useGroup';
 
 const bemm = useBemm('chip-group');
 
@@ -28,7 +28,7 @@ const blockClasses = computed(() => {
 </script>
 
 <style lang="scss">
-@use '~/composables/useGroup/useGroup.scss' as group;
+@use '../../composables/useGroup/useGroup.scss' as group;
 
 .chip-group {
 	display: flex;
@@ -59,7 +59,7 @@ const blockClasses = computed(() => {
 
 	&--row {
 		display: flex;
-		flex-direction: var(--chip-group-direction, column);
+		flex-direction: var(--chip-group-direction, row);
 		align-items: flex-start;
 		justify-content: flex-start;
 

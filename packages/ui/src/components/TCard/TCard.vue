@@ -54,7 +54,7 @@ import TButton from '../TButton/TButton.vue'
 import type { TCardProps, TCardEmits } from './TCard.model'
 
 const props = withDefaults(defineProps<TCardProps>(), {
-  size: 'medium',
+  size: 'auto',
   clickable: false
 })
 
@@ -104,12 +104,24 @@ const handleKeydown = (event: KeyboardEvent) => {
 .card {
   display: flex;
   flex-direction: column;
-  background: white;
+  background-image: radial-gradient(
+    circle at 0% 0%,
+    var(--color-background, #ffffff) 0%,
+    color-mix(in srgb, var(--color-background), var(--color-foreground) 10%) 100%
+  );
+  color: var(--color-background-text);
   border-radius: 0.75rem;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   transition: all 0.2s ease;
 
+
   // Size variants
+
+  &--auto{
+    width: auto;
+    max-width: 100%;
+  }
+
   &--small {
     max-width: 12rem;
   }
@@ -185,7 +197,7 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
 
   &__text {
-    text-align: center;
+    text-align: left;
     width: 100%;
   }
 
@@ -197,9 +209,6 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
 
   &__description {
-    font-size: 0.875rem;
-    color: #6b7280;
-    line-height: 1.5;
   }
 
   // Actions

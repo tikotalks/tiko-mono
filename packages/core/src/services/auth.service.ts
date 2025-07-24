@@ -244,6 +244,21 @@ export interface AuthService {
    * @returns {Promise<AuthResult>} Updated user object if successful
    */
   updateUserMetadata(metadata: Record<string, any>): Promise<AuthResult>
+  
+  /**
+   * Get the role of the current user
+   * 
+   * @returns {Promise<'user' | 'editor' | 'admin' | null>} User role or null if not authenticated
+   */
+  getUserRole(): Promise<'user' | 'editor' | 'admin' | null>
+  
+  /**
+   * Check if current user has a specific role
+   * 
+   * @param {string} requiredRole - Role to check for ('editor' or 'admin')
+   * @returns {Promise<boolean>} True if user has the role (or higher)
+   */
+  hasRole(requiredRole: 'editor' | 'admin'): Promise<boolean>
 }
 
 /**
@@ -602,6 +617,59 @@ export class ManualAuthService implements AuthService {
     } catch (error) {
       throw new Error('Invalid JWT token')
     }
+  }
+
+  async getUserRole(): Promise<'user' | 'editor' | 'admin' | null> {
+    try {
+      const session = await this.getSession()
+      if (!session) return null
+      
+      // Use RPC function to get current user's role
+      const response = await fetch(
+        'https://kejvhvszhevfwgsztedf.supabase.co/rest/v1/rpc/get_my_role',
+        {
+          method: 'POST',
+          headers: {
+            'apikey': this.ANON_KEY,
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
+          body: '{}'
+        }
+      )
+      
+      if (!response.ok) {
+        console.error('[AuthService] Failed to fetch user role:', response.status, response.statusText)
+        try {
+          const errorText = await response.text()
+          console.error('[AuthService] Error details:', errorText)
+        } catch {}
+        return 'user'
+      }
+      
+      const role = await response.json()
+      console.log('[AuthService] User role:', role)
+      
+      return role as 'user' | 'editor' | 'admin'
+    } catch (error) {
+      console.error('[AuthService] Error getting user role:', error)
+      return 'user'
+    }
+  }
+  
+  async hasRole(requiredRole: 'editor' | 'admin'): Promise<boolean> {
+    const userRole = await this.getUserRole()
+    
+    if (!userRole) return false
+    
+    // Admin has all permissions
+    if (userRole === 'admin') return true
+    
+    // Editor has editor permissions
+    if (userRole === 'editor' && requiredRole === 'editor') return true
+    
+    return false
   }
 
   /**

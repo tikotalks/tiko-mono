@@ -13,6 +13,10 @@ export { useSSO } from './composables/useSSO'
 export type { SSOOptions } from './composables/useSSO'
 export { useItems } from './composables/useItems'
 export type { UseItemsOptions, UseItemsReturn } from './composables/useItems'
+export { useImageUrl } from './composables/useImageUrl'
+export type { ImageVariants, ImageUrlOptions } from './composables/useImageUrl'
+export { useImages } from './composables/useImages'
+export type { UseImagesReturn, ImageStats } from './composables/useImages'
 
 // Types
 export * from './types/user'

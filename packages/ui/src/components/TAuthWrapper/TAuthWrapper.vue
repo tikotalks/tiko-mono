@@ -1,5 +1,5 @@
 <template>
-  <div :class="bemm()" data-cy="auth-wrapper">
+  <div :class="bemm('',['',tikoConfig?.isApp ? 'is-app' : 'is-website'])" data-cy="auth-wrapper">
 
     <div :class="bemm('background')" v-if="!isAuthenticated">
       <img
@@ -13,7 +13,7 @@
     <TSplashScreen
       v-if="isInitializing"
       :app-name="splashConfig.appName"
-      :app-icon="splashConfig.appIcon"
+      :app-icon="splashConfig.iconPath"
       :theme="splashConfig.theme"
       :duration="0"
       :show-loading="true"
@@ -57,10 +57,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, getCurrentInstance } from 'vue'
 import { useRoute } from 'vue-router'
 import { useBemm } from 'bemm'
 import { useAuthStore } from '@tiko/core'
+import { createPinia } from 'pinia'
 import { useI18n } from '../../composables/useI18n'
 import TLoginForm from '../TLoginForm/TLoginForm.vue'
 import TAppLayout from '../TAppLayout/TAppLayout.vue'
@@ -84,8 +85,40 @@ const route = useRoute()
 // i18n
 const { t, keys } = useI18n()
 
+// Ensure Pinia is available
+let pinia
+try {
+  // Try to get existing pinia instance
+  pinia = getCurrentInstance()?.appContext.config.globalProperties.$pinia
+} catch (e) {
+  // Pinia not found
+}
+
+if (!pinia) {
+  // Create and install pinia if not available
+  pinia = createPinia()
+  const app = getCurrentInstance()?.appContext.app
+  if (app) {
+    app.use(pinia)
+  }
+}
+
 // Store
-const authStore = useAuthStore()
+const authStore = ref(null)
+
+// Function to initialize store
+const initializeStore = () => {
+  try {
+    authStore.value = useAuthStore()
+    return true
+  } catch (error) {
+    console.warn('[TAuthWrapper] Store not available yet, will retry...')
+    return false
+  }
+}
+
+// Try to initialize store immediately
+initializeStore()
 
 // Get Tiko config for theme
 const { config: tikoConfig } = useTikoConfig()
@@ -96,10 +129,10 @@ const authLoading = ref(false)
 const authError = ref<string | null>(null)
 
 // Computed
-const isAuthenticated = computed(() => authStore.isAuthenticated);
+const isAuthenticated = computed(() => authStore.value?.isAuthenticated || false);
 
 // Check if we're on the auth callback route
-const isAuthCallbackRoute = computed(() => route.path === '/auth/callback');
+const isAuthCallbackRoute = computed(() => route?.path === '/auth/callback');
 
 // Splash screen configuration
 const splashConfig = computed(() => {
@@ -108,7 +141,7 @@ const splashConfig = computed(() => {
 
 
   // Get primary color from Tiko config
-  const primaryColor = tikoConfig.value?.theme?.primary;
+  const primaryColor = tikoConfig?.theme?.primary;
   const backgroundColor = primaryColor ? `var(--color-${primaryColor})` : config.backgroundColor;
 
   const finalConfig = {
@@ -129,7 +162,9 @@ const handleAppleSignIn = async () => {
   authError.value = null;
 
   try {
-    await authStore.signInWithApple();
+    if (authStore.value) {
+      await authStore.value.signInWithApple();
+    }
   } catch (error) {
     authError.value =
       error instanceof Error ? error.message : t(keys.auth.appleSignInFailed);
@@ -145,7 +180,9 @@ const handleEmailSubmit = async (email: string, fullName?: string) => {
   try {
     // Get display name from splash config or use appName
     const appDisplayName = splashConfig.value.appName || props.appName;
-    await authStore.signInWithPasswordlessEmail(email, fullName, appDisplayName);
+    if (authStore.value) {
+      await authStore.value.signInWithPasswordlessEmail(email, fullName);
+    }
   } catch (error) {
     authError.value =
       error instanceof Error
@@ -161,7 +198,9 @@ const handleVerificationSubmit = async (email: string, code: string) => {
   authError.value = null;
 
   try {
-    await authStore.verifyEmailOtp(email, code);
+    if (authStore.value) {
+      await authStore.value.verifyEmailOtp(email, code);
+    }
   } catch (error) {
     authError.value =
       error instanceof Error ? error.message : t(keys.auth.invalidVerificationCode);
@@ -174,7 +213,9 @@ const handleResendCode = async (email: string) => {
   authError.value = null;
 
   try {
-    await authStore.resendEmailOtp(email);
+    if (authStore.value) {
+      await authStore.value.resendEmailOtp(email);
+    }
   } catch (error) {
     authError.value =
       error instanceof Error ? error.message : t(keys.auth.failedToResendCode);
@@ -194,13 +235,13 @@ const handleSplashComplete = () => {
 onMounted(async () => {
 
   // Check if we're returning from auth callback or if there's already a session
-  const isReturningFromAuth = document.referrer.includes('/auth/callback') || 
+  const isReturningFromAuth = document.referrer.includes('/auth/callback') ||
                               window.location.search.includes('from=auth') ||
                               window.location.hash.includes('access_token');
-  
+
   // Magic link tokens are handled by the router which redirects to /auth/callback
   // We don't need to process them here anymore
-  
+
   // Quick check for existing session to avoid unnecessary splash screen
   const hasExistingSession = (() => {
     try {
@@ -220,7 +261,7 @@ onMounted(async () => {
 
   // Skip splash screen if returning from auth with a valid session
   const shouldSkipSplash = isReturningFromAuth && hasExistingSession;
-  
+
   const minDisplayTime = shouldSkipSplash ? 0 : 2000; // Show splash for at least 2 seconds unless skipping
   const maxDisplayTime = 5000; // Maximum time to show splash screen
   const startTime = Date.now();
@@ -237,16 +278,30 @@ onMounted(async () => {
   }, shouldSkipSplash ? 100 : maxDisplayTime); // Short timeout if skipping
 
   try {
-    // Set up auth state listener
-    authStore.setupAuthListener();
+    // Retry store initialization if needed
+    if (!authStore.value) {
+      const success = initializeStore()
+      if (!success) {
+        // If still failing, wait a bit and try again
+        setTimeout(() => {
+          initializeStore()
+        }, 100)
+      }
+    }
 
-    // Try to restore session
-    await authStore.initializeFromStorage();
+    // Only proceed if store is available
+    if (authStore.value) {
+      // Set up auth state listener
+      authStore.value.setupAuthListener();
 
-    // Auth initialization complete
+      // Try to restore session
+      await authStore.value.initializeFromStorage();
 
-    if (authStore.isAuthenticated) {
-    } else {
+      // Auth initialization complete
+
+      if (authStore.value.isAuthenticated) {
+      } else {
+      }
     }
   } catch (error: any) {
     console.error('[TAuthWrapper] ❌ Failed to initialize auth:', error);
@@ -284,12 +339,16 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .auth-wrapper {
-  height: 100vh;
   display: flex;
   flex-direction: column;
   display: flex;
-  align-items: center;
-  justify-content: center;
+
+  &--is-app {
+    overflow: hidden;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+  }
 
   &__background {
     position: fixed;

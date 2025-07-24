@@ -1,37 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
 
-// These would normally come from environment variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-// Debug environment variables
-console.log('Environment check:', {
-  hasUrl: !!supabaseUrl,
-  hasKey: !!supabaseAnonKey,
-  url: supabaseUrl,
-  env: import.meta.env
-})
-
-// Validate Supabase configuration
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Missing Supabase configuration:', {
-    hasUrl: !!supabaseUrl,
-    hasKey: !!supabaseAnonKey,
-    url: supabaseUrl,
-    allEnvVars: import.meta.env
-  })
-}
-
-if (supabaseUrl === 'https://placeholder.supabase.co' || supabaseAnonKey === 'placeholder-key') {
-  console.warn('Using placeholder Supabase credentials. Please update your .env file.')
-}
+// Use hardcoded values instead of environment variables
+const supabaseUrl = 'https://kejvhvszhevfwgsztedf.supabase.co'
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlanZodnN6aGV2Zndnc3p0ZWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4ODg2MTIsImV4cCI6MjA2NzQ2NDYxMn0.xUYXxNodJTpTwChlKbuBSojVJqX9CDW87aVISEUc2rE'
 
 // Get the site URL for auth redirects
-const siteUrl = import.meta.env.VITE_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000')
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing required environment variables: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY')
-}
+const siteUrl = (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000')
 
 export const supabase = createClient(
   supabaseUrl, 
@@ -107,6 +81,73 @@ export interface Database {
           user_id?: string
           app_name?: string
           settings?: any
+          updated_at?: string
+        }
+      }
+      media: {
+        Row: {
+          id: string
+          user_id: string | null
+          filename: string
+          original_filename: string
+          file_size: number
+          mime_type: string
+          original_url: string
+          thumbnail_url: string | null
+          medium_url: string | null
+          large_url: string | null
+          width: number | null
+          height: number | null
+          name: string
+          title: string
+          description: string | null
+          tags: string[]
+          categories: string[]
+          ai_analyzed: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          filename: string
+          original_filename: string
+          file_size: number
+          mime_type: string
+          original_url: string
+          thumbnail_url?: string | null
+          medium_url?: string | null
+          large_url?: string | null
+          width?: number | null
+          height?: number | null
+          name: string
+          title: string
+          description?: string | null
+          tags?: string[]
+          categories?: string[]
+          ai_analyzed?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          filename?: string
+          original_filename?: string
+          file_size?: number
+          mime_type?: string
+          original_url?: string
+          thumbnail_url?: string | null
+          medium_url?: string | null
+          large_url?: string | null
+          width?: number | null
+          height?: number | null
+          name?: string
+          title?: string
+          description?: string | null
+          tags?: string[]
+          categories?: string[]
+          ai_analyzed?: boolean
           updated_at?: string
         }
       }

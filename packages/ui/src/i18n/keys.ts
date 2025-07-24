@@ -11,7 +11,7 @@ function createKeysObject<T extends Record<string, any>>(
   prefix = ''
 ): any {
   const result: any = {}
-  
+
   for (const key in obj) {
     if (typeof obj[key] === 'object' && obj[key] !== null) {
       result[key] = createKeysObject(obj[key], `${prefix}${key}.`)
@@ -19,14 +19,14 @@ function createKeysObject<T extends Record<string, any>>(
       result[key] = `${prefix}${key}`
     }
   }
-  
+
   return result
 }
 
 /**
  * Translation keys object that mirrors the structure of translations
  * but contains the dot-notation keys as string values
- * 
+ *
  * Example usage:
  * const saveKey = translationKeys.common.save // 'common.save'
  * const loginKey = translationKeys.auth.login // 'auth.login'
@@ -45,6 +45,7 @@ export const translationKeys: TranslationKeys = createKeysObject<TranslationSche
     confirm: '',
     yes: '',
     no: '',
+    never: '',
     settings: '',
     back: '',
     home: '',
@@ -92,7 +93,16 @@ export const translationKeys: TranslationKeys = createKeysObject<TranslationSche
     more: '',
     showMore: '',
     speak: '',
-    menu: ''
+    menu: '',
+    views: {
+      tiles: '',
+      list: ''
+    },
+    tags: '',
+    categories: '',
+    image: '',
+    title: '',
+    size: ''
   },
   auth: {
     login: '',
@@ -577,5 +587,227 @@ export const translationKeys: TranslationKeys = createKeysObject<TranslationSche
     documentation: '',
     completePropAndUsage: '',
     items: ''
+  },
+  admin: {
+    login: {
+      title: '',
+      subtitle: '',
+      emailPlaceholder: '',
+      passwordPlaceholder: '',
+      accessInfo: '',
+      noPermission: ''
+    },
+    media: {
+      details: '',
+      filename: '',
+      notFound: '',
+      backToLibrary: '',
+      size: '',
+      type: '',
+      uploaded: '',
+      editDetails: '',
+      title: '',
+      titlePlaceholder: '',
+      description: '',
+      descriptionPlaceholder: '',
+      tags: '',
+      tagsPlaceholder: '',
+      tagsHelp: '',
+      categories: '',
+      categoriesPlaceholder: '',
+      categoriesHelp: '',
+      edit: '',
+      save: '',
+      cancel: '',
+      saveSuccess: '',
+      saveError: '',
+      loadError: '',
+      replaceImage: '',
+      replaceDescription: '',
+      selectNewImage: '',
+      replaceSuccess: '',
+      replaceError: '',
+      imageUrls: '',
+      originalUrl: '',
+      largeUrl: '',
+      mediumUrl: '',
+      thumbnailUrl: '',
+      urlCopied: '',
+      dangerZone: '',
+      deleteWarning: '',
+      deleteImage: '',
+      confirmDeleteTitle: '',
+      confirmDeleteMessage: '',
+      delete: '',
+      deleteSuccess: '',
+      deleteError: '',
+      noDescription: '',
+      analyze: '',
+      analyzeSuccess: '',
+      analyzeError: '',
+      analyzeRateLimitError: '',
+      analyzeApiKeyError: '',
+      ai_analyzed: '',
+      dimensions: '',
+      originalFilename: '',
+    },
+    dashboard: {
+      title: '',
+      totalImages: '',
+      storageUsed: '',
+      lastUpload: '',
+      uploadImages: '',
+      uploadDescription: '',
+      viewLibrary: '',
+      libraryDescription: '',
+      totalUsers: '',
+      totalMedia: '',
+      activeUsers: '',
+      totalVisits: '',
+      newToday: '',
+      storage: '',
+      fromYesterday: '',
+      today: '',
+      quickActions: '',
+      manageUsers: '',
+      manageUsersDescription: '',
+      mediaLibrary: '',
+      mediaLibraryDescription: '',
+      viewAnalytics: '',
+      viewAnalyticsDescription: '',
+      systemSettings: '',
+      systemSettingsDescription: '',
+      recentActivity: '',
+      noRecentActivity: '',
+      daysAgo: '',
+      hoursAgo: '',
+      minutesAgo: '',
+      justNow: '',
+      userLoggedIn: '',
+      mediaUploaded: '',
+      newUserRegistered: ''
+    },
+    upload: {
+      title: '',
+      dropZone: '',
+      selectFiles: '',
+      uploading: '',
+      processing: '',
+      complete: '',
+      dragDrop: '',
+      or: '',
+      uploadQueue: '',
+      startUpload: '',
+      clearQueue: '',
+      onlyImages: '',
+      uploadSuccess: '',
+      uploadError: ''
+    },
+    library: {
+      title: '',
+      search: '',
+      searchPlaceholder: '',
+      filter: '',
+      category: '',
+      tags: '',
+      noImages: '',
+      uploadFirst: '',
+      totalImages: '',
+      viewToggle: {
+        tiles: '',
+        list: ''
+      }
+    },
+    navigation: {
+      dashboard: '',
+      media: '',
+      mediaDashboard: '',
+      library: '',
+      libraryImages: '',
+      libraryCategories: '',
+      upload: '',
+      users: '',
+      analytics: ''
+    },
+    settings: '',
+    analytics: {
+      title: '',
+      today: '',
+      thisWeek: '',
+      thisMonth: '',
+      thisYear: '',
+      pageViews: '',
+      uniqueVisitors: '',
+      avgSessionDuration: '',
+      bounceRate: '',
+      visitorTrend: '',
+      chartPlaceholder: '',
+      topPages: '',
+      userActivity: '',
+      logins: '',
+      timerStarts: '',
+      radioPlays: '',
+      cardsCreated: '',
+      userBehavior: '',
+      deviceTypes: '',
+      trafficSources: ''
+    },
+    users: {
+      title: '',
+      searchPlaceholder: '',
+      addUser: '',
+      totalUsers: '',
+      activeUsers: '',
+      adminUsers: '',
+      newThisMonth: '',
+      avatar: '',
+      name: '',
+      email: '',
+      role: '',
+      status: '',
+      joined: '',
+      lastActive: '',
+      actions: '',
+      active: '',
+      inactive: '',
+      noUsersFound: '',
+      addUserComingSoon: '',
+      editUserComingSoon: '',
+      confirmActivateTitle: '',
+      confirmActivateMessage: '',
+      confirmDeactivateTitle: '',
+      confirmDeactivateMessage: '',
+      activate: '',
+      deactivate: '',
+      activateSuccess: '',
+      activateError: '',
+      deactivateSuccess: '',
+      deactivateError: '',
+      confirmDeleteTitle: '',
+      confirmDeleteMessage: '',
+      delete: '',
+      deleteSuccess: '',
+      deleteError: '',
+      loadError: '',
+      noPermission: '',
+      editUser: '',
+      emailPlaceholder: '',
+      namePlaceholder: '',
+      username: '',
+      usernamePlaceholder: '',
+      selectRole: '',
+      avatarUrl: '',
+      avatarUrlPlaceholder: '',
+      create: '',
+      roleUser: '',
+      roleModerator: '',
+      roleEditor: '',
+      roleAdmin: '',
+      emailRequired: '',
+      updateSuccess: '',
+      updateError: '',
+      createError: '',
+      createUserNotImplemented: ''
+    }
   }
 }) as TranslationKeys

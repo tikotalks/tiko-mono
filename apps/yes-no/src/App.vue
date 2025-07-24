@@ -2,7 +2,7 @@
   <div id="app">
     <!-- Auth callback route doesn't need TFramework wrapper -->
     <router-view v-if="isAuthCallbackRoute" />
-    
+
     <!-- All other routes use TFramework -->
     <TFramework
       v-else

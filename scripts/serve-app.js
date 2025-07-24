@@ -5,51 +5,83 @@ const { readdirSync, existsSync } = require('fs');
 const { join } = require('path');
 const { interactiveSelect, colors } = require('./interactive-select');
 
-// Get all apps from the apps directory
+// Get all apps from the apps and tools directories
 function getApps() {
-  const appsDir = join(process.cwd(), 'apps');
-  const apps = readdirSync(appsDir, { withFileTypes: true })
-    .filter(dirent => dirent.isDirectory())
-    .map(dirent => dirent.name)
-    .filter(name => {
-      // Check if it has a package.json with a dev script
-      const packagePath = join(appsDir, name, 'package.json');
-      if (existsSync(packagePath)) {
-        try {
-          const pkg = require(packagePath);
-          return pkg.scripts && (pkg.scripts.dev || pkg.scripts.serve);
-        } catch (e) {
-          return false;
-        }
-      }
-      return false;
-    })
-    .sort();
+  const apps = [];
   
-  return apps;
+  // Get apps from apps directory
+  const appsDir = join(process.cwd(), 'apps');
+  if (existsSync(appsDir)) {
+    const appItems = readdirSync(appsDir, { withFileTypes: true })
+      .filter(dirent => dirent.isDirectory())
+      .map(dirent => ({ name: dirent.name, type: 'app', dir: 'apps' }))
+      .filter(item => {
+        const packagePath = join(appsDir, item.name, 'package.json');
+        if (existsSync(packagePath)) {
+          try {
+            const pkg = require(packagePath);
+            return pkg.scripts && (pkg.scripts.dev || pkg.scripts.serve);
+          } catch (e) {
+            return false;
+          }
+        }
+        return false;
+      });
+    apps.push(...appItems);
+  }
+  
+  // Get tools from tools directory
+  const toolsDir = join(process.cwd(), 'tools');
+  if (existsSync(toolsDir)) {
+    const toolItems = readdirSync(toolsDir, { withFileTypes: true })
+      .filter(dirent => dirent.isDirectory())
+      .map(dirent => ({ name: dirent.name, type: 'tool', dir: 'tools' }))
+      .filter(item => {
+        const packagePath = join(toolsDir, item.name, 'package.json');
+        if (existsSync(packagePath)) {
+          try {
+            const pkg = require(packagePath);
+            return pkg.scripts && (pkg.scripts.dev || pkg.scripts.serve);
+          } catch (e) {
+            return false;
+          }
+        }
+        return false;
+      });
+    apps.push(...toolItems);
+  }
+  
+  return apps.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 // Get app info for display
-function getAppInfo(appName) {
-  const packagePath = join(process.cwd(), 'apps', appName, 'package.json');
+function getAppInfo(app) {
+  const packagePath = join(process.cwd(), app.dir || 'apps', app.name || app, 'package.json');
   try {
     const pkg = require(packagePath);
+    const name = app.name || app;
+    const displayName = app.type === 'tool' ? `${name} (tool)` : name;
     return {
-      name: appName,
+      name: displayName,
       description: pkg.description || '',
-      version: pkg.version || '0.0.0'
+      version: pkg.version || '0.0.0',
+      type: app.type || 'app'
     };
   } catch (e) {
+    const name = app.name || app;
     return {
-      name: appName,
+      name: name,
       description: '',
-      version: '0.0.0'
+      version: '0.0.0',
+      type: app.type || 'app'
     };
   }
 }
 
 // Run the specified app
-function runApp(appName) {
+function runApp(app) {
+  const appName = app.name || app;
+  const packageName = app.type === 'tool' ? `@tiko/${appName}` : appName;
   console.log(`\n${colors.blue}🏃 Starting ${colors.green}${appName}${colors.blue}...${colors.reset}\n`);
   
   // Set terminal tab name
@@ -57,7 +89,7 @@ function runApp(appName) {
   
   // Run the selected app
   try {
-    execSync(`pnpm --filter ${appName} dev`, { 
+    execSync(`pnpm --filter ${packageName} dev`, { 
       stdio: 'inherit',
       cwd: process.cwd()
     });
@@ -79,18 +111,19 @@ async function main() {
     
     // Find matching app (handle various formats)
     const normalizedArg = appArg.toLowerCase().replace('_', '-');
-    const matchingApp = apps.find(app => 
-      app.toLowerCase() === normalizedArg ||
-      app.toLowerCase().replace('-', '') === normalizedArg.replace('-', '') ||
-      app === appArg // exact match
-    );
+    const matchingApp = apps.find(app => {
+      const appName = app.name || app;
+      return appName.toLowerCase() === normalizedArg ||
+        appName.toLowerCase().replace('-', '') === normalizedArg.replace('-', '') ||
+        appName === appArg; // exact match
+    });
     
     if (matchingApp) {
       runApp(matchingApp);
       return;
     } else {
       console.log(`${colors.red}❌ App "${appArg}" not found${colors.reset}`);
-      console.log(`${colors.yellow}Available apps: ${apps.join(', ')}${colors.reset}`);
+      console.log(`${colors.yellow}Available apps: ${apps.map(a => a.name || a).join(', ')}${colors.reset}`);
       process.exit(1);
     }
   }
@@ -109,7 +142,7 @@ async function main() {
     return {
       name: `${info.name} ${colors.gray}v${info.version}${colors.reset}`,
       description: info.description,
-      value: app
+      value: app.name ? app : { name: app, type: 'app' }
     };
   });
 

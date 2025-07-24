@@ -17,6 +17,7 @@ export interface TranslationSchema {
     confirm: string
     yes: string
     no: string
+    never: string
     settings: string
     back: string
     home: string
@@ -549,6 +550,106 @@ export interface TranslationSchema {
     documentation: string
     completePropAndUsage: string
     items: string
+  }
+  admin: {
+    login: {
+      title: string
+      subtitle: string
+      emailPlaceholder: string
+      passwordPlaceholder: string
+      accessInfo: string
+      noPermission: string
+    },
+    media: {
+      filename: string
+      details: string
+      notFound: string
+      backToLibrary: string
+      size: string
+      type: string
+      uploaded: string
+      editDetails: string
+      title: string
+      titlePlaceholder: string
+      description: string
+      descriptionPlaceholder: string
+      tags: string
+      tagsPlaceholder: string
+      tagsHelp: string
+      categories: string
+      categoriesPlaceholder: string
+      categoriesHelp: string
+      edit: string
+      save: string
+      cancel: string
+      saveSuccess: string
+      saveError: string
+      loadError: string
+      replaceImage: string
+      replaceDescription: string
+      selectNewImage: string
+      replaceSuccess: string
+      replaceError: string
+      imageUrls: string
+      originalUrl: string
+      largeUrl: string
+      mediumUrl: string
+      thumbnailUrl: string
+      urlCopied: string
+      dangerZone: string
+      deleteWarning: string
+      deleteImage: string
+      confirmDeleteTitle: string
+      confirmDeleteMessage: string
+      delete: string
+      deleteSuccess: string
+      deleteError: string
+    },
+    dashboard: {
+      title: string
+      totalImages: string
+      storageUsed: string
+      lastUpload: string
+      uploadImages: string
+      uploadDescription: string
+      viewLibrary: string
+      libraryDescription: string
+    }
+    upload: {
+      title: string
+      dropZone: string
+      selectFiles: string
+      uploading: string
+      processing: string
+      complete: string
+      dragDrop: string
+      or: string
+      uploadQueue: string
+      startUpload: string
+      clearQueue: string
+      onlyImages: string
+      uploadSuccess: string
+      uploadError: string
+    }
+    library: {
+      title: string
+      search: string
+      searchPlaceholder: string
+      filter: string
+      category: string
+      tags: string
+      noImages: string
+      uploadFirst: string
+      totalImages: string
+    }
+    navigation: {
+      dashboard: string
+      library: string
+      libraryImages: string
+      libraryCategories: string
+      upload: string
+    }
+    settings: string
   }
 }
 

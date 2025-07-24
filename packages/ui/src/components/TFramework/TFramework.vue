@@ -1,9 +1,9 @@
 <template>
-  <div :class="bemm()" :style="themeStyles">
+  <div :class="bemm('',['', isApp ? 'is-app' : 'is-website'])" :style="themeStyles">
     <TAuthWrapper
       :background-image="backgroundImage"
-      :title="config.name"
-      :app-name="config.id"
+      :title="tikoConfig?.name"
+      :app-name="tikoConfig?.id"
     >
       <TAppLayout
         :title="displayTitle"
@@ -11,7 +11,7 @@
         :show-header="topBar.showTitle !== false"
         :show-back="showBackButton"
         :is-loading="loading"
-        :app-name="config.id"
+        :config="tikoConfig"
         @profile="handleProfile"
         @settings="handleSettings"
         @logout="handleLogout"
@@ -44,11 +44,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, provide, watch } from 'vue'
+import { ref, computed, onMounted, provide, watch, getCurrentInstance } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
 import { useAuthStore, useAppStore } from '@tiko/core'
-import { storeToRefs } from 'pinia'
+import { storeToRefs, createPinia } from 'pinia'
 import TAuthWrapper from '../TAuthWrapper/TAuthWrapper.vue'
 import TAppLayout from '../TAppLayout/TAppLayout.vue'
 import TPopup from '../TPopup/TPopup.vue'
@@ -64,7 +64,8 @@ import type { TFrameworkProps, TFrameworkEmits } from './TFramework.model'
 import type { Locale } from '../../i18n/types'
 
 const props = withDefaults(defineProps<TFrameworkProps>(), {
-  loading: false
+  loading: false,
+  isApp: true
 })
 
 const emit = defineEmits<TFrameworkEmits>()
@@ -72,16 +73,74 @@ const emit = defineEmits<TFrameworkEmits>()
 const bemm = useBemm('framework')
 const route = useRoute()
 const router = useRouter()
-const authStore = useAuthStore()
-const appStore = useAppStore()
+
+// Ensure Pinia is available
+let pinia
+try {
+  // Try to get existing pinia instance
+  pinia = getCurrentInstance()?.appContext.config.globalProperties.$pinia
+} catch (e) {
+  // Pinia not found
+}
+
+if (!pinia) {
+  // Create and install pinia if not available
+  pinia = createPinia()
+  const app = getCurrentInstance()?.appContext.app
+  if (app) {
+    app.use(pinia)
+  }
+}
+
+// Initialize stores with error handling
+const authStore = ref(null)
+const appStore = ref(null)
+
+// Function to initialize stores
+const initializeStores = () => {
+  try {
+    authStore.value = useAuthStore()
+    appStore.value = useAppStore()
+    return true
+  } catch (error) {
+    console.warn('[TFramework] Stores not available yet, will retry...')
+    return false
+  }
+}
+
+// Try to initialize stores immediately
+initializeStores()
+
 const eventBus = useEventBus()
 const { setLocale, t, keys, locale } = useI18n()
 
 // Set config and get theme styles
-const { themeStyles } = useTikoConfig(props.config)
+const { themeStyles, config: tikoConfig } = useTikoConfig(props.config)
 
-// Get user state and settings
-const { user, userSettings, currentTheme, currentLanguage } = storeToRefs(authStore)
+// Get user state and settings with computed refs
+const user = computed(() => {
+  if (!authStore.value) return null
+  const refs = storeToRefs(authStore.value)
+  return refs.user?.value || null
+})
+
+const userSettings = computed(() => {
+  if (!authStore.value) return {}
+  const refs = storeToRefs(authStore.value)
+  return refs.userSettings?.value || {}
+})
+
+const currentTheme = computed(() => {
+  if (!authStore.value) return 'light'
+  const refs = storeToRefs(authStore.value)
+  return refs.currentTheme?.value || 'light'
+})
+
+const currentLanguage = computed(() => {
+  if (!authStore.value) return 'en'
+  const refs = storeToRefs(authStore.value)
+  return refs.currentLanguage?.value || 'en'
+})
 
 // TopBar configuration with defaults
 const topBar = computed(() => ({
@@ -104,12 +163,12 @@ const settings = computed(() => ({
 
 // Current route information
 const currentRouteTitle = ref('')
-const currentRouteName = computed(() => route.name?.toString() || '')
+const currentRouteName = computed(() => route?.name?.toString() || '')
 
 // Display properties
 const displayTitle = computed(() => {
   if (topBar.value.showTitle === false) return ''
-  return props.config.name
+  return tikoConfig.name
 })
 
 const displaySubtitle = computed(() => {
@@ -122,6 +181,7 @@ const displaySubtitle = computed(() => {
 
 const showBackButton = computed(() => {
   if (topBar.value.showBack === false) return false
+  if (!route) return false
   // Show back button if not on home route
   return route.name !== 'home' && route.matched.length > 1
 })
@@ -163,20 +223,26 @@ const handleSettings = () => {
 }
 
 const handleLogout = async () => {
-  await authStore.logout()
-  await router.push('/auth/login')
+  if (authStore.value) {
+    await authStore.value.logout()
+  }
+  if (router) {
+    await router.push('/auth/login')
+  }
 }
 
 const handleBack = () => {
-  if (router.options.history.state.back) {
+  if (router?.options?.history?.state?.back) {
     router.back()
-  } else {
+  } else if (router) {
     router.push('/')
   }
 }
 
 // Update current route title
 const updateRouteTitle = () => {
+  if (!route) return
+  
   // This can be customized per app via slot or event
   const matched = route.matched[route.matched.length - 1]
   if (matched?.meta?.title) {
@@ -193,7 +259,11 @@ const updateRouteTitle = () => {
 }
 
 // Watch route changes
-watch(() => route.fullPath, updateRouteTitle, { immediate: true })
+watch(() => route?.fullPath, (newPath) => {
+  if (newPath) {
+    updateRouteTitle()
+  }
+}, { immediate: true })
 
 // Watch for language changes in user settings
 watch(currentLanguage, (newLanguage) => {
@@ -206,12 +276,12 @@ watch(currentLanguage, (newLanguage) => {
 const applyTheme = (theme: string) => {
   // Apply the theme
   document.documentElement.setAttribute('data-theme', theme)
-  
+
   // Also update the CSS custom property for color mode
   if (theme === 'dark') {
     document.documentElement.style.setProperty('color-scheme', 'dark')
   } else if (theme === 'light') {
-    document.documentElement.style.setProperty('color-scheme', 'light')  
+    document.documentElement.style.setProperty('color-scheme', 'light')
   } else {
     document.documentElement.style.removeProperty('color-scheme')
   }
@@ -226,12 +296,26 @@ watch(currentTheme, (newTheme) => {
 
 // Initialize
 onMounted(async () => {
-  // Initialize network monitoring
-  appStore.initializeNetworkMonitoring()
+  // Retry store initialization if needed
+  if (!authStore.value || !appStore.value) {
+    const success = initializeStores()
+    if (!success) {
+      // If still failing, wait a bit and try again
+      setTimeout(() => {
+        initializeStores()
+      }, 100)
+    }
+  }
 
-  // Initialize auth from storage - this loads settings from localStorage and API
-  await authStore.initializeFromStorage()
-  
+  // Initialize only if stores are available
+  if (appStore.value && authStore.value) {
+    // Initialize network monitoring
+    appStore.value.initializeNetworkMonitoring()
+
+    // Initialize auth from storage - this loads settings from localStorage and API
+    await authStore.value.initializeFromStorage()
+  }
+
   // The theme and language are now automatically applied via watchers
   // No need for manual initialization here
 
@@ -244,11 +328,14 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .framework {
-  height: 100vh;
   width: 100vw;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+
+  &--is-app{
+    overflow: hidden;
+    height: 100vh;
+  }
 
   &__route-display {
     font-weight: 500;

@@ -1,9 +1,9 @@
 <template>
   <div :class="bemm()">
     <div :class="bemm('icon')">
-      <TIcon :name="icon" size="3rem" />
+      <TIcon :name="icon" />
     </div>
-    
+
     <div :class="bemm('content')">
       <h3 :class="bemm('title')">{{ title }}</h3>
       <p :class="bemm('message')">{{ message }}</p>
@@ -11,19 +11,22 @@
 
     <div :class="bemm('actions')">
       <TButton
-        :label="cancelLabel"
         type="default"
         color="secondary"
         @click="handleCancel"
+        :icon="Icons.ARROW_LEFT"
         :class="bemm('cancel-button')"
-      />
+      >
+        {{ cancelLabel }}
+      </TButton>
       <TButton
-        :label="confirmLabel"
-        type="fancy"
         :color="confirmColor"
+        :icon="confirmIcon(confirmColor)"
         @click="handleConfirm"
         :class="bemm('confirm-button')"
-      />
+      >
+        {{ confirmLabel }}
+      </TButton>
     </div>
   </div>
 </template>
@@ -32,11 +35,12 @@
 import { useBemm } from 'bemm'
 import TButton from '../../TButton/TButton.vue'
 import TIcon from '../../TIcon/TIcon.vue'
+import { Icons } from 'open-icon'
 
 interface Props {
   title: string
   message: string
-  icon?: string
+  icon?: Icons
   confirmLabel?: string
   cancelLabel?: string
   confirmColor?: 'primary' | 'success' | 'error' | 'warning'
@@ -66,6 +70,19 @@ const handleCancel = () => {
   props.onCancel?.()
   emit('close')
 }
+
+const confirmIcon = (color: string) => {
+  switch (color) {
+    case 'success':
+      return Icons.CIRCLED_CHECK
+    case 'error':
+      return Icons.MULTIPLY_M
+    case 'warning':
+      return Icons.CIRCLED_EXCLAMATION_MARK
+    default:
+      return Icons.ARROW_RIGHT
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -81,6 +98,7 @@ const handleCancel = () => {
 
   &__icon {
     color: var(--color-warning);
+    font-size: 2em;
   }
 
   &__content {
@@ -93,7 +111,7 @@ const handleCancel = () => {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--color-primary-text);
+    color: var(--color-foreground);
   }
 
   &__message {

@@ -91,7 +91,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive, watch, toRefs, inject } from 'vue';
 import { useBemm } from 'bemm';
-import { TButton, TIcon, TAppLayout, useI18n, useParentMode, type Icons } from '@tiko/ui';
+import { TButton, TIcon, TAppLayout, useI18n, useParentMode } from '@tiko/ui';
+import { Icons } from 'open-icon';
 import { useYesNoStore } from '../stores/yesno';
 import YesNoSettingsForm from '../components/YesNoSettingsForm.vue';
 import QuestionInputForm from '../components/QuestionInputForm.vue';

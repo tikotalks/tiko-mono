@@ -1,0 +1,63 @@
+@use '../../styles/global' as global;
+
+$breakpoints: '', tablet, mobile;
+$directions: row, column;
+$alignments: start, center, end;
+
+
+@mixin responsive-group {
+
+  @each $breakpoint in ('', tablet, mobile) {
+    $suffix: if($breakpoint =='', '', '-#{$breakpoint}');
+
+    @if $breakpoint =='' {
+      @include generate-classes($suffix);
+    }
+
+    @else if $breakpoint ==tablet {
+      @include global.tablet() {
+        @include generate-classes($suffix);
+      }
+    }
+
+    @else if $breakpoint ==mobile {
+      @include global.mobile() {
+        @include generate-classes($suffix);
+      }
+    }
+  }
+}
+
+@mixin generate-classes($suffix) {
+
+  @each $direction in $directions {
+    &--#{$direction}#{$suffix} {
+      flex-direction: $direction;
+    }
+  }
+
+  @each $align in $alignments {
+    &--align-#{$align}#{$suffix} {
+      align-items: flex-#{$align};
+    }
+  }
+
+  &--wrap#{$suffix} {
+    flex-wrap: wrap;
+  }
+
+  &--nowrap#{$suffix} {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+
+    >* {
+      scroll-snap-align: start;
+    }
+  }
+}
+
+@mixin responsiveGroup {
+  @include responsive-group;
+}

@@ -187,14 +187,14 @@ const decrement = () => {
   &__field {
     width: 100%;
     padding: 0.75rem 1rem;
-    border: 1px solid var(--border-primary);
+    border: 1px solid var(--color-accent);
     border-radius: var(--border-radius);
     font-family: inherit;
     font-size: 1rem;
     line-height: 1.5;
     transition: all 0.2s ease;
-    background: var(--bg-primary);
-    color: var(--text-primary);
+    background: var(--color-background);
+    color: var(--color-background-text);
 
     &:focus {
       outline: none;
@@ -269,6 +269,7 @@ const decrement = () => {
   &__description {
     font-size: 0.875rem;
     line-height: 1.4;
+    opacity: .5;
   }
 
   &__error {

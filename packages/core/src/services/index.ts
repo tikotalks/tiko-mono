@@ -16,11 +16,15 @@ export * from './parent-mode.service'
 export * from './user-settings.service'
 export * from './item.service'
 export * from './file.service'
+export * from './media.service'
+export * from './media-analysis.service'
+export * from './user.service'
 
 // Export Supabase implementations
 export { SupabaseParentModeService } from './parent-mode-supabase.service'
 export { SupabaseUserSettingsService } from './user-settings-supabase.service'
 export { SupabaseItemService } from './item-supabase.service'
+export { SupabaseMediaService } from './media-supabase.service'
 
 // Export active service instances
 // Currently using localStorage implementations due to Supabase SDK issues
@@ -30,6 +34,9 @@ export { parentModeService } from './parent-mode.service'
 export { userSettingsService } from './user-settings.service'
 export { itemService } from './item.service'
 export { fileService } from './file.service'
+export { mediaService } from './media-supabase.service'
+export { mediaAnalysisService } from './media-analysis.service'
+export { userService } from './user.service'
 
 // Alternative: Export Supabase implementations
 // import { SupabaseParentModeService } from './parent-mode-supabase.service'

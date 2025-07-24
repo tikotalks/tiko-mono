@@ -1,5 +1,5 @@
 <template>
-  <header :class="bemm()">
+  <header :class="bemm('',['',isApp ? 'is-app' : 'is-website'])">
     <!-- Left Section -->
     <div :class="bemm('left')">
       <div v-if="showBackButton" :class="bemm('back')">
@@ -172,7 +172,8 @@ const props = withDefaults(defineProps<TTopBarProps>(), {
   showUserInfo: true,
   showOnlineStatus: false,
   isUserOnline: true,
-  isLoading: false
+  isLoading: false,
+  isApp: true,
 })
 
 const emit = defineEmits<TTopBarEmits>()
@@ -475,6 +476,8 @@ onUnmounted(() => {
   min-height: 4rem;
   z-index: 100;
   border-radius: inherit;
+
+
 
   &__left {
     display: flex;

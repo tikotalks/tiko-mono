@@ -1,43 +1,66 @@
 .content {
-	> p {
+	>p {
 		line-height: 1.75;
+
 		&:first-of-type {
 			font-size: 1.1em;
 		}
 	}
-	> * {
-		& + * {
+
+	>* {
+		&+* {
 			margin-top: var(--space);
 		}
 	}
 
-	dl {
-		counter-reset: name;
-		dd + dt {
-			margin-top: 1em;
+	dl:not([class]) {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xs);
+
+		dd+dt {
+			margin-top: .5em;
 		}
+
 		&:has(dt ~ dt) {
 			dt {
-				counter-increment: name;
-				&::before {
-					content: counter(name) '.';
-					margin-right: 0.5em;
-				}
+				font-weight: bold;
 			}
+
 			dd {
 				font-weight: 300;
-				opacity: 0.5;
-				padding-left: var(--space);
-				margin-top: 0.5em;
+				opacity: 0.75;
 			}
 		}
 	}
 }
+
+ul:not([class]) {
+	counter-reset: list;
+
+	dd+dt {
+		margin-top: 1em;
+	}
+
+	&:has(ul > li) {
+		li {
+			counter-increment: name;
+
+			&::before {
+				content: counter(name) '.';
+				margin-right: 0.5em;
+			}
+		}
+
+	}
+}
+
 
 a {
 	color: currentColor;
 	text-decoration: none;
 }
+
 h1 {
 	font-size: calc(var(--spacing) * 0.75);
 }

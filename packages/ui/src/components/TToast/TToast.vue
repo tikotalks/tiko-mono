@@ -9,7 +9,7 @@
 				:class="bemm('', ['', toast.type, toast.position])"
 				:role="getRole(toast.type)"
 				:aria-live="getAriaLive(toast.type)"
-				:style="`--toast-color: var(--${toast.type})`"
+				:style="`--toast-color: var(--color-${toast.type})`"
 			>
 				<div :class="bemm('content')">
 					<TIcon
