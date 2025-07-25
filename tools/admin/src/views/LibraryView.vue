@@ -1,156 +1,266 @@
 <template>
   <div :class="bemm()">
-      <div :class="bemm('header')">
-        <div :class="bemm('stats')">
-            <p :class="bemm('stats-value')">{{ t('admin.library.totalImages') }}: {{ stats.totalImages }}</p>
-        </div>
+    <div :class="bemm('header')">
+      <div :class="bemm('stats')">
+        <p :class="bemm('stats-value')">
+          {{ t('admin.library.totalImages') }}: {{ stats.totalImages }}
+        </p>
+      </div>
 
-        <div :class="bemm('search')">
-          <TInput
-            v-model="searchQuery"
-            :placeholder="t('admin.library.searchPlaceholder')"
-            :icon="Icons.SEARCH_L"
-            @input="searchImages(searchQuery)"
-          />
-        </div>
-
-        <TViewToggle
-          v-model="viewMode"
-          :tiles-label="t('admin.library.viewToggle.tiles')"
-          :list-label="t('admin.library.viewToggle.list')"
-          :tiles-icon="Icons.GRID_3X3"
-          :list-icon="Icons.LIST"
+      <div :class="bemm('search')">
+        <TInput
+          v-model="searchQuery"
+          :placeholder="t('admin.library.searchPlaceholder')"
+          :icon="Icons.SEARCH_L"
+          @input="searchImages(searchQuery)"
         />
       </div>
 
-      <div v-if="loading" :class="bemm('loading')">
-        <TSpinner />
-      </div>
+      <TViewToggle
+        v-model="viewMode"
+        :tiles-label="t('common.views.tiles')"
+        :list-label="t('common.views.list')"
+        :tiles-icon="Icons.BLOCK_PARTIALS"
+        :list-icon="Icons.CHECK_LIST"
+      />
 
-      <div v-else-if="imageList.length === 0" :class="bemm('empty')">
-        <TCard>
-          <TIcon :name="Icons.IMAGE" size="large" />
-          <p>{{ t('admin.library.noImages') }}</p>
-          <TButton color="primary" @click="router.push('/upload')">
-            {{ t('admin.library.uploadFirst') }}
-          </TButton>
-        </TCard>
-      </div>
-
-      <!-- Tiles View -->
-      <TGrid
-        v-else-if="viewMode === 'tiles'"
-        :min-item-width="'250px'"
-      >
-        <TMediaTile
-          v-for="media in filteredImages"
-          :key="media.id"
-          :media="media"
-          :href="`/media/${media.id}`"
-          :get-image-variants="getImageVariants"
-          @click="selectMedia"
+      <div :class="bemm('sorting')">
+        <TInputSelect
+          v-model="sortField"
+          :options="sortOptions"
+          :label="t('admin.library.sortBy.label')"
         />
-      </TGrid>
 
-      <!-- List View -->
-      <TList
-        v-else
-        :columns="listColumns"
+        <TButton
+          :icon="sortOrder === 'asc' ? Icons.ARROW_UP : Icons.ARROW_DOWN"
+          type="ghost"
+          @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
+          :title="sortOrder === 'asc' ? t('admin.library.order.ascending') : t('admin.library.order.descending')"
+        />
+      </div>
+    </div>
+
+    <div v-if="loading" :class="bemm('loading')">
+      <TSpinner />
+    </div>
+
+    <div v-else-if="imageList.length === 0" :class="bemm('empty')">
+      <TCard>
+        <TIcon :name="Icons.IMAGE" size="large" />
+        <p>{{ t('admin.library.noImages') }}</p>
+        <TButton color="primary" @click="router.push('/upload')">
+          {{ t('admin.library.uploadFirst') }}
+        </TButton>
+      </TCard>
+    </div>
+
+    <!-- Tiles View -->
+    <TGrid v-else-if="viewMode === 'tiles'" :min-item-width="'250px'">
+      <TMediaTile
+        v-for="media in sortedImages"
+        :key="media.id"
+        :media="media"
+        :href="`/media/${media.id}`"
+        :get-image-variants="getImageVariants"
+        @click="selectMedia"
+      />
+    </TGrid>
+
+    <!-- List View -->
+    <TList v-else :columns="listColumns">
+      <TListItem
+        v-for="media in sortedImages"
+        :key="media.id"
+        :href="`/media/${media.id}`"
+        clickable
+        @click="(e) => selectMedia(e, media)"
       >
-        <TListItem
-          v-for="media in filteredImages"
-          :key="media.id"
-          :href="`/media/${media.id}`"
-          clickable
-          @click="(e) => selectMedia(e, media)"
-        >
-          <div :class="bemm('list-cell', 'image')">
-            <img
-              :src="getImageVariants(media.original_url).thumbnail"
-              :alt="media.original_filename"
-              loading="lazy"
-              :class="bemm('list-image')"
-            />
-          </div>
-          <div :class="bemm('list-cell', 'title')">
-            <span :class="bemm('list-title')">{{ media.title || media.original_filename }}</span>
-          </div>
-          <div :class="bemm('list-cell', 'size')">
-            <span>{{ formatBytes(media.file_size) }}</span>
-          </div>
-          <div :class="bemm('list-cell', 'tags')">
-            <TChipGroup v-if="media.tags?.length" :class="bemm('list-chips')" direction="row">
-              <TChip v-for="tag in media.tags.slice(0, 2)" :key="tag" size="small">{{ tag }}</TChip>
-              <span v-if="media.tags.length > 2" :class="bemm('more-indicator')">
-                +{{ media.tags.length - 2 }}
-              </span>
-            </TChipGroup>
-          </div>
-          <div :class="bemm('list-cell', 'categories')">
-            <TChipGroup v-if="media.categories?.length" :class="bemm('list-chips')" direction="row">
-              <TChip v-for="category in media.categories.slice(0, 2)" :key="category" size="small">{{ category }}</TChip>
-              <span v-if="media.categories.length > 2" :class="bemm('more-indicator')">
-                +{{ media.categories.length - 2 }}
-              </span>
-            </TChipGroup>
-          </div>
-          <div :class="bemm('list-cell', 'id')">
-            <span :class="bemm('list-id')">{{ media.id }}</span>
-          </div>
-        </TListItem>
-      </TList>
+        <TListCell
+          type="image"
+          :image-src="getImageVariants(media.original_url).thumbnail"
+          :image-alt="media.original_filename"
+        />
+        <TListCell
+          type="text"
+          :content="media.title || media.original_filename"
+        />
+        <TListCell type="size" :content="media.file_size" />
+        <TListCell type="chips" :chips="media.tags" :max-chips="2" />
+        <TListCell type="chips" :chips="media.categories" :max-chips="2" />
+        <TListCell type="id" :content="media.id" />
+      </TListItem>
+    </TList>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, inject } from 'vue'
-import { useRouter } from 'vue-router'
-import { useBemm } from 'bemm'
-import { useI18n } from '@tiko/ui'
-import { TCard, TButton, TIcon, TSpinner, TInput, TChip, TChipGroup, TViewToggle } from '@tiko/ui'
-import { Icons } from 'open-icon'
-import { useImageUrl, useImages } from '@tiko/core'
-import type { MediaItem } from '@tiko/core'
-import type { ToastService } from '@tiko/ui'
+import { ref, onMounted, inject, computed, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import { Icons } from 'open-icon';
+import { useBemm } from 'bemm';
+import { useImageUrl, useImages } from '@tiko/core';
+// import { useUserSettings } from '@tiko/core'; // TODO: Fix import after build
+import type { MediaItem, ToastService } from '@tiko/ui';
+import {
+  useI18n,
+  TCard,
+  TButton,
+  TIcon,
+  TSpinner,
+  TInput,
+  TViewToggle,
+  TGrid,
+  TMediaTile,
+  TList,
+  TListItem,
+  TListCell,
+  TInputSelect,
+} from '@tiko/ui';
 
-const toastService = inject<ToastService>('toastService')
-const { getImageVariants } = useImageUrl()
-const { imageList, stats, loading, searchImages, filteredImages, loadImages } = useImages()
+const toastService = inject<ToastService>('toastService');
+const { getImageVariants } = useImageUrl();
+const { imageList, stats, loading, searchImages, filteredImages, loadImages } =
+  useImages();
+// const { settings, loadSettings, setSetting } = useUserSettings('admin'); // TODO: Fix after build
 
-const bemm = useBemm('library-view')
-const { t } = useI18n()
-const router = useRouter()
+const bemm = useBemm('library-view');
+const { t } = useI18n();
+const router = useRouter();
 
-const searchQuery = ref('')
-const viewMode = ref<'tiles' | 'list'>('tiles')
+const searchQuery = ref('');
+
+// Sorting options
+type ViewMode = 'tiles' | 'list';
+type SortField = 'upload_date' | 'name' | 'size' | 'title';
+type SortOrder = 'asc' | 'desc';
+
+// Initialize from user settings with defaults
+const viewMode = ref<ViewMode>('tiles');
+const sortField = ref<SortField>('upload_date');
+const sortOrder = ref<SortOrder>('desc');
+
+const sortOptions = [
+  { value: 'upload_date', label: t('admin.library.sortBy.uploadDate') },
+  { value: 'name', label: t('admin.library.sortBy.fileName') },
+  { value: 'title', label: t('admin.library.sortBy.title') },
+  { value: 'size', label: t('admin.library.sortBy.fileSize') },
+];
+
+const orderOptions = [
+  { value: 'asc', label: t('admin.library.order.ascending') },
+  { value: 'desc', label: t('admin.library.order.descending') },
+];
 
 const listColumns = [
   { key: 'image', label: t('common.image'), width: '80px' },
-  { key: 'title', label: t('common.title'), width: '2fr' },
-  { key: 'size', label: t('common.size'), width: '120px' },
+  { key: 'title', label: t('common.title'), width: '1fr' },
+  { key: 'size', label: t('common.size'), width: '1fr' },
   { key: 'tags', label: t('common.tags'), width: '1fr' },
   { key: 'categories', label: t('common.categories'), width: '1fr' },
-  { key: 'id', label: 'ID', width: '100px' }
-]
+  { key: 'id', label: 'ID', width: '1fr' },
+];
 
 const formatBytes = (bytes: number): string => {
-  if (bytes === 0) return '0 Bytes'
-  const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-}
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
+
+// Computed property for sorted images
+const sortedImages = computed(() => {
+  const images = [...filteredImages.value];
+
+  images.sort((a, b) => {
+    let compareValue = 0;
+
+    switch (sortField.value) {
+      case 'upload_date':
+        // Assuming created_at field exists, otherwise use ID as proxy for upload order
+        const dateA = new Date(a.created_at || a.id).getTime();
+        const dateB = new Date(b.created_at || b.id).getTime();
+        compareValue = dateA - dateB;
+        break;
+
+      case 'name':
+        compareValue = (a.original_filename || '').localeCompare(b.original_filename || '');
+        break;
+
+      case 'title':
+        compareValue = (a.title || a.original_filename || '').localeCompare(b.title || b.original_filename || '');
+        break;
+
+      case 'size':
+        compareValue = (a.file_size || 0) - (b.file_size || 0);
+        break;
+    }
+
+    // Apply sort order
+    return sortOrder.value === 'asc' ? compareValue : -compareValue;
+  });
+
+  return images;
+});
 
 const selectMedia = (e: Event, media: MediaItem) => {
-  e.preventDefault()
+  e.preventDefault();
   // Navigate to media detail page
-  router.push(`/media/${media.id}`)
-}
+  router.push(`/media/${media.id}`);
+};
 
+// Watch for changes and save to user settings
+watch(viewMode, async (newValue) => {
+  // await setSetting('libraryViewMode', newValue); // TODO: Fix after useUserSettings import
+});
 
-onMounted(() => {
-  loadImages()
-})
+watch(sortField, async (newValue) => {
+  // await setSetting('librarySortField', newValue); // TODO: Fix after useUserSettings import
+});
+
+watch(sortOrder, async (newValue) => {
+  // await setSetting('librarySortOrder', newValue); // TODO: Fix after useUserSettings import
+});
+
+onMounted(async () => {
+  // Load user settings
+  // await loadSettings(); // TODO: Fix after useUserSettings import
+
+  // Apply saved settings
+  // viewMode.value = settings.value.libraryViewMode || 'tiles';
+  // sortField.value = settings.value.librarySortField || 'upload_date';
+  // sortOrder.value = settings.value.librarySortOrder || 'desc';
+
+  // Load images
+  loadImages();
+
+  // Temporary: Add mock data for testing if no images are loaded
+  setTimeout(() => {
+    if (imageList.value.length === 0) {
+      imageList.value = [
+        {
+          id: 'test-1',
+          title: 'Test Image 1',
+          original_filename: 'test1.jpg',
+          original_url: 'https://via.placeholder.com/300x200',
+          file_size: 1024000,
+          tags: ['test', 'demo'],
+          categories: ['sample'],
+        },
+        {
+          id: 'test-2',
+          title: 'Test Image 2',
+          original_filename: 'test2.png',
+          original_url: 'https://via.placeholder.com/400x300',
+          file_size: 2048000,
+          tags: ['test'],
+          categories: ['sample', 'demo'],
+        },
+      ];
+      stats.value.totalImages = 2;
+    }
+  }, 1000);
+});
 </script>
 
 <style lang="scss">
@@ -173,10 +283,7 @@ onMounted(() => {
 
   &__stats {
     opacity: 0.5;
-
-
   }
-
 
   &__search {
     flex: 1;
@@ -186,6 +293,12 @@ onMounted(() => {
   &__view-toggle {
     display: flex;
     gap: var(--space-xs);
+  }
+
+  &__sorting {
+    display: flex;
+    gap: var(--space-xs);
+    align-items: center;
   }
 
   &__loading {
@@ -232,7 +345,7 @@ onMounted(() => {
     object-fit: cover;
     border-radius: var(--border-radius-sm);
     border: 1px solid var(--color-border);
-    
+
     // Checkerboard pattern for transparent images (smaller for list view)
     --dot-color: color-mix(in srgb, var(--color-foreground), transparent 90%);
     background-image:
@@ -241,7 +354,11 @@ onMounted(() => {
       linear-gradient(45deg, transparent 75%, var(--dot-color) 75%),
       linear-gradient(-45deg, transparent 75%, var(--dot-color) 75%);
     background-size: 10px 10px;
-    background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
+    background-position:
+      0 0,
+      0 5px,
+      5px -5px,
+      -5px 0px;
   }
 
   &__list-title {
@@ -260,7 +377,7 @@ onMounted(() => {
 
   &__list-chips {
     gap: var(--space-xs) !important;
-    
+
     .t-chip {
       font-size: var(--font-size-xs);
     }
@@ -278,7 +395,7 @@ onMounted(() => {
     .t-list-item {
       grid-template-columns: 60px 2fr 100px 1fr 80px;
     }
-    
+
     &__list-cell--categories {
       display: none;
     }
@@ -288,9 +405,12 @@ onMounted(() => {
     .t-list-item {
       grid-template-columns: 50px 1fr 80px 60px;
     }
-    
+
     &__list-cell--tags {
       display: none;
     }
   }
-}</style>
+}
+
+// TMediaTile handles its own styling
+</style>

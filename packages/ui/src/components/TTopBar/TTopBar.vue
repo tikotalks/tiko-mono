@@ -39,7 +39,7 @@
       <div v-if="user" :class="bemm('user-section')">
         <!-- Parent Mode Enabled Indicator -->
         <TButton
-          v-if="parentMode.isUnlocked.value"
+          v-if="parentMode.value?.isUnlocked?.value"
           type="outline"
           size="medium"
           icon="shield"
@@ -50,7 +50,6 @@
 
         <!-- User Avatar -->
         <TContextMenu
-          v-if="parentMode.isUnlocked.value"
           ref="userMenuRef"
           :config="userMenuConfig"
         >
@@ -100,47 +99,6 @@
           />
         </div>
       </TContextMenu>
-
-      <!-- User Avatar (when NOT in parent mode) -->
-      <div
-        v-else
-        :class="bemm('user')"
-        @click="handleParentModeEnable"
-        @keydown="handleParentModeKeyDown"
-        role="button"
-        tabindex="0"
-        :aria-label="'Enable parent mode'"
-      >
-        <div :class="bemm('avatar')">
-          <img
-            v-if="userAvatar"
-            :src="userAvatar"
-            :alt="userDisplayName"
-            :class="bemm('avatar-image')"
-            @error="handleAvatarError"
-          />
-          <div
-            v-else
-            :class="bemm('avatar-fallback')"
-            :style="{ backgroundColor: userAvatarColor }"
-          >
-            {{ userInitials }}
-          </div>
-
-          <!-- Online indicator -->
-          <div
-            v-if="showOnlineStatus"
-            :class="bemm('online-indicator', [ isUserOnline ? 'online' : 'offline'])"
-            :aria-label="isUserOnline ? 'Online' : 'Offline'"
-          />
-        </div>
-
-        <!-- User info (desktop only) -->
-        <div v-if="showUserInfo && !isMobile" :class="bemm('user-info')">
-          <span :class="bemm('user-name')">{{ userDisplayName }}</span>
-          <span v-if="userRole" :class="bemm('user-role')">{{ userRole }}</span>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -179,9 +137,45 @@ const props = withDefaults(defineProps<TTopBarProps>(), {
 const emit = defineEmits<TTopBarEmits>()
 
 const bemm = useBemm('top-bar')
-const authStore = useAuthStore()
-const parentMode = useParentMode(props.appName || 'default')
 const { t, keys } = useI18n()
+
+// Initialize stores - try immediately and also on mount
+const authStore = ref<any>(null)
+const parentMode = ref<any>(null)
+
+// Try to initialize stores
+const initializeStores = () => {
+  if (!authStore.value) {
+    try {
+      authStore.value = useAuthStore()
+      console.log('[TTopBar] Auth store initialized successfully')
+    } catch (e) {
+      console.warn('[TTopBar] Failed to initialize auth store:', e.message)
+    }
+  }
+  
+  if (!parentMode.value) {
+    try {
+      parentMode.value = useParentMode(props.appName || 'default')
+      console.log('[TTopBar] Parent mode initialized successfully')
+    } catch (e) {
+      console.warn('[TTopBar] Failed to initialize parent mode:', e.message)
+      // Create a mock parent mode
+      parentMode.value = {
+        isUnlocked: ref(false),
+        canManageContent: ref(false)
+      }
+    }
+  }
+}
+
+// Try to initialize immediately
+initializeStores()
+
+// Also try on mount in case stores weren't ready
+onMounted(() => {
+  initializeStores()
+})
 
 // Inject services
 const popupService = inject<any>('popupService')
@@ -192,10 +186,10 @@ const userMenuRef = ref<InstanceType<typeof TContextMenu>>()
 const isMobile = ref(false)
 
 // Computed
-const user = computed(() => authStore.user)
+const user = computed(() => authStore.value?.user)
 
 const userDisplayName = computed(() => {
-  const user = authStore.user
+  const user = authStore.value?.user
   if (!user) return 'Guest'
 
   return user.user_metadata?.full_name ||
@@ -214,7 +208,7 @@ const userInitials = computed(() => {
 })
 
 const userAvatar = computed(() => {
-  const user = authStore.user
+  const user = authStore.value?.user
   return user?.user_metadata?.avatar_url ||
          user?.user_metadata?.picture ||
          null
@@ -222,7 +216,7 @@ const userAvatar = computed(() => {
 
 const userAvatarColor = computed(() => {
   // Generate a consistent color based on user email
-  const email = authStore.user?.email || 'default'
+  const email = authStore.value?.user?.email || 'default'
   const colors = [
     '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4',
     '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'
@@ -237,7 +231,7 @@ const userAvatarColor = computed(() => {
 })
 
 const userRole = computed(() => {
-  return authStore.user?.user_metadata?.role || null
+  return authStore.value?.user?.user_metadata?.role || null
 })
 
 const userMenuLabel = computed(() =>
@@ -341,7 +335,7 @@ const handleSettings = () => {
 
 const handleLogout = async () => {
   try {
-    await authStore.logout()
+    await authStore.value?.logout()
     emit('logout')
   } catch (error) {
     console.error('Logout failed:', error)
@@ -366,7 +360,7 @@ const handleParentModeEnable = async () => {
 
   try {
     // If parent mode is not enabled, show setup dialog
-    if (!parentMode.isEnabled.value) {
+    if (!parentMode.value?.isEnabled?.value) {
       showParentModeSetup()
       return
     }

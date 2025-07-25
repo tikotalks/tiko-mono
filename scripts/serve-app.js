@@ -81,7 +81,22 @@ function getAppInfo(app) {
 // Run the specified app
 function runApp(app) {
   const appName = app.name || app;
-  const packageName = app.type === 'tool' ? `@tiko/${appName}` : appName;
+  // For tools, check if they already have @tiko prefix
+  let packageName;
+  if (app.type === 'tool') {
+    // Check the actual package.json for the real name
+    const packagePath = join(process.cwd(), app.dir || 'tools', appName, 'package.json');
+    try {
+      const pkg = require(packagePath);
+      packageName = pkg.name;
+    } catch (e) {
+      // Fallback to adding @tiko prefix
+      packageName = `@tiko/${appName}`;
+    }
+  } else {
+    packageName = appName;
+  }
+  
   console.log(`\n${colors.blue}🏃 Starting ${colors.green}${appName}${colors.blue}...${colors.reset}\n`);
   
   // Set terminal tab name

@@ -11,30 +11,15 @@
         loading="lazy"
         :class="bemm('image')"
       />
-      <div v-if="showOverlay && (media.tags?.length || media.categories?.length)" :class="bemm('overlay')">
-        <div v-if="media.tags?.length" :class="bemm('overlay-section')">
-          <h6 :class="bemm('overlay-title')">{{ t('common.tags') }}</h6>
-          <TChipGroup :class="bemm('chip-group')" direction="row">
-            <TChip v-for="tag in media.tags" :key="tag" size="small">{{ tag }}</TChip>
-          </TChipGroup>
-        </div>
-        <div v-if="media.categories?.length" :class="bemm('overlay-section')">
-          <h6 :class="bemm('overlay-title')">{{ t('common.categories') }}</h6>
-          <TChipGroup :class="bemm('chip-group')" direction="row">
-            <TChip v-for="category in media.categories" :key="category" size="small">{{ category }}</TChip>
-          </TChipGroup>
-        </div>
-      </div>
     </div>
-    
+
     <div :class="bemm('info')">
       <p :class="bemm('title')">{{ displayTitle }}</p>
-      <p v-if="showId" :class="bemm('id')">ID: {{ media.id }}</p>
-      <p :class="bemm('meta')">
+      <!-- <p :class="bemm('meta')">
         <span>{{ formatBytes(media.file_size) }}</span>
         <span v-if="media.tags?.length">• {{ media.tags.length }} {{ t('common.tags') }}</span>
         <span v-if="media.categories?.length">• {{ media.categories.length }} {{ t('common.categories') }}</span>
-      </p>
+      </p> -->
     </div>
   </a>
 </template>
@@ -47,7 +32,6 @@ import { TChip, TChipGroup } from '../TChip'
 import type { TMediaTileProps } from './TMediaTile.model'
 
 const props = withDefaults(defineProps<TMediaTileProps>(), {
-  showOverlay: true,
   showId: true,
   getImageVariants: undefined
 })
@@ -59,13 +43,13 @@ const emit = defineEmits<{
 const bemm = useBemm('t-media-tile')
 const { t } = useI18n()
 
-const displayTitle = computed(() => 
+const displayTitle = computed(() =>
   props.media.title || props.media.original_filename
 )
 
 const thumbnailUrl = computed(() => {
   if (props.getImageVariants) {
-    return props.getImageVariants(props.media.original_url).thumbnail
+    return props.getImageVariants(props.media.original_url).medium
   }
   return props.media.original_url
 })
@@ -114,7 +98,7 @@ const formatBytes = (bytes: number): string => {
     width: 100%;
     height: 200px;
     object-fit: contain;
-    
+
     // Checkerboard pattern for transparent images
     --dot-color: color-mix(in srgb, var(--color-foreground), transparent 90%);
     background-image:
@@ -126,45 +110,9 @@ const formatBytes = (bytes: number): string => {
     background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
   }
 
-  &__overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    flex-direction: column;
-    background-color: rgba(0, 0, 0, 0.7);
-    color: var(--color-background);
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    padding: var(--space);
-    overflow: auto;
-    gap: var(--space-s);
-    pointer-events: none;
-  }
-
-  &:hover &__overlay {
-    opacity: 1;
-    pointer-events: all;
-  }
-
-  &__overlay-section {
-    width: 100%;
-  }
-
-  &__overlay-title {
-    font-size: var(--font-size-sm);
-    font-weight: 600;
-    margin-bottom: var(--space-xs);
-    color: var(--color-background);
-  }
-
   &__chip-group {
     gap: var(--space-xs);
-    
+
     .t-chip {
       background: rgba(255, 255, 255, 0.2);
       color: var(--color-background);
@@ -200,7 +148,7 @@ const formatBytes = (bytes: number): string => {
   }
 
   &__meta {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-s);
     color: var(--color-text-secondary);
     display: flex;
     gap: var(--space-xs);

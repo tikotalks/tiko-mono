@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { TFramework, type FrameworkConfig, useI18n } from '@tiko/ui'
 import tikoConfig from '../tiko.config'
@@ -31,16 +31,8 @@ const isAuthCallbackRoute = computed(() => {
   return route.path === '/auth/callback'
 })
 
-// Make sure TAuthWrapper doesn't initialize on auth callback
-if (isAuthCallbackRoute.value) {
-}
-
-// Debug app initialization
-onMounted(() => {
-})
-
 // Framework configuration
-const frameworkConfig = computed<FrameworkConfig>(() => ({
+const frameworkConfig = ref<FrameworkConfig>({
   ...tikoConfig,
   topBar: {
     showUser: true,
@@ -56,11 +48,10 @@ const frameworkConfig = computed<FrameworkConfig>(() => ({
         title: t(keys.yesno.yesnoSettings),
         icon: 'circle-question',
         order: 10
-        // component: YesNoSettings // Add custom settings component if needed
       }
     ]
   }
-}))
+});
 </script>
 
 <style lang="scss">

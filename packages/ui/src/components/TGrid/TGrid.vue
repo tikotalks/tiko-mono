@@ -1,5 +1,5 @@
 <template>
-  <div :class="bemm({ responsive })" :style="gridStyles">
+  <div :class="bemm('',['',responsive ? 'responsive' : ''])" :style="gridStyles">
     <slot />
   </div>
 </template>

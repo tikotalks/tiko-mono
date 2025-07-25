@@ -8,6 +8,10 @@ export interface TikoThemeColors {
   success?: string
   warning?: string
   error?: string
+  dark?: string
+  light?: string
+  'accent-dark'?: string
+  'accent-light'?: string
 }
 
 export interface TikoConfig {
@@ -42,6 +46,11 @@ export const defaultTikoConfig: Required<TikoConfig> = {
     success: '#4caf50',
     warning: '#ff9800',
     error: '#f44336',
+    dark: '#18032a',
+    light: '#ffffff',
+    'accent-dark': '#000000',
+    'accent-light': '#edf2f5',
+
   },
   features: {},
   settings: {},

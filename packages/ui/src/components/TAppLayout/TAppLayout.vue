@@ -73,6 +73,7 @@ const bemm = useBemm('app-layout');
   flex-direction: column;
   align-items: center;
   justify-content: center;
+
   &__header {
     width: calc(100% - (var(--space) * 2));
     top: 0;
@@ -92,6 +93,8 @@ const bemm = useBemm('app-layout');
   }
 
   &--is-website {
+    min-height: 100vh;
+    justify-content: flex-start;
   }
 
   &__content {

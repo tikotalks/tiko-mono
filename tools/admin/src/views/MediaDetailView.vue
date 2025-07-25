@@ -564,7 +564,7 @@ onMounted(() => {
 
     p {
       margin-bottom: var(--space-xs);
-      font-size: var(--font-size-sm);
+      font-size: var(--font-size-s);
     }
   }
 

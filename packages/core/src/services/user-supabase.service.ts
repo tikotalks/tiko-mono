@@ -29,6 +29,7 @@ export class SupabaseUserService implements UserService {
       if (!session) throw new Error('Not authenticated')
 
       // Check if current user is admin using RPC
+      console.log('[UserService] Checking user role...')
       const roleResponse = await fetch(`${this.API_URL}/rpc/get_my_role`, {
         method: 'POST',
         headers: {
@@ -40,15 +41,20 @@ export class SupabaseUserService implements UserService {
       })
 
       if (!roleResponse.ok) {
+        const errorText = await roleResponse.text()
+        console.error('[UserService] Role check failed:', errorText)
         throw new Error('Failed to check user role')
       }
 
       const role = await roleResponse.json()
+      console.log('[UserService] User role:', role)
+      
       if (role !== 'admin') {
         throw new Error('Unauthorized: Admin access required')
       }
 
       // Get all user profiles
+      console.log('[UserService] Fetching all user profiles...')
       const response = await fetch(`${this.API_URL}/user_profiles?select=*&order=created_at.desc`, {
         headers: {
           'apikey': this.ANON_KEY,
@@ -57,7 +63,11 @@ export class SupabaseUserService implements UserService {
         }
       })
 
+      console.log('[UserService] Response status:', response.status)
+      
       if (!response.ok) {
+        const errorText = await response.text()
+        console.error('[UserService] Error response:', errorText)
         throw new Error(`Failed to fetch users: ${response.statusText}`)
       }
 

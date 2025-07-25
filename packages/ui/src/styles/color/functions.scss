@@ -15,8 +15,8 @@
 
 @function perceived-lightness($color) {
   $r: color.channel($color, 'red');
-  $g: color.channel($color, 'blue');
-  $b: color.channel($color, 'green');
+  $g: color.channel($color, 'green');
+  $b: color.channel($color, 'blue');
 
   // ITU-R BT.709 perceived brightness formula
   $brightness: math.div(0.2126 * $r + 0.7152 * $g + 0.0722 * $b, 255) * 100;
@@ -53,11 +53,7 @@
 @function textColorShade($color-value, $color-name) {
 	$lightness: perceived-lightness($color-value);
 
-	@if $color-name == 'purple' {
-	@debug $color-value, $lightness;
-	}
-
-	@if $lightness < 60 {
+	@if $lightness > 60 {
 		@return darken-color-mix($color-value, 60%);
 	} @else {
 		@return lighten-color-mix($color-value, 75%);

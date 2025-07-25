@@ -1,6 +1,5 @@
 <template>
   <div :class="bemm('',['',tikoConfig?.isApp ? 'is-app' : 'is-website'])" data-cy="auth-wrapper">
-
     <div :class="bemm('background')" v-if="!isAuthenticated">
       <img
         v-if="props.backgroundImage"
@@ -57,11 +56,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, getCurrentInstance } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useBemm } from 'bemm'
 import { useAuthStore } from '@tiko/core'
-import { createPinia } from 'pinia'
 import { useI18n } from '../../composables/useI18n'
 import TLoginForm from '../TLoginForm/TLoginForm.vue'
 import TAppLayout from '../TAppLayout/TAppLayout.vue'
@@ -85,43 +83,17 @@ const route = useRoute()
 // i18n
 const { t, keys } = useI18n()
 
-// Ensure Pinia is available
-let pinia
-try {
-  // Try to get existing pinia instance
-  pinia = getCurrentInstance()?.appContext.config.globalProperties.$pinia
-} catch (e) {
-  // Pinia not found
-}
-
-if (!pinia) {
-  // Create and install pinia if not available
-  pinia = createPinia()
-  const app = getCurrentInstance()?.appContext.app
-  if (app) {
-    app.use(pinia)
-  }
-}
-
-// Store
-const authStore = ref(null)
-
-// Function to initialize store
-const initializeStore = () => {
-  try {
-    authStore.value = useAuthStore()
-    return true
-  } catch (error) {
-    console.warn('[TAuthWrapper] Store not available yet, will retry...')
-    return false
-  }
-}
-
-// Try to initialize store immediately
-initializeStore()
-
 // Get Tiko config for theme
 const { config: tikoConfig } = useTikoConfig()
+
+// Auth store - initialize with try-catch to handle cases where Pinia isn't ready
+let authStore: any = null
+try {
+  authStore = useAuthStore()
+} catch (e: any) {
+  console.error('[TAuthWrapper] Failed to initialize auth store:', e.message)
+  // This will be retried in onMounted
+}
 
 // Local state
 const isInitializing = ref(true)
@@ -129,7 +101,10 @@ const authLoading = ref(false)
 const authError = ref<string | null>(null)
 
 // Computed
-const isAuthenticated = computed(() => authStore.value?.isAuthenticated || false);
+const isAuthenticated = computed(() => {
+  if (!authStore) return false;
+  return authStore.isAuthenticated || false;
+});
 
 // Check if we're on the auth callback route
 const isAuthCallbackRoute = computed(() => route?.path === '/auth/callback');
@@ -162,9 +137,8 @@ const handleAppleSignIn = async () => {
   authError.value = null;
 
   try {
-    if (authStore.value) {
-      await authStore.value.signInWithApple();
-    }
+    if (!authStore) throw new Error('Auth store not initialized');
+    await authStore.signInWithApple();
   } catch (error) {
     authError.value =
       error instanceof Error ? error.message : t(keys.auth.appleSignInFailed);
@@ -178,11 +152,8 @@ const handleEmailSubmit = async (email: string, fullName?: string) => {
   authError.value = null;
 
   try {
-    // Get display name from splash config or use appName
-    const appDisplayName = splashConfig.value.appName || props.appName;
-    if (authStore.value) {
-      await authStore.value.signInWithPasswordlessEmail(email, fullName);
-    }
+    if (!authStore) throw new Error('Auth store not initialized');
+    await authStore.signInWithPasswordlessEmail(email, fullName);
   } catch (error) {
     authError.value =
       error instanceof Error
@@ -198,9 +169,8 @@ const handleVerificationSubmit = async (email: string, code: string) => {
   authError.value = null;
 
   try {
-    if (authStore.value) {
-      await authStore.value.verifyEmailOtp(email, code);
-    }
+    if (!authStore) throw new Error('Auth store not initialized');
+    await authStore.verifyEmailOtp(email, code);
   } catch (error) {
     authError.value =
       error instanceof Error ? error.message : t(keys.auth.invalidVerificationCode);
@@ -213,9 +183,8 @@ const handleResendCode = async (email: string) => {
   authError.value = null;
 
   try {
-    if (authStore.value) {
-      await authStore.value.resendEmailOtp(email);
-    }
+    if (!authStore) throw new Error('Auth store not initialized');
+    await authStore.resendEmailOtp(email);
   } catch (error) {
     authError.value =
       error instanceof Error ? error.message : t(keys.auth.failedToResendCode);
@@ -233,7 +202,6 @@ const handleSplashComplete = () => {
 
 // Initialize authentication
 onMounted(async () => {
-
   // Check if we're returning from auth callback or if there's already a session
   const isReturningFromAuth = document.referrer.includes('/auth/callback') ||
                               window.location.search.includes('from=auth') ||
@@ -278,30 +246,33 @@ onMounted(async () => {
   }, shouldSkipSplash ? 100 : maxDisplayTime); // Short timeout if skipping
 
   try {
-    // Retry store initialization if needed
-    if (!authStore.value) {
-      const success = initializeStore()
-      if (!success) {
-        // If still failing, wait a bit and try again
-        setTimeout(() => {
-          initializeStore()
-        }, 100)
+    // Try to initialize auth store if it wasn't available during setup
+    if (!authStore) {
+      try {
+        authStore = useAuthStore();
+        console.log('[TAuthWrapper] Auth store initialized in onMounted');
+      } catch (e: any) {
+        console.error('[TAuthWrapper] Still cannot initialize auth store:', e.message);
+        throw new Error('Auth store initialization failed');
       }
     }
 
-    // Only proceed if store is available
-    if (authStore.value) {
+    // Only proceed if we have a valid auth store
+    if (authStore) {
       // Set up auth state listener
-      authStore.value.setupAuthListener();
+      authStore.setupAuthListener();
 
       // Try to restore session
-      await authStore.value.initializeFromStorage();
+      await authStore.initializeFromStorage();
 
       // Auth initialization complete
-
-      if (authStore.value.isAuthenticated) {
+      if (authStore.isAuthenticated) {
+        console.log('[TAuthWrapper] ✅ User is authenticated');
       } else {
+        console.log('[TAuthWrapper] ℹ️ User is not authenticated');
       }
+    } else {
+      console.warn('[TAuthWrapper] No auth store available, skipping auth initialization');
     }
   } catch (error: any) {
     console.error('[TAuthWrapper] ❌ Failed to initialize auth:', error);

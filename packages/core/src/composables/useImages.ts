@@ -1,6 +1,7 @@
-import { ref, computed, type Ref } from 'vue'
+import { ref, computed, onMounted, onUnmounted, type Ref } from 'vue'
 import type { MediaItem } from '../services/media.service'
 import { mediaService } from '../services'
+import { useEventBus } from '@tiko/ui'
 
 export interface ImageStats {
   totalImages: number
@@ -54,6 +55,9 @@ const filteredImages = computed(() => {
  * Composable for managing images and media statistics
  */
 export function useImages(): UseImagesReturn {
+  // Event bus for listening to upload completion
+  const eventBus = useEventBus()
+
   const loadImages = async () => {
     loading.value = true
     error.value = null
@@ -107,6 +111,21 @@ export function useImages(): UseImagesReturn {
   const refresh = async () => {
     await loadImages()
   }
+
+  // Listen for media refresh events from uploads
+  const handleMediaRefresh = () => {
+    refresh()
+  }
+
+  // Set up event listeners
+  onMounted(() => {
+    eventBus.on('media:refresh', handleMediaRefresh)
+  })
+
+  // Clean up event listeners
+  onUnmounted(() => {
+    eventBus.off('media:refresh', handleMediaRefresh)
+  })
   
   return {
     // Data

@@ -6,6 +6,13 @@ export interface MediaItem {
   file_size: number
   tags?: string[]
   categories?: string[]
+  description?: string
+  ai_analyzed?: boolean
+  created_at?: string
+  updated_at?: string
+  type?: string
+  width?: number
+  height?: number
 }
 
 export interface TMediaTileProps {

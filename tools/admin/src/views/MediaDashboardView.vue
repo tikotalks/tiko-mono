@@ -105,7 +105,7 @@ onMounted(async () => {
 
 
     h3 {
-      font-size: var(--font-size-sm);
+      font-size: var(--font-size-s);
       color: var(--color-text-secondary);
       margin-bottom: var(--space-xs);
     }
@@ -137,7 +137,7 @@ onMounted(async () => {
 
     p {
       color: var(--color-text-secondary);
-      font-size: var(--font-size-sm);
+      font-size: var(--font-size-s);
     }
   }
 }</style>

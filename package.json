@@ -10,6 +10,7 @@
   ],
   "packageManager": "pnpm@8.15.0",
   "scripts": {
+    "dev:app": "node scripts/dev.js",
     "serve": "node scripts/serve-app.js",
     "build": "node scripts/build-app-interactive.js",
     "build:ci": "node scripts/build-app-interactive.js all",
@@ -73,7 +74,6 @@
     "vue-tsc": "^1.8.27"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.50.3",
     "bemm": "^1.2.2",
     "mitt": "^3.0.1",
     "pinia": "^2.1.7",

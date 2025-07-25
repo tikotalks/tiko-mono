@@ -3,6 +3,7 @@
     <TAuthWrapper
       :background-image="backgroundImage"
       :title="tikoConfig?.name"
+      :is-app="isApp"
       :app-name="tikoConfig?.id"
     >
       <TAppLayout
@@ -11,6 +12,7 @@
         :show-header="topBar.showTitle !== false"
         :show-back="showBackButton"
         :is-loading="loading"
+        :is-app="isApp"
         :config="tikoConfig"
         @profile="handleProfile"
         @settings="handleSettings"
@@ -48,13 +50,14 @@ import { ref, computed, onMounted, provide, watch, getCurrentInstance } from 'vu
 import { useRoute, useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
 import { useAuthStore, useAppStore } from '@tiko/core'
-import { storeToRefs, createPinia } from 'pinia'
+import { storeToRefs } from 'pinia'
 import TAuthWrapper from '../TAuthWrapper/TAuthWrapper.vue'
 import TAppLayout from '../TAppLayout/TAppLayout.vue'
 import TPopup from '../TPopup/TPopup.vue'
 import TToast from '../TToast/TToast.vue'
 import TSettings from './TSettings.vue'
 import TProfile from '../TProfile/TProfile.vue'
+import TSpinner from '../TSpinner/TSpinner.vue'
 import { popupService } from '../TPopup'
 import { toastService } from '../TToast'
 import { useTikoConfig } from '../../composables/useTikoConfig'
@@ -74,22 +77,10 @@ const bemm = useBemm('framework')
 const route = useRoute()
 const router = useRouter()
 
-// Ensure Pinia is available
-let pinia
-try {
-  // Try to get existing pinia instance
-  pinia = getCurrentInstance()?.appContext.config.globalProperties.$pinia
-} catch (e) {
-  // Pinia not found
-}
-
+// Check if Pinia is available
+const pinia = getCurrentInstance()?.appContext.config.globalProperties.$pinia
 if (!pinia) {
-  // Create and install pinia if not available
-  pinia = createPinia()
-  const app = getCurrentInstance()?.appContext.app
-  if (app) {
-    app.use(pinia)
-  }
+  console.error('[TFramework] Pinia is not initialized. Please ensure app.use(pinia) is called before mounting the app.')
 }
 
 // Initialize stores with error handling
@@ -101,9 +92,10 @@ const initializeStores = () => {
   try {
     authStore.value = useAuthStore()
     appStore.value = useAppStore()
+    console.log('[TFramework] Stores initialized successfully')
     return true
   } catch (error) {
-    console.warn('[TFramework] Stores not available yet, will retry...')
+    console.warn('[TFramework] Stores not available yet, will retry...', error)
     return false
   }
 }
@@ -131,9 +123,14 @@ const userSettings = computed(() => {
 })
 
 const currentTheme = computed(() => {
-  if (!authStore.value) return 'light'
+  if (!authStore.value) {
+    console.log('[TFramework] No auth store for theme, defaulting to light')
+    return 'light'
+  }
   const refs = storeToRefs(authStore.value)
-  return refs.currentTheme?.value || 'light'
+  const theme = refs.currentTheme?.value || 'light'
+  console.log('[TFramework] currentTheme computed:', theme)
+  return theme
 })
 
 const currentLanguage = computed(() => {
@@ -242,7 +239,7 @@ const handleBack = () => {
 // Update current route title
 const updateRouteTitle = () => {
   if (!route) return
-  
+
   // This can be customized per app via slot or event
   const matched = route.matched[route.matched.length - 1]
   if (matched?.meta?.title) {
@@ -274,6 +271,8 @@ watch(currentLanguage, (newLanguage) => {
 
 // Apply theme to DOM
 const applyTheme = (theme: string) => {
+  console.log('[TFramework] Applying theme:', theme)
+
   // Apply the theme
   document.documentElement.setAttribute('data-theme', theme)
 
@@ -285,10 +284,13 @@ const applyTheme = (theme: string) => {
   } else {
     document.documentElement.style.removeProperty('color-scheme')
   }
+
+  console.log('[TFramework] Theme applied. data-theme attribute:', document.documentElement.getAttribute('data-theme'))
 }
 
 // Watch for theme changes in user settings
 watch(currentTheme, (newTheme) => {
+  console.log('[TFramework] Theme changed in store:', newTheme)
   if (newTheme) {
     applyTheme(newTheme)
   }
@@ -298,11 +300,16 @@ watch(currentTheme, (newTheme) => {
 onMounted(async () => {
   // Retry store initialization if needed
   if (!authStore.value || !appStore.value) {
+    console.log('[TFramework] Retrying store initialization in onMounted...')
     const success = initializeStores()
     if (!success) {
       // If still failing, wait a bit and try again
+      console.log('[TFramework] Store init failed, retrying in 100ms...')
       setTimeout(() => {
-        initializeStores()
+        const retrySuccess = initializeStores()
+        if (!retrySuccess) {
+          console.error('[TFramework] Failed to initialize stores after retry!')
+        }
       }, 100)
     }
   }
@@ -341,6 +348,14 @@ onMounted(async () => {
     font-weight: 500;
     color: var(--color-foreground);
     text-align: center;
+  }
+
+  &__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100vw;
   }
 }
 </style>

@@ -8,6 +8,6 @@
       "@tiko/core": ["../../packages/core/src"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }

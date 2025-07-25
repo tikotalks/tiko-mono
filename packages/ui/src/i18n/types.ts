@@ -66,6 +66,15 @@ export interface TranslationSchema {
     showMore: string
     speak: string
     menu: string
+    tags: string
+    image: string
+    title: string
+    size: string
+    categories: string
+    views: {
+      tiles: string
+      list: string
+    }
   }
   auth: {
     login: string

@@ -223,7 +223,7 @@ const selectDate = (date: Date): void => {
 		justify-content: center;
 		cursor: pointer;
 		border-radius: var(--border-radius-sm);
-		font-size: var(--font-size-sm);
+		font-size: var(--font-size-s);
 		transition: all var(--transition-duration) var(--transition-timing);
 		opacity: 0.25;
 		border-radius: var(--border-radius);

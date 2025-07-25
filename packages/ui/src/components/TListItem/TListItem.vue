@@ -1,7 +1,7 @@
 <template>
   <component
     :is="componentTag"
-    :class="bemm({ clickable: isClickable })"
+    :class="bemm('',['',isClickable ? 'clickable' :''])"
     :href="href"
     v-bind="componentProps"
     @click="handleClick"
@@ -37,15 +37,15 @@ const isClickable = computed(() => {
 
 const componentProps = computed(() => {
   const baseProps: Record<string, any> = {}
-  
+
   if (props.href) {
     baseProps.href = props.href
   }
-  
+
   if (componentTag.value === 'button') {
     baseProps.type = 'button'
   }
-  
+
   return baseProps
 })
 
@@ -57,10 +57,8 @@ const handleClick = (event: Event) => {
 <style lang="scss">
 .t-list-item {
   display: grid;
-  gap: var(--space);
-  padding: var(--space-s) var(--space);
   background: var(--color-background);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-accent);
   transition: background-color 0.2s;
   text-decoration: none;
   color: inherit;

@@ -8,6 +8,8 @@ export { IconRegistryPlugin, useIconRegistry } from './icons'
 export type { IconRegistry, IconRegistryPluginOptions } from './icons'
 // Re-export Icons type to avoid direct open-icon imports in apps
 export type { Icons } from 'open-icon'
+export { Icons as IconList } from 'open-icon'
+
 export * from './components/TInput'
 export * from './components/TLoginForm'
 export * from './components/TAuthWrapper'
@@ -30,11 +32,13 @@ export * from './components/TAuthCallback'
 export * from './components/TPinInput'
 export * from './components/TNumberPad'
 export * from './components/TChip'
-// export * from './components/TMediaTile'
-// export * from './components/TList'
-// export * from './components/TListItem'
-// export * from './components/TGrid'
+export * from './components/TMediaTile'
+export * from './components/TList'
+export * from './components/TListItem'
+export * from './components/TListCell'
+export * from './components/TGrid'
 export * from './components/TViewToggle'
+export * from './components/TStatusBar'
 
 export { default as TInputText } from './components/TForm/inputs/TInputText/TInputText.vue';
 export { default as TInputNumber } from './components/TForm/inputs/TInputNumber/TInputNumber.vue';
@@ -92,8 +96,6 @@ export * from './utils/splash-screen-config'
 export * from './types'
 
 // Re-export icon types and utilities for documentation
-export type { Icons } from 'open-icon'
-export { Icons as IconList } from 'open-icon'
 
 // Router utilities
 export { createAppRouter } from './router/createAppRouter'

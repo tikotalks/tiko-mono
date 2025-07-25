@@ -17,6 +17,10 @@ export { useImageUrl } from './composables/useImageUrl'
 export type { ImageVariants, ImageUrlOptions } from './composables/useImageUrl'
 export { useImages } from './composables/useImages'
 export type { UseImagesReturn, ImageStats } from './composables/useImages'
+export { useUserSettings } from './composables/useUserSettings'
+export type { UseUserSettingsReturn } from './composables/useUserSettings'
+export { useUpload } from './composables/useUpload'
+export type { UploadItem } from './composables/useUpload'
 
 // Types
 export * from './types/user'

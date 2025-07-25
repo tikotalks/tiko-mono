@@ -9,12 +9,13 @@ export default defineConfig({
       fileName: 'index'
     },
     rollupOptions: {
-      external: ['vue', 'pinia', 'axios'],
+      external: ['vue', 'pinia', 'axios', '@tiko/ui'],
       output: {
         globals: {
           vue: 'Vue',
           pinia: 'Pinia',
-          axios: 'axios'
+          axios: 'axios',
+          '@tiko/ui': 'TikoUI'
         }
       }
     }

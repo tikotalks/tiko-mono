@@ -1,10 +1,10 @@
 <template>
-  <div :class="bemm('',{ striped, bordered, hover })">
+  <div :class="bemm('')">
     <div v-if="columns?.length" :class="bemm('header')">
       <div
         v-for="column in columns"
         :key="column.key"
-        :class="bemm('header-cell', { [`align-${column.align || 'left'}`]: true })"
+        :class="bemm('header-cell', ['', `align-${column.align || 'left'}`])"
         :style="{ width: column.width }"
       >
         {{ column.label }}
@@ -39,38 +39,40 @@ const gridTemplateColumns = computed(() => {
 
 <style lang="scss">
 .t-list {
+
+  --color-primary-accent:color-mix(in srgb, var(--color-primary), transparent 75%);
+
   display: flex;
   flex-direction: column;
   border-radius: var(--border-radius);
   overflow: hidden;
+  border: 1px solid var(--color-primary-accent);
 
-  &--bordered {
-    border: 1px solid var(--color-border);
+
+
+   .t-list-item:nth-child(even) {
+    background: var(--color-accent);
   }
 
-  &--striped &__body .t-list-item:nth-child(even) {
-    background: var(--color-background-secondary);
-  }
-
-  &--hover &__body .t-list-item:hover {
-    background: var(--color-background-secondary);
+  .t-list-item:hover {
+    background: var(--color-secondary);
   }
 
   &__header {
     display: grid;
     grid-template-columns: v-bind(gridTemplateColumns);
-    gap: var(--space);
-    padding: var(--space-s) var(--space);
     background: var(--color-background-secondary);
     font-weight: 600;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-s);
     color: var(--color-text-secondary);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-primary-accent);
+
   }
 
   &__header-cell {
     display: flex;
     align-items: center;
+    padding: var(--space);
 
     &--align-left {
       justify-content: flex-start;

@@ -22,7 +22,13 @@ export function createViteConfig(dirname, port = 3000, pwaConfig = null) {
     server: {
       port,
       strictPort: false,
-      open: false
+      open: false,
+      cors: true,
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
     },
     build: {
       sourcemap: true,

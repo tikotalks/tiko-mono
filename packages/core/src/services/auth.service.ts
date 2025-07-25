@@ -327,21 +327,30 @@ export class ManualAuthService implements AuthService {
   }
 
   async signInWithMagicLink(email: string, fullName?: string): Promise<AuthResult> {
+    console.log('[AuthService] signInWithMagicLink called with:', { email, fullName })
     try {
-      const response = await fetch(`${this.API_URL}/otp`, {
+      const url = `${this.API_URL}/otp`
+      const body = {
+        email,
+        create_user: true,
+        data: fullName ? { full_name: fullName } : undefined
+      }
+      
+      console.log('[AuthService] Sending POST request to:', url)
+      console.log('[AuthService] Request body:', body)
+      
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'apikey': this.ANON_KEY
         },
-        body: JSON.stringify({
-          email,
-          create_user: true,
-          data: fullName ? { full_name: fullName } : undefined
-        })
+        body: JSON.stringify(body)
       })
 
+      console.log('[AuthService] Response status:', response.status)
       const data = await response.json()
+      console.log('[AuthService] Response data:', data)
 
       if (!response.ok) {
         return { success: false, error: data.error_description || data.msg || 'Failed to send magic link' }
@@ -349,6 +358,7 @@ export class ManualAuthService implements AuthService {
 
       return { success: true }
     } catch (error) {
+      console.error('[AuthService] Network error:', error)
       return { success: false, error: 'Network error occurred' }
     }
   }

@@ -94,15 +94,15 @@ export const translationKeys: TranslationKeys = createKeysObject<TranslationSche
     showMore: '',
     speak: '',
     menu: '',
+    categories: '',
+    image: '',
+    title: '',
+    tags: '',
+    size:  '',
     views: {
       tiles: '',
       list: ''
     },
-    tags: '',
-    categories: '',
-    image: '',
-    title: '',
-    size: ''
   },
   auth: {
     login: '',
@@ -588,6 +588,17 @@ export const translationKeys: TranslationKeys = createKeysObject<TranslationSche
     completePropAndUsage: '',
     items: ''
   },
+  statusBar: {
+    uploading: '',
+    waiting: '',
+    errors: '',
+    complete: '',
+    uploaded: '',
+    start: '',
+    retry: '',
+    clearDone: '',
+    confirmClose: ''
+  },
   admin: {
     login: {
       title: '',
@@ -701,7 +712,10 @@ export const translationKeys: TranslationKeys = createKeysObject<TranslationSche
       clearQueue: '',
       onlyImages: '',
       uploadSuccess: '',
-      uploadError: ''
+      uploadError: '',
+      duplicateWarning: '',
+      clearSuccessful: '',
+      removeDuplicates: ''
     },
     library: {
       title: '',
@@ -716,6 +730,17 @@ export const translationKeys: TranslationKeys = createKeysObject<TranslationSche
       viewToggle: {
         tiles: '',
         list: ''
+      },
+      sortBy: {
+        label: '',
+        uploadDate: '',
+        fileName: '',
+        title: '',
+        fileSize: ''
+      },
+      order: {
+        ascending: '',
+        descending: ''
       }
     },
     navigation: {

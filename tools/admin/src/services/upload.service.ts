@@ -4,20 +4,27 @@ import { mediaService } from '@tiko/core'
 export class UploadService {
   private workerUrl = 'https://upload-worker.tikocdn.org/upload'
 
-  async uploadFile(file: File): Promise<{ url: string; id: string; aiAnalysisMessage?: string }> {
-    // First upload to R2 via Worker
-    const formData = new FormData()
-    formData.append('file', file)
+  async uploadFile(file: File): Promise<{ 
+    success: boolean
+    url?: string
+    mediaId?: string
+    error?: string
+    aiAnalysisMessage?: string 
+  }> {
+    try {
+      // First upload to R2 via Worker
+      const formData = new FormData()
+      formData.append('file', file)
 
-    const response = await fetch(this.workerUrl, {
-      method: 'POST',
-      body: formData
-    })
+      const response = await fetch(this.workerUrl, {
+        method: 'POST',
+        body: formData
+      })
 
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.details || error.error || 'Upload failed')
-    }
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.details || error.error || 'Upload failed')
+      }
 
     const data = await response.json()
     
@@ -69,17 +76,26 @@ export class UploadService {
       const media = await mediaService.saveMedia(mediaData)
 
       return { 
+        success: true,
         url: data.original || data.url,
-        id: media.id,
+        mediaId: media.id,
         aiAnalysisMessage
       }
     } catch (dbError) {
       console.error('Failed to save to database:', dbError)
       // Don't fail the upload if DB save fails
       return { 
-        url: data.url,
-        id: '',
+        success: true,
+        url: data.original || data.url,
+        mediaId: '',
         aiAnalysisMessage
+      }
+    }
+    } catch (error) {
+      console.error('Upload failed:', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Upload failed'
       }
     }
   }

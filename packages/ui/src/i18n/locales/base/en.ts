@@ -557,6 +557,17 @@ export const en: TranslationSchema = {
     completePropAndUsage: 'Complete prop and usage documentation',
     items: 'items'
   },
+  statusBar: {
+    uploading: 'Uploading {current} of {total}',
+    waiting: 'Waiting to upload...',
+    errors: '{count} error(s)',
+    complete: 'Upload complete',
+    uploaded: '{count} uploaded',
+    start: 'Start',
+    retry: 'Retry',
+    clearDone: 'Clear completed',
+    confirmClose: 'Are you sure? Uploads in progress will be cancelled.'
+  },
   admin: {
     login: {
       title: 'Admin Login',
@@ -670,7 +681,10 @@ export const en: TranslationSchema = {
       clearQueue: 'Clear Queue',
       onlyImages: 'Only image files are allowed',
       uploadSuccess: '{name} uploaded successfully',
-      uploadError: 'Failed to upload {name}'
+      uploadError: 'Failed to upload {name}',
+      duplicateWarning: 'A file with this name already exists',
+      clearSuccessful: 'Clear Successful',
+      removeDuplicates: 'Remove Duplicates'
     },
     library: {
       title: 'Media Library',
@@ -685,6 +699,17 @@ export const en: TranslationSchema = {
       viewToggle: {
         tiles: 'Tiles',
         list: 'List'
+      },
+      sortBy: {
+        label: 'Sort by',
+        uploadDate: 'Upload Date',
+        fileName: 'File Name',
+        title: 'Title',
+        fileSize: 'File Size'
+      },
+      order: {
+        ascending: 'Ascending',
+        descending: 'Descending'
       }
     },
     navigation: {

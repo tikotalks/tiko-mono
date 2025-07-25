@@ -156,6 +156,8 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss">
+@use '../../styles/global.scss' as global2;
+
 .t-popup {
 	$b: &;
 	position: fixed;
@@ -196,7 +198,7 @@ onUnmounted(() => {
 		align-items: flex-end;
 		justify-content: flex-end;
 
-		@include global.mobile-only() {
+		@include global2.mobile-only() {
 			width: 100%;
 			padding: var(--space-xs);
 			padding-bottom: calc(var(--spacing) * 2 + var(--space))
@@ -221,7 +223,7 @@ onUnmounted(() => {
 
 
 
-		@include global.desktop-up() {
+		@include global2.desktop-up() {
 			width: var(--popup-width, fit-content);
 		}
 	}

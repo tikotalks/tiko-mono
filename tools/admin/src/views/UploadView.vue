@@ -8,7 +8,7 @@
         @dragleave.prevent="isDragging = false"
       >
         <TCard>
-          <TIcon :name="Icons.ARROW_UPLOAD" size="large" />
+          <TIcon :name="Icons.ARROW_HEADED_UP" size="large" />
           <h3>{{ t('admin.upload.dragDrop') }}</h3>
           <p>{{ t('admin.upload.or') }}</p>
           <TButton color="primary" @click="selectFiles">
@@ -25,45 +25,67 @@
         </TCard>
       </div>
 
-      <div v-if="uploadQueue.length > 0" :class="bemm('queue')">
+      <div v-if="queue.length > 0" :class="bemm('queue')">
         <h3>{{ t('admin.upload.uploadQueue') }}</h3>
         <div :class="bemm('queue-items')">
           <div
-            v-for="item in uploadQueue"
+            v-for="item in queue"
             :key="item.id"
-            :class="bemm('queue-item',['', item.status])"
+            :class="bemm('queue-item',['', item.status, item.isDuplicate ? 'duplicate': ''])"
           >
             <img v-if="item.preview" :src="item.preview" :alt="item.file.name" />
             <div :class="bemm('queue-item-info')">
               <p :class="bemm('queue-item-name')">{{ item.file.name }}</p>
               <p :class="bemm('queue-item-size')">{{ formatBytes(item.file.size) }}</p>
+              <p v-if="item.isDuplicate" :class="bemm('queue-item-warning')">
+                <TIcon :name="Icons.EXCLAMATION_MARK_M" size="small" />
+                {{ item.duplicateWarning }}
+              </p>
             </div>
-            <div :class="bemm('queue-item-status')">
-              <TSpinner v-if="item.status === 'uploading'" size="small" />
-              <TIcon v-else-if="item.status === 'success'" :name="Icons.CHECK_M" color="success" />
-              <TIcon v-else-if="item.status === 'pending'" :name="Icons.THREE_DOTS_HORIZONTAL" color="success" />
-              <TIcon v-else-if="item.status === 'error'" :name="Icons.CLOSE" color="error" />
+            <div :class="bemm('queue-item-actions')">
+              <div :class="bemm('queue-item-status')">
+                <TSpinner v-if="item.status === 'uploading'" size="small" />
+                <TIcon v-else-if="item.status === 'success'" :name="Icons.CHECK_M" color="success" />
+                <TIcon v-else-if="item.status === 'pending'" :name="Icons.THREE_DOTS_HORIZONTAL" />
+                <TIcon v-else-if="item.status === 'error'" :name="Icons.CLOSE" color="error" />
+              </div>
+              <TButton
+                v-if="item.status === 'pending' || item.status === 'error'"
+                type="ghost"
+                size="small"
+                :icon="Icons.MULTIPLY_M"
+                @click="removeFromQueue(item.id)"
+                :title="t('common.remove')"
+              />
             </div>
           </div>
         </div>
         <div :class="bemm('actions')">
           <TButton
             color="primary"
-            :disabled="isUploading"
-            @click="startUpload"
+            :disabled="isUploading || pendingItems.length === 0"
+            @click="startUpload()"
           >
             {{ t('admin.upload.startUpload') }}
           </TButton>
           <TButton
-            v-if="hasSuccessfulUploads"
+            v-if="successItems.length > 0"
             color="success"
-            @click="clearSuccessful"
+            @click="clearSuccessful()"
           >
             {{ t('admin.upload.clearSuccessful') }}
           </TButton>
           <TButton
+            v-if="hasDuplicates"
+            color="warning"
+            :icon="Icons.EXCLAMATION_MARK_M"
+            @click="removeDuplicates()"
+          >
+            {{ t('admin.upload.removeDuplicates') }} ({{ duplicateCount }})
+          </TButton>
+          <TButton
             color="secondary"
-            @click="clearQueue"
+            @click="clearAll()"
           >
             {{ t('admin.upload.clearQueue') }}
           </TButton>
@@ -73,32 +95,39 @@
 </template>
 
 <script setup lang="ts">
-import { ref, inject, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, inject, onMounted, computed } from 'vue'
 import { useBemm } from 'bemm'
 import { useI18n } from '@tiko/ui'
 import { TCard, TButton, TIcon, TSpinner } from '@tiko/ui'
 import { Icons } from 'open-icon'
-import { uploadService } from '../services/upload.service'
+import { useImages, useUpload } from '@tiko/core'
 import type { ToastService } from '@tiko/ui'
+import { uploadService } from '../services/upload.service'
 
 const bemm = useBemm('upload-view')
 const { t } = useI18n()
-const router = useRouter()
 const toastService = inject<ToastService>('toastService')
-
-interface UploadItem {
-  id: string
-  file: File
-  preview?: string
-  status: 'pending' | 'uploading' | 'success' | 'error'
-  error?: string
-}
+const { imageList, loadImages } = useImages()
+const { 
+  queue,
+  addToQueue,
+  removeFromQueue,
+  startUpload,
+  clearSuccessful,
+  clearAll,
+  removeDuplicates,
+  isUploading,
+  pendingItems,
+  successItems,
+  duplicateItems
+} = useUpload(uploadService, toastService)
 
 const isDragging = ref(false)
 const fileInput = ref<HTMLInputElement>()
-const uploadQueue = ref<UploadItem[]>([])
-const isUploading = ref(false)
+
+// Computed for safe duplicate item access
+const duplicateCount = computed(() => duplicateItems?.value?.length || 0)
+const hasDuplicates = computed(() => duplicateCount.value > 0)
 
 const formatBytes = (bytes: number): string => {
   if (bytes === 0) return '0 Bytes'
@@ -115,7 +144,9 @@ const selectFiles = () => {
 const handleFileSelect = (event: Event) => {
   const input = event.target as HTMLInputElement
   if (input.files) {
-    addFilesToQueue(Array.from(input.files))
+    addToQueue(Array.from(input.files), checkForDuplicates)
+    // Reset input so same file can be selected again
+    input.value = ''
   }
 }
 
@@ -127,7 +158,7 @@ const handleDrop = (event: DragEvent) => {
   const imageFiles = files.filter(file => file.type.startsWith('image/'))
 
   if (imageFiles.length > 0) {
-    addFilesToQueue(imageFiles)
+    addToQueue(imageFiles, checkForDuplicates)
   } else {
     toastService?.show({
       message: t('admin.upload.onlyImages'),
@@ -136,91 +167,16 @@ const handleDrop = (event: DragEvent) => {
   }
 }
 
-const addFilesToQueue = (files: File[]) => {
-  files.forEach(file => {
-    const reader = new FileReader()
-    const id = `${Date.now()}-${Math.random()}`
-
-    const item: UploadItem = {
-      id,
-      file,
-      status: 'pending'
-    }
-
-    reader.onload = (e) => {
-      item.preview = e.target?.result as string
-    }
-
-    reader.readAsDataURL(file)
-    uploadQueue.value.push(item)
-  })
+const checkForDuplicates = (filename: string): boolean => {
+  return imageList.value.some(media =>
+    media.original_filename?.toLowerCase() === filename.toLowerCase()
+  )
 }
 
-const startUpload = async () => {
-  isUploading.value = true
-
-  for (const item of uploadQueue.value) {
-    if (item.status !== 'pending') continue
-
-    item.status = 'uploading'
-
-    try {
-      const result = await uploadService.uploadFile(item.file)
-
-      item.status = 'success'
-
-      // Show success message
-      toastService?.show({
-        message: t('admin.upload.uploadSuccess', { name: item.file.name }),
-        type: 'success'
-      })
-
-      // If there's an AI analysis warning, show it separately
-      if (result.aiAnalysisMessage) {
-        setTimeout(() => {
-          toastService?.show({
-            message: result.aiAnalysisMessage || '',
-            type: 'warning',
-            duration: 6000
-          })
-        }, 500) // Small delay so both toasts don't overlap
-      }
-    } catch (error) {
-      item.status = 'error'
-      item.error = error instanceof Error ? error.message : 'Unknown error'
-
-      console.error('[Upload] Error uploading file:', item.file.name, error)
-
-      // Show more detailed error message
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-
-      toastService?.show({
-        message: `${t('admin.upload.uploadError', { name: item.file.name })}: ${errorMessage}`,
-        type: 'error',
-        duration: 5000
-      })
-    }
-  }
-
-  isUploading.value = false
-
-  // Auto-clear successful uploads after a delay
-  setTimeout(() => {
-    uploadQueue.value = uploadQueue.value.filter(item => item.status !== 'success')
-  }, 2000)
-}
-
-const hasSuccessfulUploads = computed(() =>
-  uploadQueue.value.some(item => item.status === 'success')
-)
-
-const clearSuccessful = () => {
-  uploadQueue.value = uploadQueue.value.filter(item => item.status !== 'success')
-}
-
-const clearQueue = () => {
-  uploadQueue.value = []
-}
+// Load existing images on mount to check for duplicates
+onMounted(() => {
+  loadImages()
+})
 </script>
 
 <style lang="scss">
@@ -286,18 +242,24 @@ const clearQueue = () => {
 
 
     &--pending {
-      opacity: 0.5;
+      opacity: 0.7;
     }
     &--uploading {
       opacity: 1;
+      border-color: var(--color-primary);
+      background-color: var(--color-primary-alpha-10);
     }
     &--success {
       opacity: 1;
-     border-color: var(--color-foreground)
+     border-color: var(--color-success)
     }
     &--error {
       opacity: 1;
      border-color: var(--color-error)
+    }
+    &--duplicate {
+      border-color: var(--color-warning);
+      background-color: var(--color-warning-alpha-10);
     }
 
     img {
@@ -316,8 +278,23 @@ const clearQueue = () => {
     text-align: center;
   }
 
+  &__queue-item-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
   &__queue-item-info {
     flex: 1;
+  }
+
+  &__queue-item-warning {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--color-warning);
+    font-size: var(--font-size-s);
+    margin-top: var(--space-xs);
   }
 
   &__queue-item-name {
@@ -325,7 +302,7 @@ const clearQueue = () => {
   }
 
   &__queue-item-size {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-s);
     color: var(--color-text-secondary);
   }
 

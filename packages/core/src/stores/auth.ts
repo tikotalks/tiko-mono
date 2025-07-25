@@ -100,11 +100,14 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const signInWithPasswordlessEmail = async (email: string, fullName?: string) => {
+    console.log('[Auth Store] signInWithPasswordlessEmail called with:', { email, fullName })
     isLoading.value = true
     error.value = null
 
     try {
+      console.log('[Auth Store] Calling authService.signInWithMagicLink...')
       const result = await authService.signInWithMagicLink(email, fullName)
+      console.log('[Auth Store] Magic link result:', result)
 
       if (!result.success) {
         // Handle rate limiting with a user-friendly message
