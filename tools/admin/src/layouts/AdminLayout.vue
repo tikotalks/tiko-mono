@@ -114,6 +114,12 @@ const navigationItems: NavigationItem[] = [
     icon: Icons.USER_GROUP,
     label: t(keys.admin.navigation.users),
   },
+  {
+    name: 'translations',
+    to: { name: 'Translations' },
+    icon: Icons.LANGUAGE,
+    label: t(keys.admin.navigation.translations),
+  },
   // {
   //   name: 'analytics',
   //   to: { name: 'Analytics' },

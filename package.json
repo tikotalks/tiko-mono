@@ -25,6 +25,8 @@
     "check:i18n": "node scripts/check-i18n.mjs",
     "check:i18n:json": "node scripts/check-i18n.mjs --json",
     "i18n:add": "node scripts/i18n-add.mjs",
+    "translations:export": "node scripts/export-translations.js",
+    "build:with-translations": "pnpm run translations:export && pnpm run build",
     "dev": "nx run-many --target=serve --all --parallel",
     "lint": "nx run-many --target=lint --all",
     "typecheck": "nx run-many --target=typecheck --all",

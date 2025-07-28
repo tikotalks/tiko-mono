@@ -752,7 +752,8 @@ export const translationKeys: TranslationKeys = createKeysObject<TranslationSche
       libraryCategories: '',
       upload: '',
       users: '',
-      analytics: ''
+      analytics: '',
+      translations: ''
     },
     settings: '',
     analytics: {
@@ -833,6 +834,28 @@ export const translationKeys: TranslationKeys = createKeysObject<TranslationSche
       updateError: '',
       createError: '',
       createUserNotImplemented: ''
+    },
+    translations: {
+      title: '',
+      targetLocale: '',
+      export: '',
+      addKey: '',
+      totalKeys: '',
+      completion: '',
+      missing: '',
+      autoTranslated: '',
+      key: '',
+      source: '',
+      autoTranslate: '',
+      autoTranslatedTooltip: '',
+      noTranslations: '',
+      noTranslationsDesc: '',
+      noSourceValue: '',
+      autoTranslateNotImplemented: '',
+      deleteKeyTitle: '',
+      deleteKeyMessage: '',
+      addKeyNotImplemented: '',
+      exported: ''
     }
   }
 }) as TranslationKeys

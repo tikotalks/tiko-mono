@@ -19,6 +19,7 @@ export * from './file.service'
 export * from './media.service'
 export * from './media-analysis.service'
 export * from './user.service'
+export * from './translation.service'
 
 // Export Supabase implementations
 export { SupabaseParentModeService } from './parent-mode-supabase.service'
@@ -37,6 +38,7 @@ export { fileService } from './file.service'
 export { mediaService } from './media-supabase.service'
 export { mediaAnalysisService } from './media-analysis.service'
 export { userService } from './user.service'
+export { translationService } from './translation.service'
 
 // Alternative: Export Supabase implementations
 // import { SupabaseParentModeService } from './parent-mode-supabase.service'

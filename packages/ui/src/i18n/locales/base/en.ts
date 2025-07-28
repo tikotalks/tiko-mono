@@ -721,7 +721,8 @@ export const en: TranslationSchema = {
       libraryCategories: 'Categories',
       upload: 'Upload',
       users: 'Users',
-      analytics: 'Analytics'
+      analytics: 'Analytics',
+      translations: 'Translations'
     },
     settings: 'Settings',
     analytics: {
@@ -802,6 +803,28 @@ export const en: TranslationSchema = {
       updateError: 'Failed to update user',
       createError: 'Failed to create user',
       createUserNotImplemented: 'User creation is not yet implemented'
+    },
+    translations: {
+      title: 'Translations',
+      targetLocale: 'Target Language',
+      export: 'Export',
+      addKey: 'Add Key',
+      totalKeys: 'Total Keys',
+      completion: 'Completion',
+      missing: 'Missing',
+      autoTranslated: 'Auto-translated',
+      key: 'Key',
+      source: 'Source',
+      autoTranslate: 'Auto-translate',
+      autoTranslatedTooltip: 'This translation was generated automatically',
+      noTranslations: 'No translations found',
+      noTranslationsDesc: 'Start by adding translation keys or search for specific translations',
+      noSourceValue: 'Source value is required for auto-translation',
+      autoTranslateNotImplemented: 'Auto-translation feature is coming soon',
+      deleteKeyTitle: 'Delete Translation Key',
+      deleteKeyMessage: 'Are you sure you want to delete the key "{key}" from all languages?',
+      addKeyNotImplemented: 'Add key feature is coming soon',
+      exported: 'Translations exported for {locale}'
     }
   }
 }

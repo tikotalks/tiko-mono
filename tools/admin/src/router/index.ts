@@ -6,6 +6,7 @@ import MediaDashboardView from '../views/MediaDashboardView.vue'
 import MediaDetailView from '../views/MediaDetailView.vue'
 import UploadView from '../views/UploadView.vue'
 import UsersView from '../views/UsersView.vue'
+import TranslationAdminView from '../views/TranslationAdminView.vue'
 
 const router = createAppRouter({
   routes: [
@@ -42,6 +43,11 @@ const router = createAppRouter({
           path: 'users',
           name: 'Users',
           component: UsersView
+        },
+        {
+          path: 'translations',
+          name: 'Translations',
+          component: TranslationAdminView
         }
       ]
     }
