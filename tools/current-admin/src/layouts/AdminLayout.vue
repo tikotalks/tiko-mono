@@ -41,36 +41,26 @@
       </ul>
     </nav>
   </aside>
-  <div :class="bemm('content')">
+  <div :class="bemm('content')" v-if="!isCheckingAuth">
     <router-view />
   </div>
-
-  <!-- Upload Status Bar -->
-  <TStatusBar :show="hasItems">
-    <UploadStatus @close="hasItems = false" />
-  </TStatusBar>
+  <div v-else class="loading-container">
+    <TSpinner />
+  </div>
 </div>
 </template>
 
 
 <script lang="ts" setup>
-import { ref, computed, inject } from 'vue'
+import { ref, computed } from 'vue'
 import { useBemm } from 'bemm'
 import { Icons } from 'open-icon'
-import { useI18n, TIcon, TSpinner, TStatusBar } from '@tiko/ui'
+import { useI18n, TIcon, TSpinner  } from '@tiko/ui'
 import { useRouter, useRoute } from 'vue-router'
-import { useUpload } from '@tiko/core'
-import { uploadService } from '../services/upload.service'
-import type { ToastService } from '@tiko/ui'
-import UploadStatus from '../components/UploadStatus.vue'
 
 const { keys, t } = useI18n();
 
 const bemm = useBemm('admin-layout');
-const toastService = inject<ToastService>('toastService')
-
-// Initialize upload composable with service
-const { hasItems } = useUpload(uploadService, toastService)
 
 interface NavigationItem {
   name: string;
@@ -84,42 +74,42 @@ interface NavigationItem {
 const navigationItems: NavigationItem[] = [
   {
     name: 'dashboard',
-    to: { name: 'Dashboard' },
+    to: { name: 'dashboard' },
     icon: Icons.BUILDING_HOUSE2,
-    label: 'Dashboard', // t(keys.admin.navigation.dashboard),
+    label: t(keys.admin.navigation.dashboard),
   },
   {
     name: 'media',
-    to: { name: 'MediaDashboard' },
+    to: { name: 'media-dashboard' },
     icon: Icons.IMAGE,
-    label: 'Media', // t(keys.admin.navigation.media),
+    label: t(keys.admin.navigation.media),
     items: [
       {
         name: 'library',
-        to: { name: 'Library' },
+        to: { name: 'library' },
         icon: Icons.IMAGE,
-        label: 'Library', // t(keys.admin.navigation.library),
+        label: t(keys.admin.navigation.library),
       },
       {
         name: 'upload',
-        to: { name: 'Upload' },
-        icon: Icons.ARROW_HEADED_UP,
-        label: 'Upload', // t(keys.admin.navigation.upload),
+        to: { name: 'upload' },
+        icon: Icons.ARROW_UPLOAD,
+        label: t(keys.admin.navigation.upload),
       },
     ],
   },
   {
     name: 'users',
-    to: { name: 'Users' },
+    to: { name: 'users' },
     icon: Icons.USER_GROUP,
     label: t(keys.admin.navigation.users),
   },
-  // {
-  //   name: 'analytics',
-  //   to: { name: 'Analytics' },
-  //   icon: Icons.CHART_LINE,
-  //   label: 'Analytics', // t(keys.admin.navigation.analytics),
-  // },
+  {
+    name: 'analytics',
+    to: { name: 'analytics' },
+    icon: Icons.CHART_LINE,
+    label: t(keys.admin.navigation.analytics),
+  },
 ];
 
 </script>
@@ -178,7 +168,7 @@ const navigationItems: NavigationItem[] = [
   text-decoration: none;
   color: var(--color-foreground);
   background-color: color-mix(in srgb, var(--color-primary), transparent 80%);
-  border-radius: 4px;
+  border-radius: var(--border-radius);
   transition: background-color 0.2s;
   gap: var(--space-xs);
 
@@ -205,65 +195,6 @@ const navigationItems: NavigationItem[] = [
   align-items: center;
   justify-content: center;
   height: 100vh;
-}
-
-.upload-status {
-  display: flex;
-  align-items: center;
-  gap: var(--space);
-
-  &__info {
-    display: flex;
-    align-items: center;
-    gap: var(--space);
-    flex: 1;
-  }
-
-  &__status {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2em;
-    height: 2em;
-  }
-
-  &__text {
-    flex: 1;
-  }
-
-  &__current {
-    font-weight: 500;
-    margin: 0;
-  }
-
-  &__summary {
-    font-size: var(--font-size-s);
-    color: var(--color-text-secondary);
-    margin: 0;
-  }
-
-  &__progress {
-    flex: 1;
-    max-width: 200px;
-  }
-
-  &__progress-bar {
-    height: 4px;
-    background: var(--color-border);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  &__progress-fill {
-    height: 100%;
-    background: var(--color-primary);
-    transition: width 0.3s ease;
-  }
-
-  &__actions {
-    display: flex;
-    gap: var(--space-xs);
-  }
 }
 
 </style>

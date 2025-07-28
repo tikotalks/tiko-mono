@@ -87,7 +87,7 @@
         <TListCell type="size" :content="media.file_size" />
         <TListCell type="chips" :chips="media.tags" :max-chips="2" />
         <TListCell type="chips" :chips="media.categories" :max-chips="2" />
-        <TListCell type="id" :content="media.id" />
+        <TListCell type="id" :content="media.id" :truncate="true" />
       </TListItem>
     </TList>
   </div>
@@ -98,8 +98,7 @@ import { ref, onMounted, inject, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { Icons } from 'open-icon';
 import { useBemm } from 'bemm';
-import { useImageUrl, useImages } from '@tiko/core';
-// import { useUserSettings } from '@tiko/core'; // TODO: Fix import after build
+import { useImageUrl, useImages, useUserSettings } from '@tiko/core';
 import type { MediaItem, ToastService } from '@tiko/ui';
 import {
   useI18n,
@@ -121,7 +120,7 @@ const toastService = inject<ToastService>('toastService');
 const { getImageVariants } = useImageUrl();
 const { imageList, stats, loading, searchImages, filteredImages, loadImages } =
   useImages();
-// const { settings, loadSettings, setSetting } = useUserSettings('admin'); // TODO: Fix after build
+const { settings, loadSettings, setSetting } = useUserSettings('admin');
 
 const bemm = useBemm('library-view');
 const { t } = useI18n();
@@ -154,10 +153,10 @@ const orderOptions = [
 const listColumns = [
   { key: 'image', label: t('common.image'), width: '80px' },
   { key: 'title', label: t('common.title'), width: '1fr' },
-  { key: 'size', label: t('common.size'), width: '1fr' },
+  { key: 'size', label: t('common.size'), width: '120px' },
   { key: 'tags', label: t('common.tags'), width: '1fr' },
   { key: 'categories', label: t('common.categories'), width: '1fr' },
-  { key: 'id', label: 'ID', width: '1fr' },
+  { key: 'id', label: 'ID', width: '100px' },
 ];
 
 const formatBytes = (bytes: number): string => {
@@ -211,25 +210,25 @@ const selectMedia = (e: Event, media: MediaItem) => {
 
 // Watch for changes and save to user settings
 watch(viewMode, async (newValue) => {
-  // await setSetting('libraryViewMode', newValue); // TODO: Fix after useUserSettings import
+  await setSetting('libraryViewMode', newValue);
 });
 
 watch(sortField, async (newValue) => {
-  // await setSetting('librarySortField', newValue); // TODO: Fix after useUserSettings import
+  await setSetting('librarySortField', newValue);
 });
 
 watch(sortOrder, async (newValue) => {
-  // await setSetting('librarySortOrder', newValue); // TODO: Fix after useUserSettings import
+  await setSetting('librarySortOrder', newValue);
 });
 
 onMounted(async () => {
   // Load user settings
-  // await loadSettings(); // TODO: Fix after useUserSettings import
+  await loadSettings();
 
   // Apply saved settings
-  // viewMode.value = settings.value.libraryViewMode || 'tiles';
-  // sortField.value = settings.value.librarySortField || 'upload_date';
-  // sortOrder.value = settings.value.librarySortOrder || 'desc';
+  viewMode.value = settings.value.libraryViewMode || 'tiles';
+  sortField.value = settings.value.librarySortField || 'upload_date';
+  sortOrder.value = settings.value.librarySortOrder || 'desc';
 
   // Load images
   loadImages();
@@ -324,10 +323,6 @@ onMounted(async () => {
   }
 
   // List View Styles for custom cells
-  .t-list-item {
-    grid-template-columns: 80px 2fr 120px 1fr 1fr 100px;
-  }
-
   &__list-cell {
     display: flex;
     align-items: center;
@@ -388,27 +383,6 @@ onMounted(async () => {
     color: var(--color-text-secondary);
     opacity: 0.6;
     padding: var(--space-xs);
-  }
-
-  // Responsive adjustments
-  @media (max-width: 1024px) {
-    .t-list-item {
-      grid-template-columns: 60px 2fr 100px 1fr 80px;
-    }
-
-    &__list-cell--categories {
-      display: none;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .t-list-item {
-      grid-template-columns: 50px 1fr 80px 60px;
-    }
-
-    &__list-cell--tags {
-      display: none;
-    }
   }
 }
 

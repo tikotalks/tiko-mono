@@ -58,6 +58,10 @@ const gridTemplateColumns = computed(() => {
     background: var(--color-secondary);
   }
 
+  .t-list-item {
+    grid-template-columns: v-bind(gridTemplateColumns);
+  }
+
   &__header {
     display: grid;
     grid-template-columns: v-bind(gridTemplateColumns);

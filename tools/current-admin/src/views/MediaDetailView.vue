@@ -362,13 +362,9 @@ const handleFileReplace = async (event: Event) => {
   try {
     const result = await uploadService.uploadFile(file);
 
-    if (!result.success) {
-      throw new Error(result.error || 'Upload failed');
-    }
-
     // Update the media record with new file info
     const updatedMedia = await mediaService.updateMedia(media.value.id, {
-      filename: file.name,
+      filename: result.id, // This would need to be updated in the upload service
       original_url: result.url,
       file_size: file.size,
       mime_type: file.type,
@@ -376,18 +372,10 @@ const handleFileReplace = async (event: Event) => {
 
     media.value = updatedMedia;
 
-    // Reset the file input
-    if (fileInput.value) {
-      fileInput.value.value = '';
-    }
-
     toastService?.show({
       message: t('admin.media.replaceSuccess'),
       type: 'success',
     });
-
-    // Reload the page to get updated image variants
-    await loadMedia();
   } catch (error) {
     console.error('Failed to replace image:', error);
     toastService?.show({

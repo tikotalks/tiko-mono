@@ -17,6 +17,8 @@ export interface TListCellProps {
   clickable?: boolean
   /** Loading state */
   loading?: boolean
+  /** Should the item truncate */
+  truncate?: boolean
 }
 
 export interface ChipData {

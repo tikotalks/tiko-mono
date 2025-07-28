@@ -1,6 +1,11 @@
 <template>
   <div
-    :class="bemm('', ['',type, clickable ? 'clickable' : ''])"
+    :class="bemm('',[
+      type,
+      loading ? 'loading' : '',
+      clickable ? 'clickable' : '',
+      truncate ? 'truncate' : '',
+    ])"
     :style="{ width }"
     @click="handleClick"
   >
@@ -32,22 +37,22 @@
     </div>
 
     <!-- ID Cell (monospace styling) -->
-    <span v-else-if="type === 'id'" :class="bemm('id')">
+    <span v-else-if="type === 'id'" :class="bemm('id', { truncate })">
       {{ content }}
     </span>
 
     <!-- Size Cell (formatted bytes) -->
-    <span v-else-if="type === 'size'" :class="bemm('size')">
+    <span v-else-if="type === 'size'" :class="bemm('size', { truncate })">
       {{ formatBytes(Number(content) || 0) }}
     </span>
 
     <!-- Custom Content Slot -->
-    <div v-else-if="type === 'custom'" :class="bemm('custom')">
+    <div v-else-if="type === 'custom'" :class="bemm('custom', { truncate })">
       <slot />
     </div>
 
     <!-- Text Cell (default) -->
-    <span v-else :class="bemm('text')">
+    <span v-else :class="bemm('text', { truncate })">
       {{ content }}
     </span>
   </div>
@@ -63,7 +68,8 @@ const props = withDefaults(defineProps<TListCellProps>(), {
   type: 'text',
   maxChips: 2,
   clickable: false,
-  loading: false
+  loading: false,
+  truncate: false
 })
 
 const emit = defineEmits<{
@@ -97,17 +103,35 @@ const formatBytes = (bytes: number): string => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
+@use "../../styles/global" as g;
+
 .list-cell {
   display: flex;
   align-items: center;
   padding: var(--space-s);
+  min-width: 0; // Allow flex items to shrink below their minimum content size
 
   &--clickable {
     cursor: pointer;
 
     &:hover {
       background-color: var(--color-background-secondary);
+    }
+  }
+
+  &--truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    
+    .list-cell__id,
+    .list-cell__size,
+    .list-cell__text,
+    .list-cell__custom {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 
@@ -153,21 +177,50 @@ const formatBytes = (bytes: number): string => {
     font-size: var(--font-size-s);
     color: var(--color-foreground-secondary);
     opacity: 0.6;
-    // @include global.truncate();
+    display: block;
+    width: 100%;
+
+    &--truncate {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
   &__size {
     font-size: var(--font-size-s);
     color: var(--color-foreground);
+    display: block;
+    width: 100%;
+
+    &--truncate {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
   &__text {
     font-size: var(--font-size);
     color: var(--color-foreground);
+    display: block;
+    width: 100%;
+
+    &--truncate {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
   &__custom {
     width: 100%;
+
+    &--truncate {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 }
 </style>
