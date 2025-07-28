@@ -4,7 +4,7 @@
     <div :class="bemm('header')">
       <h1 :class="bemm('title')">{{ t(keys.admin.translations.title) }}</h1>
 
-      <div :class="bemm('actions')">
+      <div v-if="isAuthenticated" :class="bemm('actions')">
         <!-- Locale Switcher -->
         <TInputSelect
           v-model="targetLocale"
@@ -41,7 +41,7 @@
     </div>
 
     <!-- Statistics -->
-    <div :class="bemm('stats')">
+    <div v-if="isAuthenticated" :class="bemm('stats')">
       <div :class="bemm('stat')">
         <span :class="bemm('stat-label')">{{ t(keys.admin.translations.totalKeys) }}</span>
         <span :class="bemm('stat-value')">{{ statistics.totalKeys }}</span>
@@ -67,7 +67,7 @@
     </div>
 
     <!-- Translations Table -->
-    <div :class="bemm('table-container')">
+    <div v-if="isAuthenticated && allKeys.length > 0" :class="bemm('table-container')">
       <table :class="bemm('table')">
         <thead>
           <tr>
@@ -161,15 +161,27 @@
     </div>
 
     <!-- Loading/Empty States -->
-    <span
-      v-if="!loading && displayedTranslations.length === 0"
+    <div
+      v-if="!loading && !isAuthenticated"
+      :class="bemm('empty')"
     >
-      <TIcon :name="Icons.HELLO_GOODBYE" />
-      <span>{{ t(keys.admin.translations.noTranslations) }}</span>
-      <span>{{ t(keys.admin.translations.noTranslationsDesc) }}</span>
-    </span>
+      <TIcon :name="Icons.KEY || Icons.SETTINGS" :class="bemm('empty-icon')" />
+      <h3 :class="bemm('empty-title')">{{ t(keys.auth.loginRequired) }}</h3>
+      <p :class="bemm('empty-description')">{{ t(keys.auth.loginRequiredDescription) }}</p>
+    </div>
+    
+    <div
+      v-else-if="!loading && displayedTranslations.length === 0"
+      :class="bemm('empty')"
+    >
+      <TIcon :name="Icons.HELLO_GOODBYE" :class="bemm('empty-icon')" />
+      <h3 :class="bemm('empty-title')">{{ t(keys.admin.translations.noTranslations) }}</h3>
+      <p :class="bemm('empty-description')">{{ t(keys.admin.translations.noTranslationsDesc) }}</p>
+    </div>
 
-    <TSpinner v-if="loading" />
+    <div v-if="loading" :class="bemm('loading')">
+      <TSpinner />
+    </div>
   </div>
 </template>
 
@@ -204,6 +216,7 @@ const toastService = inject<ToastService>('toastService');
 // State
 const loading = ref(false);
 const searchQuery = ref('');
+const isAuthenticated = ref(false);
 const sourceLocale = ref('en');
 const targetLocale = ref('fr');
 const allKeys = ref<string[]>([]);
@@ -312,8 +325,15 @@ async function loadTranslations() {
 
     // Load statistics
     statistics.value = await translationService.getStatistics();
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error loading translations:', error);
+    
+    // Handle authentication error specifically
+    if (error.message?.includes('No authentication token')) {
+      // Don't show error toast for auth issues, the UI will handle it
+      return;
+    }
+    
     toastService?.show({
       message: t(keys.errors.loadingData),
       type: 'error'
@@ -559,8 +579,19 @@ function flattenObject(obj: any, prefix = ''): Record<string, string> {
 }
 
 
-onMounted(() => {
-  loadTranslations();
+onMounted(async () => {
+  // Check if user is authenticated
+  try {
+    const authData = localStorage.getItem('sb-kejvhvszhevfwgsztedf-auth-token');
+    isAuthenticated.value = !!authData;
+  } catch {
+    isAuthenticated.value = false;
+  }
+  
+  // Only load if authenticated
+  if (isAuthenticated.value) {
+    await loadTranslations();
+  }
 });
 </script>
 
@@ -719,5 +750,39 @@ onMounted(() => {
   &__actions-cell {
     display: flex;
     gap: var(--space-xs);
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xl);
+    text-align: center;
+    gap: var(--space);
+  }
+
+  &__empty-icon {
+    font-size: 3em;
+    color: var(--color-foreground-secondary);
+    opacity: 0.5;
+  }
+
+  &__empty-title {
+    font-size: var(--font-size-lg);
+    color: var(--color-foreground);
+    margin: 0;
+  }
+
+  &__empty-description {
+    color: var(--color-foreground-secondary);
+    margin: 0;
+  }
+
+  &__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xl);
   }
 }</style>
