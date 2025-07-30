@@ -120,20 +120,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
 import { Icons } from 'open-icon'
 
-import { TButton, TInputText, TList, TListItem,TListCell, TProgressBar, useI18n, TKeyValue, } from '@tiko/ui'
+import { TButton, TInputText, TList, TListItem,TListCell, TProgressBar, useI18n, TKeyValue, AddTranslationKeyDialog, ToastService } from '@tiko/ui'
 import { useI18nDatabaseService } from '@tiko/core'
 
 import type { I18nKey } from '../../types/i18n.types'
+import type { PopupService } from '@tiko/ui'
 
 const bemm = useBemm('i18n-database-view')
 const { t } = useI18n()
 const router = useRouter()
 const translationService = useI18nDatabaseService()
+const popupService = inject<PopupService>('popupService')
+const toastService = inject<ToastService>('toastService')
 
 // Data
 const keys = ref<I18nKey[]>([])
@@ -277,9 +280,56 @@ async function handleFileUpload(event: Event) {
 
 // View key details
 function viewKeyDetails(key: I18nKey) {
-  // Navigate to key details view
-  console.log('View key details:', key)
-  // TODO: Create a dedicated key details view showing all translations for this key
+  if (!popupService) {
+    console.error('PopupService not available')
+    return
+  }
+
+  popupService.open({
+    component: AddTranslationKeyDialog,
+    props: {
+      mode: 'edit',
+      editKey: {
+        id: key.id,
+        key: key.key,
+        category: key.category,
+        description: key.description
+      },
+      title: t('admin.i18n.editKey.title'),
+      onSave: async (data) => {
+        try {
+          // Update the key details if changed
+          if (data.category !== key.category || data.description !== key.description) {
+            await translationService.updateTranslationKey(key.id, {
+              category: data.category,
+              description: data.description
+            })
+          }
+
+          // Update translations
+          for (const [localeCode, value] of Object.entries(data.translations)) {
+            if (value) {
+              await translationService.saveTranslation(data.key, localeCode, value)
+            }
+          }
+
+          toastService?.show({
+            message: t('admin.i18n.editKey.success'),
+            type: 'success'
+          })
+
+          // Reload keys to show updated data
+          await loadKeys()
+        } catch (error) {
+          console.error('Failed to update translation key:', error)
+          toastService?.show({
+            message: t('admin.i18n.editKey.error'),
+            type: 'error'
+          })
+        }
+      }
+    }
+  })
 }
 
 // Lifecycle

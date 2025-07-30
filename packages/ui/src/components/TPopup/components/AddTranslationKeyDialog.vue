@@ -1,7 +1,7 @@
 <template>
   <div :class="bemm()">
     <div :class="bemm('header')">
-      <h2>{{ title || t('admin.i18n.addKey.title') }}</h2>
+      <h2>{{ title || (props.mode === 'edit' ? t('admin.i18n.editKey.title') : t('admin.i18n.addKey.title')) }}</h2>
     </div>
 
     <div :class="bemm('content')">
@@ -17,6 +17,7 @@
           :required="true"
           :error="errors.key"
           :loading="checkingKey"
+          :disabled="props.mode === 'edit'"
           @input="handleKeyInput"
         />
 
@@ -117,7 +118,8 @@ import type { AddTranslationKeyDialogProps, LanguageTranslation } from './AddTra
 import TFormGroup from '../../TForm/TFormGroup.vue'
 
 const props = withDefaults(defineProps<AddTranslationKeyDialogProps>(), {
-  title: ''
+  title: '',
+  mode: 'create'
 })
 
 const emit = defineEmits<{
@@ -160,6 +162,9 @@ const isValid = computed(() => {
 async function checkKeyExists(key: string): Promise<boolean> {
   if (!key.trim()) return false
   
+  // Skip validation in edit mode
+  if (props.mode === 'edit') return false
+  
   try {
     const exists = await translationService.keyExists(key.trim())
     return exists
@@ -171,6 +176,9 @@ async function checkKeyExists(key: string): Promise<boolean> {
 
 function handleKeyInput() {
   errors.key = ''
+  
+  // Skip validation in edit mode
+  if (props.mode === 'edit') return
   
   // Clear previous timeout
   if (keyCheckTimeout) {
@@ -323,9 +331,33 @@ async function handleSave() {
   }
 }
 
+// Initialize for edit mode
+async function initializeEditMode() {
+  if (props.mode === 'edit' && props.editKey) {
+    keyData.key = props.editKey.key
+    keyData.category = props.editKey.category || ''
+    keyData.description = props.editKey.description || ''
+    
+    // Load existing translations
+    try {
+      const existingTranslations = await translationService.getTranslationsForKeyString(props.editKey.key)
+      
+      // Update the translations values
+      for (const translation of existingTranslations) {
+        if (translations.value[translation.locale_code]) {
+          translations.value[translation.locale_code].value = translation.value
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load existing translations:', error)
+    }
+  }
+}
+
 // Lifecycle
-onMounted(() => {
-  loadLanguages()
+onMounted(async () => {
+  await loadLanguages()
+  await initializeEditMode()
 })
 </script>
 
@@ -391,8 +423,11 @@ onMounted(() => {
   &__translation-item {
     background: var(--color-background-secondary);
     border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);display: flex;
-    gap: var(--space);
+    border: 1px solid var(--color-border);
+    padding: var(--space);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
 
     &--primary {
       background: var(--color-primary-alpha-10);
@@ -405,7 +440,6 @@ onMounted(() => {
     justify-content: space-between;
     align-items: center;
     margin-bottom: var(--space-xs);
-    width: 33.33%;
   }
 
   &__language-info {

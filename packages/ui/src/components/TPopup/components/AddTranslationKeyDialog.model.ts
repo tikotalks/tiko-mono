@@ -1,5 +1,12 @@
 export interface AddTranslationKeyDialogProps {
   title?: string
+  mode?: 'create' | 'edit'
+  editKey?: {
+    id?: string
+    key: string
+    category?: string
+    description?: string
+  }
   onClose?: () => void
   onSave?: (data: TranslationKeyData) => Promise<void>
 }

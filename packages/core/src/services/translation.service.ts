@@ -301,6 +301,34 @@ class TranslationService {
   }
 
   /**
+   * Get all translations for a specific key (by key string) across all languages
+   */
+  async getTranslationsForKeyString(key: string): Promise<Translation[]> {
+    try {
+      // First get the key ID
+      const keys = await this.makeRequest(
+        `/i18n_keys?key=eq.${encodeURIComponent(key)}&select=id`
+      )
+      
+      if (!keys || keys.length === 0) {
+        return []
+      }
+      
+      const keyId = keys[0].id
+      
+      // Get published translations for this key across all languages
+      const translations = await this.makeRequest(
+        `/i18n_translations?select=*,locale_code:language_code&key_id=eq.${keyId}&is_published=eq.true&order=language_code.asc`
+      )
+      
+      return translations
+    } catch (error) {
+      logger.error('translation-service', `Error getting translations for key: ${key}`, error)
+      return []
+    }
+  }
+
+  /**
    * Get latest published translation for a specific key and language
    */
   async getLatestTranslation(keyId: number, languageCode: string): Promise<Translation | null> {
