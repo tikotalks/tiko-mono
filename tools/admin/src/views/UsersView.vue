@@ -88,12 +88,14 @@
                     size="small"
                     :icon="Icons.FILE_EDIT"
                     @click="editUser(user)"
+                    :title="t('admin.users.actions.editUser', 'Edit user')"
                   />
                   <TButton
                     type="ghost"
                     size="small"
                     :icon="Icons.LOCK"
                     @click="toggleUserStatus(user)"
+                    :title="user.is_active ? t('admin.users.actions.deactivateUser', 'Deactivate user') : t('admin.users.actions.activateUser', 'Activate user')"
                   />
                   <TButton
                     type="ghost"
@@ -101,6 +103,7 @@
                     color="error"
                     :icon="Icons.MULTIPLY_M"
                     @click="deleteUser(user)"
+                    :title="t('admin.users.actions.deleteUser', 'Delete user')"
                   />
                 </div>
               </td>

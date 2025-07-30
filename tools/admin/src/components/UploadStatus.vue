@@ -87,6 +87,7 @@
         type="ghost"
         :icon="expanded ? Icons.CHEVRON_DOWN : Icons.CHEVRON_UP"
         @click="expanded = !expanded"
+        :title="expanded ? t('admin.upload.collapse', 'Collapse') : t('admin.upload.expand', 'Expand')"
       />
 
       <TButton

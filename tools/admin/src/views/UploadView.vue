@@ -45,9 +45,9 @@
             <div :class="bemm('queue-item-actions')">
               <div :class="bemm('queue-item-status')">
                 <TSpinner v-if="item.status === 'uploading'" size="small" />
-                <TIcon v-else-if="item.status === 'success'" :name="Icons.CHECK_M" color="success" />
-                <TIcon v-else-if="item.status === 'pending'" :name="Icons.THREE_DOTS_HORIZONTAL" />
-                <TIcon v-else-if="item.status === 'error'" :name="Icons.CLOSE" color="error" />
+                <TActionIcon v-else-if="item.status === 'success'" :name="Icons.CHECK_M" color="success" />
+                <TActionIcon v-else-if="item.status === 'pending'" :name="Icons.THREE_DOTS_HORIZONTAL" color="primary" />
+                <TActionIcon v-else-if="item.status === 'error'" :name="Icons.CLOSE" color="error" />
               </div>
               <TButton
                 v-if="item.status === 'pending' || item.status === 'error'"
@@ -98,7 +98,7 @@
 import { ref, inject, onMounted, computed } from 'vue'
 import { useBemm } from 'bemm'
 import { useI18n } from '@tiko/ui'
-import { TCard, TButton, TIcon, TSpinner } from '@tiko/ui'
+import { TCard, TButton, TIcon, TActionIcon, TSpinner } from '@tiko/ui'
 import { Icons } from 'open-icon'
 import { useImages, useUpload } from '@tiko/core'
 import type { ToastService } from '@tiko/ui'
@@ -108,7 +108,7 @@ const bemm = useBemm('upload-view')
 const { t } = useI18n()
 const toastService = inject<ToastService>('toastService')
 const { imageList, loadImages } = useImages()
-const { 
+const {
   queue,
   addToQueue,
   removeFromQueue,
@@ -182,6 +182,7 @@ onMounted(() => {
 <style lang="scss">
 .upload-view {
   padding: var(--space);
+  padding-bottom: 200px;
 
   &__upload-area {
     max-width: 600px;

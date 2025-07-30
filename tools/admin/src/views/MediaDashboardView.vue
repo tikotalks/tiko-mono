@@ -16,7 +16,7 @@
 
         <TCard>
           <h3>{{ t('admin.dashboard.lastUpload') }}</h3>
-          <p class="stat-value">{{ formatDate(stats.lastUpload) }}</p>
+          <p class="stat-value">{{ stats.lastUpload ? formatDate(stats.lastUpload) : t('common.never') }}</p>
         </TCard>
       </div>
 
@@ -50,7 +50,7 @@ import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
 import { useI18n } from '@tiko/ui'
-import { authService, useImages } from '@tiko/core'
+import { authService, useImages, formatBytes, formatDate } from '@tiko/core'
 import {  TCard,  TIcon } from '@tiko/ui'
 import { Icons } from 'open-icon'
 
@@ -61,23 +61,6 @@ const { stats, loadImages } = useImages()
 
 
 
-const formatBytes = (bytes: number): string => {
-  if (bytes === 0) return '0 Bytes'
-
-  const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-}
-
-const formatDate = (date: Date | null): string => {
-  if (!date) return t('common.never')
-  return new Intl.DateTimeFormat('en-US', {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  }).format(date)
-}
 
 onMounted(async () => {
   await loadImages()

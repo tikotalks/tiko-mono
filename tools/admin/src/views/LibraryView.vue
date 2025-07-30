@@ -7,14 +7,12 @@
         </p>
       </div>
 
-      <div :class="bemm('search')">
-        <TInput
+        <TInputText
           v-model="searchQuery"
           :placeholder="t('admin.library.searchPlaceholder')"
           :icon="Icons.SEARCH_L"
           @input="searchImages(searchQuery)"
         />
-      </div>
 
       <TViewToggle
         v-model="viewMode"
@@ -28,12 +26,12 @@
         <TInputSelect
           v-model="sortField"
           :options="sortOptions"
-          :label="t('admin.library.sortBy.label')"
         />
 
         <TButton
           :icon="sortOrder === 'asc' ? Icons.ARROW_UP : Icons.ARROW_DOWN"
-          type="ghost"
+          type="outline"
+          size="small"
           @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
           :title="sortOrder === 'asc' ? t('admin.library.order.ascending') : t('admin.library.order.descending')"
         />
@@ -114,6 +112,7 @@ import {
   TListItem,
   TListCell,
   TInputSelect,
+  TInputText,
 } from '@tiko/ui';
 
 const toastService = inject<ToastService>('toastService');
@@ -284,10 +283,6 @@ onMounted(async () => {
     opacity: 0.5;
   }
 
-  &__search {
-    flex: 1;
-    max-width: 400px;
-  }
 
   &__view-toggle {
     display: flex;

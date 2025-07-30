@@ -1,76 +1,76 @@
 <template>
-
-<div :class="bemm('container')">
-  <aside :class="bemm('sidebar')">
-    <nav :class="bemm('navigation')">
-      <ul :class="bemm('nav-list')">
-        <li :class="bemm('nav-item')" v-for="item in navigationItems">
-          <router-link
-            v-if="item.to"
-            :to="item.to"
-            :class="bemm('nav-link')"
-            :key="item.name"
-          >
-            <TIcon :name="item.icon" />
-            <span>{{ item.label }}</span>
-          </router-link>
-
-          <div v-else :class="bemm('nav-link app__nav-link--header')"
-            :key="item.label">
-            <TIcon :name="item.icon" />
-            <span>{{ item.label }}</span>
-          </div>
-
-          <ul :class="bemm('nav-list')" v-if="item.items">
-            <li
-              :class="bemm('nav-item', ['','sub'])"
-              v-for="subItem in item.items"
-              :key="subItem.name"
+  <div :class="bemm('container')">
+    <aside :class="bemm('sidebar')">
+      <nav :class="bemm('navigation')">
+        <ul :class="bemm('nav-list')">
+          <li :class="bemm('nav-item')" v-for="item in navigationItems">
+            <router-link
+              v-if="item.to"
+              :to="item.to"
+              :class="bemm('nav-link')"
+              :key="item.name"
             >
-              <router-link
-                v-if="subItem.to"
-                :to="subItem.to"
-                :class="bemm('nav-link')"
-              >
-                <TIcon :name="subItem.icon" />
-                <span>{{ subItem.label }}</span>
-              </router-link>
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </nav>
-  </aside>
-  <div :class="bemm('content')">
-    <router-view />
-  </div>
+              <TIcon :name="item.icon" />
+              <span>{{ item.label }}</span>
+            </router-link>
 
-  <!-- Upload Status Bar -->
-  <TStatusBar :show="hasItems">
-    <UploadStatus @close="hasItems = false" />
-  </TStatusBar>
-</div>
+            <div
+              v-else
+              :class="bemm('nav-link',['','header'])"
+              :key="item.label"
+            >
+              <TIcon :name="item.icon" />
+              <span>{{ item.label }}</span>
+            </div>
+
+            <ul :class="bemm('nav-list')" v-if="item.items">
+              <li
+                :class="bemm('nav-item', ['', 'sub'])"
+                v-for="subItem in item.items"
+                :key="subItem.name"
+              >
+                <router-link
+                  v-if="subItem.to"
+                  :to="subItem.to"
+                  :class="bemm('nav-link')"
+                >
+                  <TIcon :name="subItem.icon" />
+                  <span>{{ subItem.label }}</span>
+                </router-link>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+    <div :class="bemm('content')">
+      <router-view />
+    </div>
+
+    <!-- Upload Status Bar -->
+    <TStatusBar :show="hasItems">
+      <UploadStatus @close="hasItems = false" />
+    </TStatusBar>
+  </div>
 </template>
 
-
 <script lang="ts" setup>
-import { ref, computed, inject } from 'vue'
-import { useBemm } from 'bemm'
-import { Icons } from 'open-icon'
-import { useI18n, TIcon, TSpinner, TStatusBar } from '@tiko/ui'
-import { useRouter, useRoute } from 'vue-router'
-import { useUpload } from '@tiko/core'
-import { uploadService } from '../services/upload.service'
-import type { ToastService } from '@tiko/ui'
-import UploadStatus from '../components/UploadStatus.vue'
+import { inject } from 'vue';
+import { useBemm } from 'bemm';
+import { Icons } from 'open-icon';
+import { useI18n, TIcon, TStatusBar } from '@tiko/ui';
+import { useUpload } from '@tiko/core';
+import { uploadService } from '../services/upload.service';
+import type { ToastService } from '@tiko/ui';
+import UploadStatus from '../components/UploadStatus.vue';
 
 const { keys, t } = useI18n();
 
 const bemm = useBemm('admin-layout');
-const toastService = inject<ToastService>('toastService')
+const toastService = inject<ToastService>('toastService');
 
 // Initialize upload composable with service
-const { hasItems } = useUpload(uploadService, toastService)
+const { hasItems } = useUpload(uploadService, toastService);
 
 interface NavigationItem {
   name: string;
@@ -80,31 +80,30 @@ interface NavigationItem {
   items?: NavigationItem[];
 }
 
-
 const navigationItems: NavigationItem[] = [
   {
     name: 'dashboard',
     to: { name: 'Dashboard' },
     icon: Icons.BUILDING_HOUSE2,
-    label: 'Dashboard', // t(keys.admin.navigation.dashboard),
+    label: t('admin.navigation.dashboard', 'Dashboard'),
   },
   {
     name: 'media',
     to: { name: 'MediaDashboard' },
     icon: Icons.IMAGE,
-    label: 'Media', // t(keys.admin.navigation.media),
+    label: t('admin.navigation.media', 'Media'),
     items: [
       {
         name: 'library',
         to: { name: 'Library' },
         icon: Icons.IMAGE,
-        label: 'Library', // t(keys.admin.navigation.library),
+        label: t('admin.navigation.library', 'Library'),
       },
       {
         name: 'upload',
         to: { name: 'Upload' },
         icon: Icons.ARROW_HEADED_UP,
-        label: 'Upload', // t(keys.admin.navigation.upload),
+        label: t('admin.navigation.upload', 'Upload'),
       },
     ],
   },
@@ -112,27 +111,43 @@ const navigationItems: NavigationItem[] = [
     name: 'users',
     to: { name: 'Users' },
     icon: Icons.USER_GROUP,
-    label: t(keys.admin.navigation.users),
+    label: t('admin.navigation.users', 'Users'),
   },
   {
-    name: 'translations',
-    to: { name: 'Translations' },
-    icon: Icons.LANGUAGE,
-    label: t(keys.admin.navigation.translations),
+    name: 'i18n',
+    icon: Icons.SPEECH_BALLOONS,
+    label: t('admin.navigation.i18n', 'i18n'),
+    items: [
+      {
+        name: 'i18n-keys',
+        to: { name: 'I18nKeys' },
+        icon: Icons.KITCHEN_CUTLERY,
+        label: t('admin.navigation.i18nKeys', 'Keys'),
+      },
+      {
+        name: 'i18n-database',
+        to: { name: 'I18nDatabase' },
+        icon: Icons.FILE_CLOUD,
+        label: t('admin.navigation.i18nDatabase', 'Import'),
+      },
+      {
+        name: 'i18n-languages',
+        to: { name: 'I18nLanguages' },
+        icon: Icons.SPEECH_BALLOON_SQUARE,
+        label: t('admin.navigation.i18nLanguages', 'Languages'),
+      },
+    ]
   },
   // {
   //   name: 'analytics',
   //   to: { name: 'Analytics' },
   //   icon: Icons.CHART_LINE,
-  //   label: 'Analytics', // t(keys.admin.navigation.analytics),
+  //   label: t('admin.navigation.analytics', 'Analytics'),
   // },
 ];
-
 </script>
 
-
 <style lang="scss">
-
 .admin-layout {
   &__container {
     display: flex;
@@ -141,7 +156,7 @@ const navigationItems: NavigationItem[] = [
   }
 
   &__sidebar {
-    width: 250px;
+    width: clamp(240px, 15vw, 320px);
     border-right: 1px solid var(--color-border);
   }
 
@@ -155,6 +170,7 @@ const navigationItems: NavigationItem[] = [
 
   &__content {
     width: 100%;
+    padding: var(--space);
   }
 
   &__nav-list {
@@ -165,9 +181,9 @@ const navigationItems: NavigationItem[] = [
     flex-direction: column;
     gap: var(--space-xs);
 
-    .app__nav-list {
-     padding-left: var(--space);
-     padding-top: var(--space-xs);
+    .admin-layout__nav-list {
+      padding-left: var(--space);
+      padding-top: var(--space-xs);
     }
   }
   &__nav-item {
@@ -176,35 +192,38 @@ const navigationItems: NavigationItem[] = [
     }
   }
 
-&__nav-link {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  padding: var(--space-xs) var(--space-s);
-  text-decoration: none;
-  color: var(--color-foreground);
-  background-color: color-mix(in srgb, var(--color-primary), transparent 80%);
-  border-radius: 4px;
-  transition: background-color 0.2s;
-  gap: var(--space-xs);
+  &__nav-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-s);
+    text-decoration: none;
+    color: var(--color-foreground);
+    // background-color: color-mix(in srgb, var(--color-primary), transparent 80%);
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    gap: var(--space-xs);
 
-  &:hover:not(.nav-link--header) {
-    background-color: var(--color-primary);
-  }
+    &:hover:not(.nav-link--header) {
+      background-color: var(--color-primary);
+    }
 
-  &--header {
-    font-weight: 600;
-    cursor: default;
-    opacity: 0.8;
-  }
+    &--header {
+      font-weight: 600;
+      cursor: default;
+      opacity: 0.8;
+    }
 
-  &.router-link-active {
-    background-color: var(--color-primary);
-    color: var(--color-primary-text);
+    &.router-link-exact-active {
+      background-color: color-mix(
+        in srgb,
+        var(--color-primary),
+        transparent 80%
+      );
+      box-shadow: 0 0 0 1px var(--color-primary);
+    }
   }
 }
-}
-
 
 .loading-container {
   display: flex;
@@ -271,5 +290,4 @@ const navigationItems: NavigationItem[] = [
     gap: var(--space-xs);
   }
 }
-
 </style>
