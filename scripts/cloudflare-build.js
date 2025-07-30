@@ -32,11 +32,16 @@ if (!appName) {
 
 // Convert simple app names to Nx project names
 const appNameMapping = {
-  'admin': '@tiko/admin',
-  'yesno': 'yesno',  // yesno doesn't use @tiko prefix
+  'admin': 'admin',
+  'yesno': 'yes-no',     // Directory is yes-no, not yesno
+  'yes-no': 'yes-no',
   'timer': 'timer',
   'cards': 'cards',
-  'radio': 'radio'
+  'radio': 'radio',
+  'type': 'type',
+  'todo': 'todo',
+  'tiko': 'tiko',
+  'ui-docs': 'ui-docs'
 };
 
 if (appNameMapping[appName]) {
