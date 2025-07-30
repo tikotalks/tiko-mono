@@ -170,14 +170,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useBemm } from 'bemm'
-import { useAuthStore } from '@tiko/core'
+import { useAuthStore, useI18nDatabaseService } from '@tiko/core'
 import { storeToRefs } from 'pinia'
 import TButton from '../TButton/TButton.vue'
 import TIcon from '../TIcon/TIcon.vue'
 import { toastService } from '../TToast'
 import { useLocalStorage } from '../../composables/useLocalStorage'
 import { useI18n } from '../../composables/useI18n'
-import { getLanguageGroups, findLanguageGroupByLocale, getBaseLanguageCode } from '../../utils/languageGroups'
+import { groupDatabaseLanguages, findLanguageGroupByLocale, getBaseLanguageCode } from '../../utils/languageGroups'
 import type { FrameworkConfig, SettingsSection } from './TFramework.model'
 import type { Locale } from '../../i18n/types'
 
@@ -194,6 +194,7 @@ const bemm = useBemm('settings')
 const authStore = useAuthStore()
 const { user, userSettings, currentTheme, currentLanguage } = storeToRefs(authStore)
 const { t, locale, setLocale, availableLocales, localeNames } = useI18n()
+const translationService = useI18nDatabaseService()
 
 // Theme settings
 const themes = computed(() => [
@@ -206,7 +207,15 @@ const themes = computed(() => [
 const voiceEnabled = ref(userSettings.value.voiceEnabled ?? true)
 const selectedVoice = ref(userSettings.value.voice ?? '')
 const availableVoices = ref<SpeechSynthesisVoice[]>([])
-const languageGroups = getLanguageGroups()
+
+// Language data
+const databaseLanguages = ref<Array<{ code: string; name: string; native_name?: string }>>([])
+const languageGroups = computed(() => {
+  if (databaseLanguages.value.length === 0) {
+    return []
+  }
+  return groupDatabaseLanguages(databaseLanguages.value)
+})
 
 // Current language group state
 const selectedBaseLanguage = ref('')
@@ -228,6 +237,22 @@ const initializeLanguageSelection = () => {
 
 // Helper function to get translated language names
 const getTranslatedLanguageName = (translationKey: string) => {
+  // For database languages, the translationKey is actually the language name
+  // First check if it's a valid translation key
+  if (translationKey.includes('.')) {
+    return t(translationKey)
+  }
+  
+  // Otherwise, find the language in our database and use its native name
+  const language = databaseLanguages.value.find(lang => 
+    lang.name.toLowerCase() === translationKey.toLowerCase()
+  )
+  
+  if (language) {
+    return language.native_name || language.name
+  }
+  
+  // Fallback to original translation approach
   return t(`languageNames.${translationKey}`)
 }
 
@@ -337,7 +362,20 @@ const loadVoices = () => {
   }
 }
 
-onMounted(() => {
+// Load languages from database
+const loadLanguages = async () => {
+  try {
+    const languages = await translationService.getActiveLanguages()
+    databaseLanguages.value = languages
+  } catch (err) {
+    console.error('Failed to load languages:', err)
+  }
+}
+
+onMounted(async () => {
+  // Load languages from database
+  await loadLanguages()
+  
   // Initialize language selection
   initializeLanguageSelection()
 

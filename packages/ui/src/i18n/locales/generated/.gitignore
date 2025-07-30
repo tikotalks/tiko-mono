@@ -1,9 +1,0 @@
-# Generated translation files
-# These are created during build from the database
-*.json
-*.ts
-index.ts
-
-# Keep this file
-!.gitignore
-!README.md

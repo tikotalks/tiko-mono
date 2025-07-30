@@ -66,7 +66,6 @@ export type { Card } from './components/TCard/TCardCommunication.ts'
 
 // Composables
 export { useI18n } from './composables/useI18n'
-export { useStaticI18n } from './composables/useStaticI18n'
 export { initializeDatabaseKeys, getDatabaseKeys, databaseKeys } from './i18n/database-keys'
 export type { TranslationKey } from './i18n/types'
 

@@ -10,22 +10,22 @@
         <h2 :class="bemm('section-title')">{{ t('admin.dashboard.users') }}</h2>
         <div :class="bemm('stats')">
           <TCard>
-            <h3>{{ t('admin.dashboard.totalUsers') }}</h3>
+            <h5>{{ t('admin.dashboard.totalUsers') }}</h5>
             <p class="stat-value">{{ userStats?.totalUsers || 0 }}</p>
           </TCard>
 
           <TCard>
-            <h3>{{ t('admin.dashboard.activeUsers') }}</h3>
+            <h5>{{ t('admin.dashboard.activeUsers') }}</h5>
             <p class="stat-value">{{ userStats?.activeUsers || 0 }}</p>
           </TCard>
 
           <TCard>
-            <h3>{{ t('admin.dashboard.newUsersToday') }}</h3>
+            <h5>{{ t('admin.dashboard.newUsersToday') }}</h5>
             <p class="stat-value">{{ userStats?.newUsersToday || 0 }}</p>
           </TCard>
 
           <TCard>
-            <h3>{{ t('admin.dashboard.adminUsers') }}</h3>
+            <h5>{{ t('admin.dashboard.adminUsers') }}</h5>
             <p class="stat-value">{{ userStats?.adminUsers || 0 }}</p>
           </TCard>
         </div>
@@ -36,17 +36,17 @@
         <h2 :class="bemm('section-title')">{{ t('admin.dashboard.media') }}</h2>
         <div :class="bemm('stats')">
           <TCard>
-            <h3>{{ t('admin.dashboard.totalMediaItems') }}</h3>
+            <h5>{{ t('admin.dashboard.totalMediaItems') }}</h5>
             <p class="stat-value">{{ mediaCount }}</p>
           </TCard>
 
           <TCard>
-            <h3>{{ t('admin.dashboard.storageUsed') }}</h3>
+            <h5>{{ t('admin.dashboard.storageUsed') }}</h5>
             <p class="stat-value">{{ formatBytes(mediaStats?.storageUsed || 0) }}</p>
           </TCard>
 
           <TCard>
-            <h3>{{ t('admin.dashboard.lastUpload') }}</h3>
+            <h5>{{ t('admin.dashboard.lastUpload') }}</h5>
             <p class="stat-value">{{ mediaStats?.lastUpload ? formatDate(mediaStats.lastUpload) : t('common.never') }}</p>
           </TCard>
         </div>
@@ -57,22 +57,22 @@
         <h2 :class="bemm('section-title')">{{ t('admin.dashboard.translations') }}</h2>
         <div :class="bemm('stats')">
           <TCard>
-            <h3>{{ t('admin.dashboard.totalLocales') }}</h3>
+            <h5>{{ t('admin.dashboard.totalLocales') }}</h5>
             <p class="stat-value">{{ translationStats?.locales?.length || 0 }}</p>
           </TCard>
 
           <TCard>
-            <h3>{{ t('admin.dashboard.totalStrings') }}</h3>
+            <h5>{{ t('admin.dashboard.totalStrings') }}</h5>
             <p class="stat-value">{{ translationStats?.totalKeys || 0 }}</p>
           </TCard>
 
           <TCard>
-            <h3>{{ t('admin.dashboard.missingTranslations') }}</h3>
+            <h5>{{ t('admin.dashboard.missingTranslations') }}</h5>
             <p class="stat-value">{{ totalMissingTranslations }}</p>
           </TCard>
 
           <TCard>
-            <h3>{{ t('admin.dashboard.completionRate') }}</h3>
+            <h5>{{ t('admin.dashboard.completionRate') }}</h5>
             <p class="stat-value">{{ averageCompletionRate }}%</p>
           </TCard>
         </div>
@@ -314,6 +314,11 @@ onMounted(() => {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: var(--space);
+
+    .icon{
+      font-size: 2em;
+      color: var(--color-secondary)
+    }
   }
 
   &__action-card {

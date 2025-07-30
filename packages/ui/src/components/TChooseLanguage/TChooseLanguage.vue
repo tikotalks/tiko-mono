@@ -5,18 +5,30 @@
       <TInputText
         v-model="searchQuery"
         :placeholder="t(keys.common.search)"
-        :icon="Icons.SEARCH"
+        :icon="Icons.SEARCH_M"
         :class="bemm('search-input')"
       />
     </div>
 
     <!-- Language List -->
     <div :class="bemm('list')">
-      <div
-        v-for="group in filteredLanguageGroups"
-        :key="group.baseCode"
-        :class="bemm('item', { active: isLanguageActive(group) })"
-      >
+      <!-- Loading state -->
+      <div v-if="loading" :class="bemm('loading')">
+        {{ t(keys.common.loading) }}
+      </div>
+      
+      <!-- Error state -->
+      <div v-else-if="error" :class="bemm('error')">
+        {{ error }}
+      </div>
+      
+      <!-- Language items -->
+      <template v-else>
+        <div
+          v-for="group in filteredLanguageGroups"
+          :key="group.baseCode"
+          :class="bemm('item', { active: isLanguageActive(group) })"
+        >
         <button
           :class="bemm('item-button')"
           @click="handleLanguageClick(group)"
@@ -45,10 +57,11 @@
         </div>
       </div>
 
-      <!-- No results message -->
-      <div v-if="filteredLanguageGroups.length === 0" :class="bemm('no-results')">
-        {{ t(keys.radio.noResultsFound) }}
-      </div>
+        <!-- No results message -->
+        <div v-if="filteredLanguageGroups.length === 0" :class="bemm('no-results')">
+          {{ t(keys.radio.noResultsFound) }}
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -57,10 +70,10 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useBemm } from 'bemm'
 import { useI18n } from '../../composables/useI18n'
+import { useI18nDatabaseService } from '@tiko/core'
 import TInputText from '../TForm/inputs/TInputText/TInputText.vue'
-import { getLanguageGroups, getBaseLanguageCode, type LanguageGroup } from '../../utils/languageGroups'
+import { groupDatabaseLanguages, getBaseLanguageCode, type LanguageGroup } from '../../utils/languageGroups'
 import { Icons } from 'open-icon'
-import { locales, type LocaleCode } from '../../i18n/locales'
 import type { TChooseLanguageProps, TChooseLanguageEmits } from './TChooseLanguage.model'
 import TButton from '../TButton/TButton.vue'
 
@@ -72,10 +85,14 @@ const emit = defineEmits<TChooseLanguageEmits>()
 
 const bemm = useBemm('choose-language')
 const { t, keys, locale } = useI18n()
+const translationService = useI18nDatabaseService()
 
 // Local state
 const selectedLanguage = ref('')
 const searchQuery = ref('')
+const databaseLanguages = ref<Array<{ code: string; name: string; native_name?: string }>>([])
+const loading = ref(false)
+const error = ref<string | null>(null)
 
 // Initialize from modelValue
 const initializeFromModelValue = () => {
@@ -86,13 +103,18 @@ const initializeFromModelValue = () => {
   }
 }
 
-// Get all language groups
-const languageGroups = computed(() => getLanguageGroups())
+// Get all language groups from database
+const languageGroups = computed(() => {
+  if (databaseLanguages.value.length === 0) {
+    return []
+  }
+  return groupDatabaseLanguages(databaseLanguages.value)
+})
 
 // Filter and sort language groups
 const filteredLanguageGroups = computed(() => {
   let groups = languageGroups.value
-  
+
   // Filter by search query
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
@@ -106,7 +128,7 @@ const filteredLanguageGroups = computed(() => {
              variantCodes.some(code => code.includes(query))
     })
   }
-  
+
   // Sort alphabetically by translated name
   return groups.sort((a, b) => {
     const nameA = getTranslatedLanguageName(a.baseCode)
@@ -115,9 +137,20 @@ const filteredLanguageGroups = computed(() => {
   })
 })
 
-// Get translated language name
+// Get translated language name from database
 const getTranslatedLanguageName = (baseCode: string): string => {
-  // Map base codes to translation keys
+  // First, try to find the language in our database languages
+  const language = databaseLanguages.value.find(lang => {
+    const langBaseCode = getBaseLanguageCode(lang.code)
+    return langBaseCode === baseCode
+  })
+  
+  if (language) {
+    // Use native name if available, otherwise use the name
+    return language.native_name || language.name
+  }
+  
+  // Fallback to translation keys for backwards compatibility
   const languageKeys: Record<string, string> = {
     'bg': keys.languageNames.bulgarian,
     'cs': keys.languageNames.czech,
@@ -149,7 +182,7 @@ const getTranslatedLanguageName = (baseCode: string): string => {
     'sl': keys.languageNames.slovenian,
     'sv': keys.languageNames.swedish
   }
-  
+
   const translationKey = languageKeys[baseCode]
   return translationKey ? t(translationKey) : baseCode.toUpperCase()
 }
@@ -176,13 +209,13 @@ const handleLanguageClick = (group: LanguageGroup) => {
 }
 
 // Handle region button click
-const handleRegionClick = (localeCode: LocaleCode) => {
+const handleRegionClick = (localeCode: string) => {
   if (props.disabled) return
   selectLanguage(localeCode)
 }
 
 // Select a language and emit the change
-const selectLanguage = (localeCode: LocaleCode) => {
+const selectLanguage = (localeCode: string) => {
   selectedLanguage.value = localeCode
   emit('update:modelValue', localeCode)
   emit('change', localeCode)
@@ -190,7 +223,7 @@ const selectLanguage = (localeCode: LocaleCode) => {
 }
 
 // Get default variant for a language group
-const getDefaultVariant = (group: LanguageGroup): LocaleCode | null => {
+const getDefaultVariant = (group: LanguageGroup): string | null => {
   // Define default variants
   const defaults: Record<string, string> = {
     'en': 'en-GB',
@@ -203,7 +236,7 @@ const getDefaultVariant = (group: LanguageGroup): LocaleCode | null => {
 
   const defaultCode = defaults[group.baseCode]
   if (defaultCode && group.variants.some(v => v.code === defaultCode)) {
-    return defaultCode as LocaleCode
+    return defaultCode
   }
 
   // Fallback to first variant
@@ -222,9 +255,27 @@ watch(() => props.modelValue, (newValue) => {
   }
 }, { immediate: true })
 
+// Load languages from database
+const loadLanguages = async () => {
+  try {
+    loading.value = true
+    error.value = null
+    
+    // Fetch active languages from database
+    const languages = await translationService.getActiveLanguages()
+    databaseLanguages.value = languages
+  } catch (err) {
+    console.error('Failed to load languages:', err)
+    error.value = t(keys.errors.generic)
+  } finally {
+    loading.value = false
+  }
+}
+
 // Initialize on mount
-onMounted(() => {
+onMounted(async () => {
   initializeFromModelValue()
+  await loadLanguages()
 })
 </script>
 
@@ -321,6 +372,18 @@ onMounted(() => {
     padding: var(--space-lg);
     color: var(--color-foreground-secondary);
     font-size: 0.875em;
+  }
+
+  &__loading {
+    text-align: center;
+    padding: var(--space-lg);
+    color: var(--color-foreground-secondary);
+  }
+
+  &__error {
+    text-align: center;
+    padding: var(--space-lg);
+    color: var(--color-error);
   }
 }
 </style>
