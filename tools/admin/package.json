@@ -1,5 +1,5 @@
 {
-  "name": "@tiko/admin-new",
+  "name": "@tiko/admin",
   "version": "1.0.0",
   "description": "Tiko Admin - Admin dashboard app",
   "type": "module",
