@@ -1,7 +1,7 @@
 <template>
   <component
     :is="componentTag"
-    :class="bemm('',['',isClickable ? 'clickable' :''])"
+    :class="bemm('', ['',isClickable ? 'clickable' : '', props.selected ? 'selected' : ''])"
     :href="href"
     v-bind="componentProps"
     @click="handleClick"
@@ -17,7 +17,8 @@ import type { TListItemProps } from './TListItem.model'
 
 const props = withDefaults(defineProps<TListItemProps>(), {
   tag: 'div',
-  clickable: false
+  clickable: false,
+  selected: false
 })
 
 const emit = defineEmits<{
@@ -72,6 +73,14 @@ const handleClick = (event: Event) => {
 
     &:hover {
       background: var(--color-background-secondary);
+    }
+  }
+
+  &--selected {
+    background: color-mix(in srgb, var(--color-primary), transparent 75%) !important;
+
+    &:hover {
+      background: var(--color-primary);
     }
   }
 }

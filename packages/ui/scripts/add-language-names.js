@@ -125,17 +125,17 @@ function addLanguageNamesToFile(langCode, filePath) {
   }
 
   let content = fs.readFileSync(filePath, 'utf8')
-  
+
   // Check if languageNames already exists
   if (content.includes('languageNames:')) {
     console.log(`${langCode}: languageNames already exists`)
     return
   }
-  
+
   // Create the languageNames section
   const translations = LANGUAGE_TRANSLATIONS[langCode]
   const languageNamesSection = `  languageNames: {
-    // Base languages
+
     bulgarian: '${translations.bulgarian}',
     czech: '${translations.czech}',
     welsh: '${translations.welsh}',
@@ -165,7 +165,7 @@ function addLanguageNamesToFile(langCode, filePath) {
     slovak: '${translations.slovak}',
     slovenian: '${translations.slovenian}',
     swedish: '${translations.swedish}',
-    // Regional variants
+
     germanGermany: '${translations.germanGermany}',
     germanAustria: '${translations.germanAustria}',
     germanSwitzerland: '${translations.germanSwitzerland}',

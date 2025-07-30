@@ -466,7 +466,7 @@ export const is: TranslationSchema = {
     onlyOneNumberAllowed: 'Aðeins ein tala er leyfð'
   },
   languageNames: {
-    // Base languages
+
     bulgarian: 'Búlgarska',
     czech: 'Tékkneska',
     welsh: 'Velska',
@@ -496,7 +496,7 @@ export const is: TranslationSchema = {
     slovak: 'Slóvakíska',
     slovenian: 'Slóvenska',
     swedish: 'Sænska',
-    // Regional variants
+
     germanGermany: 'Þýska (Þýskaland)',
     germanAustria: 'Þýska (Austurríki)',
     germanSwitzerland: 'Þýska (Sviss)',

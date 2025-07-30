@@ -221,7 +221,7 @@ export class SupabaseUserService implements UserService {
       const session = this.getSession()
       if (!session) throw new Error('Not authenticated')
 
-      const response = await fetch(`${this.API_URL}/user_profiles?select=id,role,is_active,created_at`, {
+      const response = await fetch(`${this.API_URL}/user_profiles?select=id,created_at`, {
         headers: {
           'apikey': this.ANON_KEY,
           'Authorization': `Bearer ${session.access_token}`,

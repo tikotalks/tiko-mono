@@ -238,6 +238,32 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
   
+  // Clean up any corrupted locale storage
+  const cleanupCorruptedLocaleStorage = () => {
+    try {
+      const storedLocale = localStorage.getItem('tiko-language')
+      if (storedLocale) {
+        console.log('[Auth Store] Current tiko-language value:', storedLocale)
+        
+        // Check if the value has double quotes (corrupted)
+        const parsed = JSON.parse(storedLocale)
+        console.log('[Auth Store] Parsed locale:', parsed, typeof parsed)
+        
+        // If the parsed value is still a string with quotes, it's double-encoded
+        if (typeof parsed === 'string' && (parsed.startsWith('"') && parsed.endsWith('"'))) {
+          console.warn('[Auth Store] Detected double-encoded locale, cleaning up...')
+          const cleanLocale = parsed.slice(1, -1) // Remove the extra quotes
+          localStorage.setItem('tiko-language', JSON.stringify(cleanLocale))
+          console.log('[Auth Store] Cleaned locale to:', cleanLocale)
+        }
+      }
+    } catch (err) {
+      console.error('[Auth Store] Error during locale cleanup:', err)
+      // If there's any error, clear the corrupted value
+      localStorage.removeItem('tiko-language')
+    }
+  }
+  
   // Sync settings to API (user metadata)
   const syncSettingsToAPI = async () => {
     if (!user.value) return
@@ -287,6 +313,8 @@ export const useAuthStore = defineStore('auth', () => {
   
   const initializeFromStorage = async () => {
     try {
+      // Clean up any corrupted locale entries first
+      cleanupCorruptedLocaleStorage()
       
       // First, load settings from localStorage for immediate use
       loadSettingsFromStorage()
@@ -377,12 +405,20 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const updateLanguage = async (language: string) => {
+    console.log('[Auth Store] updateLanguage called with:', language)
+    
     await updateSetting('language', language)
     
     // Also update the i18n locale directly in localStorage
-    // This ensures immediate UI update
+    // Use the same JSON encoding pattern that useLocalStorage uses
     try {
-      localStorage.setItem('tiko-language', JSON.stringify(language))
+      const encodedValue = JSON.stringify(language)
+      console.log('[Auth Store] Setting tiko-language to:', encodedValue)
+      localStorage.setItem('tiko-language', encodedValue)
+      
+      // Verify what was actually stored
+      const stored = localStorage.getItem('tiko-language')
+      console.log('[Auth Store] Verification - stored value:', stored)
     } catch (err) {
       console.error('[Auth Store] Failed to update i18n locale:', err)
     }

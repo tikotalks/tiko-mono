@@ -1,23 +1,9 @@
 // usePopup.ts
-import { markRaw, ref, nextTick, type Component, type VNode } from 'vue';
-
-export interface PopupOptions {
-	component: Component;
-	props?: Record<string, any>;
-	title?: string;
-	description?: string;
-	onClose?: () => void;
-	config?: {
-		background?: boolean;
-		position?: 'center' | 'bottom' | 'top';
-		canClose?: boolean;
-		width?: string;
-	};
-	id?: string;
-	closePopups?: boolean;
-	slots?: Record<string, () => VNode>;
-	on?: Record<string, (...args: any[]) => void>;
-}
+import { markRaw, reactive, ref, type ComponentPublicInstance, type Slot, type Component } from 'vue';
+import PopupSlot from './TPopupSlot.vue';
+import type { PopupOptions, PopupInstance } from './TPopup.model';
+import { logger } from '@tiko/core';
+import { ConfirmDialog, ProgressDialog, AddTranslationKeyDialog } from './components';
 
 const defaultPopupOptions: Partial<PopupOptions> = {
 	config: {
@@ -25,44 +11,57 @@ const defaultPopupOptions: Partial<PopupOptions> = {
 		position: 'center',
 		canClose: true,
 		width: 'auto',
+		closingTimeout: 1000,
 	},
 	closePopups: false,
 };
 
-export interface PopupInstance {
-	id: string;
-	component: Component;
-	props: Record<string, any>;
-	title?: string;
-	description?: string;
-	onClose?: () => void;
-	openedTime: number;
-	slots?: Record<string, () => VNode>;
-	events?: Record<string, (...args: any[]) => void>;
-	config: {
-		canClose?: boolean;
-		hasBackground: boolean;
-		position: string;
-		width: string;
-	};
-}
+export const popupRefs = reactive<Record<string, ComponentPublicInstance | null>>({});
+
+// Component registry for string-based component resolution
+const componentRegistry: Record<string, Component> = {
+	ConfirmDialog,
+	ProgressDialog,
+	AddTranslationKeyDialog
+};
 
 const usePopupService = () => {
 	const popups = ref<PopupInstance[]>([]);
-	const instanceId = crypto.randomUUID();
 
+	// Add a global popup state reset mechanism
+	const resetPopupState = () => {
+		popups.value = [];
+	};
 
-	const showPopup = (opts: PopupOptions) => {
+	const show = (opts: PopupOptions) => {
+		// Ensure no stale popups are lingering
+		if (popups.value.length > 5) {
+			resetPopupState();
+		}
+
+		// Resolve string components
+		if (typeof opts.component === 'string') {
+			const resolvedComponent = componentRegistry[opts.component];
+			if (!resolvedComponent) {
+				logger.error(`Component "${opts.component}" not found in popup registry`);
+				return '';
+			}
+			opts.component = markRaw(resolvedComponent);
+		} else if (typeof opts.component === 'function') {
+			const slotFn = opts.component as Slot<any>;
+			opts = {
+				...opts,
+				component: markRaw(PopupSlot),
+				slots: {
+					...opts.slots,
+					// @ts-expect-error
+					default: slotFn,
+				},
+			};
+		}
 
 		const options = { ...defaultPopupOptions, ...opts };
 		const id = options.id || crypto.randomUUID();
-
-		console.log(`[PopupService ${instanceId}] Opening popup:`, {
-			popupId: id,
-			title: options.title,
-			component: options.component?.name || 'Unknown',
-			currentPopupCount: popups.value.length
-		});
 
 		if (options.closePopups) {
 			closeAllPopups(id);
@@ -70,85 +69,110 @@ const usePopupService = () => {
 
 		const wrappedProps = {
 			...options.props,
-			...(options.on && Object.entries(options.on).reduce((acc, [event, handler]) => {
-				// Convert kebab-case to camelCase for event handlers
-				const camelCaseEvent = event.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-				const capitalizedEvent = camelCaseEvent.charAt(0).toUpperCase() + camelCaseEvent.slice(1);
-
-				return {
-					...acc,
-					[`onUpdate:${event}`]: handler,
-					[`on${capitalizedEvent}`]: handler,
-				};
-			}, {})),
+			...(options.on &&
+				Object.entries(options.on).reduce(
+					(acc, [event, handler]) => ({
+						...acc,
+						[`onUpdate:${event}`]: handler,
+						[`on${event.charAt(0).toUpperCase() + event.slice(1)}`]: handler,
+					}),
+					{}
+				)),
 		};
 
 		const newPopup: PopupInstance = {
 			id,
-			component: markRaw(options.component),
+			component: options.component ? markRaw(options.component) : markRaw(PopupSlot),
+			footer: options.footer ? markRaw(options.footer) : undefined,
+			header: options.header ? markRaw(options.header) : undefined,
 			props: wrappedProps,
 			title: options.title || '',
 			description: options.description || '',
 			config: {
 				hasBackground: options.config?.background ?? true,
 				position: options.config?.position || 'center',
-				canClose: options.config?.canClose,
+				canClose: options.config?.canClose ?? true,
 				width: options.config?.width || 'auto',
+				closingTimeout: options.config?.closingTimeout || 1000,
 			},
+			onCallback: options.onCallback,
 			onClose: options.onClose,
 			openedTime: Date.now(),
 			slots: options.slots,
 			events: options.on,
+			state: {
+				closing: false,
+			},
 		};
 
-		nextTick(() => {
-			popups.value.push(newPopup);
-			console.log(`[PopupService ${instanceId}] Popup added to array:`, {
-				popupId: id,
-				totalPopups: popups.value.length,
-				popupIds: popups.value.map(p => p.id)
-			});
+		Promise.resolve().then(() => {
+
+			// Attempt to push popup with additional safety
+			try {
+				popups.value.push(newPopup);
+			} catch (error) {
+				logger.error('Failed to push popup', {
+					error,
+					popupId: id,
+					popupsCount: popups.value.length,
+				});
+				resetPopupState();
+			}
 		});
+
 		return id;
 	};
 
-	const closePopup = (id?: string) => {
+	const close = (opts: { id?: string; callback?: Object }) => {
+		const { id, callback } = opts;
+
 		if (id) {
-			const popup = popups.value.find(p => p.id === id);
+			const popup = popups.value.find((p) => p.id === id);
 			if (popup) {
-				popup.onClose?.();
-				popups.value = popups.value.filter(p => p.id !== id);
+				popup.state.closing = true;
+
+				if (callback && popup.onCallback) {
+					popup.onCallback(callback);
+				}
+
+				setTimeout(() => {
+					popup.onClose?.();
+					popups.value = popups.value.filter((p) => p.id !== id);
+				}, popup.config.closingTimeout);
 			}
-		}
-		else {
+		} else {
 			// Close the last opened popup if no ID is provided
 			const popup = popups.value[popups.value.length - 1];
 			if (popup) {
-				popup.onClose?.();
-				popups.value.pop();
+				popup.state.closing = true;
+				setTimeout(() => {
+					popup.onClose?.();
+					popups.value.pop();
+				}, popup.config.closingTimeout);
 			}
 		}
 	};
 
 	const closeAllPopups = (excludeId?: string) => {
-		popups.value.filter(popup => popup.id !== excludeId).forEach(popup => popup.onClose?.());
-		nextTick(() => {
-			popups.value = [];
-		});
+		popups.value
+			.map((popup) => popup.id)
+			.filter((popupId) => popupId !== excludeId)
+			.forEach((id) => close({ id }));
 	};
 
 	return {
-		instanceId,
 		popups,
-		showPopup,
-		closePopup,
+		open: show,
+		show,
+		showPopup: show,
+		close: close,
+		closePopup: close,
 		closeAllPopups,
-		// Convenience aliases
-		open: showPopup,
-		close: closePopup,
-		closeAll: closeAllPopups,
+		resetPopupState, // Expose reset method
 	};
 };
 
 export const popupService = usePopupService();
+
+
 export type PopupService = ReturnType<typeof usePopupService>;

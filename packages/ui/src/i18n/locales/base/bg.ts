@@ -480,7 +480,7 @@ export const bg: TranslationSchema = {
   },
 
   languageNames: {
-    // Base languages
+
     bulgarian: 'Български',
     czech: 'Чешки',
     welsh: 'Уелски',
@@ -510,7 +510,7 @@ export const bg: TranslationSchema = {
     slovak: 'Словашки',
     slovenian: 'Словенски',
     swedish: 'Шведски',
-    // Regional variants
+
     germanGermany: 'Немски (Германия)',
     germanAustria: 'Немски (Австрия)',
     germanSwitzerland: 'Немски (Швейцария)',

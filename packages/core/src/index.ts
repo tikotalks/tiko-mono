@@ -21,11 +21,22 @@ export { useUserSettings } from './composables/useUserSettings'
 export type { UseUserSettingsReturn } from './composables/useUserSettings'
 export { useUpload } from './composables/useUpload'
 export type { UploadItem } from './composables/useUpload'
+export { useEventBus, createEventBus } from './composables/useEventBus'
+export type {
+  EventMap,
+  EventHandler,
+  EventBusComposable,
+  TikoEvents
+} from './composables/useEventBus.model'
+export { useTranslationService } from './composables/useTranslationService'
+export { useI18nDatabaseService } from './composables/useI18nDatabaseService'
 
 // Types
 export * from './types/user'
 
 // Utils
+export * from './utils/format'
+export * from './utils/logger'
 export { createTikoApp } from './utils/createTikoApp'
 export type { TikoAppOptions } from './utils/createTikoApp'
 export { defineConfig } from './utils/defineConfig'

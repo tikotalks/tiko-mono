@@ -61,7 +61,6 @@ import TSpinner from '../TSpinner/TSpinner.vue'
 import { popupService } from '../TPopup'
 import { toastService } from '../TToast'
 import { useTikoConfig } from '../../composables/useTikoConfig'
-import { useEventBus } from '../../composables/useEventBus'
 import { useI18n } from '../../composables/useI18n'
 import type { TFrameworkProps, TFrameworkEmits } from './TFramework.model'
 import type { Locale } from '../../i18n/types'
@@ -103,7 +102,6 @@ const initializeStores = () => {
 // Try to initialize stores immediately
 initializeStores()
 
-const eventBus = useEventBus()
 const { setLocale, t, keys, locale } = useI18n()
 
 // Set config and get theme styles

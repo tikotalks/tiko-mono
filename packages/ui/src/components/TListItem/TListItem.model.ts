@@ -3,4 +3,5 @@ export interface TListItemProps {
   href?: string
   tag?: 'div' | 'a' | 'button'
   clickable?: boolean
+  selected?: boolean
 }

@@ -12,7 +12,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@tiko/core'
+import { logger, useAuthStore } from '@tiko/core'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -20,31 +20,31 @@ const statusMessage = ref('Processing authentication...')
 
 onMounted(async () => {
   try {
-    console.log('[AuthCallback] Starting OAuth callback processing...')
-    console.log('[AuthCallback] Current URL:', window.location.href)
-    console.log('[AuthCallback] URL params:', window.location.search)
-    
+    logger.debug('[AuthCallback] Starting OAuth callback processing...')
+    logger.debug('[AuthCallback] Current URL:', window.location.href)
+    logger.debug('[AuthCallback] URL params:', window.location.search)
+
     statusMessage.value = 'Processing authentication...'
-    
+
     // First ensure the auth listener is set up
     if (!authStore.session) {
-      console.log('[AuthCallback] No session found, setting up auth listener...')
+      logger.info('[AuthCallback] No session found, setting up auth listener...')
       authStore.setupAuthListener()
     }
-    
+
     // Give Supabase time to process the OAuth callback from the URL
     // The detectSessionInUrl: true should handle this, but we need to wait for it
     let attempts = 0
     const maxAttempts = 10
     const checkInterval = 500
-    
+
     const checkAuth = async () => {
       attempts++
       console.log(`[AuthCallback] Check attempt ${attempts}/${maxAttempts}`)
-      
+
       // Try to get the latest session
       await authStore.initializeFromStorage()
-      
+
       if (authStore.isAuthenticated) {
         console.log('[AuthCallback] Authentication successful!')
         statusMessage.value = 'Authentication successful! Redirecting...'
@@ -53,7 +53,7 @@ onMounted(async () => {
         }, 1000)
         return true
       }
-      
+
       if (attempts >= maxAttempts) {
         console.warn('[AuthCallback] Max attempts reached, no session found')
         console.log('[AuthCallback] Auth state:', {
@@ -67,14 +67,14 @@ onMounted(async () => {
         }, 2000)
         return false
       }
-      
+
       // Try again
       await new Promise(resolve => setTimeout(resolve, checkInterval))
       return checkAuth()
     }
-    
+
     await checkAuth()
-    
+
   } catch (error) {
     console.error('[AuthCallback] Error processing callback:', error)
     statusMessage.value = 'Authentication error. Redirecting to login...'
@@ -92,7 +92,7 @@ onMounted(async () => {
   align-items: center;
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  
+
   &__container {
     background: white;
     border-radius: 16px;
@@ -102,20 +102,20 @@ onMounted(async () => {
     max-width: 400px;
     width: 90%;
   }
-  
+
   &__loading {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
-    
+
     p {
       margin: 0;
       font-size: 1.1rem;
       color: #666;
     }
   }
-  
+
   &__spinner {
     width: 40px;
     height: 40px;

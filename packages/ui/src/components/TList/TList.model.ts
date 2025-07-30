@@ -3,6 +3,9 @@ export interface TListProps {
   striped?: boolean
   bordered?: boolean
   hover?: boolean
+  sortBy?: string
+  sortDirection?: 'asc' | 'desc'
+  onSort?: (column: string, direction: 'asc' | 'desc') => void
 }
 
 export interface TListColumn {

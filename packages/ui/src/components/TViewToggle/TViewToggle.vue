@@ -1,7 +1,7 @@
 <template>
-  <div :class="bemm()">
+  <TButtonGroup :class="bemm()">
     <TButton
-      :type="modelValue === 'tiles' ? 'default' : 'ghost'"
+      :type="modelValue === 'tiles' ? 'default' : 'outline'"
       :icon="tilesIcon"
       :size="size"
       @click="emit('update:modelValue', 'tiles')"
@@ -9,14 +9,14 @@
       {{ tilesLabel }}
     </TButton>
     <TButton
-      :type="modelValue === 'list' ? 'default' : 'ghost'"
+      :type="modelValue === 'list' ? 'default' : 'outline'"
       :icon="listIcon"
       :size="size"
       @click="emit('update:modelValue', 'list')"
     >
       {{ listLabel }}
     </TButton>
-  </div>
+  </TButtonGroup>
 </template>
 
 <script setup lang="ts">
@@ -25,12 +25,13 @@ import { useI18n } from '../../composables/useI18n'
 import { TButton } from '../TButton'
 import { Icons } from 'open-icon'
 import type { TViewToggleProps } from './TViewToggle.model'
+import TButtonGroup from '../TButton/TButtonGroup.vue'
 
 const props = withDefaults(defineProps<TViewToggleProps>(), {
   tilesLabel: '',
   listLabel: '',
-  tilesIcon: Icons.GRID_3X3,
-  listIcon: Icons.LIST,
+  tilesIcon: Icons.FILE_COLUMNS,
+  listIcon: Icons.CHECK_LIST,
   size: 'small'
 })
 
@@ -48,7 +49,6 @@ const listLabel = props.listLabel || t('common.views.list')
 
 <style lang="scss">
 .t-view-toggle {
-  display: flex;
-  gap: var(--space-xs);
+
 }
 </style>

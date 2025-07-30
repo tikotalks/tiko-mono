@@ -483,7 +483,7 @@ export const da: TranslationSchema = {
   },
 
   languageNames: {
-    // Base languages
+
     bulgarian: 'Bulgarsk',
     czech: 'Tjekkisk',
     welsh: 'Walisisk',
@@ -513,7 +513,7 @@ export const da: TranslationSchema = {
     slovak: 'Slovakisk',
     slovenian: 'Slovensk',
     swedish: 'Svensk',
-    // Regional variants
+
     germanGermany: 'Tysk (Tyskland)',
     germanAustria: 'Tysk (Østrig)',
     germanSwitzerland: 'Tysk (Schweiz)',

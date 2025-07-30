@@ -477,7 +477,7 @@ export interface TranslationSchema {
     onlyOneNumberAllowed: string
   }
   languageNames: {
-    // Base languages
+
     bulgarian: string
     czech: string
     welsh: string
@@ -507,7 +507,7 @@ export interface TranslationSchema {
     slovak: string
     slovenian: string
     swedish: string
-    // Regional variants
+
     germanGermany: string
     germanAustria: string
     germanSwitzerland: string

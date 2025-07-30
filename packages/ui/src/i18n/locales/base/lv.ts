@@ -469,7 +469,7 @@ export const lv: TranslationSchema = {
     onlyOneNumberAllowed: 'Only one number is allowed'
   },
   languageNames: {
-    // Base languages
+
     bulgarian: 'Bulgāru',
     czech: 'Čehu',
     welsh: 'Velsiešu',
@@ -499,7 +499,7 @@ export const lv: TranslationSchema = {
     slovak: 'Slovāku',
     slovenian: 'Slovēņu',
     swedish: 'Zviedru',
-    // Regional variants
+
     germanGermany: 'Vācu (Vācija)',
     germanAustria: 'Vācu (Austrija)',
     germanSwitzerland: 'Vācu (Šveice)',

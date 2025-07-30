@@ -71,7 +71,10 @@ export const en: TranslationSchema = {
     categories: 'Categories',
     image: 'Image',
     title: 'Title',
-    size: 'Size'
+    size: 'Size',
+    of: 'of',
+    selected: 'Selected',
+    dashboard: 'Dashboard'
   },
   auth: {
     login: 'Login',
@@ -474,7 +477,7 @@ export const en: TranslationSchema = {
     onlyOneNumberAllowed: 'Only one number is allowed'
   },
   languageNames: {
-    // Base languages
+
     bulgarian: 'Bulgarian',
     czech: 'Czech',
     welsh: 'Welsh',
@@ -504,7 +507,7 @@ export const en: TranslationSchema = {
     slovak: 'Slovak',
     slovenian: 'Slovenian',
     swedish: 'Swedish',
-    // Regional variants
+
     germanGermany: 'German (Germany)',
     germanAustria: 'German (Austria)',
     germanSwitzerland: 'German (Switzerland)',
@@ -665,7 +668,21 @@ export const en: TranslationSchema = {
       justNow: 'Just now',
       userLoggedIn: '{username} logged in',
       mediaUploaded: '{filename} was uploaded',
-      newUserRegistered: '{username} registered'
+      newUserRegistered: '{username} registered',
+      // Missing keys for Dashboard.vue
+      users: 'Users',
+      media: 'Media',
+      translations: 'Translations',
+      adminUsers: 'Admin Users',
+      newUsersToday: 'New Users Today',
+      totalMediaItems: 'Total Media Items',
+      totalLocales: 'Total Locales',
+      totalStrings: 'Total Strings',
+      missingTranslations: 'Missing Translations',
+      completionRate: 'Completion Rate',
+      completionByLocale: 'Completion by Locale',
+      manageTranslations: 'Manage Translations',
+      manageTranslationsDescription: 'Edit and manage translation strings'
     },
     upload: {
       title: 'Upload Images',
@@ -803,6 +820,79 @@ export const en: TranslationSchema = {
       updateError: 'Failed to update user',
       createError: 'Failed to create user',
       createUserNotImplemented: 'User creation is not yet implemented'
+    },
+    i18n: {
+      common: {
+        itemsSelected: '{count} items selected',
+        selectAll: 'Select All',
+        clearSelection: 'Clear Selection'
+      },
+      language: {
+        generatingTranslations: 'Generating Translations',
+        loadingSourceTranslations: 'Loading source translations...',
+        translatingKey: 'Translating {current} of {total}',
+        savingTranslation: 'Saving translation for {key}...',
+        translated: 'Translated',
+        failed: 'Failed',
+        skipped: 'Skipped',
+        generateWithAI: 'Generate with AI',
+        aiTranslationSuccess: 'Successfully generated {count} translations',
+        aiTranslationSkipped: '{count} translations skipped - {reason}',
+        aiTranslationError: '{count} translations failed',
+        aiTranslationFailed: 'Failed to generate translations: {error}',
+        updatingList: 'Updating List',
+        refreshingData: 'Refreshing data from database...',
+        export: 'Export',
+        import: 'Import',
+        totalKeys: 'Total Keys',
+        coverage: 'Coverage',
+        searchPlaceholder: 'Search translations...',
+        showAll: 'Show All',
+        showTranslated: 'Show Translated',
+        showMissing: 'Show Missing',
+        key: 'Key',
+        translation: 'Translation',
+        actions: 'Actions',
+        missingTranslation: 'No translation',
+        autoTranslate: 'Auto-translate',
+        noResults: 'No results found',
+        importTitle: 'Import Translations',
+        selectFile: 'Select JSON File',
+        showingResults: 'Showing {shown} of {total}',
+        totalResults: 'Total: {total} translations'
+      },
+      languages: {
+        active: 'Active',
+        inactive: 'Inactive',
+        addKey: 'Add Translation Key'
+      },
+      addKey: {
+        title: 'Add New Translation Key',
+        keyDetails: 'Key Details',
+        keyName: 'Key Name',
+        keyNamePlaceholder: 'e.g., common.welcomeMessage',
+        category: 'Category',
+        categoryPlaceholder: 'e.g., common, timer, radio',
+        description: 'Description',
+        descriptionPlaceholder: 'Describe what this translation is used for...',
+        translations: 'Translations',
+        generateAll: 'Generate All',
+        generateTranslation: 'Generate translation',
+        translationPlaceholder: 'Enter translation...',
+        keyRequired: 'Key name is required',
+        englishRequired: 'English translation is required',
+        generationError: 'Failed to generate translation',
+        success: 'Translation key created successfully',
+        error: 'Failed to create translation key: {error}'
+      },
+      database: {
+        upload: {
+          reading: 'Reading file...',
+          processing: 'Processing translations...',
+          success: '{count} translations imported for {language}',
+          error: 'Import failed: {error}'
+        }
+      }
     },
     translations: {
       title: 'Translations',

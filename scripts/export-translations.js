@@ -95,7 +95,7 @@ async function exportTranslations() {
     
     // Get all enabled locales
     console.log('🌍 Fetching enabled locales...');
-    const locales = await supabaseRequest('/locales?enabled=eq.true&order=code');
+    const locales = await supabaseRequest('/i18n_locales?enabled=eq.true&order=code');
     console.log(`✅ Found ${locales.length} enabled locales`);
     
     // Export translations for each locale
@@ -105,7 +105,7 @@ async function exportTranslations() {
       try {
         // Fetch approved translations for this locale
         const translations = await supabaseRequest(
-          `/translations?locale=eq.${locale.code}&order=key`
+          `/i18n_translations?locale=eq.${locale.code}&order=key`
         );
         
         if (translations.length === 0) {
@@ -123,7 +123,7 @@ async function exportTranslations() {
         if (locale.fallback_locale) {
           console.log(`   🔄 Applying fallback from ${locale.fallback_locale}...`);
           const fallbackTranslations = await supabaseRequest(
-            `/translations?locale=eq.${locale.fallback_locale}&order=key`
+            `/i18n_translations?locale=eq.${locale.fallback_locale}&order=key`
           );
           
           // Add fallback translations that don't exist in current locale
@@ -138,7 +138,7 @@ async function exportTranslations() {
         if (locale.code !== 'en' && !locale.code.startsWith('en-')) {
           console.log(`   🔄 Applying final fallback from en...`);
           const englishTranslations = await supabaseRequest(
-            `/translations?locale=eq.en&order=key`
+            `/i18n_translations?locale=eq.en&order=key`
           );
           
           for (const translation of englishTranslations) {
@@ -190,7 +190,7 @@ export default generatedTranslations;
     console.log('=================================');
     
     // Show statistics
-    const stats = await supabaseRequest('/locale_details');
+    const stats = await supabaseRequest('/i18n_locale_details');
     if (stats && stats.length > 0) {
       console.log('\n📊 Translation Statistics:');
       stats.forEach(stat => {

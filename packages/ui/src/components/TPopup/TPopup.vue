@@ -1,164 +1,158 @@
 <!-- Popup.vue -->
 <template>
 	<Teleport to="body">
-		<template
+		<div
 			v-for="popup in popups"
+			:id="popup.id"
 			:key="popup.id"
+			:class="[
+				bemm(''),
+				bemm('', popup.config.position),
+				bemm('', popup.config.hasBackground ? 'has-background' : ''),
+				bemm('', `stack-${popup.id}`),
+				bemm('', popup.state.closing ? 'closing' : ''),
+			]"
 		>
 			<div
-				:id="popup.id"
-				:class="[
-					bemm(''),
-					bemm('', popup.config.position),
-					bemm('', popup.config.hasBackground ? 'has-background' : ''),
-					bemm('', `stack-${popup.id}`),
-				]"
-			>
-				<div
-					v-if="popup.config.hasBackground"
-					:class="bemm('background')"
-					@click="popupService.closePopup(popup.id)"
-				/>
-				<div :class="bemm('wrapper')">
-					<div :class="bemm('container')" @click.stop>
-
+				v-if="popup.config.hasBackground"
+				:class="bemm('background')"
+				@click="popupService.closePopup({ id: popup.id })"
+			></div>
+			<div :class="bemm('wrapper')">
+				<div :class="bemm('container')">
 					<header
-						v-if="hasSlot('header')"
+						v-if="hasSlot('header') || popup.title"
 						:class="bemm('header')"
 					>
-						<slot name="header" />
-					</header>
-
-					<header v-else-if="popup.title" :class="bemm('header')">
-						<h3 :class="bemm('title')">{{ popup.title }}</h3>
-
-						<div :class="bemm('description')" v-if="popup.description">
-							{{ popup.description }}
-						</div>
-						<span
-
-						v-if="popup.config.canClose"
-							:class="bemm('close')"
-					>
-						<TButton
-							:icon="Icons.MULTIPLY_M"
-							:size="ButtonSize.SMALL"
-							@click="popupService.closePopup(popup.id)"
-						/>
-						</span>
-					</header>
-
-					<span
-						v-if="popup.config.canClose && !popup.title"
-						:class="bemm('close')"
-					>
-						<TButton
-							:icon="Icons.MULTIPLY_M"
-							:size="ButtonSize.SMALL"
-							@click="popupService.closePopup(popup.id)"
-						/>
-					</span>
-
-					<main :class="bemm('content')">
-						<component
-							:is="popup.component"
-							v-bind="popup.props"
-							@close="popupService.closePopup(popup.id)"
-						/>
-					</main>
-
-					<footer
-							v-if="hasSlot('footer')"
-							:class="bemm('footer')"
+						<h4
+							v-if="popup.title"
+							:class="bemm('header-title')"
 						>
-							<slot name="footer" />
-						</footer>
-					</div
-				</div>
+							{{ popup.title }}
+						</h4>
+						<p
+							v-if="popup.description"
+							:class="bemm('header-description')"
+						>
+							{{ popup.description }}
+						</p>
+						<slot name="header"></slot>
+						<TButton
+							v-if="popup.config.canClose"
+							:class="bemm('close')"
+							:icon="Icons.MULTIPLY_M"
+							:size="ButtonSize.SMALL"
+							@click="popupService.close({ id: popup.id })"
+						/>
+						<component
+							:is="popup.header"
+							v-if="popup.header"
+						/>
+					</header>
+
+					<div :class="bemm('content')">
+						<component
+							v-bind="popup.props"
+							:is="popup.component"
+							:key="popup.id"
+							:ref="(el: ComponentPublicInstance | null) => (popupRefs[popup.id] = el)"
+							@close="popupService.close({ id: popup.id })"
+						>
+							<template
+								v-for="(slot, name) in popup.slots"
+								:key="name"
+								#[name]
+							>
+								<component :is="slot" />
+							</template>
+						</component>
+					</div>
+					<footer
+						v-if="hasSlot('footer') || popup.footer"
+						:class="bemm('footer')"
+					>
+						<slot name="footer"></slot>
+						<component
+							:is="popup.footer"
+							v-if="popup.footer"
+							v-bind="popup.props"
+							@close="popupService.closePopup({ id: popup.id })"
+						/>
+					</footer>
 				</div>
 			</div>
-		</template>
+		</div>
 	</Teleport>
 </template>
 
 <script setup lang="ts">
 import { useBemm } from 'bemm';
-import { popupService } from './TPopup.service';
-import { ButtonSize } from '../TButton/TButton.model';
+import { popupService, popupRefs } from './TPopup.service';
 import { Icons } from 'open-icon';
-// import type { EventData } from '~/utils/eventBus';
-// import { EventChannel, EventAction, EventKeys } from '~/utils/eventBus';
+import { useEventBus } from '@tiko/core';
+import type { TikoEvents } from '@tiko/core';
+import { ButtonSize, TButton } from '@tiko/ui';
+import { ComponentPublicInstance, computed, useSlots, onMounted, onUnmounted } from 'vue';
 
-import TButton from '../TButton/TButton.vue';
-import { computed, useSlots, onMounted, onUnmounted, watch } from 'vue';
-
-const bemm = useBemm('t-popup');
+const bemm = useBemm('popup');
+const eventBus = useEventBus<TikoEvents>();
 
 const popups = computed(() => {
 	return popupService.popups.value;
 });
 
-onMounted(()=>{
-})
+// Event handlers
+const handleKeyPress = (data: { key: string }) => {
+	if (data.key === 'Escape') {
+		popupService.closePopup({});
+	}
+};
 
-// Watch for changes to popups array
-watch(popups, (newPopups, oldPopups) => {
-	// Popups array changed
-}, { deep: true, immediate: true });
+const handlePopupOpen = (data: { component: any; id?: string; [key: string]: any }) => {
+	if (data.id) {
+		popupService.showPopup({ component: data.component, ...data });
+	}
+};
 
-// // Handle escape key and event bus
-// eventBus.on(EventChannel.UI, (p) => {
-// 	const payload = p as EventData;
-// 	if (payload.action === EventAction.KEY && payload.data.key === EventKeys.ESCAPE) {
-// 		popupService.closePopup();
-// 	}
-// });
+const handlePopupClose = (data: { id?: string }) => {
+	if (data.id) {
+		popupService.closePopup({ id: data.id });
+	}
+};
 
-// eventBus.on(EventChannel.POPUP, (p) => {
-// 	const payload = p as EventData;
+const handlePopupForceClose = () => {
+	popupService.closeAllPopups();
+};
 
-// 	switch (payload.action) {
-// 		case EventAction.OPEN:
-// 			if (payload.data?.id) {
-// 				popupService.showPopup({ component: payload.data.component, ...payload.data });
-// 			}
-// 			break;
-// 		case EventAction.CLOSE:
-// 			if (payload.data?.id) {
-// 				popupService.closePopup(payload.data.id);
-// 			}
-// 			break;
-// 		case EventAction.FORCE_CLOSE:
-// 			popupService.closeAllPopups();
-// 			break;
-// 	}
-// });
+// Setup event listeners
+onMounted(() => {
+	// Listen for escape key press (using a generic key event)
+	eventBus.on('app:key', handleKeyPress);
+
+	// Popup-specific events (these would need to be added to TikoEvents)
+	// For now, using app-level events as placeholders
+	eventBus.on('app:popup-open', handlePopupOpen);
+	eventBus.on('app:popup-close', handlePopupClose);
+	eventBus.on('app:popup-force-close', handlePopupForceClose);
+});
+
+// Cleanup event listeners
+onUnmounted(() => {
+	eventBus.off('app:key', handleKeyPress);
+	eventBus.off('app:popup-open', handlePopupOpen);
+	eventBus.off('app:popup-close', handlePopupClose);
+	eventBus.off('app:popup-force-close', handlePopupForceClose);
+});
 
 const $slots = useSlots();
 const hasSlot = (name: string) => {
 	return !!$slots[name];
 };
-
-// Handle escape key
-const handleKeyDown = (event: KeyboardEvent) => {
-	if (event.key === 'Escape' && popups.value.length > 0) {
-		popupService.closePopup();
-	}
-};
-
-onMounted(() => {
-	document.addEventListener('keydown', handleKeyDown);
-});
-
-onUnmounted(() => {
-	document.removeEventListener('keydown', handleKeyDown);
-});
 </script>
 
-<style lang="scss">
-@use '../../styles/global.scss' as global2;
-
-.t-popup {
+<style lang="scss" scoped>
+@use "../../styles/global.scss" as g;
+.popup {
 	$b: &;
 	position: fixed;
 	z-index: 100;
@@ -168,11 +162,12 @@ onUnmounted(() => {
 	left: 0;
 	inset: 0;
 	background-color: transparent;
-	width: 100svw;
-	height: 100svh;
+	height: calc(100vh + 2em);
+	width: calc(100vw + 2em);
 	border: none;
 
-	--int-popup-padding: var(--popup-padding, var(--space));
+	display: flex;
+	overflow: scroll;
 
 	// Stack popups using their unique IDs
 	&--stack {
@@ -180,28 +175,31 @@ onUnmounted(() => {
 	}
 
 	&__background {
-		position: absolute;
+		position: fixed;
+		top: 0;
 		inset: 0;
-		background-color: color-mix(in srgb, var(--color-accent), transparent 80%);
+		background-color: color-mix(in srgb, var(--color-accent-dark), transparent 80%);
 		backdrop-filter: blur(5px);
 		animation: backgroundFadeIn 0.3s var(--bezier) forwards;
+		height: 100vh;
+		width: 100vw;
 	}
 
 	&__wrapper {
 		width: 100vw;
 		margin: auto;
 		overflow: scroll;
-		padding:  var(--int-popup-padding);
-		max-height: 100vh;
-		height: 100vh;
+		height: fit-content;
 		display: flex;
 		align-items: flex-end;
 		justify-content: flex-end;
+		margin: var(--spacing);
+		overflow: visible;
 
-		@include global2.mobile-only() {
+		@include g.mobile-only() {
 			width: 100%;
 			padding: var(--space-xs);
-			padding-bottom: calc(var(--spacing) * 2 + var(--space))
+			padding-bottom: calc(var(--spacing) * 2 + var(--space));
 		}
 	}
 
@@ -215,30 +213,26 @@ onUnmounted(() => {
 		color: var(--popup-container-color, var(--color-foreground));
 		max-width: 960px;
 		width: fit-content;
-		animation: containerComeIn .3s var(--bezier) forwards;
-		transform: scale(.85) translateY(var(--space));
+		animation: containerComeIn 0.3s var(--bezier) forwards;
+		transform: scale(0.75) translateY(var(--spacing));
 		opacity: 0;
-		box-shadow:	.5em .5em 6em rgba(0,0,0,.125), .25em .25em 1em rgba(0,0,0,.125),
-		-0.25em -.25em 1em rgba(255,255,255,.125) inset;
+	}
 
+	&__content {
+		padding: var(--popup-padding, var(--space));
 
-
-		@include global2.desktop-up() {
+		@include g.desktop-up() {
 			width: var(--popup-width, fit-content);
 		}
 	}
 
-	&__content{
-		padding: var(--popup-padding,var(--space));
-	}
-
 	&__close {
+		--button-background-color: transparent;
+		--button-background-color--hover: var(--color-tertiary);
 		position: absolute;
 		z-index: 5;
-		top: calc(var(--space) / 3);
-		right: calc(var(--space) / 2);
-		--button-background-color: var(--color-accent);
-		--button-background-color_hover: var(--color-tertiary);
+		top: calc(var(--popup-padding, var(--space)));
+		right: calc(var(--popup-padding, var(--space)));
 	}
 
 	&--bottom {
@@ -253,24 +247,63 @@ onUnmounted(() => {
 		}
 	}
 
-	&__header{
-		background-image: linear-gradient(to left top, color-mix(in srgb, var(--color-primary), transparent 80%), transparent);
-		border-radius: var(--popup-border-radius, var(--border-radius)) var(--border-radius) 0 0;
-		color: var(--color-foreground);
+	&__header {
+		padding: var(--popup-padding, var(--space));
 
-		padding: var(--popup-padding,var(--space));
-		position: relative;
-		.popup__close{
-			position: absolute; top: var(--space-s); right: var(--space-s);
-			margin: 0;
+		border-radius: inherit;
+		border-bottom-left-radius: 0;
+		border-bottom-right-radius: 0;
+		border-bottom: 1px solid color-mix(in srgb, var(--color-tertiary), transparent 80%);
+
+		background-color: color-mix(in srgb, var(--color-tertiary), var(--color-background) 90%);
+		z-index: 10;
+		position: sticky;
+		top: 0;
+
+		display: flex;
+		gap: var(--space);
+		align-items: center;
+
+		&:has(.popup__close) {
+			padding-right: var(--space-xl);
 		}
 	}
 
-	&__description{
-		margin-top: .5em;
-		opacity: .5;
-		font-size: .875em;
-		max-width: calc(100% - var(--spacing));
+	&__header-title {
+		font-size: 1em;
+		font-weight: 600;
+		color: var(--color-tertiary);
+	}
+	&__footer {
+		padding: var(--popup-padding, var(--space));
+
+		border-radius: inherit;
+		border-top-left-radius: 0;
+		border-top-right-radius: 0;
+		border-top: 1px solid color-mix(in srgb, var(--color-tertiary), transparent 80%);
+
+		background-color: color-mix(in srgb, var(--color-tertiary), var(--color-background) 90%);
+		z-index: 10;
+		position: sticky;
+		top: 0;
+
+		display: flex;
+		gap: var(--space);
+		align-items: center;
+
+		&:has(.popup__close) {
+			padding-right: var(--space-xl);
+		}
+	}
+
+	&--closing {
+		.popup__container {
+			animation: containerGoAway 1s ease-in-out forwards;
+		}
+		.popup__background {
+			pointer-events: none;
+			animation: backgroundFadeOut 0.5s ease-in-out forwards;
+		}
 	}
 }
 
@@ -280,19 +313,21 @@ onUnmounted(() => {
 	}
 }
 
+@keyframes backgroundFadeOut {
+	to {
+		opacity: 0;
+	}
+}
 @keyframes containerComeIn {
 	to {
 		transform: scale(1) translateY(0);
 		opacity: 1;
 	}
 }
-
-.popup-footer{
-	margin: calc(var(--int-popup-padding) * -1);
-	border-top: 1px solid var(--color-accent);
-	margin-top: var(--int-popup-padding);
-	padding: var(--int-popup-padding);
-	// background-color: var(--color-accent);
-	// border-radius: var(--popup-border-radius, var(--border-radius));
+@keyframes containerGoAway {
+	to {
+		transform: scale(0.75) translateY(100%);
+		opacity: 0;
+	}
 }
 </style>

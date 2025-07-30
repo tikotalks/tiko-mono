@@ -16,7 +16,6 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useBemm } from 'bemm'
 import { useI18n } from '../../composables/useI18n'
 import { useParentMode } from '../../composables/useParentMode'
-import { useEventBus } from '../../composables/useEventBus'
 import { toastService as defaultToastService, ToastSettings } from '../TToast'
 import TButton from '../TButton/TButton.vue'
 import TParentModePinInput from './TParentModePinInput.vue'
@@ -45,7 +44,6 @@ const emit = defineEmits<{
 const bemm = useBemm('parent-mode-toggle')
 const { t, keys } = useI18n()
 const parentMode = useParentMode(props.appName)
-const eventBus = useEventBus()
 
 // Local state
 const showPinInput = ref(false)

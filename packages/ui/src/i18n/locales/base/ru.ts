@@ -465,7 +465,7 @@ export const ru: TranslationSchema = {
     onlyOneNumberAllowed: 'Разрешено только одно число'
   },
   languageNames: {
-    // Base languages
+
     bulgarian: 'Болгарский',
     czech: 'Чешский',
     welsh: 'Валлийский',
@@ -495,7 +495,7 @@ export const ru: TranslationSchema = {
     slovak: 'Словацкий',
     slovenian: 'Словенский',
     swedish: 'Шведский',
-    // Regional variants
+
     germanGermany: 'Немецкий (Германия)',
     germanAustria: 'Немецкий (Австрия)',
     germanSwitzerland: 'Немецкий (Швейцария)',

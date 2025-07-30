@@ -110,93 +110,22 @@ export async function loadTranslation(localeCode: LocaleCode) {
   return translation
 }
 
-// Import all translations statically for now to ensure they work
-// TODO: Optimize this later with proper async loading
-import { bgBG } from './bg-BG'
-import { csCZ } from './cs-CZ'
-import { cyGB } from './cy-GB'
-import { daDK } from './da-DK'
-import { deAT } from './de-AT'
-import { deCH } from './de-CH'
-import { deDE } from './de-DE'
-import { elGR } from './el-GR'
-import { enAU } from './en-AU'
-import { enCA } from './en-CA'
+// Only import the default English translations statically as a fallback
 import { enGB } from './en-GB'
-import { enUS } from './en-US'
-import { esAR } from './es-AR'
-import { esES } from './es-ES'
-import { esMX } from './es-MX'
-import { etEE } from './et-EE'
-import { fiFI } from './fi-FI'
-import { frBE } from './fr-BE'
-import { frCA } from './fr-CA'
-import { frFR } from './fr-FR'
-import { gaIE } from './ga-IE'
-import { hrHR } from './hr-HR'
-import { huHU } from './hu-HU'
-import { hyAM } from './hy-AM'
-import { isIS } from './is-IS'
-import { itIT } from './it-IT'
-import { ltLT } from './lt-LT'
-import { lvLV } from './lv-LV'
-import { mtMT } from './mt-MT'
-import { nlBE } from './nl-BE'
-import { nlNL } from './nl-NL'
-import { noNO } from './no-NO'
-import { plPL } from './pl-PL'
-import { ptBR } from './pt-BR'
-import { ptPT } from './pt-PT'
-import { roRO } from './ro-RO'
-import { ruRU } from './ru-RU'
-import { skSK } from './sk-SK'
-import { slSI } from './sl-SI'
-import { svSE } from './sv-SE'
 
-// Get all translations - now synchronously available
+// Get all translations - only returns what's been loaded
 export function getTranslations() {
-  return {
-    'bg-BG': bgBG,
-    'cs-CZ': csCZ,
-    'cy-GB': cyGB,
-    'da-DK': daDK,
-    'de-AT': deAT,
-    'de-CH': deCH,
-    'de-DE': deDE,
-    'el-GR': elGR,
-    'en-AU': enAU,
-    'en-CA': enCA,
-    'en-GB': enGB,
-    'en-US': enUS,
-    'es-AR': esAR,
-    'es-ES': esES,
-    'es-MX': esMX,
-    'et-EE': etEE,
-    'fi-FI': fiFI,
-    'fr-BE': frBE,
-    'fr-CA': frCA,
-    'fr-FR': frFR,
-    'ga-IE': gaIE,
-    'hr-HR': hrHR,
-    'hu-HU': huHU,
-    'hy-AM': hyAM,
-    'is-IS': isIS,
-    'it-IT': itIT,
-    'lt-LT': ltLT,
-    'lv-LV': lvLV,
-    'mt-MT': mtMT,
-    'nl-BE': nlBE,
-    'nl-NL': nlNL,
-    'no-NO': noNO,
-    'pl-PL': plPL,
-    'pt-BR': ptBR,
-    'pt-PT': ptPT,
-    'ro-RO': roRO,
-    'ru-RU': ruRU,
-    'sk-SK': skSK,
-    'sl-SI': slSI,
-    'sv-SE': svSE
+  // Convert the cache Map to a plain object
+  const loadedTranslations: Record<string, any> = {
+    'en-GB': enGB // Always include English as fallback
   }
+  
+  // Add any dynamically loaded translations from the cache
+  translationCache.forEach((value, key) => {
+    loadedTranslations[key] = value
+  })
+  
+  return loadedTranslations
 }
 
 // Export available locales without triggering imports

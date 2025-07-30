@@ -24,10 +24,7 @@ const mockAppStore = {
   initializeNetworkMonitoring: vi.fn()
 }
 
-vi.mock('@tiko/core', () => ({
-  useAuthStore: () => mockAuthStore,
-  useAppStore: () => mockAppStore
-}))
+// vi.mock('@tiko/core') is defined below with useEventBus
 
 // Mock pinia's storeToRefs
 vi.mock('pinia', () => ({
@@ -68,12 +65,18 @@ vi.mock('../../composables/useTikoConfig', () => ({
   })
 }))
 
-vi.mock('../../composables/useEventBus', () => ({
-  useEventBus: () => ({
-    emit: vi.fn(),
-    on: vi.fn(),
-    off: vi.fn()
-  })
+vi.mock('@tiko/core', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@tiko/core')>()
+  return {
+    ...actual,
+    useAuthStore: () => mockAuthStore,
+    useAppStore: () => mockAppStore,
+    useEventBus: () => ({
+      emit: vi.fn(),
+      on: vi.fn(),
+      off: vi.fn()
+    })
+  }
 }))
 
 // Mock i18n

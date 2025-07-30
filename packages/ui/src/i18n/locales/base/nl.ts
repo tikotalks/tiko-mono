@@ -465,7 +465,7 @@ export const nl: TranslationSchema = {
     onlyOneNumberAllowed: 'Er is slechts één nummer toegestaan'
   },
   languageNames: {
-    // Base languages
+
     bulgarian: 'Bulgaars',
     czech: 'Tsjechisch',
     welsh: 'Welsh',
@@ -495,7 +495,7 @@ export const nl: TranslationSchema = {
     slovak: 'Slowaaks',
     slovenian: 'Sloveens',
     swedish: 'Zweeds',
-    // Regional variants
+
     germanGermany: 'Duits (Duitsland)',
     germanAustria: 'Duits (Oostenrijk)',
     germanSwitzerland: 'Duits (Zwitserland)',

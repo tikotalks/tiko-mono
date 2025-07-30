@@ -469,7 +469,7 @@ export const ga: TranslationSchema = {
     onlyOneNumberAllowed: 'Only one number is allowed'
   },
   languageNames: {
-    // Base languages
+
     bulgarian: 'Bulgáiris',
     czech: 'Seicis',
     welsh: 'Breatnais',
@@ -499,7 +499,7 @@ export const ga: TranslationSchema = {
     slovak: 'Slóvaicis',
     slovenian: 'Slóivéinis',
     swedish: 'Sualainnis',
-    // Regional variants
+
     germanGermany: 'Gearmáinis (An Ghearmáin)',
     germanAustria: 'Gearmáinis (An Ostair)',
     germanSwitzerland: 'Gearmáinis (An Eilvéis)',

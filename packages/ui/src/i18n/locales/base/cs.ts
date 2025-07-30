@@ -482,7 +482,7 @@ export const cs: TranslationSchema = {
   },
 
   languageNames: {
-    // Base languages
+
     bulgarian: 'Bulharština',
     czech: 'Čeština',
     welsh: 'Velština',
@@ -512,7 +512,7 @@ export const cs: TranslationSchema = {
     slovak: 'Slovenština',
     slovenian: 'Slovinština',
     swedish: 'Švédština',
-    // Regional variants
+
     germanGermany: 'Němčina (Německo)',
     germanAustria: 'Němčina (Rakousko)',
     germanSwitzerland: 'Němčina (Švýcarsko)',

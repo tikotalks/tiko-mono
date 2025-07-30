@@ -465,7 +465,7 @@ export const fi: TranslationSchema = {
     onlyOneNumberAllowed: 'Vain yksi numero sallitaan'
   },
   languageNames: {
-    // Base languages
+
     bulgarian: 'Bulgaria',
     czech: 'Tsekki',
     welsh: 'Wales',
@@ -495,7 +495,7 @@ export const fi: TranslationSchema = {
     slovak: 'Slovakia',
     slovenian: 'Slovenia',
     swedish: 'Ruotsi',
-    // Regional variants
+
     germanGermany: 'Saksa (Saksa)',
     germanAustria: 'Saksa (Itävalta)',
     germanSwitzerland: 'Saksa (Sveitsi)',

@@ -469,7 +469,7 @@ export const et: TranslationSchema = {
       onlyOneNumberAllowed: 'Lubatud on ainult üks number'
     },
     languageNames: {
-    // Base languages
+
     bulgarian: 'Bulgaaria',
     czech: 'Tšehhi',
     welsh: 'Kõmri',
@@ -499,7 +499,7 @@ export const et: TranslationSchema = {
     slovak: 'Slovaki',
     slovenian: 'Sloveenia',
     swedish: 'Rootsi',
-    // Regional variants
+
     germanGermany: 'Saksa (Saksamaa)',
     germanAustria: 'Saksa (Austria)',
     germanSwitzerland: 'Saksa (Šveits)',

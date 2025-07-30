@@ -1,6 +1,13 @@
 import { ref, computed } from 'vue'
-import type { ToastService } from '@tiko/ui'
-import { useEventBus } from '@tiko/ui'
+import { useEventBus } from './useEventBus'
+
+export interface ToastService {
+  show(options: { 
+    message: string
+    type?: 'success' | 'error' | 'warning' | 'info'
+    duration?: number 
+  }): void
+}
 
 export interface UploadItem {
   id: string

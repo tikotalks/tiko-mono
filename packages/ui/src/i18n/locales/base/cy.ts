@@ -466,7 +466,7 @@ export const cy: TranslationSchema = {
     onlyOneNumberAllowed: 'Dim ond un rhif a ganiateir'
   },
   languageNames: {
-    // Base languages
+
     bulgarian: 'Bwlgareg',
     czech: 'Tsieceg',
     welsh: 'Cymraeg',
@@ -496,7 +496,7 @@ export const cy: TranslationSchema = {
     slovak: 'Slofaceg',
     slovenian: 'Slofeneg',
     swedish: 'Swedeg',
-    // Regional variants
+
     germanGermany: 'Almaeneg (Yr Almaen)',
     germanAustria: 'Almaeneg (Awstria)',
     germanSwitzerland: 'Almaeneg (Y Swistir)',

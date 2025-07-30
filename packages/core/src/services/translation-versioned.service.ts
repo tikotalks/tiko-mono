@@ -39,10 +39,21 @@ class TranslationVersionedService {
    */
   private getSession() {
     try {
-      const authData = localStorage.getItem('sb-kejvhvszhevfwgsztedf-auth-token');
-      if (!authData) return null;
-      const parsed = JSON.parse(authData);
-      return parsed?.access_token || null;
+      // Try the new auth session format first
+      const authData = localStorage.getItem('tiko_auth_session');
+      if (authData) {
+        const parsed = JSON.parse(authData);
+        return parsed?.access_token || null;
+      }
+      
+      // Fallback to Supabase format
+      const supabaseData = localStorage.getItem('supabase.auth.token');
+      if (supabaseData) {
+        const parsed = JSON.parse(supabaseData);
+        return parsed?.access_token || null;
+      }
+      
+      return null;
     } catch {
       return null;
     }
@@ -53,15 +64,12 @@ class TranslationVersionedService {
    */
   private async makeRequest(path: string, options: RequestInit = {}) {
     const token = this.getSession();
-    if (!token) {
-      throw new Error('No authentication token found');
-    }
-
+    
     const response = await fetch(`${this.API_URL}${path}`, {
       ...options,
       headers: {
         'apikey': this.ANON_KEY,
-        'Authorization': `Bearer ${token}`,
+        'Authorization': token ? `Bearer ${token}` : `Bearer ${this.ANON_KEY}`,
         'Content-Type': 'application/json',
         'Prefer': 'return=representation',
         ...options.headers,
@@ -70,6 +78,7 @@ class TranslationVersionedService {
 
     if (!response.ok) {
       const error = await response.text();
+      console.error('Translation API error:', error);
       throw new Error(`Request failed: ${error}`);
     }
 
@@ -91,17 +100,54 @@ class TranslationVersionedService {
    */
   async getTranslations(locale: string): Promise<Array<{ key: string; value: string; auto_translated?: boolean }>> {
     try {
-      // This uses the 'translations' view which only shows approved translations
+      // This uses the 'i18n_translations' view which only shows approved translations
       const data = await this.makeRequest(
-        `/translations?locale=eq.${locale}&order=key`
+        `/i18n_translations?locale=eq.${locale}&order=key`
       );
       return data || [];
     } catch (error) {
       console.error('Error fetching translations:', error);
-      // Return empty array if no auth, this allows the UI to still load
-      if (error.message?.includes('No authentication token')) {
-        return [];
+      throw error;
+    }
+  }
+
+  /**
+   * Get translations with language inheritance
+   * For example: en-US falls back to en for missing keys
+   */
+  async getTranslationsWithFallback(locale: string): Promise<Array<{ key: string; value: string; auto_translated?: boolean; source_locale?: string }>> {
+    try {
+      // Get direct translations for the locale
+      const localeTranslations = await this.getTranslations(locale);
+      const translationMap = new Map(localeTranslations.map(t => [t.key, { ...t, source_locale: locale }]));
+
+      // If it's a locale variant (e.g., en-US), get parent language translations
+      if (locale.includes('-')) {
+        const parentLanguage = locale.split('-')[0];
+        const parentTranslations = await this.getTranslations(parentLanguage);
+        
+        // Add parent translations for missing keys
+        for (const translation of parentTranslations) {
+          if (!translationMap.has(translation.key)) {
+            translationMap.set(translation.key, { ...translation, source_locale: parentLanguage });
+          }
+        }
       }
+
+      // Final fallback to English if not already English
+      if (!locale.startsWith('en')) {
+        const englishTranslations = await this.getTranslations('en');
+        
+        for (const translation of englishTranslations) {
+          if (!translationMap.has(translation.key)) {
+            translationMap.set(translation.key, { ...translation, source_locale: 'en' });
+          }
+        }
+      }
+
+      return Array.from(translationMap.values());
+    } catch (error) {
+      console.error('Error fetching translations with fallback:', error);
       throw error;
     }
   }
@@ -111,7 +157,7 @@ class TranslationVersionedService {
    */
   async getPendingTranslations(locale?: string): Promise<TranslationVersion[]> {
     try {
-      let url = '/pending_translations?order=created_at.desc';
+      let url = '/i18n_pending_translations?order=created_at.desc';
       if (locale) {
         url += `&locale=eq.${locale}`;
       }
@@ -130,7 +176,7 @@ class TranslationVersionedService {
   async getTranslationHistory(key: string, locale: string): Promise<TranslationVersion[]> {
     try {
       const data = await this.makeRequest(
-        `/translation_history?key=eq.${key}&locale=eq.${locale}&order=version_number.desc`
+        `/i18n_translation_history?key=eq.${key}&locale=eq.${locale}&order=version_number.desc`
       );
       return data || [];
     } catch (error) {
@@ -224,7 +270,7 @@ class TranslationVersionedService {
    */
   async getContributors(): Promise<TranslationContributor[]> {
     try {
-      const data = await this.makeRequest('/translation_contributors');
+      const data = await this.makeRequest('/i18n_contributors');
       return data || [];
     } catch (error) {
       console.error('Error fetching contributors:', error);
@@ -237,7 +283,7 @@ class TranslationVersionedService {
    */
   async getNotifications(unreadOnly: boolean = true): Promise<any[]> {
     try {
-      let url = '/translation_notifications?order=created_at.desc';
+      let url = '/i18n_notifications?order=created_at.desc';
       if (unreadOnly) {
         url += '&read=eq.false';
       }
@@ -256,7 +302,7 @@ class TranslationVersionedService {
   async markNotificationRead(notificationId: string): Promise<void> {
     try {
       await this.makeRequest(
-        `/translation_notifications?id=eq.${notificationId}`,
+        `/i18n_notifications?id=eq.${notificationId}`,
         {
           method: 'PATCH',
           body: JSON.stringify({ read: true }),
@@ -316,7 +362,7 @@ class TranslationVersionedService {
    */
   async getStatistics(): Promise<any> {
     try {
-      const localeDetails = await this.makeRequest('/locale_details');
+      const localeDetails = await this.makeRequest('/i18n_locale_details');
       
       const stats = {
         totalKeys: localeDetails[0]?.total_keys || 0,
@@ -338,16 +384,6 @@ class TranslationVersionedService {
       return stats;
     } catch (error) {
       console.error('Error getting statistics:', error);
-      // Return empty stats if no auth
-      if (error.message?.includes('No authentication token')) {
-        return {
-          totalKeys: 0,
-          locales: [],
-          completeness: {},
-          pending: {},
-          autoTranslated: {},
-        };
-      }
       throw error;
     }
   }
@@ -376,20 +412,23 @@ class TranslationVersionedService {
    */
   async getAllKeys(): Promise<string[]> {
     try {
-      // Get distinct keys from translation_versions table
+      // Get distinct keys from i18n_translation_versions table, excluding corrupted ones
       const data = await this.makeRequest(
-        '/translation_versions?select=key&order=key'
+        '/i18n_translation_versions?select=key&order=key'
       );
       
-      // Extract unique keys
-      const uniqueKeys = [...new Set(data.map((item: any) => item.key))];
-      return uniqueKeys.sort();
+      // Extract unique keys and filter out corrupted ones
+      const allKeys = data.map((item: any) => item.key);
+      const uniqueKeys = [...new Set(allKeys)];
+      const cleanKeys = uniqueKeys.filter(key => !key.includes('[object Object]'));
+      
+      console.log('Total keys in DB:', allKeys.length);
+      console.log('Unique keys:', uniqueKeys.length);
+      console.log('Clean keys (no corruption):', cleanKeys.length);
+      
+      return cleanKeys.sort();
     } catch (error) {
       console.error('Error fetching all keys:', error);
-      // Return empty array if no auth
-      if (error.message?.includes('No authentication token')) {
-        return [];
-      }
       throw error;
     }
   }
@@ -400,13 +439,211 @@ class TranslationVersionedService {
   async deleteTranslationKey(key: string): Promise<void> {
     try {
       await this.makeRequest(
-        `/translation_versions?key=eq.${encodeURIComponent(key)}`,
+        `/i18n_translation_versions?key=eq.${encodeURIComponent(key)}`,
         {
           method: 'DELETE',
         }
       );
     } catch (error) {
       console.error('Error deleting translation key:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a new locale in the i18n_locales table
+   */
+  async createLocale(code: string, name: string, nativeName: string): Promise<void> {
+    try {
+      await this.makeRequest('/i18n_locales', {
+        method: 'POST',
+        body: JSON.stringify({
+          code,
+          name,
+          native_name: nativeName,
+          enabled: true
+        }),
+      });
+    } catch (error) {
+      console.error('Error creating locale:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check if a locale exists
+   */
+  async checkLocaleExists(locale: string): Promise<boolean> {
+    try {
+      const data = await this.makeRequest(
+        `/i18n_locales?code=eq.${locale}`
+      );
+      return data && data.length > 0;
+    } catch (error) {
+      console.error('Error checking locale existence:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Get all available locales
+   */
+  async getLocales(): Promise<Array<{ code: string; name: string; native_name: string }>> {
+    try {
+      const data = await this.makeRequest('/i18n_locales?order=name');
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching locales:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all available languages (base languages, not locale variants)
+   */
+  async getLanguages(): Promise<Array<{ code: string; name: string; native_name: string; rtl?: boolean }>> {
+    try {
+      const data = await this.makeRequest('/i18n_languages?order=name');
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching languages:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check if a language exists
+   */
+  async checkLanguageExists(languageCode: string): Promise<boolean> {
+    try {
+      const data = await this.makeRequest(
+        `/i18n_languages?code=eq.${languageCode}`
+      );
+      return data && data.length > 0;
+    } catch (error) {
+      console.error('Error checking language existence:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Create a new language
+   */
+  async createLanguage(code: string, name: string, nativeName: string): Promise<void> {
+    try {
+      await this.makeRequest('/i18n_languages', {
+        method: 'POST',
+        body: JSON.stringify({
+          code,
+          name,
+          native_name: nativeName,
+          rtl: false
+        }),
+      });
+    } catch (error) {
+      console.error('Error creating language:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Clean up corrupted keys that contain [object Object]
+   */
+  async cleanupCorruptedKeys(): Promise<{ cleaned: number; failed: number }> {
+    try {
+      // Get all keys
+      const allKeys = await this.getAllKeys();
+      const corruptedKeys = allKeys.filter(key => key.includes('[object Object]'));
+      
+      let cleaned = 0;
+      let failed = 0;
+      
+      for (const corruptedKey of corruptedKeys) {
+        try {
+          // Extract the real key by removing [object Object]
+          const cleanKey = corruptedKey.replace('[object Object]', '');
+          
+          // Get all translations for the corrupted key
+          const translations = await this.makeRequest(
+            `/i18n_translation_versions?key=eq.${encodeURIComponent(corruptedKey)}`
+          );
+          
+          // Update each translation to use the clean key
+          for (const translation of translations) {
+            try {
+              await this.makeRequest(
+                `/i18n_translation_versions?id=eq.${translation.id}`,
+                {
+                  method: 'PATCH',
+                  body: JSON.stringify({ key: cleanKey }),
+                }
+              );
+            } catch (updateError) {
+              console.error(`Failed to update translation ${translation.id}:`, updateError);
+              failed++;
+            }
+          }
+          
+          cleaned++;
+        } catch (error) {
+          console.error(`Failed to clean key ${corruptedKey}:`, error);
+          failed++;
+        }
+      }
+      
+      return { cleaned, failed };
+    } catch (error) {
+      console.error('Error cleaning corrupted keys:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete all keys containing [object Object]
+   */
+  async deleteCorruptedKeys(): Promise<number> {
+    try {
+      // Get all keys
+      const allKeys = await this.getAllKeys();
+      const corruptedKeys = allKeys.filter(key => key.includes('[object Object]'));
+      
+      let deleted = 0;
+      
+      for (const key of corruptedKeys) {
+        try {
+          await this.deleteTranslationKey(key);
+          deleted++;
+        } catch (error) {
+          console.error(`Failed to delete key ${key}:`, error);
+        }
+      }
+      
+      return deleted;
+    } catch (error) {
+      console.error('Error deleting corrupted keys:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all unique keys from all locales/languages
+   */
+  async getAllUniqueKeys(): Promise<string[]> {
+    try {
+      // Query to get all unique keys across all translations
+      const data = await this.makeRequest(
+        '/i18n_translation_versions?select=key&order=key'
+      );
+      
+      // Extract unique keys
+      const uniqueKeys = [...new Set(data.map((item: any) => item.key))];
+      
+      // Filter out corrupted keys
+      const cleanKeys = uniqueKeys.filter(key => !key.includes('[object Object]'));
+      
+      return cleanKeys.sort();
+    } catch (error) {
+      console.error('Error fetching all unique keys:', error);
       throw error;
     }
   }

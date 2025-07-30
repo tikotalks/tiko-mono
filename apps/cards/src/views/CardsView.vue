@@ -231,18 +231,15 @@ const handleCardClick = (card: any) => {
   if (editMode.value && parentMode.canManageContent.value) {
     // In edit mode, clicking toggles selection
     toggleCardSelection(card.id)
-    console.log('Card selected/deselected:', card.label)
     return
   }
 
   // In normal mode, speak the card
-  console.log('Speaking card:', card.label, '-', card.audioText)
   speakCard(card)
 }
 
 const handleCardSelect = (cardId: string) => {
   toggleCardSelection(cardId)
-  console.log('Card selection toggled:', cardId)
 }
 
 const handleCardEdit = (card: any) => {
@@ -284,7 +281,6 @@ const deleteSelectedCards = async () => {
 
 const handleViewChange = (view: 'grid' | 'groups') => {
   store.currentView = view
-  console.log('View changed to:', view)
 }
 
 // Show create card modal

@@ -1,7 +1,7 @@
 import { ref, computed, onMounted, onUnmounted, type Ref } from 'vue'
 import type { MediaItem } from '../services/media.service'
 import { mediaService } from '../services'
-import { useEventBus } from '@tiko/ui'
+import { useEventBus } from './useEventBus'
 
 export interface ImageStats {
   totalImages: number

@@ -1,0 +1,8 @@
+/assets/*
+  Cache-Control: max-age=31536000, immutable
+
+/*.js
+  Cache-Control: max-age=31536000, immutable
+
+/*.css
+  Cache-Control: max-age=31536000, immutable

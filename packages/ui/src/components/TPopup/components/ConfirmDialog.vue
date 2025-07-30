@@ -24,6 +24,8 @@
         :icon="confirmIcon(confirmColor)"
         @click="handleConfirm"
         :class="bemm('confirm-button')"
+        ref="confirmButton"
+        autofocus
       >
         {{ confirmLabel }}
       </TButton>
@@ -32,6 +34,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useBemm } from 'bemm'
 import TButton from '../../TButton/TButton.vue'
 import TIcon from '../../TIcon/TIcon.vue'
@@ -60,6 +63,7 @@ const emit = defineEmits<{
 }>()
 
 const bemm = useBemm('confirm-dialog')
+const confirmButton = ref<InstanceType<typeof TButton> | null>(null)
 
 const handleConfirm = () => {
   props.onConfirm?.()
@@ -83,6 +87,39 @@ const confirmIcon = (color: string) => {
       return Icons.ARROW_RIGHT
   }
 }
+
+// Focus the confirm button when mounted and handle enter key
+onMounted(() => {
+  nextTick(() => {
+    // Focus the confirm button for keyboard navigation
+    const button = confirmButton.value?.$el as HTMLElement
+    if (button) {
+      const buttonElement = button.querySelector('button') || button
+      buttonElement?.focus()
+    }
+  })
+})
+
+// Handle keyboard events
+const handleKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Enter') {
+    event.preventDefault()
+    handleConfirm()
+  } else if (event.key === 'Escape') {
+    event.preventDefault()
+    handleCancel()
+  }
+}
+
+// Add event listener when component mounts
+onMounted(() => {
+  document.addEventListener('keydown', handleKeydown)
+})
+
+// Clean up event listener
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown)
+})
 </script>
 
 <style lang="scss" scoped>

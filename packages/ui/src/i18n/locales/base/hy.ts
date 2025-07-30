@@ -466,7 +466,7 @@ export const hy: TranslationSchema = {
     onlyOneNumberAllowed: 'Only one number is allowed '
   },
   languageNames: {
-    // Base languages
+
     bulgarian: 'Բուլղարերեն',
     czech: 'Չեխերեն',
     welsh: 'Ուելսերեն',
@@ -496,7 +496,7 @@ export const hy: TranslationSchema = {
     slovak: 'Սլովակերեն',
     slovenian: 'Սլովեներեն',
     swedish: 'Շվեդերեն',
-    // Regional variants
+
     germanGermany: 'Գերմաներեն (Գերմանիա)',
     germanAustria: 'Գերմաներեն (Ավստրիա)',
     germanSwitzerland: 'Գերմաներեն (Շվեյցարիա)',
