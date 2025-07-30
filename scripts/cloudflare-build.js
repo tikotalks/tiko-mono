@@ -88,27 +88,59 @@ function checkCommitMessageOverrides(message, app) {
  */
 function getAffectedProjects() {
   try {
-    // Get the base commit for comparison
-    // For production, compare with previous commit
-    // For PRs/previews, compare with base branch
-    const base = isProduction ? 'HEAD~1' : 'origin/main';
+    // Cloudflare does shallow clones, so we need to handle this differently
+    let base = 'origin/main';
     
-    console.log(`🔍 Checking affected projects between ${base} and HEAD...`);
+    // Try to get the previous commit for production builds
+    if (isProduction) {
+      try {
+        // Check if we have enough git history
+        execSync('git rev-parse HEAD~1', { encoding: 'utf8' });
+        base = 'HEAD~1';
+      } catch (e) {
+        console.log('⚠️  Shallow clone detected, comparing with origin/main instead');
+        // Try to fetch more history
+        try {
+          execSync('git fetch --unshallow', { encoding: 'utf8' });
+          base = 'origin/main';
+        } catch (fetchError) {
+          console.log('⚠️  Could not unshallow, using current state');
+          // Fall back to checking all files
+          base = '';
+        }
+      }
+    }
+    
+    console.log(`🔍 Checking affected projects${base ? ` between ${base} and HEAD` : ''}...`);
     
     // Run nx affected:apps to get list of affected applications
-    const affected = execSync(
-      `npx nx show projects --affected --base=${base} --head=HEAD --type=app`,
-      { encoding: 'utf8' }
-    ).trim().split('\n').filter(Boolean);
+    let affected = [];
+    let affectedLibs = [];
+    
+    if (base) {
+      affected = execSync(
+        `npx nx show projects --affected --base=${base} --head=HEAD --type=app`,
+        { encoding: 'utf8' }
+      ).trim().split('\n').filter(Boolean);
+      
+      affectedLibs = execSync(
+        `npx nx show projects --affected --base=${base} --head=HEAD --type=lib`,
+        { encoding: 'utf8' }
+      ).trim().split('\n').filter(Boolean);
+    } else {
+      // If no base, get all projects
+      affected = execSync(
+        `npx nx show projects --type=app`,
+        { encoding: 'utf8' }
+      ).trim().split('\n').filter(Boolean);
+      
+      affectedLibs = execSync(
+        `npx nx show projects --type=lib`,
+        { encoding: 'utf8' }
+      ).trim().split('\n').filter(Boolean);
+    }
     
     console.log('📦 Affected apps:', affected.length > 0 ? affected.join(', ') : 'none');
-    
-    // Also check if shared packages are affected
-    const affectedLibs = execSync(
-      `npx nx show projects --affected --base=${base} --head=HEAD --type=lib`,
-      { encoding: 'utf8' }
-    ).trim().split('\n').filter(Boolean);
-    
     console.log('📚 Affected libraries:', affectedLibs.length > 0 ? affectedLibs.join(', ') : 'none');
     
     return { apps: affected, libs: affectedLibs };
@@ -136,7 +168,16 @@ function shouldBuildApp() {
   const { apps, libs } = getAffectedProjects();
   
   // Check if this app is directly affected
-  if (apps.includes(appName)) {
+  // Handle both with and without @tiko/ prefix
+  const appNameVariations = [
+    appName,
+    `@tiko/${appName}`,
+    appName.replace('@tiko/', '')
+  ];
+  
+  const isAppAffected = apps.some(app => appNameVariations.includes(app));
+  
+  if (isAppAffected) {
     return { 
       shouldBuild: true, 
       reason: 'App has direct changes' 
@@ -144,7 +185,7 @@ function shouldBuildApp() {
   }
   
   // Check if core packages are affected (should rebuild all apps)
-  const corePackages = ['ui', 'core'];
+  const corePackages = ['ui', 'core', '@tiko/ui', '@tiko/core'];
   const coreAffected = libs.some(lib => corePackages.includes(lib));
   
   if (coreAffected) {
