@@ -22,12 +22,29 @@ const fs = require('fs');
 const path = require('path');
 
 // Get the app name from command line arguments
-const appName = process.argv[2];
+let appName = process.argv[2];
 
 if (!appName) {
   console.error('Error: App name is required');
   console.error('Usage: node scripts/cloudflare-build.js <app-name>');
   process.exit(1);
+}
+
+// Convert simple app names to Nx project names
+const appNameMapping = {
+  'admin': '@tiko/admin',
+  'yesno': 'yesno',  // yesno doesn't use @tiko prefix
+  'timer': 'timer',
+  'cards': 'cards',
+  'radio': 'radio'
+};
+
+if (appNameMapping[appName]) {
+  const originalName = appName;
+  appName = appNameMapping[appName];
+  if (originalName !== appName) {
+    console.log(`📝 Converting ${originalName} to ${appName} for Nx compatibility`);
+  }
 }
 
 // Get environment variables
