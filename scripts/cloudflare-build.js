@@ -111,7 +111,7 @@ function checkCommitMessageOverrides(message, app) {
 function getAffectedProjects() {
   try {
     // Cloudflare does shallow clones, so we need to handle this differently
-    let base = 'origin/main';
+    let base = 'origin/master';
     
     // Try to get the previous commit for production builds
     if (isProduction) {
@@ -120,11 +120,11 @@ function getAffectedProjects() {
         execSync('git rev-parse HEAD~1', { encoding: 'utf8' });
         base = 'HEAD~1';
       } catch (e) {
-        console.log('⚠️  Shallow clone detected, comparing with origin/main instead');
+        console.log('⚠️  Shallow clone detected, comparing with origin/master instead');
         // Try to fetch more history
         try {
           execSync('git fetch --unshallow', { encoding: 'utf8' });
-          base = 'origin/main';
+          base = 'origin/master';
         } catch (fetchError) {
           console.log('⚠️  Could not unshallow, using current state');
           // Fall back to checking all files
