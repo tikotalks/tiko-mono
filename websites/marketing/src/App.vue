@@ -1,5 +1,5 @@
 <template>
-  <TFramework 
+  <TFramework
     :config="frameworkConfig"
     :require-auth="false"
     :show-splash-screen="false"
@@ -17,8 +17,7 @@ const frameworkConfig: FrameworkConfig = {
   name: 'Tiko Marketing',
   isApp: false,
   theme: {
-    primary: 'indigo',
-    mode: 'light'
+    primary: 'indigo'
   },
   topBar: {
     showUser: false,
