@@ -5,7 +5,7 @@ const { readdirSync, existsSync } = require('fs');
 const { join } = require('path');
 const { interactiveSelect, colors } = require('./interactive-select');
 
-// Get all apps from the apps and tools directories
+// Get all apps from the apps, tools, and websites directories
 function getApps() {
   const apps = [];
   
@@ -51,6 +51,27 @@ function getApps() {
     apps.push(...toolItems);
   }
   
+  // Get websites from websites directory
+  const websitesDir = join(process.cwd(), 'websites');
+  if (existsSync(websitesDir)) {
+    const websiteItems = readdirSync(websitesDir, { withFileTypes: true })
+      .filter(dirent => dirent.isDirectory())
+      .map(dirent => ({ name: dirent.name, type: 'website', dir: 'websites' }))
+      .filter(item => {
+        const packagePath = join(websitesDir, item.name, 'package.json');
+        if (existsSync(packagePath)) {
+          try {
+            const pkg = require(packagePath);
+            return pkg.scripts && (pkg.scripts.dev || pkg.scripts.serve);
+          } catch (e) {
+            return false;
+          }
+        }
+        return false;
+      });
+    apps.push(...websiteItems);
+  }
+  
   return apps.sort((a, b) => a.name.localeCompare(b.name));
 }
 
@@ -60,7 +81,12 @@ function getAppInfo(app) {
   try {
     const pkg = require(packagePath);
     const name = app.name || app;
-    const displayName = app.type === 'tool' ? `${name} (tool)` : name;
+    let displayName = name;
+    if (app.type === 'tool') {
+      displayName = `${name} (tool)`;
+    } else if (app.type === 'website') {
+      displayName = `${name} (website)`;
+    }
     return {
       name: displayName,
       description: pkg.description || '',
@@ -81,17 +107,17 @@ function getAppInfo(app) {
 // Run the specified app
 function runApp(app) {
   const appName = app.name || app;
-  // For tools, check if they already have @tiko prefix
+  // For tools and websites, check package.json for the real name
   let packageName;
-  if (app.type === 'tool') {
+  if (app.type === 'tool' || app.type === 'website') {
     // Check the actual package.json for the real name
-    const packagePath = join(process.cwd(), app.dir || 'tools', appName, 'package.json');
+    const packagePath = join(process.cwd(), app.dir || app.type === 'tool' ? 'tools' : 'websites', appName, 'package.json');
     try {
       const pkg = require(packagePath);
       packageName = pkg.name;
     } catch (e) {
-      // Fallback to adding @tiko prefix
-      packageName = `@tiko/${appName}`;
+      // Fallback to adding @tiko prefix for tools
+      packageName = app.type === 'tool' ? `@tiko/${appName}` : appName;
     }
   } else {
     packageName = appName;
@@ -104,7 +130,8 @@ function runApp(app) {
   
   // Run the selected app
   try {
-    execSync(`pnpm --filter ${packageName} dev`, { 
+    // Use nx serve for all projects
+    execSync(`npx nx serve ${appName}`, { 
       stdio: 'inherit',
       cwd: process.cwd()
     });
