@@ -41,6 +41,16 @@ export { mediaAnalysisService } from './media-analysis.service'
 export { userService } from './user.service'
 export { translationService } from './translation.service'
 export { gptTranslationService } from './gpt-translation.service'
+export { contentService } from './content.service'
+export type { 
+  ContentProject, 
+  SectionTemplate, 
+  ContentField, 
+  PageTemplate, 
+  ContentPage, 
+  PageSection, 
+  FieldValue 
+} from './content.service'
 
 // Alternative: Export Supabase implementations
 // import { SupabaseParentModeService } from './parent-mode-supabase.service'
