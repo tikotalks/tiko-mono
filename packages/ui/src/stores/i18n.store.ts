@@ -94,7 +94,7 @@ export const useI18nStore = defineStore('i18n', () => {
       }
 
     } catch (err) {
-      error.value = `Failed to load translations for ${locale}: ${err.message}`
+      error.value = `Failed to load translations for ${locale}: ${err instanceof Error ? err.message : String(err)}`
       // logger.error('i18n-store', error.value)
 
       // Set empty object to prevent repeated attempts
@@ -106,8 +106,6 @@ export const useI18nStore = defineStore('i18n', () => {
 
   function translate(key: string, params?: Record<string, any>): string {
     const translation = currentTranslations.value[key]
-
-    console.error('kutttt2', key, currentTranslations.value, currentLocale.value)
 
     if (!translation) {
       // Try base locale if current is regional
@@ -145,7 +143,7 @@ export const useI18nStore = defineStore('i18n', () => {
     currentLocale.value = locale
     console.log('[I18n Store] About to call setPersistedLocale with:', locale)
     setPersistedLocale(locale)
-    
+
     // Verify what was stored
     const stored = localStorage.getItem('tiko-language')
     console.log('[I18n Store] After setPersistedLocale, localStorage contains:', stored)

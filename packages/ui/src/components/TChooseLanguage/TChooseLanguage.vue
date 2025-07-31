@@ -16,12 +16,12 @@
       <div v-if="loading" :class="bemm('loading')">
         {{ t(keys.common.loading) }}
       </div>
-      
+
       <!-- Error state -->
       <div v-else-if="error" :class="bemm('error')">
         {{ error }}
       </div>
-      
+
       <!-- Language items -->
       <template v-else>
         <div
@@ -144,12 +144,12 @@ const getTranslatedLanguageName = (baseCode: string): string => {
     const langBaseCode = getBaseLanguageCode(lang.code)
     return langBaseCode === baseCode
   })
-  
+
   if (language) {
     // Use native name if available, otherwise use the name
     return language.native_name || language.name
   }
-  
+
   // Fallback to translation keys for backwards compatibility
   const languageKeys: Record<string, string> = {
     'bg': keys.languageNames.bulgarian,
@@ -260,7 +260,7 @@ const loadLanguages = async () => {
   try {
     loading.value = true
     error.value = null
-    
+
     // Fetch active languages from database
     const languages = await translationService.getActiveLanguages()
     databaseLanguages.value = languages
@@ -285,12 +285,16 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: var(--space);
-  max-height: 60vh;
-  height: 400px;
 
   &__search {
     flex-shrink: 0;
     padding: 0 var(--space);
+    position: sticky;
+    top:80px;
+    background-color: color-mix(in srgb, var(--color-primary), transparent 90%);
+    padding: calc(var(--border-radius) / 2);
+    z-index: 10;
+    border-radius: calc(var(--border-radius) * 1.5);
   }
 
   &__search-input {

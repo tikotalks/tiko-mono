@@ -23,7 +23,7 @@ export function useLocalStorage<T>(
         if (parsed.startsWith('"') && parsed.endsWith('"')) {
           initialValue = parsed.slice(1, -1) as T
         } else {
-          initialValue = parsed
+          initialValue = parsed as T
         }
       } else {
         initialValue = parsed

@@ -662,11 +662,8 @@ export interface TranslationSchema {
   }
 }
 
-// Import available locales from the locales index
-import type { LocaleCode } from './locales'
-
-// Available locales - now uses the actual available locales from the system
-export type Locale = LocaleCode
+// Available locales - now dynamically loaded from database
+export type Locale = string
 
 // Type for translation functions with interpolation support
 export type TranslationFunction = (key: TranslationKey, params?: Record<string, any> | string) => string
