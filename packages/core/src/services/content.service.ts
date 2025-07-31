@@ -105,7 +105,6 @@ export interface ContentSection {
   slug: string
   description?: string
   language_code?: string
-  component_type: string
   is_reusable: boolean
   is_active: boolean
   project_id?: string
@@ -411,35 +410,44 @@ class ContentService {
       `/content_page_sections?page_id=eq.${pageId}&order=order_index.asc`
     )
     
-    // Map PageSection to ContentPageSection format
-    return sections.map((s: any) => ({
-      page_id: s.page_id,
-      section_id: s.section_template_id,
-      section_template_id: s.section_template_id,
-      order_index: s.order_index,
-      override_name: s.override_name,
-      content_data: undefined
-    }))
+    // Return the sections as they are from the database
+    return sections
   }
 
   async setPageSections(pageId: string, sections: any[]): Promise<void> {
-    // Delete existing sections
+    // Validate input
+    if (!pageId) {
+      throw new Error('Page ID is required')
+    }
+    
+    if (!Array.isArray(sections)) {
+      throw new Error('Sections must be an array')
+    }
+    
+    // Prepare new sections data first to validate
+    const sectionsWithPageId = sections.map((s, index) => {
+      // Validate required fields
+      if (!s.section_template_id) {
+        throw new Error(`Section at index ${index} is missing section_template_id`)
+      }
+      
+      // Clean up the data - only send what the database expects
+      const { page_id, ...sectionData } = s
+      return {
+        page_id: pageId,
+        section_template_id: sectionData.section_template_id,
+        order_index: sectionData.order_index ?? index,
+        override_name: sectionData.override_name || null
+      }
+    })
+    
+    // Only delete existing sections if we have valid new data
     await this.makeRequest(`/content_page_sections?page_id=eq.${pageId}`, {
       method: 'DELETE',
     })
 
     // Insert new sections
-    if (sections.length > 0) {
-      const sectionsWithPageId = sections.map(s => {
-        // Clean up the data - only send what the database expects
-        const { page_id, ...sectionData } = s
-        return {
-          page_id: pageId,
-          section_template_id: sectionData.section_template_id,
-          order_index: sectionData.order_index || 0,
-          override_name: sectionData.override_name || null
-        }
-      })
+    if (sectionsWithPageId.length > 0) {
       await this.makeRequest('/content_page_sections', {
         method: 'POST',
         body: JSON.stringify(sectionsWithPageId),
