@@ -1,14 +1,10 @@
 <template>
   <div :class="bemm()">
-    <div :class="bemm('header')">
-      <h1 :class="bemm('title')">Translation Keys</h1>
-      <div :class="bemm('actions')">
-        <TInput
-          v-model="searchQuery"
-          placeholder="Search keys..."
-          :icon="Icons.SEARCH_M"
-          :class="bemm('search')"
-        />
+    <AdminPageHeader
+      title="Translation Keys"
+      description="Manage and search through all available translation keys"
+    >
+      <template #actions>
         <TButton
           type="ghost"
           :icon="Icons.ARROW_ROTATE_TOP_LEFT"
@@ -17,22 +13,35 @@
         >
           Refresh
         </TButton>
-      </div>
-    </div>
+      </template>
 
-    <div :class="bemm('stats')">
-      <div :class="bemm('stat')">
-        <span :class="bemm('stat-label')">Total Keys</span>
-        <span :class="bemm('stat-value')">{{ filteredKeys.length }}</span>
-      </div>
-      <div :class="bemm('stat')">
-        <span :class="bemm('stat-label')">Displayed</span>
-        <span :class="bemm('stat-value')">{{ filteredKeys.length }}</span>
-      </div>
-    </div>
+      <template #inputs>
+        <TInput
+          v-model="searchQuery"
+          placeholder="Search keys..."
+          :icon="Icons.SEARCH_M"
+          :class="bemm('search')"
+        />
+      </template>
+
+      <template #stats>
+        <TKeyValue
+          :items="[
+            {
+              key: 'Total Keys',
+              value: String(filteredKeys.length)
+            },
+            {
+              key: 'Displayed',
+              value: String(filteredKeys.length)
+            }
+          ]"
+        />
+      </template>
+    </AdminPageHeader>
 
     <div :class="bemm('list-container')" v-if="!loading">
-      <TList>
+      <TList :show-stats="true">
         <TListItem
           v-for="key in filteredKeys"
           :key="key"
@@ -40,17 +49,14 @@
           <TListCell type="custom">
             <span :class="bemm('key-text')">{{ key }}</span>
           </TListCell>
-          <TListCell type="custom">
-            <div :class="bemm('actions-cell')">
-              <TButton
-                type="ghost"
-                size="small"
-                :icon="Icons.COPY"
-                @click="copyKey(key)"
-                :title="t('admin.i18n.keys.actions.copyKey', 'Copy key')"
-              />
-            </div>
-          </TListCell>
+          <TListCell 
+            type="actions" 
+            :actions="[
+              listActions.copy((e) => copyKey(key), {
+                tooltip: t('admin.i18n.keys.actions.copyKey', 'Copy key')
+              })
+            ]"
+          />
         </TListItem>
       </TList>
     </div>
@@ -83,11 +89,14 @@ import {
   TListItem,
   TListCell,
   useI18n,
+  TKeyValue,
+  listActions,
 } from '@tiko/ui';
+import AdminPageHeader from '@/components/AdminPageHeader.vue';
 
 const bemm = useBemm('i18n-keys');
 const toastService = inject<ToastService>('toastService');
-const { keys } = useI18n();
+const { keys, t } = useI18n();
 
 // State
 const loading = ref(false);
@@ -177,55 +186,8 @@ onMounted(() => {
   height: 100%;
   overflow: hidden;
 
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--space);
-    flex-wrap: wrap;
-  }
-
-  &__title {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-foreground);
-    margin: 0;
-  }
-
-  &__actions {
-    display: flex;
-    gap: var(--space-s);
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
   &__search {
     width: 250px;
-  }
-
-  &__stats {
-    display: flex;
-    gap: var(--space);
-    padding: var(--space);
-    background: var(--color-background-secondary);
-    border-radius: var(--border-radius);
-  }
-
-  &__stat {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-  }
-
-  &__stat-label {
-    font-size: var(--font-size-s);
-    color: var(--color-foreground-secondary);
-  }
-
-  &__stat-value {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-foreground);
   }
 
   &__list-container {
@@ -240,11 +202,6 @@ onMounted(() => {
     font-family: monospace;
     font-size: var(--font-size-s);
     color: var(--color-foreground);
-  }
-
-  &__actions-cell {
-    display: flex;
-    gap: var(--space-xs);
   }
 
   &__empty {

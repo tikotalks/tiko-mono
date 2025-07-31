@@ -3,7 +3,7 @@ import { markRaw, reactive, ref, type ComponentPublicInstance, type Slot, type C
 import PopupSlot from './TPopupSlot.vue';
 import type { PopupOptions, PopupInstance } from './TPopup.model';
 import { logger } from '@tiko/core';
-import { ConfirmDialog, ProgressDialog, AddTranslationKeyDialog } from './components';
+import { ConfirmDialog, ProgressDialog } from './components';
 
 const defaultPopupOptions: Partial<PopupOptions> = {
 	config: {
@@ -21,8 +21,7 @@ export const popupRefs = reactive<Record<string, ComponentPublicInstance | null>
 // Component registry for string-based component resolution
 const componentRegistry: Record<string, Component> = {
 	ConfirmDialog,
-	ProgressDialog,
-	AddTranslationKeyDialog
+	ProgressDialog
 };
 
 const usePopupService = () => {
@@ -123,7 +122,7 @@ const usePopupService = () => {
 		return id;
 	};
 
-	const close = (opts: { id?: string; callback?: Object }) => {
+	const close = (opts: { id?: string; callback?: Object } = {}) => {
 		const { id, callback } = opts;
 
 		if (id) {

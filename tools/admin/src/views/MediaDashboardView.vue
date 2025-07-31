@@ -1,24 +1,30 @@
 <template>
   <div :class="bemm()">
-
+    <AdminPageHeader
+      :title="t('admin.dashboard.mediaTitle')"
+      :description="t('admin.dashboard.mediaDescription')"
+    >
+      <template #stats>
+        <TKeyValue
+          :items="[
+            {
+              key: t('admin.dashboard.totalImages'),
+              value: String(stats.totalImages)
+            },
+            {
+              key: t('admin.dashboard.storageUsed'),
+              value: formatBytes(stats.storageUsed)
+            },
+            {
+              key: t('admin.dashboard.lastUpload'),
+              value: stats.lastUpload ? formatDate(stats.lastUpload) : t('common.never')
+            }
+          ]"
+        />
+      </template>
+    </AdminPageHeader>
 
     <div :class="bemm('content')">
-      <div :class="bemm('stats')">
-        <TCard>
-          <h3>{{ t('admin.dashboard.totalImages') }}</h3>
-          <p class="stat-value">{{ stats.totalImages }}</p>
-        </TCard>
-
-        <TCard>
-          <h3>{{ t('admin.dashboard.storageUsed') }}</h3>
-          <p class="stat-value">{{ formatBytes(stats.storageUsed) }}</p>
-        </TCard>
-
-        <TCard>
-          <h3>{{ t('admin.dashboard.lastUpload') }}</h3>
-          <p class="stat-value">{{ stats.lastUpload ? formatDate(stats.lastUpload) : t('common.never') }}</p>
-        </TCard>
-      </div>
 
       <div :class="bemm('actions')">
         <TCard
@@ -51,8 +57,9 @@ import { useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
 import { useI18n } from '@tiko/ui'
 import { authService, useImages, formatBytes, formatDate } from '@tiko/core'
-import {  TCard,  TIcon } from '@tiko/ui'
+import {  TCard,  TIcon, TKeyValue } from '@tiko/ui'
 import { Icons } from 'open-icon'
+import AdminPageHeader from '../components/AdminPageHeader.vue'
 
 const bemm = useBemm('dashboard-view')
 const { t } = useI18n()
@@ -76,27 +83,15 @@ onMounted(async () => {
   &__content {
     flex: 1;
     padding: var(--space);
-    overflow-y: auto;   display: flex;
-     gap: var(--space);
-
+    overflow-y: auto;
+    display: flex;
+    gap: var(--space);
   }
 
-  &__stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: var(--space);
-
-
-    h3 {
-      font-size: var(--font-size-s);
-      color: var(--color-text-secondary);
-      margin-bottom: var(--space-xs);
-    }
-
-    .stat-value {
-      font-size: var(--font-size-2xl);
-      font-weight: bold;
-    }
+  &__stat-value {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-foreground);
   }
 
   &__actions {

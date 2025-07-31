@@ -1,23 +1,21 @@
 <template>
   <div :class="bemm()">
-    <div :class="bemm('header')">
-      <div :class="bemm('header-content')">
+    <AdminPageHeader
+      :title="language?.name || languageCode"
+      :description="t('admin.i18n.language.description')"
+    >
+      <template #actions>
         <TButton
           type="ghost"
           :icon="Icons.ARROW_LEFT"
           @click="router.push({ name: 'I18nLanguages' })"
-          :class="bemm('back-button')"
-        />
-        <h1>{{ language?.name || languageCode }}</h1>
+        >
+          {{ t('common.back') }}
+        </TButton>
         <TChip
           :type="language?.is_active ? 'success' : 'default'"
           :text="language?.is_active ? t('admin.i18n.languages.active') : t('admin.i18n.languages.inactive')"
         />
-      </div>
-
-      <div :class="bemm('header-actions')">
-        <TButtonGroup>
-
         <TButton
           @click="exportTranslations"
           :icon="Icons.ARROW_DOWNLOAD"
@@ -32,27 +30,19 @@
         >
           {{ t('admin.i18n.language.import') }}
         </TButton>
+      </template>
 
-      </TButtonGroup>
-      </div>
-    </div>
-
-    <!-- Stats -->
-    <TKeyValue :class="bemm('stats')" :items="[{
-      key:  t('admin.i18n.language.totalKeys'),
-      value: stats.totalKeys
-    },{
-      key: t('admin.i18n.language.translated'),
-      value: stats.translatedKeys
-    },{
-      key: t('admin.i18n.language.missing'),
-      value: stats.missingKeys
-    },{
-      key: t('admin.i18n.language.coverage'),
-      value: stats.coveragePercent + '%'
-    }
-
-        ]" />
+      <template #stats>
+        <TKeyValue
+          :items="[
+            { key: t('admin.i18n.language.totalKeys'), value: String(stats.totalKeys) },
+            { key: t('admin.i18n.language.translated'), value: String(stats.translatedKeys) },
+            { key: t('admin.i18n.language.missing'), value: String(stats.missingKeys) },
+            { key: t('admin.i18n.language.coverage'), value: `${stats.coveragePercent}%` }
+          ]"
+        />
+      </template>
+    </AdminPageHeader>
 
 
     <!-- Filter Controls -->
@@ -60,7 +50,7 @@
       <TInputText
         v-model="searchQuery"
         :placeholder="t('admin.i18n.language.searchPlaceholder')"
-        :icon="Icons.SEARCH"
+        :icon="Icons.SEARCH_M"
         :class="bemm('search')"
       />
 
@@ -100,6 +90,7 @@
         :striped="true"
         :bordered="true"
         :hover="true"
+        :show-stats="true"
         :sortBy="sortBy"
         :sortDirection="sortDirection"
         @sort="handleSort"
@@ -126,7 +117,7 @@
             </div>
           </TListCell>
           <TListCell key="value" type="custom">
-            <TInput
+            <TInputText
               v-if="editingKeyId === item.key.id"
               v-model="editingValue"
               :class="bemm('edit-input')"
@@ -279,6 +270,7 @@ import type { ToastService, PopupService } from '@tiko/ui'
 import { Icons } from 'open-icon'
 import { useI18nDatabaseService, gptTranslationService } from '@tiko/core'
 import type { Language, TranslationKey, Translation } from '@tiko/core'
+import AdminPageHeader from '@/components/AdminPageHeader.vue'
 
 const bemm = useBemm('i18n-language-detail-view')
 const { t, refreshTranslations } = useI18n()

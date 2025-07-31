@@ -34,10 +34,19 @@ const toOptions = (option: string | Option): Option => {
 			label: option,
 			value: option,
 		};
-	} else if (option.label && option.value) {
-		return option;
+	} else if (option && typeof option === 'object' && ('label' in option || 'value' in option)) {
+		return {
+			label: option.label || option.value || '',
+			value: option.value || option.label || '',
+			disabled: option.disabled,
+			icon: option.icon
+		};
 	} else {
-		throw new Error('Invalid option');
+		console.warn('Invalid option format:', option);
+		return {
+			label: String(option),
+			value: String(option),
+		};
 	}
 };
 

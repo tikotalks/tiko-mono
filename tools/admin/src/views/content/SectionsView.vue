@@ -43,10 +43,10 @@
           v-if="filteredSections.length > 0"
           :columns="[
             { key: 'name', label: t('common.name'), width: '20%' },
-            { key: 'template', label: t('admin.content.sections.template'), width: '20%' },
+            { key: 'template', label: t('common.template'), width: '20%' },
             { key: 'language', label: t('common.language'), width: '15%' },
             { key: 'type', label: t('common.type'), width: '15%' },
-            { key: 'metadata', label: t('admin.content.sections.properties'), width: '15%' },
+            { key: 'metadata', label: t('common.properties'), width: '15%' },
             { key: 'actions', label: t('common.actions'), width: '15%' }
           ]"
           :striped="true"
@@ -76,8 +76,8 @@
                 </TChip>
               </div>
             </TListCell>
-            <TListCell 
-              type="actions" 
+            <TListCell
+              type="actions"
               :actions="[
                 listActions.edit((e) => { e.stopPropagation(); openEditSectionDialog(section) }),
                 listActions.delete((e) => { e.stopPropagation(); handleDeleteSection(section) })
@@ -152,8 +152,8 @@
                 </TChip>
               </div>
             </TListCell>
-            <TListCell 
-              type="actions" 
+            <TListCell
+              type="actions"
               :actions="[
                 listActions.edit((e) => { e.stopPropagation(); openEditTemplateDialog(template) }),
                 listActions.delete((e) => { e.stopPropagation(); handleDeleteTemplate(template) })

@@ -1,11 +1,10 @@
 <template>
   <div :class="bemm()">
-    <div :class="bemm('header')">
-      <div>
-        <h1>{{ t('admin.i18n.import.title') }}</h1>
-        <p>{{ t('admin.i18n.import.description') }}</p>
-      </div>
-      <div :class="bemm('header-actions')">
+    <AdminPageHeader
+      :title="t('admin.i18n.import.title')"
+      :description="t('admin.i18n.import.description')"
+    >
+      <template #actions>
         <TButton
           @click="router.push({ name: 'I18nDatabase' })"
           :icon="Icons.DATABASE"
@@ -13,8 +12,8 @@
         >
           {{ t('admin.i18n.import.backToDatabase') }}
         </TButton>
-      </div>
-    </div>
+      </template>
+    </AdminPageHeader>
 
     <!-- Language Selection -->
     <div :class="bemm('section')">
@@ -33,6 +32,7 @@
         :striped="true"
         :bordered="true"
         :hover="true"
+        :show-stats="true"
         :sortBy="sortBy"
         :sortDirection="sortDirection"
         @sort="handleSort"
@@ -198,6 +198,7 @@ import { Icons } from 'open-icon'
 import { TButton, TIcon, TProgressBar, TKeyValue, TList, TListItem, TListCell, useI18n, ToastService, Colors } from '@tiko/ui'
 import { useI18nDatabaseService, useUserPreferences, USER_PREFERENCE_KEYS } from '@tiko/core'
 import type { Language } from '@tiko/core'
+import AdminPageHeader from '@/components/AdminPageHeader.vue'
 
 interface LanguageWithStats extends Language {
   translationCount?: number

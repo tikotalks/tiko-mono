@@ -21,7 +21,7 @@
     <!-- Chips Cell -->
     <div v-else-if="type === 'chips' && chips?.length" :class="bemm('chips')">
       <TChip
-        v-for="(chip, index) in visibleChips"
+        v-for="(chip, _) in visibleChips"
         :key="chip"
         size="small"
         :class="bemm('chip')"
@@ -46,6 +46,22 @@
       {{ formatBytes(Number(content) || 0) }}
     </span>
 
+    <!-- Actions Cell -->
+    <div v-else-if="type === 'actions' && actions?.length" :class="bemm('actions')">
+      <TButton
+        v-for="(action, index) in actions"
+        :key="index"
+        :type="action.buttonType"
+        :icon="action.icon"
+        :color="action.color"
+        :size="action.size || 'small'"
+        :disabled="action.disabled"
+        :loading="action.loading"
+        :tooltip="action.tooltip || action.label"
+        @click="handleActionClick($event, action)"
+      />
+    </div>
+
     <!-- Custom Content Slot -->
     <div v-else-if="type === 'custom'" :class="bemm('custom', { truncate })">
       <slot />
@@ -62,7 +78,9 @@
 import { computed } from 'vue'
 import { useBemm } from 'bemm'
 import TChip from '../TChip/TChip.vue'
+import TButton from '../TButton/TButton.vue'
 import type { TListCellProps } from './TListCell.model'
+import type { ListAction } from '../TListItem/TListItem.model'
 
 const props = withDefaults(defineProps<TListCellProps>(), {
   type: 'text',
@@ -91,6 +109,13 @@ const remainingCount = computed(() => {
 const handleClick = (event: Event) => {
   if (props.clickable) {
     emit('click', event)
+  }
+}
+
+const handleActionClick = (event: Event, action: ListAction) => {
+  event.stopPropagation()
+  if (action.handler && !action.disabled) {
+    action.handler(event)
   }
 }
 
@@ -124,7 +149,7 @@ const formatBytes = (bytes: number): string => {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    
+
     .list-cell__id,
     .list-cell__size,
     .list-cell__text,
@@ -221,6 +246,14 @@ const formatBytes = (bytes: number): string => {
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--space-xs);
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
   }
 }
 </style>

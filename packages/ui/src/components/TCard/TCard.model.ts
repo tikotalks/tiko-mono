@@ -101,6 +101,7 @@ export interface TCardEmits {
    * Emitted when the card is clicked (only when clickable)
    */
   click: [event: Event]
+  action: [action: CardAction]
 }
 
 export interface TCardSlots {

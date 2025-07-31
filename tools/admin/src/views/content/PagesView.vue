@@ -32,7 +32,7 @@
       v-else-if="filteredPages.length > 0"
       :columns="[
         { key: 'title', label: t('common.title'), width: '20%' },
-        { key: 'slug', label: t('admin.content.pages.slug'), width: '20%' },
+        { key: 'slug', label: t('common.slug'), width: '20%' },
         { key: 'path', label: t('common.path'), width: '20%' },
         { key: 'project', label: t('common.project'), width: '15%' },
         { key: 'metadata', label: t('common.status'), width: '15%' },
@@ -172,12 +172,6 @@ function getProjectName(projectId: string): string {
 
 function getPageMetadata(page: ContentPage): string[] {
   const metadata = []
-
-  // Add project name
-  const projectName = getProjectName(page.project_id)
-  if (projectName) {
-    metadata.push(projectName)
-  }
 
   // Add language
   metadata.push(page.language_code.toUpperCase())

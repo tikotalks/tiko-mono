@@ -1,36 +1,10 @@
 <template>
   <div :class="bemm()">
-    <!-- Header -->
-    <div :class="bemm('header')">
-      <h1 :class="bemm('title')">Translations</h1>
-
-      <div :class="bemm('actions')">
-        <!-- Language Switcher -->
-        <TInputSelect
-          v-model="targetLocale"
-          :options="languageOptions"
-          :label="'Target Language'"
-          :class="bemm('locale-select')"
-        />
-
-        <!-- Search -->
-        <TInput
-          v-model="searchQuery"
-          :placeholder="'Search...'"
-          :icon="Icons.SEARCH_M"
-          :class="bemm('search')"
-        />
-
-        <!-- Filter Toggle -->
-        <TButton
-          type="ghost"
-          :icon="showOnlyMissing ? Icons.EYE_SLASH : Icons.EYE"
-          @click="showOnlyMissing = !showOnlyMissing"
-          :class="bemm('filter-toggle', { active: showOnlyMissing })"
-        >
-          {{ showOnlyMissing ? 'Show All' : 'Missing Only' }}
-        </TButton>
-
+    <AdminPageHeader
+      title="Translations"
+      description="Manage translations across all languages"
+    >
+      <template #actions>
         <!-- Import Button -->
         <TButton
           type="ghost"
@@ -92,39 +66,52 @@
         >
           Approve Pending ({{ pendingCount }})
         </TButton>
-      </div>
-    </div>
+      </template>
 
-    <!-- Statistics -->
-    <div :class="[bemm('stats'),'horizontal-table']">
-      <dl :class="bemm('stat')">
-        <dt :class="bemm('stat-label')">Total Keys</dt>
-        <dd :class="bemm('stat-value')">{{ statistics.totalKeys }}</dd>
-      </dl>
-      <dl :class="bemm('stat')">
-        <dt :class="bemm('stat-label')">Completion</dt>
-        <dd :class="bemm('stat-value')">
-          {{ statistics.completeness[targetLocale]?.percentage || 0 }}%
-        </dd>
-      </dl>
-      <dl :class="bemm('stat')">
-        <dt :class="bemm('stat-label')">Missing</dt>
-        <dd :class="bemm('stat-value')">
-          {{ statistics.completeness[targetLocale]?.missing || 0 }}
-        </dd>
-      </dl>
-      <dl :class="bemm('stat')">
-        <dt :class="bemm('stat-label')">Auto Translated</dt>
-        <dd :class="bemm('stat-value')">
-          {{ statistics.autoTranslated[targetLocale] || 0 }}
-        </dd>
-      </dl>
-    </div>
+      <template #inputs>
+        <!-- Language Switcher -->
+        <TInputSelect
+          v-model="targetLocale"
+          :options="languageOptions"
+          :label="'Target Language'"
+          :class="bemm('locale-select')"
+        />
+
+        <!-- Search -->
+        <TInput
+          v-model="searchQuery"
+          :placeholder="'Search...'"
+          :icon="Icons.SEARCH_M"
+          :class="bemm('search')"
+        />
+
+        <!-- Filter Toggle -->
+        <TButton
+          type="ghost"
+          :icon="showOnlyMissing ? Icons.EYE_SLASH : Icons.EYE"
+          @click="showOnlyMissing = !showOnlyMissing"
+          :class="bemm('filter-toggle', { active: showOnlyMissing })"
+        >
+          {{ showOnlyMissing ? 'Show All' : 'Missing Only' }}
+        </TButton>
+      </template>
+
+      <template #stats>
+        <TKeyValue
+          :items="[
+            { key: 'Total Keys', value: String(statistics.totalKeys) },
+            { key: 'Completion', value: `${statistics.completeness[targetLocale]?.percentage || 0}%` },
+            { key: 'Missing', value: String(statistics.completeness[targetLocale]?.missing || 0) },
+            { key: 'Auto Translated', value: String(statistics.autoTranslated[targetLocale] || 0) }
+          ]"
+        />
+      </template>
+    </AdminPageHeader>
 
 
     <!-- Translations List -->
     <div v-if="allKeys.length > 0" :class="bemm('list-container', { selecting: isSelecting })">
-      <TList :columns="listColumns" :striped="true" :bordered="true" :hover="true">
+      <TList :columns="listColumns" :striped="true" :bordered="true" :hover="true" :show-stats="true">
         <TListItem
           v-for="row in displayedTranslations"
           :key="row.key"
@@ -166,50 +153,33 @@
           </TListCell>
 
           <!-- Actions Column -->
-          <TListCell type="custom">
-            <div :class="bemm('actions-cell')">
-              <template v-if="row.key === editingKey">
-                <TButton
-                  type="ghost"
-                  size="small"
-                  :icon="Icons.CHECK_M"
-                  @click="saveEdit"
-                  :title="'Save'"
-                />
-                <TButton
-                  type="ghost"
-                  size="small"
-                  :icon="Icons.CLOSE"
-                  @click="cancelEdit"
-                  :title="'Cancel'"
-                />
-              </template>
-              <template v-else>
-                <TButton
-                  type="ghost"
-                  size="small"
-                  :icon="Icons.EDIT_M"
-                  @click="startEdit(row)"
-                  :title="'Edit'"
-                />
-                <TButton
-                  type="ghost"
-                  size="small"
-                  :icon="Icons.STAR_M"
-                  @click="autoTranslate(row)"
-                  :loading="translatingKeys.has(row.key)"
-                  :title="row.targetValue ? 'Re-generate translation' : 'Auto-translate'"
-                />
-                <TButton
-                  type="ghost"
-                  size="small"
-                  :icon="Icons.MULTIPLY_M"
-                  @click="deleteKey(row.key)"
-                  :title="'Delete'"
-                />
-              </template>
-            </div>
-          </TListCell>
+          <TListCell 
+            type="actions" 
+            :actions="row.key === editingKey ? [
+              listActions.custom({
+                icon: Icons.CHECK_M,
+                color: 'success',
+                handler: () => saveEdit(),
+                tooltip: 'Save'
+              }),
+              listActions.custom({
+                icon: Icons.CLOSE,
+                color: 'secondary',
+                handler: () => cancelEdit(),
+                tooltip: 'Cancel'
+              })
+            ] : [
+              listActions.edit(() => startEdit(row), { tooltip: 'Edit' }),
+              listActions.custom({
+                icon: Icons.STAR_M,
+                color: 'primary',
+                handler: () => autoTranslate(row),
+                loading: translatingKeys.has(row.key),
+                tooltip: row.targetValue ? 'Re-generate translation' : 'Auto-translate'
+              }),
+              listActions.delete(() => deleteKey(row.key), { tooltip: 'Delete' })
+            ]"
+          />
         </TListItem>
       </TList>
     </div>
@@ -371,7 +341,10 @@ import {
   TProgressBar,
   TStatusBar,
   ConfirmDialog,
+  TKeyValue,
+  listActions,
 } from '@tiko/ui';
+import AdminPageHeader from '@/components/AdminPageHeader.vue';
 
 interface TranslationRow {
   key: string;
@@ -1644,27 +1617,6 @@ onMounted(async () => {
   height: 100%;
   overflow: hidden;
 
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--space);
-    flex-wrap: wrap;
-  }
-
-  &__title {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-foreground);
-    margin: 0;
-  }
-
-  &__actions {
-    display: flex;
-    gap: var(--space-s);
-    align-items: center;
-    flex-wrap: wrap;
-  }
 
   &__locale-select {
     width: 120px;
@@ -1679,31 +1631,6 @@ onMounted(async () => {
       background-color: var(--color-primary);
       color: var(--color-primary-text);
     }
-  }
-
-  &__stats {
-    display: flex;
-    gap: var(--space);
-    padding: var(--space);
-    background: var(--color-background-secondary);
-    border-radius: var(--border-radius);
-  }
-
-  &__stat {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-  }
-
-  &__stat-label {
-    font-size: var(--font-size-s);
-    color: var(--color-foreground-secondary);
-  }
-
-  &__stat-value {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-foreground);
   }
 
   &__list-container {
@@ -1755,11 +1682,6 @@ onMounted(async () => {
 
   &__edit-input {
     flex: 1;
-  }
-
-  &__actions-cell {
-    display: flex;
-    gap: var(--space-xs);
   }
 
   &__empty {

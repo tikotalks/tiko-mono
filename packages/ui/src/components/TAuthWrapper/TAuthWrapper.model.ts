@@ -12,7 +12,7 @@ export interface TAuthWrapperProps {
   
   /**
    * Name of the app (used for splash screen and authentication context)
-   * @default 'todo'
+   * @default 'todo' (for backwards compatibility)
    */
   appName?: string
   

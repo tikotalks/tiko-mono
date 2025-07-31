@@ -114,9 +114,16 @@ const isAuthCallbackRoute = computed(() => route?.path === '/auth/callback');
 
 // Splash screen configuration
 const splashConfig = computed(() => {
-
-  const config = defaultTikoSplashConfigs[props.appName as keyof typeof defaultTikoSplashConfigs] || defaultTikoSplashConfigs.todo;
-
+  // Try to get config for the specific app, otherwise use a default
+  const appConfig = defaultTikoSplashConfigs[props.appName as keyof typeof defaultTikoSplashConfigs];
+  
+  // If no config found, create a default one using the app name from props
+  const config = appConfig || {
+    appName: props.title || props.appName,
+    backgroundColor: '#f8f9fa',
+    themeColor: '#007bff',
+    iconPath: `/assets/image/app-icon-${props.appName}.png`
+  };
 
   // Get primary color from Tiko config
   const primaryColor = tikoConfig?.theme?.primary;
@@ -129,7 +136,6 @@ const splashConfig = computed(() => {
     theme: 'auto' as const,
     backgroundColor
   };
-
 
   return finalConfig;
 });

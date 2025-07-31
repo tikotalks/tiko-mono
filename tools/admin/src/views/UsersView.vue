@@ -1,14 +1,10 @@
 <template>
   <div :class="bemm()">
-    <div :class="bemm('header')">
-      <h1>{{ t(keys.admin.users.title) }}</h1>
-      <div :class="bemm('actions')">
-        <TInput
-          v-model="searchQuery"
-          :placeholder="t(keys.admin.users.searchPlaceholder)"
-          :icon="Icons.SEARCH_L"
-          :class="bemm('search')"
-        />
+    <AdminPageHeader
+      :title="t(keys.admin.users.title)"
+      :description="t(keys.admin.users.description)"
+    >
+      <template #actions>
         <TButton
           color="primary"
           :icon="Icons.USER_ADD"
@@ -16,16 +12,18 @@
         >
           {{ t(keys.admin.users.addUser) }}
         </TButton>
-      </div>
-    </div>
+      </template>
 
-    <div v-if="loading" :class="bemm('loading')">
-      <TSpinner />
-    </div>
+      <template #inputs>
+        <TInput
+          v-model="searchQuery"
+          :placeholder="t(keys.admin.users.searchPlaceholder)"
+          :icon="Icons.SEARCH_L"
+          :class="bemm('search')"
+        />
+      </template>
 
-    <div v-else :class="bemm('content')">
-      <!-- User Stats -->
-      <div :class="bemm('stats')">
+      <template #stats v-if="!loading">
         <TCard :class="bemm('stat-card')">
           <h3>{{ t(keys.admin.users.totalUsers) }}</h3>
           <p class="stat-value">{{ users.length }}</p>
@@ -42,7 +40,14 @@
           <h3>{{ t(keys.admin.users.newThisMonth) }}</h3>
           <p class="stat-value">{{ newUsersThisMonth }}</p>
         </TCard>
-      </div>
+      </template>
+    </AdminPageHeader>
+
+    <div v-if="loading" :class="bemm('loading')">
+      <TSpinner />
+    </div>
+
+    <div v-else :class="bemm('content')">
 
       <!-- Users Table -->
       <TCard :class="bemm('table-card')">
@@ -129,6 +134,7 @@ import { userService } from '@tiko/core'
 import type { PopupService, ToastService } from '@tiko/ui'
 import type { UserProfile } from '@tiko/core'
 import UserEditModal from '../components/UserEditModal.vue'
+import AdminPageHeader from '../components/AdminPageHeader.vue'
 
 
 const bemm = useBemm('users-view')
@@ -325,24 +331,6 @@ onMounted(async () => {
 .users-view {
   padding: var(--space);
 
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-l);
-
-    h1 {
-      font-size: var(--font-size-xl);
-      font-weight: 600;
-    }
-  }
-
-  &__actions {
-    display: flex;
-    gap: var(--space);
-    align-items: center;
-  }
-
   &__search {
     width: 300px;
   }
@@ -360,11 +348,6 @@ onMounted(async () => {
     gap: var(--space-l);
   }
 
-  &__stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: var(--space);
-  }
 
   &__stat-card {
     text-align: center;

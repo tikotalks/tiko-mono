@@ -155,6 +155,12 @@ export function generatePWAMetaTags(config: {
  * Default splash screen configurations for Tiko apps
  */
 export const defaultTikoSplashConfigs = {
+  admin: {
+    appName: 'Admin',
+    backgroundColor: '#f8f9fa',
+    themeColor: '#007bff',
+    iconPath: '/assets/image/app-icon-admin.png'
+  },
   cards: {
     appName: 'Cards',
     backgroundColor: '#f8f9fa',
@@ -173,6 +179,12 @@ export const defaultTikoSplashConfigs = {
     themeColor: '#28a745',
     iconPath: '/assets/image/app-icon-timer.png'
   },
+  tiko: {
+    appName: 'Tiko',
+    backgroundColor: '#f8f9fa',
+    themeColor: '#9333ea',
+    iconPath: '/assets/image/app-icon-tiko.png'
+  },
   todo: {
     appName: 'Todo',
     backgroundColor: '#f8f9fa',
@@ -184,6 +196,12 @@ export const defaultTikoSplashConfigs = {
     backgroundColor: '#ffffff',
     themeColor: '#fd7e14',
     iconPath: '/assets/image/app-icon-type.png'
+  },
+  'ui-docs': {
+    appName: 'UI Documentation',
+    backgroundColor: '#f8f9fa',
+    themeColor: '#8b5cf6',
+    iconPath: '/assets/image/app-icon-ui-docs.png'
   },
   yesno: {
     appName: 'Yes No',

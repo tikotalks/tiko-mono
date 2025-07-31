@@ -1,8 +1,9 @@
 <template>
   <div :class="bemm()">
-    <div :class="bemm('header')">
-      <h1>{{ t('common.dashboard') }}</h1>
-    </div>
+    <AdminPageHeader
+      :title="t('common.dashboard')"
+      :description="t('admin.dashboard.description')"
+    />
 
     <div :class="bemm('content')">
       <!-- User Statistics Section -->
@@ -155,6 +156,7 @@ import { useBemm } from 'bemm'
 import { useI18n, TCard, TIcon } from '@tiko/ui'
 import { userService, translationService, useImages, formatBytes, formatDate, logger } from '@tiko/core'
 import { Icons } from 'open-icon'
+import AdminPageHeader from '../components/AdminPageHeader.vue'
 
 const { t, keys } = useI18n()
 const bemm = useBemm('admin-dashboard')
@@ -212,15 +214,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
 
-  &__header {
-    padding: var(--space);
-    border-bottom: 1px solid var(--color-border);
-
-    h1 {
-      margin: 0;
-      font-size: var(--font-size-xl);
-    }
-  }
 
   &__content {
     flex: 1;

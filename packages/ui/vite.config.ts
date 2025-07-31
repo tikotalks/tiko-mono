@@ -19,7 +19,7 @@ export default defineConfig({
       fileName: 'index'
     },
     rollupOptions: {
-      external: ['vue', 'pinia', 'bemm', 'mitt', 'open-icon', '@supabase/supabase-js', '@tiko/core'],
+      external: ['vue', 'pinia', 'bemm', 'mitt', 'open-icon', '@supabase/supabase-js', '@tiko/core', '@tiptap/vue-3', '@tiptap/starter-kit', '@tiptap/extension-placeholder', '@tiptap/extension-link', '@tiptap/extension-underline'],
       output: {
         globals: {
           vue: 'Vue',
@@ -28,7 +28,12 @@ export default defineConfig({
           mitt: 'mitt',
           'open-icon': 'OpenIcon',
           '@supabase/supabase-js': 'Supabase',
-          '@tiko/core': 'TikoCore'
+          '@tiko/core': 'TikoCore',
+          '@tiptap/vue-3': 'TipTapVue3',
+          '@tiptap/starter-kit': 'TipTapStarterKit',
+          '@tiptap/extension-placeholder': 'TipTapPlaceholder',
+          '@tiptap/extension-link': 'TipTapLink',
+          '@tiptap/extension-underline': 'TipTapUnderline'
         }
       }
     }

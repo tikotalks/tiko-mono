@@ -53,6 +53,8 @@ export { default as TInputCheckbox } from './components/TForm/inputs/TInputCheck
 export { default as TInputRadio } from './components/TForm/inputs/TInputRadio/TInputRadio.vue';
 export { default as TTextArea } from './components/TForm/inputs/TInputTextArea/TInputTextArea.vue';
 export { default as TFormGroup } from './components/TForm/TFormGroup.vue';
+export { default as TFormField } from './components/TForm/TFormField.vue';
+// export * from './components/TRichTextEditor'; // Temporarily disabled until TipTap deps are installed
 
 // TrustCafe-style components with T prefix (temporarily disabled due to import issues)
 // export * from './components/TForm'
@@ -64,6 +66,16 @@ export * from './components/TToast'
 // Specialized Components
 export { default as TCardCommunication } from './components/TCard/TCardCommunication.vue'
 export type { Card } from './components/TCard/TCardCommunication.ts'
+
+// Empty State Components
+export { default as TEmpty } from './components/TEmpty/TEmpty.vue'
+export type { TEmptyProps } from './components/TEmpty/TEmpty.model'
+export { default as TEmptyState } from './components/TEmptyState/TEmptyState.vue'
+export type { TEmptyStateProps } from './components/TEmptyState/TEmptyState.model'
+
+// Header Component
+export { default as THeader } from './components/THeader/THeader.vue'
+export type { THeaderProps } from './components/THeader/THeader.model'
 
 // Composables
 export { useI18n } from './composables/useI18n'

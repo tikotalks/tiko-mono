@@ -6,13 +6,13 @@ A powerful drag-and-drop list component that allows users to reorder items with 
 
 ```vue
 <template>
-  <TDraggableList 
+  <TDraggableList
     :items="todoItems"
     @reorder="handleReorder"
   >
     <template #default="{ item }">
       <div class="todo-item">
-        <TCheckbox v-model="item.completed" />
+        <TInputCheckbox v-model="item.completed" />
         <span>{{ item.text }}</span>
       </div>
     </template>
@@ -21,7 +21,7 @@ A powerful drag-and-drop list component that allows users to reorder items with 
 
 <script setup>
 import { ref } from 'vue'
-import { TDraggableList, TCheckbox } from '@tiko/ui'
+import { TDraggableList, TInputCheckbox } from '@tiko/ui'
 
 const todoItems = ref([
   { id: '1', text: 'Learn Vue 3', completed: false },
@@ -71,21 +71,21 @@ The default slot receives:
 <template>
   <div class="task-manager">
     <h2>My Tasks</h2>
-    
-    <TDraggableList 
+
+    <TDraggableList
       :items="tasks"
       @reorder="updateTaskOrder"
     >
       <template #default="{ item, index }">
         <div class="task-item">
-          <TCheckbox 
+          <TInputCheckbox
             v-model="item.completed"
             @change="updateTask(item)"
           />
           <div class="task-content">
             <h3>{{ item.title }}</h3>
             <p>{{ item.description }}</p>
-            <TChip 
+            <TChip
               :color="item.priority === 'high' ? 'error' : 'primary'"
               size="small"
             >
@@ -93,9 +93,9 @@ The default slot receives:
             </TChip>
           </div>
           <div class="task-actions">
-            <TButton 
-              icon="edit" 
-              size="small" 
+            <TButton
+              icon="edit"
+              size="small"
               type="ghost"
               @click="editTask(item)"
             />
@@ -108,7 +108,7 @@ The default slot receives:
 
 <script setup>
 import { ref } from 'vue'
-import { TDraggableList, TCheckbox, TChip, TButton } from '@tiko/ui'
+import { TDraggableList, TInputCheckbox, TChip, TButton } from '@tiko/ui'
 
 const tasks = ref([
   {
@@ -149,8 +149,8 @@ const editTask = (task) => {
 <template>
   <div class="playlist">
     <h2>{{ playlistName }}</h2>
-    
-    <TDraggableList 
+
+    <TDraggableList
       :items="songs"
       @reorder="reorderSongs"
     >
@@ -165,13 +165,13 @@ const editTask = (task) => {
             <span class="duration">{{ item.duration }}</span>
           </div>
           <div class="song-actions">
-            <TButton 
-              icon="play" 
+            <TButton
+              icon="play"
               size="small"
               @click="playSong(item)"
             />
-            <TButton 
-              icon="heart" 
+            <TButton
+              icon="heart"
               size="small"
               type="ghost"
               :color="item.liked ? 'error' : 'secondary'"
@@ -221,8 +221,8 @@ const reorderSongs = (newSongs) => {
 <template>
   <div class="nav-editor">
     <h2>Customize Navigation</h2>
-    
-    <TDraggableList 
+
+    <TDraggableList
       :items="menuItems"
       :enabled="isEditing"
       @reorder="updateMenuOrder"
@@ -231,15 +231,15 @@ const reorderSongs = (newSongs) => {
         <div class="menu-item">
           <TIcon :name="item.icon" />
           <span>{{ item.label }}</span>
-          <TToggle 
+          <TToggle
             v-model="item.visible"
             @change="saveMenuItem(item)"
           />
         </div>
       </template>
     </TDraggableList>
-    
-    <TButton 
+
+    <TButton
       @click="isEditing = !isEditing"
       :color="isEditing ? 'success' : 'primary'"
     >
@@ -275,8 +275,8 @@ const saveMenuItem = (item) => {
 <template>
   <div class="file-manager">
     <TToggle v-model="sortMode" label="Sort Mode" />
-    
-    <TDraggableList 
+
+    <TDraggableList
       :items="files"
       :enabled="sortMode"
       @reorder="handleFileReorder"
@@ -289,13 +289,13 @@ const saveMenuItem = (item) => {
             <span class="filesize">{{ formatSize(item.size) }}</span>
           </div>
           <div class="file-actions">
-            <TButton 
+            <TButton
               icon="download"
               size="small"
               type="ghost"
               @click="downloadFile(item)"
             />
-            <TButton 
+            <TButton
               icon="trash"
               size="small"
               type="ghost"
@@ -338,7 +338,7 @@ const getFileIcon = (type) => {
 
 ```vue
 <template>
-  <TDraggableList 
+  <TDraggableList
     :items="items"
     @reorder="saveNewOrder"
   >
@@ -374,13 +374,13 @@ const saveNewOrder = async (newItems) => {
   try {
     // Update local state immediately
     items.value = newItems
-    
+
     // Update order on server
     const updates = newItems.map((item, index) => ({
       id: item.id,
       order: index
     }))
-    
+
     await api.post('/items/reorder', { updates })
   } catch (error) {
     console.error('Failed to save order:', error)

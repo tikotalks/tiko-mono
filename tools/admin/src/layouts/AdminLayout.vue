@@ -68,13 +68,13 @@
 import { inject } from 'vue';
 import { useBemm } from 'bemm';
 import { Icons } from 'open-icon';
-import { useI18n, TIcon, TStatusBar, AddTranslationKeyDialog } from '@tiko/ui';
+import { useI18n, TIcon, TStatusBar } from '@tiko/ui';
 import { useUpload, useI18nDatabaseService } from '@tiko/core';
 import { uploadService } from '../services/upload.service';
 import type { ToastService, PopupService } from '@tiko/ui';
 import UploadStatus from '../components/UploadStatus.vue';
 
-const { keys, t } = useI18n();
+const { t } = useI18n();
 
 const bemm = useBemm('admin-layout');
 const toastService = inject<ToastService>('toastService');
@@ -94,11 +94,14 @@ interface NavigationItem {
 }
 
 // Function to open Add Key dialog
-function openAddKeyDialog() {
+async function openAddKeyDialog() {
   if (!popupService) {
     console.error('PopupService not available');
     return;
   }
+
+  // Import AddTranslationKeyDialog dynamically
+  const { default: AddTranslationKeyDialog } = await import('../components/dialogs/AddTranslationKeyDialog.vue');
 
   popupService.open({
     component: AddTranslationKeyDialog,
@@ -147,7 +150,7 @@ const navigationItems: NavigationItem[] = [
   {
     name: 'dashboard',
     to: { name: 'Dashboard' },
-    icon: Icons.BUILDING_HOUSE2,
+    icon: Icons.BOARD_MULTI_DASHBOARD,
     label: t('admin.navigation.dashboard'),
   },
   {
@@ -165,7 +168,7 @@ const navigationItems: NavigationItem[] = [
       {
         name: 'upload',
         to: { name: 'Upload' },
-        icon: Icons.ARROW_HEADED_UP,
+        icon: Icons.ARROW_UPLOAD,
         label: t('admin.navigation.upload'),
       },
     ],
@@ -196,7 +199,7 @@ const navigationItems: NavigationItem[] = [
       {
         name: 'i18n-import',
         to: { name: 'I18nImport' },
-        icon: Icons.UPLOAD,
+        icon: Icons.ARROW_DOWNLOAD,
         label: t('admin.navigation.i18n.import'),
       },
       {
@@ -204,6 +207,31 @@ const navigationItems: NavigationItem[] = [
         to: { name: 'I18nLanguages' },
         icon: Icons.SPEECH_BALLOON_SQUARE,
         label: t('admin.navigation.i18nLanguages'),
+      },
+    ]
+  },
+  {
+    name: 'content',
+    icon: Icons.FILE_TEXT,
+    label: t('admin.navigation.content.title'),
+    items: [
+      {
+        name: 'content-projects',
+        to: { name: 'ContentProjects' },
+        icon: Icons.FOLDER,
+        label: t('admin.navigation.content.projects'),
+      },
+      {
+        name: 'content-sections',
+        to: { name: 'ContentSections' },
+        icon: Icons.BOARD_MULTI2_HORIZONTAL,
+        label: t('admin.navigation.content.sections'),
+      },
+      {
+        name: 'content-pages',
+        to: { name: 'ContentPages' },
+        icon: Icons.BOARD_SPLIT_T_UP,
+        label: t('admin.navigation.content.pages'),
       },
     ]
   },

@@ -9,6 +9,11 @@ export interface AddTranslationKeyDialogProps {
   }
   onClose?: () => void
   onSave?: (data: TranslationKeyData) => Promise<void>
+  onBatchSave?: (result: {
+    createdKeys: any[]
+    createdTranslations: any[]
+    errors: string[]
+  }) => void
 }
 
 export interface TranslationKeyData {

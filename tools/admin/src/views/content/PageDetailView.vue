@@ -78,25 +78,35 @@
           <TSpinner />
         </div>
 
+
         <div v-else-if="pageSections.length > 0" :class="bemm('sections-list')">
           <TDraggableList
-            v-model="pageSections"
-            :key-field="'section_template_id'"
-            @update:model-value="handleSectionsReorder"
+            :items="pageSections"
+            :enabled="true"
+            :on-reorder="handleSectionsReorder"
           >
-            <template #item="{ item }">
+            <template v-slot="{ item }">
               <div :class="bemm('section-item')">
+                <TIcon :name="Icons.ARROW_HEADED_UP_DOWN" :class="bemm('drag-handle')" />
                 <div :class="bemm('section-info')">
-                  <span :class="bemm('section-name')">{{ getSectionName(item) }}</span>
-                  <span :class="bemm('section-type')">{{ getSectionType(item) }}</span>
+                  <span :class="bemm('section-name')">{{ item?.section?.name || item?.pageSection?.override_name || 'Unknown Section' }}</span>
+                  <span :class="bemm('section-type')">{{ item?.section?.component_type || 'unknown' }}</span>
                 </div>
                 <div :class="bemm('section-actions')">
                   <TButton
                     type="icon-only"
-                    :icon="Icons.DELETE"
+                    :icon="Icons.EDIT_M"
+                    size="small"
+                    @click="handleEditSection(item)"
+                    :tooltip="t('common.edit')"
+                  />
+                  <TButton
+                    type="icon-only"
+                    :icon="Icons.MULTIPLY_M"
                     color="error"
                     size="small"
                     @click="handleRemoveSection(item)"
+                    :tooltip="t('common.delete')"
                   />
                 </div>
               </div>
@@ -203,6 +213,7 @@ import {
   TListItem,
   TListCell,
   TDraggableList,
+  TIcon,
   ConfirmDialog,
   useI18n
 } from '@tiko/ui'
@@ -222,7 +233,7 @@ const popupService = inject<PopupService>('popupService')
 // State
 const page = ref<ContentPage | null>(null)
 const projects = ref<ContentProject[]>([])
-const pageSections = ref<PageSection[]>([])
+const pageSections = ref<any[]>([]) // Changed to match marketing site structure
 const availableSections = ref<ContentSection[]>([])
 const loading = ref(false)
 const loadingSections = ref(false)
@@ -260,69 +271,72 @@ async function loadPageSections() {
   loadingSections.value = true
   try {
     // Load page sections
-    pageSections.value = await contentService.getPageSections(page.value.id)
-    console.log('Loaded page sections:', pageSections.value)
+    const sections = await contentService.getPageSections(page.value.id)
+    console.log('Raw page sections from API:', sections)
 
-    // Load available sections for reference
-    availableSections.value = await contentService.getSections()
-    console.log('Available sections:', availableSections.value)
+    // Transform to match marketing site structure
+    const sectionsWithTemplates = []
+
+    for (const pageSection of sections || []) {
+      try {
+        // Load the section template
+        const template = await contentService.getSectionTemplate(pageSection.section_template_id)
+
+        // Create the combined structure like marketing site
+        sectionsWithTemplates.push({
+          pageSection: {
+            ...pageSection,
+            section_id: pageSection.section_template_id // Add section_id for compatibility
+          },
+          section: template,
+          content: {}, // Empty for now
+          id: pageSection.section_template_id // For TDraggableList
+        })
+
+        console.log(`Loaded section:`, { pageSection, section: template })
+      } catch (e) {
+        console.error(`Failed to load template ${pageSection.section_template_id}:`, e)
+        // Still add the section even if template fails to load
+        sectionsWithTemplates.push({
+          pageSection,
+          section: null,
+          content: {},
+          id: pageSection.section_template_id
+        })
+      }
+    }
+
+    pageSections.value = sectionsWithTemplates
+    console.log('Final sections structure:', pageSections.value)
   } catch (error) {
     console.error('Failed to load page sections:', error)
     // Handle gracefully if tables don't exist
-    if (error?.message?.includes('does not exist')) {
+    if (error?.message?.includes('does not exist') || error?.message?.includes('404')) {
+      console.log('Sections tables may not exist, using empty arrays')
       pageSections.value = []
       availableSections.value = []
+    } else {
+      // Log the full error for debugging
+      console.error('Full error details:', error)
     }
   } finally {
     loadingSections.value = false
   }
 }
 
-function getSectionName(pageSection: PageSection): string {
-  // First try to find by section instance ID if we're storing section IDs
-  let section = availableSections.value.find(s => s.id === pageSection.section_template_id)
-
-  // If not found, try to find by template ID
-  if (!section) {
-    section = availableSections.value.find(s => s.section_template_id === pageSection.section_template_id)
-  }
-
-  // If still not found and we have templates as fallback, look them up
-  if (!section && availableSections.value.length > 0) {
-    // The section might be using a template directly
-    const firstSection = availableSections.value[0]
-    if (firstSection.id === firstSection.section_template_id) {
-      // We're using templates as sections
-      section = availableSections.value.find(s => s.id === pageSection.section_template_id)
-    }
-  }
-
-  return pageSection.override_name || section?.name || 'Unknown Section'
-}
-
-function getSectionType(pageSection: PageSection): string {
-  // Same lookup logic as getSectionName
-  let section = availableSections.value.find(s => s.id === pageSection.section_template_id)
-  if (!section) {
-    section = availableSections.value.find(s => s.section_template_id === pageSection.section_template_id)
-  }
-  if (!section && availableSections.value.length > 0) {
-    const firstSection = availableSections.value[0]
-    if (firstSection.id === firstSection.section_template_id) {
-      section = availableSections.value.find(s => s.id === pageSection.section_template_id)
-    }
-  }
-
-  return section?.component_type || 'unknown'
-}
+// Removed getSectionName and getSectionType - now accessing data directly in template
 
 function openAddSectionDialog() {
+  // Get list of already used section template IDs
+  const usedSectionIds = pageSections.value.map(s => s.pageSection.section_template_id)
+  
   popupService?.open({
     component: AddSectionDialog,
     title: t('admin.content.page.addSection'),
     props: {
       pageId: page.value?.id,
       existingSections: pageSections.value,
+      usedSectionIds: usedSectionIds,
       onAdd: handleAddSection
     }
   })
@@ -332,17 +346,55 @@ async function handleAddSection(sectionData: Omit<PageSection, 'page_id'>) {
   if (!page.value) return
 
   try {
-    // Add the section to the page
-    const newSection: PageSection = {
+    // Check if this section template is already used
+    const existingSection = pageSections.value.find(
+      s => s.pageSection.section_template_id === sectionData.section_template_id
+    )
+    
+    if (existingSection) {
+      toastService?.show({
+        message: t('admin.content.page.sectionAlreadyExists', 'This section template is already used on this page'),
+        type: 'warning'
+      })
+      return
+    }
+    
+    // Create the new page section
+    const newPageSection: PageSection = {
       ...sectionData,
-      page_id: page.value.id
+      page_id: page.value.id,
+      order_index: pageSections.value.length
     }
 
-    // Update the sections list locally
-    pageSections.value = [...pageSections.value, newSection]
+    // Try to load the section template
+    let sectionTemplate = null
+    try {
+      sectionTemplate = await contentService.getSectionTemplate(newPageSection.section_template_id)
+    } catch (e) {
+      console.error('Failed to load section template:', e)
+    }
 
-    // Save to backend
-    await contentService.setPageSections(page.value.id, pageSections.value)
+    // Add to sections with the same structure as marketing site
+    const newSectionData = {
+      pageSection: {
+        ...newPageSection,
+        section_id: newPageSection.section_template_id
+      },
+      section: sectionTemplate,
+      content: {},
+      id: newPageSection.section_template_id
+    }
+
+    pageSections.value = [...pageSections.value, newSectionData]
+
+    // Extract just the pageSection data for backend
+    const sectionsForBackend = pageSections.value.map(s => ({
+      page_id: s.pageSection.page_id,
+      section_template_id: s.pageSection.section_template_id,
+      order_index: s.pageSection.order_index,
+      override_name: s.pageSection.override_name
+    }))
+    await contentService.setPageSections(page.value.id, sectionsForBackend)
 
     toastService?.show({
       message: t('admin.content.page.sectionAddSuccess'),
@@ -351,29 +403,68 @@ async function handleAddSection(sectionData: Omit<PageSection, 'page_id'>) {
 
     // Reload sections to get fresh data
     await loadPageSections()
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to add section:', error)
-    toastService?.show({
-      message: t('admin.content.page.sectionAddError'),
-      type: 'error'
-    })
+    
+    // Check for duplicate key error
+    if (error?.message?.includes('duplicate key') || error?.message?.includes('23505')) {
+      toastService?.show({
+        message: t('admin.content.page.sectionAlreadyExists', 'This section template is already used on this page'),
+        type: 'warning'
+      })
+      // Reload to ensure UI is in sync with database
+      await loadPageSections()
+    } else {
+      toastService?.show({
+        message: t('admin.content.page.sectionAddError'),
+        type: 'error'
+      })
+    }
   }
 }
 
-async function handleSectionsReorder(newSections: PageSection[]) {
+async function handleSectionsReorder(newSections: any[]) {
   if (!page.value) return
 
+  // Store the original sections in case we need to restore them
+  const originalSections = [...pageSections.value]
+  
   try {
+    console.log('Reordering sections:', newSections)
+    
+    // Validate the new sections array
+    if (!newSections || !Array.isArray(newSections) || newSections.length === 0) {
+      console.error('Invalid sections array received:', newSections)
+      throw new Error('Invalid sections array')
+    }
+    
     // Update order indices
     const updatedSections = newSections.map((section, index) => ({
       ...section,
-      order_index: index
+      pageSection: { ...section.pageSection, order_index: index }
     }))
 
+    // Update local state optimistically
     pageSections.value = updatedSections
 
-    // Save to backend
-    await contentService.setPageSections(page.value.id, updatedSections)
+    // Extract just the pageSection data for backend
+    const sectionsForBackend = updatedSections.map(s => {
+      // Ensure we have valid data
+      if (!s.pageSection) {
+        console.error('Missing pageSection data:', s)
+        throw new Error('Invalid section data structure')
+      }
+      
+      return {
+        page_id: s.pageSection.page_id,
+        section_template_id: s.pageSection.section_template_id,
+        order_index: s.pageSection.order_index,
+        override_name: s.pageSection.override_name
+      }
+    })
+    
+    console.log('Saving reordered sections:', sectionsForBackend)
+    await contentService.setPageSections(page.value.id, sectionsForBackend)
 
     toastService?.show({
       message: t('admin.content.page.sectionsReorderSuccess'),
@@ -381,21 +472,32 @@ async function handleSectionsReorder(newSections: PageSection[]) {
     })
   } catch (error) {
     console.error('Failed to reorder sections:', error)
+    
+    // Restore original sections
+    pageSections.value = originalSections
+    
     toastService?.show({
       message: t('admin.content.page.sectionsReorderError'),
       type: 'error'
     })
-    // Reload to restore original order
-    await loadPageSections()
   }
 }
 
-async function handleRemoveSection(section: PageSection) {
+function handleEditSection(sectionData: any) {
+  // TODO: Implement edit section functionality
+  console.log('Edit section:', sectionData)
+  toastService?.show({
+    message: 'Edit section functionality coming soon',
+    type: 'info'
+  })
+}
+
+async function handleRemoveSection(sectionData: any) {
   popupService?.open({
     component: ConfirmDialog,
     props: {
       title: t('admin.content.page.removeSectionConfirm'),
-      message: t('admin.content.page.removeSectionMessage', { name: getSectionName(section) }),
+      message: t('admin.content.page.removeSectionMessage', { name: sectionData.section?.name || sectionData.pageSection?.override_name || 'this section' }),
       confirmLabel: t('common.remove'),
       cancelLabel: t('common.cancel'),
       confirmColor: 'error',
@@ -406,13 +508,22 @@ async function handleRemoveSection(section: PageSection) {
         try {
           // Remove the section from the list
           const updatedSections = pageSections.value
-            .filter(s => s.section_template_id !== section.section_template_id)
-            .map((s, index) => ({ ...s, order_index: index }))
+            .filter(s => s.id !== sectionData.id)
+            .map((s, index) => ({
+              ...s,
+              pageSection: { ...s.pageSection, order_index: index }
+            }))
 
           pageSections.value = updatedSections
 
-          // Save to backend
-          await contentService.setPageSections(page.value.id, updatedSections)
+          // Extract just the pageSection data for backend
+          const sectionsForBackend = updatedSections.map(s => ({
+            page_id: s.pageSection.page_id,
+            section_template_id: s.pageSection.section_template_id,
+            order_index: s.pageSection.order_index,
+            override_name: s.pageSection.override_name
+          }))
+          await contentService.setPageSections(page.value.id, sectionsForBackend)
 
           toastService?.show({
             message: t('admin.content.page.sectionRemoveSuccess'),
@@ -611,8 +722,8 @@ onMounted(() => {
 
   &__section-item {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: var(--space);
     background: var(--color-background-secondary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
@@ -625,10 +736,20 @@ onMounted(() => {
     }
   }
 
+  &__drag-handle {
+    color: var(--color-foreground-secondary);
+    cursor: grab;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
   &__section-info {
     display: flex;
     flex-direction: column;
     gap: var(--space-2xs);
+    flex: 1;
   }
 
   &__section-name {

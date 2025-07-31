@@ -1,24 +1,29 @@
 <template>
   <div :class="bemm()">
     <div :class="bemm('header')">
-      <h3>{{ t('admin.content.pages.addSection') }}</h3>
-      <p>{{ sections.length > 0 ? t('admin.content.pages.selectSectionInstance') : t('admin.content.pages.noSectionsAvailable') }}</p>
+      <h3>{{ t('admin.content.page.addSection') }}</h3>
+      <p>{{ 
+        loading ? t('common.loading') :
+        sectionOptions.length === 0 ? t('admin.content.page.allNonReusableSectionsUsed') :
+        sections.length > 0 ? t('admin.content.page.selectSectionToAdd') : 
+        t('admin.content.page.noSectionInstancesAvailable') 
+      }}</p>
     </div>
     
     <div :class="bemm('content')">
       <TFormGroup>
         <TInputSelect
           v-model="selectedSectionId"
-          :label="t('admin.content.pages.selectSection')"
+          :label="t('admin.content.page.selectSection')"
           :options="sectionOptions"
-          :placeholder="t('admin.content.pages.sectionTemplatePlaceholder')"
+          :placeholder="t('admin.content.page.sectionTemplatePlaceholder')"
           :required="true"
         />
 
         <TInputText
           v-model="overrideName"
-          :label="t('admin.content.pages.sectionOverrideName')"
-          :placeholder="t('admin.content.pages.sectionOverrideNamePlaceholder')"
+          :label="t('admin.content.page.sectionOverrideName')"
+          :placeholder="t('admin.content.page.sectionOverrideNamePlaceholder')"
         />
       </TFormGroup>
 
@@ -26,18 +31,17 @@
         <TSpinner />
       </div>
       
-      <div v-else-if="sections.length === 0" :class="bemm('empty')">
+      <div v-else-if="sectionOptions.length === 0" :class="bemm('empty')">
         <TEmptyState
           :icon="Icons.LAYERS"
-          :title="t('admin.content.pages.noSectionsTitle')"
-          :description="t('admin.content.pages.noSectionsDescription')"
+          :title="t('admin.content.page.allSectionsUsed')"
+          :description="t('admin.content.page.allSectionsUsedDescription')"
         />
       </div>
 
       <div v-else-if="selectedSection" :class="bemm('preview')">
-        <h3>{{ t('admin.content.pages.sectionPreview') }}</h3>
+        <h3>{{ t('admin.content.page.sectionPreview') }}</h3>
         <div :class="bemm('template-info')">
-          <p><strong>{{ t('common.type') }}:</strong> {{ selectedSection.component_type }}</p>
           <p v-if="selectedSection.description">{{ selectedSection.description }}</p>
           <p v-if="selectedSection.language_code"><strong>{{ t('common.language') }}:</strong> {{ selectedSection.language_code }}</p>
           <p v-if="selectedSection.is_reusable"><strong>{{ t('admin.content.sections.reusable') }}:</strong> {{ t('common.yes') }}</p>
@@ -71,6 +75,7 @@ import type { ContentSection, PageSection } from '@tiko/core'
 interface Props {
   pageId?: string
   existingSections?: PageSection[]
+  usedSectionIds?: string[]
   onAdd?: (data: Omit<PageSection, 'page_id'>) => void
 }
 
@@ -92,14 +97,20 @@ const loading = ref(false)
 
 // Computed
 const sectionOptions = computed(() => {
-  // Filter out sections that are already added to this page
-  const existingSectionIds = props.existingSections?.map(s => s.section_template_id) || []
+  // Use the provided usedSectionIds or derive from existingSections
+  const usedIds = props.usedSectionIds || props.existingSections?.map(s => s.section_template_id) || []
   
   return sections.value
-    .filter(section => section.is_reusable || !existingSectionIds.includes(section.section_template_id))
+    .filter(section => {
+      // Allow reusable sections to be added multiple times
+      if (section.is_reusable) return true
+      // For non-reusable sections, check if they're already used
+      // When using section instances, we check against the section's template ID
+      return !usedIds.includes(section.section_template_id)
+    })
     .map(section => ({
       value: section.id,
-      label: `${section.name} (${section.component_type})`,
+      label: section.name,
       description: section.description
     }))
 })
@@ -116,32 +127,15 @@ const isValid = computed(() => {
 async function loadSections() {
   loading.value = true
   try {
+    // Load section instances - these are pre-configured sections that can be added to pages
     sections.value = await contentService.getSections()
+    console.log('Loaded section instances:', sections.value)
   } catch (error) {
-    console.error('Failed to load sections:', error)
-    // Handle gracefully if table doesn't exist yet
+    console.error('Failed to load section instances:', error)
+    // If the content_sections table doesn't exist, show a helpful message
     if (error?.message?.includes('does not exist') || error?.message?.includes('42P01')) {
-      console.log('content_sections table does not exist yet - falling back to templates')
-      // Fallback to loading templates and converting them to mock sections
-      try {
-        const templates = await contentService.getSectionTemplates()
-        sections.value = templates.map(template => ({
-          id: template.id,
-          section_template_id: template.id,
-          name: template.name,
-          slug: template.slug,
-          description: template.description,
-          language_code: template.language_code,
-          component_type: template.component_type,
-          is_reusable: template.is_reusable,
-          is_active: template.is_active,
-          created_at: template.created_at,
-          updated_at: template.updated_at
-        }))
-      } catch (templateError) {
-        console.error('Failed to load templates as fallback:', templateError)
-        sections.value = []
-      }
+      console.log('content_sections table does not exist yet. You need to run the create-content-sections.sql migration.')
+      sections.value = []
     } else {
       sections.value = []
     }
@@ -159,6 +153,7 @@ function handleAdd() {
 
   const section = selectedSection.value!
   const sectionData = {
+    // Use section.section_template_id since we're now using section instances
     section_template_id: section.section_template_id,
     order_index: props.existingSections?.length || 0,
     override_name: overrideName.value.trim() || section.name

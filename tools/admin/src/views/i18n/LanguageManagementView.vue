@@ -1,11 +1,15 @@
 <template>
   <div :class="bemm()">
-    <div :class="bemm('header')">
-      <h1 :class="bemm('title')">{{ t(keys.admin.languages.title) }}</h1>
-      <TButton :icon="Icons.ADD" @click="showAddLanguage">
-        {{ t(keys.admin.languages.addLanguage) }}
-      </TButton>
-    </div>
+    <AdminPageHeader
+      :title="t(keys.admin.languages.title)"
+      :description="t(keys.admin.languages.description)"
+    >
+      <template #actions>
+        <TButton :icon="Icons.ADD" @click="showAddLanguage">
+          {{ t(keys.admin.languages.addLanguage) }}
+        </TButton>
+      </template>
+    </AdminPageHeader>
 
     <!-- Language Tabs -->
     <div :class="bemm('tabs')">
@@ -21,7 +25,7 @@
 
     <!-- Languages Tab -->
     <div v-if="activeTab === 'languages'" :class="bemm('content')">
-      <TList :columns="languageColumns">
+      <TList :columns="languageColumns" :show-stats="true">
         <TListItem
           v-for="language in languages"
           :key="language.code"
@@ -32,7 +36,7 @@
           <TListCell type="text" :content="language.name" />
           <TListCell type="text" :content="language.native_name" />
           <TListCell type="custom">
-            <TToggle
+            <TInputCheckbox
               v-model="language.enabled"
               @update:modelValue="toggleLanguage(language)"
               :disabled="language.code === 'en'"
@@ -48,14 +52,14 @@
     <!-- Locales Tab -->
     <div v-else-if="activeTab === 'locales'" :class="bemm('content')">
       <div :class="bemm('filters')">
-        <TSelect
+        <TInputSelect
           v-model="filterLanguage"
           :options="languageFilterOptions"
           :label="t(keys.admin.languages.filterByLanguage)"
         />
       </div>
 
-      <TList :columns="localeColumns">
+      <TList :columns="localeColumns" :show-stats="true">
         <TListItem
           v-for="locale in filteredLocales"
           :key="locale.code"
@@ -69,14 +73,14 @@
           <TListCell type="text" :content="locale.native_name" />
           <TListCell type="text" :content="locale.currency_code || '—'" />
           <TListCell type="custom">
-            <TToggle
+            <TInputCheckbox
               v-model="locale.enabled"
               @update:modelValue="toggleLocale(locale)"
             />
           </TListCell>
           <TListCell type="custom">
             <div :class="bemm('progress')">
-              <div 
+              <div
                 :class="bemm('progress-bar')"
                 :style="{ width: `${getCompletionPercentage(locale.code)}%` }"
               />
@@ -89,7 +93,7 @@
       </TList>
     </div>
 
-    <TLoading v-if="loading" />
+    <TSpinner v-if="loading" />
   </div>
 </template>
 
@@ -104,12 +108,13 @@ import {
   TList,
   TListItem,
   TListCell,
-  TToggle,
+  TInputCheckbox,
   TIcon,
-  TSelect,
-  TLoading,
+  TSpinner,
   useI18n,
+  TInputSelect,
 } from '@tiko/ui';
+import AdminPageHeader from '@/components/AdminPageHeader.vue';
 
 interface Language {
   code: string;
@@ -182,7 +187,7 @@ const filteredLocales = computed(() => {
   if (filterLanguage.value === 'all') {
     return locales.value;
   }
-  return locales.value.filter(locale => 
+  return locales.value.filter(locale =>
     locale.language_code === filterLanguage.value
   );
 });

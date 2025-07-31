@@ -1,11 +1,10 @@
 <template>
   <div :class="bemm()">
-    <div :class="bemm('header')">
-      <h1>{{ t('admin.i18n.languages.title') }}</h1>
-      <p>{{ t('admin.i18n.languages.description') }}</p>
-
-      <TButtonGroup :class="bemm('header-actions')">
-
+    <AdminPageHeader
+      :title="t('admin.i18n.languages.title')"
+      :description="t('admin.i18n.languages.description')"
+    >
+      <template #actions>
         <TButton
           @click="openAddKeyDialog"
           :icon="Icons.EDIT_M"
@@ -27,8 +26,8 @@
           :type="'icon-only'"
           :tooltip="t('admin.i18n.languages.forceReload')"
         />
-           </TButtonGroup>
-    </div>
+      </template>
+    </AdminPageHeader>
 
     <!-- Languages List -->
     <div :class="bemm('languages-section')">
@@ -43,14 +42,9 @@
       </div>
 
       <div v-else-if="languages.length === 0" :class="bemm('empty-state')">
-        <p>{{ t('admin.i18n.languages.noLanguages', 'No languages found') }}</p>
+        <p>{{ t('admin.i18n.languages.noLanguages') }}</p>
         <p>
-          {{
-            t(
-              'admin.i18n.languages.checkDatabase',
-              'Please run the SQL script to populate languages',
-            )
-          }}
+          {{  t('admin.i18n.languages.checkDatabase')}}
         </p>
         <div :class="bemm('sql-instruction')">
           <p>Run this in your Supabase SQL editor:</p>
@@ -102,6 +96,7 @@
         :hover="true"
         :sortBy="sortBy"
         :sortDirection="sortDirection"
+        :show-stats="true"
         @sort="handleSort"
       >
         <TListItem
@@ -134,35 +129,29 @@
             >{{ languageStatus(language) }}
             </TChip>
           </TListCell>
-          <TListCell key="actions" type="custom">
-            <div :class="bemm('actions')">
-              <TButton
-                type="ghost"
-                size="small"
-                :icon="Icons.ARROW_UPLOAD"
-                @click="uploadForLanguage(language)"
-                :title="t('admin.i18n.languages.uploadTranslations')"
-              />
-              <TButton
-                type="ghost"
-                size="small"
-                :icon="Icons.EYE"
-                @click="viewLanguageDetails(language)"
-                :title="t('admin.i18n.languages.viewDetails')"
-              />
-              <TButton
-                type="ghost"
-                size="small"
-                :icon="language.is_active ? Icons.INVISIBLE_M : Icons.EYE"
-                @click="toggleLanguageStatus(language)"
-                :title="
-                  language.is_active
-                    ? t('admin.i18n.languages.deactivate')
-                    : t('admin.i18n.languages.activate')
-                "
-              />
-            </div>
-          </TListCell>
+          <TListCell 
+            key="actions" 
+            type="actions" 
+            :actions="[
+              listActions.custom({
+                icon: Icons.ARROW_UPLOAD,
+                color: 'primary',
+                handler: () => uploadForLanguage(language),
+                tooltip: t('admin.i18n.languages.uploadTranslations')
+              }),
+              listActions.view(() => viewLanguageDetails(language), {
+                tooltip: t('admin.i18n.languages.viewDetails')
+              }),
+              listActions.custom({
+                icon: language.is_active ? Icons.INVISIBLE_M : Icons.EYE,
+                color: 'secondary',
+                handler: () => toggleLanguageStatus(language),
+                tooltip: language.is_active
+                  ? t('admin.i18n.languages.deactivate')
+                  : t('admin.i18n.languages.activate')
+              })
+            ]"
+          />
         </TListItem>
       </TList>
     </div>
@@ -269,12 +258,14 @@ import {
   TPopupWrapper,
   TProgressBar,
   TChip,
-  Colors
+  Colors,
+  listActions
 } from '@tiko/ui';
 import type { PopupService, ToastService, TranslationKeyData } from '@tiko/ui';
 import { Icons } from 'open-icon';
 import { useI18nDatabaseService } from '@tiko/core';
 import type { Language } from '@tiko/core';
+import AdminPageHeader from '@/components/AdminPageHeader.vue';
 
 const bemm = useBemm('i18n-languages-view');
 const { t, refreshTranslations, locale } = useI18n();
@@ -566,11 +557,14 @@ async function addLanguage() {
 }
 
 // Open Add Key Dialog
-function openAddKeyDialog() {
+async function openAddKeyDialog() {
   showAddKeyDialog.value = true;
 
+  // Import AddTranslationKeyDialog dynamically
+  const { default: AddTranslationKeyDialog } = await import('../../components/dialogs/AddTranslationKeyDialog.vue');
+
   const dialog = popupService?.open({
-    component: 'AddTranslationKeyDialog',
+    component: AddTranslationKeyDialog,
     props: {
       onSave: handleSaveKey
     }
@@ -696,21 +690,6 @@ onMounted(() => {
 .i18n-languages-view {
   padding: var(--space-lg);
 
-  &__header {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space);
-    margin-bottom: var(--space-xl);
-
-    h1 {
-      font-size: var(--font-size-xxl);
-      color: var(--color-foreground);
-    }
-
-    p {
-      color: var(--color-foreground-secondary);
-    }
-  }
 
   &__languages-section {
     background: var(--color-background-secondary);
@@ -734,10 +713,6 @@ onMounted(() => {
     height: 4px;
   }
 
-  &__actions {
-    display: flex;
-    gap: var(--space-xs);
-  }
 
   &__upload-modal {
     display: flex;
@@ -794,10 +769,5 @@ onMounted(() => {
     }
   }
 
-  &__header-actions {
-    display: flex;
-    gap: var(--space);
-    margin-top: var(--space);
-  }
 }
 </style>

@@ -1,12 +1,20 @@
 <template>
   <div :class="bemm()">
-    <div :class="bemm('header')">
-      <div :class="bemm('stats')">
-        <p :class="bemm('stats-value')">
-          {{ t('admin.library.totalImages') }}: {{ stats.totalImages }}
-        </p>
-      </div>
+    <AdminPageHeader
+      :title="t('admin.library.title')"
+      :description="t('admin.library.description')"
+    >
+      <template #actions>
+        <TButton
+          color="primary"
+          :icon="Icons.ARROW_UPLOAD"
+          @click="router.push('/upload')"
+        >
+          {{ t('admin.library.uploadImages') }}
+        </TButton>
+      </template>
 
+      <template #inputs>
         <TInputText
           v-model="searchQuery"
           :placeholder="t('admin.library.searchPlaceholder')"
@@ -14,29 +22,38 @@
           @input="searchImages(searchQuery)"
         />
 
-      <TViewToggle
-        v-model="viewMode"
-        :tiles-label="t('common.views.tiles')"
-        :list-label="t('common.views.list')"
-        :tiles-icon="Icons.BLOCK_PARTIALS"
-        :list-icon="Icons.CHECK_LIST"
-      />
-
-      <div :class="bemm('sorting')">
-        <TInputSelect
-          v-model="sortField"
-          :options="sortOptions"
+        <TViewToggle
+          v-model="viewMode"
+          :tiles-label="t('common.views.tiles')"
+          :list-label="t('common.views.list')"
+          :tiles-icon="Icons.BLOCK_PARTIALS"
+          :list-icon="Icons.CHECK_LIST"
         />
 
-        <TButton
-          :icon="sortOrder === 'asc' ? Icons.ARROW_UP : Icons.ARROW_DOWN"
-          type="outline"
-          size="small"
-          @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
-          :title="sortOrder === 'asc' ? t('admin.library.order.ascending') : t('admin.library.order.descending')"
+        <div :class="bemm('sorting')">
+          <TInputSelect
+            v-model="sortField"
+            :options="sortOptions"
+          />
+
+          <TButton
+            :icon="sortOrder === 'asc' ? Icons.ARROW_UP : Icons.ARROW_DOWN"
+            type="outline"
+            size="small"
+            @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
+            :title="sortOrder === 'asc' ? t('admin.library.order.ascending') : t('admin.library.order.descending')"
+          />
+        </div>
+      </template>
+
+      <template #stats>
+        <TKeyValue
+          :items="[
+            { key: t('admin.library.totalImages'), value: String(stats.totalImages) }
+          ]"
         />
-      </div>
-    </div>
+      </template>
+    </AdminPageHeader>
 
     <div v-if="loading" :class="bemm('loading')">
       <TSpinner />
@@ -65,7 +82,7 @@
     </TGrid>
 
     <!-- List View -->
-    <TList v-else :columns="listColumns">
+    <TList v-else :columns="listColumns" :show-stats="true">
       <TListItem
         v-for="media in sortedImages"
         :key="media.id"
@@ -113,7 +130,9 @@ import {
   TListCell,
   TInputSelect,
   TInputText,
+  TKeyValue,
 } from '@tiko/ui';
+import AdminPageHeader from '../components/AdminPageHeader.vue';
 
 const toastService = inject<ToastService>('toastService');
 const { getImageVariants } = useImageUrl();
@@ -266,28 +285,6 @@ onMounted(async () => {
   padding: var(--space);
   display: flex;
   flex-direction: column;
-
-  &__header {
-    display: flex;
-    gap: var(--space);
-    align-items: flex-start;
-    align-items: center;
-    padding: var(--space);
-
-    @media (max-width: 768px) {
-      flex-direction: column;
-    }
-  }
-
-  &__stats {
-    opacity: 0.5;
-  }
-
-
-  &__view-toggle {
-    display: flex;
-    gap: var(--space-xs);
-  }
 
   &__sorting {
     display: flex;

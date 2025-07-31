@@ -1,12 +1,17 @@
 <template>
   <div :class="bemm()">
-      <div
-        :class="bemm('upload-area', { dragging: isDragging })"
-        @drop="handleDrop"
-        @dragover.prevent
-        @dragenter.prevent="isDragging = true"
-        @dragleave.prevent="isDragging = false"
-      >
+    <AdminPageHeader
+      :title="t('admin.upload.title')"
+      :description="t('admin.upload.description')"
+    />
+    
+    <div
+      :class="bemm('upload-area', { dragging: isDragging })"
+      @drop="handleDrop"
+      @dragover.prevent
+      @dragenter.prevent="isDragging = true"
+      @dragleave.prevent="isDragging = false"
+    >
         <TCard>
           <TIcon :name="Icons.ARROW_HEADED_UP" size="large" />
           <h3>{{ t('admin.upload.dragDrop') }}</h3>
@@ -103,6 +108,7 @@ import { Icons } from 'open-icon'
 import { useImages, useUpload } from '@tiko/core'
 import type { ToastService } from '@tiko/ui'
 import { uploadService } from '../services/upload.service'
+import AdminPageHeader from '../components/AdminPageHeader.vue'
 
 const bemm = useBemm('upload-view')
 const { t } = useI18n()

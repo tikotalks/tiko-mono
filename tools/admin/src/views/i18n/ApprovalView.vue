@@ -1,42 +1,44 @@
 <template>
   <div :class="bemm()">
-    <!-- Header -->
-    <div :class="bemm('header')">
-      <h1 :class="bemm('title')">{{ t(keys.admin.translations.approvalTitle) }}</h1>
-      
-      <div :class="bemm('stats')">
-        <div :class="bemm('stat')">
-          <span :class="bemm('stat-value')">{{ pendingCount }}</span>
-          <span :class="bemm('stat-label')">{{ t(keys.admin.translations.pendingReview) }}</span>
-        </div>
-      </div>
-    </div>
+    <AdminPageHeader
+      :title="t(keys.admin.translations.approvalTitle)"
+      :description="t(keys.admin.translations.approvalDescription)"
+    >
+      <template #actions>
+        <TButton
+          type="ghost"
+          :icon="Icons.CHECK_M"
+          @click="batchApproveSelected"
+          :disabled="selectedIds.size === 0"
+        >
+          {{ t(keys.admin.translations.approveSelected, { count: selectedIds.size }) }}
+        </TButton>
+      </template>
 
-    <!-- Filters -->
-    <div :class="bemm('filters')">
-      <TSelect
-        v-model="filterLocale"
-        :options="localeOptions"
-        :label="t(keys.admin.translations.filterByLocale)"
-        :class="bemm('filter')"
-      />
-      
-      <TSelect
-        v-model="filterContributor"
-        :options="contributorOptions"
-        :label="t(keys.admin.translations.filterByContributor)"
-        :class="bemm('filter')"
-      />
-      
-      <TButton
-        type="ghost"
-        :icon="Icons.CHECK_DOUBLE"
-        @click="batchApproveSelected"
-        :disabled="selectedIds.size === 0"
-      >
-        {{ t(keys.admin.translations.approveSelected, { count: selectedIds.size }) }}
-      </TButton>
-    </div>
+      <template #inputs>
+        <TInputSelect
+          v-model="filterLocale"
+          :options="localeOptions"
+          :label="t(keys.admin.translations.filterByLocale)"
+          :class="bemm('filter')"
+        />
+
+        <TInputSelect
+          v-model="filterContributor"
+          :options="contributorOptions"
+          :label="t(keys.admin.translations.filterByContributor)"
+          :class="bemm('filter')"
+        />
+      </template>
+
+      <template #stats>
+        <TKeyValue
+          :items="[
+            { key: t(keys.admin.translations.pendingReview), value: String(pendingCount) }
+          ]"
+        />
+      </template>
+    </AdminPageHeader>
 
     <!-- Pending Translations Table -->
     <div :class="bemm('table-container')">
@@ -44,7 +46,7 @@
         <thead>
           <tr>
             <th :class="bemm('th', 'checkbox')">
-              <TCheckbox
+              <TInputCheckbox
                 v-model="selectAll"
                 @update:modelValue="toggleSelectAll"
               />
@@ -65,7 +67,7 @@
             :class="bemm('row', { selected: selectedIds.has(translation.id) })"
           >
             <td :class="bemm('td', 'checkbox')">
-              <TCheckbox
+              <TInputCheckbox
                 :modelValue="selectedIds.has(translation.id)"
                 @update:modelValue="toggleSelection(translation.id)"
               />
@@ -144,7 +146,7 @@
       :description="t(keys.admin.translations.allTranslationsReviewed)"
     />
 
-    <TLoading v-if="loading" />
+    <TSpinner v-if="loading" />
   </div>
 </template>
 
@@ -155,14 +157,16 @@ import { Icons } from 'open-icon';
 import { translationService } from '@tiko/core';
 import type { TranslationVersion } from '@tiko/core';
 import type { PopupService, ToastService } from '@tiko/ui';
+import AdminPageHeader from '@/components/AdminPageHeader.vue';
 import {
   TButton,
-  TCheckbox,
   TIcon,
-  TSelect,
   TEmpty,
-  TLoading,
+  TSpinner,
   useI18n,
+  TInputSelect,
+  TInputCheckbox,
+  TKeyValue,
 } from '@tiko/ui';
 
 const bemm = useBemm('translation-approval');
@@ -200,7 +204,7 @@ const contributorOptions = computed(() => {
       t.creator_name || t.creator_email || 'Unknown'
     );
   });
-  
+
   return [
     { value: 'all', label: t(keys.common.all) },
     ...Array.from(contributors.entries()).map(([id, name]) => ({
@@ -212,15 +216,15 @@ const contributorOptions = computed(() => {
 
 const filteredTranslations = computed(() => {
   let filtered = [...pendingTranslations.value];
-  
+
   if (filterLocale.value !== 'all') {
     filtered = filtered.filter(t => t.locale === filterLocale.value);
   }
-  
+
   if (filterContributor.value !== 'all') {
     filtered = filtered.filter(t => t.created_by === filterContributor.value);
   }
-  
+
   return filtered;
 });
 
@@ -246,7 +250,7 @@ function toggleSelection(id: string) {
   } else {
     selectedIds.value.add(id);
   }
-  
+
   // Update select all checkbox
   selectAll.value = selectedIds.value.size === filteredTranslations.value.length;
 }
@@ -262,12 +266,12 @@ function toggleSelectAll(value: boolean) {
 async function approveTranslation(translation: TranslationVersion) {
   try {
     await translationService.approveTranslation(translation.id);
-    
+
     toastService?.show({
       message: t(keys.admin.translations.approveSuccess),
       type: 'success',
     });
-    
+
     // Reload
     await loadPendingTranslations();
   } catch (error) {
@@ -287,17 +291,17 @@ async function rejectTranslation(translation: TranslationVersion) {
     confirmText: t(keys.admin.translations.reject),
     confirmType: 'danger',
   });
-  
+
   if (!notes) return;
-  
+
   try {
     await translationService.rejectTranslation(translation.id, notes);
-    
+
     toastService?.show({
       message: t(keys.admin.translations.rejectSuccess),
       type: 'success',
     });
-    
+
     // Reload
     await loadPendingTranslations();
   } catch (error) {
@@ -311,28 +315,28 @@ async function rejectTranslation(translation: TranslationVersion) {
 
 async function batchApproveSelected() {
   const count = selectedIds.value.size;
-  
+
   const confirmed = await popupService?.confirm({
     title: t(keys.admin.translations.batchApproveTitle),
     message: t(keys.admin.translations.batchApproveMessage, { count }),
     confirmText: t(keys.admin.translations.approve),
   });
-  
+
   if (!confirmed) return;
-  
+
   try {
     const approved = await translationService.batchApprove(
       Array.from(selectedIds.value)
     );
-    
+
     toastService?.show({
       message: t(keys.admin.translations.batchApproveSuccess, { count: approved }),
       type: 'success',
     });
-    
+
     selectedIds.value.clear();
     selectAll.value = false;
-    
+
     // Reload
     await loadPendingTranslations();
   } catch (error) {
@@ -357,7 +361,7 @@ function formatDate(dateString: string): string {
   const now = new Date();
   const diff = now.getTime() - date.getTime();
   const hours = Math.floor(diff / (1000 * 60 * 60));
-  
+
   if (hours < 1) {
     const minutes = Math.floor(diff / (1000 * 60));
     return t(keys.common.minutesAgo, { count: minutes });
@@ -395,27 +399,6 @@ onMounted(() => {
     font-weight: var(--font-weight-bold);
     color: var(--color-foreground);
     margin: 0;
-  }
-
-  &__stats {
-    display: flex;
-    gap: var(--space);
-  }
-
-  &__stat {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-xs);
-  }
-
-  &__stat-value {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-primary);
-  }
-
-  &__stat-label {
-    color: var(--color-foreground-secondary);
   }
 
   &__filters {

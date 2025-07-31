@@ -39,9 +39,9 @@
         :color="action.color"
         :icon="action.icon"
         :label="action.label"
-        :action="action.action"
+        @click="()=>callAction(action)"
         class="card__action"
-      />
+      >{{ action.label }}</TButton>
     </div>
   </div>
 </template>
@@ -51,7 +51,7 @@ import { computed } from 'vue'
 import { useBemm } from 'bemm'
 import TIcon from '../TIcon/TIcon.vue'
 import TButton from '../TButton/TButton.vue'
-import type { TCardProps, TCardEmits } from './TCard.model'
+import type { TCardProps, TCardEmits, CardAction } from './TCard.model'
 
 const props = withDefaults(defineProps<TCardProps>(), {
   size: 'auto',
@@ -74,6 +74,14 @@ const cardClasses = computed(() => {
     'has-actions': Boolean(props.actions?.length)
   })
 })
+
+const callAction = (actionItem: CardAction) => {
+  if (actionItem.action) {
+    actionItem.action()
+  } else {
+    emit('action', actionItem)
+  }
+}
 
 const cardStyles = computed(() => {
   const styles: Record<string, string> = {}
@@ -215,9 +223,9 @@ const handleKeydown = (event: KeyboardEvent) => {
   // Actions
   &__actions {
     display: flex;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem 1rem;
-    border-top: 1px solid #f3f4f6;
+    gap: var(--space-s);
+    padding: var(--space);
+    border-top: 1px solid var(--color-accent);
     justify-content: center;
     flex-wrap: wrap;
   }

@@ -1,17 +1,16 @@
 <template>
   <div :class="bemm()">
-    <div :class="bemm('header')">
-      <div>
-        <h1>{{ t('admin.i18n.database.title') }}</h1>
-        <p>{{ t('admin.i18n.database.description') }}</p>
-      </div>
-      <div :class="bemm('header-actions')">
+    <AdminPageHeader
+      :title="t('admin.i18n.database.title')"
+      :description="t('admin.i18n.database.description')"
+    >
+      <template #actions>
         <TButton @click="openAddKeyDialog" :icon="Icons.ADD" color="primary">
           {{ t('admin.i18n.database.addKey') }}
         </TButton>
         <TButton
           @click="router.push({ name: 'I18nImport' })"
-          :icon="Icons.UPLOAD"
+          :icon="Icons.ARROW_UPLOAD"
           type="outline"
         >
           {{ t('admin.i18n.database.importTranslations') }}
@@ -23,27 +22,18 @@
         >
           {{ t('admin.i18n.database.viewLanguages') }}
         </TButton>
-      </div>
-    </div>
+      </template>
 
-    <!-- Stats Section -->
-    <TKeyValue
-      :class="bemm('stats')"
-      :items="[
-        {
-          key: t('admin.i18n.database.stats.totalKeys'),
-          value: stats.totalKeys,
-        },
-        {
-          key: t('admin.i18n.database.stats.totalLanguages'),
-          value: stats.totalLanguages,
-        },
-        {
-          key: t('admin.i18n.database.stats.totalTranslations'),
-          value: stats.totalTranslations,
-        },
-      ]"
-    />
+      <template #stats>
+        <TKeyValue
+          :items="[
+            { key: t('admin.i18n.database.stats.totalKeys'), value: String(stats.totalKeys) },
+            { key: t('admin.i18n.database.stats.totalLanguages'), value: String(stats.totalLanguages) },
+            { key: t('admin.i18n.database.stats.totalTranslations'), value: String(stats.totalTranslations) }
+          ]"
+        />
+      </template>
+    </AdminPageHeader>
     <!-- Keys List -->
     <div :class="bemm('keys-section')">
       <!-- Keys List -->
@@ -64,8 +54,18 @@
         :hover="true"
         :sortBy="sortBy"
         :sortDirection="sortDirection"
+        :show-stats="true"
         @sort="handleSort"
+        :style="{ width: '100%' }"
       >
+        <template #header-prepend>
+          <th :style="{ width: '40px' }">
+            <TInputCheckbox
+              v-model="selectAll"
+              @update:modelValue="toggleSelectAll"
+            />
+          </th>
+        </template>
         <template #header>
           <h4>{{ t('admin.i18n.database.keys.title')}}</h4>
 
@@ -82,7 +82,20 @@
           :key="key.id"
           :clickable="true"
           @click="viewKeyDetails(key)"
+          :actions="[
+            listActions.edit((e) => handleEdit(e, key)),
+            listActions.delete((e) => handleDelete(e, key))
+          ]"
         >
+          <template #prepend>
+            <TListCell type="custom" :style="{ width: '40px' }">
+              <TInputCheckbox
+                :modelValue="selectedIds.has(key.id)"
+                @update:modelValue="toggleSelection(key.id)"
+                @click.stop
+              />
+            </TListCell>
+          </template>
           <TListCell type="custom">
             <span class="id">
               {{ key.key }}
@@ -119,6 +132,41 @@
       </div>
     </div>
   </div>
+
+  <!-- Status Bar for Bulk Actions -->
+  <TStatusBar :show="selectedIds.size > 0">
+    <div :class="bemm('status-bar')">
+      <div :class="bemm('status-bar-info')">
+        {{ t('admin.i18n.database.selectedKeys', { count: selectedIds.size }) }}
+      </div>
+      <div :class="bemm('status-bar-actions')">
+        <TButton
+          @click="bulkGenerateTranslations"
+          :icon="Icons.SPARKLE"
+          size="small"
+          color="primary"
+          :disabled="!canGenerateTranslations"
+        >
+          {{ t('admin.i18n.database.generateTranslations') }}
+        </TButton>
+        <TButton
+          @click="bulkDelete"
+          :icon="Icons.MULTIPLY_M"
+          size="small"
+          color="error"
+        >
+          {{ t('admin.i18n.database.deleteSelected') }}
+        </TButton>
+        <TButton
+          @click="clearSelection"
+          type="ghost"
+          size="small"
+        >
+          {{ t('common.clearSelection') }}
+        </TButton>
+      </div>
+    </div>
+  </TStatusBar>
 </template>
 
 <script setup lang="ts">
@@ -133,12 +181,17 @@ import {
   TList,
   TListItem,
   TListCell,
-  TText,
   useI18n,
   TKeyValue,
-  AddTranslationKeyDialog,
   ToastService,
+  TProgressBar,
+  listActions,
+  TInputCheckbox,
+  TStatusBar,
+  ConfirmDialog
 } from '@tiko/ui';
+import AddTranslationKeyDialog from '../../components/dialogs/AddTranslationKeyDialog.vue';
+import AdminPageHeader from '@/components/AdminPageHeader.vue';
 import { useI18nDatabaseService, useUserPreferences, USER_PREFERENCE_KEYS } from '@tiko/core';
 
 import type { I18nKey } from '../../types/i18n.types';
@@ -158,6 +211,8 @@ const searchQuery = ref('');
 const loading = ref(false);
 const sortBy = ref('key');
 const sortDirection = ref<'asc' | 'desc'>('asc');
+const selectedIds = ref(new Set<string>());
+const selectAll = ref(false);
 
 // Stats
 const stats = ref({
@@ -327,7 +382,92 @@ function openAddKeyDialog() {
           });
         }
       },
+      onBatchSave: (result) => {
+        // Handle batch save result
+        const successCount = result.createdKeys?.length || 0;
+        const errorCount = result.errors?.length || 0;
+        const skippedCount = result.skippedCount || 0;
+
+        // Build message based on results
+        if (successCount > 0 && errorCount === 0) {
+          toastService?.show({
+            message: t('admin.i18n.addKey.batchSuccess', `Successfully created ${successCount} translation keys`),
+            type: 'success',
+          });
+        } else if (successCount > 0 && errorCount > 0) {
+          toastService?.show({
+            message: t('admin.i18n.addKey.batchPartialSuccess',
+              `Created ${successCount} keys successfully. ${errorCount} failed.`),
+            type: 'warning',
+          });
+        } else if (errorCount > 0) {
+          toastService?.show({
+            message: t('admin.i18n.addKey.batchErrors', `Failed to create keys. ${errorCount} errors occurred.`),
+            type: 'error',
+          });
+        }
+
+        if (skippedCount > 0) {
+          console.log(`Skipped ${skippedCount} entries with validation errors`);
+        }
+
+        if (errorCount > 0) {
+          console.error('Batch save errors:', result.errors);
+        }
+
+        // Reload keys to show the new ones
+        if (successCount > 0) {
+          loadKeys();
+        }
+      },
     },
+  });
+}
+
+// Handle edit action
+function handleEdit(event: Event, key: I18nKey) {
+  event.stopPropagation();
+  viewKeyDetails(key);
+}
+
+// Handle delete action
+async function handleDelete(event: Event, key: I18nKey) {
+  event.stopPropagation();
+
+  if (!popupService) {
+    console.error('PopupService not available');
+    return;
+  }
+
+  // Show confirmation dialog
+  popupService.open({
+    component: ConfirmDialog,
+    props: {
+      title: t('admin.i18n.database.deleteKey.title'),
+      message: t('admin.i18n.database.deleteKey.message', { key: key.key }),
+      confirmLabel: t('common.delete'),
+      cancelLabel: t('common.cancel'),
+      confirmColor: 'error',
+      onConfirm: async () => {
+        try {
+          await translationService.deleteTranslationKey(key.id);
+
+          toastService?.show({
+            message: t('admin.i18n.database.deleteKey.success'),
+            type: 'success',
+          });
+
+          // Reload keys to reflect the deletion
+          await loadKeys();
+        } catch (error) {
+          console.error('Failed to delete translation key:', error);
+          toastService?.show({
+            message: t('admin.i18n.database.deleteKey.error'),
+            type: 'error',
+          });
+        }
+      }
+    }
   });
 }
 
@@ -409,6 +549,135 @@ async function viewKeyDetails(key: I18nKey) {
   });
 }
 
+// Selection methods
+function toggleSelection(keyId: string) {
+  if (selectedIds.value.has(keyId)) {
+    selectedIds.value.delete(keyId);
+  } else {
+    selectedIds.value.add(keyId);
+  }
+
+  // Update select all checkbox
+  selectAll.value = selectedIds.value.size === filteredKeys.value.length && filteredKeys.value.length > 0;
+}
+
+function toggleSelectAll(value: boolean) {
+  if (value) {
+    filteredKeys.value.forEach(key => selectedIds.value.add(key.id));
+  } else {
+    selectedIds.value.clear();
+  }
+}
+
+function clearSelection() {
+  selectedIds.value.clear();
+  selectAll.value = false;
+}
+
+// Bulk actions
+async function bulkDelete() {
+  if (!popupService) {
+    console.error('PopupService not available');
+    return;
+  }
+
+  const count = selectedIds.value.size;
+
+  popupService.open({
+    component: ConfirmDialog,
+    props: {
+      title: t('admin.i18n.database.bulkDelete.title'),
+      message: t('admin.i18n.database.bulkDelete.message', { count }),
+      confirmLabel: t('common.delete'),
+      cancelLabel: t('common.cancel'),
+      confirmColor: 'error',
+      onConfirm: async () => {
+        try {
+          // Delete all selected keys
+          const promises = Array.from(selectedIds.value).map(id => {
+            const key = keys.value.find(k => k.id === id);
+            if (key) {
+              return translationService.deleteTranslationKey(parseInt(id));
+            }
+          });
+
+          await Promise.all(promises);
+
+          toastService?.show({
+            message: t('admin.i18n.database.bulkDelete.success', { count }),
+            type: 'success',
+          });
+
+          // Clear selection and reload
+          clearSelection();
+          await loadKeys();
+        } catch (error) {
+          console.error('Failed to delete translation keys:', error);
+          toastService?.show({
+            message: t('admin.i18n.database.bulkDelete.error'),
+            type: 'error',
+          });
+        }
+      }
+    }
+  });
+}
+
+// Check if we can generate translations (if English translations exist)
+const canGenerateTranslations = computed(() => {
+  // Check if any selected keys have English translations
+  return Array.from(selectedIds.value).some(id => {
+    const key = keys.value.find(k => k.id === id);
+    // This is a simplified check - you may need to load actual translations
+    return key && key.translationCount > 0;
+  });
+});
+
+async function bulkGenerateTranslations() {
+  if (!popupService) {
+    console.error('PopupService not available');
+    return;
+  }
+
+  const count = selectedIds.value.size;
+
+  popupService.open({
+    component: ConfirmDialog,
+    props: {
+      title: t('admin.i18n.database.bulkGenerate.title'),
+      message: t('admin.i18n.database.bulkGenerate.message', { count }),
+      confirmLabel: t('admin.i18n.database.bulkGenerate.confirm'),
+      cancelLabel: t('common.cancel'),
+      confirmColor: 'primary',
+      icon: Icons.SPARKLE,
+      onConfirm: async () => {
+        try {
+          // TODO: Implement GPT translation generation for selected keys
+          // This would involve:
+          // 1. Get English translations for selected keys
+          // 2. Generate translations for other languages
+          // 3. Save generated translations
+
+          toastService?.show({
+            message: t('admin.i18n.database.bulkGenerate.success', { count }),
+            type: 'success',
+          });
+
+          // Clear selection and reload
+          clearSelection();
+          await loadKeys();
+        } catch (error) {
+          console.error('Failed to generate translations:', error);
+          toastService?.show({
+            message: t('admin.i18n.database.bulkGenerate.error'),
+            type: 'error',
+          });
+        }
+      }
+    }
+  });
+}
+
 // Lifecycle
 onMounted(async () => {
   // Only load if we're on this page
@@ -440,52 +709,25 @@ onMounted(async () => {
   flex-direction: column;
   gap: var(--space);
 
-  &__header {
+  &__stat {
     display: flex;
-    justify-content: space-between;
-    align-items: start;
-    margin-bottom: var(--space-xl);
-
-    h1 {
-      font-size: var(--font-size-xxl);
-      color: var(--color-foreground);
-      margin-bottom: var(--space-xs);
-    }
-
-    p {
-      color: var(--color-foreground-secondary);
-    }
-  }
-
-  &__header-actions {
-    display: flex;
-    gap: var(--space);
-  }
-
-  &__stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--space);
-    margin-bottom: var(--space-xl);
-  }
-
-  &__stat-card {
-    background: var(--color-background-secondary);
-    border-radius: var(--radius);
+    flex-direction: column;
+    gap: var(--space-xs);
     padding: var(--space);
-    text-align: center;
+    background: var(--color-background-secondary);
+    border-radius: var(--border-radius);
+    min-width: 120px;
+  }
 
-    h3 {
-      font-size: var(--font-size-s);
-      color: var(--color-foreground-secondary);
-      margin-bottom: var(--space-xs);
-    }
+  &__stat-label {
+    font-size: var(--font-size-s);
+    color: var(--color-foreground-secondary);
+  }
 
-    p {
-      font-size: var(--font-size-xxl);
-      font-weight: bold;
-      color: var(--color-primary);
-    }
+  &__stat-value {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-foreground);
   }
 
   &__keys-section {
@@ -537,6 +779,25 @@ onMounted(async () => {
     padding: var(--space-xl);
     text-align: center;
     color: var(--color-foreground-secondary);
+  }
+
+  &__status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space);
+    width: 100%;
+  }
+
+  &__status-bar-info {
+    font-size: var(--font-size-s);
+    color: var(--color-foreground-secondary);
+  }
+
+  &__status-bar-actions {
+    display: flex;
+    gap: var(--space-s);
+    align-items: center;
   }
 }
 </style>

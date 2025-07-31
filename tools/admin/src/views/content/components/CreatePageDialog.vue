@@ -1,14 +1,14 @@
 <template>
   <div :class="bemm()">
     <div :class="bemm('header')">
-      <h2>{{ mode === 'edit' ? t('admin.content.pages.edit') : t('admin.content.pages.create') }}</h2>
+      <h2>{{ mode === 'edit' ? t('common.edit') : t('common.create') }}</h2>
     </div>
 
     <div :class="bemm('content')">
       <TFormGroup>
         <TInputText
           v-model="formData.title"
-          :label="t('admin.content.pages.title')"
+          :label="t('common.title')"
           :placeholder="t('admin.content.pages.titlePlaceholder')"
           :required="true"
           :error="errors.title"
@@ -16,7 +16,7 @@
 
         <TInputText
           v-model="formData.slug"
-          :label="t('admin.content.pages.slug')"
+          :label="t('common.slug')"
           :placeholder="t('admin.content.pages.slugPlaceholder')"
           :hint="t('admin.content.pages.slugHint')"
           :required="true"
@@ -41,6 +41,14 @@
           :label="t('admin.content.pages.template')"
           :options="templateOptions"
           :placeholder="t('admin.content.pages.templatePlaceholder')"
+        />
+
+        <TInputSelect
+          v-model="formData.language_code"
+          :label="t('common.language')"
+          :options="languageOptions"
+          :required="true"
+          :error="errors.language_code"
         />
       </TFormGroup>
 
@@ -137,6 +145,7 @@ const formData = reactive({
   slug: props.page?.slug || '',
   project_id: props.page?.project_id || '',
   template_id: props.page?.template_id || '',
+  language_code: props.page?.language_code || 'en',
   meta_title: props.page?.seo_title || '',
   meta_description: props.page?.seo_description || '',
   is_published: props.page?.is_published ?? false,
@@ -145,7 +154,8 @@ const formData = reactive({
 const errors = reactive({
   title: '',
   slug: '',
-  project_id: ''
+  project_id: '',
+  language_code: ''
 })
 const saving = ref(false)
 
@@ -164,7 +174,7 @@ const templateOptions = computed(() => {
   const options = [
     { value: '', label: t('admin.content.pages.noTemplate') }
   ]
-  
+
   if (templates.value && Array.isArray(templates.value)) {
     templates.value.forEach(template => {
       if (template && template.id && template.name) {
@@ -175,9 +185,24 @@ const templateOptions = computed(() => {
       }
     })
   }
-  
+
   return options
 })
+
+const languageOptions = computed(() => [
+  { value: 'en', label: 'English' },
+  { value: 'es', label: 'Español' },
+  { value: 'fr', label: 'Français' },
+  { value: 'de', label: 'Deutsch' },
+  { value: 'it', label: 'Italiano' },
+  { value: 'pt', label: 'Português' },
+  { value: 'nl', label: 'Nederlands' },
+  { value: 'ru', label: 'Русский' },
+  { value: 'pl', label: 'Polski' },
+  { value: 'sv', label: 'Svenska' },
+  { value: 'ro', label: 'Română' },
+  { value: 'el', label: 'Ελληνικά' }
+])
 
 const isValid = computed(() => {
   return formData.title.trim() !== '' &&
@@ -208,22 +233,23 @@ async function handleSlugInput() {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '')
   }
-  
+
   // Validate slug format (alphanumeric and hyphens only)
   if (formData.slug && !/^[a-z0-9-]*$/.test(formData.slug)) {
     errors.slug = t('admin.content.pages.slugError')
   } else {
     errors.slug = ''
-    
-    // Check for duplicate slug
-    if (formData.project_id && formData.slug) {
+
+    // Check for duplicate slug in the same language
+    if (formData.project_id && formData.slug && formData.language_code) {
       try {
-        const existingPages = await contentService.getPages(formData.project_id, 'en')
-        const duplicate = existingPages.find(page => 
-          page.slug === formData.slug && 
+        const existingPages = await contentService.getPages(formData.project_id, formData.language_code)
+        const duplicate = existingPages.find(page =>
+          page.slug === formData.slug &&
+          page.language_code === formData.language_code &&
           (props.mode === 'create' || page.id !== props.page?.id)
         )
-        
+
         if (duplicate) {
           errors.slug = t('admin.content.pages.slugDuplicateError')
         }
@@ -271,13 +297,13 @@ async function handleSave() {
       seo_description: formData.meta_description.trim(),
       is_published: formData.is_published,
       is_home: formData.is_home,
-      language_code: 'en' // Default to English, should be configurable
+      language_code: formData.language_code
     }
 
     console.log('Saving page data:', pageData)
     console.log('template_id value:', formData.template_id)
     console.log('template_id type:', typeof formData.template_id)
-    
+
     emit('save', pageData)
   } catch (error) {
     console.error('Failed to save page:', error)

@@ -35,14 +35,14 @@ import { TIcon as Icon } from '../TIcon';
 import { TToolTip as ToolTip } from '../TToolTip';
 import type { ChipIcon } from './TChip.model';
 import { useBemm } from 'bemm';
-import type { Colors, Screen } from '../../types';
+import { Colors, Screen } from '../../types';
 
 const bemm = useBemm('chip');
 
 const props = defineProps({
 	color: {
 		type: String as PropType<Colors>,
-		default: undefined,
+		default: Colors.PRIMARY,
 	},
 	icon: {
 		type: String as PropType<ChipIcon | undefined>,

@@ -5,7 +5,9 @@
       <div :class="bemm('loading-spinner')"></div>
     </div>
 
-    {{ pageData }}
+    <pre>
+      {{ pageData }}
+    </pre>
     <!-- Dynamic Sections -->
     <template v-if="!loading && pageData?.sections?.length">
       <SectionRenderer
@@ -25,10 +27,12 @@
 <script setup lang="ts">
 import { useBemm } from 'bemm'
 import { useContent, type PageContent } from '@tiko/core'
-import { ref, onMounted } from 'vue'
+import { useI18n } from '@tiko/ui'
+import { ref, onMounted, watch } from 'vue'
 import SectionRenderer from '../components/SectionRenderer.vue'
 
 const bemm = useBemm('home-view')
+const { locale } = useI18n()
 const content = useContent({ projectSlug: 'marketing' })
 
 // Page content
@@ -36,14 +40,18 @@ const pageData = ref<PageContent | null>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
 
-// Load content on mount
-onMounted(async () => {
+// Function to load content for current language
+async function loadContent() {
   try {
     loading.value = true
-    console.log('Loading page content for marketing project...')
+    error.value = null
+    
+    // Get language code from locale (e.g., 'en-GB' -> 'en')
+    const languageCode = locale.value.split('-')[0]
+    console.log(`Loading page content for marketing project in ${languageCode}...`)
 
-    // Try to get the home page
-    const page = await content.getPage('home')
+    // Try to get the home page for current language
+    const page = await content.getPage('home', languageCode)
     console.log('Page response:', page)
 
     if (page) {
@@ -53,7 +61,7 @@ onMounted(async () => {
       // Try to list all pages to see what's available
       const allPages = await content.getPages()
       console.log('Available pages:', allPages)
-      error.value = 'No content found for "home" page. Available pages logged to console.'
+      error.value = `No content found for "home" page in ${languageCode}. Available pages logged to console.`
     }
   } catch (err) {
     console.error('Failed to load page content:', err)
@@ -61,6 +69,16 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+}
+
+// Load content on mount
+onMounted(() => {
+  loadContent()
+})
+
+// Reload content when language changes
+watch(locale, () => {
+  loadContent()
 })
 </script>
 

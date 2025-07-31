@@ -60,10 +60,10 @@ body {
 }
 
 
-.id{
+.id {
 	font-size: .875em;
 	font-family: 'Courier New', Courier, monospace;
-	background-color: var(--color-accent);
+	background-color: color-mix(in srgb, var(--color-accent), transparent 75%);
 	width: fit-content;
 	padding: var(--space-xs);
 	border-radius: 4px;

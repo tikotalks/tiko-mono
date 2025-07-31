@@ -6,6 +6,7 @@
     :disabled="isDisabled"
     :type="buttonType"
     :style="buttonStyles"
+    :tooltip="!!tooltip"
     v-bind="$attrs"
   >
     <div :class="bemm('container', ['', reverse ? 'direction-reverse' : ''])">
@@ -34,6 +35,16 @@
     >
       {{ count }}
     </span>
+    <TToolTip
+      v-if="tooltip"
+      :content="tooltip"
+      :position="'top'"
+      :disabled="!tooltip"
+      :delay=".5"
+      :max-width="'200px'"
+    >
+       {{tooltip}}
+    </TToolTip>
   </component>
 </template>
 
@@ -43,6 +54,7 @@ import { useBemm } from 'bemm'
 import { useI18n } from '../../composables/useI18n'
 import { TIcon } from '../TIcon'
 import { ButtonType, ButtonSize, ButtonColor, ButtonStatus, type TButtonProps } from './TButton.model'
+import TToolTip from '../TToolTip/TToolTip.vue'
 
 const props = withDefaults(defineProps<TButtonProps>(), {
   icon: '',
