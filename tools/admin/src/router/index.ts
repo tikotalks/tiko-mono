@@ -12,6 +12,10 @@ import I18nImportView from '../views/i18n/ImportView.vue'
 import I18nKeysView from '../views/i18n/KeysView.vue'
 import I18nLanguagesView from '../views/i18n/LanguagesView.vue'
 import I18nLanguageDetailView from '../views/i18n/DetailView.vue'
+import ContentProjectsView from '../views/content/ProjectsView.vue'
+import ContentSectionsView from '../views/content/SectionsView.vue'
+import ContentPagesView from '../views/content/PagesView.vue'
+import ContentPageDetailView from '../views/content/PageDetailView.vue'
 
 const router = createAppRouter({
   routes: [
@@ -78,6 +82,26 @@ const router = createAppRouter({
           path: 'i18n/languages/:code',
           name: 'I18nLanguageDetail',
           component: I18nLanguageDetailView
+        },
+        {
+          path: 'content/projects',
+          name: 'ContentProjects',
+          component: ContentProjectsView
+        },
+        {
+          path: 'content/sections',
+          name: 'ContentSections',
+          component: ContentSectionsView
+        },
+        {
+          path: 'content/pages',
+          name: 'ContentPages',
+          component: ContentPagesView
+        },
+        {
+          path: 'content/pages/:id',
+          name: 'ContentPageDetail',
+          component: ContentPageDetailView
         }
       ]
     }

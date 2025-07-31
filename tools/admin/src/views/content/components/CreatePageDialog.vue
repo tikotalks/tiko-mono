@@ -1,0 +1,347 @@
+<template>
+  <div :class="bemm()">
+    <div :class="bemm('header')">
+      <h2>{{ mode === 'edit' ? t('admin.content.pages.edit') : t('admin.content.pages.create') }}</h2>
+    </div>
+
+    <div :class="bemm('content')">
+      <TFormGroup>
+        <TInputText
+          v-model="formData.title"
+          :label="t('admin.content.pages.title')"
+          :placeholder="t('admin.content.pages.titlePlaceholder')"
+          :required="true"
+          :error="errors.title"
+        />
+
+        <TInputText
+          v-model="formData.slug"
+          :label="t('admin.content.pages.slug')"
+          :placeholder="t('admin.content.pages.slugPlaceholder')"
+          :hint="t('admin.content.pages.slugHint')"
+          :required="true"
+          :error="errors.slug"
+          @input="handleSlugInput"
+        />
+
+      </TFormGroup>
+
+      <TFormGroup>
+        <TInputSelect
+          v-model="formData.project_id"
+          :label="t('admin.content.pages.project')"
+          :options="projectOptions"
+          :placeholder="t('admin.content.pages.projectPlaceholder')"
+          :required="true"
+          :error="errors.project_id"
+        />
+
+        <TInputSelect
+          v-model="formData.template_id"
+          :label="t('admin.content.pages.template')"
+          :options="templateOptions"
+          :placeholder="t('admin.content.pages.templatePlaceholder')"
+        />
+      </TFormGroup>
+
+      <TFormGroup>
+        <TInputText
+          v-model="formData.meta_title"
+          :label="t('admin.content.pages.metaTitle')"
+          :placeholder="t('admin.content.pages.metaTitlePlaceholder')"
+        />
+
+        <TTextArea
+          v-model="formData.meta_description"
+          :label="t('admin.content.pages.metaDescription')"
+          :placeholder="t('admin.content.pages.metaDescriptionPlaceholder')"
+          :rows="2"
+        />
+      </TFormGroup>
+
+      <TFormGroup>
+        <TInputCheckbox
+          v-model="formData.is_published"
+          :label="t('admin.content.pages.published')"
+          :hint="t('admin.content.pages.publishedHint')"
+        />
+
+        <TInputCheckbox
+          v-model="formData.is_home"
+          :label="t('admin.content.pages.isHome')"
+          :hint="t('admin.content.pages.isHomeHint')"
+        />
+      </TFormGroup>
+
+    </div>
+
+    <div :class="bemm('footer')">
+      <TButton type="ghost" @click="handleClose">
+        {{ t('common.cancel') }}
+      </TButton>
+      <TButton
+        color="primary"
+        @click="handleSave"
+        :status="saving ? 'loading' : 'idle'"
+        :disabled="!isValid"
+      >
+        {{ t('common.save') }}
+      </TButton>
+    </div>
+
+    <!-- Add Section Dialog is handled via popup service -->
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, computed, onMounted, watch, inject } from 'vue'
+import { useBemm } from 'bemm'
+import {
+  TButton,
+  TInputText,
+  TTextArea,
+  TFormGroup,
+  TInputCheckbox,
+  TInputSelect,
+  useI18n,
+  type PopupService
+} from '@tiko/ui'
+import { Icons } from 'open-icon'
+import { contentService } from '@tiko/core'
+import type { ContentPage, ContentProject, PageTemplate } from '@tiko/core'
+
+interface Props {
+  page?: ContentPage
+  mode?: 'create' | 'edit'
+  projects?: ContentProject[]
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  mode: 'create',
+  projects: () => []
+})
+
+const emit = defineEmits<{
+  close: []
+  save: [data: Partial<ContentPage>]
+}>()
+
+const bemm = useBemm('create-page-dialog')
+const { t } = useI18n()
+const popupService = inject<PopupService>('popupService')
+
+// State
+const templates = ref<PageTemplate[]>([])
+const formData = reactive({
+  title: props.page?.title || '',
+  slug: props.page?.slug || '',
+  project_id: props.page?.project_id || '',
+  template_id: props.page?.template_id || '',
+  meta_title: props.page?.seo_title || '',
+  meta_description: props.page?.seo_description || '',
+  is_published: props.page?.is_published ?? false,
+  is_home: props.page?.is_home ?? false
+})
+const errors = reactive({
+  title: '',
+  slug: '',
+  project_id: ''
+})
+const saving = ref(false)
+
+// Computed
+const projectOptions = computed(() => {
+  if (!props.projects || !Array.isArray(props.projects)) {
+    return []
+  }
+  return props.projects.map(project => ({
+    value: project.id,
+    label: project.name
+  }))
+})
+
+const templateOptions = computed(() => {
+  const options = [
+    { value: '', label: t('admin.content.pages.noTemplate') }
+  ]
+  
+  if (templates.value && Array.isArray(templates.value)) {
+    templates.value.forEach(template => {
+      if (template && template.id && template.name) {
+        options.push({
+          value: template.id,
+          label: template.name
+        })
+      }
+    })
+  }
+  
+  return options
+})
+
+const isValid = computed(() => {
+  return formData.title.trim() !== '' &&
+         formData.slug.trim() !== '' &&
+         formData.project_id !== '' &&
+         !Object.values(errors).some(error => error !== '')
+})
+
+// Methods
+async function loadTemplates() {
+  try {
+    // Only load templates if we have a project selected
+    if (formData.project_id) {
+      templates.value = await contentService.getPageTemplates(formData.project_id)
+    } else {
+      templates.value = []
+    }
+  } catch (error) {
+    console.error('Failed to load templates:', error)
+  }
+}
+
+async function handleSlugInput() {
+  // Auto-generate slug from title if empty
+  if (!formData.slug && formData.title) {
+    formData.slug = formData.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+  }
+  
+  // Validate slug format (alphanumeric and hyphens only)
+  if (formData.slug && !/^[a-z0-9-]*$/.test(formData.slug)) {
+    errors.slug = t('admin.content.pages.slugError')
+  } else {
+    errors.slug = ''
+    
+    // Check for duplicate slug
+    if (formData.project_id && formData.slug) {
+      try {
+        const existingPages = await contentService.getPages(formData.project_id, 'en')
+        const duplicate = existingPages.find(page => 
+          page.slug === formData.slug && 
+          (props.mode === 'create' || page.id !== props.page?.id)
+        )
+        
+        if (duplicate) {
+          errors.slug = t('admin.content.pages.slugDuplicateError')
+        }
+      } catch (error) {
+        console.error('Failed to check for duplicate slug:', error)
+      }
+    }
+  }
+}
+
+
+function handleClose() {
+  emit('close')
+}
+
+async function handleSave() {
+  // Validate
+  if (!formData.title.trim()) {
+    errors.title = t('validation.required')
+    return
+  }
+
+  if (!formData.slug.trim()) {
+    errors.slug = t('validation.required')
+    return
+  }
+
+  if (!formData.project_id) {
+    errors.project_id = t('validation.required')
+    return
+  }
+
+  if (!isValid.value) return
+
+  saving.value = true
+
+  try {
+    const pageData: Partial<ContentPage> = {
+      ...(props.mode === 'edit' && props.page?.id ? { id: props.page.id } : {}),
+      title: formData.title.trim(),
+      slug: formData.slug.trim(),
+      project_id: formData.project_id,
+      template_id: formData.template_id && formData.template_id.trim() !== '' ? formData.template_id : undefined,
+      seo_title: formData.meta_title.trim() || formData.title.trim(),
+      seo_description: formData.meta_description.trim(),
+      is_published: formData.is_published,
+      is_home: formData.is_home,
+      language_code: 'en' // Default to English, should be configurable
+    }
+
+    console.log('Saving page data:', pageData)
+    console.log('template_id value:', formData.template_id)
+    console.log('template_id type:', typeof formData.template_id)
+    
+    emit('save', pageData)
+  } catch (error) {
+    console.error('Failed to save page:', error)
+  } finally {
+    saving.value = false
+  }
+}
+
+// Watchers
+watch(() => formData.project_id, () => {
+  loadTemplates()
+})
+
+// Auto-generate slug from title in create mode
+watch(() => formData.title, (newTitle) => {
+  if (props.mode === 'create' && !formData.slug && newTitle) {
+    formData.slug = newTitle
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+  }
+})
+
+// Lifecycle
+onMounted(() => {
+  loadTemplates()
+})
+</script>
+
+<style lang="scss">
+.create-page-dialog {
+  display: flex;
+  flex-direction: column;
+  width: 800px;
+  max-width: 90vw;
+  max-height: 80vh;
+  background: var(--color-background);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+
+  &__header {
+    padding: var(--space-lg);
+    border-bottom: 1px solid var(--color-border);
+
+    h2 {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      color: var(--color-foreground);
+      margin: 0;
+    }
+  }
+
+  &__content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-lg);
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space);
+    padding: var(--space-lg);
+    border-top: 1px solid var(--color-border);
+  }
+}
+</style>
