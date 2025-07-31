@@ -3,7 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "prefix": "ui-docs",
-  "sourceRoot": "apps/ui-docs/src",
+  "sourceRoot": "tools/ui-docs/src",
   "tags": [],
   "targets": {
     "build": {
@@ -11,7 +11,7 @@
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
-        "outputPath": "dist/apps/ui-docs",
+        "outputPath": "dist/tools/ui-docs",
         "skipTypeCheck": true
       },
       "configurations": {
@@ -44,13 +44,13 @@
       "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/ui-docs/**/*.{ts,tsx,vue}"]
+        "lintFilePatterns": ["tools/ui-docs/**/*.{ts,tsx,vue}"]
       }
     },
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "vue-tsc --noEmit --project apps/ui-docs/tsconfig.app.json"
+        "command": "vue-tsc --noEmit --project tools/ui-docs/tsconfig.app.json"
       }
     }
   }
