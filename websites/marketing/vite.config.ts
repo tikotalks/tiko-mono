@@ -18,6 +18,7 @@ export default defineConfig({
     sourcemap: true
   },
   optimizeDeps: {
-    include: ['vue', 'vue-router', 'pinia', '@tiko/ui', '@tiko/core']
+    include: ['vue', 'vue-router', 'pinia'],
+    exclude: ['@tiko/ui', '@tiko/core']
   }
 })
