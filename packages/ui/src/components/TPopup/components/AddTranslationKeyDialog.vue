@@ -96,6 +96,16 @@
         {{ t('common.cancel') }}
       </TButton>
       <TButton
+        type="outline"
+        color="primary"
+        @click="handleGenerateAndSave"
+        :status="generatingAndSaving ? 'loading' : 'idle'"
+        :disabled="!englishTranslation.trim() || !keyData.key.trim() || errors.key || checkingKey.value"
+        :icon="Icons.STAR_M"
+      >
+        {{ t('admin.i18n.addKey.generateAndSave') }}
+      </TButton>
+      <TButton
         color="primary"
         @click="handleSave"
         :status="saving ? 'loading' : 'idle'"
@@ -148,6 +158,7 @@ const errors = reactive({
 })
 const saving = ref(false)
 const generatingAll = ref(false)
+const generatingAndSaving = ref(false)
 const checkingKey = ref(false)
 let keyCheckTimeout: NodeJS.Timeout | null = null
 
@@ -333,6 +344,36 @@ async function handleSave() {
     console.error('Failed to save translation key:', error)
   } finally {
     saving.value = false
+  }
+}
+
+async function handleGenerateAndSave() {
+  // Validate key and English translation
+  if (!keyData.key.trim()) {
+    errors.key = t('admin.i18n.addKey.keyRequired')
+    return
+  }
+
+  if (!englishTranslation.value.trim()) {
+    const englishLang = translations.value['en']
+    if (englishLang) {
+      englishLang.error = t('admin.i18n.addKey.englishRequired')
+    }
+    return
+  }
+
+  generatingAndSaving.value = true
+
+  try {
+    // First generate all translations
+    await generateAllTranslations()
+    
+    // Then save everything
+    await handleSave()
+  } catch (error) {
+    console.error('Failed to generate and save:', error)
+  } finally {
+    generatingAndSaving.value = false
   }
 }
 
