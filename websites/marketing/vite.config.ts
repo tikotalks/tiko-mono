@@ -6,11 +6,13 @@ export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src')
+      '@': path.resolve(__dirname, './src'),
+      '@tiko/ui': path.resolve(__dirname, '../../packages/ui/src'),
+      '@tiko/core': path.resolve(__dirname, '../../packages/core/src')
     }
   },
   server: {
-    port: 3004,
+    port: 6000,
     host: true
   },
   build: {
@@ -18,7 +20,6 @@ export default defineConfig({
     sourcemap: true
   },
   optimizeDeps: {
-    include: ['vue', 'vue-router', 'pinia'],
-    exclude: ['@tiko/ui', '@tiko/core']
+    include: ['vue', 'vue-router', 'pinia']
   }
 })
