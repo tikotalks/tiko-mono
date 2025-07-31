@@ -1,3 +1,5 @@
+import { Colors } from "../../types"
+
 export interface TProgressBarProps {
   /**
    * The current progress value (0-100)
@@ -17,7 +19,7 @@ export interface TProgressBarProps {
   /**
    * Color variant
    */
-  color?: 'primary' | 'secondary' | 'success' | 'warning' | 'error'
+  color?: Colors
 
   /**
    * Show percentage text inside or outside the bar
@@ -47,4 +49,14 @@ export interface TProgressBarProps {
   status?: {
     [key: string]: [number, number] | [number]
   }
+
+  /**
+   * Prefix text to show before the percentage
+   */
+  prefix?: string
+
+  /**
+   * Suffix text to show after the percentage
+   */
+  suffix?: string
 }

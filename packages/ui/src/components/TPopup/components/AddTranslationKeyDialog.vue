@@ -45,7 +45,7 @@
             type="outline"
             :icon="Icons.STAR_M"
             @click="generateAllTranslations"
-            :loading="generatingAll"
+            :status="generatingAll ? 'loading' : 'idle'"
             :disabled="!englishTranslation || generatingAll"
           >
             {{ t('admin.i18n.addKey.generateAll') }}
@@ -69,7 +69,7 @@
                 size="small"
                 :icon="Icons.STAR_SMALL"
                 @click="generateTranslation(lang.code)"
-                :loading="translations[lang.code]?.loading"
+                :status="translations[lang.code]?.loading ? 'loading' : 'idle'"
                 :disabled="!englishTranslation || translations[lang.code]?.loading"
                 :title="t('admin.i18n.addKey.generateTranslation')"
               />
@@ -98,7 +98,7 @@
       <TButton
         color="primary"
         @click="handleSave"
-        :loading="saving"
+        :status="saving ? 'loading' : 'idle'"
         :disabled="!isValid"
       >
         {{ t('common.save') }}
@@ -130,6 +130,11 @@ const bemm = useBemm('add-translation-key-dialog')
 const { t } = useI18n()
 const translationService = useI18nDatabaseService()
 
+// Debug props
+console.log('AddTranslationKeyDialog props:', props)
+console.log('Mode:', props.mode)
+console.log('EditKey:', props.editKey)
+
 // State
 const activeLanguages = ref<Language[]>([])
 const keyData = reactive({
@@ -152,19 +157,19 @@ const englishTranslation = computed(() => {
 })
 
 const isValid = computed(() => {
-  return keyData.key.trim() !== '' && 
-         englishTranslation.value.trim() !== '' && 
-         !errors.key && 
+  return keyData.key.trim() !== '' &&
+         englishTranslation.value.trim() !== '' &&
+         !errors.key &&
          !checkingKey.value
 })
 
 // Methods
 async function checkKeyExists(key: string): Promise<boolean> {
   if (!key.trim()) return false
-  
+
   // Skip validation in edit mode
   if (props.mode === 'edit') return false
-  
+
   try {
     const exists = await translationService.keyExists(key.trim())
     return exists
@@ -176,10 +181,10 @@ async function checkKeyExists(key: string): Promise<boolean> {
 
 function handleKeyInput() {
   errors.key = ''
-  
+
   // Skip validation in edit mode
   if (props.mode === 'edit') return
-  
+
   // Clear previous timeout
   if (keyCheckTimeout) {
     clearTimeout(keyCheckTimeout)
@@ -197,7 +202,7 @@ function handleKeyInput() {
 
   keyCheckTimeout = setTimeout(async () => {
     checkingKey.value = true
-    
+
     try {
       const exists = await checkKeyExists(key)
       if (exists) {
@@ -334,29 +339,56 @@ async function handleSave() {
 // Initialize for edit mode
 async function initializeEditMode() {
   if (props.mode === 'edit' && props.editKey) {
+    console.log('Edit mode - initializing with key:', props.editKey)
     keyData.key = props.editKey.key
     keyData.category = props.editKey.category || ''
     keyData.description = props.editKey.description || ''
-    
+
     // Load existing translations
     try {
+      console.log('Current translations object:', translations.value)
       const existingTranslations = await translationService.getTranslationsForKeyString(props.editKey.key)
-      
+      console.log('Loaded translations for key:', props.editKey.key, existingTranslations)
+
       // Update the translations values
       for (const translation of existingTranslations) {
-        if (translations.value[translation.locale_code]) {
-          translations.value[translation.locale_code].value = translation.value
+        // Try both locale_code and language_code
+        const langCode = translation.locale_code || translation.language_code
+        console.log('Processing translation:', langCode, translation.value)
+        console.log('Translation object for lang:', translations.value[langCode])
+
+        if (langCode && translations.value[langCode]) {
+          translations.value[langCode].value = translation.value
+          console.log('Updated translation for', langCode, 'to:', translation.value)
+        } else {
+          console.warn('Language code not found in translations object:', langCode)
         }
       }
+      console.log('Final translations after update:', translations.value)
     } catch (error) {
       console.error('Failed to load existing translations:', error)
     }
   }
 }
 
+// Watch for prop changes
+watch(() => props.editKey, async (newVal) => {
+  console.log('EditKey prop changed:', newVal)
+  if (newVal && props.mode === 'edit') {
+    // Ensure languages are loaded first
+    if (activeLanguages.value.length === 0) {
+      await loadLanguages()
+    }
+    await initializeEditMode()
+  }
+}, { immediate: true })
+
 // Lifecycle
 onMounted(async () => {
+  console.log('Component mounted, props:', props)
   await loadLanguages()
+  // Use nextTick to ensure DOM and reactive values are updated
+  await nextTick()
   await initializeEditMode()
 })
 </script>
@@ -450,19 +482,19 @@ onMounted(async () => {
 
   &__language-code {
     font-family: var(--font-family-mono);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-s);
     font-weight: 600;
     color: var(--color-foreground);
   }
 
   &__language-name {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-s);
     color: var(--color-foreground-secondary);
   }
 
   &__error-message {
     margin-top: var(--space-xxs);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-s);
     color: var(--color-error);
   }
 

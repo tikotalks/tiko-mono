@@ -10,6 +10,9 @@
       ])
     "
   >
+    <span v-if="prefix" :class="bemm('prefix')">
+      {{ prefix }}
+    </span>
     <div
       :class="bemm('track')"
       role="progressbar"
@@ -21,7 +24,7 @@
       <div :class="bemm('fill')" :style="fillStyle">
         <span
           v-if="showPercentage && percentagePosition === 'inside'"
-          :class="bemm('percentage', 'inside')"
+          :class="bemm('percentage', ['', 'inside'])"
         >
           {{ displayText }}
         </span>
@@ -30,9 +33,13 @@
 
     <span
       v-if="showPercentage && percentagePosition === 'outside'"
-      :class="bemm('percentage', 'outside')"
+      :class="bemm('percentage', ['', 'outside'])"
     >
       {{ displayText }}
+    </span>
+
+    <span v-if="suffix" :class="bemm('suffix')">
+      {{ suffix }}
     </span>
   </div>
 </template>
@@ -49,6 +56,8 @@ const props = withDefaults(defineProps<TProgressBarProps>(), {
   showPercentage: false,
   percentagePosition: 'outside',
   animated: true,
+  prefix: '',
+  suffix: '',
   indeterminate: false,
   status: () => ({
     complete: [100],
@@ -101,9 +110,10 @@ const status = computed(() => {
 <style lang="scss">
 .t-progress-bar {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: var(--space-xs);
   width: 100%;
+  align-items: center;
 
   &--complete {
     --progress-color: var(--color-success);
@@ -167,6 +177,13 @@ const status = computed(() => {
       color: var(--color-foreground);
       text-align: center;
     }
+  }
+
+  &__prefix,
+  &__affix {
+    font-size: var(--font-size-s);
+    font-weight: var(--font-weight-medium);
+    white-space: nowrap;
   }
 }
 

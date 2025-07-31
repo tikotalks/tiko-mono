@@ -113,6 +113,7 @@ const handleKeydown = (event: KeyboardEvent) => {
   border-radius: 0.75rem;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   transition: all 0.2s ease;
+  border: 1px solid color-mix(in srgb, var(--color-secondary), transparent 50%);
 
 
   // Size variants

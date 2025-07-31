@@ -41,6 +41,7 @@ export * from './components/TViewToggle'
 export * from './components/TStatusBar'
 export * from './components/TProgressBar'
 export * from './components/TKeyValue'
+export * from './components/TText'
 
 export { default as TInputText } from './components/TForm/inputs/TInputText/TInputText.vue';
 export { default as TInputNumber } from './components/TForm/inputs/TInputNumber/TInputNumber.vue';

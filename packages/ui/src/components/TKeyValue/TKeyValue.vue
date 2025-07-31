@@ -28,13 +28,26 @@ const props = withDefaults(
 <style lang="scss">
 
 .t-key-value {
+  --key-value-border: color-mix(in srgb, var(--color-primary), transparent 50%);
+  --key-value-background:
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-primary), transparent 75%),
+      transparent
+    );
+
+  // color-mix(in srgb, var(--color-primary), transparent 75%);
   display: flex;
   flex-direction: var(--direction, column);
-  background-color: color-mix(in srgb, var(--color-primary), transparent 75%);
-  border: 1px solid var(--color-primary);
+  background:var(--key-value-background);
+  border: 1px solid var(--key-value-border);
   border-radius: var(--border-radius);
   width: fit-content;
   max-width: 100%;
+  margin: auto;
+  box-shadow: 2px 2px 1em 0 color-mix(in srgb, var(--color-light), transparent 90%) inset,
+    -2px -2px 1em 0 color-mix(in srgb, var(--color-primary), transparent 50%) inset;
+
 
 
   &--row{
@@ -48,7 +61,7 @@ const props = withDefaults(
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    border-right: 1px solid var(--color-primary);
+    border-right: 1px solid var(--key-value-border);
     padding: var(--space-s) var(--space);
     &:last-child {
       border-right: none;

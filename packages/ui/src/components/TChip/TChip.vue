@@ -93,6 +93,7 @@ const blockClasses = computed(() => {
 	transition: background-color 0.2s;
 	flex-shrink: 0;
 
+
 	background-color: var(--chip-background, none);
 	border: 1px solid transparent;
 	color: var(--chip-text-color, currentColor);
@@ -184,6 +185,7 @@ const blockClasses = computed(() => {
 		gap: calc(var(--space) / 2);
 		align-items: center;
 		justify-content: center;
+		white-space: nowrap;
 	}
 
 	&__icon {

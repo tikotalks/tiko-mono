@@ -231,7 +231,8 @@ const hasSlot = (name: string) => {
 		--button-background-color--hover: var(--color-tertiary);
 		position: absolute;
 		z-index: 5;
-		top: calc(var(--popup-padding, var(--space)));
+		margin: 0;
+		top: calc(var(--popup-padding,var(--space)));
 		right: calc(var(--popup-padding, var(--space)));
 	}
 
