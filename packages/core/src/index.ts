@@ -30,6 +30,11 @@ export type {
 } from './composables/useEventBus.model'
 export { useTranslationService } from './composables/useTranslationService'
 export { useI18nDatabaseService } from './composables/useI18nDatabaseService'
+export { useUserPreferences } from './composables/useUserPreferences'
+export type { UserPreferences, ListPreferences } from './composables/useUserPreferences'
+
+// Constants
+export * from './constants'
 
 // Types
 export * from './types/user'

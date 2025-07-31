@@ -232,7 +232,7 @@ class GPTTranslationService {
       'gpt-3.5-turbo': { input: 0.0005, output: 0.0015 }
     };
 
-    const price = pricing[model] || pricing['gpt-4-turbo-preview'];
+    const price = pricing[model as keyof typeof pricing] || pricing['gpt-4-turbo-preview'];
     
     // Assume output is similar length to input
     const inputCost = (estimatedTokens / 1000) * price.input;
@@ -244,6 +244,3 @@ class GPTTranslationService {
 
 // Export singleton instance
 export const gptTranslationService = new GPTTranslationService();
-
-// Export types
-export type { TranslationRequest, BatchTranslationRequest };

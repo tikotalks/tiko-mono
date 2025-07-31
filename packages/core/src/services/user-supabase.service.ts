@@ -74,7 +74,7 @@ export class SupabaseUserService implements UserService {
       const profiles = await response.json()
       
       // For now, return profiles as-is (auth metadata would require admin API access)
-      return profiles.map(profile => ({
+      return profiles.map((profile: any) => ({
         ...profile,
         is_active: profile.is_active ?? true
       }))
@@ -240,10 +240,10 @@ export class SupabaseUserService implements UserService {
 
       const stats: UserStats = {
         totalUsers: profiles?.length || 0,
-        activeUsers: profiles?.filter(p => p.is_active !== false).length || 0,
-        adminUsers: profiles?.filter(p => p.role === 'admin').length || 0,
-        newUsersToday: profiles?.filter(p => new Date(p.created_at) >= todayStart).length || 0,
-        newUsersThisMonth: profiles?.filter(p => new Date(p.created_at) >= monthStart).length || 0
+        activeUsers: profiles?.filter((p: any) => p.is_active !== false).length || 0,
+        adminUsers: profiles?.filter((p: any) => p.role === 'admin').length || 0,
+        newUsersToday: profiles?.filter((p: any) => new Date(p.created_at) >= todayStart).length || 0,
+        newUsersThisMonth: profiles?.filter((p: any) => new Date(p.created_at) >= monthStart).length || 0
       }
 
       return stats

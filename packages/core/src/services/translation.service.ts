@@ -437,6 +437,53 @@ class TranslationService {
   }
 
   /**
+   * Get statistics for dashboard (alias for better naming)
+   */
+  async getStatistics(): Promise<{
+    locales: string[]
+    totalKeys: number
+    completeness: Record<string, { percentage: number; missing: number }>
+  }> {
+    try {
+      // Get all active languages
+      const languages = await this.getActiveLanguages()
+      const locales = languages.map(lang => lang.code)
+      
+      // Get all keys
+      const keys = await this.getTranslationKeys()
+      const totalKeys = keys.length
+      
+      // Get language details with completion stats
+      const languageDetails = await this.getLanguageDetails()
+      
+      // Build completeness object
+      const completeness: Record<string, { percentage: number; missing: number }> = {}
+      for (const detail of languageDetails) {
+        if (locales.includes(detail.code)) {
+          completeness[detail.code] = {
+            percentage: detail.completion_percentage || 0,
+            missing: totalKeys - (detail.translation_count || 0)
+          }
+        }
+      }
+      
+      return {
+        locales,
+        totalKeys,
+        completeness
+      }
+    } catch (error) {
+      logger.error('translation', 'Failed to get statistics:', error)
+      // Return empty structure on error
+      return {
+        locales: [],
+        totalKeys: 0,
+        completeness: {}
+      }
+    }
+  }
+
+  /**
    * Get translation statistics with key counts (optimized)
    */
   async getTranslationStats(): Promise<any> {
@@ -618,7 +665,7 @@ class TranslationService {
           }
 
         } catch (error) {
-          result.errors.push(`Error processing ${key}: ${error.message}`)
+          result.errors.push(`Error processing ${key}: ${error instanceof Error ? error.message : String(error)}`)
         }
         
         // Update progress
@@ -629,7 +676,7 @@ class TranslationService {
       }
 
     } catch (error) {
-      result.errors.push(`Import failed: ${error.message}`)
+      result.errors.push(`Import failed: ${error instanceof Error ? error.message : String(error)}`)
     }
 
     return result
@@ -733,12 +780,12 @@ class TranslationService {
             })
             result.translations_created++
           } catch (error) {
-            result.errors.push(`Failed to save translation for ${item.key.key}: ${error.message}`)
+            result.errors.push(`Failed to save translation for ${item.key.key}: ${error instanceof Error ? error.message : String(error)}`)
           }
         }
       }
     } catch (error) {
-      result.errors.push(`Batch translation failed: ${error.message}`)
+      result.errors.push(`Batch translation failed: ${error instanceof Error ? error.message : String(error)}`)
     }
 
     return result
@@ -786,12 +833,12 @@ class TranslationService {
           result.translations_created++
 
         } catch (error) {
-          result.errors.push(`Error translating ${key.key}: ${error.message}`)
+          result.errors.push(`Error translating ${key.key}: ${error instanceof Error ? error.message : String(error)}`)
         }
       }
 
     } catch (error) {
-      result.errors.push(`Auto-translation failed: ${error.message}`)
+      result.errors.push(`Auto-translation failed: ${error instanceof Error ? error.message : String(error)}`)
     }
 
     return result

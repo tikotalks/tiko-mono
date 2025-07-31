@@ -81,6 +81,3 @@ import { SupabaseUserService } from './user-supabase.service'
 
 // Export singleton instance
 export const userService: UserService = new SupabaseUserService()
-
-// Export types
-export type { UserProfile, UserStats }
