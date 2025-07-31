@@ -15,6 +15,24 @@ export interface TAuthWrapperProps {
    * @default 'todo'
    */
   appName?: string
+  
+  /**
+   * Whether the app is an application (true) or website (false)
+   * @default true
+   */
+  isApp?: boolean
+  
+  /**
+   * Whether authentication is required
+   * @default true
+   */
+  requireAuth?: boolean
+  
+  /**
+   * Whether to show the splash screen
+   * @default true
+   */
+  showSplashScreen?: boolean
 }
 
 export interface TAuthWrapperSlots {

@@ -10,7 +10,7 @@
     </div>
   <!-- Loading State with Splash Screen -->
     <TSplashScreen
-      v-if="isInitializing"
+      v-if="isInitializing && showSplashScreen"
       :app-name="splashConfig.appName"
       :app-icon="splashConfig.iconPath"
       :theme="splashConfig.theme"
@@ -25,7 +25,7 @@
 
     <!-- Login Form within App Layout -->
     <TAppLayout
-      v-else-if="!isAuthenticated && !isAuthCallbackRoute"
+      v-else-if="requireAuth && !isAuthenticated && !isAuthCallbackRoute && !isInitializing"
       :title="t(keys.auth.welcomeToTiko)"
       :subtitle="t(keys.auth.signInToAccess)"
       :showHeader="false"
@@ -48,8 +48,8 @@
       </div>
     </TAppLayout>
 
-    <!-- Authenticated Content or Auth Callback Route -->
-    <div v-else :class="bemm('app')" data-cy="authenticated-content">
+    <!-- Authenticated Content or Auth Callback Route or No Auth Required -->
+    <div v-else-if="!isInitializing" :class="bemm('app')" data-cy="authenticated-content">
       <slot />
     </div>
   </div>
@@ -71,7 +71,10 @@ import type { TAuthWrapperProps } from './TAuthWrapper.model'
 const props = withDefaults(defineProps<TAuthWrapperProps>(), {
   backgroundImage: '',
   title: 'Welcome to Tiko',
-  appName: 'todo'
+  appName: 'todo',
+  isApp: true,
+  requireAuth: true,
+  showSplashScreen: true
 })
 
 // BEM classes
@@ -202,6 +205,12 @@ const handleSplashComplete = () => {
 
 // Initialize authentication
 onMounted(async () => {
+  // If auth is not required and splash screen is not needed, skip initialization
+  if (!props.requireAuth && !props.showSplashScreen) {
+    isInitializing.value = false;
+    return;
+  }
+
   // Check if we're returning from auth callback or if there's already a session
   const isReturningFromAuth = document.referrer.includes('/auth/callback') ||
                               window.location.search.includes('from=auth') ||
@@ -227,8 +236,8 @@ onMounted(async () => {
 
   // Auth context determined
 
-  // Skip splash screen if returning from auth with a valid session
-  const shouldSkipSplash = isReturningFromAuth && hasExistingSession;
+  // Skip splash screen if returning from auth with a valid session or if splash screen is disabled
+  const shouldSkipSplash = (isReturningFromAuth && hasExistingSession) || !props.showSplashScreen;
 
   const minDisplayTime = shouldSkipSplash ? 0 : 2000; // Show splash for at least 2 seconds unless skipping
   const maxDisplayTime = 5000; // Maximum time to show splash screen
@@ -246,33 +255,38 @@ onMounted(async () => {
   }, shouldSkipSplash ? 100 : maxDisplayTime); // Short timeout if skipping
 
   try {
-    // Try to initialize auth store if it wasn't available during setup
-    if (!authStore) {
-      try {
-        authStore = useAuthStore();
-        console.log('[TAuthWrapper] Auth store initialized in onMounted');
-      } catch (e: any) {
-        console.error('[TAuthWrapper] Still cannot initialize auth store:', e.message);
-        throw new Error('Auth store initialization failed');
+    // Only initialize auth if it's required
+    if (props.requireAuth) {
+      // Try to initialize auth store if it wasn't available during setup
+      if (!authStore) {
+        try {
+          authStore = useAuthStore();
+          console.log('[TAuthWrapper] Auth store initialized in onMounted');
+        } catch (e: any) {
+          console.error('[TAuthWrapper] Still cannot initialize auth store:', e.message);
+          throw new Error('Auth store initialization failed');
+        }
       }
-    }
 
-    // Only proceed if we have a valid auth store
-    if (authStore) {
-      // Set up auth state listener
-      authStore.setupAuthListener();
+      // Only proceed if we have a valid auth store
+      if (authStore) {
+        // Set up auth state listener
+        authStore.setupAuthListener();
 
-      // Try to restore session
-      await authStore.initializeFromStorage();
+        // Try to restore session
+        await authStore.initializeFromStorage();
 
-      // Auth initialization complete
-      if (authStore.isAuthenticated) {
-        console.log('[TAuthWrapper] ✅ User is authenticated');
+        // Auth initialization complete
+        if (authStore.isAuthenticated) {
+          console.log('[TAuthWrapper] ✅ User is authenticated');
+        } else {
+          console.log('[TAuthWrapper] ℹ️ User is not authenticated');
+        }
       } else {
-        console.log('[TAuthWrapper] ℹ️ User is not authenticated');
+        console.warn('[TAuthWrapper] No auth store available, skipping auth initialization');
       }
     } else {
-      console.warn('[TAuthWrapper] No auth store available, skipping auth initialization');
+      console.log('[TAuthWrapper] Auth not required, skipping initialization');
     }
   } catch (error: any) {
     console.error('[TAuthWrapper] ❌ Failed to initialize auth:', error);

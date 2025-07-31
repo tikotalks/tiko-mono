@@ -5,6 +5,8 @@
       :title="tikoConfig?.name"
       :is-app="isApp"
       :app-name="tikoConfig?.id"
+      :require-auth="requireAuth"
+      :show-splash-screen="showSplashScreen"
     >
       <TAppLayout
         :title="displayTitle"
@@ -67,7 +69,9 @@ import type { Locale } from '../../i18n/types'
 
 const props = withDefaults(defineProps<TFrameworkProps>(), {
   loading: false,
-  isApp: true
+  isApp: true,
+  requireAuth: true,
+  showSplashScreen: true
 })
 
 const emit = defineEmits<TFrameworkEmits>()

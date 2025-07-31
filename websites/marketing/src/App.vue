@@ -1,14 +1,33 @@
 <template>
   <TFramework 
-    :app-name="'marketing'" 
-    :show-user="false"
+    :config="frameworkConfig"
     :require-auth="false"
-    :theme="'light'"
+    :show-splash-screen="false"
+    :is-app="false"
   >
     <router-view />
   </TFramework>
 </template>
 
 <script setup lang="ts">
-import { TFramework } from '@tiko/ui'
+import { TFramework, type FrameworkConfig } from '@tiko/ui'
+
+const frameworkConfig: FrameworkConfig = {
+  id: 'marketing',
+  name: 'Tiko Marketing',
+  isApp: false,
+  theme: {
+    primary: 'indigo',
+    mode: 'light'
+  },
+  topBar: {
+    showUser: false,
+    showTitle: false,
+    showSubtitle: false,
+    showCurrentRoute: false
+  },
+  settings: {
+    enabled: false
+  }
+}
 </script>

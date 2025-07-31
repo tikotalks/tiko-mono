@@ -31,6 +31,8 @@ export interface TFrameworkProps {
   backgroundImage?: string
   loading?: boolean
   isApp?: boolean
+  requireAuth?: boolean
+  showSplashScreen?: boolean
 }
 
 export interface TFrameworkEmits {
