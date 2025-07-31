@@ -11,7 +11,7 @@
           :icon="Icons.EDIT_M"
           color="secondary"
         >
-          {{ t('admin.i18n.languages.addKey') }}
+          {{ t('admin.i18n.addKey') }}
         </TButton>
         <TButton
           @click="showAddLanguageDialog = true"
@@ -23,12 +23,11 @@
         <TButton
           @click="forceReloadI18n"
           :icon="Icons.ARROW_RELOAD_DOWN_UP"
-          color="warning"
           :loading="reloadingI18n"
-        >
-          {{ t('admin.i18n.languages.forceReload', 'Force Reload i18n') }}
-        </TButton>
-      </TButtonGroup>
+          :type="'icon-only'"
+          :tooltip="t('admin.i18n.languages.forceReload')"
+        />
+           </TButtonGroup>
     </div>
 
     <!-- Languages List -->
@@ -64,37 +63,37 @@
         :columns="[
           {
             key: 'code',
-            label: t('admin.i18n.languages.code', 'Code'),
+            label: t('common.code'),
             width: '10%',
             sortable: true,
           },
           {
             key: 'name',
-            label: t('admin.i18n.languages.name', 'Language'),
+            label: t('common.name'),
             width: '20%',
             sortable: true,
           },
           {
             key: 'native_name',
-            label: t('admin.i18n.languages.nativeName', 'Native Name'),
+            label: t('common.nativeName'),
             width: '20%',
             sortable: true,
           },
           {
             key: 'coverage',
-            label: t('admin.i18n.languages.coverage', 'Coverage'),
+            label: t('common.coverage'),
             width: '25%',
             sortable: true,
           },
           {
             key: 'status',
-            label: t('admin.i18n.languages.status', 'Status'),
+            label: t('common.status'),
             width: '10%',
             sortable: true,
           },
           {
             key: 'actions',
-            label: t('admin.i18n.languages.actions', 'Actions'),
+            label: t('common.actions'),
             width: '15%',
           },
         ]"
@@ -119,14 +118,11 @@
           />
           <TListCell key="coverage" type="custom">
             <div :class="bemm('coverage')">
-              <span :class="bemm('coverage-text')">
-                {{ language.translationCount || 0 }} / {{ totalKeys }} ({{
-                  language.coveragePercent
-                }}%)
-              </span>
               <TProgressBar
                 :value="language.coveragePercent || 0"
                 :class="bemm('coverage-progress')"
+                :showPercentage="true"
+                :prefix="`${language.translationCount || 0 } / ${totalKeys}`"
                 size="small"
                 :color="getCoverageColor(language.coveragePercent)"
               />
@@ -273,6 +269,7 @@ import {
   TPopupWrapper,
   TProgressBar,
   TChip,
+  Colors
 } from '@tiko/ui';
 import type { PopupService, ToastService, TranslationKeyData } from '@tiko/ui';
 import { Icons } from 'open-icon';
@@ -464,10 +461,10 @@ async function loadLanguages() {
   }
 }
 
-function getCoverageColor(percent: number): string {
-  if (percent >= 90) return 'success';
-  if (percent >= 70) return 'warning';
-  return 'error';
+function getCoverageColor(percent: number): Colors {
+  if (percent >= 90) return Colors.SUCCESS;
+  if (percent >= 70) return Colors.WARNING;
+  return Colors.ERROR;
 }
 
 function uploadForLanguage(language: Language) {
@@ -645,31 +642,31 @@ async function handleSaveKey(data: TranslationKeyData) {
 // Force reload i18n translations
 async function forceReloadI18n() {
   reloadingI18n.value = true;
-  
+
   try {
     console.log('Forcing i18n reload...');
-    
+
     // Clear and reload translations cache
     await refreshTranslations();
-    
+
     // Small delay to ensure the store has updated
     await new Promise(resolve => setTimeout(resolve, 100));
-    
+
     // Reload languages to show updated coverage
     await loadLanguages();
-    
+
     // Force Vue to re-render by updating a reactive value
     // This ensures the UI picks up the new translations
     const currentLocale = locale.value;
     console.log('Current locale after refresh:', currentLocale);
-    
+
     // Show success message
     toastService?.show({
       message: t('admin.i18n.languages.reloadSuccess') || 'i18n translations reloaded successfully',
       type: 'success',
       duration: 3000
     });
-    
+
     console.log('i18n reload completed successfully');
   } catch (error: any) {
     console.error('Failed to reload i18n:', error);
@@ -728,7 +725,7 @@ onMounted(() => {
   }
 
   &__coverage-text {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-s);
     color: var(--color-foreground-secondary);
   }
 

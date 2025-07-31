@@ -8,6 +8,7 @@ import UploadView from '../views/UploadView.vue'
 import UsersView from '../views/UsersView.vue'
 import I18nTranslationAdminView from '../views/i18n/AdminView.vue'
 import I18nDatabaseView from '../views/i18n/DatabaseView.vue'
+import I18nImportView from '../views/i18n/ImportView.vue'
 import I18nKeysView from '../views/i18n/KeysView.vue'
 import I18nLanguagesView from '../views/i18n/LanguagesView.vue'
 import I18nLanguageDetailView from '../views/i18n/DetailView.vue'
@@ -57,6 +58,11 @@ const router = createAppRouter({
           path: 'i18n/database',
           name: 'I18nDatabase',
           component: I18nDatabaseView
+        },
+        {
+          path: 'i18n/import',
+          name: 'I18nImport',
+          component: I18nImportView
         },
         {
           path: 'i18n/keys',

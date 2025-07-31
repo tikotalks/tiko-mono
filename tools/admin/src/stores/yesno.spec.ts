@@ -74,6 +74,7 @@ describe('useYesNoStore', () => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         is_favorite: false,
+        order_index: 0,
         metadata: {}
       }
     ])

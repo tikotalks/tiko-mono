@@ -37,6 +37,16 @@
                   <TIcon :name="subItem.icon" />
                   <span>{{ subItem.label }}</span>
                 </router-link>
+                <a
+                  v-else-if="subItem.action"
+                  @click="subItem.action"
+                  :class="bemm('nav-link', ['', 'action'])"
+                  href="#"
+                  @click.prevent
+                >
+                  <TIcon :name="subItem.icon" />
+                  <span>{{ subItem.label }}</span>
+                </a>
               </li>
             </ul>
           </li>
@@ -58,16 +68,18 @@
 import { inject } from 'vue';
 import { useBemm } from 'bemm';
 import { Icons } from 'open-icon';
-import { useI18n, TIcon, TStatusBar } from '@tiko/ui';
-import { useUpload } from '@tiko/core';
+import { useI18n, TIcon, TStatusBar, AddTranslationKeyDialog } from '@tiko/ui';
+import { useUpload, useI18nDatabaseService } from '@tiko/core';
 import { uploadService } from '../services/upload.service';
-import type { ToastService } from '@tiko/ui';
+import type { ToastService, PopupService } from '@tiko/ui';
 import UploadStatus from '../components/UploadStatus.vue';
 
 const { keys, t } = useI18n();
 
 const bemm = useBemm('admin-layout');
 const toastService = inject<ToastService>('toastService');
+const popupService = inject<PopupService>('popupService');
+const translationService = useI18nDatabaseService();
 
 // Initialize upload composable with service
 const { hasItems } = useUpload(uploadService, toastService);
@@ -78,6 +90,57 @@ interface NavigationItem {
   icon: string;
   label: string;
   items?: NavigationItem[];
+  action?: () => void;
+}
+
+// Function to open Add Key dialog
+function openAddKeyDialog() {
+  if (!popupService) {
+    console.error('PopupService not available');
+    return;
+  }
+
+  popupService.open({
+    component: AddTranslationKeyDialog,
+    title: t('admin.i18n.addKey.title'),
+    props: {
+      mode: 'create',
+      onSave: async (data) => {
+        try {
+          // Create the key
+          const key = await translationService.createTranslationKey({
+            key: data.key,
+            category: data.category,
+            description: data.description,
+          });
+
+          // Create translations for each language
+          for (const [localeCode, value] of Object.entries(data.translations)) {
+            if (value) {
+              await translationService.createTranslation({
+                key_id: key.id,
+                language_code: localeCode,
+                value: value as string,
+                is_published: true,
+                notes: 'Created via admin interface',
+              });
+            }
+          }
+
+          toastService?.show({
+            message: t('admin.i18n.addKey.success'),
+            type: 'success',
+          });
+        } catch (error) {
+          console.error('Failed to create translation key:', error);
+          toastService?.show({
+            message: t('admin.i18n.addKey.error'),
+            type: 'error',
+          });
+        }
+      },
+    },
+  });
 }
 
 const navigationItems: NavigationItem[] = [
@@ -119,10 +182,22 @@ const navigationItems: NavigationItem[] = [
     label: t('admin.navigation.i18n.title'),
     items: [
       {
+        name: 'i18n-add-key',
+        icon: Icons.ADD,
+        label: t('admin.navigation.i18n.addKey'),
+        action: openAddKeyDialog,
+      },
+      {
         name: 'i18n-database',
         to: { name: 'I18nDatabase' },
         icon: Icons.FILE_CLOUD,
         label: t('admin.navigation.i18nDatabase'),
+      },
+      {
+        name: 'i18n-import',
+        to: { name: 'I18nImport' },
+        icon: Icons.UPLOAD,
+        label: t('admin.navigation.i18n.import'),
       },
       {
         name: 'i18n-languages',
@@ -197,8 +272,9 @@ const navigationItems: NavigationItem[] = [
     border-radius: 4px;
     transition: background-color 0.2s;
     gap: var(--space-xs);
+    cursor: pointer;
 
-    &:hover:not(.nav-link--header) {
+    &:hover:not(.admin-layout__nav-link--header) {
       background-color: var(--color-primary);
     }
 
@@ -206,6 +282,15 @@ const navigationItems: NavigationItem[] = [
       font-weight: 600;
       cursor: default;
       opacity: 0.8;
+    }
+
+    &--action {
+      border: 1px dashed var(--color-primary);
+
+      &:hover {
+        background-color: var(--color-primary);
+        border-style: solid;
+      }
     }
 
     &.router-link-exact-active {

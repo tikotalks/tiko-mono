@@ -6,6 +6,16 @@
         <p>{{ t('admin.i18n.database.description') }}</p>
       </div>
       <div :class="bemm('header-actions')">
+        <TButton @click="openAddKeyDialog" :icon="Icons.ADD" color="primary">
+          {{ t('admin.i18n.database.addKey') }}
+        </TButton>
+        <TButton
+          @click="router.push({ name: 'I18nImport' })"
+          :icon="Icons.UPLOAD"
+          type="outline"
+        >
+          {{ t('admin.i18n.database.importTranslations') }}
+        </TButton>
         <TButton
           @click="router.push({ name: 'I18nLanguages' })"
           :icon="Icons.SPEECH_BALLOON"
@@ -16,68 +26,56 @@
       </div>
     </div>
 
-    <!-- Upload Section -->
-    <div :class="bemm('upload-section')">
-      <h2>{{ t('admin.i18n.database.upload.title') }}</h2>
-      <div :class="bemm('upload-box')">
-        <input
-          type="file"
-          accept=".json"
-          @change="handleFileUpload"
-          :class="bemm('upload-input')"
-          ref="fileInput"
-        />
-        <TButton
-          @click="$refs.fileInput.click()"
-          :icon="Icons.UPLOAD"
-          color="primary"
-        >
-          {{ t('admin.i18n.database.upload.button') }}
-        </TButton>
-        <p :class="bemm('upload-help')">
-          {{ t('admin.i18n.database.upload.help') }}
-        </p>
-      </div>
-
-      <!-- Upload Progress -->
-      <div v-if="uploadStatus" :class="bemm('upload-status')">
-        <p>{{ uploadStatus }}</p>
-        <TProgressBar v-if="uploadProgress > 0" :value="uploadProgress" />
-      </div>
-    </div>
-
     <!-- Stats Section -->
-    <TKeyValue :class="bemm('stats')" :items="[
-      { key: t('admin.i18n.database.stats.totalKeys'), value: stats.totalKeys },
-      { key: t('admin.i18n.database.stats.totalLanguages'), value: stats.totalLanguages },
-      { key: t('admin.i18n.database.stats.totalTranslations'), value: stats.totalTranslations }
-    ]" />
+    <TKeyValue
+      :class="bemm('stats')"
+      :items="[
+        {
+          key: t('admin.i18n.database.stats.totalKeys'),
+          value: stats.totalKeys,
+        },
+        {
+          key: t('admin.i18n.database.stats.totalLanguages'),
+          value: stats.totalLanguages,
+        },
+        {
+          key: t('admin.i18n.database.stats.totalTranslations'),
+          value: stats.totalTranslations,
+        },
+      ]"
+    />
     <!-- Keys List -->
     <div :class="bemm('keys-section')">
-
-
       <!-- Keys List -->
       <TList
         :columns="[
-          { key: 'key', label: t('admin.i18n.database.keys.key'), width: '40%' },
-          { key: 'category', label: t('admin.i18n.database.keys.category'), width: '20%' },
-          { key: 'description', label: t('admin.i18n.database.keys.description'), width: '25%' },
-          { key: 'translations', label: t('admin.i18n.database.keys.translations'), width: '15%' }
+          { key: 'key', label: t('common.key'), width: '40%', sortable: true },
+          { key: 'category', label: t('common.category'), width: '20%', sortable: true },
+          { key: 'description', label: t('common.description'), width: '25%', sortable: true },
+          {
+            key: 'translations',
+            label: t('common.translations'),
+            width: '15%',
+            sortable: true
+          },
         ]"
         :striped="true"
         :bordered="true"
         :hover="true"
+        :sortBy="sortBy"
+        :sortDirection="sortDirection"
+        @sort="handleSort"
       >
         <template #header>
-          <h4>{{ t('admin.i18n.database.keys.title') }}</h4>
+          <h4>{{ t('admin.i18n.database.keys.title')}}</h4>
 
-<!-- Search -->
-<TInputText
-  v-model="searchQuery"
-  :placeholder="t('admin.i18n.database.keys.search')"
-  :icon="Icons.SEARCH_M"
-  :class="bemm('search')"
-/>
+          <!-- Search -->
+          <TInputText
+            v-model="searchQuery"
+            :placeholder="t('common.search')"
+            :icon="Icons.SEARCH_M"
+            :class="bemm('search')"
+          />
         </template>
         <TListItem
           v-for="key in filteredKeys"
@@ -85,7 +83,11 @@
           :clickable="true"
           @click="viewKeyDetails(key)"
         >
-          <TListCell type="text" :content="key.key" />
+          <TListCell type="custom">
+            <span class="id">
+              {{ key.key }}
+            </span>
+          </TListCell>
           <TListCell type="custom">
             <span :class="bemm('category-badge')">
               {{ key.category || '-' }}
@@ -120,170 +122,236 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, inject } from 'vue'
-import { useRouter } from 'vue-router'
-import { useBemm } from 'bemm'
-import { Icons } from 'open-icon'
+import { ref, computed, onMounted, inject, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
+import { useBemm } from 'bemm';
+import { Icons } from 'open-icon';
 
-import { TButton, TInputText, TList, TListItem,TListCell, TProgressBar, useI18n, TKeyValue, AddTranslationKeyDialog, ToastService } from '@tiko/ui'
-import { useI18nDatabaseService } from '@tiko/core'
+import {
+  TButton,
+  TInputText,
+  TList,
+  TListItem,
+  TListCell,
+  TText,
+  useI18n,
+  TKeyValue,
+  AddTranslationKeyDialog,
+  ToastService,
+} from '@tiko/ui';
+import { useI18nDatabaseService, useUserPreferences, USER_PREFERENCE_KEYS } from '@tiko/core';
 
-import type { I18nKey } from '../../types/i18n.types'
-import type { PopupService } from '@tiko/ui'
+import type { I18nKey } from '../../types/i18n.types';
+import type { PopupService } from '@tiko/ui';
 
-const bemm = useBemm('i18n-database-view')
-const { t } = useI18n()
-const router = useRouter()
-const translationService = useI18nDatabaseService()
-const popupService = inject<PopupService>('popupService')
-const toastService = inject<ToastService>('toastService')
+const bemm = useBemm('i18n-database-view');
+const { t } = useI18n();
+const router = useRouter();
+const translationService = useI18nDatabaseService();
+const popupService = inject<PopupService>('popupService');
+const toastService = inject<ToastService>('toastService');
+const { getListPreferences, updateListPreferences, loadPreferences } = useUserPreferences();
 
 // Data
-const keys = ref<I18nKey[]>([])
-const searchQuery = ref('')
-const uploadStatus = ref('')
-const uploadProgress = ref(0)
-const fileInput = ref<HTMLInputElement>()
-const loading = ref(false)
+const keys = ref<I18nKey[]>([]);
+const searchQuery = ref('');
+const loading = ref(false);
+const sortBy = ref('key');
+const sortDirection = ref<'asc' | 'desc'>('asc');
 
 // Stats
 const stats = ref({
   totalKeys: 0,
   totalLanguages: 0,
-  totalTranslations: 0
-})
+  totalTranslations: 0,
+});
 
 // Computed
 const filteredKeys = computed(() => {
-  if (!searchQuery.value) return keys.value
+  let result = keys.value;
 
-  const query = searchQuery.value.toLowerCase()
-  return keys.value.filter(key =>
-    key.key.toLowerCase().includes(query) ||
-    key.category?.toLowerCase().includes(query) ||
-    key.description?.toLowerCase().includes(query)
-  )
-})
+  // Apply search filter
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase();
+    result = result.filter(
+      (key) =>
+        key.key.toLowerCase().includes(query) ||
+        key.category?.toLowerCase().includes(query) ||
+        key.description?.toLowerCase().includes(query),
+    );
+  }
+
+  // Apply sorting
+  if (sortBy.value) {
+    result = [...result].sort((a, b) => {
+      let aVal = a[sortBy.value] || '';
+      let bVal = b[sortBy.value] || '';
+
+      // Handle translation count separately
+      if (sortBy.value === 'translations') {
+        aVal = a.translationCount || 0;
+        bVal = b.translationCount || 0;
+      }
+
+      // Convert to strings for comparison
+      aVal = String(aVal).toLowerCase();
+      bVal = String(bVal).toLowerCase();
+
+      if (sortDirection.value === 'asc') {
+        return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+      } else {
+        return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
+      }
+    });
+  }
+
+  return result;
+});
 
 // Methods
+function handleSort(column: string, direction: 'asc' | 'desc') {
+  sortBy.value = column;
+  sortDirection.value = direction;
+
+  // Save preferences
+  updateListPreferences(USER_PREFERENCE_KEYS.LISTS.I18N_DATABASE_KEYS, {
+    sortBy: column,
+    sortDirection: direction
+  });
+}
+
 async function loadKeys() {
-  loading.value = true
+  loading.value = true;
   try {
     // Get keys with translation counts in a single optimized query
-    const data = await translationService.getKeysWithTranslationCounts()
-    keys.value = data.map(key => ({
+    const data = await translationService.getKeysWithTranslationCounts();
+    keys.value = data.map((key) => ({
       ...key,
-      translationCount: key.translation_count || 0
-    }))
+      translationCount: key.translation_count || 0,
+    }));
 
     // Load other stats
-    await loadStats()
+    await loadStats();
   } catch (error) {
-    console.error('Failed to load keys:', error)
+    console.error('Failed to load keys:', error);
     // Check if it's an auth error
     if (error.message.includes('401')) {
-      uploadStatus.value = t('admin.i18n.database.authError', 'Please make sure you are logged in and have the necessary permissions.')
+      uploadStatus.value = t(
+        'admin.i18n.database.authError',
+        'Please make sure you are logged in and have the necessary permissions.',
+      );
     } else if (error.message.includes('404')) {
-      uploadStatus.value = t('admin.i18n.database.tablesNotFound', 'Translation tables not found. Please run the database migration.')
+      uploadStatus.value = t(
+        'admin.i18n.database.tablesNotFound',
+        'Translation tables not found. Please run the database migration.',
+      );
     } else {
-      uploadStatus.value = t('admin.i18n.database.loadError', 'Failed to load translation keys: {error}', { error: error.message })
+      uploadStatus.value = t(
+        'admin.i18n.database.loadError',
+        'Failed to load translation keys: {error}',
+        { error: error.message },
+      );
     }
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 async function loadStats() {
   try {
     // Only load languages, we already have the translation counts
-    const languages = await translationService.getLanguages()
+    const languages = await translationService.getLanguages();
 
     // Calculate total translations from the keys we already loaded
-    const totalTranslations = keys.value.reduce((sum, key) => sum + (key.translationCount || 0), 0)
+    const totalTranslations = keys.value.reduce(
+      (sum, key) => sum + (key.translationCount || 0),
+      0,
+    );
 
     stats.value = {
       totalKeys: keys.value.length,
-      totalLanguages: languages.filter(l => l.is_active).length,
-      totalTranslations
-    }
+      totalLanguages: languages.filter((l) => l.is_active).length,
+      totalTranslations,
+    };
   } catch (error) {
-    console.error('Failed to load stats:', error)
+    console.error('Failed to load stats:', error);
   }
 }
 
-async function handleFileUpload(event: Event) {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-
-  if (!file) return
-
-  try {
-    uploadStatus.value = t('admin.i18n.database.upload.reading')
-    uploadProgress.value = 10
-
-    const text = await file.text()
-    const data = JSON.parse(text)
-
-    uploadStatus.value = t('admin.i18n.database.upload.processing')
-    uploadProgress.value = 30
-
-    // Detect language code from filename (e.g., en.json, en-GB.json)
-    const languageCode = file.name.replace('.json', '')
-
-    // Check if language exists, create if not
-    const languages = await translationService.getLanguages()
-    const languageExists = languages.some(l => l.code === languageCode)
-
-    if (!languageExists) {
-      uploadStatus.value = t('admin.i18n.database.upload.creatingLanguage', 'Creating language: {code}', { code: languageCode })
-      await translationService.createLanguage({
-        code: languageCode,
-        name: languageCode === 'en' ? 'English' : languageCode === 'fr' ? 'French' : languageCode,
-        is_active: true
-      })
-      uploadProgress.value = 40
-    }
-
-    // Import the translations
-    const result = await translationService.importTranslations(languageCode, data, {
-      onProgress: (progress) => {
-        uploadProgress.value = 40 + (progress * 0.6)
-      }
-    })
-
-    uploadStatus.value = t('admin.i18n.database.upload.success', {
-      count: result.importedCount,
-      language: languageCode
-    })
-    uploadProgress.value = 100
-
-    // Reload data
-    await loadKeys()
-
-    // Clear status after 5 seconds
-    setTimeout(() => {
-      uploadStatus.value = ''
-      uploadProgress.value = 0
-    }, 5000)
-
-  } catch (error) {
-    console.error('Upload failed:', error)
-    uploadStatus.value = t('admin.i18n.database.upload.error', {
-      error: error.message
-    })
-    uploadProgress.value = 0
+// Open Add Key Dialog
+function openAddKeyDialog() {
+  if (!popupService) {
+    console.error('PopupService not available');
+    return;
   }
 
-  // Clear file input
-  target.value = ''
+  popupService.open({
+    component: AddTranslationKeyDialog,
+    props: {
+      mode: 'create',
+      title: t('admin.i18n.addKey.title'),
+      onSave: async (data) => {
+        try {
+          // Create the key
+          const key = await translationService.createTranslationKey({
+            key: data.key,
+            category: data.category,
+            description: data.description,
+          });
+
+          // Create translations for each language
+          for (const [localeCode, value] of Object.entries(data.translations)) {
+            if (value) {
+              await translationService.createTranslation({
+                key_id: key.id,
+                language_code: localeCode,
+                value: value as string,
+                is_published: true,
+                notes: 'Created via admin interface',
+              });
+            }
+          }
+
+          toastService?.show({
+            message: t('admin.i18n.addKey.success'),
+            type: 'success',
+          });
+
+          // Reload keys to show the new one
+          await loadKeys();
+        } catch (error) {
+          console.error('Failed to create translation key:', error);
+          toastService?.show({
+            message: t('admin.i18n.addKey.error'),
+            type: 'error',
+          });
+        }
+      },
+    },
+  });
 }
 
 // View key details
-function viewKeyDetails(key: I18nKey) {
+async function viewKeyDetails(key: I18nKey) {
+  console.log('viewKeyDetails called with key:', key);
+
   if (!popupService) {
-    console.error('PopupService not available')
-    return
+    console.error('PopupService not available');
+    return;
   }
+
+  console.log('Opening popup with props:', {
+    mode: 'edit',
+    editKey: {
+      id: key.id,
+      key: key.key,
+      category: key.category,
+      description: key.description,
+    },
+  });
+
+  // Use nextTick to ensure proper timing
+  await nextTick();
 
   popupService.open({
     component: AddTranslationKeyDialog,
@@ -293,55 +361,77 @@ function viewKeyDetails(key: I18nKey) {
         id: key.id,
         key: key.key,
         category: key.category,
-        description: key.description
+        description: key.description,
       },
       title: t('admin.i18n.editKey.title'),
       onSave: async (data) => {
         try {
           // Update the key details if changed
-          if (data.category !== key.category || data.description !== key.description) {
+          if (
+            data.category !== key.category ||
+            data.description !== key.description
+          ) {
             await translationService.updateTranslationKey(key.id, {
               category: data.category,
-              description: data.description
-            })
+              description: data.description,
+            });
           }
 
           // Update translations
           for (const [localeCode, value] of Object.entries(data.translations)) {
             if (value) {
-              await translationService.saveTranslation(data.key, localeCode, value)
+              await translationService.createTranslation({
+                key_id: key.id,
+                language_code: localeCode,
+                value: value as string,
+                is_published: true,
+                notes: 'Updated via admin interface',
+              });
             }
           }
 
           toastService?.show({
             message: t('admin.i18n.editKey.success'),
-            type: 'success'
-          })
+            type: 'success',
+          });
 
           // Reload keys to show updated data
-          await loadKeys()
+          await loadKeys();
         } catch (error) {
-          console.error('Failed to update translation key:', error)
+          console.error('Failed to update translation key:', error);
           toastService?.show({
             message: t('admin.i18n.editKey.error'),
-            type: 'error'
-          })
+            type: 'error',
+          });
         }
-      }
-    }
-  })
+      },
+    },
+  });
 }
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
   // Only load if we're on this page
   if (router.currentRoute.value.name === 'I18nDatabase') {
-    loadKeys().catch(error => {
-      console.error('Failed to load keys on mount:', error)
+    // Load user preferences first
+    await loadPreferences();
+
+    // Apply saved preferences
+    const savedPrefs = getListPreferences(USER_PREFERENCE_KEYS.LISTS.I18N_DATABASE_KEYS);
+    if (savedPrefs.sortBy) {
+      sortBy.value = savedPrefs.sortBy;
+    }
+    if (savedPrefs.sortDirection) {
+      sortDirection.value = savedPrefs.sortDirection;
+    }
+
+    // Then load keys
+    loadKeys().catch((error) => {
+      console.error('Failed to load keys on mount:', error);
       // Don't block the UI, just log the error
-    })
+    });
   }
-})
+});
 </script>
 
 <style lang="scss">
@@ -349,7 +439,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: var(--space);
-
 
   &__header {
     display: flex;
@@ -373,48 +462,6 @@ onMounted(() => {
     gap: var(--space);
   }
 
-  &__upload-section {
-    background: var(--color-background-secondary);
-    border-radius: var(--radius-lg);
-    padding: var(--space-lg);
-    margin-bottom: var(--space-xl);
-
-    h2 {
-      font-size: var(--font-size-lg);
-      margin-bottom: var(--space);
-    }
-  }
-
-  &__upload-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space);
-    padding: var(--space-lg);
-    border: 2px dashed var(--color-border);
-    border-radius: var(--radius);
-    background: var(--color-background);
-  }
-
-  &__upload-input {
-    display: none;
-  }
-
-  &__upload-help {
-    font-size: var(--font-size-sm);
-    color: var(--color-foreground-secondary);
-    text-align: center;
-  }
-
-  &__upload-status {
-    margin-top: var(--space);
-
-    p {
-      margin-bottom: var(--space-xs);
-      color: var(--color-foreground);
-    }
-  }
-
   &__stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -429,7 +476,7 @@ onMounted(() => {
     text-align: center;
 
     h3 {
-      font-size: var(--font-size-sm);
+      font-size: var(--font-size-s);
       color: var(--color-foreground-secondary);
       margin-bottom: var(--space-xs);
     }
@@ -463,7 +510,7 @@ onMounted(() => {
   }
 
   &__translation-count-text {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-s);
     color: var(--color-foreground-secondary);
   }
 
@@ -478,11 +525,11 @@ onMounted(() => {
     background: var(--color-primary-10);
     color: var(--color-primary);
     border-radius: var(--radius-sm);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-s);
   }
 
   &__translation-count {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-s);
     color: var(--color-foreground-secondary);
   }
 

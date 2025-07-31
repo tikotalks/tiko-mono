@@ -78,9 +78,9 @@
     <!-- Results Count -->
     <div :class="bemm('results-info')">
       <span v-if="searchQuery || filterMode !== 'all'">
-        {{ t('admin.i18n.language.showingResults', { 
-          shown: sortedTranslations.length, 
-          total: keys.length 
+        {{ t('admin.i18n.language.showingResults', {
+          shown: sortedTranslations.length,
+          total: keys.length
         }) || `Showing ${sortedTranslations.length} of ${keys.length}` }}
       </span>
       <span v-else>
@@ -119,10 +119,10 @@
           </TListCell>
           <TListCell key="key" type="custom">
             <div :class="bemm('key-cell')">
-              <span :class="bemm('key-text')">{{ item.key.key }}</span>
-              <span v-if="item.key.category" :class="bemm('key-category')">
+              <span :class="[bemm('key-text'),'id']">{{ item.key.key }}</span>
+              <!-- <span v-if="item.key.category" :class="bemm('key-category')">
                 {{ item.key.category }}
-              </span>
+              </span> -->
             </div>
           </TListCell>
           <TListCell key="value" type="custom">
@@ -196,9 +196,9 @@
             {{ t('admin.i18n.common.itemsSelected', { count: selectedCount }) || `${selectedCount} items selected` }}
           </span>
           <span :class="bemm('selection-filter-info')">
-            {{ t('admin.i18n.language.showingResults', { 
-              shown: sortedTranslations.length, 
-              total: keys.length 
+            {{ t('admin.i18n.language.showingResults', {
+              shown: sortedTranslations.length,
+              total: keys.length
             }) || `Showing ${sortedTranslations.length} of ${keys.length}` }}
           </span>
         </div>
@@ -207,8 +207,8 @@
           <TButtonGroup>
           <TButton
             size="small"
-            type="outline"
-            :icon="Icons.SPARKLE"
+            :color="Colors.SECONDARY"
+            :icon="Icons.STAR_L"
             @click="generateAITranslations"
             :loading="generatingAI"
             :disabled="selectedKeys.size === 0"
@@ -223,7 +223,7 @@
             @click="selectAll"
             v-if="selectedKeys.size < filteredTranslations.length"
           >
-            {{ t('admin.i18n.common.selectAll') }}
+            {{ t('common.selectAll') }}
           </TButton>
 
           <TButton
@@ -232,7 +232,7 @@
             :icon="Icons.MULTIPLY_M"
             @click="clearSelection"
           >
-            {{ t('admin.i18n.common.clearSelection') }}
+            {{ t('common.clearSelection') }}
           </TButton></TButtonGroup>
         </div>
       </div>
@@ -274,7 +274,7 @@
 import { ref, computed, onMounted, inject } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
-import { TPopupWrapper, useI18n, TButton, TList, TListCell, TListItem, TChip, TInputText, TInputSelect, TButtonGroup, TStatusBar, TIcon, TInputCheckbox, TKeyValue, i18nService } from '@tiko/ui'
+import { TPopupWrapper, useI18n, TButton, TList, TListCell, TListItem, TChip, TInputText, TInputSelect, TButtonGroup, TStatusBar, TIcon, TInputCheckbox, TKeyValue, i18nService, Colors } from '@tiko/ui'
 import type { ToastService, PopupService } from '@tiko/ui'
 import { Icons } from 'open-icon'
 import { useI18nDatabaseService, gptTranslationService } from '@tiko/core'
@@ -365,11 +365,11 @@ const hasSelectedMissingTranslations = computed(() => {
 // Sorted translations
 const sortedTranslations = computed(() => {
   const sorted = [...filteredTranslations.value]
-  
+
   sorted.sort((a, b) => {
     let aValue: any
     let bValue: any
-    
+
     switch (sortBy.value) {
       case 'key':
         aValue = a.key.key
@@ -383,12 +383,12 @@ const sortedTranslations = computed(() => {
         aValue = a.key.key
         bValue = b.key.key
     }
-    
+
     // String comparison
     const compareResult = String(aValue).localeCompare(String(bValue))
     return sortDirection.value === 'asc' ? compareResult : -compareResult
   })
-  
+
   return sorted
 })
 
@@ -477,7 +477,7 @@ async function saveTranslation(key: TranslationKey) {
     })
 
     cancelEdit()
-    
+
     // Refresh the global i18n cache so new translation is available immediately
     await refreshTranslations()
   } catch (error) {
@@ -534,7 +534,7 @@ async function autoTranslate(key: TranslationKey) {
       is_published: true, // Changed to match the created translation
       created_at: newTranslation.created_at || new Date().toISOString()
     })
-    
+
     // Refresh the global i18n cache so new translation is available immediately
     await refreshTranslations()
   } catch (error) {
@@ -686,7 +686,7 @@ async function generateAITranslations() {
 
   try {
     const selectedKeyIds = Array.from(selectedKeys.value)
-    
+
     if (selectedKeyIds.length === 0) return
 
     let successCount = 0
@@ -893,7 +893,7 @@ async function generateAITranslations() {
 
       // Reload data from database to get real IDs and ensure consistency
       await loadData()
-      
+
       // Refresh the global i18n cache so new translations are available immediately
       await refreshTranslations()
 
@@ -976,7 +976,7 @@ onMounted(() => {
 
   &__results-info {
     margin-bottom: var(--space);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-s);
     color: var(--color-foreground-secondary);
     font-weight: 500;
   }
@@ -995,7 +995,7 @@ onMounted(() => {
 
   &__key-text {
     font-family: var(--font-family-mono);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-s);
     color: var(--color-foreground);
   }
 
