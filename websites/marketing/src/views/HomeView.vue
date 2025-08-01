@@ -4,16 +4,15 @@
     <div v-if="loading" :class="bemm('loading')">
       <div :class="bemm('loading-spinner')"></div>
     </div>
-
-    <pre>
-      {{ pageData }}
-    </pre>
     <!-- Dynamic Sections -->
     <template v-if="!loading && pageData?.sections?.length">
+
       <SectionRenderer
         v-for="section in pageData.sections"
         :key="section.section.id"
         :section="section.section"
+        :content="section.content"
+        :show-debug="false"
       />
     </template>
 
@@ -45,13 +44,15 @@ async function loadContent() {
   try {
     loading.value = true
     error.value = null
-    
+
     // Get language code from locale (e.g., 'en-GB' -> 'en')
     const languageCode = locale.value.split('-')[0]
     console.log(`Loading page content for marketing project in ${languageCode}...`)
 
     // Try to get the home page for current language
-    const page = await content.getPage('home', languageCode)
+    // CRITICAL: skipCache=true to bypass cache and get fresh data from DB
+    console.log(`🏠 [HomeView] Loading fresh page data for 'home' in ${languageCode}...`)
+    const page = await content.getPage('home', languageCode, true)
     console.log('Page response:', page)
 
     if (page) {

@@ -168,6 +168,17 @@ class TranslationService {
   }
 
   /**
+   * Get translation keys by names
+   */
+  async getTranslationKeysByNames(keyNames: string[]): Promise<TranslationKey[]> {
+    if (keyNames.length === 0) return []
+    
+    // Escape and quote each key name for the query
+    const keyList = keyNames.map(k => `"${k.replace(/"/g, '""')}"`).join(',')
+    return this.makeRequest(`/i18n_keys?key=in.(${keyList})&order=key.asc`)
+  }
+
+  /**
    * Create a new translation key
    */
   async createTranslationKey(key: Omit<TranslationKey, 'id' | 'created_at'>): Promise<TranslationKey> {
@@ -179,6 +190,20 @@ class TranslationService {
       }
     })
     return Array.isArray(result) ? result[0] : result
+  }
+
+  /**
+   * Create multiple translation keys at once
+   */
+  async createTranslationKeysBatch(keys: Omit<TranslationKey, 'id' | 'created_at'>[]): Promise<TranslationKey[]> {
+    const result = await this.makeRequest('/i18n_keys', {
+      method: 'POST',
+      body: JSON.stringify(keys),
+      headers: {
+        'Prefer': 'return=representation'
+      }
+    })
+    return Array.isArray(result) ? result : [result]
   }
 
   /**
@@ -366,6 +391,84 @@ class TranslationService {
       }
     })
     return Array.isArray(result) ? result[0] : result
+  }
+
+  /**
+   * Create multiple translations at once
+   */
+  async createTranslationsBatch(translations: Array<{
+    key_id: number
+    language_code: string
+    value: string
+    is_published?: boolean
+    notes?: string
+  }>): Promise<Translation[]> {
+    const allResults: Translation[] = []
+    
+    // Process in very small batches to avoid PostgREST query parsing errors
+    const BATCH_SIZE = 10 // Smaller batch size for better reliability
+    
+    for (let i = 0; i < translations.length; i += BATCH_SIZE) {
+      const batch = translations.slice(i, i + BATCH_SIZE)
+      
+      // Get current versions for this batch - use simpler approach per key/language pair
+      const versionMap = new Map<string, number>()
+      
+      // Fetch versions for each key-language pair individually to avoid complex OR queries
+      for (const t of batch) {
+        try {
+          const existing = await this.makeRequest(
+            `/i18n_translations?key_id=eq.${t.key_id}&language_code=eq.${t.language_code}&order=version.desc&limit=1`
+          )
+          if (existing.length > 0) {
+            const mapKey = `${t.key_id}-${t.language_code}`
+            versionMap.set(mapKey, existing[0].version)
+          }
+        } catch (error) {
+          console.warn(`Failed to fetch version for key ${t.key_id}, language ${t.language_code}:`, error)
+          // Continue with version 1 for this translation
+        }
+      }
+
+      // Add versions to translations
+      const translationsWithVersions = batch.map(t => ({
+        ...t,
+        version: (versionMap.get(`${t.key_id}-${t.language_code}`) || 0) + 1
+      }))
+
+      try {
+        const result = await this.makeRequest('/i18n_translations', {
+          method: 'POST',
+          body: JSON.stringify(translationsWithVersions),
+          headers: {
+            'Prefer': 'return=representation'
+          }
+        })
+        
+        const batchResults = Array.isArray(result) ? result : [result]
+        allResults.push(...batchResults)
+      } catch (error) {
+        console.error('Failed to create translations batch:', error)
+        // Try individual inserts as fallback
+        for (const translation of translationsWithVersions) {
+          try {
+            const result = await this.makeRequest('/i18n_translations', {
+              method: 'POST',
+              body: JSON.stringify([translation]),
+              headers: {
+                'Prefer': 'return=representation'
+              }
+            })
+            const singleResult = Array.isArray(result) ? result : [result]
+            allResults.push(...singleResult)
+          } catch (singleError) {
+            console.error(`Failed to create single translation for key ${translation.key_id}, language ${translation.language_code}:`, singleError)
+          }
+        }
+      }
+    }
+    
+    return allResults
   }
 
   /**
@@ -884,6 +987,82 @@ class TranslationService {
       }
 
       current[keys[keys.length - 1]] = value
+    }
+
+    return result
+  }
+
+  /**
+   * Create multiple translation keys with their translations in a single batch operation
+   */
+  async createKeysWithTranslationsBatch(items: Array<{
+    key: string
+    category?: string
+    description?: string
+    translations: Record<string, string> // language_code -> value
+  }>): Promise<{
+    createdKeys: TranslationKey[]
+    createdTranslations: Translation[]
+    errors: string[]
+  }> {
+    const result = {
+      createdKeys: [] as TranslationKey[],
+      createdTranslations: [] as Translation[],
+      errors: [] as string[]
+    }
+
+    try {
+      // First, create all keys
+      const keysToCreate = items.map(item => ({
+        key: item.key,
+        category: item.category,
+        description: item.description
+      }))
+
+      const createdKeys = await this.createTranslationKeysBatch(keysToCreate)
+      result.createdKeys = createdKeys
+
+      // Map key strings to IDs
+      const keyIdMap = new Map<string, number>()
+      for (const key of createdKeys) {
+        keyIdMap.set(key.key, key.id)
+      }
+
+      // Prepare all translations
+      const translationsToCreate: Array<{
+        key_id: number
+        language_code: string
+        value: string
+        is_published?: boolean
+        notes?: string
+      }> = []
+
+      for (const item of items) {
+        const keyId = keyIdMap.get(item.key)
+        if (!keyId) {
+          result.errors.push(`Failed to get ID for key: ${item.key}`)
+          continue
+        }
+
+        for (const [languageCode, value] of Object.entries(item.translations)) {
+          if (value.trim()) {
+            translationsToCreate.push({
+              key_id: keyId,
+              language_code: languageCode,
+              value: value.trim(),
+              is_published: true
+            })
+          }
+        }
+      }
+
+      // Create all translations in batch
+      if (translationsToCreate.length > 0) {
+        const createdTranslations = await this.createTranslationsBatch(translationsToCreate)
+        result.createdTranslations = createdTranslations
+      }
+    } catch (error) {
+      result.errors.push(`Batch operation failed: ${error instanceof Error ? error.message : String(error)}`)
     }
 
     return result

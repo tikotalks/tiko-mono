@@ -5,7 +5,7 @@
         v-for="item in items"
         :key="item.id"
         :data-draggable-id="item.id"
-        :class="bemm('item', { 
+        :class="bemm('item', {
           dragging: draggedItem?.id === item.id,
           'drag-over': draggedOverItem?.id === item.id,
           disabled: !isEnabled
@@ -86,8 +86,8 @@ const handleTouchEnd = (event: TouchEvent) => {
     align-items: center;
     gap: var(--space-s);
     background-color: var(--color-background);
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius);
+    border: 1px solid var(--color-accent);
+    border-radius: var(--border-radius);
     padding: var(--space-s);
     transition: all 0.2s ease;
     user-select: none;

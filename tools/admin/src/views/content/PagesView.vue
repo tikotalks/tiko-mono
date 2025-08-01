@@ -17,7 +17,7 @@
       <template #inputs>
         <TInputSelect
           v-model="selectedProjectId"
-          :label="t('admin.content.pages.filterByProject')"
+          :label="t('filter.filterByProject')"
           :options="projectFilterOptions"
           :placeholder="t('admin.content.pages.allProjects')"
         />

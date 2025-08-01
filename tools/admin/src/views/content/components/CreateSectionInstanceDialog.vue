@@ -47,7 +47,7 @@
 
       <TFormGroup v-if="selectedTemplate">
         <TInputSelect
-          v-model="formData.language_code"
+          v-model="validatedLanguageCode"
           :label="t('admin.content.sections.language')"
           :options="languageOptions"
           :placeholder="t('admin.content.sections.languagePlaceholder')"
@@ -68,7 +68,7 @@
             <span>{{ getSectionTypeLabel(selectedTemplate.component_type) }}</span>
           </div>
           <div :class="bemm('template-detail')">
-            <span :class="bemm('label')">{{ t('admin.content.sections.reusable') }}:</span>
+            <span :class="bemm('label')">{{ t('common.reusable') }}:</span>
             <span>{{ selectedTemplate.is_reusable ? t('common.yes') : t('common.no') }}</span>
           </div>
           <div v-if="selectedTemplate.description" :class="bemm('template-detail')">
@@ -80,9 +80,9 @@
 
       <!-- Template Fields -->
       <div v-if="templateFields.length > 0" :class="bemm('template-fields')">
-        <h3>{{ t('admin.content.sections.fields') }}</h3>
-        <p :class="bemm('help-text')">{{ t('admin.content.sections.fieldsHelp') }}</p>
-        
+        <h3>{{ t('common.fields') }}</h3>
+        <p :class="bemm('help-text')">{{ t('common.fieldsHelp') }}</p>
+
         <div :class="bemm('fields-list')">
           <TFormGroup v-for="field in templateFields" :key="field.id">
             <!-- Text Field -->
@@ -93,7 +93,7 @@
               :placeholder="`Enter ${field.label.toLowerCase()}`"
               :required="field.is_required"
             />
-            
+
             <!-- Textarea Field -->
             <TTextArea
               v-else-if="field.field_type === 'textarea'"
@@ -103,7 +103,7 @@
               :required="field.is_required"
               :rows="3"
             />
-            
+
             <!-- Rich Text Field -->
             <!-- TODO: Replace with TRichTextEditor once TipTap dependencies are installed -->
             <TTextArea
@@ -114,7 +114,7 @@
               :required="field.is_required"
               :rows="5"
             />
-            
+
             <!-- Number Field -->
             <TInputText
               v-else-if="field.field_type === 'number'"
@@ -124,14 +124,14 @@
               :required="field.is_required"
               type="number"
             />
-            
+
             <!-- Boolean Field -->
             <TInputCheckbox
               v-else-if="field.field_type === 'boolean'"
               v-model="fieldValues[field.field_key]"
               :label="field.label"
             />
-            
+
             <!-- Select Field -->
             <TInputSelect
               v-else-if="field.field_type === 'select'"
@@ -142,6 +142,16 @@
               :required="field.is_required"
             />
             
+            <!-- Options Field -->
+            <TInputSelect
+              v-else-if="field.field_type === 'options'"
+              v-model="fieldValues[field.field_key]"
+              :label="field.label"
+              :options="getOptionsFromConfig(field)"
+              :placeholder="`Select ${field.label.toLowerCase()}`"
+              :required="field.is_required"
+            />
+
             <!-- Default Text for other field types -->
             <TInputText
               v-else
@@ -172,7 +182,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useBemm } from 'bemm'
 import {
   TButton,
@@ -186,10 +196,15 @@ import {
 import { contentService, translationService } from '@tiko/core'
 import type { SectionTemplate, ContentSection, Language, ContentField } from '@tiko/core'
 
+interface SectionWithData extends ContentSection {
+  fieldValues?: Record<string, any>
+}
+
 interface Props {
   templates?: SectionTemplate[]
-  section?: ContentSection
+  section?: SectionWithData
   mode?: 'create' | 'edit'
+  onSave?: (data: Omit<ContentSection, 'id' | 'created_at' | 'updated_at'>, fieldValues?: Record<string, any>) => Promise<void>
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -239,7 +254,7 @@ const templateOptions = computed(() => {
 
 const languageOptions = computed(() => {
   const options = [
-    { value: '', label: t('admin.content.sections.global') }
+    { value: '', label: t('common.global') }
   ]
 
   languages.value.forEach(lang => {
@@ -250,6 +265,21 @@ const languageOptions = computed(() => {
   })
 
   return options
+})
+
+// Computed property to ensure we always have a valid language code
+const validatedLanguageCode = computed({
+  get() {
+    const code = formData.language_code
+    // If the code looks like a label (too long or has spaces), return empty string
+    if (code && (code.length > 10 || code.includes(' ') || code === t('common.global'))) {
+      return ''
+    }
+    return code
+  },
+  set(value: string) {
+    formData.language_code = value
+  }
 })
 
 const isValid = computed(() => {
@@ -273,8 +303,17 @@ async function loadTemplateFields(templateId: string) {
     templateFields.value = await contentService.getFieldsBySectionTemplate(templateId)
     // Initialize field values
     fieldValues.value = {}
+
+    // If editing and we have existing field values, use them
+    if (props.mode === 'edit' && props.section?.fieldValues) {
+      fieldValues.value = { ...props.section.fieldValues }
+    }
+
+    // Set defaults for any missing fields
     templateFields.value.forEach(field => {
-      fieldValues.value[field.field_key] = field.default_value || getDefaultValueForFieldType(field.field_type)
+      if (fieldValues.value[field.field_key] === undefined) {
+        fieldValues.value[field.field_key] = field.default_value || getDefaultValueForFieldType(field.field_type)
+      }
     })
   } catch (error) {
     console.error('Failed to load template fields:', error)
@@ -313,7 +352,7 @@ function onTemplateChange() {
         formData.description = selectedTemplate.value.description || ''
       }
     }
-    
+
     // Load fields for the selected template
     loadTemplateFields(formData.section_template_id)
   }
@@ -329,7 +368,7 @@ function getSelectOptions(field: ContentField): Array<{ value: string; label: st
   if (!field.config?.options) {
     return []
   }
-  
+
   // Handle different option formats
   if (Array.isArray(field.config.options)) {
     return field.config.options.map((option: any) => {
@@ -345,8 +384,22 @@ function getSelectOptions(field: ContentField): Array<{ value: string; label: st
       return { value: value.trim(), label: (label || value).trim() }
     })
   }
-  
+
   return []
+}
+
+function getOptionsFromConfig(field: ContentField): Array<{ value: string; label: string }> {
+  if (!field.config?.options) {
+    return []
+  }
+  
+  // Handle the options array from FieldOptionsEditor
+  return field.config.options.map((opt: any) => {
+    if (typeof opt === 'string') {
+      return { value: opt, label: opt }
+    }
+    return { value: opt.key, label: opt.value }
+  })
 }
 
 function validateSlug() {
@@ -386,33 +439,66 @@ async function handleSave() {
 
   try {
     const template = selectedTemplate.value!
+
+    // Debug: Check what language_code value we have
+    console.log('Form language_code:', formData.language_code)
+    console.log('Form data:', formData)
+
+    // Use the validated language code to ensure we never pass a label
+    const languageCode = validatedLanguageCode.value
+
     const sectionData: Omit<ContentSection, 'id' | 'created_at' | 'updated_at'> = {
       section_template_id: formData.section_template_id,
       name: formData.name.trim(),
       slug: formData.slug.trim(),
       description: formData.description.trim() || undefined,
-      language_code: formData.language_code || undefined,
+      language_code: languageCode || undefined,
       component_type: template.component_type,
       is_reusable: template.is_reusable,
       is_active: formData.is_active,
       project_id: props.section?.project_id
     }
-    
-    emit('save', sectionData)
+
+    // If onSave prop is provided, use it and wait for completion
+    if (props.onSave) {
+      // Pass both section data and field values
+      await props.onSave(sectionData, fieldValues.value)
+
+      // Close the dialog after successful save
+      emit('close')
+    } else {
+      // Fallback to emit for backward compatibility
+      emit('save', sectionData)
+    }
   } catch (error) {
     console.error('Failed to create section instance:', error)
+    // Don't close on error, let user fix issues
   } finally {
     saving.value = false
   }
 }
 
+// Watch for language_code changes
+watch(() => formData.language_code, (newVal, oldVal) => {
+  console.log('Language code changed from:', oldVal, 'to:', newVal)
+  
+  // Additional validation to catch label values early
+  if (newVal && (newVal.length > 10 || newVal.includes(' '))) {
+    console.warn('Warning: Language code appears to be a label, not a code:', newVal)
+  }
+})
+
 // Lifecycle
 onMounted(() => {
   loadLanguages()
-  
+
   // If editing an existing section, load its template fields
   if (props.mode === 'edit' && props.section?.section_template_id) {
     loadTemplateFields(props.section.section_template_id)
+
+    // Debug: Check initial section data
+    console.log('Initial section data:', props.section)
+    console.log('Initial language_code:', props.section?.language_code)
   }
 })
 </script>

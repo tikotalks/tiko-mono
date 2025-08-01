@@ -42,7 +42,7 @@
 - `admin.content.pages.isHome` - "Set as Home Page"
 - `admin.content.pages.isHomeHint` - "Make this the default page for the project"
 - `admin.content.pages.homePage` - "Home Page"
-- `admin.content.pages.filterByProject` - "Filter by Project"
+- `filter.filterByProject` - "Filter by Project"
 - `admin.content.pages.allProjects` - "All Projects"
 - `admin.content.pages.path` - "Path"
 - `admin.content.pages.status` - "Status"
@@ -102,10 +102,10 @@
 - `admin.content.sections.deleteError` - "Failed to delete section"
 - `admin.content.sections.deleteConfirm` - "Delete Section"
 - `admin.content.sections.deleteMessage` - "Are you sure you want to delete the section \"{name}\"? This action cannot be undone."
-- `admin.content.sections.filterByLanguage` - "Filter by Language"
+- `filter.filterByLanguage` - "Filter by Language"
 - `admin.content.sections.global` - "Global"
-- `admin.content.sections.reusable` - "Reusable"
-- `admin.content.sections.properties` - "Properties"
+- `common.reusable` - "Reusable"
+- `common.properties` - "Properties"
 
 ### Section Form Fields
 - `admin.content.sections.namePlaceholder` - "Enter section name"
@@ -115,7 +115,7 @@
 - `admin.content.sections.language` - "Language"
 - `admin.content.sections.languagePlaceholder` - "Select language (optional)"
 - `admin.content.sections.isReusable` - "Reusable Section"
-- `admin.content.sections.reusableHint` - "Reusable sections can be added to multiple pages"
+- `common.reusableHint` - "Reusable sections can be added to multiple pages"
 - `admin.content.sections.slugError` - "Slug must contain only lowercase letters, numbers, and hyphens"
 
 ### Section Types
@@ -131,8 +131,8 @@
 - `admin.content.sections.types.custom` - "Custom"
 
 ### Section Fields
-- `admin.content.sections.fields` - "Section Fields"
-- `admin.content.sections.fieldsHelp` - "Define the content fields for this section"
+- `common.fields` - "Section Fields"
+- `common.fieldsHelp` - "Define the content fields for this section"
 - `admin.content.sections.addField` - "Add Field"
 - `admin.content.sections.newField` - "New Field"
 - `admin.content.sections.fieldKey` - "Field Key"

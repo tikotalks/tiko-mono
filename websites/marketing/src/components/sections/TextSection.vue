@@ -24,7 +24,8 @@ const bemm = useBemm('text-section')
 
 <style lang="scss">
 .text-section {
-  padding: var(--space-2xl) 0;
+  padding: var(--space-xl) 0;
+  border: 1px solid red;
 
   &__container {
     max-width: 1200px;

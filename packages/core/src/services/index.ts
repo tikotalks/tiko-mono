@@ -49,7 +49,11 @@ export type {
   PageTemplate, 
   ContentPage, 
   PageSection, 
-  FieldValue 
+  FieldValue,
+  ContentSection,
+  ContentPageSection,
+  ContentData,
+  Language
 } from './content.service'
 
 // Alternative: Export Supabase implementations

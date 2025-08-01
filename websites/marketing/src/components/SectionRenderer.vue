@@ -1,10 +1,26 @@
 <template>
-  <component
-    :is="sectionComponent"
-    v-if="sectionComponent"
-    :section="section"
-    :content="section.content"
-  />
+  <div>
+    <!-- Debug info (remove in production) -->
+    <pre v-if="showDebug">
+      Section: {{ section.name || section.slug }}
+      Template: {{ section.section_template_id }}
+      Content: {{ content }}
+    </pre>
+    
+    <!-- Dynamic component rendering -->
+    <component
+      :is="sectionComponent"
+      v-if="sectionComponent"
+      :section="section"
+      :content="content"
+    />
+    
+    <!-- Fallback if no component found -->
+    <div v-else>
+      <p>Unknown section type: {{ sectionType }}</p>
+      <pre>{{ section }}</pre>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -13,9 +29,13 @@ import type { ContentSection } from '@tiko/core'
 
 interface SectionRendererProps {
   section: ContentSection
+  content?: Record<string, any>
+  showDebug?: boolean
 }
 
-const props = defineProps<SectionRendererProps>()
+const props = withDefaults(defineProps<SectionRendererProps>(), {
+  showDebug: false
+})
 
 // Map section types to components
 const sectionComponents = {
@@ -28,9 +48,13 @@ const sectionComponents = {
   gallery: defineAsyncComponent(() => import('./sections/GallerySection.vue'))
 }
 
-// Get the component based on section type or template
+// Get section type from slug or name
+const sectionType = computed(() => {
+  return props.section.slug || props.section.name?.toLowerCase() || 'text'
+})
+
+// Get the component based on section type
 const sectionComponent = computed(() => {
-  const type = props.section.template?.key || props.section.type || 'text'
-  return sectionComponents[type as keyof typeof sectionComponents] || sectionComponents.text
+  return sectionComponents[sectionType.value as keyof typeof sectionComponents] || sectionComponents.text
 })
 </script>

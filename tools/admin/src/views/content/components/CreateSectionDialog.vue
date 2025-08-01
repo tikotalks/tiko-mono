@@ -52,7 +52,7 @@
         <TInputCheckbox
           v-model="formData.is_reusable"
           :label="t('admin.content.sections.isReusable')"
-          :hint="t('admin.content.sections.reusableHint')"
+          :hint="t('common.reusableHint')"
         />
 
         <TInputCheckbox
@@ -62,8 +62,8 @@
       </TFormGroup>
 
       <div :class="bemm('fields-section')" v-if="formData.slug">
-        <h3>{{ t('admin.content.sections.fields') }}</h3>
-        <p :class="bemm('help-text')">{{ t('admin.content.sections.fieldsHelp') }}</p>
+        <h3>{{ t('common.fields') }}</h3>
+        <p :class="bemm('help-text')">{{ t('common.fieldsHelp') }}</p>
 
         <div :class="bemm('fields-list')">
           <div
@@ -129,6 +129,13 @@
                 :rows="3"
               />
             </div>
+            
+            <div v-if="field.field_type === 'options'" :class="bemm('field-config')">
+              <FieldOptionsEditor
+                v-model="field.config"
+                @update:modelValue="(value) => field.config = value"
+              />
+            </div>
           </div>
 
           <TButton
@@ -174,6 +181,7 @@ import {
 import { Icons } from 'open-icon'
 import { contentService, translationService } from '@tiko/core'
 import type { SectionTemplate, ContentField, Language } from '@tiko/core'
+import FieldOptionsEditor from './FieldOptionsEditor.vue'
 
 interface Props {
   section?: SectionTemplate
@@ -238,6 +246,7 @@ const fieldTypeOptions = [
   { value: 'number', label: t('admin.content.sections.fieldTypes.number') },
   { value: 'boolean', label: t('admin.content.sections.fieldTypes.boolean') },
   { value: 'select', label: t('admin.content.sections.fieldTypes.select') },
+  { value: 'options', label: t('admin.content.sections.fieldTypes.options', 'Options') },
   { value: 'media', label: t('admin.content.sections.fieldTypes.media') },
   { value: 'media_list', label: t('admin.content.sections.fieldTypes.mediaList') },
   { value: 'list', label: t('admin.content.sections.fieldTypes.list') },
@@ -247,7 +256,7 @@ const fieldTypeOptions = [
 // Computed
 const languageOptions = computed(() => {
   const options = [
-    { value: 'global', label: t('admin.content.sections.global') }
+    { value: 'global', label: t('common.global') }
   ]
 
   languages.value.forEach(lang => {
@@ -375,6 +384,11 @@ async function handleSave() {
 
         processed.config = { options }
       }
+      
+      // Handle options field type (already has config from FieldOptionsEditor)
+      if (field.field_type === 'options' && field.config) {
+        processed.config = field.config
+      }
 
       return processed
     })
@@ -404,7 +418,7 @@ async function loadExistingFields() {
     try {
       console.log('Loading fields for section:', props.section.id)
       const existingFields = await contentService.getFieldsBySectionTemplate(props.section.id)
-      
+
       // Convert ContentField to FieldForm
       formData.fields = existingFields.map(field => ({
         id: field.id,
@@ -414,10 +428,10 @@ async function loadExistingFields() {
         is_required: field.is_required,
         is_translatable: field.is_translatable,
         order_index: field.order_index,
-        select_options: field.config?.options ? 
-          (Array.isArray(field.config.options) ? 
+        select_options: field.config?.options ?
+          (Array.isArray(field.config.options) ?
             field.config.options.map((opt: any) => typeof opt === 'string' ? opt : `${opt.value}|${opt.label}`).join('\n') :
-            field.config.options) : 
+            field.config.options) :
           ''
       }))
     } catch (error) {

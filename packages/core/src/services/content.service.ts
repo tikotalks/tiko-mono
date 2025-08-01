@@ -41,7 +41,7 @@ export interface ContentField {
   section_template_id: string
   field_key: string
   label: string
-  field_type: 'text' | 'textarea' | 'richtext' | 'number' | 'boolean' | 'select' | 'media' | 'media_list' | 'list' | 'object'
+  field_type: 'text' | 'textarea' | 'richtext' | 'number' | 'boolean' | 'select' | 'options' | 'media' | 'media_list' | 'list' | 'object'
   is_required: boolean
   is_translatable: boolean
   default_value?: any

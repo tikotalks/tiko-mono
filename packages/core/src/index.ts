@@ -32,6 +32,8 @@ export { useTranslationService } from './composables/useTranslationService'
 export { useI18nDatabaseService } from './composables/useI18nDatabaseService'
 export { useUserPreferences } from './composables/useUserPreferences'
 export type { UserPreferences, ListPreferences } from './composables/useUserPreferences'
+export { useContent } from './composables/useContent'
+export type { PageContent, UseContentOptions } from './composables/useContent'
 
 // Constants
 export * from './constants'

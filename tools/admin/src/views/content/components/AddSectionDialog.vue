@@ -2,14 +2,14 @@
   <div :class="bemm()">
     <div :class="bemm('header')">
       <h3>{{ t('admin.content.page.addSection') }}</h3>
-      <p>{{ 
+      <p>{{
         loading ? t('common.loading') :
         sectionOptions.length === 0 ? t('admin.content.page.allNonReusableSectionsUsed') :
-        sections.length > 0 ? t('admin.content.page.selectSectionToAdd') : 
-        t('admin.content.page.noSectionInstancesAvailable') 
+        sections.length > 0 ? t('admin.content.page.selectSectionToAdd') :
+        t('admin.content.page.noSectionInstancesAvailable')
       }}</p>
     </div>
-    
+
     <div :class="bemm('content')">
       <TFormGroup>
         <TInputSelect
@@ -30,7 +30,7 @@
       <div v-if="loading" :class="bemm('loading')">
         <TSpinner />
       </div>
-      
+
       <div v-else-if="sectionOptions.length === 0" :class="bemm('empty')">
         <TEmptyState
           :icon="Icons.LAYERS"
@@ -44,7 +44,7 @@
         <div :class="bemm('template-info')">
           <p v-if="selectedSection.description">{{ selectedSection.description }}</p>
           <p v-if="selectedSection.language_code"><strong>{{ t('common.language') }}:</strong> {{ selectedSection.language_code }}</p>
-          <p v-if="selectedSection.is_reusable"><strong>{{ t('admin.content.sections.reusable') }}:</strong> {{ t('common.yes') }}</p>
+          <p v-if="selectedSection.is_reusable"><strong>{{ t('common.reusable') }}:</strong> {{ t('common.yes') }}</p>
         </div>
       </div>
     </div>
@@ -99,7 +99,7 @@ const loading = ref(false)
 const sectionOptions = computed(() => {
   // Use the provided usedSectionIds or derive from existingSections
   const usedIds = props.usedSectionIds || props.existingSections?.map(s => s.section_template_id) || []
-  
+
   return sections.value
     .filter(section => {
       // Allow reusable sections to be added multiple times
@@ -152,13 +152,18 @@ function handleAdd() {
   if (!isValid.value) return
 
   const section = selectedSection.value!
+  
   const sectionData = {
-    // Use section.section_template_id since we're now using section instances
+    // Reference the section instance
+    section_id: section.id,
     section_template_id: section.section_template_id,
     order_index: props.existingSections?.length || 0,
     override_name: overrideName.value.trim() || section.name
   }
-  
+
+  console.log('AddSectionDialog.handleAdd - Selected section:', section)
+  console.log('AddSectionDialog.handleAdd - Sending section data:', sectionData)
+
   // Call the callback if provided (for popup service usage)
   if (props.onAdd) {
     props.onAdd(sectionData)
@@ -166,7 +171,7 @@ function handleAdd() {
     // Fallback to emit (for direct component usage)
     emit('add', sectionData)
   }
-  
+
   // Close the dialog after adding
   emit('close')
 }

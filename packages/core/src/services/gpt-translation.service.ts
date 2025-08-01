@@ -23,6 +23,14 @@ export interface BatchTranslationRequest {
   targetLocale: string;
 }
 
+export interface MultiLanguageTranslationRequest {
+  text: string;
+  sourceLocale: string;
+  targetLocales: string[];
+  context?: string;
+  key?: string;
+}
+
 class GPTTranslationService {
   private apiKey?: string;
   private model: string = 'gpt-4-turbo-preview';
@@ -182,6 +190,122 @@ class GPTTranslationService {
   }
 
   /**
+   * Translate a single text to multiple languages in one request
+   */
+  async translateToMultipleLanguages(request: MultiLanguageTranslationRequest): Promise<Record<string, string>> {
+    console.log('GPT Multi-language Translation Request:', request);
+    
+    if (!this.apiKey) {
+      console.warn('No OpenAI API key configured. Using placeholder translations.');
+      const results: Record<string, string> = {};
+      for (const locale of request.targetLocales) {
+        results[locale] = `[AUTO-${locale}] ${request.text}`;
+      }
+      return results;
+    }
+
+    try {
+      // Create a prompt that asks for translations to all target languages at once
+      const targetLanguages = request.targetLocales.map(locale => 
+        `${locale}: ${this.getLanguageName(locale)}`
+      ).join('\n');
+
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`
+        },
+        body: JSON.stringify({
+          model: this.model,
+          messages: [
+            {
+              role: 'system',
+              content: `You are a professional translator for a children's educational app. 
+                       Translate the given text from ${this.getLanguageName(request.sourceLocale)} to the following languages:
+                       ${targetLanguages}
+                       
+                       Return the translations in JSON format with locale codes as keys.
+                       Maintain a friendly, clear tone suitable for children and parents.
+                       Keep any placeholders like {name} or {count} exactly as-is.
+                       Return ONLY valid JSON, no markdown formatting, no code blocks, no additional text.
+                       Do NOT wrap the JSON in \`\`\`json or any other markdown.
+                       Example format: {"fr": "Bonjour", "de": "Hallo"}
+                       ${request.context ? `Context: ${request.context}` : ''}`
+            },
+            {
+              role: 'user',
+              content: request.text
+            }
+          ],
+          temperature: 0.3,
+          max_tokens: 2000
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('OpenAI API error:', error);
+        throw new Error(error.error?.message || 'Multi-language translation failed');
+      }
+
+      const data = await response.json();
+      const responseText = data.choices[0].message.content;
+      
+      try {
+        // Clean up the response - GPT sometimes includes markdown code blocks
+        let cleanedResponse = responseText.trim();
+        
+        // Remove markdown code blocks if present
+        if (cleanedResponse.startsWith('```json')) {
+          cleanedResponse = cleanedResponse.substring(7); // Remove ```json
+        } else if (cleanedResponse.startsWith('```')) {
+          cleanedResponse = cleanedResponse.substring(3); // Remove ```
+        }
+        
+        if (cleanedResponse.endsWith('```')) {
+          cleanedResponse = cleanedResponse.substring(0, cleanedResponse.length - 3); // Remove trailing ```
+        }
+        
+        cleanedResponse = cleanedResponse.trim();
+        
+        // Parse the JSON response
+        const translations = JSON.parse(cleanedResponse);
+        
+        // Validate all requested languages are present
+        const results: Record<string, string> = {};
+        for (const locale of request.targetLocales) {
+          if (translations[locale]) {
+            results[locale] = translations[locale];
+          } else {
+            console.warn(`No translation returned for locale: ${locale}`);
+            results[locale] = `[AUTO-${locale}] ${request.text}`;
+          }
+        }
+        
+        return results;
+      } catch (parseError) {
+        console.error('Failed to parse translation response:', parseError);
+        console.error('Response was:', responseText);
+        // Fallback to placeholders
+        const results: Record<string, string> = {};
+        for (const locale of request.targetLocales) {
+          results[locale] = `[AUTO-${locale}] ${request.text}`;
+        }
+        return results;
+      }
+    } catch (error) {
+      console.error('Multi-language translation error:', error);
+      // Fallback to placeholders
+      const results: Record<string, string> = {};
+      for (const locale of request.targetLocales) {
+        results[locale] = `[AUTO-${locale}] ${request.text}`;
+      }
+      return results;
+    }
+  }
+
+  /**
    * Get human-readable language name from locale code
    */
   private getLanguageName(locale: string): string {
@@ -212,6 +336,20 @@ class GPTTranslationService {
       'fi': 'Finnish',
       'el': 'Greek',
       'ro': 'Romanian',
+      'bg': 'Bulgarian',
+      'cs': 'Czech',
+      'sk': 'Slovak',
+      'sl': 'Slovenian',
+      'hr': 'Croatian',
+      'hu': 'Hungarian',
+      'et': 'Estonian',
+      'lv': 'Latvian',
+      'lt': 'Lithuanian',
+      'mt': 'Maltese',
+      'ga': 'Irish',
+      'cy': 'Welsh',
+      'is': 'Icelandic',
+      'hy': 'Armenian',
       // Add more as needed
     };
 

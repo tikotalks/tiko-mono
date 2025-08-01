@@ -6,7 +6,10 @@ import type {
   ContentPage,
   ContentPageSection,
   ContentData,
-  Language
+  Language,
+  SectionTemplate,
+  ContentField,
+  FieldValue
 } from '../services/content.service'
 
 export interface UseContentOptions {
@@ -37,7 +40,7 @@ export function useContent(options?: UseContentOptions) {
 
   // Cache for pages and content
   const pageCache = new Map<string, PageContent>()
-  const sectionCache = new Map<string, ContentSection>()
+  const sectionCache = new Map<string, SectionTemplate>()
 
   // Computed
   const projectId = computed(() => opts.projectId || currentProject.value?.id)
@@ -55,11 +58,12 @@ export function useContent(options?: UseContentOptions) {
   }
 
   // Get a single page with all its content
-  async function getPage(pageIdOrSlug: string, language?: string): Promise<PageContent | null> {
+  async function getPage(pageIdOrSlug: string, language?: string, skipCache = false): Promise<PageContent | null> {
     const cacheKey = `${pageIdOrSlug}-${language || 'default'}`
     
-    // Check cache first
-    if (pageCache.has(cacheKey)) {
+    // Check cache first (unless skipCache is true)
+    if (!skipCache && pageCache.has(cacheKey)) {
+      console.log(`[useContent] Returning cached page for key: ${cacheKey}`)
       return pageCache.get(cacheKey)!
     }
 
@@ -94,54 +98,115 @@ export function useContent(options?: UseContentOptions) {
 
       // Get page sections
       const pageSections = await contentService.getPageSections(page.id)
+      console.log(`🔍 [useContent] Found ${pageSections.length} page sections for page ${page.id}:`, pageSections)
+      
+      // Check for null section_ids
+      const nullSectionIds = pageSections.filter(ps => !ps.section_id)
+      if (nullSectionIds.length > 0) {
+        console.error(`❌ [useContent] ${nullSectionIds.length} page sections have NULL section_id:`, nullSectionIds)
+      }
       
       // Load sections with their content
-      const sectionsWithContent = await Promise.all(
-        pageSections.map(async (pageSection) => {
-          // Get section template
-          let section = sectionCache.get(pageSection.section_id)
-          if (!section) {
-            section = await contentService.getSection(pageSection.section_id)
-            sectionCache.set(pageSection.section_id, section)
+      const sectionsWithContent = (await Promise.all(
+        pageSections.map(async (pageSection, index) => {
+          console.log(`🔧 [useContent] Processing pageSection ${index} (${pageSection.override_name}):`, pageSection)
+          
+          // Get section instance first
+          let sectionInstance = null
+          if (pageSection.section_id) {
+            console.log(`🔍 [useContent] Loading section instance ${pageSection.section_id}...`)
+            try {
+              sectionInstance = await contentService.getSection(pageSection.section_id)
+              console.log(`✅ [useContent] Section instance loaded:`, sectionInstance)
+            } catch (error) {
+              console.error(`❌ [useContent] Failed to load section instance ${pageSection.section_id}:`, error)
+            }
+          } else {
+            console.error(`❌ [useContent] PageSection ${pageSection.override_name} has NULL section_id - cannot load!`)
+          }
+          
+          if (!sectionInstance) {
+            console.error(`❌ [useContent] No section instance found for pageSection:`, pageSection)
+            console.error(`❌ [useContent] This section will be filtered out and NOT rendered on marketing site`)
+            return null
+          }
+          
+          // Get section template from the instance
+          const sectionTemplateId = sectionInstance.section_template_id
+          let sectionTemplate = sectionCache.get(sectionTemplateId)
+          if (!sectionTemplate) {
+            sectionTemplate = await contentService.getSectionTemplate(sectionTemplateId)
+            if (sectionTemplate) {
+              sectionCache.set(sectionTemplateId, sectionTemplate)
+            }
           }
 
-          // Get content for this section
-          const content: Record<string, ContentData[]> = {}
+          // Get fields for this section template
+          const fields = await contentService.getFieldsBySectionTemplate(sectionTemplateId)
           
-          if (pageSection.content_data) {
-            // Page-specific content
-            content.default = [pageSection.content_data]
-          } else if (section.is_reusable) {
-            // Reusable section content
-            const sectionContent = await contentService.getSectionContent(
-              section.id,
-              language || section.language_code
-            )
-            
-            // Group content by field
-            sectionContent.forEach(item => {
-              if (!content[item.field_key]) {
-                content[item.field_key] = []
+          let content: Record<string, any> = {}
+          
+          // If this page section references a section instance, load content from there
+          if (pageSection.section_id) {
+            try {
+              // Load content from the section instance
+              content = await contentService.getSectionData(pageSection.section_id, language || page.language_code)
+              console.log(`✅ [useContent] Loaded content from section instance ${pageSection.section_id}:`, content)
+              if (Object.keys(content).length === 0) {
+                console.warn(`⚠️ [useContent] Section instance ${pageSection.section_id} has no content data`)
               }
-              content[item.field_key].push(item)
-            })
+            } catch (error) {
+              console.error(`❌ [useContent] Failed to load section instance data for ${pageSection.section_id}:`, error)
+            }
+          } else {
+            console.log(`❌ [useContent] No section_id found for pageSection ${pageSection.override_name}`)
+          }
+          
+          // If no section instance or it failed, fall back to page-specific field values
+          if (Object.keys(content).length === 0) {
+            // Get field values for this page and language
+            const fieldValues = await contentService.getFieldValues(page.id, language || page.language_code)
+            
+            // Convert values array to object keyed by field_key
+            fieldValues
+              .filter(v => v.section_template_id === sectionTemplateId)
+              .forEach(v => {
+                const field = fields.find(f => f.id === v.field_id)
+                if (field) {
+                  content[field.field_key] = v.value
+                }
+              })
           }
 
           return {
-            pageSection,
-            section,
+            pageSection: {
+              ...pageSection
+            },
+            section: sectionInstance,
             content
           }
         })
-      )
+      )).filter(section => section !== null)
 
       const result: PageContent = {
         page,
-        sections: sectionsWithContent
+        sections: sectionsWithContent,
+        _cached_at: new Date().toISOString()
+      } as PageContent & { _cached_at?: string }
+
+      console.log(`🎯 [useContent] FINAL RESULT: ${sectionsWithContent.length} sections loaded for marketing site:`)
+      sectionsWithContent.forEach((section, index) => {
+        console.log(`   ${index}: ${section.section.name} (${Object.keys(section.content).length} content fields)`)
+      })
+      
+      if (sectionsWithContent.length === 0) {
+        console.error(`❌ [useContent] NO SECTIONS WILL BE RENDERED! All sections were filtered out.`)
+        console.error(`❌ [useContent] This is why the marketing site shows no sections after reorder.`)
       }
 
       // Cache the result
       pageCache.set(cacheKey, result)
+      console.log(`[useContent] Cached page at ${result._cached_at}`)
       
       return result
     } catch (err) {
