@@ -313,6 +313,7 @@ async function loadLanguages() {
 async function loadTemplateFields(templateId: string) {
   try {
     templateFields.value = await contentService.getFieldsBySectionTemplate(templateId)
+    console.log('Loaded template fields:', templateFields.value)
     // Initialize field values
     fieldValues.value = {}
 
@@ -402,7 +403,11 @@ function getSelectOptions(field: ContentField): Array<{ value: string; label: st
 }
 
 function getOptionsFromConfig(field: ContentField): Array<{ value: string; label: string }> {
+  console.log('getOptionsFromConfig - field:', field)
+  console.log('getOptionsFromConfig - field.config:', field.config)
+  
   if (!field.config?.options) {
+    console.warn('No options found in field config')
     return []
   }
 

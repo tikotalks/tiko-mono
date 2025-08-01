@@ -372,6 +372,7 @@ async function handleSave() {
   try {
     // Process fields
     const processedFields = formData.fields.map(field => {
+      console.log('Processing field:', field)
       const processed: any = {
         field_key: field.field_key,
         label: field.label,
@@ -400,11 +401,12 @@ async function handleSave() {
         processed.config = field.config
       }
 
-      // Handle items field type (already has config from ItemsFieldConfigurator)
+      // Handle items field type (already has config from ItemsFieldEditor)
       if (field.field_type === 'items' && field.config) {
         processed.config = field.config
       }
 
+      console.log('Processed field:', processed)
       return processed
     })
 
@@ -435,20 +437,29 @@ async function loadExistingFields() {
       const existingFields = await contentService.getFieldsBySectionTemplate(props.section.id)
 
       // Convert ContentField to FieldForm
-      formData.fields = existingFields.map(field => ({
-        id: field.id,
-        field_key: field.field_key,
-        label: field.label,
-        field_type: field.field_type,
-        is_required: field.is_required,
-        is_translatable: field.is_translatable,
-        order_index: field.order_index,
-        select_options: field.config?.options ?
-          (Array.isArray(field.config.options) ?
-            field.config.options.map((opt: any) => typeof opt === 'string' ? opt : `${opt.value}|${opt.label}`).join('\n') :
-            field.config.options) :
-          ''
-      }))
+      formData.fields = existingFields.map(field => {
+        const fieldForm: any = {
+          id: field.id,
+          field_key: field.field_key,
+          label: field.label,
+          field_type: field.field_type,
+          is_required: field.is_required,
+          is_translatable: field.is_translatable,
+          order_index: field.order_index,
+          select_options: field.config?.options ?
+            (Array.isArray(field.config.options) ?
+              field.config.options.map((opt: any) => typeof opt === 'string' ? opt : `${opt.value}|${opt.label}`).join('\n') :
+              field.config.options) :
+            ''
+        }
+        
+        // Also preserve config for options and items field types
+        if ((field.field_type === 'options' || field.field_type === 'items') && field.config) {
+          fieldForm.config = field.config
+        }
+        
+        return fieldForm
+      })
     } catch (error) {
       console.error('Failed to load fields:', error)
     }
