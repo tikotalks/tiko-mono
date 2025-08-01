@@ -139,6 +139,15 @@
         <pre :class="bemm('page-data')">{{ JSON.stringify(page.page_data, null, 2) }}</pre>
       </TCard>
 
+      <!-- Field Values Debug (temporary) -->
+      <TCard :class="bemm('section')">
+        <h3 :class="bemm('section-title')">Field Values Debug</h3>
+        <FieldValuesDebug
+          :page-id="page.id"
+          :language-code="page.language_code"
+        />
+      </TCard>
+
       <!-- Actions -->
       <TCard :class="bemm('section')">
         <h3 :class="bemm('section-title')">{{ t('admin.content.page.actions') }}</h3>
@@ -222,6 +231,7 @@ import type { ContentPage, ContentProject, PageSection, ContentSection, ToastSer
 import { Icons } from 'open-icon'
 import CreatePageDialog from './components/CreatePageDialog.vue'
 import AddSectionDialog from './components/AddSectionDialog.vue'
+import FieldValuesDebug from './components/FieldValuesDebug.vue'
 
 const bemm = useBemm('page-detail-view')
 const { t } = useI18n()
@@ -272,7 +282,24 @@ async function loadPageSections() {
   try {
     // Load page sections
     const sections = await contentService.getPageSections(page.value.id)
-    console.log('Raw page sections from API:', sections)
+
+    // Debug: Check section_id values in raw data
+    let nullSectionCount = 0
+    sections?.forEach((section, index) => {
+      if (!section.section_id) {
+        nullSectionCount++
+      }
+    })
+
+    // Warn if sections have NULL section_id
+    if (nullSectionCount > 0) {
+      console.error(`❌ ${nullSectionCount} sections have NULL section_id!`)
+      toastService?.show({
+        message: `${nullSectionCount} sections are missing section instances. They won't display on the website. Please run the database fix.`,
+        type: 'error',
+        duration: 8000
+      })
+    }
 
     // Transform to match marketing site structure
     const sectionsWithTemplates = []
@@ -282,37 +309,59 @@ async function loadPageSections() {
         // Load the section template
         const template = await contentService.getSectionTemplate(pageSection.section_template_id)
 
+        // Load the actual section instance and its content (like marketing site does)
+        let sectionInstance = null
+        let sectionContent = {}
+
+        if (pageSection.section_id) {
+          try {
+            // Load the section instance
+            sectionInstance = await contentService.getSection(pageSection.section_id)
+
+            // Load the content from the section instance
+            sectionContent = await contentService.getSectionData(pageSection.section_id, 'en')
+          } catch (error) {
+            console.error(`Failed to load section instance ${pageSection.section_id}:`, error)
+          }
+        } else {
+          console.warn(`Section ${pageSection.override_name} has no section_id - cannot load instance content`)
+        }
+
         // Create the combined structure like marketing site
+        // CRITICAL: Use section_template_id as stable ID since it's part of the composite key
+        const stableId = `${pageSection.page_id}-${pageSection.section_template_id}`
+
         sectionsWithTemplates.push({
           pageSection: {
             ...pageSection,
-            section_id: pageSection.section_template_id // Add section_id for compatibility
+            // NEVER use section_template_id as section_id - they are different concepts!
+            section_id: pageSection.section_id // Keep the actual section_id, even if null
           },
-          section: template,
-          content: {}, // Empty for now
-          id: pageSection.section_template_id // For TDraggableList
+          section: sectionInstance || template, // Use section instance if available, fallback to template
+          content: sectionContent, // Actual content from section instance
+          id: stableId // Use stable ID for TDraggableList
         })
 
-        console.log(`Loaded section:`, { pageSection, section: template })
       } catch (e) {
         console.error(`Failed to load template ${pageSection.section_template_id}:`, e)
         // Still add the section even if template fails to load
         sectionsWithTemplates.push({
-          pageSection,
+          pageSection: {
+            ...pageSection,
+            section_id: pageSection.section_id // Preserve section_id even in error case
+          },
           section: null,
           content: {},
-          id: pageSection.section_template_id
+          id: `${pageSection.page_id}-${pageSection.section_template_id}` // Consistent ID format
         })
       }
     }
 
     pageSections.value = sectionsWithTemplates
-    console.log('Final sections structure:', pageSections.value)
   } catch (error) {
     console.error('Failed to load page sections:', error)
     // Handle gracefully if tables don't exist
     if (error?.message?.includes('does not exist') || error?.message?.includes('404')) {
-      console.log('Sections tables may not exist, using empty arrays')
       pageSections.value = []
       availableSections.value = []
     } else {
@@ -329,7 +378,7 @@ async function loadPageSections() {
 function openAddSectionDialog() {
   // Get list of already used section template IDs
   const usedSectionIds = pageSections.value.map(s => s.pageSection.section_template_id)
-  
+
   popupService?.open({
     component: AddSectionDialog,
     title: t('admin.content.page.addSection'),
@@ -342,29 +391,36 @@ function openAddSectionDialog() {
   })
 }
 
-async function handleAddSection(sectionData: Omit<PageSection, 'page_id'>) {
+async function handleAddSection(sectionData: Omit<PageSection, 'page_id'> & { section_id?: string }) {
   if (!page.value) return
 
   try {
-    // Check if this section template is already used
-    const existingSection = pageSections.value.find(
-      s => s.pageSection.section_template_id === sectionData.section_template_id
-    )
-    
-    if (existingSection) {
-      toastService?.show({
-        message: t('admin.content.page.sectionAlreadyExists', 'This section template is already used on this page'),
-        type: 'warning'
-      })
-      return
+
+    // Check if this exact section instance is already used
+    if (sectionData.section_id) {
+      const existingSection = pageSections.value.find(
+        s => s.pageSection.section_id === sectionData.section_id
+      )
+
+      if (existingSection) {
+        toastService?.show({
+          message: t('admin.content.page.sectionInstanceAlreadyExists', 'This section instance is already used on this page'),
+          type: 'warning'
+        })
+        return
+      }
+    } else {
+      console.warn('No section_id provided in sectionData:', sectionData)
     }
-    
+
     // Create the new page section
-    const newPageSection: PageSection = {
+    const newPageSection: PageSection & { section_id?: string } = {
       ...sectionData,
       page_id: page.value.id,
-      order_index: pageSections.value.length
+      order_index: pageSections.value.length,
+      section_id: sectionData.section_id
     }
+
 
     // Try to load the section template
     let sectionTemplate = null
@@ -378,11 +434,11 @@ async function handleAddSection(sectionData: Omit<PageSection, 'page_id'>) {
     const newSectionData = {
       pageSection: {
         ...newPageSection,
-        section_id: newPageSection.section_template_id
+        section_id: newPageSection.section_id // Keep the actual section_id, no fallback!
       },
       section: sectionTemplate,
-      content: {},
-      id: newPageSection.section_template_id
+      content: {}, // Will be loaded from section instance
+      id: `${newPageSection.page_id}-${newPageSection.section_template_id}` // Consistent ID format
     }
 
     pageSections.value = [...pageSections.value, newSectionData]
@@ -391,9 +447,11 @@ async function handleAddSection(sectionData: Omit<PageSection, 'page_id'>) {
     const sectionsForBackend = pageSections.value.map(s => ({
       page_id: s.pageSection.page_id,
       section_template_id: s.pageSection.section_template_id,
+      section_id: s.pageSection.section_id,
       order_index: s.pageSection.order_index,
       override_name: s.pageSection.override_name
     }))
+
     await contentService.setPageSections(page.value.id, sectionsForBackend)
 
     toastService?.show({
@@ -405,7 +463,7 @@ async function handleAddSection(sectionData: Omit<PageSection, 'page_id'>) {
     await loadPageSections()
   } catch (error: any) {
     console.error('Failed to add section:', error)
-    
+
     // Check for duplicate key error
     if (error?.message?.includes('duplicate key') || error?.message?.includes('23505')) {
       toastService?.show({
@@ -428,21 +486,22 @@ async function handleSectionsReorder(newSections: any[]) {
 
   // Store the original sections in case we need to restore them
   const originalSections = [...pageSections.value]
-  
+
   try {
-    console.log('Reordering sections:', newSections)
-    
     // Validate the new sections array
     if (!newSections || !Array.isArray(newSections) || newSections.length === 0) {
       console.error('Invalid sections array received:', newSections)
       throw new Error('Invalid sections array')
     }
-    
-    // Update order indices
-    const updatedSections = newSections.map((section, index) => ({
-      ...section,
-      pageSection: { ...section.pageSection, order_index: index }
-    }))
+
+
+    // Update order indices - ensure we keep ALL properties
+    const updatedSections = newSections.map((section, index) => {
+      // Deep clone to ensure we don't lose any properties
+      const clonedSection = JSON.parse(JSON.stringify(section))
+      clonedSection.pageSection.order_index = index
+      return clonedSection
+    })
 
     // Update local state optimistically
     pageSections.value = updatedSections
@@ -454,16 +513,34 @@ async function handleSectionsReorder(newSections: any[]) {
         console.error('Missing pageSection data:', s)
         throw new Error('Invalid section data structure')
       }
+
+      // CRITICAL: Check for NULL section_id
+      if (!s.pageSection.section_id) {
+        // For now, we'll still save it but warn loudly
+        toastService?.show({
+          message: `Warning: Section "${s.pageSection.override_name}" has no section instance. It won't display on the website.`,
+          type: 'warning',
+          duration: 5000
+        })
+      }
+      
+      // Get section_template_id from the pageSection or fall back to section
+      const section_template_id = s.pageSection?.section_template_id || s.section?.section_template_id
+      
+      if (!section_template_id) {
+        console.error('❌ Missing section_template_id for section:', s)
+        throw new Error(`Section "${s.pageSection?.override_name || 'unknown'}" is missing section_template_id`)
+      }
       
       return {
         page_id: s.pageSection.page_id,
-        section_template_id: s.pageSection.section_template_id,
+        section_template_id: section_template_id,
+        section_id: s.pageSection.section_id,
         order_index: s.pageSection.order_index,
         override_name: s.pageSection.override_name
-      }
+      };
     })
-    
-    console.log('Saving reordered sections:', sectionsForBackend)
+
     await contentService.setPageSections(page.value.id, sectionsForBackend)
 
     toastService?.show({
@@ -472,10 +549,10 @@ async function handleSectionsReorder(newSections: any[]) {
     })
   } catch (error) {
     console.error('Failed to reorder sections:', error)
-    
+
     // Restore original sections
     pageSections.value = originalSections
-    
+
     toastService?.show({
       message: t('admin.content.page.sectionsReorderError'),
       type: 'error'
@@ -485,7 +562,6 @@ async function handleSectionsReorder(newSections: any[]) {
 
 function handleEditSection(sectionData: any) {
   // TODO: Implement edit section functionality
-  console.log('Edit section:', sectionData)
   toastService?.show({
     message: 'Edit section functionality coming soon',
     type: 'info'
@@ -520,6 +596,7 @@ async function handleRemoveSection(sectionData: any) {
           const sectionsForBackend = updatedSections.map(s => ({
             page_id: s.pageSection.page_id,
             section_template_id: s.pageSection.section_template_id,
+            section_id: s.pageSection.section_id,
             order_index: s.pageSection.order_index,
             override_name: s.pageSection.override_name
           }))

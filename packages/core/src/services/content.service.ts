@@ -1,6 +1,6 @@
 /**
  * Content Management Service
- * 
+ *
  * Handles all content-related operations including:
  * - Managing projects, pages, sections, and fields
  * - Storing and retrieving multilingual content
@@ -83,9 +83,11 @@ export interface ContentPage {
 
 export interface PageSection {
   page_id: string
-  section_template_id: string
+  section_id: string  // Reference to content_sections instance (now required)
   order_index: number
   override_name?: string
+  // Deprecated - will be removed after migration
+  section_template_id?: string
 }
 
 export interface FieldValue {
@@ -149,9 +151,9 @@ class ContentService {
     try {
       const session = await authService.getSession()
       const token = session?.access_token || null
-      
+
       const url = `${this.baseUrl}${endpoint}`
-      
+
       const response = await fetch(url, {
         ...options,
         headers: {
@@ -217,14 +219,14 @@ class ContentService {
 
   async getSectionTemplates(projectId?: string, languageCode?: string): Promise<SectionTemplate[]> {
     let query = '/content_section_templates?is_active=eq.true'
-    
+
     // Filter by language - include global (null) and specific language
     if (languageCode) {
       query += `&or=(language_code.is.null,language_code.eq.${languageCode})`
     }
-    
+
     query += '&order=name.asc'
-    
+
     return this.makeRequest(query)
   }
 
@@ -235,13 +237,13 @@ class ContentService {
 
   async createSectionTemplate(data: Omit<SectionTemplate, 'id' | 'created_at' | 'updated_at'> & { fields?: Omit<ContentField, 'id' | 'section_template_id'>[] }): Promise<SectionTemplate> {
     const { fields, ...template } = data
-    
+
     const result = await this.makeRequest('/content_section_templates', {
       method: 'POST',
       body: JSON.stringify(template),
     })
     const createdSection = Array.isArray(result) ? result[0] : result
-    
+
     // Create fields if provided
     if (fields && fields.length > 0) {
       try {
@@ -259,30 +261,30 @@ class ContentService {
         throw error
       }
     }
-    
+
     return createdSection
   }
 
   async updateSectionTemplate(id: string, updates: Partial<SectionTemplate> & { fields?: Omit<ContentField, 'id' | 'section_template_id'>[] }): Promise<void> {
     const { fields, ...templateUpdates } = updates
-    
+
     // Update the section template
     await this.makeRequest(`/content_section_templates?id=eq.${id}`, {
       method: 'PATCH',
       body: JSON.stringify(templateUpdates),
     })
-    
+
     // Handle fields if provided
     if (fields !== undefined) {
       try {
         // Get existing fields
         const existingFields = await this.getFieldsBySectionTemplate(id)
-        
+
         // Delete all existing fields
         await Promise.all(
           existingFields.map(field => this.deleteField(field.id))
         )
-        
+
         // Create new fields
         if (fields.length > 0) {
           await Promise.all(
@@ -356,17 +358,17 @@ class ContentService {
 
   async getPages(projectId?: string, languageCode?: string): Promise<ContentPage[]> {
     let query = '/content_pages?'
-    
+
     if (projectId) {
       query += `project_id=eq.${projectId}&`
     }
-    
+
     if (languageCode) {
       query += `language_code=eq.${languageCode}&`
     }
-    
+
     query += 'order=full_path.asc'
-    
+
     return this.makeRequest(query)
   }
 
@@ -409,49 +411,109 @@ class ContentService {
     const sections = await this.makeRequest(
       `/content_page_sections?page_id=eq.${pageId}&order=order_index.asc`
     )
-    
+
+
     // Return the sections as they are from the database
     return sections
   }
 
-  async setPageSections(pageId: string, sections: any[]): Promise<void> {
+  async setPageSections(pageId: string, sections: any[], options: { preserveExisting?: boolean } = {}): Promise<void> {
     // Validate input
     if (!pageId) {
       throw new Error('Page ID is required')
     }
-    
+
     if (!Array.isArray(sections)) {
       throw new Error('Sections must be an array')
     }
-    
-    // Prepare new sections data first to validate
+
+    // Get existing sections to preserve their IDs
+    const existingSections = await this.getPageSections(pageId)
+
+    const existingSectionMap = new Map(
+      existingSections.map(s => [`${s.section_template_id}-${s.override_name}`, s])
+    )
+
+    // Prepare new sections data
     const sectionsWithPageId = sections.map((s, index) => {
-      // Validate required fields
-      if (!s.section_template_id) {
-        throw new Error(`Section at index ${index} is missing section_template_id`)
+      // Try to find existing section to preserve its database ID and section_id
+      const existingKey = `${s.section_template_id}-${s.override_name}`
+      const existing = existingSectionMap.get(existingKey)
+
+      if (existing && !s.section_id) {
+        s.section_id = existing.section_id
       }
-      
+
+      // Validate required fields
+      if (!s.section_id) {
+        console.error(`❌ Section "${s.override_name}" at index ${index} is missing section_id!`)
+      }
+
       // Clean up the data - only send what the database expects
       const { page_id, ...sectionData } = s
-      return {
+      // Only include what we actually need for the junction table
+      const result: any = {
         page_id: pageId,
-        section_template_id: sectionData.section_template_id,
+        section_id: sectionData.section_id,
         order_index: sectionData.order_index ?? index,
-        override_name: sectionData.override_name || null
+        override_name: sectionData.override_name || null,
       }
-    })
-    
-    // Only delete existing sections if we have valid new data
-    await this.makeRequest(`/content_page_sections?page_id=eq.${pageId}`, {
-      method: 'DELETE',
+      
+      // Validate that we have a section_id
+      if (!result.section_id) {
+        console.error('❌ Missing section_id for section:', sectionData)
+        throw new Error(`Section "${sectionData.override_name}" at index ${index} is missing section_id`)
+      }
+
+
+      return result
     })
 
-    // Insert new sections
-    if (sectionsWithPageId.length > 0) {
+    // For reordering, we should update existing records instead of delete/insert
+    // This preserves the section_id values
+    
+    // First, let's handle any truly new sections (that don't exist yet)
+    // Use section_id to determine what exists, not section_template_id
+    const existingSectionIds = new Set(existingSections.map(s => s.section_id))
+    
+    const newSections = sectionsWithPageId.filter(s => !existingSectionIds.has(s.section_id))
+    const existingSectionsToUpdate = sectionsWithPageId.filter(s => existingSectionIds.has(s.section_id))
+    
+    // Update order_index for existing sections
+    for (const section of existingSectionsToUpdate) {
+      await this.makeRequest(
+        `/content_page_sections?page_id=eq.${pageId}&section_id=eq.${section.section_id}`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({
+            order_index: section.order_index,
+            override_name: section.override_name
+          })
+        }
+      )
+    }
+    
+    // Insert only truly new sections
+    if (newSections.length > 0) {
       await this.makeRequest('/content_page_sections', {
         method: 'POST',
-        body: JSON.stringify(sectionsWithPageId),
+        body: JSON.stringify(newSections),
       })
+    }
+    
+    // Delete sections that were removed
+    const currentSectionIds = new Set(sectionsWithPageId.map(s => s.section_id))
+    const sectionsToDelete = existingSections.filter(
+      existing => !currentSectionIds.has(existing.section_id)
+    )
+    
+    if (sectionsToDelete.length > 0) {
+      for (const sectionToDelete of sectionsToDelete) {
+        await this.makeRequest(
+          `/content_page_sections?page_id=eq.${pageId}&section_id=eq.${sectionToDelete.section_id}`,
+          { method: 'DELETE' }
+        )
+      }
     }
   }
 
@@ -512,18 +574,74 @@ class ContentService {
 
   async getSections(projectId?: string, languageCode?: string): Promise<ContentSection[]> {
     let query = '/content_sections?is_active=eq.true'
-    
+
     if (projectId) {
       query += `&project_id=eq.${projectId}`
     }
-    
+
     if (languageCode) {
       query += `&language_code=eq.${languageCode}`
     }
-    
+
     query += '&order=name.asc'
-    
+
     return this.makeRequest(query)
+  }
+
+  async getSectionData(sectionId: string, languageCode?: string): Promise<Record<string, any>> {
+    try {
+      let query = `/content_section_data?section_id=eq.${sectionId}`
+      if (languageCode) {
+        query += `&language_code=eq.${languageCode}`
+      }
+
+      const data = await this.makeRequest(query)
+
+      // Convert array of field values to object keyed by field_key
+      const result: Record<string, any> = {}
+      data.forEach((item: any) => {
+        // PostgreSQL JSONB returns the value directly, no need to parse
+        result[item.field_key] = item.value
+      })
+
+      return result
+    } catch (error) {
+      console.error('Failed to get section data:', error)
+      return {}
+    }
+  }
+
+  async setSectionData(sectionId: string, fieldValues: Record<string, any>, languageCode?: string): Promise<void> {
+    try {
+      // First delete existing data for this section
+      let deleteQuery = `/content_section_data?section_id=eq.${sectionId}`
+      if (languageCode) {
+        deleteQuery += `&language_code=eq.${languageCode}`
+      }
+
+      await this.makeRequest(deleteQuery, {
+        method: 'DELETE'
+      })
+
+      // Then insert new data
+      const dataToInsert = Object.entries(fieldValues).map(([field_key, value]) => ({
+        section_id: sectionId,
+        field_key,
+        // Ensure we're not double-encoding strings
+        value: typeof value === 'string' ? value : JSON.stringify(value),
+        language_code: languageCode || null
+      }))
+
+      if (dataToInsert.length > 0) {
+        await this.makeRequest('/content_section_data', {
+          method: 'POST',
+          body: JSON.stringify(dataToInsert)
+        })
+      }
+    } catch (error) {
+      console.error('Failed to set section data:', error)
+      throw error
+    }
   }
 
   async createSection(data: Omit<ContentSection, 'id' | 'created_at' | 'updated_at'>): Promise<ContentSection> {
@@ -551,29 +669,25 @@ class ContentService {
 
   async getSection(idOrSlug: string): Promise<ContentSection | null> {
     try {
-      // Try to get by ID first
-      let result = await this.makeRequest(`/content_section_templates?id=eq.${idOrSlug}`)
+      console.log(`getSection: Looking for section with ID/slug: ${idOrSlug}`)
+
+      // Try to get section instance by ID first
+      let result = await this.makeRequest(`/content_sections?id=eq.${idOrSlug}`)
+      console.log(`getSection: Query by ID found ${result.length} results:`, result)
+
       if (!result.length) {
         // Try by slug
-        result = await this.makeRequest(`/content_section_templates?slug=eq.${idOrSlug}`)
+        result = await this.makeRequest(`/content_sections?slug=eq.${idOrSlug}`)
+        console.log(`getSection: Query by slug found ${result.length} results:`, result)
       }
-      
-      if (!result.length) return null
-      
-      const template = result[0]
-      // Map SectionTemplate to ContentSection format
-      return {
-        id: template.id,
-        name: template.name,
-        slug: template.slug,
-        description: template.description,
-        language_code: template.language_code,
-        component_type: template.component_type,
-        is_reusable: template.is_reusable,
-        is_active: template.is_active,
-        created_at: template.created_at,
-        updated_at: template.updated_at
+
+      if (!result.length) {
+        console.warn(`getSection: No section found for ID/slug: ${idOrSlug}`)
+        return null
       }
+
+      console.log(`getSection: Returning section:`, result[0])
+      return result[0]
     } catch (error) {
       console.error('Error getting section:', error)
       return null
@@ -611,7 +725,7 @@ class ContentService {
     try {
       // This would create in a content_data table
       console.warn('createContent not fully implemented - requires content_data table')
-      
+
       // Return a mock ContentData for now
       return {
         id: `mock-${Date.now()}`,
@@ -667,7 +781,7 @@ class ContentService {
       sections.map(async (template, index) => {
         const fields = await this.getFieldsBySectionTemplate(template.id)
         const values = await this.getFieldValues(page.id, languageCode)
-        
+
         // Convert values array to object keyed by field_key
         const valueMap: Record<string, any> = {}
         values
