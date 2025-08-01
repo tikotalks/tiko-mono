@@ -4,6 +4,8 @@
     <div v-if="loading" :class="bemm('loading')">
       <div :class="bemm('loading-spinner')"></div>
     </div>
+
+   <pre>{{ pageData }}</pre>
     <!-- Dynamic Sections -->
     <template v-if="!loading && pageData?.sections?.length">
 
@@ -12,7 +14,7 @@
         :key="section.section.id"
         :section="section.section"
         :content="section.content"
-        :show-debug="false"
+        :show-debug="true"
       />
     </template>
 

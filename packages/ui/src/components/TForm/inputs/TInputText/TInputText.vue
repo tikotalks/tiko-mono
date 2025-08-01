@@ -29,14 +29,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import InputBase from '../../InputBase.vue'
 import type { TInputTextProps } from './TInputText.model'
 import { Size, Status } from '../../../../types'
 
 const model = defineModel<string>()
 
-const props = withDefaults(defineProps<TInputTextProps>(), {
+withDefaults(defineProps<TInputTextProps>(), {
   label: '',
   placeholder: '',
   description: '',

@@ -1,13 +1,10 @@
 <template>
   <div :class="bemm()">
-    <div :class="bemm('header')">
-      <h2>{{ mode === 'edit' ? t('admin.content.sections.edit') : t('admin.content.sections.create') }}</h2>
-    </div>
-
     <div :class="bemm('content')">
       <TFormGroup>
         <TInputText
           v-model="formData.name"
+          :inline="true"
           :label="t('common.name')"
           :placeholder="t('admin.content.sections.namePlaceholder')"
           :required="true"
@@ -16,6 +13,7 @@
 
         <TInputText
           v-model="formData.slug"
+          :inline="true"
           :label="t('common.slug')"
           :placeholder="t('admin.content.sections.slugPlaceholder')"
           :required="true"
@@ -25,6 +23,7 @@
 
         <TTextArea
           v-model="formData.description"
+          :inline="true"
           :label="t('common.description')"
           :placeholder="t('admin.content.sections.descriptionPlaceholder')"
           :rows="3"
@@ -33,6 +32,7 @@
 
       <TFormGroup>
         <TInputSelect
+          :inline="true"
           v-model="formData.component_type"
           :label="t('admin.content.sections.componentType')"
           :options="componentTypeOptions"
@@ -41,6 +41,7 @@
         />
 
         <TInputSelect
+          :inline="true"
           v-model="formData.language_code"
           :label="t('admin.content.sections.language')"
           :options="languageOptions"
@@ -84,6 +85,7 @@
 
             <TFormGroup>
               <TInputText
+          :inline="true"
                 v-model="field.field_key"
                 :label="t('admin.content.sections.fieldKey')"
                 :placeholder="t('admin.content.sections.fieldKeyPlaceholder')"
@@ -92,15 +94,14 @@
               />
 
               <TInputText
+          :inline="true"
                 v-model="field.label"
                 :label="t('admin.content.sections.fieldLabel')"
                 :placeholder="t('admin.content.sections.fieldLabelPlaceholder')"
                 :required="true"
               />
-            </TFormGroup>
-
-            <TFormGroup>
               <TInputSelect
+          :inline="true"
                 v-model="field.field_type"
                 :label="t('admin.content.sections.fieldType')"
                 :options="fieldTypeOptions"
@@ -129,9 +130,16 @@
                 :rows="3"
               />
             </div>
-            
+
             <div v-if="field.field_type === 'options'" :class="bemm('field-config')">
               <FieldOptionsEditor
+                v-model="field.config"
+                @update:modelValue="(value) => field.config = value"
+              />
+            </div>
+
+            <div v-if="field.field_type === 'items'" :class="bemm('field-config')">
+              <ItemsFieldEditor
                 v-model="field.config"
                 @update:modelValue="(value) => field.config = value"
               />
@@ -182,6 +190,7 @@ import { Icons } from 'open-icon'
 import { contentService, translationService } from '@tiko/core'
 import type { SectionTemplate, ContentField, Language } from '@tiko/core'
 import FieldOptionsEditor from './FieldOptionsEditor.vue'
+import ItemsFieldEditor from './ItemsFieldEditor.vue'
 
 interface Props {
   section?: SectionTemplate
@@ -247,6 +256,7 @@ const fieldTypeOptions = [
   { value: 'boolean', label: t('admin.content.sections.fieldTypes.boolean') },
   { value: 'select', label: t('admin.content.sections.fieldTypes.select') },
   { value: 'options', label: t('admin.content.sections.fieldTypes.options', 'Options') },
+  { value: 'items', label: t('admin.content.sections.fieldTypes.items', 'Items (Repeater)') },
   { value: 'media', label: t('admin.content.sections.fieldTypes.media') },
   { value: 'media_list', label: t('admin.content.sections.fieldTypes.mediaList') },
   { value: 'list', label: t('admin.content.sections.fieldTypes.list') },
@@ -384,9 +394,14 @@ async function handleSave() {
 
         processed.config = { options }
       }
-      
+
       // Handle options field type (already has config from FieldOptionsEditor)
       if (field.field_type === 'options' && field.config) {
+        processed.config = field.config
+      }
+
+      // Handle items field type (already has config from ItemsFieldConfigurator)
+      if (field.field_type === 'items' && field.config) {
         processed.config = field.config
       }
 
@@ -451,9 +466,7 @@ onMounted(() => {
 .create-section-dialog {
   display: flex;
   flex-direction: column;
-  width: 800px;
-  max-width: 90vw;
-  max-height: 80vh;
+
   background: var(--color-background);
   border-radius: var(--radius-lg);
   overflow: hidden;

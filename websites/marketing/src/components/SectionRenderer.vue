@@ -45,7 +45,8 @@ const sectionComponents = {
   parents: defineAsyncComponent(() => import('./sections/ParentsSection.vue')),
   text: defineAsyncComponent(() => import('./sections/TextSection.vue')),
   cta: defineAsyncComponent(() => import('./sections/CTASection.vue')),
-  gallery: defineAsyncComponent(() => import('./sections/GallerySection.vue'))
+  gallery: defineAsyncComponent(() => import('./sections/GallerySection.vue')),
+  testimonials: defineAsyncComponent(() => import('./sections/TestimonialsSection.vue'))
 }
 
 // Get section type from slug or name

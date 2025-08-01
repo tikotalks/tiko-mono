@@ -8,6 +8,7 @@
     <div :class="bemm('content')">
       <TFormGroup>
         <TInputSelect
+        :inline="true"
           v-model="formData.section_template_id"
           :label="t('admin.content.sections.template')"
           :options="templateOptions"
@@ -19,7 +20,8 @@
       </TFormGroup>
 
       <TFormGroup v-if="selectedTemplate">
-        <TInputText
+
+        <TInputText        :inline="true"
           v-model="formData.name"
           :label="t('common.name')"
           :placeholder="t('admin.content.sections.namePlaceholder')"
@@ -27,7 +29,7 @@
           :error="errors.name"
         />
 
-        <TInputText
+        <TInputText        :inline="true"
           v-model="formData.slug"
           :label="t('common.slug')"
           :placeholder="t('admin.content.sections.slugPlaceholder')"
@@ -37,7 +39,7 @@
       </TFormGroup>
 
       <TFormGroup v-if="selectedTemplate">
-        <TTextArea
+        <TTextArea        :inline="true"
           v-model="formData.description"
           :label="t('common.description')"
           :placeholder="t('admin.content.sections.descriptionPlaceholder')"
@@ -46,7 +48,7 @@
       </TFormGroup>
 
       <TFormGroup v-if="selectedTemplate">
-        <TInputSelect
+        <TInputSelect        :inline="true"
           v-model="validatedLanguageCode"
           :label="t('admin.content.sections.language')"
           :options="languageOptions"
@@ -84,10 +86,10 @@
         <p :class="bemm('help-text')">{{ t('common.fieldsHelp') }}</p>
 
         <div :class="bemm('fields-list')">
-          <TFormGroup v-for="field in templateFields" :key="field.id">
+          <template v-for="field in templateFields" :key="field.id">
             <!-- Text Field -->
             <TInputText
-              v-if="field.field_type === 'text'"
+              v-if="field.field_type === 'text'"        :inline="true"
               v-model="fieldValues[field.field_key]"
               :label="field.label"
               :placeholder="`Enter ${field.label.toLowerCase()}`"
@@ -97,7 +99,7 @@
             <!-- Textarea Field -->
             <TTextArea
               v-else-if="field.field_type === 'textarea'"
-              v-model="fieldValues[field.field_key]"
+              v-model="fieldValues[field.field_key]"        :inline="true"
               :label="field.label"
               :placeholder="`Enter ${field.label.toLowerCase()}`"
               :required="field.is_required"
@@ -108,7 +110,7 @@
             <!-- TODO: Replace with TRichTextEditor once TipTap dependencies are installed -->
             <TTextArea
               v-else-if="field.field_type === 'richtext'"
-              v-model="fieldValues[field.field_key]"
+              v-model="fieldValues[field.field_key]"        :inline="true"
               :label="field.label"
               :placeholder="`Enter ${field.label.toLowerCase()}`"
               :required="field.is_required"
@@ -118,7 +120,7 @@
             <!-- Number Field -->
             <TInputText
               v-else-if="field.field_type === 'number'"
-              v-model="fieldValues[field.field_key]"
+              v-model="fieldValues[field.field_key]"        :inline="true"
               :label="field.label"
               :placeholder="`Enter ${field.label.toLowerCase()}`"
               :required="field.is_required"
@@ -128,39 +130,48 @@
             <!-- Boolean Field -->
             <TInputCheckbox
               v-else-if="field.field_type === 'boolean'"
-              v-model="fieldValues[field.field_key]"
+              v-model="fieldValues[field.field_key]"        :inline="true"
               :label="field.label"
             />
 
             <!-- Select Field -->
             <TInputSelect
               v-else-if="field.field_type === 'select'"
-              v-model="fieldValues[field.field_key]"
+              v-model="fieldValues[field.field_key]"        :inline="true"
               :label="field.label"
               :options="getSelectOptions(field)"
               :placeholder="`Select ${field.label.toLowerCase()}`"
               :required="field.is_required"
             />
-            
+
             <!-- Options Field -->
             <TInputSelect
               v-else-if="field.field_type === 'options'"
-              v-model="fieldValues[field.field_key]"
+              v-model="fieldValues[field.field_key]"        :inline="true"
               :label="field.label"
               :options="getOptionsFromConfig(field)"
               :placeholder="`Select ${field.label.toLowerCase()}`"
+              :required="field.is_required"
+            />
+            
+            <!-- Items Field (Repeater) -->
+            <ItemsFieldInstance
+              v-else-if="field.field_type === 'items'"
+              v-model="fieldValues[field.field_key]"
+              :label="field.label"
+              :config="field.config"
               :required="field.is_required"
             />
 
             <!-- Default Text for other field types -->
             <TInputText
               v-else
-              v-model="fieldValues[field.field_key]"
+              v-model="fieldValues[field.field_key]"        :inline="true"
               :label="`${field.label} (${field.field_type})`"
               :placeholder="`Enter ${field.label.toLowerCase()}`"
               :required="field.is_required"
             />
-          </TFormGroup>
+          </template>
         </div>
       </div>
     </div>
@@ -195,6 +206,7 @@ import {
 } from '@tiko/ui'
 import { contentService, translationService } from '@tiko/core'
 import type { SectionTemplate, ContentSection, Language, ContentField } from '@tiko/core'
+import ItemsFieldInstance from './ItemsFieldInstance.vue'
 
 interface SectionWithData extends ContentSection {
   fieldValues?: Record<string, any>
@@ -330,6 +342,7 @@ function getDefaultValueForFieldType(fieldType: string): any {
       return 0
     case 'list':
     case 'media_list':
+    case 'items':
       return []
     case 'object':
       return {}
@@ -392,7 +405,7 @@ function getOptionsFromConfig(field: ContentField): Array<{ value: string; label
   if (!field.config?.options) {
     return []
   }
-  
+
   // Handle the options array from FieldOptionsEditor
   return field.config.options.map((opt: any) => {
     if (typeof opt === 'string') {
@@ -481,7 +494,7 @@ async function handleSave() {
 // Watch for language_code changes
 watch(() => formData.language_code, (newVal, oldVal) => {
   console.log('Language code changed from:', oldVal, 'to:', newVal)
-  
+
   // Additional validation to catch label values early
   if (newVal && (newVal.length > 10 || newVal.includes(' '))) {
     console.warn('Warning: Language code appears to be a label, not a code:', newVal)

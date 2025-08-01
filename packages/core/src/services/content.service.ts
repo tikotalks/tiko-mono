@@ -36,17 +36,34 @@ export interface SectionTemplate {
   updated_at: string
 }
 
+export interface ItemFieldConfig {
+  fields: ItemSubField[]
+  min_items?: number
+  max_items?: number
+  default_items?: number
+}
+
+export interface ItemSubField {
+  key: string
+  label: string
+  type: 'text' | 'textarea' | 'number' | 'boolean' | 'select'
+  required?: boolean
+  placeholder?: string
+  options?: Array<{ value: string; label: string }> // For select type
+  default?: any
+}
+
 export interface ContentField {
   id: string
   section_template_id: string
   field_key: string
   label: string
-  field_type: 'text' | 'textarea' | 'richtext' | 'number' | 'boolean' | 'select' | 'options' | 'media' | 'media_list' | 'list' | 'object'
+  field_type: 'text' | 'textarea' | 'richtext' | 'number' | 'boolean' | 'select' | 'options' | 'media' | 'media_list' | 'list' | 'object' | 'items'
   is_required: boolean
   is_translatable: boolean
   default_value?: any
   validation_rules?: Record<string, any>
-  config?: Record<string, any>
+  config?: Record<string, any> // For items type, this will be ItemFieldConfig
   order_index: number
 }
 

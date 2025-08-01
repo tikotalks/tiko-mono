@@ -120,6 +120,16 @@
 		--sizing: 1.25;
 	}
 
+	&--inline{
+		display: flex;
+		align-items: center;
+		gap: var(--space);
+
+		#{$b}__label {
+			width: var(--input-label-width, 30%);
+		}
+	}
+
 	&__control {
 		padding: var(--input-control-padding, var(--input-control-padding-y, calc(0.75em * var(--sizing)))) var(--input-control-padding, var(--input-control-padding-x, calc(var(--sizing) * 1em)));
 		background-color: transparent;

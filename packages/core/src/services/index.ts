@@ -45,7 +45,9 @@ export { contentService } from './content.service'
 export type { 
   ContentProject, 
   SectionTemplate, 
-  ContentField, 
+  ContentField,
+  ItemFieldConfig,
+  ItemSubField,
   PageTemplate, 
   ContentPage, 
   PageSection, 

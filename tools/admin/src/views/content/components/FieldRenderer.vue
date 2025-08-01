@@ -22,6 +22,7 @@ import {
   useI18n 
 } from '@tiko/ui'
 import type { ContentField } from '@tiko/core'
+import ItemsFieldEditor from './ItemsFieldEditor.vue'
 
 interface Props {
   field: ContentField
@@ -54,6 +55,8 @@ const fieldComponent = computed(() => {
     case 'select':
     case 'options':
       return TInputSelect
+    case 'items':
+      return ItemsFieldEditor
     default:
       return TInputText
   }
@@ -80,6 +83,11 @@ const fieldProps = computed(() => {
           return { value: opt.key, label: opt.value }
         })
       }
+      break
+      
+    case 'items':
+      // Pass the config directly for items field
+      baseProps.config = props.field.config || { fields: [] }
       break
   }
   

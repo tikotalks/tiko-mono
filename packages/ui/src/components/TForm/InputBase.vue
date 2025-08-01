@@ -115,7 +115,6 @@
 
 <script lang="ts" setup generic="T">
 import { ref, reactive, onMounted, computed } from 'vue';
-import { ButtonSettings } from "../TButton/TButton.model";
 import { TButton } from '../TButton';
 import TIcon from '../TIcon/TIcon.vue';
 import { Size, Status } from '../../types';
@@ -135,6 +134,7 @@ type Props = {
 	description?: string;
 	instructions?: string;
 	disabled?: boolean;
+	inline?: boolean;
 	onKey?: {
 		key: string;
 		action: (e: KeyboardEvent) => void;
@@ -166,6 +166,7 @@ const props = withDefaults(defineProps<Props>(), {
 	instructions: '',
 	disabled: false,
 	onKey: undefined,
+	inline: false,
 	error: () => [],
 	maxErrors: 1,
 	size: () => Size.MEDIUM,
@@ -356,6 +357,7 @@ const inputClasses = computed(() => {
 	return [
 		bemm('', [
 			props.size,
+			props.inline ? 'inline' : '',
 			focused.value ? 'focused' : '',
 			props.controls ? '' : 'no-controls',
 			validationErrors.value.length > 0 ? 'has-error' : '',
