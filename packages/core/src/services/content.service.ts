@@ -665,6 +665,22 @@ class ContentService {
     })
   }
 
+  async getSectionUsage(sectionId: string): Promise<{ page_id: string; page_title: string }[]> {
+    try {
+      // Get all pages that use this section
+      const query = `/content_page_sections?section_id=eq.${sectionId}&select=page_id,content_pages(id,title)`
+      const results = await this.makeRequest(query)
+      
+      return results.map((r: any) => ({
+        page_id: r.page_id,
+        page_title: r.content_pages?.title || 'Unknown Page'
+      }))
+    } catch (error) {
+      console.error('Failed to get section usage:', error)
+      return []
+    }
+  }
+
   // =================== SECTIONS (Alias for Section Templates) ===================
 
   async getSection(idOrSlug: string): Promise<ContentSection | null> {
