@@ -10,9 +10,11 @@ account_id = "dc2b7d14a69351375cab6de9a13ddee9"
 
 # Temporarily disabled custom routes - will use worker.dev URL for testing
 
-[[r2_buckets]]
-binding = "R2_BUCKET"
-bucket_name = "tiko-media"
+# [[r2_buckets]]
+# binding = "R2_BUCKET"
+# bucket_name = "tiko-media"
+
+# Temporarily disabled R2 bucket - needs to be created in Cloudflare dashboard first
 
 [vars]
 # Non-sensitive environment variables can go here
