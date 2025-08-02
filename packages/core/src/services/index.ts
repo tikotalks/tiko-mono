@@ -57,6 +57,13 @@ export type {
   ContentData,
   Language
 } from './content.service'
+export { sentenceService } from './sentence.service'
+export type {
+  SentencePrediction,
+  SentencePredictResponse,
+  SentenceSelectRequest,
+  SentenceSelectResponse
+} from './sentence.service'
 
 // Alternative: Export Supabase implementations
 // import { SupabaseParentModeService } from './parent-mode-supabase.service'

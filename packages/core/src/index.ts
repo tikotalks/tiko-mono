@@ -34,6 +34,8 @@ export { useUserPreferences } from './composables/useUserPreferences'
 export type { UserPreferences, ListPreferences } from './composables/useUserPreferences'
 export { useContent } from './composables/useContent'
 export type { PageContent, UseContentOptions } from './composables/useContent'
+export { useSentenceBuilder, useSentenceBuilders } from './composables/useSentenceBuilder'
+export type { UseSentenceBuilderOptions, UseSentenceBuilderReturn } from './composables/useSentenceBuilder'
 
 // Constants
 export * from './constants'
