@@ -58,9 +58,9 @@ export class UploadService {
       const mediaData = {
         filename: data.filename || file.name,
         original_filename: file.name,
-        file_size: file.size,
-        mime_type: file.type,
-        original_url: data.original || data.url,
+        file_size: data.size || file.size,
+        mime_type: data.type || file.type,
+        original_url: data.url,
         width: data.width || null,
         height: data.height || null,
         name: data.name || file.name.replace(/\.[^.]+$/, ''),
@@ -77,7 +77,7 @@ export class UploadService {
 
       return { 
         success: true,
-        url: data.original || data.url,
+        url: data.url,
         mediaId: media.id,
         aiAnalysisMessage
       }
@@ -86,7 +86,7 @@ export class UploadService {
       // Don't fail the upload if DB save fails
       return { 
         success: true,
-        url: data.original || data.url,
+        url: data.url,
         mediaId: '',
         aiAnalysisMessage
       }
