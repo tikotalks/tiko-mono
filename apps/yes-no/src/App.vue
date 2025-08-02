@@ -34,6 +34,10 @@ const isAuthCallbackRoute = computed(() => {
 // Framework configuration
 const frameworkConfig = ref<FrameworkConfig>({
   ...tikoConfig,
+  auth: {
+    ...tikoConfig.auth,
+    skipAuth: true // Ensure skipAuth is explicitly set
+  },
   topBar: {
     showUser: true,
     showTitle: true,

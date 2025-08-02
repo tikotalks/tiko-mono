@@ -15,11 +15,12 @@ export interface UseImagesReturn {
   stats: Ref<ImageStats>
   loading: Ref<boolean>
   error: Ref<string | null>
-  
+
   // Computed
   filteredImages: Ref<MediaItem[]>
-  
+
   // Methods
+  getImage: (id: string) => MediaItem | undefined
   loadImages: () => Promise<void>
   searchImages: (query: string) => void
   refreshStats: () => Promise<void>
@@ -41,7 +42,7 @@ const filteredImages = computed(() => {
   if (!searchQuery.value) {
     return imageList.value
   }
-  
+
   const query = searchQuery.value.toLowerCase()
   return imageList.value.filter(media =>
     media.title?.toLowerCase().includes(query) ||
@@ -53,17 +54,22 @@ const filteredImages = computed(() => {
 
 /**
  * Composable for managing images and media statistics
+ * @param publicMode - If true, uses public API that doesn't require authentication
  */
-export function useImages(): UseImagesReturn {
+export function useImages(publicMode = false): UseImagesReturn {
   // Event bus for listening to upload completion
   const eventBus = useEventBus()
 
   const loadImages = async () => {
     loading.value = true
     error.value = null
-    
+
     try {
-      imageList.value = await mediaService.getMediaList()
+      if (publicMode) {
+        imageList.value = await mediaService.getPublicMediaList()
+      } else {
+        imageList.value = await mediaService.getMediaList()
+      }
       await refreshStats()
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load images'
@@ -72,11 +78,15 @@ export function useImages(): UseImagesReturn {
       loading.value = false
     }
   }
-  
+
+  const getImage = (id: string): MediaItem | undefined => {
+    return imageList.value.find(image => image.id === id)
+  }
+
   const searchImages = (query: string) => {
     searchQuery.value = query
   }
-  
+
   const refreshStats = async () => {
     try {
       if (imageList.value.length === 0) {
@@ -87,17 +97,17 @@ export function useImages(): UseImagesReturn {
         }
         return
       }
-      
+
       // Calculate stats from loaded images
       const totalImages = imageList.value.length
       const storageUsed = imageList.value.reduce((total, image) => total + (image.file_size || 0), 0)
-      
+
       // Find the most recent upload
       const lastUpload = imageList.value.reduce((latest, image) => {
         const imageDate = new Date(image.created_at)
         return !latest || imageDate > latest ? imageDate : latest
       }, null as Date | null)
-      
+
       stats.value = {
         totalImages,
         storageUsed,
@@ -107,7 +117,7 @@ export function useImages(): UseImagesReturn {
       console.error('Failed to calculate stats:', err)
     }
   }
-  
+
   const refresh = async () => {
     await loadImages()
   }
@@ -126,18 +136,19 @@ export function useImages(): UseImagesReturn {
   onUnmounted(() => {
     eventBus.off('media:refresh', handleMediaRefresh)
   })
-  
+
   return {
     // Data
     imageList,
     stats,
     loading,
     error,
-    
+
     // Computed
     filteredImages,
-    
+
     // Methods
+    getImage,
     loadImages,
     searchImages,
     refreshStats,

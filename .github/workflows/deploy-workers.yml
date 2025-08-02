@@ -9,7 +9,79 @@ on:
       - '.github/workflows/deploy-workers.yml'
 
 jobs:
+  check-triggers:
+    runs-on: ubuntu-latest
+    outputs:
+      should-build: ${{ steps.check.outputs.should-build }}
+      build-i18n: ${{ steps.check.outputs.build-i18n }}
+      build-media: ${{ steps.check.outputs.build-media }}
+      build-sentence: ${{ steps.check.outputs.build-sentence }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          
+      - name: Check commit message for triggers
+        id: check
+        run: |
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          echo "Commit message: $COMMIT_MSG"
+          
+          # Check for skip triggers
+          if [[ "$COMMIT_MSG" == *"[skip-ci]"* ]] || [[ "$COMMIT_MSG" == *"[skip:workers]"* ]]; then
+            echo "should-build=false" >> $GITHUB_OUTPUT
+            echo "build-i18n=false" >> $GITHUB_OUTPUT
+            echo "build-media=false" >> $GITHUB_OUTPUT
+            echo "build-sentence=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Check for build all triggers
+          if [[ "$COMMIT_MSG" == *"[build:all]"* ]] || [[ "$COMMIT_MSG" == *"[build:workers]"* ]]; then
+            echo "should-build=true" >> $GITHUB_OUTPUT
+            echo "build-i18n=true" >> $GITHUB_OUTPUT
+            echo "build-media=true" >> $GITHUB_OUTPUT
+            echo "build-sentence=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Check for specific worker triggers
+          if [[ "$COMMIT_MSG" == *"[build:i18n-translator]"* ]]; then
+            echo "build-i18n=true" >> $GITHUB_OUTPUT
+          fi
+          if [[ "$COMMIT_MSG" == *"[build:media-upload]"* ]]; then
+            echo "build-media=true" >> $GITHUB_OUTPUT
+          fi
+          if [[ "$COMMIT_MSG" == *"[build:sentence-engine]"* ]]; then
+            echo "build-sentence=true" >> $GITHUB_OUTPUT
+          fi
+          
+          # If any specific worker is triggered, enable should-build
+          if [[ "${build_i18n}${build_media}${build_sentence}" == *"true"* ]]; then
+            echo "should-build=true" >> $GITHUB_OUTPUT
+          else
+            # Check for file changes
+            if git diff --name-only HEAD^ HEAD | grep -q "workers/i18n-translator/"; then
+              echo "build-i18n=true" >> $GITHUB_OUTPUT
+            fi
+            if git diff --name-only HEAD^ HEAD | grep -q "workers/media-upload/"; then
+              echo "build-media=true" >> $GITHUB_OUTPUT
+            fi
+            if git diff --name-only HEAD^ HEAD | grep -q "workers/sentence-engine/"; then
+              echo "build-sentence=true" >> $GITHUB_OUTPUT
+            fi
+            
+            # Set should-build if any worker needs building
+            if git diff --name-only HEAD^ HEAD | grep -q "workers/"; then
+              echo "should-build=true" >> $GITHUB_OUTPUT
+            else
+              echo "should-build=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
   deploy:
+    needs: check-triggers
+    if: needs.check-triggers.outputs.should-build == 'true'
     runs-on: ubuntu-latest
     name: Deploy Workers
     steps:
@@ -35,6 +107,7 @@ jobs:
           pnpm --filter=@tiko/sentence-engine-worker build
           
       - name: Deploy i18n-translator worker
+        if: needs.check-triggers.outputs.build-i18n == 'true'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -43,6 +116,7 @@ jobs:
           command: deploy --env production
           
       - name: Deploy media-upload worker
+        if: needs.check-triggers.outputs.build-media == 'true'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -51,6 +125,7 @@ jobs:
           command: deploy --env production
           
       - name: Deploy sentence-engine worker
+        if: needs.check-triggers.outputs.build-sentence == 'true'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

@@ -1,4 +1,4 @@
-import { defineConfig } from '@tiko/ui/types/tiko-config'
+import { defineConfig } from '@tiko/core'
 
 export default defineConfig({
   id: 'yesno',
@@ -9,5 +9,8 @@ export default defineConfig({
     primary: 'purple',
     secondary: 'green',
     tertiary: 'red'
+  },
+  auth: {
+    skipAuth: true // Allow using the app without login
   }
 })

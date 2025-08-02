@@ -61,6 +61,11 @@ export interface MediaService {
   getMediaList(): Promise<MediaItem[]>
 
   /**
+   * Get all public media items (no authentication required)
+   */
+  getPublicMediaList(): Promise<MediaItem[]>
+
+  /**
    * Search media items
    */
   searchMedia(options: MediaSearchOptions): Promise<MediaItem[]>

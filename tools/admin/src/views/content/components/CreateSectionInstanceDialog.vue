@@ -313,7 +313,6 @@ async function loadLanguages() {
 async function loadTemplateFields(templateId: string) {
   try {
     templateFields.value = await contentService.getFieldsBySectionTemplate(templateId)
-    console.log('Loaded template fields:', templateFields.value)
     // Initialize field values
     fieldValues.value = {}
 
@@ -403,11 +402,7 @@ function getSelectOptions(field: ContentField): Array<{ value: string; label: st
 }
 
 function getOptionsFromConfig(field: ContentField): Array<{ value: string; label: string }> {
-  console.log('getOptionsFromConfig - field:', field)
-  console.log('getOptionsFromConfig - field.config:', field.config)
-  
   if (!field.config?.options) {
-    console.warn('No options found in field config')
     return []
   }
 
@@ -458,10 +453,6 @@ async function handleSave() {
   try {
     const template = selectedTemplate.value!
 
-    // Debug: Check what language_code value we have
-    console.log('Form language_code:', formData.language_code)
-    console.log('Form data:', formData)
-
     // Use the validated language code to ensure we never pass a label
     const languageCode = validatedLanguageCode.value
 
@@ -497,9 +488,7 @@ async function handleSave() {
 }
 
 // Watch for language_code changes
-watch(() => formData.language_code, (newVal, oldVal) => {
-  console.log('Language code changed from:', oldVal, 'to:', newVal)
-
+watch(() => formData.language_code, (newVal) => {
   // Additional validation to catch label values early
   if (newVal && (newVal.length > 10 || newVal.includes(' '))) {
     console.warn('Warning: Language code appears to be a label, not a code:', newVal)
@@ -513,10 +502,6 @@ onMounted(() => {
   // If editing an existing section, load its template fields
   if (props.mode === 'edit' && props.section?.section_template_id) {
     loadTemplateFields(props.section.section_template_id)
-
-    // Debug: Check initial section data
-    console.log('Initial section data:', props.section)
-    console.log('Initial language_code:', props.section?.language_code)
   }
 })
 </script>

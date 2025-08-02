@@ -673,29 +673,29 @@ The project uses smart build detection to only rebuild apps when necessary. You 
 
 ### Force Build Triggers
 Add these to your commit message to force builds:
-- `[build-all]` - Forces ALL apps to build regardless of changes
-- `[force-build]` - Same as `[build-all]`, forces all apps to build
-- `[build-{app}]` - Forces a specific app to build (e.g., `[build-cards]`, `[build-timer]`)
+- `[build:all]` - Forces ALL apps to build regardless of changes
+- `[force-build]` - Same as `[build:all]`, forces all apps to build
+- `[build:{app}]` - Forces a specific app to build (e.g., `[build:cards]`, `[build:timer]`)
 
 ### Skip Build Triggers
 Add these to your commit message to skip builds:
 - `[skip-ci]` - Skips ALL builds even if there are changes
 - `[skip-build]` - Same as `[skip-ci]`
-- `[skip-{app}]` - Skips a specific app's build (e.g., `[skip-cards]`)
+- `[skip:{app}]` - Skips a specific app's build (e.g., `[skip:cards]`)
 
 ### Examples
 ```bash
 # Force all apps to build even without changes
-git commit -m "chore: update dependencies [build-all]"
+git commit -m "chore: update dependencies [build:all]"
 
 # Force specific app to build
-git commit -m "fix(cards): update config [build-cards]"
+git commit -m "fix(cards): update config [build:cards]"
 
 # Skip all builds (useful for documentation changes)
 git commit -m "docs: update README [skip-ci]"
 
 # Skip specific app build
-git commit -m "style(timer): fix typo in comment [skip-timer]"
+git commit -m "style(timer): fix typo in comment [skip:timer]"
 ```
 
 ### Build Detection Logic
@@ -790,3 +790,42 @@ The script should be integrated into the CI pipeline:
 - **Keep keys.ts as source of truth** - all new keys must be added there first
 - **Use semantic key names** that clearly indicate their purpose
 - **Group related keys** logically (by app, feature, or component)
+
+## Build Triggers for Netlify Deployments
+
+The project uses smart build detection to only rebuild apps when necessary. You can override this behavior using commit message triggers:
+
+### Force Build Triggers
+Add these to your commit message to force builds:
+- `[build:all]` - Forces ALL apps to build regardless of changes
+- `[force-build]` - Same as `[build:all]`, forces all apps to build
+- `[build:{app}]` - Forces a specific app to build (e.g., `[build:cards]`, `[build:timer]`)
+
+### Skip Build Triggers
+Add these to your commit message to skip builds:
+- `[skip-ci]` - Skips ALL builds even if there are changes
+- `[skip-build]` - Same as `[skip-ci]`
+- `[skip:{app}]` - Skips a specific app's build (e.g., `[skip:cards]`)
+
+### Examples
+```bash
+# Force all apps to build even without changes
+git commit -m "chore: update dependencies [build:all]"
+
+# Force specific app to build
+git commit -m "fix(cards): update config [build:cards]"
+
+# Skip all builds (useful for documentation changes)
+git commit -m "docs: update README [skip-ci]"
+
+# Skip specific app build
+git commit -m "style(timer): fix typo in comment [skip:timer]"
+```
+
+### Build Detection Logic
+By default, apps will only build if:
+1. There are changes in the app's directory
+2. There are changes in shared packages (packages/ui, packages/core)
+3. There are changes in root dependencies (package.json, pnpm-lock.yaml)
+
+The commit message triggers override this default behavior.

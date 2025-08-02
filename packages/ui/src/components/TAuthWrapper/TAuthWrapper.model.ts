@@ -11,6 +11,11 @@ export interface TAuthWrapperProps {
   title?: string
   
   /**
+   * Allow users to skip authentication
+   */
+  allowSkipAuth?: boolean
+  
+  /**
    * Name of the app (used for splash screen and authentication context)
    * @default 'todo' (for backwards compatibility)
    */

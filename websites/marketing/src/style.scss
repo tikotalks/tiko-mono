@@ -1,6 +1,13 @@
 // Global styles for the marketing website
 @use '@tiko/ui/styles/app.scss';
 
+:root{
+  --font-family: 'Nunito', sans-serif;
+  --header-font-family: 'Lora', serif;
+
+}
+
+
 // Reset
 * {
   margin: 0;
@@ -17,8 +24,8 @@ html {
 
 body {
   font-family: var(--font-family);
-  color: var(--color-foreground);
-  background: var(--color-background);
+  color: var(--color-dark);
+  background: var(--color-light);
   line-height: 1.6;
 }
 

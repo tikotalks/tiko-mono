@@ -5,12 +5,14 @@
     :show-splash-screen="false"
     :is-app="false"
   >
+  <PageHeader/>
     <router-view />
   </TFramework>
 </template>
 
 <script setup lang="ts">
 import { TFramework, type FrameworkConfig } from '@tiko/ui'
+import PageHeader from './components/PageHeader.vue';
 
 const frameworkConfig: FrameworkConfig = {
   id: 'marketing',

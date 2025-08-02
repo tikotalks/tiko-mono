@@ -39,11 +39,13 @@
           :app-id="appName"
           :app-name="title"
           :enable-sso="true"
+          :allow-skip-auth="allowSkipAuth"
           @apple-sign-in="handleAppleSignIn"
           @email-submit="handleEmailSubmit"
           @verification-submit="handleVerificationSubmit"
           @resend-code="handleResendCode"
           @clear-error="clearAuthError"
+          @skip-auth="handleSkipAuth"
         />
       </div>
     </TAppLayout>
@@ -74,7 +76,8 @@ const props = withDefaults(defineProps<TAuthWrapperProps>(), {
   appName: 'todo',
   isApp: true,
   requireAuth: true,
-  showSplashScreen: true
+  showSplashScreen: true,
+  allowSkipAuth: false
 })
 
 // BEM classes
@@ -105,6 +108,10 @@ const authError = ref<string | null>(null)
 
 // Computed
 const isAuthenticated = computed(() => {
+  // Check if user skipped auth
+  if (sessionStorage.getItem('tiko_skip_auth') === 'true') {
+    return true;
+  }
   if (!authStore) return false;
   return authStore.isAuthenticated || false;
 });
@@ -141,6 +148,13 @@ const splashConfig = computed(() => {
 });
 
 // Methods
+const handleSkipAuth = () => {
+  // Set a flag in session storage to indicate skip auth mode
+  sessionStorage.setItem('tiko_skip_auth', 'true');
+  // Reload the page to apply skip auth mode
+  window.location.reload();
+}
+
 const handleAppleSignIn = async () => {
   authLoading.value = true;
   authError.value = null;

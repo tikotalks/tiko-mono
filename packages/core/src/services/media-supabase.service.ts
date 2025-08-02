@@ -101,6 +101,40 @@ export class SupabaseMediaService implements MediaService {
     }
   }
 
+  async getPublicMediaList(): Promise<MediaItem[]> {
+    try {
+      console.log('[MediaService] Fetching public media list...')
+      const response = await fetch(`${this.API_URL}/media?select=*&order=created_at.desc`, {
+        headers: {
+          'apikey': this.ANON_KEY,
+          'Content-Type': 'application/json'
+          // Explicitly no Authorization header for public access
+        }
+      })
+
+      console.log('[MediaService] Response status:', response.status)
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('[MediaService] Failed to fetch public media:', response.status, errorText)
+        
+        // Check if it's an auth error
+        if (response.status === 401 || errorText.includes('JWT')) {
+          throw new Error('Authentication required - RLS policy may need update')
+        }
+        
+        throw new Error(`Failed to fetch public media: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      console.log('[MediaService] Successfully fetched', data.length, 'media items')
+      return data || []
+    } catch (error) {
+      console.error('[MediaService] Error in getPublicMediaList:', error)
+      throw error
+    }
+  }
+
   async searchMedia(options: MediaSearchOptions): Promise<MediaItem[]> {
     const session = this.getSession()
     if (!session) throw new Error('Not authenticated')

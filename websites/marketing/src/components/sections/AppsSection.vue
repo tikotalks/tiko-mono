@@ -1,120 +1,195 @@
 <template>
   <section :class="bemm()">
-    <div :class="bemm('container')">
-      <h2 v-if="content?.title" :class="bemm('title')">
-        {{ content.title }}
-      </h2>
-      <div :class="bemm('grid')">
-        <TCard 
-          v-for="app in apps" 
-          :key="app.id"
-          :class="bemm('card')"
-          clickable
-          @click="navigateToApp(app.url)"
-        >
-          <div :class="bemm('icon')">
-            <TIcon 
-              :name="getIcon(app.icon)" 
-              size="large" 
-            />
-          </div>
-          <h3>{{ app.name || app.title }}</h3>
-          <p>{{ app.description }}</p>
-        </TCard>
+    <div :class="bemm('wrapper')">
+      <div
+        :class="bemm('image')"
+        :style="`--background-image: url(${imageUrl})`"
+      ></div>
+      <div :class="bemm('container')">
+        <h2 v-if="content?.title" :class="bemm('title')" v-html="processTitle(content.title)" />
+        <MarkdownRenderer
+          :class="bemm('content')"
+          v-if="content?.body"
+          :content="content.body"
+        />
       </div>
+    </div>
+
+    <div :class="bemm('apps')">
+      <ul v-if="content?.apps" :class="bemm('apps-list')">
+        <li
+          v-for="(app, index) in content.apps"
+          :key="index"
+          :class="bemm('app-item')"
+          :style="`--color: ${app.color || 'var(--color-blue)'};`"
+        >
+          <img
+            :src="getImageUrl(app.image)"
+            :alt="app.title"
+            :class="bemm('app-image')"
+          />
+        </li>
+      </ul>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { useBemm } from 'bemm'
-import { TCard, TIcon } from '@tiko/ui'
-import { Icons } from 'open-icon'
-import { computed } from 'vue'
-import type { ContentSection } from '@tiko/core'
+import { useBemm } from 'bemm';
+import type { ContentSection } from '@tiko/core';
+import { useImages, useImageUrl } from '@tiko/core';
+import { onMounted, ref } from 'vue';
+import MarkdownRenderer from '../MarkdownRenderer.vue';
+import { processTitle } from '@/utils/processTitle';
 
-interface AppsSectionProps {
-  section: ContentSection
-  content: any
+interface TextSectionProps {
+  section: ContentSection;
+  content: any;
 }
 
-const props = defineProps<AppsSectionProps>()
-const bemm = useBemm('apps-section')
+const props = defineProps<TextSectionProps>();
+const bemm = useBemm('apps-section');
 
-const apps = computed(() => {
-  return props.content?.items || []
-})
+const { getImage, loadImages } = useImages(true); // Use public mode for marketing site
+const { getImageVariants } = useImageUrl();
 
-function getIcon(iconName: string) {
-  return Icons[iconName as keyof typeof Icons] || Icons.CARD
-}
 
-function navigateToApp(url: string) {
-  if (url) {
-    window.open(url, '_blank')
+const getImageUrl = (imageId: string) => {
+  const imageData = getImage(imageId);
+  if (imageData) {
+    return getImageVariants(imageData.original_url).medium;
   }
-}
+  return '';
+};
+const imageUrl = ref('');
+
+const loadImage = async () => {
+  if (props.content.image) {
+    const image = getImage(props.content.image);
+    console.log('Image:', image);
+    if (image) {
+      imageUrl.value = getImageVariants(image.original_url).large;
+    } else {
+      imageUrl.value = '';
+    }
+  }
+};
+
+onMounted(async () => {
+  await loadImages();
+  loadImage();
+});
 </script>
 
 <style lang="scss">
 .apps-section {
-  padding: var(--space-2xl) 0;
-  background: var(--color-background-secondary);
+  padding: var(--spacing);
+  background-color: var(--color-light);
+  color: var(--color-dark);
+
+  position: relative;
+
+  &__wrapper {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+  }
+  &__image {
+    width: 50vw;
+    height: 50vw;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    background-image: var(--background-image);
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+    transform: translateY(-50%) translateX(-25%) rotate(90deg);
+  }
 
   &__container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 var(--space);
+    width: calc(50% + (var(--spacing) * 1.5));
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-l);
+    background-color: color-mix(in srgb, var(--color-blue), transparent 75%);
+    border-radius: var(--border-radius);
+    padding: var(--spacing);
+    transform: translateX(var(--spacing));
+    // margin-right: calc(var(--spacing) * -1);
   }
 
   &__title {
-    font-size: var(--font-size-2xl);
-    text-align: center;
-    margin-bottom: var(--space-xl);
-    color: var(--color-foreground);
+    font-size: clamp(3em, 4vw, 6em);
+    line-height: 1;
+    font-family: var(--header-font-family);
+    color: var(--color-blue);
+    position: absolute;
+    left: 0;
+    transform: translateX(-100%);
+    width: calc(50vw - var(--spacing));
+    span{
+      color: var(--color-green);
+    }
   }
 
-  &__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: var(--space);
-  }
-
-  &__card {
-    text-align: center;
-    padding: var(--space);
-    transition: transform 0.2s ease;
-
-    &:hover {
-      transform: translateY(-4px);
-    }
-
-    h3 {
-      margin: var(--space-s) 0;
-      color: var(--color-foreground);
-    }
+  &__content {
+    color: var(--color-foreground-secondary);
+    line-height: 1.6;
+    max-width: 640px;
 
     p {
-      color: var(--color-foreground-secondary);
-      font-size: var(--font-size-sm);
+      margin-bottom: var(--space);
     }
   }
 
-  &__icon {
-    width: 64px;
-    height: 64px;
-    margin: 0 auto;
+  &__apps {
+    width: 100%;
     display: flex;
+    flex-wrap: wrap;
+    gap: var(--space);
+    justify-content: center;
+    left: 0;
+    width: 100%;
+    bottom: 0;
+    position: relative;
+    z-index: 10;
+    margin-top: calc((var(--spacing) / 2) * -1);
+  }
+  &__apps-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space);
+    justify-content: center;
+  }
+  &__app-item {
+    width: 160px;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border-radius: var(--border-radius);
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: var(--color-primary-10);
-    border-radius: var(--radius-lg);
+    background: var(--color, var(--color-background));
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: var(--border-radius);
+    transition: transform 0.3s ease;
+    &:hover {
+      transform: scale(1.05);
+    }
   }
 
-  @media (max-width: 768px) {
-    &__grid {
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    }
+  &__app-image {
+    width: 80%;
+    height: auto;
   }
 }
 </style>

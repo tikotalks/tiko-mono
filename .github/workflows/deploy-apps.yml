@@ -1,0 +1,253 @@
+name: Deploy Apps to Netlify
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - '.github/workflows/deploy-apps.yml'
+
+jobs:
+  check-triggers:
+    runs-on: ubuntu-latest
+    outputs:
+      build-all-apps: ${{ steps.check.outputs.build-all-apps }}
+      build-timer: ${{ steps.check.outputs.build-timer }}
+      build-cards: ${{ steps.check.outputs.build-cards }}
+      build-radio: ${{ steps.check.outputs.build-radio }}
+      build-todo: ${{ steps.check.outputs.build-todo }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          
+      - name: Check commit message for triggers
+        id: check
+        run: |
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          echo "Commit message: $COMMIT_MSG"
+          
+          # Check for build triggers
+          if [[ "$COMMIT_MSG" == *"[build:all]"* ]] || [[ "$COMMIT_MSG" == *"[build:apps]"* ]]; then
+            echo "build-all-apps=true" >> $GITHUB_OUTPUT
+            echo "build-timer=true" >> $GITHUB_OUTPUT
+            echo "build-cards=true" >> $GITHUB_OUTPUT
+            echo "build-radio=true" >> $GITHUB_OUTPUT
+            echo "build-todo=true" >> $GITHUB_OUTPUT
+          else
+            # Check for specific app triggers
+            if [[ "$COMMIT_MSG" == *"[build:timer]"* ]]; then
+              echo "build-timer=true" >> $GITHUB_OUTPUT
+            fi
+            if [[ "$COMMIT_MSG" == *"[build:cards]"* ]]; then
+              echo "build-cards=true" >> $GITHUB_OUTPUT
+            fi
+            if [[ "$COMMIT_MSG" == *"[build:radio]"* ]]; then
+              echo "build-radio=true" >> $GITHUB_OUTPUT
+            fi
+            if [[ "$COMMIT_MSG" == *"[build:todo]"* ]]; then
+              echo "build-todo=true" >> $GITHUB_OUTPUT
+            fi
+            
+            # Check for file changes if no triggers
+            if [[ -z "${build_timer}${build_cards}${build_radio}${build_todo}" ]]; then
+              # Check which apps have changes
+              if git diff --name-only HEAD^ HEAD | grep -q "apps/timer/"; then
+                echo "build-timer=true" >> $GITHUB_OUTPUT
+              fi
+              if git diff --name-only HEAD^ HEAD | grep -q "apps/cards/"; then
+                echo "build-cards=true" >> $GITHUB_OUTPUT
+              fi
+              if git diff --name-only HEAD^ HEAD | grep -q "apps/radio/"; then
+                echo "build-radio=true" >> $GITHUB_OUTPUT
+              fi
+              if git diff --name-only HEAD^ HEAD | grep -q "apps/todo/"; then
+                echo "build-todo=true" >> $GITHUB_OUTPUT
+              fi
+              
+              # If packages changed, build all apps
+              if git diff --name-only HEAD^ HEAD | grep -q "packages/"; then
+                echo "build-all-apps=true" >> $GITHUB_OUTPUT
+                echo "build-timer=true" >> $GITHUB_OUTPUT
+                echo "build-cards=true" >> $GITHUB_OUTPUT
+                echo "build-radio=true" >> $GITHUB_OUTPUT
+                echo "build-todo=true" >> $GITHUB_OUTPUT
+              fi
+            fi
+          fi
+          
+          # Check for skip triggers
+          if [[ "$COMMIT_MSG" == *"[skip-ci]"* ]] || [[ "$COMMIT_MSG" == *"[skip:apps]"* ]]; then
+            echo "build-timer=false" >> $GITHUB_OUTPUT
+            echo "build-cards=false" >> $GITHUB_OUTPUT
+            echo "build-radio=false" >> $GITHUB_OUTPUT
+            echo "build-todo=false" >> $GITHUB_OUTPUT
+          fi
+
+  deploy-timer:
+    needs: check-triggers
+    if: needs.check-triggers.outputs.build-timer == 'true'
+    runs-on: ubuntu-latest
+    name: Deploy Timer App
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+        
+      - name: Build Timer app
+        run: |
+          pnpm --filter=@tiko/ui build
+          pnpm --filter=@tiko/core build
+          pnpm --filter=timer build
+          
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v2
+        with:
+          publish-dir: './apps/timer/dist'
+          production-branch: master
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy from GitHub Actions"
+          enable-pull-request-comment: false
+          enable-commit-comment: false
+          overwrites-pull-request-comment: false
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_TIMER_SITE_ID }}
+
+  deploy-cards:
+    needs: check-triggers
+    if: needs.check-triggers.outputs.build-cards == 'true'
+    runs-on: ubuntu-latest
+    name: Deploy Cards App
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+        
+      - name: Build Cards app
+        run: |
+          pnpm --filter=@tiko/ui build
+          pnpm --filter=@tiko/core build
+          pnpm --filter=cards build
+          
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v2
+        with:
+          publish-dir: './apps/cards/dist'
+          production-branch: master
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy from GitHub Actions"
+          enable-pull-request-comment: false
+          enable-commit-comment: false
+          overwrites-pull-request-comment: false
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_CARDS_SITE_ID }}
+
+  deploy-radio:
+    needs: check-triggers
+    if: needs.check-triggers.outputs.build-radio == 'true'
+    runs-on: ubuntu-latest
+    name: Deploy Radio App
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+        
+      - name: Build Radio app
+        run: |
+          pnpm --filter=@tiko/ui build
+          pnpm --filter=@tiko/core build
+          pnpm --filter=radio build
+          
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v2
+        with:
+          publish-dir: './apps/radio/dist'
+          production-branch: master
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy from GitHub Actions"
+          enable-pull-request-comment: false
+          enable-commit-comment: false
+          overwrites-pull-request-comment: false
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_RADIO_SITE_ID }}
+
+  deploy-todo:
+    needs: check-triggers
+    if: needs.check-triggers.outputs.build-todo == 'true'
+    runs-on: ubuntu-latest
+    name: Deploy Todo App
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+        
+      - name: Build Todo app
+        run: |
+          pnpm --filter=@tiko/ui build
+          pnpm --filter=@tiko/core build
+          pnpm --filter=todo build
+          
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v2
+        with:
+          publish-dir: './apps/todo/dist'
+          production-branch: master
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy from GitHub Actions"
+          enable-pull-request-comment: false
+          enable-commit-comment: false
+          overwrites-pull-request-comment: false
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_TODO_SITE_ID }}
+
+  # Skip tiko app for now as it has build issues
+  # deploy-tiko:
+  #   needs: check-triggers
+  #   if: needs.check-triggers.outputs.build-tiko == 'true'
+  #   ...

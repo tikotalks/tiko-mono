@@ -4,10 +4,10 @@
       <h1>{{ t('marketing.about.title') }}</h1>
       <div :class="bemm('content')">
         <p>{{ t('marketing.about.intro') }}</p>
-        
+
         <h2>{{ t('marketing.about.mission.title') }}</h2>
         <p>{{ t('marketing.about.mission.description') }}</p>
-        
+
         <h2>{{ t('marketing.about.values.title') }}</h2>
         <div :class="bemm('values')">
           <div v-for="value in values" :key="value.title" :class="bemm('value')">
@@ -61,7 +61,7 @@ const values = [
 
   &__content {
     margin-top: var(--space-xl);
-    
+
     h2 {
       margin: var(--space-xl) 0 var(--space);
       color: var(--color-foreground);

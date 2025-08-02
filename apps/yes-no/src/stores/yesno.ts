@@ -61,7 +61,9 @@ export const useYesNoStore = defineStore('yesno', () => {
       try {
         const userId = authStore.user?.id
         if (!userId) {
-          console.error('[YesNoStore] No user ID available')
+          console.log('[YesNoStore] No user ID available - running in skip auth mode')
+          // In skip auth mode, just update local history without saving to DB
+          questionHistory.value = [question.trim(), ...questionHistory.value].slice(0, 20)
           return
         }
         
@@ -185,7 +187,8 @@ export const useYesNoStore = defineStore('yesno', () => {
     try {
       const userId = authStore.user?.id
       if (!userId) {
-        console.log('[YesNoStore] No user ID available, skipping item load')
+        console.log('[YesNoStore] No user ID available - running in skip auth mode')
+        // In skip auth mode, questions are only stored locally
         return
       }
       
@@ -270,7 +273,9 @@ export const useYesNoStore = defineStore('yesno', () => {
     try {
       const userId = authStore.user?.id
       if (!userId) {
-        console.error('[YesNoStore] No user ID available')
+        console.log('[YesNoStore] No user ID available - running in skip auth mode')
+        // In skip auth mode, just clear local history
+        questionHistory.value = []
         return
       }
       

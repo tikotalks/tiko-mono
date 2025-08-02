@@ -7,6 +7,7 @@ export interface TikoConfig {
   auth?: {
     required?: boolean
     providers?: ('email' | 'apple')[]
+    skipAuth?: boolean // Allow app to run without authentication
   }
 }
 

@@ -134,14 +134,12 @@
             <div v-if="field.field_type === 'options'" :class="bemm('field-config')">
               <FieldOptionsEditor
                 v-model="field.config"
-                @update:modelValue="(value) => field.config = value"
               />
             </div>
 
             <div v-if="field.field_type === 'items'" :class="bemm('field-config')">
               <ItemsFieldEditor
                 v-model="field.config"
-                @update:modelValue="(value) => field.config = value"
               />
             </div>
           </div>
@@ -201,6 +199,7 @@ interface Props {
 interface FieldForm extends Partial<ContentField> {
   id: string
   select_options?: string
+  config?: Record<string, any>
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -321,7 +320,8 @@ function addField() {
     field_type: 'text',
     is_required: false,
     is_translatable: true,
-    order_index: formData.fields.length
+    order_index: formData.fields.length,
+    config: {}
   })
 }
 
@@ -372,7 +372,6 @@ async function handleSave() {
   try {
     // Process fields
     const processedFields = formData.fields.map(field => {
-      console.log('Processing field:', field)
       const processed: any = {
         field_key: field.field_key,
         label: field.label,
@@ -406,7 +405,6 @@ async function handleSave() {
         processed.config = field.config
       }
 
-      console.log('Processed field:', processed)
       return processed
     })
 
@@ -433,7 +431,6 @@ async function handleSave() {
 async function loadExistingFields() {
   if (props.mode === 'edit' && props.section?.id) {
     try {
-      console.log('Loading fields for section:', props.section.id)
       const existingFields = await contentService.getFieldsBySectionTemplate(props.section.id)
 
       // Convert ContentField to FieldForm

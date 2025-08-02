@@ -26,6 +26,12 @@ export interface TLoginFormProps {
    * @default true
    */
   enableSSO?: boolean
+  
+  /**
+   * Whether to allow skipping authentication
+   * @default false
+   */
+  allowSkipAuth?: boolean
 }
 
 export interface TLoginFormEmits {
@@ -53,6 +59,11 @@ export interface TLoginFormEmits {
    * Emitted when clear error is clicked
    */
   clearError: []
+  
+  /**
+   * Emitted when skip auth is clicked
+   */
+  skipAuth: []
 }
 
 export type LoginFormStep = 'email' | 'verification' | 'register'

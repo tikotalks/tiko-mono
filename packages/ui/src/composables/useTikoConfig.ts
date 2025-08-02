@@ -33,8 +33,12 @@ export function useTikoConfig(config?: TikoConfig):{
   return {
     config: {
       ...defaultTikoConfig,
-      ...currentConfig.value
-    },
+      ...currentConfig.value,
+      auth: {
+        ...defaultTikoConfig.auth,
+        ...currentConfig.value?.auth
+      }
+    } as Required<TikoConfig>,
     themeStyles
   }
 }

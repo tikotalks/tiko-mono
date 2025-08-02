@@ -61,6 +61,18 @@
             >{{ t(keys.auth.loginWithApple) }}</TButton
           >
 
+          <!-- Skip Auth Button -->
+          <TButton
+            v-if="allowSkipAuth"
+            type="ghost"
+            size="large"
+            @click="handleSkipAuth"
+            :disabled="isLoading"
+            :class="bemm('skip-button')"
+            data-cy="skip-auth-button"
+            >{{ t(keys.auth.skipLogin) || 'Skip Login' }}</TButton
+          >
+
           <!-- Register Link -->
           <div :class="bemm('register')">
             <span :class="bemm('register-text')">{{ t(keys.auth.dontHaveAccount) }}</span>
@@ -374,6 +386,10 @@ const clearError = () => {
   emailError.value = '';
   verificationError.value = '';
   emit('clearError');
+};
+
+const handleSkipAuth = () => {
+  emit('skipAuth');
 };
 
 // Cleanup on unmount

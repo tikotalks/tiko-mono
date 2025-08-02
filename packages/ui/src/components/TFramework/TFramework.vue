@@ -5,13 +5,14 @@
       :title="tikoConfig?.name"
       :is-app="isApp"
       :app-name="tikoConfig?.id"
-      :require-auth="requireAuth"
+      :require-auth="computedRequireAuth"
       :show-splash-screen="showSplashScreen"
+      :allow-skip-auth="props.config?.auth?.skipAuth"
     >
       <TAppLayout
         :title="displayTitle"
         :subtitle="displaySubtitle"
-        :show-header="topBar.showTitle !== false"
+        :show-header="showTopBar"
         :show-back="showBackButton"
         :is-loading="loading"
         :is-app="isApp"
@@ -36,6 +37,17 @@
 
         <!-- Main content -->
         <slot />
+        
+        <!-- Login button when in skip auth mode -->
+        <TButton
+          v-if="isSkipAuthMode"
+          :class="bemm('login-button')"
+          type="ghost"
+          :icon="Icons.USER"
+          @click="handleSkipAuthLogin"
+        >
+          {{ t(keys.auth.login) }}
+        </TButton>
       </TAppLayout>
     </TAuthWrapper>
 
@@ -60,6 +72,8 @@ import TToast from '../TToast/TToast.vue'
 import TSettings from './TSettings.vue'
 import TProfile from '../TProfile/TProfile.vue'
 import TSpinner from '../TSpinner/TSpinner.vue'
+import TButton from '../TButton/TButton.vue'
+import { Icons } from 'open-icon'
 import { popupService } from '../TPopup'
 import { toastService } from '../TToast'
 import { useTikoConfig } from '../../composables/useTikoConfig'
@@ -110,6 +124,26 @@ const { setLocale, t, keys, locale } = useI18n()
 
 // Set config and get theme styles
 const { themeStyles, config: tikoConfig } = useTikoConfig(props.config)
+
+// Compute whether auth is required based on config
+const computedRequireAuth = computed(() => {
+  // Always require auth initially, even if skipAuth is available
+  // The skip option will be shown on the login screen
+  return props.requireAuth
+})
+
+// Check if we're in skip auth mode
+const isSkipAuthMode = computed(() => {
+  return sessionStorage.getItem('tiko_skip_auth') === 'true'
+})
+
+// Show top bar only when authenticated or not in skip auth mode
+const showTopBar = computed(() => {
+  if (isSkipAuthMode.value) {
+    return false
+  }
+  return topBar.value.showTitle !== false
+})
 
 // Get user state and settings with computed refs
 const user = computed(() => {
@@ -238,6 +272,12 @@ const handleBack = () => {
   }
 }
 
+const handleSkipAuthLogin = () => {
+  // Clear skip auth flag and reload to show login screen
+  sessionStorage.removeItem('tiko_skip_auth')
+  window.location.reload()
+}
+
 // Update current route title
 const updateRouteTitle = () => {
   if (!route) return
@@ -340,6 +380,13 @@ onMounted(async () => {
   width: 100vw;
   display: flex;
   flex-direction: column;
+  
+  &__login-button {
+    position: fixed;
+    top: var(--space);
+    right: var(--space);
+    z-index: 100;
+  }
 
   &--is-app{
     overflow: hidden;
