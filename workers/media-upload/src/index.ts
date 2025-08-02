@@ -208,7 +208,7 @@ async function handleUpload(request: Request, env: Env): Promise<Response> {
       }
     })
 
-    const baseUrl = `https://media.tikocdn.org/${baseKey}`
+    const baseUrl = `https://data.tikocdn.org/${baseKey}`
     const isImage = file.type.startsWith('image/')
     
     let metadata: ImageMetadata = {
