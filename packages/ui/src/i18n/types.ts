@@ -660,6 +660,42 @@ export interface TranslationSchema {
     }
     settings: string
   }
+  deployment: {
+    dashboard: {
+      title: string
+      subtitle: string
+    }
+    filters: {
+      all: string
+      apps: string
+      tools: string
+      websites: string
+      workers: string
+    }
+    types: {
+      app: string
+      tool: string
+      website: string
+      worker: string
+    }
+    status: {
+      idle: string
+      building: string
+      success: string
+      failed: string
+    }
+    lastDeployed: string
+    duration: string
+    history: string
+    deploy: string
+    historyFor: string
+    noHistory: string
+    viewLogs: string
+    confirmDeploy: string
+    deployWarning: string
+    commitMessage: string
+    commitMessagePlaceholder: string
+  }
 }
 
 // Available locales - now dynamically loaded from database

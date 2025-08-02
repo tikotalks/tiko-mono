@@ -64,6 +64,12 @@ export type {
   SentenceSelectRequest,
   SentenceSelectResponse
 } from './sentence.service'
+export { deploymentService } from './deployment.service'
+export type {
+  DeploymentTarget,
+  DeploymentHistory,
+  GitHubWorkflowRun
+} from './deployment.service'
 
 // Alternative: Export Supabase implementations
 // import { SupabaseParentModeService } from './parent-mode-supabase.service'

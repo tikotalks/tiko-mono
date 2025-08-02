@@ -235,6 +235,12 @@ const navigationItems: NavigationItem[] = [
       },
     ]
   },
+  {
+    name: 'deployment',
+    to: { name: 'Deployment' },
+    icon: Icons.CLOUD_UPLOAD,
+    label: t('admin.navigation.deployment'),
+  },
   // {
   //   name: 'analytics',
   //   to: { name: 'Analytics' },

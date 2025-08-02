@@ -1,0 +1,626 @@
+<template>
+  <div :class="bemm()">
+    <THeader 
+      :title="t('deployment.dashboard.title')"
+      :subtitle="t('deployment.dashboard.subtitle')"
+    />
+
+    <div :class="bemm('section')">
+      <div :class="bemm('filters')">
+        <TButton
+          v-for="filter in filters"
+          :key="filter.value"
+          :type="selectedFilter === filter.value ? 'default' : 'ghost'"
+          :class="bemm('filter')"
+          @click="selectedFilter = filter.value"
+        >
+          {{ filter.label }}
+        </TButton>
+        
+        <TButton
+          type="outline"
+          :icon="Icons.REFRESH"
+          :loading="isRefreshing"
+          @click="refreshStatus"
+        >
+          {{ t('common.refresh') }}
+        </TButton>
+      </div>
+
+      <div :class="bemm('grid')">
+        <div
+          v-for="target in filteredTargets"
+          :key="target.id"
+          :class="bemm('card', [target.status])"
+        >
+          <div :class="bemm('card-header')">
+            <div :class="bemm('card-info')">
+              <h3 :class="bemm('card-title')">{{ target.name }}</h3>
+              <p :class="bemm('card-description')">{{ target.description }}</p>
+              <div :class="bemm('card-meta')">
+                <span :class="bemm('card-type', [target.type])">
+                  {{ t(`deployment.types.${target.type}`) }}
+                </span>
+                <span :class="bemm('card-trigger')">{{ target.trigger }}</span>
+              </div>
+            </div>
+            
+            <div :class="bemm('card-status')">
+              <TIcon 
+                :name="getStatusIcon(target.status)"
+                :class="bemm('status-icon', [target.status])"
+              />
+              <span :class="bemm('status-text')">
+                {{ t(`deployment.status.${target.status}`) }}
+              </span>
+            </div>
+          </div>
+
+          <div :class="bemm('card-body')">
+            <div v-if="target.lastDeployed" :class="bemm('last-deployed')">
+              <TIcon :name="Icons.CLOCK" />
+              <span>{{ t('deployment.lastDeployed') }}: {{ formatDate(target.lastDeployed) }}</span>
+            </div>
+            
+            <div v-if="target.buildDuration" :class="bemm('build-duration')">
+              <TIcon :name="Icons.TIMER" />
+              <span>{{ t('deployment.duration') }}: {{ formatDuration(target.buildDuration) }}</span>
+            </div>
+
+            <div v-if="target.url" :class="bemm('url')">
+              <TIcon :name="Icons.EXTERNAL_LINK" />
+              <a 
+                :href="target.url" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                :class="bemm('url-link')"
+              >
+                {{ target.url }}
+              </a>
+            </div>
+          </div>
+
+          <div :class="bemm('card-actions')">
+            <TButton
+              type="outline"
+              :icon="Icons.HISTORY"
+              @click="showHistory(target.id)"
+            >
+              {{ t('deployment.history') }}
+            </TButton>
+            
+            <TButton
+              type="primary"
+              :icon="Icons.PLAY"
+              :loading="deploymentStates[target.id]?.isDeploying"
+              :disabled="target.status === 'building'"
+              @click="triggerDeployment(target)"
+            >
+              {{ t('deployment.deploy') }}
+            </TButton>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deployment History Modal -->
+    <TModal
+      v-if="historyModalOpen"
+      :title="t('deployment.historyFor', { name: selectedTarget?.name })"
+      @close="historyModalOpen = false"
+    >
+      <div :class="bemm('history')">
+        <div
+          v-for="event in deploymentHistory"
+          :key="event.id"
+          :class="bemm('history-item', [event.status])"
+        >
+          <div :class="bemm('history-header')">
+            <TIcon :name="getStatusIcon(event.status)" />
+            <span :class="bemm('history-commit')">{{ event.commit }}</span>
+            <span :class="bemm('history-user')">{{ event.triggeredBy }}</span>
+            <span :class="bemm('history-date')">{{ formatDate(event.startedAt) }}</span>
+          </div>
+          
+          <div v-if="event.duration" :class="bemm('history-duration')">
+            {{ formatDuration(event.duration) }}
+          </div>
+          
+          <div v-if="event.logUrl" :class="bemm('history-actions')">
+            <TButton
+              type="ghost"
+              size="small"
+              :icon="Icons.EXTERNAL_LINK"
+              @click="openLogs(event.logUrl)"
+            >
+              {{ t('deployment.viewLogs') }}
+            </TButton>
+          </div>
+        </div>
+        
+        <div v-if="deploymentHistory.length === 0" :class="bemm('empty')">
+          <TIcon :name="Icons.INFO" />
+          <p>{{ t('deployment.noHistory') }}</p>
+        </div>
+      </div>
+    </TModal>
+
+    <!-- Deploy Confirmation Modal -->
+    <TModal
+      v-if="deployModalOpen"
+      :title="t('deployment.confirmDeploy', { name: selectedTarget?.name })"
+      @close="deployModalOpen = false"
+    >
+      <div :class="bemm('deploy-form')">
+        <p :class="bemm('deploy-warning')">
+          {{ t('deployment.deployWarning') }}
+        </p>
+        
+        <TInput
+          v-model="deployMessage"
+          :label="t('deployment.commitMessage')"
+          :placeholder="t('deployment.commitMessagePlaceholder')"
+          :class="bemm('deploy-input')"
+        />
+        
+        <div :class="bemm('deploy-actions')">
+          <TButton
+            type="ghost"
+            @click="deployModalOpen = false"
+          >
+            {{ t('common.cancel') }}
+          </TButton>
+          
+          <TButton
+            type="primary"
+            :loading="isDeploying"
+            @click="confirmDeployment"
+          >
+            {{ t('deployment.confirmDeploy', { name: selectedTarget?.name }) }}
+          </TButton>
+        </div>
+      </div>
+    </TModal>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted, reactive } from 'vue'
+import { useBemm } from 'bemm'
+import { useI18n } from '@tiko/core'
+import { Icons } from 'open-icon'
+import { 
+  deploymentService, 
+  type DeploymentTarget, 
+  type DeploymentHistory 
+} from '@tiko/core/services/deployment.service'
+import { 
+  THeader, 
+  TButton, 
+  TIcon, 
+  TModal, 
+  TInput 
+} from '@tiko/ui'
+
+const bemm = useBemm('deployment-dashboard')
+const { t } = useI18n()
+
+// State
+const targets = ref<DeploymentTarget[]>([])
+const selectedFilter = ref<string>('all')
+const isRefreshing = ref(false)
+const deploymentStates = reactive<Record<string, { isDeploying: boolean }>>({})
+
+// History modal
+const historyModalOpen = ref(false)
+const selectedTarget = ref<DeploymentTarget | null>(null)
+const deploymentHistory = ref<DeploymentHistory[]>([])
+
+// Deploy modal
+const deployModalOpen = ref(false)
+const deployMessage = ref('')
+const isDeploying = ref(false)
+
+// Filters
+const filters = computed(() => [
+  { label: t('deployment.filters.all'), value: 'all' },
+  { label: t('deployment.filters.apps'), value: 'app' },
+  { label: t('deployment.filters.tools'), value: 'tool' },
+  { label: t('deployment.filters.websites'), value: 'website' },
+  { label: t('deployment.filters.workers'), value: 'worker' }
+])
+
+const filteredTargets = computed(() => {
+  if (selectedFilter.value === 'all') {
+    return targets.value
+  }
+  return targets.value.filter(target => target.type === selectedFilter.value)
+})
+
+// Methods
+const loadDeploymentStatus = async () => {
+  try {
+    targets.value = await deploymentService.getDeploymentStatus()
+  } catch (error) {
+    console.error('Error loading deployment status:', error)
+  }
+}
+
+const refreshStatus = async () => {
+  isRefreshing.value = true
+  try {
+    await loadDeploymentStatus()
+  } finally {
+    isRefreshing.value = false
+  }
+}
+
+const triggerDeployment = async (target: DeploymentTarget) => {
+  selectedTarget.value = target
+  deployMessage.value = `deploy: ${target.name} via admin dashboard`
+  deployModalOpen.value = true
+}
+
+const confirmDeployment = async () => {
+  if (!selectedTarget.value) return
+  
+  isDeploying.value = true
+  deploymentStates[selectedTarget.value.id] = { isDeploying: true }
+  
+  try {
+    const success = await deploymentService.triggerDeployment(
+      selectedTarget.value.id,
+      deployMessage.value
+    )
+    
+    if (success) {
+      // Save deployment event
+      await deploymentService.saveDeploymentEvent(
+        selectedTarget.value.id,
+        'triggered',
+        { triggeredFrom: 'admin-dashboard', message: deployMessage.value }
+      )
+      
+      // Refresh status after a short delay
+      setTimeout(refreshStatus, 2000)
+    }
+  } catch (error) {
+    console.error('Error triggering deployment:', error)
+  } finally {
+    isDeploying.value = false
+    deploymentStates[selectedTarget.value.id] = { isDeploying: false }
+    deployModalOpen.value = false
+    deployMessage.value = ''
+  }
+}
+
+const showHistory = async (targetId: string) => {
+  selectedTarget.value = targets.value.find(t => t.id === targetId) || null
+  if (!selectedTarget.value) return
+  
+  try {
+    deploymentHistory.value = await deploymentService.getDeploymentHistory(targetId)
+    historyModalOpen.value = true
+  } catch (error) {
+    console.error('Error loading deployment history:', error)
+  }
+}
+
+const openLogs = (url: string) => {
+  window.open(url, '_blank', 'noopener,noreferrer')
+}
+
+const getStatusIcon = (status?: string) => {
+  switch (status) {
+    case 'building': return Icons.LOADING
+    case 'success': return Icons.CHECK
+    case 'failed': return Icons.X
+    default: return Icons.CIRCLE
+  }
+}
+
+const formatDate = (date: Date) => {
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(date)
+}
+
+const formatDuration = (ms: number) => {
+  const seconds = Math.floor(ms / 1000)
+  const minutes = Math.floor(seconds / 60)
+  
+  if (minutes > 0) {
+    return `${minutes}m ${seconds % 60}s`
+  }
+  return `${seconds}s`
+}
+
+// Initialize deployment states
+const initializeDeploymentStates = () => {
+  targets.value.forEach(target => {
+    deploymentStates[target.id] = { isDeploying: false }
+  })
+}
+
+onMounted(async () => {
+  await loadDeploymentStatus()
+  initializeDeploymentStates()
+  
+  // Auto-refresh every 30 seconds
+  setInterval(refreshStatus, 30000)
+})
+</script>
+
+<style lang="scss">
+.deployment-dashboard {
+  &__section {
+    margin-bottom: var(--space-xl);
+  }
+
+  &__filters {
+    display: flex;
+    gap: var(--space-s);
+    align-items: center;
+    margin-bottom: var(--space-lg);
+    flex-wrap: wrap;
+  }
+
+  &__filter {
+    // Styling handled by TButton
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: var(--space);
+  }
+
+  &__card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: var(--space);
+    background: var(--color-background-elevated);
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: var(--color-primary);
+      transform: translateY(-2px);
+    }
+
+    &--building {
+      border-color: var(--color-warning);
+      background: var(--color-warning-background);
+    }
+
+    &--success {
+      border-color: var(--color-success);
+    }
+
+    &--failed {
+      border-color: var(--color-error);
+    }
+  }
+
+  &__card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space);
+  }
+
+  &__card-info {
+    flex: 1;
+  }
+
+  &__card-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-xs);
+  }
+
+  &__card-description {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--space-s);
+  }
+
+  &__card-meta {
+    display: flex;
+    gap: var(--space-s);
+    align-items: center;
+  }
+
+  &__card-type {
+    padding: var(--space-xs) var(--space-s);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+
+    &--app {
+      background: var(--color-primary-background);
+      color: var(--color-primary);
+    }
+
+    &--tool {
+      background: var(--color-secondary-background);
+      color: var(--color-secondary);
+    }
+
+    &--website {
+      background: var(--color-accent-background);
+      color: var(--color-accent);
+    }
+
+    &--worker {
+      background: var(--color-warning-background);
+      color: var(--color-warning);
+    }
+  }
+
+  &__card-trigger {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+    background: var(--color-background);
+    padding: var(--space-xs);
+    border-radius: var(--radius-sm);
+  }
+
+  &__card-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
+  &__status-icon {
+    font-size: var(--font-size-lg);
+
+    &--idle {
+      color: var(--color-text-tertiary);
+    }
+
+    &--building {
+      color: var(--color-warning);
+      animation: spin 1s linear infinite;
+    }
+
+    &--success {
+      color: var(--color-success);
+    }
+
+    &--failed {
+      color: var(--color-error);
+    }
+  }
+
+  &__status-text {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+  }
+
+  &__card-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    margin-bottom: var(--space);
+  }
+
+  &__last-deployed,
+  &__build-duration,
+  &__url {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+  }
+
+  &__url-link {
+    color: var(--color-primary);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__card-actions {
+    display: flex;
+    gap: var(--space-s);
+    justify-content: flex-end;
+  }
+
+  // History modal styles
+  &__history {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  &__history-item {
+    padding: var(--space);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    margin-bottom: var(--space-s);
+
+    &--running {
+      border-color: var(--color-warning);
+    }
+
+    &--success {
+      border-color: var(--color-success);
+    }
+
+    &--failed {
+      border-color: var(--color-error);
+    }
+  }
+
+  &__history-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    margin-bottom: var(--space-xs);
+  }
+
+  &__history-commit {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    background: var(--color-background);
+    padding: var(--space-xs);
+    border-radius: var(--radius-sm);
+  }
+
+  &__history-user,
+  &__history-date {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+  }
+
+  &__history-duration {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-tertiary);
+    margin-bottom: var(--space-xs);
+  }
+
+  &__empty {
+    text-align: center;
+    padding: var(--space-xl);
+    color: var(--color-text-secondary);
+  }
+
+  // Deploy modal styles
+  &__deploy-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space);
+  }
+
+  &__deploy-warning {
+    padding: var(--space);
+    background: var(--color-warning-background);
+    color: var(--color-warning);
+    border-radius: var(--radius);
+    font-size: var(--font-size-sm);
+  }
+
+  &__deploy-actions {
+    display: flex;
+    gap: var(--space-s);
+    justify-content: flex-end;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>
