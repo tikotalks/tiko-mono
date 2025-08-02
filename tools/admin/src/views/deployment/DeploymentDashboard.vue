@@ -31,74 +31,64 @@
         <TCard
           v-for="target in filteredTargets"
           :key="target.id"
-          :class="bemm('card', [target.status])"
+          :class="bemm('card', ['', target.status as string])"
+          :title="target.name"
+          :description="target.description"
+          :category="target.type"
         >
-          <div :class="bemm('card-header')">
-            <div :class="bemm('card-info')">
-              <h3 :class="bemm('card-title')">{{ target.name }}</h3>
-              <p :class="bemm('card-description')">{{ target.description }}</p>
-              <div :class="bemm('card-meta')">
-                <span :class="bemm('card-type', [target.type])">
-                  {{ t(`deployment.types.${target.type}`) }}
-                </span>
-                <span :class="bemm('card-trigger')">{{ target.trigger }}</span>
-              </div>
-            </div>
+          <span :class="bemm('card-trigger')">{{ target.trigger }}</span>
 
-            <div :class="bemm('card-status')">
-              <TIcon
-                :name="getStatusIcon(target.status)"
-                :class="bemm('status-icon', [target.status])"
-              />
-              <span :class="bemm('status-text')">
-                {{ t(`deployment.status.${target.status}`) }}
-              </span>
-            </div>
-          </div>
+          <template #content>
+            <TChip
+              :class="bemm('card-status')"
+              :icon="getStatusIcon(target.status)"
+              :color="target.status"
+            >
+              {{ t(`deployment.status.${target.status}`) }}
+            </TChip>
 
-          <div :class="bemm('card-body')">
             <div v-if="target.lastDeployed" :class="bemm('last-deployed')">
               <TIcon :name="Icons.CLOCK" />
-              <span>{{ t('deployment.lastDeployed') }}: {{ formatDate(target.lastDeployed) }}</span>
+              <span
+                >{{ t('deployment.lastDeployed') }}:
+                {{ formatDate(target.lastDeployed) }}</span
+              >
             </div>
 
             <div v-if="target.buildDuration" :class="bemm('build-duration')">
               <TIcon :name="Icons.TIMER" />
-              <span>{{ t('deployment.duration') }}: {{ formatDuration(target.buildDuration) }}</span>
-            </div>
-
-            <div v-if="target.url" :class="bemm('url')">
-              <TIcon :name="Icons.EXTERNAL_LINK" />
-              <a
-                :href="target.url"
-                target="_blank"
-                rel="noopener noreferrer"
-                :class="bemm('url-link')"
+              <span
+                >{{ t('deployment.duration') }}:
+                {{ formatDuration(target.buildDuration) }}</span
               >
-                {{ target.url }}
-              </a>
             </div>
-          </div>
 
-          <div :class="bemm('card-actions')">
-            <TButton
-              type="outline"
-              :icon="Icons.ARROW_ROTATE_TOP_LEFT"
-              @click="showHistory(target)"
-            >
-              {{ t('deployment.history') }}
+            <TButton    :href="target.url" :type="'outline'" :icon="Icons.ARROW_RIGHT" v-if="target.url" :class="bemm('url')">
+
+
+                {{ target.url }}
             </TButton>
 
-            <TButton
-              type="primary"
-              :icon="Icons.PLAYBACK_PLAY"
-              :loading="deploymentStates[target.id]?.isDeploying"
-              :disabled="target.status === 'building'"
-              @click="triggerDeployment(target)"
-            >
-              {{ t('deployment.deploy') }}
-            </TButton>
-          </div>
+            <TButtonGroup :class="bemm('card-actions')">
+              <TButton
+                type="outline"
+                :icon="Icons.ARROW_ROTATE_TOP_LEFT"
+                @click="showHistory(target)"
+              >
+                {{ t('deployment.history') }}
+              </TButton>
+
+              <TButton
+                type="default"
+                :icon="Icons.PLAYBACK_PLAY"
+                :loading="deploymentStates[target.id]?.isDeploying"
+                :disabled="target.status === 'building'"
+                @click="triggerDeployment(target)"
+              >
+                {{ t('deployment.deploy') }}
+              </TButton>
+            </TButtonGroup>
+          </template>
         </TCard>
       </div>
     </div>
@@ -106,31 +96,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive, inject } from 'vue'
-import { useBemm } from 'bemm'
-import { TCard, useI18n } from '@tiko/ui'
-import { Icons } from 'open-icon'
+import { ref, computed, onMounted, reactive, inject } from 'vue';
+import { useBemm } from 'bemm';
+import { TButtonGroup, TCard, TChip, useI18n } from '@tiko/ui';
+import { Icons } from 'open-icon';
 import {
   deploymentService,
   type DeploymentTarget,
-  type DeploymentHistory
-} from '@tiko/core'
-import {
-  THeader,
-  TButton,
-  TIcon,
-  type PopupService
-} from '@tiko/ui'
+  type DeploymentHistory,
+} from '@tiko/core';
+import { THeader, TButton, TIcon, type PopupService } from '@tiko/ui';
 
-const bemm = useBemm('deployment-dashboard')
-const { t } = useI18n()
-const popupService = inject<PopupService>('popupService')
+const bemm = useBemm('deployment-dashboard');
+const { t } = useI18n();
+const popupService = inject<PopupService>('popupService');
 
 // State
-const targets = ref<DeploymentTarget[]>([])
-const selectedFilter = ref<string>('all')
-const isRefreshing = ref(false)
-const deploymentStates = reactive<Record<string, { isDeploying: boolean }>>({})
+const targets = ref<DeploymentTarget[]>([]);
+const selectedFilter = ref<string>('all');
+const isRefreshing = ref(false);
+const deploymentStates = reactive<Record<string, { isDeploying: boolean }>>({});
 
 // Filters
 const filters = computed(() => [
@@ -138,150 +123,158 @@ const filters = computed(() => [
   { label: t('deployment.filters.apps'), value: 'app' },
   { label: t('deployment.filters.tools'), value: 'tool' },
   { label: t('deployment.filters.websites'), value: 'website' },
-  { label: t('deployment.filters.workers'), value: 'worker' }
-])
+  { label: t('deployment.filters.workers'), value: 'worker' },
+]);
 
 const filteredTargets = computed(() => {
   if (selectedFilter.value === 'all') {
-    return targets.value
+    return targets.value;
   }
-  return targets.value.filter(target => target.type === selectedFilter.value)
-})
+  return targets.value.filter((target) => target.type === selectedFilter.value);
+});
 
 // Methods
 const loadDeploymentStatus = async () => {
   try {
-    targets.value = await deploymentService.getDeploymentStatus()
+    targets.value = await deploymentService.getDeploymentStatus();
   } catch (error) {
-    console.error('Error loading deployment status:', error)
+    console.error('Error loading deployment status:', error);
   }
-}
+};
 
 const refreshStatus = async () => {
-  isRefreshing.value = true
+  isRefreshing.value = true;
   try {
-    await loadDeploymentStatus()
+    await loadDeploymentStatus();
   } finally {
-    isRefreshing.value = false
+    isRefreshing.value = false;
   }
-}
+};
 
 const triggerDeployment = async (target: DeploymentTarget) => {
-  if (!popupService) return
+  if (!popupService) return;
 
   try {
     // Import the component dynamically
-    const { default: DeploymentTriggerModal } = await import('./components/DeploymentTriggerModal.vue')
+    const { default: DeploymentTriggerModal } = await import(
+      './components/DeploymentTriggerModal.vue'
+    );
 
     popupService.open({
       title: t('deployment.confirmDeploy', { name: target.name }),
       component: DeploymentTriggerModal,
       props: {
         targetName: target.name,
-        defaultMessage: `Deploy ${target.name} via admin dashboard`
+        defaultMessage: `Deploy ${target.name} via admin dashboard`,
       },
       on: {
         confirm: async (message: string) => {
-          deploymentStates[target.id] = { isDeploying: true }
-          
+          deploymentStates[target.id] = { isDeploying: true };
+
           try {
             const success = await deploymentService.triggerDeployment(
               target.id,
-              message
-            )
+              message,
+            );
 
             if (success) {
               // Save deployment event
               await deploymentService.saveDeploymentEvent(
                 target.id,
                 'triggered',
-                { triggeredFrom: 'admin-dashboard', message }
-              )
+                { triggeredFrom: 'admin-dashboard', message },
+              );
 
               // Refresh status after a short delay
-              setTimeout(refreshStatus, 2000)
+              setTimeout(refreshStatus, 2000);
             }
           } catch (error) {
-            console.error('Error triggering deployment:', error)
+            console.error('Error triggering deployment:', error);
           } finally {
-            deploymentStates[target.id] = { isDeploying: false }
-            popupService.close()
+            deploymentStates[target.id] = { isDeploying: false };
+            popupService.close();
           }
         },
         cancel: () => {
-          popupService.close()
-        }
-      }
-    })
+          popupService.close();
+        },
+      },
+    });
   } catch (error) {
-    console.error('Error loading deployment trigger modal:', error)
+    console.error('Error loading deployment trigger modal:', error);
   }
-}
+};
 
 const showHistory = async (target: DeploymentTarget) => {
-  if (!popupService) return
+  if (!popupService) return;
 
   try {
-    const history = await deploymentService.getDeploymentHistory(target.id)
+    const history = await deploymentService.getDeploymentHistory(target.id);
 
     // Import the component dynamically
-    const { default: DeploymentHistoryModal } = await import('./components/DeploymentHistoryModal.vue')
+    const { default: DeploymentHistoryModal } = await import(
+      './components/DeploymentHistoryModal.vue'
+    );
 
     popupService.open({
       title: t('deployment.historyFor', { name: target.name }),
       component: DeploymentHistoryModal,
       props: {
         history,
-        targetName: target.name
-      }
-    })
+        targetName: target.name,
+      },
+    });
   } catch (error) {
-    console.error('Error loading deployment history:', error)
+    console.error('Error loading deployment history:', error);
   }
-}
+};
 
 const getStatusIcon = (status?: string) => {
   switch (status) {
-    case 'building': return Icons.LOADING
-    case 'success': return Icons.CHECK
-    case 'failed': return Icons.X
-    default: return Icons.CIRCLE
+    case 'building':
+      return Icons.LOADING;
+    case 'success':
+      return Icons.CHECK;
+    case 'failed':
+      return Icons.X;
+    default:
+      return Icons.CIRCLE;
   }
-}
+};
 
 const formatDate = (date: Date) => {
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
-  }).format(date)
-}
+    minute: '2-digit',
+  }).format(date);
+};
 
 const formatDuration = (ms: number) => {
-  const seconds = Math.floor(ms / 1000)
-  const minutes = Math.floor(seconds / 60)
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
 
   if (minutes > 0) {
-    return `${minutes}m ${seconds % 60}s`
+    return `${minutes}m ${seconds % 60}s`;
   }
-  return `${seconds}s`
-}
+  return `${seconds}s`;
+};
 
 // Initialize deployment states
 const initializeDeploymentStates = () => {
-  targets.value.forEach(target => {
-    deploymentStates[target.id] = { isDeploying: false }
-  })
-}
+  targets.value.forEach((target) => {
+    deploymentStates[target.id] = { isDeploying: false };
+  });
+};
 
 onMounted(async () => {
-  await loadDeploymentStatus()
-  initializeDeploymentStates()
+  await loadDeploymentStatus();
+  initializeDeploymentStates();
 
   // Auto-refresh every 30 seconds
-  setInterval(refreshStatus, 30000)
-})
+  setInterval(refreshStatus, 30000);
+});
 </script>
 
 <style lang="scss">

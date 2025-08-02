@@ -143,6 +143,7 @@ jobs:
           accountId: dc2b7d14a69351375cab6de9a13ddee9
           workingDirectory: 'workers/i18n-translator'
           command: deploy --env production
+          wranglerVersion: 'latest'
           
       - name: Deploy media-upload worker
         if: needs.check-triggers.outputs.build-media == 'true'
@@ -152,6 +153,7 @@ jobs:
           accountId: dc2b7d14a69351375cab6de9a13ddee9
           workingDirectory: 'workers/media-upload'
           command: deploy --env production
+          wranglerVersion: 'latest'
           
       - name: Deploy sentence-engine worker
         if: needs.check-triggers.outputs.build-sentence == 'true'
@@ -161,3 +163,4 @@ jobs:
           accountId: dc2b7d14a69351375cab6de9a13ddee9
           workingDirectory: 'workers/sentence-engine'
           command: deploy --env production
+          wranglerVersion: 'latest'

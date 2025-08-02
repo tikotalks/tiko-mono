@@ -132,7 +132,8 @@ class DeploymentService {
         type: 'worker',
         trigger: '[build:i18n-translator]',
         description: 'AI-powered translation service worker',
-        url: 'https://tikoapi.org/translate'
+        url: 'https://tiko-i18n-translator-production.workers.dev'
+        // url: 'https://tikoapi.org/translate' // Custom domain (requires zone permissions)
       },
       {
         id: 'media-upload',
@@ -140,7 +141,8 @@ class DeploymentService {
         type: 'worker',
         trigger: '[build:media-upload]',
         description: 'File upload and media processing worker',
-        url: 'https://tikoapi.org/media'
+        url: 'https://tiko-media-upload-production.workers.dev'
+        // url: 'https://tikoapi.org/media' // Custom domain (requires zone permissions)
       },
       {
         id: 'sentence-engine',
@@ -148,7 +150,8 @@ class DeploymentService {
         type: 'worker',
         trigger: '[build:sentence-engine]',
         description: 'AI sentence prediction and completion worker',
-        url: 'https://tikoapi.org/sentence'
+        url: 'https://tiko-sentence-engine-production.workers.dev'
+        // url: 'https://tikoapi.org/sentence' // Custom domain (requires zone permissions)
       }
     ]
   }

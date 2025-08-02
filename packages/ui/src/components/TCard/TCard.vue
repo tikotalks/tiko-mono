@@ -28,7 +28,11 @@
           <slot />
         </div>
       </div>
+
+      <slot name="content" />
     </div>
+
+
 
     <div v-if="actions && actions.length > 0" class="card__actions">
       <TButton
@@ -196,13 +200,10 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
 
   &__emoji {
-    font-size: 3rem;
-    line-height: 1;
   }
 
   &__icon {
-    font-size: 3rem;
-    color: #6b7280;
+
   }
 
   &__text {
@@ -211,10 +212,7 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
 
   &__title {
-    margin: 0 0 0.5rem;
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #111827;
+
   }
 
   &__description {
@@ -222,12 +220,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 
   // Actions
   &__actions {
-    display: flex;
-    gap: var(--space-s);
-    padding: var(--space);
-    border-top: 1px solid var(--color-accent);
-    justify-content: center;
-    flex-wrap: wrap;
+
   }
 
   // Size adjustments
