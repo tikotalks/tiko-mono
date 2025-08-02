@@ -8,7 +8,7 @@ routes = [
   { pattern = "media.tikocdn.org/*", zone_name = "tikocdn.org" }
 ]
 
-[[r2_buckets]]
+[[env.production.r2_buckets]]
 binding = "R2_BUCKET"
 bucket_name = "media"
 
