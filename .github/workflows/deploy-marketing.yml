@@ -29,8 +29,62 @@ jobs:
             echo "should-build=true" >> $GITHUB_OUTPUT
           fi
 
-  deploy:
+  check-environment:
     needs: check-triggers
+    if: needs.check-triggers.outputs.should-build == 'true'
+    runs-on: ubuntu-latest
+    name: Check Required Environment Variables
+    steps:
+      - name: Check Netlify Credentials
+        run: |
+          MISSING_VARS=""
+          
+          if [ -z "${{ secrets.NETLIFY_AUTH_TOKEN }}" ]; then
+            MISSING_VARS="$MISSING_VARS NETLIFY_AUTH_TOKEN"
+          fi
+          
+          if [ -z "${{ secrets.NETLIFY_MARKETING_SITE_ID }}" ]; then
+            MISSING_VARS="$MISSING_VARS NETLIFY_MARKETING_SITE_ID"
+          fi
+          
+          if [ -n "$MISSING_VARS" ]; then
+            echo "❌ ERROR: Missing required Netlify secrets:"
+            for var in $MISSING_VARS; do
+              echo "  - $var"
+            done
+            echo ""
+            echo "Please add these secrets in GitHub Settings > Secrets and variables > Actions"
+            exit 1
+          fi
+          
+          echo "✅ Netlify credentials are configured"
+      
+      - name: Check Supabase Environment Variables
+        run: |
+          MISSING_VARS=""
+          
+          if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ]; then
+            MISSING_VARS="$MISSING_VARS VITE_SUPABASE_URL"
+          fi
+          
+          if [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ]; then
+            MISSING_VARS="$MISSING_VARS VITE_SUPABASE_ANON_KEY"
+          fi
+          
+          if [ -n "$MISSING_VARS" ]; then
+            echo "❌ ERROR: Missing required Supabase secrets:"
+            for var in $MISSING_VARS; do
+              echo "  - $var"
+            done
+            echo ""
+            echo "Please add these secrets in GitHub Settings > Secrets and variables > Actions"
+            exit 1
+          fi
+          
+          echo "✅ Supabase environment variables are configured"
+
+  deploy:
+    needs: [check-triggers, check-environment]
     if: needs.check-triggers.outputs.should-build == 'true'
     runs-on: ubuntu-latest
     name: Deploy Marketing Website

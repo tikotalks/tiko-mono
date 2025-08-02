@@ -54,8 +54,79 @@ jobs:
             echo "build-todo=true" >> $GITHUB_OUTPUT
           fi
 
-  deploy-timer:
+  check-environment:
     needs: check-triggers
+    if: needs.check-triggers.outputs.build-timer == 'true' || needs.check-triggers.outputs.build-cards == 'true' || needs.check-triggers.outputs.build-radio == 'true' || needs.check-triggers.outputs.build-todo == 'true'
+    runs-on: ubuntu-latest
+    name: Check Required Environment Variables
+    steps:
+      - name: Check Netlify Auth Token
+        run: |
+          if [ -z "${{ secrets.NETLIFY_AUTH_TOKEN }}" ]; then
+            echo "❌ ERROR: Missing required secret NETLIFY_AUTH_TOKEN"
+            echo "Please add this secret in GitHub Settings > Secrets and variables > Actions"
+            exit 1
+          fi
+          echo "✅ NETLIFY_AUTH_TOKEN is configured"
+      
+      - name: Check Supabase Environment Variables
+        run: |
+          MISSING_VARS=""
+          
+          if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ]; then
+            MISSING_VARS="$MISSING_VARS VITE_SUPABASE_URL"
+          fi
+          
+          if [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ]; then
+            MISSING_VARS="$MISSING_VARS VITE_SUPABASE_ANON_KEY"
+          fi
+          
+          if [ -n "$MISSING_VARS" ]; then
+            echo "❌ ERROR: Missing required Supabase secrets:"
+            for var in $MISSING_VARS; do
+              echo "  - $var"
+            done
+            echo ""
+            echo "Please add these secrets in GitHub Settings > Secrets and variables > Actions"
+            exit 1
+          fi
+          
+          echo "✅ Supabase environment variables are configured"
+      
+      - name: Check App Site IDs
+        run: |
+          MISSING_SITE_IDS=""
+          
+          if [[ "${{ needs.check-triggers.outputs.build-timer }}" == "true" ]] && [ -z "${{ secrets.NETLIFY_TIMER_SITE_ID }}" ]; then
+            MISSING_SITE_IDS="$MISSING_SITE_IDS NETLIFY_TIMER_SITE_ID"
+          fi
+          
+          if [[ "${{ needs.check-triggers.outputs.build-cards }}" == "true" ]] && [ -z "${{ secrets.NETLIFY_CARDS_SITE_ID }}" ]; then
+            MISSING_SITE_IDS="$MISSING_SITE_IDS NETLIFY_CARDS_SITE_ID"
+          fi
+          
+          if [[ "${{ needs.check-triggers.outputs.build-radio }}" == "true" ]] && [ -z "${{ secrets.NETLIFY_RADIO_SITE_ID }}" ]; then
+            MISSING_SITE_IDS="$MISSING_SITE_IDS NETLIFY_RADIO_SITE_ID"
+          fi
+          
+          if [[ "${{ needs.check-triggers.outputs.build-todo }}" == "true" ]] && [ -z "${{ secrets.NETLIFY_TODO_SITE_ID }}" ]; then
+            MISSING_SITE_IDS="$MISSING_SITE_IDS NETLIFY_TODO_SITE_ID"
+          fi
+          
+          if [ -n "$MISSING_SITE_IDS" ]; then
+            echo "❌ ERROR: Missing required Netlify site IDs:"
+            for id in $MISSING_SITE_IDS; do
+              echo "  - $id"
+            done
+            echo ""
+            echo "Please create the Netlify sites and add these secrets in GitHub Settings"
+            exit 1
+          fi
+          
+          echo "✅ All required Netlify site IDs are configured"
+
+  deploy-timer:
+    needs: [check-triggers, check-environment]
     if: needs.check-triggers.outputs.build-timer == 'true'
     runs-on: ubuntu-latest
     name: Deploy Timer App
@@ -95,7 +166,7 @@ jobs:
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_TIMER_SITE_ID }}
 
   deploy-cards:
-    needs: check-triggers
+    needs: [check-triggers, check-environment]
     if: needs.check-triggers.outputs.build-cards == 'true'
     runs-on: ubuntu-latest
     name: Deploy Cards App
@@ -135,7 +206,7 @@ jobs:
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_CARDS_SITE_ID }}
 
   deploy-radio:
-    needs: check-triggers
+    needs: [check-triggers, check-environment]
     if: needs.check-triggers.outputs.build-radio == 'true'
     runs-on: ubuntu-latest
     name: Deploy Radio App
@@ -175,7 +246,7 @@ jobs:
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_RADIO_SITE_ID }}
 
   deploy-todo:
-    needs: check-triggers
+    needs: [check-triggers, check-environment]
     if: needs.check-triggers.outputs.build-todo == 'true'
     runs-on: ubuntu-latest
     name: Deploy Todo App
