@@ -1,6 +1,6 @@
 <template>
   <div :class="bemm()">
-    <THeader 
+    <THeader
       :title="t('deployment.dashboard.title')"
       :subtitle="t('deployment.dashboard.subtitle')"
     />
@@ -16,7 +16,7 @@
         >
           {{ filter.label }}
         </TButton>
-        
+
         <TButton
           type="outline"
           :icon="Icons.REFRESH"
@@ -28,7 +28,7 @@
       </div>
 
       <div :class="bemm('grid')">
-        <div
+        <TCard
           v-for="target in filteredTargets"
           :key="target.id"
           :class="bemm('card', [target.status])"
@@ -44,9 +44,9 @@
                 <span :class="bemm('card-trigger')">{{ target.trigger }}</span>
               </div>
             </div>
-            
+
             <div :class="bemm('card-status')">
-              <TIcon 
+              <TIcon
                 :name="getStatusIcon(target.status)"
                 :class="bemm('status-icon', [target.status])"
               />
@@ -61,7 +61,7 @@
               <TIcon :name="Icons.CLOCK" />
               <span>{{ t('deployment.lastDeployed') }}: {{ formatDate(target.lastDeployed) }}</span>
             </div>
-            
+
             <div v-if="target.buildDuration" :class="bemm('build-duration')">
               <TIcon :name="Icons.TIMER" />
               <span>{{ t('deployment.duration') }}: {{ formatDuration(target.buildDuration) }}</span>
@@ -69,9 +69,9 @@
 
             <div v-if="target.url" :class="bemm('url')">
               <TIcon :name="Icons.EXTERNAL_LINK" />
-              <a 
-                :href="target.url" 
-                target="_blank" 
+              <a
+                :href="target.url"
+                target="_blank"
                 rel="noopener noreferrer"
                 :class="bemm('url-link')"
               >
@@ -83,15 +83,15 @@
           <div :class="bemm('card-actions')">
             <TButton
               type="outline"
-              :icon="Icons.HISTORY"
+              :icon="Icons.ARROW_ROTATE_TOP_LEFT"
               @click="showHistory(target)"
             >
               {{ t('deployment.history') }}
             </TButton>
-            
+
             <TButton
               type="primary"
-              :icon="Icons.PLAY"
+              :icon="Icons.PLAYBACK_PLAY"
               :loading="deploymentStates[target.id]?.isDeploying"
               :disabled="target.status === 'building'"
               @click="triggerDeployment(target)"
@@ -99,7 +99,7 @@
               {{ t('deployment.deploy') }}
             </TButton>
           </div>
-        </div>
+        </TCard>
       </div>
     </div>
   </div>
@@ -108,19 +108,18 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive, inject } from 'vue'
 import { useBemm } from 'bemm'
-import { useI18n } from '@tiko/ui'
+import { TCard, useI18n } from '@tiko/ui'
 import { Icons } from 'open-icon'
-import { 
-  deploymentService, 
-  type DeploymentTarget, 
-  type DeploymentHistory 
-} from '@tiko/core/services/deployment.service'
-import { 
-  THeader, 
-  TButton, 
-  TIcon, 
-  TInput,
-  type PopupService 
+import {
+  deploymentService,
+  type DeploymentTarget,
+  type DeploymentHistory
+} from '@tiko/core'
+import {
+  THeader,
+  TButton,
+  TIcon,
+  type PopupService
 } from '@tiko/ui'
 
 const bemm = useBemm('deployment-dashboard')
@@ -169,72 +168,72 @@ const refreshStatus = async () => {
 
 const triggerDeployment = async (target: DeploymentTarget) => {
   if (!popupService) return
-  
-  popupService.open({
-    title: t('deployment.confirmDeploy', { name: target.name }),
-    component: 'form',
-    formConfig: {
-      fields: [
-        {
-          key: 'message',
-          type: 'text',
-          label: t('deployment.commitMessage'),
-          placeholder: t('deployment.commitMessagePlaceholder'),
-          value: `deploy: ${target.name} via admin dashboard`
-        }
-      ]
-    },
-    onConfirm: async (data: { message: string }) => {
-      deploymentStates[target.id] = { isDeploying: true }
-      
-      try {
-        const success = await deploymentService.triggerDeployment(
-          target.id,
-          data.message
-        )
-        
-        if (success) {
-          // Save deployment event
-          await deploymentService.saveDeploymentEvent(
-            target.id,
-            'triggered',
-            { triggeredFrom: 'admin-dashboard', message: data.message }
-          )
+
+  try {
+    // Import the component dynamically
+    const { default: DeploymentTriggerModal } = await import('./components/DeploymentTriggerModal.vue')
+
+    popupService.open({
+      title: t('deployment.confirmDeploy', { name: target.name }),
+      component: DeploymentTriggerModal,
+      props: {
+        targetName: target.name,
+        defaultMessage: `Deploy ${target.name} via admin dashboard`
+      },
+      on: {
+        confirm: async (message: string) => {
+          deploymentStates[target.id] = { isDeploying: true }
           
-          // Refresh status after a short delay
-          setTimeout(refreshStatus, 2000)
+          try {
+            const success = await deploymentService.triggerDeployment(
+              target.id,
+              message
+            )
+
+            if (success) {
+              // Save deployment event
+              await deploymentService.saveDeploymentEvent(
+                target.id,
+                'triggered',
+                { triggeredFrom: 'admin-dashboard', message }
+              )
+
+              // Refresh status after a short delay
+              setTimeout(refreshStatus, 2000)
+            }
+          } catch (error) {
+            console.error('Error triggering deployment:', error)
+          } finally {
+            deploymentStates[target.id] = { isDeploying: false }
+            popupService.close()
+          }
+        },
+        cancel: () => {
+          popupService.close()
         }
-      } catch (error) {
-        console.error('Error triggering deployment:', error)
-      } finally {
-        deploymentStates[target.id] = { isDeploying: false }
       }
-    }
-  })
+    })
+  } catch (error) {
+    console.error('Error loading deployment trigger modal:', error)
+  }
 }
 
 const showHistory = async (target: DeploymentTarget) => {
   if (!popupService) return
-  
+
   try {
     const history = await deploymentService.getDeploymentHistory(target.id)
-    
+
+    // Import the component dynamically
+    const { default: DeploymentHistoryModal } = await import('./components/DeploymentHistoryModal.vue')
+
     popupService.open({
       title: t('deployment.historyFor', { name: target.name }),
-      component: 'info',
-      content: history.length > 0 
-        ? history.map(event => `
-            <div style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #ddd; border-radius: 4px;">
-              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                <strong>${event.commit}</strong>
-                <span>${event.triggeredBy}</span>
-                <span>${formatDate(event.startedAt)}</span>
-              </div>
-              ${event.duration ? `<div>Duration: ${formatDuration(event.duration)}</div>` : ''}
-              ${event.logUrl ? `<div><a href="${event.logUrl}" target="_blank">View Logs</a></div>` : ''}
-            </div>
-          `).join('')
-        : `<p>${t('deployment.noHistory')}</p>`
+      component: DeploymentHistoryModal,
+      props: {
+        history,
+        targetName: target.name
+      }
     })
   } catch (error) {
     console.error('Error loading deployment history:', error)
@@ -262,7 +261,7 @@ const formatDate = (date: Date) => {
 const formatDuration = (ms: number) => {
   const seconds = Math.floor(ms / 1000)
   const minutes = Math.floor(seconds / 60)
-  
+
   if (minutes > 0) {
     return `${minutes}m ${seconds % 60}s`
   }
@@ -279,7 +278,7 @@ const initializeDeploymentStates = () => {
 onMounted(async () => {
   await loadDeploymentStatus()
   initializeDeploymentStates()
-  
+
   // Auto-refresh every 30 seconds
   setInterval(refreshStatus, 30000)
 })

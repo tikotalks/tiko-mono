@@ -4,6 +4,22 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Target worker to deploy (i18n-translator, media-upload, sentence-engine, or all)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - i18n-translator
+          - media-upload
+          - sentence-engine
+      message:
+        description: 'Deployment message'
+        required: false
+        default: 'Manual deployment from admin dashboard'
 
 jobs:
   check-triggers:
@@ -18,17 +34,41 @@ jobs:
         with:
           fetch-depth: 2
           
-      - name: Check commit message for triggers
+      - name: Check triggers
         id: check
         run: |
-          COMMIT_MSG="${{ github.event.head_commit.message }}"
-          echo "Commit message: $COMMIT_MSG"
-          
           # Default to no builds
           echo "should-build=false" >> $GITHUB_OUTPUT
           echo "build-i18n=false" >> $GITHUB_OUTPUT
           echo "build-media=false" >> $GITHUB_OUTPUT
           echo "build-sentence=false" >> $GITHUB_OUTPUT
+          
+          # Handle workflow_dispatch trigger
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            TARGET="${{ github.event.inputs.target }}"
+            echo "Workflow dispatch target: $TARGET"
+            
+            if [[ "$TARGET" == "all" ]]; then
+              echo "should-build=true" >> $GITHUB_OUTPUT
+              echo "build-i18n=true" >> $GITHUB_OUTPUT
+              echo "build-media=true" >> $GITHUB_OUTPUT
+              echo "build-sentence=true" >> $GITHUB_OUTPUT
+            elif [[ "$TARGET" == "i18n-translator" ]]; then
+              echo "build-i18n=true" >> $GITHUB_OUTPUT
+              echo "should-build=true" >> $GITHUB_OUTPUT
+            elif [[ "$TARGET" == "media-upload" ]]; then
+              echo "build-media=true" >> $GITHUB_OUTPUT
+              echo "should-build=true" >> $GITHUB_OUTPUT
+            elif [[ "$TARGET" == "sentence-engine" ]]; then
+              echo "build-sentence=true" >> $GITHUB_OUTPUT
+              echo "should-build=true" >> $GITHUB_OUTPUT
+            fi
+            exit 0
+          fi
+          
+          # Handle push trigger - check commit message
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          echo "Commit message: $COMMIT_MSG"
           
           # Check for build all triggers
           if [[ "$COMMIT_MSG" == *"[build:all]"* ]] || [[ "$COMMIT_MSG" == *"[build:workers]"* ]]; then
