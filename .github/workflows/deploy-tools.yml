@@ -1,0 +1,154 @@
+name: Deploy Tools to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  check-triggers:
+    runs-on: ubuntu-latest
+    outputs:
+      should-build: ${{ steps.check.outputs.should-build }}
+      build-admin: ${{ steps.check.outputs.build-admin }}
+      build-ui-docs: ${{ steps.check.outputs.build-ui-docs }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          
+      - name: Check commit message for triggers
+        id: check
+        run: |
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          echo "Commit message: $COMMIT_MSG"
+          
+          # Default to no builds
+          echo "should-build=false" >> $GITHUB_OUTPUT
+          echo "build-admin=false" >> $GITHUB_OUTPUT
+          echo "build-ui-docs=false" >> $GITHUB_OUTPUT
+          
+          # Check for build all triggers
+          if [[ "$COMMIT_MSG" == *"[build:all]"* ]] || [[ "$COMMIT_MSG" == *"[build:tools]"* ]]; then
+            echo "should-build=true" >> $GITHUB_OUTPUT
+            echo "build-admin=true" >> $GITHUB_OUTPUT
+            echo "build-ui-docs=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Check for specific tool triggers
+          if [[ "$COMMIT_MSG" == *"[build:admin]"* ]]; then
+            echo "build-admin=true" >> $GITHUB_OUTPUT
+            echo "should-build=true" >> $GITHUB_OUTPUT
+          fi
+          if [[ "$COMMIT_MSG" == *"[build:ui-docs]"* ]]; then
+            echo "build-ui-docs=true" >> $GITHUB_OUTPUT
+            echo "should-build=true" >> $GITHUB_OUTPUT
+          fi
+
+  check-environment:
+    needs: check-triggers
+    if: needs.check-triggers.outputs.should-build == 'true'
+    runs-on: ubuntu-latest
+    name: Check Required Environment Variables
+    steps:
+      - name: Check Cloudflare API Token
+        run: |
+          if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
+            echo "❌ ERROR: Missing required secret CLOUDFLARE_API_TOKEN"
+            echo "Please add this secret in GitHub Settings > Secrets and variables > Actions"
+            exit 1
+          fi
+          echo "✅ CLOUDFLARE_API_TOKEN is configured"
+      
+      - name: Check Supabase Environment Variables
+        run: |
+          MISSING_VARS=""
+          
+          if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ]; then
+            MISSING_VARS="$MISSING_VARS VITE_SUPABASE_URL"
+          fi
+          
+          if [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ]; then
+            MISSING_VARS="$MISSING_VARS VITE_SUPABASE_ANON_KEY"
+          fi
+          
+          if [ -n "$MISSING_VARS" ]; then
+            echo "❌ ERROR: Missing required Supabase secrets:"
+            for var in $MISSING_VARS; do
+              echo "  - $var"
+            done
+            echo ""
+            echo "Please add these secrets in GitHub Settings > Secrets and variables > Actions"
+            exit 1
+          fi
+          
+          echo "✅ Supabase environment variables are configured"
+
+  deploy-admin:
+    needs: [check-triggers, check-environment]
+    if: needs.check-triggers.outputs.build-admin == 'true'
+    runs-on: ubuntu-latest
+    name: Deploy Admin Tool
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+        
+      - name: Build Admin tool
+        run: |
+          pnpm --filter=@tiko/ui build
+          pnpm --filter=@tiko/core build
+          pnpm --filter=admin build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: dc2b7d14a69351375cab6de9a13ddee9
+          command: pages deploy ./tools/admin/dist --project-name=tiko-admin --compatibility-date=2024-08-02
+
+  deploy-ui-docs:
+    needs: [check-triggers, check-environment]
+    if: needs.check-triggers.outputs.build-ui-docs == 'true'
+    runs-on: ubuntu-latest
+    name: Deploy UI Docs
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+        
+      - name: Build UI Docs
+        run: |
+          pnpm --filter=@tiko/ui build
+          pnpm --filter=@tiko/ui-docs build
+          
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: dc2b7d14a69351375cab6de9a13ddee9
+          command: pages deploy ./tools/ui-docs/dist --project-name=tiko-ui-docs --compatibility-date=2024-08-02

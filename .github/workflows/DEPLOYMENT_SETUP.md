@@ -5,24 +5,15 @@ This guide explains how to set up automatic deployments for all Tiko projects vi
 ## Overview
 
 Each part of the Tiko monorepo deploys independently:
-- **Workers** → Cloudflare Workers
-- **Apps** → Netlify (timer, cards, radio, todo)
-- **Marketing Website** → Netlify
-- **Admin Tool** → Netlify
+- **Workers** → Cloudflare Workers (i18n-translator, media-upload, sentence-engine)
+- **Apps** → Cloudflare Pages (timer, cards, radio, todo, yes-no)
+- **Websites** → Cloudflare Pages (marketing, future media site)
+- **Tools** → Cloudflare Pages (admin, ui-docs)
 
 ## Required GitHub Secrets
 
-### For Cloudflare Workers
-- `CLOUDFLARE_API_TOKEN` - Your Cloudflare API token
-
-### For Netlify Deployments
-- `NETLIFY_AUTH_TOKEN` - Your Netlify personal access token
-- `NETLIFY_TIMER_SITE_ID` - Timer app site ID
-- `NETLIFY_CARDS_SITE_ID` - Cards app site ID
-- `NETLIFY_RADIO_SITE_ID` - Radio app site ID
-- `NETLIFY_TODO_SITE_ID` - Todo app site ID
-- `NETLIFY_MARKETING_SITE_ID` - Marketing website site ID
-- `NETLIFY_ADMIN_SITE_ID` - Admin tool site ID
+### For Cloudflare (Workers and Pages)
+- `CLOUDFLARE_API_TOKEN` - Your Cloudflare API token (used for all deployments)
 
 ### For Supabase (used by apps)
 - `VITE_SUPABASE_URL` - Your Supabase project URL
@@ -30,51 +21,35 @@ Each part of the Tiko monorepo deploys independently:
 
 ## Setup Instructions
 
-### 1. Get Netlify Auth Token
-1. Go to https://app.netlify.com/user/applications#personal-access-tokens
-2. Click "New access token"
-3. Give it a name like "GitHub Actions"
+### 1. Get Cloudflare API Token
+1. Go to https://dash.cloudflare.com/profile/api-tokens
+2. Click "Create Token"
+3. Use "Custom token" template with these permissions:
+   - Account: Cloudflare Pages:Edit
+   - Zone: Zone:Read (for all zones)
+   - Account: Account:Read
 4. Copy the token
 
-### 2. Create Netlify Sites
-For each app/website, either:
-
-**Option A: Create manually in Netlify**
-1. Go to Netlify dashboard
-2. Click "Add new site" → "Deploy manually"
-3. Drag any folder to create the site
-4. Go to Site settings → General → Site details
-5. Copy the Site ID
-
-**Option B: Use Netlify CLI**
-```bash
-# Install Netlify CLI
-npm install -g netlify-cli
-
-# Login
-netlify login
-
-# Create sites
-cd apps/timer && netlify sites:create --name tiko-timer
-cd apps/cards && netlify sites:create --name tiko-cards
-cd apps/radio && netlify sites:create --name tiko-radio
-cd apps/todo && netlify sites:create --name tiko-todo
-cd websites/marketing && netlify sites:create --name tiko-marketing
-cd tools/admin && netlify sites:create --name tiko-admin
-
-# List sites to get IDs
-netlify sites:list
-```
+### 2. Cloudflare Pages Projects
+Cloudflare Pages projects are created automatically when you first deploy.
+No manual setup required - the deployment will create projects with these names:
+- `tiko-timer` - Timer app
+- `tiko-cards` - Cards app  
+- `tiko-radio` - Radio app
+- `tiko-todo` - Todo app
+- `tiko-marketing` - Marketing website
+- `tiko-admin` - Admin tool
+- `tiko-ui-docs` - UI documentation
 
 ### 3. Add Secrets to GitHub
 1. Go to your GitHub repository → Settings → Secrets and variables → Actions
 2. Add each secret from the list above
 
 ### 4. Link Custom Domains (Optional)
-In Netlify dashboard for each site:
-1. Go to Domain settings
+In Cloudflare Pages dashboard for each project:
+1. Go to Custom domains
 2. Add custom domain
-3. Follow DNS configuration instructions
+3. DNS records are automatically configured if using Cloudflare DNS
 
 ## How It Works
 
@@ -82,24 +57,33 @@ In Netlify dashboard for each site:
 
 **IMPORTANT**: Deployments are ONLY triggered by explicit commit message triggers. File changes alone will NOT trigger deployments.
 
-#### Force Builds
+#### Force Builds by Category
 Add these to your commit message to force deployments:
 - `[build:all]` - Forces ALL projects to build and deploy
-- `[build:apps]` - Forces all apps to deploy
-- `[build:workers]` - Forces all workers to deploy
-- `[build:websites]` - Forces all websites to deploy
-- `[build:tools]` - Forces all tools to deploy
+- `[build:apps]` - Forces all apps to deploy (timer, cards, radio, todo, yes-no)
+- `[build:workers]` - Forces all workers to deploy (i18n-translator, media-upload, sentence-engine)
+- `[build:websites]` - Forces all websites to deploy (marketing)
+- `[build:tools]` - Forces all tools to deploy (admin, ui-docs)
 
 #### Force Specific Deployments
+**Apps:**
 - `[build:timer]` - Deploy timer app only
 - `[build:cards]` - Deploy cards app only
 - `[build:radio]` - Deploy radio app only
 - `[build:todo]` - Deploy todo app only
-- `[build:marketing]` - Deploy marketing website only
-- `[build:admin]` - Deploy admin tool only
+- `[build:yes-no]` - Deploy yes-no app only
+
+**Workers:**
 - `[build:i18n-translator]` - Deploy i18n translator worker only
 - `[build:media-upload]` - Deploy media upload worker only
 - `[build:sentence-engine]` - Deploy sentence engine worker only
+
+**Websites:**
+- `[build:marketing]` - Deploy marketing website only
+
+**Tools:**
+- `[build:admin]` - Deploy admin tool only
+- `[build:ui-docs]` - Deploy UI docs only
 
 #### No Skip Triggers Needed
 Since deployments only happen with explicit triggers, there's no need for skip triggers. Simply don't include a build trigger in your commit message if you don't want to deploy.
@@ -110,6 +94,7 @@ Since deployments only happen with explicit triggers, there's no need for skip t
 3. ONLY deploys if explicit triggers are found
 4. Dependencies (packages/ui, packages/core) are built first
 5. Each deployment runs in parallel for speed
+6. Uses wrangler CLI to deploy to Cloudflare Pages
 
 ### No Automatic Deployments
 - Changes to files do NOT automatically trigger deployments
@@ -125,11 +110,11 @@ After setup, test deployments with explicit triggers:
 git commit --allow-empty -m "test: workers deployment [build:workers]"
 git push
 
-# Deploy specific app
+# Deploy specific app to Cloudflare Pages
 git commit --allow-empty -m "test: timer deployment [build:timer]"
 git push
 
-# Deploy everything
+# Deploy everything (workers + pages)
 git commit --allow-empty -m "test: full deployment [build:all]"
 git push
 
@@ -145,8 +130,8 @@ git add . && git commit -m "docs: update readme" && git push  # No deployment
 ## Monitoring
 
 - **GitHub Actions**: Check Actions tab for deployment status
-- **Netlify**: Check Netlify dashboard for deployment logs
-- **Cloudflare**: Check Workers & Pages for worker status
+- **Cloudflare Workers**: Check Workers & Pages dashboard for worker status
+- **Cloudflare Pages**: Check Workers & Pages dashboard for pages deployment status
 
 ## Environment Variables
 
@@ -156,10 +141,15 @@ Set in GitHub secrets with `VITE_` prefix:
 - `VITE_SUPABASE_ANON_KEY`
 
 ### Runtime Variables (Workers)
-Set directly in Cloudflare Workers:
+Set directly in Cloudflare Workers dashboard:
 - `OPENAI_API_KEY`
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_KEY`
+
+### Pages Environment Variables
+Set in Cloudflare Pages dashboard for each project if needed:
+- Most variables are built into the static files during build
+- Runtime variables can be set per project in Pages settings
 
 ## Troubleshooting
 
@@ -169,12 +159,13 @@ Set directly in Cloudflare Workers:
 - Verify environment variables are set
 
 ### Deployment Failures
-- Check Netlify/Cloudflare logs
+- Check Cloudflare Workers & Pages logs
 - Verify API tokens have correct permissions
-- Ensure site IDs match actual Netlify sites
+- Ensure Cloudflare account has Pages enabled
 
 ### Common Issues
-1. **"Site not found"** - Wrong NETLIFY_SITE_ID
-2. **"Unauthorized"** - Invalid NETLIFY_AUTH_TOKEN
-3. **"Build failed"** - Missing environment variables
+1. **"Project not found"** - Cloudflare Pages project will be created on first deploy
+2. **"Unauthorized"** - Invalid CLOUDFLARE_API_TOKEN or insufficient permissions
+3. **"Build failed"** - Missing environment variables or build errors
 4. **"Module not found"** - Dependencies not built in correct order
+5. **"Pages deployment failed"** - Check wrangler logs for specific errors

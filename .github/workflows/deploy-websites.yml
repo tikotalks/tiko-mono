@@ -1,4 +1,4 @@
-name: Deploy Admin Tool
+name: Deploy Websites to Cloudflare Pages
 
 on:
   push:
@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       should-build: ${{ steps.check.outputs.should-build }}
+      build-marketing: ${{ steps.check.outputs.build-marketing }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,11 +22,20 @@ jobs:
           COMMIT_MSG="${{ github.event.head_commit.message }}"
           echo "Commit message: $COMMIT_MSG"
           
-          # Default to no build
+          # Default to no builds
           echo "should-build=false" >> $GITHUB_OUTPUT
+          echo "build-marketing=false" >> $GITHUB_OUTPUT
           
-          # Check for build triggers
-          if [[ "$COMMIT_MSG" == *"[build:all]"* ]] || [[ "$COMMIT_MSG" == *"[build:tools]"* ]] || [[ "$COMMIT_MSG" == *"[build:admin]"* ]]; then
+          # Check for build all triggers
+          if [[ "$COMMIT_MSG" == *"[build:all]"* ]] || [[ "$COMMIT_MSG" == *"[build:websites]"* ]]; then
+            echo "should-build=true" >> $GITHUB_OUTPUT
+            echo "build-marketing=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Check for specific website triggers
+          if [[ "$COMMIT_MSG" == *"[build:marketing]"* ]]; then
+            echo "build-marketing=true" >> $GITHUB_OUTPUT
             echo "should-build=true" >> $GITHUB_OUTPUT
           fi
 
@@ -35,29 +45,14 @@ jobs:
     runs-on: ubuntu-latest
     name: Check Required Environment Variables
     steps:
-      - name: Check Netlify Credentials
+      - name: Check Cloudflare API Token
         run: |
-          MISSING_VARS=""
-          
-          if [ -z "${{ secrets.NETLIFY_AUTH_TOKEN }}" ]; then
-            MISSING_VARS="$MISSING_VARS NETLIFY_AUTH_TOKEN"
-          fi
-          
-          if [ -z "${{ secrets.NETLIFY_ADMIN_SITE_ID }}" ]; then
-            MISSING_VARS="$MISSING_VARS NETLIFY_ADMIN_SITE_ID"
-          fi
-          
-          if [ -n "$MISSING_VARS" ]; then
-            echo "❌ ERROR: Missing required Netlify secrets:"
-            for var in $MISSING_VARS; do
-              echo "  - $var"
-            done
-            echo ""
-            echo "Please add these secrets in GitHub Settings > Secrets and variables > Actions"
+          if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
+            echo "❌ ERROR: Missing required secret CLOUDFLARE_API_TOKEN"
+            echo "Please add this secret in GitHub Settings > Secrets and variables > Actions"
             exit 1
           fi
-          
-          echo "✅ Netlify credentials are configured"
+          echo "✅ CLOUDFLARE_API_TOKEN is configured"
       
       - name: Check Supabase Environment Variables
         run: |
@@ -83,11 +78,11 @@ jobs:
           
           echo "✅ Supabase environment variables are configured"
 
-  deploy:
+  deploy-marketing:
     needs: [check-triggers, check-environment]
-    if: needs.check-triggers.outputs.should-build == 'true'
+    if: needs.check-triggers.outputs.build-marketing == 'true'
     runs-on: ubuntu-latest
-    name: Deploy Admin Tool
+    name: Deploy Marketing Website
     steps:
       - uses: actions/checkout@v4
       
@@ -103,25 +98,18 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
         
-      - name: Build Admin tool
+      - name: Build Marketing website
         run: |
           pnpm --filter=@tiko/ui build
           pnpm --filter=@tiko/core build
-          pnpm --filter=admin build
+          pnpm --filter=marketing build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           
-      - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v2
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
         with:
-          publish-dir: './tools/admin/dist'
-          production-branch: master
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Deploy from GitHub Actions"
-          enable-pull-request-comment: false
-          enable-commit-comment: false
-          overwrites-pull-request-comment: false
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_ADMIN_SITE_ID }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: dc2b7d14a69351375cab6de9a13ddee9
+          command: pages deploy ./websites/marketing/dist --project-name=tiko-marketing --compatibility-date=2024-08-02
