@@ -3,10 +3,11 @@ main = "src/index.ts"
 compatibility_date = "2024-01-17"
 account_id = "dc2b7d14a69351375cab6de9a13ddee9"
 
-[env.production]
-routes = [
-  { pattern = "tikoapi.org/translate", zone_name = "tikoapi.org" }
-]
+# [env.production]
+# routes = [
+#   { pattern = "tikoapi.org/translate", zone_name = "tikoapi.org" }
+# ]
+# Note: Add routes manually in Cloudflare dashboard or after adding domain to account
 
 # Secrets should be set via wrangler secret or GitHub secrets:
 # OPENAI_API_KEY - Set via: wrangler secret put OPENAI_API_KEY
