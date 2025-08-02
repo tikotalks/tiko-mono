@@ -1,0 +1,20 @@
+{
+  "name": "@tiko/media-upload-worker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Media upload worker with AI analysis for Tiko",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "wrangler dev src/index.ts",
+    "build": "wrangler deploy src/index.ts --dry-run --outdir dist",
+    "deploy": "wrangler deploy src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250802.0",
+    "@types/node": "^20.11.5",
+    "typescript": "^5.3.3",
+    "wrangler": "^3.22.4"
+  }
+}

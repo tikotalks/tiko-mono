@@ -1,0 +1,21 @@
+{
+  "name": "@tiko/workers",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloudflare Workers for Tiko",
+  "scripts": {
+    "dev": "pnpm run -r dev",
+    "build": "pnpm run -r build",
+    "deploy": "pnpm run -r deploy",
+    "deploy:all": "pnpm run -r deploy",
+    "deploy:media-upload": "pnpm --filter=media-upload deploy",
+    "deploy:i18n-translator": "pnpm --filter=i18n-translator deploy",
+    "deploy:sentence-engine": "pnpm --filter=sentence-engine deploy",
+    "typecheck": "pnpm run -r typecheck",
+    "lint": "pnpm run -r lint"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240117.0",
+    "wrangler": "^3.22.4"
+  }
+}
