@@ -1,4 +1,4 @@
-import { supabase } from './supabase.service'
+import { getSupabase } from '../lib/supabase-lazy'
 
 export interface DeploymentTarget {
   id: string
@@ -283,6 +283,7 @@ class DeploymentService {
    */
   async saveDeploymentEvent(targetId: string, status: string, metadata?: any): Promise<void> {
     try {
+      const supabase = getSupabase()
       const { error } = await supabase
         .from('deployment_events')
         .insert({
@@ -305,6 +306,7 @@ class DeploymentService {
    */
   async getDeploymentEvents(targetId?: string, limit = 50): Promise<any[]> {
     try {
+      const supabase = getSupabase()
       let query = supabase
         .from('deployment_events')
         .select('*')
