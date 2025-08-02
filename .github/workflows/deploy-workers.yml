@@ -30,7 +30,9 @@ jobs:
       - name: Build workers
         run: |
           cd workers
-          pnpm run build
+          pnpm --filter=@tiko/i18n-translator-worker build
+          pnpm --filter=@tiko/media-upload-worker build
+          pnpm --filter=@tiko/sentence-engine-worker build
           
       - name: Deploy i18n-translator worker
         uses: cloudflare/wrangler-action@v3
