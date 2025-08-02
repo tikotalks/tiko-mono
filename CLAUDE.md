@@ -669,7 +669,7 @@ git push origin master
 
 ## Build Triggers for Netlify Deployments
 
-The project uses smart build detection to only rebuild apps when necessary. You can override this behavior using commit message triggers:
+**IMPORTANT**: Deployments are ONLY triggered by explicit commit message triggers. File changes alone will NOT trigger deployments. You must explicitly include a trigger in your commit message to deploy.
 
 ### Force Build Triggers
 Add these to your commit message to force builds:
@@ -677,34 +677,32 @@ Add these to your commit message to force builds:
 - `[force-build]` - Same as `[build:all]`, forces all apps to build
 - `[build:{app}]` - Forces a specific app to build (e.g., `[build:cards]`, `[build:timer]`)
 
-### Skip Build Triggers
-Add these to your commit message to skip builds:
-- `[skip-ci]` - Skips ALL builds even if there are changes
-- `[skip-build]` - Same as `[skip-ci]`
-- `[skip:{app}]` - Skips a specific app's build (e.g., `[skip:cards]`)
+### No Skip Triggers Needed
+Since deployments only happen with explicit triggers, there's no need for skip triggers. Simply don't include a build trigger if you don't want to deploy.
 
 ### Examples
 ```bash
-# Force all apps to build even without changes
+# Deploy everything
 git commit -m "chore: update dependencies [build:all]"
 
-# Force specific app to build
+# Deploy specific app
 git commit -m "fix(cards): update config [build:cards]"
 
-# Skip all builds (useful for documentation changes)
-git commit -m "docs: update README [skip-ci]"
+# Deploy all apps
+git commit -m "feat: add new feature [build:apps]"
 
-# Skip specific app build
-git commit -m "style(timer): fix typo in comment [skip:timer]"
+# Deploy multiple specific items
+git commit -m "fix: update auth flow [build:timer] [build:radio]"
+
+# Regular commit without deployment
+git commit -m "docs: update README"  # No deployment trigger
 ```
 
-### Build Detection Logic
-By default, apps will only build if:
-1. There are changes in the app's directory
-2. There are changes in shared packages (packages/ui, packages/core)
-3. There are changes in root dependencies (package.json, pnpm-lock.yaml)
-
-The commit message triggers override this default behavior.
+### Deployment Philosophy
+- **Explicit Control**: You decide exactly when to deploy
+- **No Surprises**: Changes won't automatically trigger deployments
+- **Batch Changes**: Make multiple commits and deploy when ready
+- **Test Locally**: Ensure everything works before triggering deployment
 
 ## I18n Validation and Management
 
@@ -793,7 +791,7 @@ The script should be integrated into the CI pipeline:
 
 ## Build Triggers for Netlify Deployments
 
-The project uses smart build detection to only rebuild apps when necessary. You can override this behavior using commit message triggers:
+**IMPORTANT**: Deployments are ONLY triggered by explicit commit message triggers. File changes alone will NOT trigger deployments. You must explicitly include a trigger in your commit message to deploy.
 
 ### Force Build Triggers
 Add these to your commit message to force builds:
@@ -801,31 +799,29 @@ Add these to your commit message to force builds:
 - `[force-build]` - Same as `[build:all]`, forces all apps to build
 - `[build:{app}]` - Forces a specific app to build (e.g., `[build:cards]`, `[build:timer]`)
 
-### Skip Build Triggers
-Add these to your commit message to skip builds:
-- `[skip-ci]` - Skips ALL builds even if there are changes
-- `[skip-build]` - Same as `[skip-ci]`
-- `[skip:{app}]` - Skips a specific app's build (e.g., `[skip:cards]`)
+### No Skip Triggers Needed
+Since deployments only happen with explicit triggers, there's no need for skip triggers. Simply don't include a build trigger if you don't want to deploy.
 
 ### Examples
 ```bash
-# Force all apps to build even without changes
+# Deploy everything
 git commit -m "chore: update dependencies [build:all]"
 
-# Force specific app to build
+# Deploy specific app
 git commit -m "fix(cards): update config [build:cards]"
 
-# Skip all builds (useful for documentation changes)
-git commit -m "docs: update README [skip-ci]"
+# Deploy all apps
+git commit -m "feat: add new feature [build:apps]"
 
-# Skip specific app build
-git commit -m "style(timer): fix typo in comment [skip:timer]"
+# Deploy multiple specific items
+git commit -m "fix: update auth flow [build:timer] [build:radio]"
+
+# Regular commit without deployment
+git commit -m "docs: update README"  # No deployment trigger
 ```
 
-### Build Detection Logic
-By default, apps will only build if:
-1. There are changes in the app's directory
-2. There are changes in shared packages (packages/ui, packages/core)
-3. There are changes in root dependencies (package.json, pnpm-lock.yaml)
-
-The commit message triggers override this default behavior.
+### Deployment Philosophy
+- **Explicit Control**: You decide exactly when to deploy
+- **No Surprises**: Changes won't automatically trigger deployments
+- **Batch Changes**: Make multiple commits and deploy when ready
+- **Test Locally**: Ensure everything works before triggering deployment

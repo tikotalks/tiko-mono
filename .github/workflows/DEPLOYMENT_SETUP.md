@@ -78,13 +78,9 @@ In Netlify dashboard for each site:
 
 ## How It Works
 
-### Automatic Deployment Triggers
-- **Workers**: Deploy when files in `workers/**` change
-- **Apps**: Deploy when files in `apps/**` or `packages/**` change
-- **Marketing**: Deploy when files in `websites/marketing/**` change
-- **Admin**: Deploy when files in `tools/admin/**` change
+### Deployment Triggers via Commit Messages
 
-### Manual Deployment Triggers via Commit Messages
+**IMPORTANT**: Deployments are ONLY triggered by explicit commit message triggers. File changes alone will NOT trigger deployments.
 
 #### Force Builds
 Add these to your commit message to force deployments:
@@ -105,50 +101,45 @@ Add these to your commit message to force deployments:
 - `[build:media-upload]` - Deploy media upload worker only
 - `[build:sentence-engine]` - Deploy sentence engine worker only
 
-#### Skip Deployments
-Add these to skip deployments even if files changed:
-- `[skip-ci]` - Skip ALL deployments
-- `[skip:apps]` - Skip all app deployments
-- `[skip:workers]` - Skip all worker deployments
-- `[skip:websites]` - Skip all website deployments
-- `[skip:tools]` - Skip all tool deployments
-- `[skip:timer]` - Skip timer app deployment
-- `[skip:cards]` - Skip cards app deployment
-- `[skip:radio]` - Skip radio app deployment
-- `[skip:todo]` - Skip todo app deployment
-- `[skip:marketing]` - Skip marketing website deployment
-- `[skip:admin]` - Skip admin tool deployment
+#### No Skip Triggers Needed
+Since deployments only happen with explicit triggers, there's no need for skip triggers. Simply don't include a build trigger in your commit message if you don't want to deploy.
 
 ### Build Process
 1. GitHub Actions runs on push to master
-2. Only affected projects are built and deployed
-3. Dependencies (packages/ui, packages/core) are built first
-4. Each deployment runs in parallel for speed
+2. Checks commit message for deployment triggers
+3. ONLY deploys if explicit triggers are found
+4. Dependencies (packages/ui, packages/core) are built first
+5. Each deployment runs in parallel for speed
+
+### No Automatic Deployments
+- Changes to files do NOT automatically trigger deployments
+- You must explicitly use commit message triggers
+- This gives you full control over when deployments happen
 
 ## Testing Deployments
 
-After setup, test by making a small change:
+After setup, test deployments with explicit triggers:
 
 ```bash
-# Test workers deployment
-echo "# Test" >> workers/README.md
-git add . && git commit -m "test: workers deployment" && git push
-
-# Test timer app deployment
-echo "# Test" >> apps/timer/README.md
-git add . && git commit -m "test: timer deployment" && git push
-
-# Force deploy all apps without changes
-git commit --allow-empty -m "chore: force deploy [build:apps]"
+# Deploy all workers
+git commit --allow-empty -m "test: workers deployment [build:workers]"
 git push
 
-# Force deploy specific worker
-git commit --allow-empty -m "fix: update config [build:i18n-translator]"
+# Deploy specific app
+git commit --allow-empty -m "test: timer deployment [build:timer]"
 git push
 
-# Skip CI for documentation changes
+# Deploy everything
+git commit --allow-empty -m "test: full deployment [build:all]"
+git push
+
+# Deploy multiple specific items
+git commit --allow-empty -m "test: multi deploy [build:cards] [build:radio]"
+git push
+
+# Regular commits don't trigger deployments
 echo "# Docs update" >> README.md
-git add . && git commit -m "docs: update readme [skip-ci]" && git push
+git add . && git commit -m "docs: update readme" && git push  # No deployment
 ```
 
 ## Monitoring

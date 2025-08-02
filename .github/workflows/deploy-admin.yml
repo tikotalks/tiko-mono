@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - master
-    paths:
-      - 'tools/admin/**'
-      - 'packages/**'
-      - '.github/workflows/deploy-admin.yml'
 
 jobs:
   check-triggers:
@@ -25,23 +21,12 @@ jobs:
           COMMIT_MSG="${{ github.event.head_commit.message }}"
           echo "Commit message: $COMMIT_MSG"
           
-          # Check for skip triggers
-          if [[ "$COMMIT_MSG" == *"[skip-ci]"* ]] || [[ "$COMMIT_MSG" == *"[skip:admin]"* ]] || [[ "$COMMIT_MSG" == *"[skip:tools]"* ]]; then
-            echo "should-build=false" >> $GITHUB_OUTPUT
-            exit 0
-          fi
+          # Default to no build
+          echo "should-build=false" >> $GITHUB_OUTPUT
           
           # Check for build triggers
           if [[ "$COMMIT_MSG" == *"[build:all]"* ]] || [[ "$COMMIT_MSG" == *"[build:tools]"* ]] || [[ "$COMMIT_MSG" == *"[build:admin]"* ]]; then
             echo "should-build=true" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          
-          # Check for file changes
-          if git diff --name-only HEAD^ HEAD | grep -q "tools/admin/\|packages/"; then
-            echo "should-build=true" >> $GITHUB_OUTPUT
-          else
-            echo "should-build=false" >> $GITHUB_OUTPUT
           fi
 
   deploy:

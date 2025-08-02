@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - master
-    paths:
-      - 'apps/**'
-      - 'packages/**'
-      - '.github/workflows/deploy-apps.yml'
 
 jobs:
   check-triggers:
@@ -29,61 +25,33 @@ jobs:
           COMMIT_MSG="${{ github.event.head_commit.message }}"
           echo "Commit message: $COMMIT_MSG"
           
-          # Check for build triggers
+          # Default to no builds
+          echo "build-timer=false" >> $GITHUB_OUTPUT
+          echo "build-cards=false" >> $GITHUB_OUTPUT
+          echo "build-radio=false" >> $GITHUB_OUTPUT
+          echo "build-todo=false" >> $GITHUB_OUTPUT
+          
+          # Check for build all triggers
           if [[ "$COMMIT_MSG" == *"[build:all]"* ]] || [[ "$COMMIT_MSG" == *"[build:apps]"* ]]; then
-            echo "build-all-apps=true" >> $GITHUB_OUTPUT
             echo "build-timer=true" >> $GITHUB_OUTPUT
             echo "build-cards=true" >> $GITHUB_OUTPUT
             echo "build-radio=true" >> $GITHUB_OUTPUT
             echo "build-todo=true" >> $GITHUB_OUTPUT
-          else
-            # Check for specific app triggers
-            if [[ "$COMMIT_MSG" == *"[build:timer]"* ]]; then
-              echo "build-timer=true" >> $GITHUB_OUTPUT
-            fi
-            if [[ "$COMMIT_MSG" == *"[build:cards]"* ]]; then
-              echo "build-cards=true" >> $GITHUB_OUTPUT
-            fi
-            if [[ "$COMMIT_MSG" == *"[build:radio]"* ]]; then
-              echo "build-radio=true" >> $GITHUB_OUTPUT
-            fi
-            if [[ "$COMMIT_MSG" == *"[build:todo]"* ]]; then
-              echo "build-todo=true" >> $GITHUB_OUTPUT
-            fi
-            
-            # Check for file changes if no triggers
-            if [[ -z "${build_timer}${build_cards}${build_radio}${build_todo}" ]]; then
-              # Check which apps have changes
-              if git diff --name-only HEAD^ HEAD | grep -q "apps/timer/"; then
-                echo "build-timer=true" >> $GITHUB_OUTPUT
-              fi
-              if git diff --name-only HEAD^ HEAD | grep -q "apps/cards/"; then
-                echo "build-cards=true" >> $GITHUB_OUTPUT
-              fi
-              if git diff --name-only HEAD^ HEAD | grep -q "apps/radio/"; then
-                echo "build-radio=true" >> $GITHUB_OUTPUT
-              fi
-              if git diff --name-only HEAD^ HEAD | grep -q "apps/todo/"; then
-                echo "build-todo=true" >> $GITHUB_OUTPUT
-              fi
-              
-              # If packages changed, build all apps
-              if git diff --name-only HEAD^ HEAD | grep -q "packages/"; then
-                echo "build-all-apps=true" >> $GITHUB_OUTPUT
-                echo "build-timer=true" >> $GITHUB_OUTPUT
-                echo "build-cards=true" >> $GITHUB_OUTPUT
-                echo "build-radio=true" >> $GITHUB_OUTPUT
-                echo "build-todo=true" >> $GITHUB_OUTPUT
-              fi
-            fi
+            exit 0
           fi
           
-          # Check for skip triggers
-          if [[ "$COMMIT_MSG" == *"[skip-ci]"* ]] || [[ "$COMMIT_MSG" == *"[skip:apps]"* ]]; then
-            echo "build-timer=false" >> $GITHUB_OUTPUT
-            echo "build-cards=false" >> $GITHUB_OUTPUT
-            echo "build-radio=false" >> $GITHUB_OUTPUT
-            echo "build-todo=false" >> $GITHUB_OUTPUT
+          # Check for specific app triggers
+          if [[ "$COMMIT_MSG" == *"[build:timer]"* ]]; then
+            echo "build-timer=true" >> $GITHUB_OUTPUT
+          fi
+          if [[ "$COMMIT_MSG" == *"[build:cards]"* ]]; then
+            echo "build-cards=true" >> $GITHUB_OUTPUT
+          fi
+          if [[ "$COMMIT_MSG" == *"[build:radio]"* ]]; then
+            echo "build-radio=true" >> $GITHUB_OUTPUT
+          fi
+          if [[ "$COMMIT_MSG" == *"[build:todo]"* ]]; then
+            echo "build-todo=true" >> $GITHUB_OUTPUT
           fi
 
   deploy-timer:
