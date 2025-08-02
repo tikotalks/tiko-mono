@@ -148,13 +148,15 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          
+      
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: dc2b7d14a69351375cab6de9a13ddee9
           command: pages deploy ./tools/admin/dist --project-name=tiko-admin --compatibility-date=2024-08-02
+          wranglerVersion: 'latest'
+          packageManager: 'pnpm'
 
   deploy-ui-docs:
     needs: [check-triggers, check-environment]
