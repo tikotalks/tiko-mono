@@ -1,4 +1,4 @@
-import { getSupabase } from '../lib/supabase-lazy'
+// No external dependencies needed - uses direct API calls
 
 export interface DeploymentTarget {
   id: string
@@ -45,6 +45,13 @@ class DeploymentService {
   private readonly GITHUB_OWNER = 'tikotalks'
   private readonly GITHUB_REPO = 'tiko-mono'
   private readonly GITHUB_API_BASE = 'https://api.github.com'
+  private readonly supabaseUrl: string
+  private readonly supabaseKey: string
+
+  constructor() {
+    this.supabaseUrl = import.meta.env['VITE_SUPABASE_URL'] || ''
+    this.supabaseKey = import.meta.env['VITE_SUPABASE_ANON_KEY'] || ''
+  }
 
   /**
    * All available deployment targets
@@ -282,19 +289,30 @@ class DeploymentService {
    * Save deployment event to database for tracking
    */
   async saveDeploymentEvent(targetId: string, status: string, metadata?: any): Promise<void> {
+    if (!this.supabaseUrl || !this.supabaseKey) {
+      console.warn('Supabase credentials not configured, skipping deployment event save')
+      return
+    }
+
     try {
-      const supabase = getSupabase()
-      const { error } = await supabase
-        .from('deployment_events')
-        .insert({
+      const response = await fetch(`${this.supabaseUrl}/rest/v1/deployment_events`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': this.supabaseKey,
+          'Authorization': `Bearer ${this.supabaseKey}`,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
           target_id: targetId,
           status,
           metadata: metadata || {},
           created_at: new Date().toISOString()
         })
+      })
 
-      if (error) {
-        console.error('Error saving deployment event:', error)
+      if (!response.ok) {
+        console.error('Error saving deployment event:', response.statusText)
       }
     } catch (error) {
       console.error('Error saving deployment event:', error)
@@ -305,25 +323,33 @@ class DeploymentService {
    * Get recent deployment events from database
    */
   async getDeploymentEvents(targetId?: string, limit = 50): Promise<any[]> {
-    try {
-      const supabase = getSupabase()
-      let query = supabase
-        .from('deployment_events')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(limit)
+    if (!this.supabaseUrl || !this.supabaseKey) {
+      console.warn('Supabase credentials not configured, returning empty deployment events')
+      return []
+    }
 
+    try {
+      let url = `${this.supabaseUrl}/rest/v1/deployment_events?select=*&order=created_at.desc&limit=${limit}`
+      
       if (targetId) {
-        query = query.eq('target_id', targetId)
+        url += `&target_id=eq.${targetId}`
       }
 
-      const { data, error } = await query
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': this.supabaseKey,
+          'Authorization': `Bearer ${this.supabaseKey}`
+        }
+      })
 
-      if (error) {
-        console.error('Error fetching deployment events:', error)
+      if (!response.ok) {
+        console.error('Error fetching deployment events:', response.statusText)
         return []
       }
 
+      const data = await response.json()
       return data || []
     } catch (error) {
       console.error('Error fetching deployment events:', error)
