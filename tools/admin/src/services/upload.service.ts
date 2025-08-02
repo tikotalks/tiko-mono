@@ -2,7 +2,7 @@ import { mediaService } from '@tiko/core'
 
 // Upload service that uses Cloudflare Worker and saves via core media service
 export class UploadService {
-  private workerUrl = 'https://media.tikocdn.org/upload'
+  private workerUrl = 'https://api.tikocdn.org/upload'
 
   async uploadFile(file: File): Promise<{ 
     success: boolean

@@ -5,7 +5,8 @@ account_id = "dc2b7d14a69351375cab6de9a13ddee9"
 
 [env.production]
 routes = [
-  { pattern = "media.tikocdn.org/*", zone_name = "tikocdn.org" }
+  { pattern = "api.tikocdn.org/upload", zone_name = "tikocdn.org" },
+  { pattern = "api.tikocdn.org/analyze", zone_name = "tikocdn.org" }
 ]
 
 [[env.production.r2_buckets]]

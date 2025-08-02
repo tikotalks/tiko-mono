@@ -140,7 +140,7 @@ class DeploymentService {
         type: 'worker',
         trigger: '[build:media-upload]',
         description: 'File upload and media processing worker',
-        url: 'https://media.tikocdn.org'
+        url: 'https://api.tikocdn.org'
       },
       {
         id: 'sentence-engine',

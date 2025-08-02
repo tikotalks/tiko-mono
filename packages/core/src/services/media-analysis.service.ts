@@ -26,7 +26,7 @@ export interface MediaAnalysisResult {
 }
 
 export class MediaAnalysisService {
-  private analyzeUrl = 'https://media.tikocdn.org/analyze'
+  private analyzeUrl = 'https://api.tikocdn.org/analyze'
 
   /**
    * Analyze a media item using AI to generate metadata
