@@ -1,0 +1,57 @@
+name: Deploy Cloudflare Workers
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'workers/**'
+      - '.github/workflows/deploy-workers.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy Workers
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Build workers
+        run: |
+          cd workers
+          pnpm run build
+          
+      - name: Deploy i18n-translator worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: dc2b7d14a69351375cab6de9a13ddee9
+          workingDirectory: 'workers/i18n-translator'
+          command: deploy --env production
+          
+      - name: Deploy media-upload worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: dc2b7d14a69351375cab6de9a13ddee9
+          workingDirectory: 'workers/media-upload'
+          command: deploy --env production
+          
+      - name: Deploy sentence-engine worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: dc2b7d14a69351375cab6de9a13ddee9
+          workingDirectory: 'workers/sentence-engine'
+          command: deploy --env production
