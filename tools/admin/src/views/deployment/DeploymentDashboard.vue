@@ -84,7 +84,7 @@
             <TButton
               type="outline"
               :icon="Icons.HISTORY"
-              @click="showHistory(target.id)"
+              @click="showHistory(target)"
             >
               {{ t('deployment.history') }}
             </TButton>
@@ -102,92 +102,13 @@
         </div>
       </div>
     </div>
-
-    <!-- Deployment History Modal -->
-    <TModal
-      v-if="historyModalOpen"
-      :title="t('deployment.historyFor', { name: selectedTarget?.name })"
-      @close="historyModalOpen = false"
-    >
-      <div :class="bemm('history')">
-        <div
-          v-for="event in deploymentHistory"
-          :key="event.id"
-          :class="bemm('history-item', [event.status])"
-        >
-          <div :class="bemm('history-header')">
-            <TIcon :name="getStatusIcon(event.status)" />
-            <span :class="bemm('history-commit')">{{ event.commit }}</span>
-            <span :class="bemm('history-user')">{{ event.triggeredBy }}</span>
-            <span :class="bemm('history-date')">{{ formatDate(event.startedAt) }}</span>
-          </div>
-          
-          <div v-if="event.duration" :class="bemm('history-duration')">
-            {{ formatDuration(event.duration) }}
-          </div>
-          
-          <div v-if="event.logUrl" :class="bemm('history-actions')">
-            <TButton
-              type="ghost"
-              size="small"
-              :icon="Icons.EXTERNAL_LINK"
-              @click="openLogs(event.logUrl)"
-            >
-              {{ t('deployment.viewLogs') }}
-            </TButton>
-          </div>
-        </div>
-        
-        <div v-if="deploymentHistory.length === 0" :class="bemm('empty')">
-          <TIcon :name="Icons.INFO" />
-          <p>{{ t('deployment.noHistory') }}</p>
-        </div>
-      </div>
-    </TModal>
-
-    <!-- Deploy Confirmation Modal -->
-    <TModal
-      v-if="deployModalOpen"
-      :title="t('deployment.confirmDeploy', { name: selectedTarget?.name })"
-      @close="deployModalOpen = false"
-    >
-      <div :class="bemm('deploy-form')">
-        <p :class="bemm('deploy-warning')">
-          {{ t('deployment.deployWarning') }}
-        </p>
-        
-        <TInput
-          v-model="deployMessage"
-          :label="t('deployment.commitMessage')"
-          :placeholder="t('deployment.commitMessagePlaceholder')"
-          :class="bemm('deploy-input')"
-        />
-        
-        <div :class="bemm('deploy-actions')">
-          <TButton
-            type="ghost"
-            @click="deployModalOpen = false"
-          >
-            {{ t('common.cancel') }}
-          </TButton>
-          
-          <TButton
-            type="primary"
-            :loading="isDeploying"
-            @click="confirmDeployment"
-          >
-            {{ t('deployment.confirmDeploy', { name: selectedTarget?.name }) }}
-          </TButton>
-        </div>
-      </div>
-    </TModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, computed, onMounted, reactive, inject } from 'vue'
 import { useBemm } from 'bemm'
-import { useI18n } from '@tiko/core'
+import { useI18n } from '@tiko/ui'
 import { Icons } from 'open-icon'
 import { 
   deploymentService, 
@@ -198,28 +119,19 @@ import {
   THeader, 
   TButton, 
   TIcon, 
-  TModal, 
-  TInput 
+  TInput,
+  type PopupService 
 } from '@tiko/ui'
 
 const bemm = useBemm('deployment-dashboard')
 const { t } = useI18n()
+const popupService = inject<PopupService>('popupService')
 
 // State
 const targets = ref<DeploymentTarget[]>([])
 const selectedFilter = ref<string>('all')
 const isRefreshing = ref(false)
 const deploymentStates = reactive<Record<string, { isDeploying: boolean }>>({})
-
-// History modal
-const historyModalOpen = ref(false)
-const selectedTarget = ref<DeploymentTarget | null>(null)
-const deploymentHistory = ref<DeploymentHistory[]>([])
-
-// Deploy modal
-const deployModalOpen = ref(false)
-const deployMessage = ref('')
-const isDeploying = ref(false)
 
 // Filters
 const filters = computed(() => [
@@ -256,58 +168,77 @@ const refreshStatus = async () => {
 }
 
 const triggerDeployment = async (target: DeploymentTarget) => {
-  selectedTarget.value = target
-  deployMessage.value = `deploy: ${target.name} via admin dashboard`
-  deployModalOpen.value = true
-}
-
-const confirmDeployment = async () => {
-  if (!selectedTarget.value) return
+  if (!popupService) return
   
-  isDeploying.value = true
-  deploymentStates[selectedTarget.value.id] = { isDeploying: true }
-  
-  try {
-    const success = await deploymentService.triggerDeployment(
-      selectedTarget.value.id,
-      deployMessage.value
-    )
-    
-    if (success) {
-      // Save deployment event
-      await deploymentService.saveDeploymentEvent(
-        selectedTarget.value.id,
-        'triggered',
-        { triggeredFrom: 'admin-dashboard', message: deployMessage.value }
-      )
+  popupService.open({
+    title: t('deployment.confirmDeploy', { name: target.name }),
+    component: 'form',
+    formConfig: {
+      fields: [
+        {
+          key: 'message',
+          type: 'text',
+          label: t('deployment.commitMessage'),
+          placeholder: t('deployment.commitMessagePlaceholder'),
+          value: `deploy: ${target.name} via admin dashboard`
+        }
+      ]
+    },
+    onConfirm: async (data: { message: string }) => {
+      deploymentStates[target.id] = { isDeploying: true }
       
-      // Refresh status after a short delay
-      setTimeout(refreshStatus, 2000)
+      try {
+        const success = await deploymentService.triggerDeployment(
+          target.id,
+          data.message
+        )
+        
+        if (success) {
+          // Save deployment event
+          await deploymentService.saveDeploymentEvent(
+            target.id,
+            'triggered',
+            { triggeredFrom: 'admin-dashboard', message: data.message }
+          )
+          
+          // Refresh status after a short delay
+          setTimeout(refreshStatus, 2000)
+        }
+      } catch (error) {
+        console.error('Error triggering deployment:', error)
+      } finally {
+        deploymentStates[target.id] = { isDeploying: false }
+      }
     }
-  } catch (error) {
-    console.error('Error triggering deployment:', error)
-  } finally {
-    isDeploying.value = false
-    deploymentStates[selectedTarget.value.id] = { isDeploying: false }
-    deployModalOpen.value = false
-    deployMessage.value = ''
-  }
+  })
 }
 
-const showHistory = async (targetId: string) => {
-  selectedTarget.value = targets.value.find(t => t.id === targetId) || null
-  if (!selectedTarget.value) return
+const showHistory = async (target: DeploymentTarget) => {
+  if (!popupService) return
   
   try {
-    deploymentHistory.value = await deploymentService.getDeploymentHistory(targetId)
-    historyModalOpen.value = true
+    const history = await deploymentService.getDeploymentHistory(target.id)
+    
+    popupService.open({
+      title: t('deployment.historyFor', { name: target.name }),
+      component: 'info',
+      content: history.length > 0 
+        ? history.map(event => `
+            <div style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #ddd; border-radius: 4px;">
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <strong>${event.commit}</strong>
+                <span>${event.triggeredBy}</span>
+                <span>${formatDate(event.startedAt)}</span>
+              </div>
+              ${event.duration ? `<div>Duration: ${formatDuration(event.duration)}</div>` : ''}
+              ${event.logUrl ? `<div><a href="${event.logUrl}" target="_blank">View Logs</a></div>` : ''}
+            </div>
+          `).join('')
+        : `<p>${t('deployment.noHistory')}</p>`
+    })
   } catch (error) {
     console.error('Error loading deployment history:', error)
   }
-}
-
-const openLogs = (url: string) => {
-  window.open(url, '_blank', 'noopener,noreferrer')
 }
 
 const getStatusIcon = (status?: string) => {
@@ -530,85 +461,6 @@ onMounted(async () => {
   }
 
   &__card-actions {
-    display: flex;
-    gap: var(--space-s);
-    justify-content: flex-end;
-  }
-
-  // History modal styles
-  &__history {
-    max-height: 400px;
-    overflow-y: auto;
-  }
-
-  &__history-item {
-    padding: var(--space);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius);
-    margin-bottom: var(--space-s);
-
-    &--running {
-      border-color: var(--color-warning);
-    }
-
-    &--success {
-      border-color: var(--color-success);
-    }
-
-    &--failed {
-      border-color: var(--color-error);
-    }
-  }
-
-  &__history-header {
-    display: flex;
-    align-items: center;
-    gap: var(--space-s);
-    margin-bottom: var(--space-xs);
-  }
-
-  &__history-commit {
-    font-family: var(--font-mono);
-    font-size: var(--font-size-sm);
-    background: var(--color-background);
-    padding: var(--space-xs);
-    border-radius: var(--radius-sm);
-  }
-
-  &__history-user,
-  &__history-date {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-  }
-
-  &__history-duration {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-tertiary);
-    margin-bottom: var(--space-xs);
-  }
-
-  &__empty {
-    text-align: center;
-    padding: var(--space-xl);
-    color: var(--color-text-secondary);
-  }
-
-  // Deploy modal styles
-  &__deploy-form {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space);
-  }
-
-  &__deploy-warning {
-    padding: var(--space);
-    background: var(--color-warning-background);
-    color: var(--color-warning);
-    border-radius: var(--radius);
-    font-size: var(--font-size-sm);
-  }
-
-  &__deploy-actions {
     display: flex;
     gap: var(--space-s);
     justify-content: flex-end;
