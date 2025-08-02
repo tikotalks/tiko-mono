@@ -3,12 +3,10 @@ main = "src/index.ts"
 compatibility_date = "2024-08-02"
 account_id = "dc2b7d14a69351375cab6de9a13ddee9"
 
-# [env.production]
-# routes = [
-#   { pattern = "tikoapi.org/sentence/*", zone_name = "tikoapi.org" }
-# ]
-
-# Temporarily disabled custom routes - will use worker.dev URL for testing
+[env.production]
+routes = [
+  { pattern = "tikoapi.org/sentence/*", zone_name = "tikoapi.org" }
+]
 
 # Secrets should be set via wrangler secret or GitHub secrets:
 # OPENAI_API_KEY - Set via: wrangler secret put OPENAI_API_KEY
