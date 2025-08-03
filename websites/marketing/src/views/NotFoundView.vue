@@ -1,13 +1,13 @@
 <template>
   <div :class="bemm()">
     <div :class="bemm('container')">
-      <TIcon :name="Icons.QUESTION_MARK" size="xlarge" />
+      <TIcon :name="Icons.QUESTION_MARK_L" size="xlarge" />
       <h1>{{ t('marketing.notfound.title') }}</h1>
       <p>{{ t('marketing.notfound.description') }}</p>
       <TButton 
         color="primary"
         @click="$router.push('/')"
-        :icon="Icons.HOME"
+        :icon="Icons.ARROW_LEFT"
       >
         {{ t('marketing.notfound.cta') }}
       </TButton>

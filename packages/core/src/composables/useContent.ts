@@ -7,9 +7,7 @@ import type {
   ContentPageSection,
   ContentData,
   Language,
-  SectionTemplate,
-  ContentField,
-  FieldValue
+  SectionTemplate
 } from '../services/content.service'
 
 export interface UseContentOptions {
@@ -40,7 +38,8 @@ export function useContent(options?: UseContentOptions) {
 
   // Cache for pages and content
   const pageCache = new Map<string, PageContent>()
-  const sectionCache = new Map<string, SectionTemplate>()
+  const sectionTemplateCache = new Map<string, SectionTemplate>()
+  const sectionCache = new Map<string, ContentSection>()
 
   // Computed
   const projectId = computed(() => opts.projectId || currentProject.value?.id)
@@ -108,7 +107,11 @@ export function useContent(options?: UseContentOptions) {
       
       // Load sections with their content
       const sectionsWithContent = (await Promise.all(
-        pageSections.map(async (pageSection, index) => {
+        pageSections.map(async (pageSection, index): Promise<{
+          pageSection: ContentPageSection
+          section: ContentSection
+          content: Record<string, any>
+        } | null> => {
           console.log(`🔧 [useContent] Processing pageSection ${index} (${pageSection.override_name}):`, pageSection)
           
           // Get section instance first
@@ -133,11 +136,11 @@ export function useContent(options?: UseContentOptions) {
           
           // Get section template from the instance
           const sectionTemplateId = sectionInstance.section_template_id
-          let sectionTemplate = sectionCache.get(sectionTemplateId)
+          let sectionTemplate = sectionTemplateCache.get(sectionTemplateId)
           if (!sectionTemplate) {
             sectionTemplate = await contentService.getSectionTemplate(sectionTemplateId)
             if (sectionTemplate) {
-              sectionCache.set(sectionTemplateId, sectionTemplate)
+              sectionTemplateCache.set(sectionTemplateId, sectionTemplate)
             }
           }
 
@@ -150,7 +153,7 @@ export function useContent(options?: UseContentOptions) {
           if (pageSection.section_id) {
             try {
               // Load content from the section instance
-              content = await contentService.getSectionData(pageSection.section_id, language || page.language_code)
+              content = await contentService.getSectionData(pageSection.section_id, language || page?.language_code || 'en')
               console.log(`✅ [useContent] Loaded content from section instance ${pageSection.section_id}:`, content)
               if (Object.keys(content).length === 0) {
                 console.warn(`⚠️ [useContent] Section instance ${pageSection.section_id} has no content data`)
@@ -165,7 +168,7 @@ export function useContent(options?: UseContentOptions) {
           // If no section instance or it failed, fall back to page-specific field values
           if (Object.keys(content).length === 0) {
             // Get field values for this page and language
-            const fieldValues = await contentService.getFieldValues(page.id, language || page.language_code)
+            const fieldValues = await contentService.getFieldValues(page!.id, language || page!.language_code)
             
             // Convert values array to object keyed by field_key
             fieldValues
@@ -186,7 +189,11 @@ export function useContent(options?: UseContentOptions) {
             content
           }
         })
-      )).filter(section => section !== null)
+      )).filter((section): section is {
+        pageSection: ContentPageSection
+        section: ContentSection
+        content: Record<string, any>
+      } => section !== null)
 
       const result: PageContent = {
         page,
@@ -196,7 +203,7 @@ export function useContent(options?: UseContentOptions) {
 
       console.log(`🎯 [useContent] FINAL RESULT: ${sectionsWithContent.length} sections loaded for marketing site:`)
       sectionsWithContent.forEach((section, index) => {
-        console.log(`   ${index}: ${section.section.name} (${Object.keys(section.content).length} content fields)`)
+        console.log(`   ${index}: ${section.section?.name || 'unknown'} (${Object.keys(section.content || {}).length} content fields)`)
       })
       
       if (sectionsWithContent.length === 0) {
@@ -206,7 +213,7 @@ export function useContent(options?: UseContentOptions) {
 
       // Cache the result
       pageCache.set(cacheKey, result)
-      console.log(`[useContent] Cached page at ${result._cached_at}`)
+      console.log(`[useContent] Cached page at ${(result as any)._cached_at}`)
       
       return result
     } catch (err) {
@@ -392,6 +399,7 @@ export function useContent(options?: UseContentOptions) {
   // Clear caches
   function clearCache() {
     pageCache.clear()
+    sectionTemplateCache.clear()
     sectionCache.clear()
   }
 

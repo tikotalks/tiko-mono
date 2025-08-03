@@ -10,6 +10,9 @@ export interface DeploymentTarget {
   lastDeployed?: Date
   status?: 'idle' | 'building' | 'success' | 'failed'
   buildDuration?: number
+  version?: string
+  buildNumber?: number
+  commit?: string
 }
 
 export interface DeploymentHistory {

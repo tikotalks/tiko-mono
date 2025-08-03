@@ -107,6 +107,8 @@ export { useTikoConfig } from './composables/useTikoConfig'
 export { useDraggable } from './composables/useDraggable'
 export type { DraggableItem, UseDraggableOptions } from './composables/useDraggable'
 export { useLocalStorage, storage } from './composables/useLocalStorage'
+export { useBuildInfo } from './composables/useBuildInfo'
+export type { BuildInfo } from './composables/useBuildInfo'
 
 // Utilities
 export * from './utils'

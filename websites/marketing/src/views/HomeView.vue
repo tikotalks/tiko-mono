@@ -6,7 +6,7 @@
         title: 'Everyone deserves a voice.',
         content: 'Tiko is a free, open-source platform full of simple communication apps, made for anyone who struggles to express themselves.'
       }"
-      :section="null"
+      :section="mockSection('hero')"
       :class="bemm('hero')"
     />
 
@@ -30,6 +30,7 @@ We believe that communication is a basic human right. That’s why everything we
 _Tiko is a movement. And it’s just getting started._
         `
       }"
+      :section="mockSection('about')"
       :class="bemm('about')"
     />
 
@@ -45,7 +46,7 @@ _Tiko is a movement. And it’s just getting started._
         }
         ]
       }"
-      :section="null"
+      :section="mockSection('section')"
       :class="bemm('image-block')"
     />
 
@@ -115,7 +116,7 @@ _Tiko is a movement. And it’s just getting started._
 
       ]
       }"
-      :section="null"
+      :section="mockSection('section')"
       :class="bemm('apps')"
     />
 
@@ -145,7 +146,7 @@ Every contribution counts. Whether it’s time, money, or spreading the word —
         }]
 
       }"
-      :section="null"
+      :section="mockSection('section')"
       :class="bemm('funding')"
       />
 
@@ -176,7 +177,7 @@ Every contribution counts. Whether it’s time, money, or spreading the word —
 
 <script setup lang="ts">
 import { useBemm } from 'bemm'
-import { useContent, type PageContent } from '@tiko/core'
+import { useContent, type PageContent, type ContentSection } from '@tiko/core'
 import { useI18n } from '@tiko/ui'
 import { ref, onMounted, watch } from 'vue'
 import SectionRenderer from '../components/SectionRenderer.vue'
@@ -189,6 +190,20 @@ import ImageBlockSection from '@/components/sections/ImageBlockSection.vue'
 const bemm = useBemm('home-view')
 const { locale } = useI18n()
 const content = useContent({ projectSlug: 'marketing' })
+
+// Helper function to create mock ContentSection objects for hardcoded content
+function mockSection(sectionType: string): ContentSection {
+  return {
+    id: `mock-${sectionType}`,
+    section_template_id: sectionType,
+    name: sectionType,
+    slug: sectionType,
+    is_reusable: false,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }
+}
 
 // Page content
 const pageData = ref<PageContent | null>(null)

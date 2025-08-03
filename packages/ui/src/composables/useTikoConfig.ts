@@ -1,6 +1,6 @@
-import { defaultTikoConfig } from './../../../../tools/admin/node_modules/@tiko/ui/src/types/tiko-config';
-import { computed, ref, type Ref, type ComputedRef, type CSSProperties } from 'vue'
+import { computed, ref, type ComputedRef, type CSSProperties } from 'vue'
 import type { TikoConfig } from '../types/tiko-config'
+import { defaultTikoConfig } from '../types/tiko-config'
 
 const globalConfig = ref<TikoConfig | null>(null)
 
@@ -33,11 +33,7 @@ export function useTikoConfig(config?: TikoConfig):{
   return {
     config: {
       ...defaultTikoConfig,
-      ...currentConfig.value,
-      auth: {
-        ...defaultTikoConfig.auth,
-        ...currentConfig.value?.auth
-      }
+      ...currentConfig.value
     } as Required<TikoConfig>,
     themeStyles
   }

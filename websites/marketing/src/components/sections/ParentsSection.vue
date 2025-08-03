@@ -47,7 +47,7 @@ const features = computed(() => {
 })
 
 function getIcon(iconName: string) {
-  return Icons[iconName as keyof typeof Icons] || Icons.LOCK
+  return Icons[iconName as keyof typeof Icons] || Icons.SHIELD
 }
 </script>
 

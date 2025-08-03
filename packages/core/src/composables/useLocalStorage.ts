@@ -1,4 +1,4 @@
-import { ref, watch, type Ref, type UnwrapRef } from 'vue'
+import { ref, watch, type Ref } from 'vue'
 
 export function useLocalStorage<T>(
   key: string,
@@ -36,5 +36,5 @@ export function useLocalStorage<T>(
     }
   }, { deep: true })
 
-  return data
+  return data as Ref<T>
 }

@@ -1,4 +1,4 @@
-import { ref, watch, Ref } from 'vue'
+import { ref, watch } from 'vue'
 
 /**
  * Reactive localStorage wrapper

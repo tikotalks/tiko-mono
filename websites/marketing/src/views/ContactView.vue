@@ -17,7 +17,7 @@
           <TButton 
             color="primary"
             @click="openSupport"
-            :icon="Icons.HELP"
+            :icon="Icons.QUESTION_MARK_L"
           >
             {{ t('marketing.contact.support.cta') }}
           </TButton>
@@ -29,7 +29,7 @@
           <TButton 
             color="secondary"
             @click="openFeedback"
-            :icon="Icons.MESSAGE"
+            :icon="Icons.MAIL"
           >
             {{ t('marketing.contact.feedback.cta') }}
           </TButton>

@@ -35,7 +35,7 @@
             <TButton 
               color="primary"
               @click="openApp(app.url)"
-              :icon="Icons.OPEN_IN_NEW"
+              :icon="Icons.ARROW_UP_RIGHT"
             >
               {{ t('marketing.apps.open') }}
             </TButton>
@@ -60,7 +60,7 @@ const apps = [
     name: 'marketing.apps.radio.name',
     tagline: 'marketing.apps.radio.tagline',
     description: 'marketing.apps.radio.fullDescription',
-    icon: Icons.RADIO,
+    icon: Icons.SETTINGS,
     url: 'https://radio.tiko.app',
     features: [
       'marketing.apps.radio.features.curated',
@@ -88,7 +88,7 @@ const apps = [
     name: 'marketing.apps.cards.name',
     tagline: 'marketing.apps.cards.tagline',
     description: 'marketing.apps.cards.fullDescription',
-    icon: Icons.CARD,
+    icon: Icons.SQUARED,
     url: 'https://cards.tiko.app',
     features: [
       'marketing.apps.cards.features.categories',
@@ -102,7 +102,7 @@ const apps = [
     name: 'marketing.apps.yesno.name',
     tagline: 'marketing.apps.yesno.tagline',
     description: 'marketing.apps.yesno.fullDescription',
-    icon: Icons.QUESTION_MARK,
+    icon: Icons.QUESTION_MARK_L,
     url: 'https://yesno.tiko.app',
     features: [
       'marketing.apps.yesno.features.simple',

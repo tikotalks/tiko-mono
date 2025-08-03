@@ -36,12 +36,12 @@ const values = [
     description: 'marketing.about.values.safety.description'
   },
   {
-    icon: Icons.LIGHTBULB,
+    icon: Icons.BULB,
     title: 'marketing.about.values.education.title',
     description: 'marketing.about.values.education.description'
   },
   {
-    icon: Icons.SMILE,
+    icon: Icons.CHECK,
     title: 'marketing.about.values.fun.title',
     description: 'marketing.about.values.fun.description'
   }

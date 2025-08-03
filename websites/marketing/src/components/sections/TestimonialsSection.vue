@@ -85,13 +85,13 @@ const bemm = useBemm('testimonials-section')
     line-height: 1.6;
     
     &::before {
-      content: """;
+      content: '"';
       font-size: 2em;
       color: var(--color-primary);
     }
     
     &::after {
-      content: """;
+      content: '"';
       font-size: 2em;
       color: var(--color-primary);
     }
