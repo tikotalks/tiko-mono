@@ -153,7 +153,7 @@ jobs:
         run: npm install -g wrangler
         
       - name: Deploy to Cloudflare Pages
-        run: wrangler pages deploy ./tools/admin/dist --project-name=tiko-admin --compatibility-date=2024-08-02
+        run: wrangler pages deploy ./tools/admin/dist --project-name=tiko-admin
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: dc2b7d14a69351375cab6de9a13ddee9
