@@ -185,12 +185,16 @@ jobs:
           pnpm --filter=@tiko/core build
           pnpm --filter=timer build
           
+      - name: Install Wrangler
+        run: npm install -g wrangler
+        
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: dc2b7d14a69351375cab6de9a13ddee9
-          command: pages deploy ./apps/timer/dist --project-name=tiko-timer --compatibility-date=2024-08-02
+        run: |
+          wrangler pages project create tiko-timer --production-branch=master || echo "Project already exists"
+          wrangler pages deploy ./apps/timer/dist --project-name=tiko-timer
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: dc2b7d14a69351375cab6de9a13ddee9
 
   deploy-yes-no:
     needs: [check-triggers, check-environment]
@@ -218,12 +222,16 @@ jobs:
           pnpm --filter=@tiko/core build
           pnpm --filter=yes-no build
           
+      - name: Install Wrangler
+        run: npm install -g wrangler
+        
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: dc2b7d14a69351375cab6de9a13ddee9
-          command: pages deploy ./apps/yes-no/dist --project-name=tiko-yes-no --compatibility-date=2024-08-02
+        run: |
+          wrangler pages project create tiko-yes-no --production-branch=master || echo "Project already exists"
+          wrangler pages deploy ./apps/yes-no/dist --project-name=tiko-yes-no
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: dc2b7d14a69351375cab6de9a13ddee9
 
   deploy-cards:
     needs: [check-triggers, check-environment]
@@ -251,12 +259,16 @@ jobs:
           pnpm --filter=@tiko/core build
           pnpm --filter=cards build
           
+      - name: Install Wrangler
+        run: npm install -g wrangler
+        
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: dc2b7d14a69351375cab6de9a13ddee9
-          command: pages deploy ./apps/cards/dist --project-name=tiko-cards --compatibility-date=2024-08-02
+        run: |
+          wrangler pages project create tiko-cards --production-branch=master || echo "Project already exists"
+          wrangler pages deploy ./apps/cards/dist --project-name=tiko-cards
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: dc2b7d14a69351375cab6de9a13ddee9
 
   deploy-radio:
     needs: [check-triggers, check-environment]
@@ -284,12 +296,16 @@ jobs:
           pnpm --filter=@tiko/core build
           pnpm --filter=radio build
           
+      - name: Install Wrangler
+        run: npm install -g wrangler
+        
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: dc2b7d14a69351375cab6de9a13ddee9
-          command: pages deploy ./apps/radio/dist --project-name=tiko-radio --compatibility-date=2024-08-02
+        run: |
+          wrangler pages project create tiko-radio --production-branch=master || echo "Project already exists"
+          wrangler pages deploy ./apps/radio/dist --project-name=tiko-radio
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: dc2b7d14a69351375cab6de9a13ddee9
 
   deploy-todo:
     needs: [check-triggers, check-environment]
@@ -317,12 +333,16 @@ jobs:
           pnpm --filter=@tiko/core build
           pnpm --filter=todo build
           
+      - name: Install Wrangler
+        run: npm install -g wrangler
+        
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: dc2b7d14a69351375cab6de9a13ddee9
-          command: pages deploy ./apps/todo/dist --project-name=tiko-todo --compatibility-date=2024-08-02
+        run: |
+          wrangler pages project create tiko-todo --production-branch=master || echo "Project already exists"
+          wrangler pages deploy ./apps/todo/dist --project-name=tiko-todo
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: dc2b7d14a69351375cab6de9a13ddee9
 
   deploy-type:
     needs: [check-triggers, check-environment]
@@ -350,12 +370,16 @@ jobs:
           pnpm --filter=@tiko/core build
           pnpm --filter=type build
           
+      - name: Install Wrangler
+        run: npm install -g wrangler
+        
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: dc2b7d14a69351375cab6de9a13ddee9
-          command: pages deploy ./apps/type/dist --project-name=tiko-type --compatibility-date=2024-08-02
+        run: |
+          wrangler pages project create tiko-type --production-branch=master || echo "Project already exists"
+          wrangler pages deploy ./apps/type/dist --project-name=tiko-type
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: dc2b7d14a69351375cab6de9a13ddee9
 
   # Skip tiko app for now as it has build issues
   # deploy-tiko:
