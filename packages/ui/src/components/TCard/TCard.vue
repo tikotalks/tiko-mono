@@ -127,7 +127,8 @@ const handleKeydown = (event: KeyboardEvent) => {
   transition: all 0.2s ease;
   border: 1px solid color-mix(in srgb, var(--color-secondary), transparent 50%);
 
-
+--form-group-background: transparent;
+--form-group-padding: 0;
   // Size variants
 
   &--auto{

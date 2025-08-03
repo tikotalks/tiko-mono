@@ -61,6 +61,7 @@ export function useUserPreferences() {
     savePreferences(newPreferences)
   }, { deep: true })
 
+
   // Get list preferences for a specific list
   function getListPreferences(listId: string): ListPreferences {
     return preferences.value.lists?.[listId] || {}
@@ -77,11 +78,17 @@ export function useUserPreferences() {
     }
   }
 
+  // Get general preferences
+  function getPreferences(): UserPreferences {
+    return preferences.value
+  }
+
   return {
     preferences,
     isLoading,
     error,
     loadPreferences,
+    getPreferences,
     getListPreferences,
     updateListPreferences
   }

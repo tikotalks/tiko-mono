@@ -87,7 +87,7 @@ const bemm = useBemm('auth-wrapper')
 const route = useRoute()
 
 // i18n
-const { t } = useI18n()
+const { t, keys } = useI18n()
 
 // Get Tiko config for theme
 const { config: tikoConfig } = useTikoConfig()

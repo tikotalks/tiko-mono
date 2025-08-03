@@ -193,7 +193,7 @@ const hasSlot = (name: string) => {
 		display: flex;
 		align-items: flex-end;
 		justify-content: flex-end;
-		margin: var(--spacing);
+		// margin: var(--spacing);
 		overflow: visible;
 
 		@include g.mobile-only() {
@@ -216,6 +216,10 @@ const hasSlot = (name: string) => {
 		animation: containerComeIn 0.3s var(--bezier) forwards;
 		transform: scale(0.75) translateY(var(--spacing));
 		opacity: 0;
+
+		@include g.mobile-only() {
+			max-width: 100%;
+		}
 	}
 
 	&__content {

@@ -27,13 +27,16 @@
         <div :class="bemm('section')">
           <h3>{{ t('admin.i18n.addKey.keyDetails') }}</h3>
 
+          <TCard>
+
           <TFormGroup>
             <TInputText
               v-model="keyData.key"
               :label="t('admin.i18n.addKey.keyName')"
               :placeholder="t('admin.i18n.addKey.keyNamePlaceholder')"
               :required="true"
-              :error="errors.key"
+              :inline="true"
+              :error="errors.key ? [errors.key as string] : undefined"
               :loading="checkingKey"
               :disabled="props.mode === 'edit'"
               @input="handleKeyInput"
@@ -41,17 +44,21 @@
 
             <TInputText
               v-model="keyData.category"
+              :inline="true"
               :label="t('admin.i18n.addKey.category')"
               :placeholder="t('admin.i18n.addKey.categoryPlaceholder')"
             />
 
             <TTextArea
               v-model="keyData.description"
+              :inline="true"
               :label="t('admin.i18n.addKey.description')"
               :placeholder="t('admin.i18n.addKey.descriptionPlaceholder')"
               :rows="2"
             />
           </TFormGroup>
+        </TCard>
+
         </div>
 
         <!-- Translations Section -->
@@ -76,12 +83,19 @@
               :key="lang.code"
               :class="bemm('translation-item', { primary: lang.code === 'en' })"
             >
-              <div :class="bemm('translation-header')">
-                <div :class="bemm('language-info')">
-                  <span :class="bemm('language-code')">{{ lang.code }}</span>
-                  <span :class="bemm('language-name')">{{ lang.name }}</span>
-                </div>
-                <TButton
+
+              <TInputText
+                v-model="translations[lang.code].value"
+                :placeholder="t('admin.i18n.addKey.translationPlaceholder')"
+                :rows="2"
+                :label="lang.name"
+                :inline="true"
+                :error="translations[lang.code].error ? [translations[lang.code].error as string] :  undefined"
+                @input="translations[lang.code].error = ''"
+                :style="{width: '100%'}"
+              />
+
+              <TButton
                   v-if="lang.code !== 'en'"
                   type="default"
                   size="small"
@@ -91,15 +105,6 @@
                   :disabled="!englishTranslation || translations[lang.code]?.loading"
                   :title="t('admin.i18n.addKey.generateTranslation')"
                 />
-              </div>
-
-              <TInputText
-                v-model="translations[lang.code].value"
-                :placeholder="t('admin.i18n.addKey.translationPlaceholder')"
-                :rows="2"
-                :error="translations[lang.code].error"
-                @input="translations[lang.code].error = ''"
-              />
 
               <div v-if="translations[lang.code].error" :class="bemm('error-message')">
                 {{ translations[lang.code].error }}
@@ -218,7 +223,7 @@
     </div>
 
     <div :class="bemm('footer')">
-      <TButton type="ghost" @click="handleClose">
+      <TButton type="outline" @click="handleClose">
         {{ t('common.cancel') }}
       </TButton>
 
@@ -943,18 +948,12 @@ onMounted(async () => {
 .add-translation-key-dialog {
   display: flex;
   flex-direction: column;
-  width: 900px;
-  max-width: 90vw;
-  max-height: 80vh;
-  background: var(--color-background);
-  border-radius: var(--border-radius);
-  overflow: hidden;
+  gap: var(--space);
 
   &__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--space-l);
     border-bottom: 1px solid var(--color-border);
 
     h2 {
@@ -977,9 +976,7 @@ onMounted(async () => {
   }
 
   &__content {
-    flex: 1;
-    overflow-y: auto;
-    padding: var(--space-l);
+
   }
 
   &__section {
@@ -1019,11 +1016,15 @@ onMounted(async () => {
   &__translation-item {
     background: var(--color-background-secondary);
     border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-primary);
     padding: var(--space);
     display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: var(--border-radius);
+
+    gap: var(--space);
 
     &--primary {
       background: var(--color-primary-alpha-10);
@@ -1156,7 +1157,14 @@ onMounted(async () => {
     justify-content: flex-end;
     gap: var(--space);
     padding: var(--space-lg);
-    border-top: 1px solid var(--color-border);
+    border: 1px solid var(--color-primary);
+    background-color: var(--color-background);
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+    padding: var(--space);
+    position: sticky;
+    bottom: var(--space-l);
+    border-radius: var(--border-radius);
+    z-index: 10;
   }
 }
 </style>

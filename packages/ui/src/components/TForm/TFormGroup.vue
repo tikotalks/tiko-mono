@@ -12,11 +12,11 @@
         <TIcon :name="isCollapsed ? 'chevron-right' : 'chevron-down'" />
       </button>
     </div>
-    
+
     <p v-if="description && !isCollapsed" :class="bemm('description')">
       {{ description }}
     </p>
-    
+
     <div v-show="!isCollapsed" :class="bemm('content')">
       <slot />
     </div>
@@ -59,18 +59,18 @@ const handleHeaderClick = () => {
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: var(--space);
-  padding: var(--space);
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius);
-  background: var(--color-background);
+  gap: var(--form-group-gap, var(--space));
+  padding: var(--form-group-padding,var(--space));
+  border: 1px solid var(--form-group-border, var(--color-accent));
+  border-radius:var(--form-group-border-radius, var(--border-radius));
+  background: var(--form-group-background, var(--color-background));
 
   &__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space);
-    
+
     &--clickable {
       cursor: pointer;
       user-select: none;

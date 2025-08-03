@@ -34,10 +34,7 @@ export const USER_PREFERENCE_KEYS = {
     SIDEBAR_COLLAPSED: 'admin-sidebar-collapsed',
     RECENT_SEARCHES: 'admin-recent-searches',
     DEFAULT_LANGUAGE_FILTER: 'admin-default-language-filter',
-  },
-
-  NAVIGATION: {
-    ADMIN: 'admin-active-navigation',
+    NAVIGATION: 'admin-active-navigation'
   }
 } as const;
 

@@ -65,7 +65,7 @@
 </template>
 
 <script lang="ts" setup>
-import { inject, computed, ref } from 'vue';
+import { inject, computed, ref, onMounted } from 'vue';
 
 import { useBemm } from 'bemm';
 import { Icons } from 'open-icon';
@@ -80,6 +80,8 @@ const translationService = useI18nDatabaseService();
 
 const { t } = useI18n();
 const bemm = useBemm('admin-navigation');
+const { preferences, loadPreferences } = useUserPreferences();
+
 
 interface NavigationItem {
   name: string;
@@ -90,6 +92,18 @@ interface NavigationItem {
   items?: NavigationItem[];
   action?: () => void;
 }
+
+const openedItems = ref<string[]>([]);
+
+
+onMounted(async () => {
+  // Load user preferences
+  await loadPreferences();
+
+  // Initialize opened items from preferences
+  const savedOpenItems = preferences.value[USER_PREFERENCE_KEYS.ADMIN.NAVIGATION] || [];
+  openedItems.value = savedOpenItems;
+});
 
 // Function to open Add Key dialog
 async function openAddKeyDialog() {
@@ -152,12 +166,14 @@ const toggleOpen = (name: string) => {
   } else {
     openedItems.value.push(name);
   }
+  
+  // Save to preferences
+  preferences.value[USER_PREFERENCE_KEYS.ADMIN.NAVIGATION] = [...openedItems.value];
 };
 const isOpen = (name: string) => {
   return openedItems.value.includes(name);
 };
 
-const openedItems = ref<string[]>([]);
 
 const navigationItems = computed<NavigationItem[]>(() => [
   {

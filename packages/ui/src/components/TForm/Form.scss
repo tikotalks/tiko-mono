@@ -127,6 +127,10 @@
 
 		#{$b}__label {
 			width: var(--input-label-width, 30%);
+			&+ #{$b}__control-container,
+			&+ #{$b}__controls {
+			margin: 0;
+		}
 		}
 	}
 
