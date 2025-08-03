@@ -3,9 +3,8 @@
 These translation keys need to be added to the database for the deployment and backup features:
 
 ## Deployment Keys
-- `admin.navigation.deployments.title` = "Deployments"
-- `admin.navigation.deployments.targets` = "Deployment Targets"
-- `admin.navigation.deployments.backups` = "Database Backups"
+- `admin.navigation.deployment` = "Deployment"
+- `admin.navigation.deploymentBackups` = "Database Backups"
 - `deployment.version` = "Version"
 - `deployment.buildNumber` = "Build"
 - `deployment.commit` = "Commit"
