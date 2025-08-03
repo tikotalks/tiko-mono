@@ -26,44 +26,31 @@
           </div>
         </div>
 
-        <div :class="bemm('detail-item')">
-          <TIcon :name="Icons.ARCHIVE" />
+        <div v-if="backup.commit" :class="bemm('detail-item')">
+          <TIcon :name="Icons.GIT_BRANCH" />
           <div>
-            <strong>{{ t('deployment.backups.size') }}</strong>
-            <span>{{ formatFileSize(backup.size) }}</span>
+            <strong>{{ t('deployment.commit') }}</strong>
+            <span>{{ backup.commit }}</span>
           </div>
         </div>
 
-        <div v-if="backup.rows" :class="bemm('detail-item')">
-          <TIcon :name="Icons.DATABASE" />
+        <div v-if="backup.branch" :class="bemm('detail-item')">
+          <TIcon :name="Icons.GIT_BRANCH" />
           <div>
-            <strong>{{ t('deployment.backups.rows') }}</strong>
-            <span>{{ backup.rows.toLocaleString() }}</span>
+            <strong>{{ t('deployment.backups.branch') }}</strong>
+            <span>{{ backup.branch }}</span>
           </div>
         </div>
 
-        <div v-if="backup.tables && backup.tables.length > 0" :class="bemm('detail-item')">
-          <TIcon :name="Icons.TABLE" />
+        <div v-if="backup.metadata?.workflowName" :class="bemm('detail-item')">
+          <TIcon :name="Icons.PLAYBACK_PLAY" />
           <div>
-            <strong>{{ t('deployment.backups.tables') }}</strong>
-            <span>{{ backup.tables.length }}</span>
+            <strong>{{ t('deployment.backups.workflow') }}</strong>
+            <span>{{ backup.metadata.workflowName }}</span>
           </div>
         </div>
       </div>
 
-      <div v-if="backup.tables && backup.tables.length > 0" :class="bemm('tables')">
-        <h4>{{ t('deployment.backups.tablesIncluded') }}</h4>
-        <div :class="bemm('table-list')">
-          <TChip
-            v-for="table in backup.tables"
-            :key="table"
-            type="outline"
-            size="small"
-          >
-            {{ table }}
-          </TChip>
-        </div>
-      </div>
 
       <div v-if="backup.metadata && Object.keys(backup.metadata).length > 0" :class="bemm('metadata')">
         <h4>{{ t('deployment.backups.metadata') }}</h4>
@@ -83,11 +70,11 @@
     <div :class="bemm('actions')">
       <TButton
         type="outline"
-        :icon="Icons.DOWNLOAD"
-        :disabled="backup.status !== 'success'"
+        :icon="Icons.EXTERNAL_LINK"
+        :disabled="backup.status !== 'success' || !backup.runUrl"
         @click="handleDownload"
       >
-        {{ t('deployment.backups.download') }}
+        {{ t('deployment.backups.viewOnGithub') }}
       </TButton>
 
       <TButton
@@ -167,7 +154,9 @@ const formatMetadataValue = (value: any) => {
 };
 
 const handleDownload = () => {
-  emit('download');
+  if (props.backup.runUrl) {
+    window.open(props.backup.runUrl, '_blank');
+  }
 };
 
 const handleClose = () => {

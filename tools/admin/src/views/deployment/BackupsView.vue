@@ -59,19 +59,19 @@
                 <span>{{ t('deployment.backups.createdAt') }}: {{ formatDate(backup.createdAt) }}</span>
               </div>
 
-              <div :class="bemm('info-item')">
-                <TIcon :name="Icons.ARCHIVE" />
-                <span>{{ t('deployment.backups.size') }}: {{ formatFileSize(backup.size) }}</span>
+              <div v-if="backup.commit" :class="bemm('info-item')">
+                <TIcon :name="Icons.GIT_BRANCH" />
+                <span>{{ t('deployment.commit') }}: {{ backup.commit }}</span>
               </div>
 
-              <div v-if="backup.tables" :class="bemm('info-item')">
-                <TIcon :name="Icons.TABLE" />
-                <span>{{ t('deployment.backups.tables') }}: {{ backup.tables.length }}</span>
+              <div v-if="backup.metadata?.actor" :class="bemm('info-item')">
+                <TIcon :name="Icons.USER" />
+                <span>{{ t('deployment.backups.triggeredBy') }}: {{ backup.metadata.actor }}</span>
               </div>
 
-              <div v-if="backup.rows" :class="bemm('info-item')">
-                <TIcon :name="Icons.DATABASE" />
-                <span>{{ t('deployment.backups.rows') }}: {{ backup.rows.toLocaleString() }}</span>
+              <div v-if="backup.metadata?.workflowName" :class="bemm('info-item')">
+                <TIcon :name="Icons.PLAYBACK_PLAY" />
+                <span>{{ t('deployment.backups.workflow') }}: {{ backup.metadata.workflowName }}</span>
               </div>
             </div>
 
@@ -105,7 +105,8 @@
                 type="outline"
                 :icon="Icons.TRASH"
                 color="error"
-                @click="confirmDeleteBackup(backup)"
+                :disabled="true"
+                :title="t('deployment.backups.deleteNotSupported')"
               >
                 {{ t('deployment.backups.delete') }}
               </TButton>
@@ -217,6 +218,12 @@ const triggerBackup = async () => {
 };
 
 const downloadBackup = async (backup: DatabaseBackup) => {
+  // For GitHub-based backups, open the workflow run page where artifacts can be downloaded
+  if (backup.runUrl) {
+    window.open(backup.runUrl, '_blank');
+    return;
+  }
+
   try {
     const downloadUrl = await backupService.getBackupDownloadUrl(backup.id);
     if (downloadUrl) {
