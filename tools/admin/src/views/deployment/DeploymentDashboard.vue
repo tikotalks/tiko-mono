@@ -27,85 +27,77 @@
         </TButton>
       </div>
 
-      <div :class="bemm('grid')">
-        <TCard
+      <TList :columns="columns">
+        <TListItem
           v-for="target in filteredTargets"
           :key="target.id"
-          :class="bemm('card', ['', target.status as string])"
-          :title="target.name"
-          :description="target.description"
-          :category="target.type"
+          :clickable="true"
+          :class="bemm('item', ['', target.status as string])"
+          @click="showHistory(target)"
         >
-          <span :class="bemm('card-trigger')">{{ target.trigger }}</span>
-
-          <template #content>
+          <TListCell type="custom">
+            <div :class="bemm('name-cell')">
+              <TIcon :name="getTypeIcon(target.type)" />
+              <div>
+                <h3 :class="bemm('item-title')">{{ target.name }}</h3>
+                <p :class="bemm('item-description')">{{ target.description }}</p>
+              </div>
+            </div>
+          </TListCell>
+          
+          <TListCell type="custom">
             <TChip
-              :class="bemm('card-status')"
               :icon="getStatusIcon(target.status)"
               :color="target.status"
+              size="small"
             >
               {{ t(`deployment.status.${target.status}`) }}
             </TChip>
-
-            <div v-if="target.lastDeployed" :class="bemm('last-deployed')">
-              <TIcon :name="Icons.CLOCK" />
-              <span
-                >{{ t('deployment.lastDeployed') }}:
-                {{ formatDate(target.lastDeployed) }}</span
-              >
+          </TListCell>
+          
+          <TListCell type="custom">
+            <div :class="bemm('meta-cell')">
+              <div v-if="target.version" :class="bemm('meta-item')">
+                <TIcon :name="Icons.TAG" />
+                {{ target.version }}
+              </div>
+              
+              <div v-if="target.commit" :class="bemm('meta-item')">
+                <TIcon :name="Icons.GIT_BRANCH" />
+                {{ target.commit }}
+              </div>
+              
+              <div v-if="target.lastDeployed" :class="bemm('meta-item')">
+                <TIcon :name="Icons.CLOCK" />
+                {{ formatDate(target.lastDeployed) }}
+              </div>
+              
+              <div v-if="target.buildDuration" :class="bemm('meta-item')">
+                <TIcon :name="Icons.TIMER" />
+                {{ formatDuration(target.buildDuration) }}
+              </div>
             </div>
-
-            <div v-if="target.buildDuration" :class="bemm('build-duration')">
-              <TIcon :name="Icons.TIMER" />
-              <span
-                >{{ t('deployment.duration') }}:
-                {{ formatDuration(target.buildDuration) }}</span
-              >
-            </div>
-
-            <div v-if="target.version" :class="bemm('version-info')">
-              <TIcon :name="Icons.TAG" />
-              <span>{{ t('deployment.version') }}: {{ target.version }}</span>
-            </div>
-
-            <div v-if="target.buildNumber" :class="bemm('build-info')">
-              <TIcon :name="Icons.HASH" />
-              <span>{{ t('deployment.buildNumber') }}: #{{ target.buildNumber }}</span>
-            </div>
-
-            <div v-if="target.commit" :class="bemm('commit-info')">
-              <TIcon :name="Icons.GIT_BRANCH" />
-              <span>{{ t('deployment.commit') }}: {{ target.commit }}</span>
-            </div>
-
-            <TButton    :href="target.url" :type="'outline'" :icon="Icons.ARROW_RIGHT" v-if="target.url" :class="bemm('url')">
-
-
-                {{ target.url }}
-            </TButton>
-
-            <TButtonGroup :class="bemm('card-actions')">
-              <TButton
-                type="outline"
-                :icon="Icons.ARROW_ROTATE_TOP_LEFT"
-                @click="showHistory(target)"
-              >
-                {{ t('deployment.history') }}
-              </TButton>
-
-              <TButton
-                type="default"
-                :icon="Icons.PLAYBACK_PLAY"
-                :loading="deploymentStates[target.id]?.isDeploying"
-                :disabled="target.status === 'building'"
-                @click="triggerDeployment(target)"
-              >
-                {{ t('deployment.deploy') }}
-              </TButton>
-            </TButtonGroup>
-          </template>
-        </TCard>
-      </div>
+          </TListCell>
+          
+          <TListCell 
+            type="actions" 
+            :actions="[
+              ...(target.url ? [listActions.custom({
+                handler: () => window.open(target.url, '_blank'),
+                tooltip: t('deployment.visit'),
+                icon: Icons.ARROW_RIGHT
+              })] : []),
+              listActions.custom({
+                handler: () => triggerDeployment(target),
+                tooltip: t('deployment.deploy'),
+                icon: Icons.PLAYBACK_PLAY,
+                disabled: target.status === 'building' || deploymentStates[target.id]?.isDeploying,
+                loading: deploymentStates[target.id]?.isDeploying
+              })
+            ]"
+          />
+        </TListItem>
+      </TList>
     </div>
   </div>
 </template>
@@ -113,7 +105,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive, inject } from 'vue';
 import { useBemm } from 'bemm';
-import { TButtonGroup, TCard, TChip, useI18n } from '@tiko/ui';
+import { TList, TListItem, TListCell, TChip, useI18n, listActions } from '@tiko/ui';
 import { Icons } from 'open-icon';
 import {
   deploymentService,
@@ -131,6 +123,14 @@ const targets = ref<DeploymentTarget[]>([]);
 const selectedFilter = ref<string>('all');
 const isRefreshing = ref(false);
 const deploymentStates = reactive<Record<string, { isDeploying: boolean }>>({});
+
+// Table columns
+const columns = [
+  { label: t('deployment.target', 'Target'), key: 'name' },
+  { label: t('deployment.status', 'Status'), key: 'status' },
+  { label: t('deployment.details', 'Details'), key: 'details' },
+  { label: t('common.actions', 'Actions'), key: 'actions' }
+];
 
 // Filters
 const filters = computed(() => [
@@ -257,6 +257,21 @@ const getStatusIcon = (status?: string) => {
   }
 };
 
+const getTypeIcon = (type: string) => {
+  switch (type) {
+    case 'app':
+      return Icons.BOARD_MULTI_DASHBOARD;
+    case 'tool':
+      return Icons.SETTINGS;
+    case 'website':
+      return Icons.GLOBE;
+    case 'worker':
+      return Icons.CLOUD;
+    default:
+      return Icons.CIRCLE;
+  }
+};
+
 const formatDate = (date: Date) => {
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
@@ -310,171 +325,62 @@ onMounted(async () => {
     // Styling handled by TButton
   }
 
-  &__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-    gap: var(--space);
-  }
-
-  &__card {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius);
-    padding: var(--space);
-    background: var(--color-background-elevated);
-    transition: all 0.2s ease;
-
-    &:hover {
-      border-color: var(--color-primary);
-      transform: translateY(-2px);
-    }
-
+  &__item {
     &--building {
-      border-color: var(--color-warning);
+      border-left: 3px solid var(--color-warning);
       background: var(--color-warning-background);
     }
 
     &--success {
-      border-color: var(--color-success);
+      border-left: 3px solid var(--color-success);
     }
 
     &--failed {
-      border-color: var(--color-error);
+      border-left: 3px solid var(--color-error);
     }
   }
 
-  &__card-header {
+  &__name-cell {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: var(--space);
-  }
-
-  &__card-info {
-    flex: 1;
-  }
-
-  &__card-title {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-    margin-bottom: var(--space-xs);
-  }
-
-  &__card-description {
-    color: var(--color-text-secondary);
-    font-size: var(--font-size-sm);
-    margin-bottom: var(--space-s);
-  }
-
-  &__card-meta {
-    display: flex;
-    gap: var(--space-s);
     align-items: center;
-  }
+    gap: var(--space-s);
 
-  &__card-type {
-    padding: var(--space-xs) var(--space-s);
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-medium);
-
-    &--app {
-      background: var(--color-primary-background);
+    .t-icon {
+      font-size: var(--font-size-lg);
       color: var(--color-primary);
     }
-
-    &--tool {
-      background: var(--color-secondary-background);
-      color: var(--color-secondary);
-    }
-
-    &--website {
-      background: var(--color-accent-background);
-      color: var(--color-accent);
-    }
-
-    &--worker {
-      background: var(--color-warning-background);
-      color: var(--color-warning);
-    }
   }
 
-  &__card-trigger {
-    font-family: var(--font-mono);
+  &__item-title {
+    margin: 0;
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  &__item-description {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+  }
+
+  &__meta-cell {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  &__meta-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
     font-size: var(--font-size-xs);
     color: var(--color-text-tertiary);
-    background: var(--color-background);
-    padding: var(--space-xs);
-    border-radius: var(--radius-sm);
-  }
 
-  &__card-status {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-xs);
-  }
-
-  &__status-icon {
-    font-size: var(--font-size-lg);
-
-    &--idle {
-      color: var(--color-text-tertiary);
-    }
-
-    &--building {
-      color: var(--color-warning);
-      animation: spin 1s linear infinite;
-    }
-
-    &--success {
-      color: var(--color-success);
-    }
-
-    &--failed {
-      color: var(--color-error);
+    .t-icon {
+      font-size: var(--font-size-sm);
     }
   }
 
-  &__status-text {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-medium);
-  }
-
-  &__card-body {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-    margin-bottom: var(--space);
-  }
-
-  &__last-deployed,
-  &__build-duration,
-  &__version-info,
-  &__build-info,
-  &__commit-info,
-  &__url {
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs);
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-  }
-
-  &__url-link {
-    color: var(--color-primary);
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-
-  &__card-actions {
-    display: flex;
-    gap: var(--space-s);
-    justify-content: flex-end;
-  }
 }
 
 @keyframes spin {

@@ -1,0 +1,9 @@
+# Auto-generated translation files
+# These files are generated from the database and should not be committed
+
+*.ts
+*.js
+*.d.ts
+!.gitignore
+
+# Keep this directory but ignore all generated content

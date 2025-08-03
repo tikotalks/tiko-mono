@@ -34,19 +34,29 @@
         />
       </template>
     </AdminPageHeader>
+
+    <!-- Conflict Alert -->
+    <I18nConflictAlert :keys="keys" />
+
     <!-- Keys List -->
     <div :class="bemm('keys-section')">
       <!-- Keys List -->
       <TList
         :columns="[
-          { key: 'key', label: t('common.key'), width: '40%', sortable: true },
-          { key: 'category', label: t('common.category'), width: '20%', sortable: true },
-          { key: 'description', label: t('common.description'), width: '25%', sortable: true },
+          { key: 'key', label: t('common.key'), width: '35%', sortable: true },
+          { key: 'category', label: t('common.category'), width: '15%', sortable: true },
+          { key: 'description', label: t('common.description'), width: '20%', sortable: true },
           {
             key: 'translations',
             label: t('common.translations'),
             width: '15%',
             sortable: true
+          },
+          {
+            key: 'actions',
+            label: t('common.actions'),
+            width: '15%',
+            sortable: false
           },
         ]"
         :striped="true"
@@ -80,12 +90,9 @@
         <TListItem
           v-for="key in filteredKeys"
           :key="key.id"
+          :id="key.key"
           :clickable="true"
           @click="viewKeyDetails(key)"
-          :actions="[
-            listActions.edit((e) => handleEdit(e, key)),
-            listActions.delete((e) => handleDelete(e, key))
-          ]"
         >
           <template #prepend>
             <TListCell type="custom" :style="{ width: '40px' }">
@@ -119,6 +126,19 @@
               />
             </div>
           </TListCell>
+          <TListCell
+            type="actions"
+            :actions="[
+              listActions.edit((e) => { e.stopPropagation(); handleEdit(e, key) }),
+              listActions.custom({
+                handler: (e) => { e.stopPropagation(); handleEditKey(e, key) },
+                tooltip: t('admin.i18n.database.editKey', 'Edit Key'),
+                icon: Icons.TAG,
+                disabled: false
+              }),
+              listActions.delete((e) => { e.stopPropagation(); handleDelete(e, key) })
+            ]"
+          />
         </TListItem>
       </TList>
 
@@ -191,7 +211,9 @@ import {
   ConfirmDialog
 } from '@tiko/ui';
 import AddTranslationKeyDialog from '../../components/dialogs/AddTranslationKeyDialog.vue';
+import EditKeyDialog from '../../components/dialogs/EditKeyDialog.vue';
 import AdminPageHeader from '@/components/AdminPageHeader.vue';
+import I18nConflictAlert from '@/components/I18nConflictAlert.vue';
 import { useI18nDatabaseService, useUserPreferences, USER_PREFERENCE_KEYS } from '@tiko/core';
 
 import type { I18nKey } from '../../types/i18n.types';
@@ -284,6 +306,9 @@ async function loadKeys() {
       ...key,
       translationCount: key.translation_count || 0,
     }));
+
+    // Log the actual number of keys fetched
+    console.log(`Loaded ${keys.value.length} translation keys`);
 
     // Load other stats
     await loadStats();
@@ -430,6 +455,45 @@ function handleEdit(event: Event, key: I18nKey) {
   viewKeyDetails(key);
 }
 
+// Handle edit key action
+async function handleEditKey(event: Event, key: I18nKey) {
+  event.stopPropagation();
+
+  if (!popupService) {
+    console.error('PopupService not available');
+    return;
+  }
+
+  popupService.open({
+    component: EditKeyDialog,
+    props: {
+      title: t('admin.i18n.editKey.title', 'Edit Translation Key'),
+      originalKey: key.key,
+      onSave: async (newKey: string) => {
+        try {
+          await translationService.updateTranslationKey(key.id, {
+            key: newKey
+          });
+
+          toastService?.show({
+            message: t('admin.i18n.editKey.success', 'Key updated successfully'),
+            type: 'success',
+          });
+
+          // Reload keys to show updated data
+          await loadKeys();
+        } catch (error) {
+          console.error('Failed to update translation key:', error);
+          toastService?.show({
+            message: t('admin.i18n.editKey.error', 'Failed to update key'),
+            type: 'error',
+          });
+        }
+      },
+    },
+  });
+}
+
 // Handle delete action
 async function handleDelete(event: Event, key: I18nKey) {
   event.stopPropagation();
@@ -506,7 +570,7 @@ async function viewKeyDetails(key: I18nKey) {
       title: t('admin.i18n.editKey.title'),
       onSave: async (data) => {
         try {
-          // Update the key details if changed
+          // Update the key details (category and description only)
           if (
             data.category !== key.category ||
             data.description !== key.description

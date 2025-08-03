@@ -45,7 +45,7 @@
           icon="shield"
           :class="bemm('parent-mode-indicator')"
         >
-          {{ t(keys.parentMode.parentMode) }}
+          {{ t('parentMode.parentMode') }}
         </TButton>
 
         <!-- User Avatar -->
@@ -137,7 +137,7 @@ const props = withDefaults(defineProps<TTopBarProps>(), {
 const emit = defineEmits<TTopBarEmits>()
 
 const bemm = useBemm('top-bar')
-const { t, keys } = useI18n()
+const { t } = useI18n()
 
 // Initialize stores - try immediately and also on mount
 const authStore = ref<any>(null)
@@ -235,20 +235,20 @@ const userRole = computed(() => {
 })
 
 const userMenuLabel = computed(() =>
-  `${t(keys.common.menu)} - ${userDisplayName.value}`
+  `${t('common.menu')} - ${userDisplayName.value}`
 )
 
 const defaultMenuItems = computed<Partial<ContextMenuItem>[]>(() => [
   {
     id: 'profile',
-    label: t(keys.profile.title),
+    label: t('profile.title'),
     icon: 'user',
     action: handleProfile,
     type: 'default'
   },
   {
     id: 'settings',
-    label: t(keys.settings.title),
+    label: t('settings.title'),
     icon: 'settings',
     action: handleSettings,
     type: 'default'
@@ -259,7 +259,7 @@ const defaultMenuItems = computed<Partial<ContextMenuItem>[]>(() => [
   },
   {
     id: 'logout',
-    label: t(keys.auth.logout),
+    label: t('auth.logout'),
     icon: 'arrow-right',
     action: handleLogout,
     type: 'default'
@@ -305,7 +305,7 @@ const handleProfile = () => {
 
   popupService.open({
     component: TProfile,
-    title: t(keys.profile.title),
+    title: t('profile.title'),
     props: {
       user: user.value
     },
@@ -323,7 +323,7 @@ const handleSettings = () => {
 
   popupService.open({
     component: TUserSettings,
-    title: t(keys.settings.userSettings),
+    title: t('settings.userSettings'),
     props: {
       user: user.value
     },
@@ -378,8 +378,8 @@ const handleParentModeEnable = async () => {
 const showParentModeSetup = () => {
   popupService.open({
     component: TParentModePinInput,
-    title: t(keys.parentMode.setUpParentMode),
-    description: t(keys.parentMode.createPinDescription),
+    title: t('parentMode.setUpParentMode'),
+    description: t('parentMode.createPinDescription'),
     props: {
       mode: 'setup',
     },
@@ -412,8 +412,8 @@ const showParentModeSetup = () => {
 const showParentModeUnlock = () => {
   popupService.open({
     component: TParentModePinInput,
-    title: t(keys.parentMode.enterParentPin),
-    description: t(keys.parentMode.enterPinDescription),
+    title: t('parentMode.enterParentPin'),
+    description: t('parentMode.enterPinDescription'),
     props: {
       mode: 'unlock',
     },

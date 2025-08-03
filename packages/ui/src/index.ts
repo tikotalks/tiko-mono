@@ -7,8 +7,9 @@ export * from './components/TCard'
 export { IconRegistryPlugin, useIconRegistry } from './icons'
 export type { IconRegistry, IconRegistryPluginOptions } from './icons'
 // Re-export Icons type to avoid direct open-icon imports in apps
-export type { Icons } from 'open-icon'
-export { Icons as IconList } from 'open-icon'
+// Commenting out to fix vite-plugin-pwa build issue
+// export type { Icons } from 'open-icon'
+// export { Icons as IconList } from 'open-icon'
 
 export * from './components/TInput'
 export * from './components/TLoginForm'

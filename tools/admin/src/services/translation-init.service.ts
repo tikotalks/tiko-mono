@@ -3,10 +3,10 @@
  * Handles loading translations from database on app startup
  */
 
-import { useI18n, initializeDatabaseKeys } from '@tiko/ui';
+import { useI18n } from '@tiko/ui';
 
 // Default locale - can be overridden by user preferences
-const DEFAULT_LOCALE = 'en-GB';
+const DEFAULT_LOCALE = 'en';
 
 /**
  * Convert locale to base language if needed
@@ -45,7 +45,10 @@ function getUserLocale(): string {
   // Check browser language
   const browserLang = navigator.language;
   if (browserLang) {
-    return browserLang;
+    // Convert browser locale to base language if needed
+    // e.g., 'en-GB' -> 'en', 'nl-NL' -> 'nl'
+    const baseLanguage = getBaseLanguage(browserLang);
+    return baseLanguage;
   }
 
   return DEFAULT_LOCALE;
@@ -58,10 +61,6 @@ function getUserLocale(): string {
 export async function initializeTranslations(): Promise<void> {
   try {
     console.log('Initializing translation system...');
-    
-    // Initialize database keys
-    await initializeDatabaseKeys();
-    console.log('Database keys initialized');
     
     // Get the i18n composable
     const { setLocale } = useI18n();

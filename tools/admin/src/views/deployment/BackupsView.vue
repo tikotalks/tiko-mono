@@ -44,76 +44,71 @@
         </TButton>
       </div>
 
-      <div v-else :class="bemm('grid')">
-        <TCard
+      <TList v-else :columns="columns">
+        <TListItem
           v-for="backup in backups"
           :key="backup.id"
-          :class="bemm('card')"
-          :title="backup.name"
-          :description="backup.description"
+          :clickable="true"
+          :class="bemm('item', ['', backup.status])"
+          @click="showBackupDetails(backup)"
         >
-          <template #content>
-            <div :class="bemm('backup-info')">
-              <div :class="bemm('info-item')">
-                <TIcon :name="Icons.CLOCK" />
-                <span>{{ t('deployment.backups.createdAt') }}: {{ formatDate(backup.createdAt) }}</span>
-              </div>
-
-              <div v-if="backup.commit" :class="bemm('info-item')">
-                <TIcon :name="Icons.GIT_BRANCH" />
-                <span>{{ t('deployment.commit') }}: {{ backup.commit }}</span>
-              </div>
-
-              <div v-if="backup.metadata?.actor" :class="bemm('info-item')">
-                <TIcon :name="Icons.USER" />
-                <span>{{ t('deployment.backups.triggeredBy') }}: {{ backup.metadata.actor }}</span>
-              </div>
-
-              <div v-if="backup.metadata?.workflowName" :class="bemm('info-item')">
-                <TIcon :name="Icons.PLAYBACK_PLAY" />
-                <span>{{ t('deployment.backups.workflow') }}: {{ backup.metadata.workflowName }}</span>
+          <TListCell type="custom">
+            <div :class="bemm('name-cell')">
+              <TIcon :name="Icons.DATABASE" />
+              <div>
+                <h3 :class="bemm('item-title')">{{ backup.name }}</h3>
+                <p v-if="backup.description" :class="bemm('item-description')">{{ backup.description }}</p>
               </div>
             </div>
-
+          </TListCell>
+          
+          <TListCell type="custom">
             <TChip
-              :class="bemm('status')"
-              :color="backup.status"
               :icon="getStatusIcon(backup.status)"
+              :color="backup.status"
+              size="small"
             >
               {{ t(`deployment.backups.status.${backup.status}`) }}
             </TChip>
-
-            <TButtonGroup :class="bemm('card-actions')">
-              <TButton
-                type="outline"
-                :icon="Icons.DOWNLOAD"
-                :disabled="backup.status !== 'success'"
-                @click="downloadBackup(backup)"
-              >
-                {{ t('deployment.backups.download') }}
-              </TButton>
-
-              <TButton
-                type="outline"
-                :icon="Icons.EYE"
-                @click="showBackupDetails(backup)"
-              >
-                {{ t('deployment.backups.details') }}
-              </TButton>
-
-              <TButton
-                type="outline"
-                :icon="Icons.TRASH"
-                color="error"
-                :disabled="true"
-                :title="t('deployment.backups.deleteNotSupported')"
-              >
-                {{ t('deployment.backups.delete') }}
-              </TButton>
-            </TButtonGroup>
-          </template>
-        </TCard>
-      </div>
+          </TListCell>
+          
+          <TListCell type="custom">
+            <div :class="bemm('meta-cell')">
+              <div :class="bemm('meta-item')">
+                <TIcon :name="Icons.CLOCK" />
+                {{ formatDate(backup.createdAt) }}
+              </div>
+              
+              <div v-if="backup.commit" :class="bemm('meta-item')">
+                <TIcon :name="Icons.GIT_BRANCH" />
+                {{ backup.commit }}
+              </div>
+              
+              <div v-if="backup.metadata?.actor" :class="bemm('meta-item')">
+                <TIcon :name="Icons.USER" />
+                {{ backup.metadata.actor }}
+              </div>
+              
+              <div v-if="backup.metadata?.workflowName" :class="bemm('meta-item')">
+                <TIcon :name="Icons.PLAYBACK_PLAY" />
+                {{ backup.metadata.workflowName }}
+              </div>
+            </div>
+          </TListCell>
+          
+          <TListCell 
+            type="actions" 
+            :actions="[
+              listActions.custom({
+                handler: () => downloadBackup(backup),
+                tooltip: t('deployment.backups.viewOnGithub'),
+                icon: Icons.EXTERNAL_LINK,
+                disabled: backup.status !== 'success'
+              })
+            ]"
+          />
+        </TListItem>
+      </TList>
     </div>
   </div>
 </template>
@@ -121,7 +116,7 @@
 <script setup lang="ts">
 import { ref, onMounted, inject } from 'vue';
 import { useBemm } from 'bemm';
-import { TButtonGroup, TCard, TChip, TSpinner, useI18n } from '@tiko/ui';
+import { TList, TListItem, TListCell, TChip, TSpinner, useI18n, listActions } from '@tiko/ui';
 import { Icons } from 'open-icon';
 import { THeader, TButton, TIcon, type PopupService, type ToastService } from '@tiko/ui';
 import { backupService, type DatabaseBackup } from '@tiko/core';
@@ -136,6 +131,14 @@ const backups = ref<DatabaseBackup[]>([]);
 const isLoading = ref(true);
 const isRefreshing = ref(false);
 const isCreatingBackup = ref(false);
+
+// Table columns
+const columns = [
+  { label: t('deployment.backups.name', 'Name'), key: 'name' },
+  { label: t('deployment.status', 'Status'), key: 'status' },
+  { label: t('deployment.details', 'Details'), key: 'details' },
+  { label: t('common.actions', 'Actions'), key: 'actions' }
+];
 
 // Methods
 const loadBackups = async () => {
@@ -382,49 +385,60 @@ onMounted(async () => {
     }
   }
 
-  &__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-    gap: var(--space);
-  }
+  &__item {
+    &--creating {
+      border-left: 3px solid var(--color-warning);
+      background: var(--color-warning-background);
+    }
 
-  &__card {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius);
-    padding: var(--space);
-    background: var(--color-background-elevated);
-    transition: all 0.2s ease;
+    &--success {
+      border-left: 3px solid var(--color-success);
+    }
 
-    &:hover {
-      border-color: var(--color-primary);
-      transform: translateY(-2px);
+    &--failed {
+      border-left: 3px solid var(--color-error);
     }
   }
 
-  &__backup-info {
+  &__name-cell {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+
+    .t-icon {
+      font-size: var(--font-size-lg);
+      color: var(--color-primary);
+    }
+  }
+
+  &__item-title {
+    margin: 0;
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  &__item-description {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+  }
+
+  &__meta-cell {
     display: flex;
     flex-direction: column;
     gap: var(--space-xs);
-    margin-bottom: var(--space);
   }
 
-  &__info-item {
+  &__meta-item {
     display: flex;
     align-items: center;
     gap: var(--space-xs);
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-  }
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
 
-  &__status {
-    margin-bottom: var(--space);
-  }
-
-  &__card-actions {
-    display: flex;
-    gap: var(--space-s);
-    justify-content: flex-end;
-    flex-wrap: wrap;
+    .t-icon {
+      font-size: var(--font-size-sm);
+    }
   }
 }
 </style>

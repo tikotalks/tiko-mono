@@ -19,13 +19,13 @@
     "ios:run": "pnpm run build && cap sync ios && cap open ios"
   },
   "dependencies": {
-    "vue": "^3.4.21",
-    "vue-router": "^4.3.0",
-    "pinia": "^2.1.7",
-    "@tiko/ui": "workspace:*",
     "@tiko/core": "workspace:*",
-    "open-icon": "^1.0.0",
-    "bemm": "^1.0.0"
+    "@tiko/ui": "workspace:*",
+    "bemm": "^1.0.0",
+    "open-icon": "^1.1.2",
+    "pinia": "^2.1.7",
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.6.2",

@@ -119,7 +119,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useBemm } from 'bemm'
-import { TIcon, TInput, IconList } from '@tiko/ui'
+import { TIcon, TInput } from '@tiko/ui'
+import { Icons as IconList } from 'open-icon'
 
 const bemm = useBemm('icons-view')
 

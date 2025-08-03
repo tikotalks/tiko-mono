@@ -158,7 +158,7 @@ import { userService, translationService, useImages, formatBytes, formatDate, lo
 import { Icons } from 'open-icon'
 import AdminPageHeader from '../components/AdminPageHeader.vue'
 
-const { t, keys } = useI18n()
+const { t } = useI18n()
 const bemm = useBemm('admin-dashboard')
 const router = useRouter()
 

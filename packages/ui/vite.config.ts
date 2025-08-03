@@ -8,6 +8,7 @@ export default defineConfig({
     preprocessorOptions: {
       scss: {
         api: 'modern-compiler',
+        silenceDeprecations: ['legacy-js-api'],
         additionalData: `@use "${resolve(__dirname, 'src/styles/global.scss')}" as global;`
       }
     }

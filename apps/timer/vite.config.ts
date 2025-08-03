@@ -34,4 +34,8 @@ const pwaConfig = {
   }
 }
 
-export default createViteConfig(__dirname, 3001, pwaConfig)
+const i18nConfig = {
+  excludeSections: ['admin', 'deployment', 'media', 'content']
+}
+
+export default createViteConfig(__dirname, 3001, pwaConfig, 'timer', i18nConfig)

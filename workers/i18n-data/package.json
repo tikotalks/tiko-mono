@@ -1,0 +1,16 @@
+{
+  "name": "i18n-data-worker",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker for fetching i18n translation data from Supabase",
+  "main": "src/index.ts",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240512.0",
+    "typescript": "^5.0.0",
+    "wrangler": "^3.0.0"
+  }
+}

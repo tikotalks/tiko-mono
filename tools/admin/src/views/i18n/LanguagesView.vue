@@ -10,7 +10,7 @@
           :icon="Icons.EDIT_M"
           color="secondary"
         >
-          {{ t('admin.i18n.addKey') }}
+          {{ t('admin.i18n.addKeyLabel') }}
         </TButton>
         <TButton
           @click="showAddLanguageDialog = true"
@@ -129,9 +129,9 @@
             >{{ languageStatus(language) }}
             </TChip>
           </TListCell>
-          <TListCell 
-            key="actions" 
-            type="actions" 
+          <TListCell
+            key="actions"
+            type="actions"
             :actions="[
               listActions.custom({
                 icon: Icons.ARROW_UPLOAD,

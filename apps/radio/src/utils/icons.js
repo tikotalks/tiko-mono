@@ -56,7 +56,8 @@ export async function getIcon(name) {
 }
 
 // Re-export types and other utilities
-export * from 'open-icon'
+// Commenting out re-export to fix build issue
+// export * from 'open-icon'
 
 // Export optimization metadata
 export const ICON_OPTIMIZATION = {

@@ -96,15 +96,41 @@ class TranslationVersionedService {
   }
 
   /**
-   * Get approved translations for a locale (for runtime use)
+   * Get approved translations for a locale (for runtime use) with pagination
    */
   async getTranslations(locale: string): Promise<Array<{ key: string; value: string; auto_translated?: boolean }>> {
     try {
-      // This uses the 'i18n_translations' view which only shows approved translations
-      const data = await this.makeRequest(
-        `/i18n_translations?locale=eq.${locale}&order=key`
-      );
-      return data || [];
+      const allTranslations: Array<{ key: string; value: string; auto_translated?: boolean }> = [];
+      const BATCH_SIZE = 1000; // Supabase default limit
+      let offset = 0;
+      let hasMore = true;
+
+      console.log(`Fetching translations for locale ${locale} with pagination...`);
+
+      while (hasMore) {
+        // This uses the 'i18n_translations' view which only shows approved translations
+        const data = await this.makeRequest(
+          `/i18n_translations?locale=eq.${locale}&order=key&limit=${BATCH_SIZE}&offset=${offset}`
+        );
+        
+        if (!data || data.length === 0) {
+          hasMore = false;
+          break;
+        }
+
+        allTranslations.push(...data);
+        console.log(`Fetched batch ${Math.floor(offset / BATCH_SIZE) + 1}: ${data.length} translations for ${locale} (total so far: ${allTranslations.length})`);
+
+        // Check if we got a full batch - if not, we're done
+        if (data.length < BATCH_SIZE) {
+          hasMore = false;
+        } else {
+          offset += BATCH_SIZE;
+        }
+      }
+
+      console.log(`Total translations fetched for ${locale}: ${allTranslations.length}`);
+      return allTranslations;
     } catch (error) {
       console.error('Error fetching translations:', error);
       throw error;
@@ -153,17 +179,43 @@ class TranslationVersionedService {
   }
 
   /**
-   * Get pending translations for review
+   * Get pending translations for review with pagination
    */
   async getPendingTranslations(locale?: string): Promise<TranslationVersion[]> {
     try {
-      let url = '/i18n_pending_translations?order=created_at.desc';
-      if (locale) {
-        url += `&locale=eq.${locale}`;
+      const allPending: TranslationVersion[] = [];
+      const BATCH_SIZE = 1000; // Supabase default limit
+      let offset = 0;
+      let hasMore = true;
+
+      console.log(`Fetching pending translations${locale ? ` for locale ${locale}` : ''} with pagination...`);
+
+      while (hasMore) {
+        let url = `/i18n_pending_translations?order=created_at.desc&limit=${BATCH_SIZE}&offset=${offset}`;
+        if (locale) {
+          url += `&locale=eq.${locale}`;
+        }
+        
+        const data = await this.makeRequest(url);
+        
+        if (!data || data.length === 0) {
+          hasMore = false;
+          break;
+        }
+
+        allPending.push(...data);
+        console.log(`Fetched batch ${Math.floor(offset / BATCH_SIZE) + 1}: ${data.length} pending translations (total so far: ${allPending.length})`);
+
+        // Check if we got a full batch - if not, we're done
+        if (data.length < BATCH_SIZE) {
+          hasMore = false;
+        } else {
+          offset += BATCH_SIZE;
+        }
       }
-      
-      const data = await this.makeRequest(url);
-      return data || [];
+
+      console.log(`Total pending translations fetched: ${allPending.length}`);
+      return allPending;
     } catch (error) {
       console.error('Error fetching pending translations:', error);
       throw error;
@@ -408,21 +460,47 @@ class TranslationVersionedService {
   }
 
   /**
-   * Get all unique translation keys from the database
+   * Get all unique translation keys from the database with pagination
    */
   async getAllKeys(): Promise<string[]> {
     try {
-      // Get distinct keys from i18n_translation_versions table, excluding corrupted ones
-      const data = await this.makeRequest(
-        '/i18n_translation_versions?select=key&order=key'
-      );
+      const allKeys: string[] = [];
+      const BATCH_SIZE = 1000; // Supabase default limit
+      let offset = 0;
+      let hasMore = true;
+
+      console.log('Fetching all translation keys with pagination...');
+
+      while (hasMore) {
+        // Get distinct keys from i18n_translation_versions table with pagination
+        const data = await this.makeRequest(
+          `/i18n_translation_versions?select=key&order=key&limit=${BATCH_SIZE}&offset=${offset}`
+        );
+        
+        if (data.length === 0) {
+          hasMore = false;
+          break;
+        }
+
+        // Extract keys from this batch
+        const batchKeys = data.map((item: any) => item.key);
+        allKeys.push(...batchKeys);
+
+        console.log(`Fetched batch ${Math.floor(offset / BATCH_SIZE) + 1}: ${data.length} keys (total so far: ${allKeys.length})`);
+
+        // Check if we got a full batch - if not, we're done
+        if (data.length < BATCH_SIZE) {
+          hasMore = false;
+        } else {
+          offset += BATCH_SIZE;
+        }
+      }
       
       // Extract unique keys and filter out corrupted ones
-      const allKeys = data.map((item: any) => item.key);
       const uniqueKeys = [...new Set(allKeys)];
       const cleanKeys = uniqueKeys.filter(key => !key.includes('[object Object]'));
       
-      console.log('Total keys in DB:', allKeys.length);
+      console.log('Total keys fetched:', allKeys.length);
       console.log('Unique keys:', uniqueKeys.length);
       console.log('Clean keys (no corruption):', cleanKeys.length);
       
@@ -626,20 +704,51 @@ class TranslationVersionedService {
   }
 
   /**
-   * Get all unique keys from all locales/languages
+   * Get all unique keys from all locales/languages with pagination
    */
   async getAllUniqueKeys(): Promise<string[]> {
     try {
-      // Query to get all unique keys across all translations
-      const data = await this.makeRequest(
-        '/i18n_translation_versions?select=key&order=key'
-      );
+      const allKeys: string[] = [];
+      const BATCH_SIZE = 1000; // Supabase default limit
+      let offset = 0;
+      let hasMore = true;
+
+      console.log('Fetching all unique translation keys with pagination...');
+
+      while (hasMore) {
+        // Query to get all unique keys across all translations with pagination
+        const data = await this.makeRequest(
+          `/i18n_translation_versions?select=key&order=key&limit=${BATCH_SIZE}&offset=${offset}`
+        );
+        
+        if (data.length === 0) {
+          hasMore = false;
+          break;
+        }
+
+        // Extract keys from this batch
+        const batchKeys = data.map((item: any) => item.key);
+        allKeys.push(...batchKeys);
+
+        console.log(`Fetched batch ${Math.floor(offset / BATCH_SIZE) + 1}: ${data.length} keys (total so far: ${allKeys.length})`);
+
+        // Check if we got a full batch - if not, we're done
+        if (data.length < BATCH_SIZE) {
+          hasMore = false;
+        } else {
+          offset += BATCH_SIZE;
+        }
+      }
       
       // Extract unique keys
-      const uniqueKeys = [...new Set(data.map((item: any) => item.key))];
+      const uniqueKeys = [...new Set(allKeys)];
       
       // Filter out corrupted keys
       const cleanKeys = uniqueKeys.filter(key => !key.includes('[object Object]'));
+      
+      console.log('Total keys fetched:', allKeys.length);
+      console.log('Unique keys:', uniqueKeys.length);
+      console.log('Clean keys (no corruption):', cleanKeys.length);
       
       return cleanKeys.sort();
     } catch (error) {

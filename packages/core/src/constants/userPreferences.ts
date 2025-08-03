@@ -15,25 +15,29 @@ export const USER_PREFERENCE_KEYS = {
     TIMER_PRESETS: 'timer-presets',
     CARDS_LIST: 'cards-list',
   },
-  
+
   // Theme preferences
   THEME: 'theme',
-  
+
   // Locale preferences
   LOCALE: 'locale',
-  
+
   // View preferences
   VIEWS: {
     DASHBOARD_LAYOUT: 'dashboard-layout',
     MEDIA_VIEW_MODE: 'media-view-mode',
     TRANSLATION_VIEW_MODE: 'translation-view-mode',
   },
-  
+
   // Admin specific preferences
   ADMIN: {
     SIDEBAR_COLLAPSED: 'admin-sidebar-collapsed',
     RECENT_SEARCHES: 'admin-recent-searches',
     DEFAULT_LANGUAGE_FILTER: 'admin-default-language-filter',
+  },
+
+  NAVIGATION: {
+    ADMIN: 'admin-active-navigation',
   }
 } as const;
 
