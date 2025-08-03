@@ -487,6 +487,23 @@ class DeploymentService {
           const completed = new Date(latestRun.updated_at)
           target.buildDuration = completed.getTime() - started.getTime()
         }
+
+        // Extract version info from workflow run
+        target.commit = latestRun.head_commit.id.substring(0, 7)
+        target.buildNumber = latestRun.id
+        
+        // Extract version from commit message or use date-based version
+        const commitMessage = latestRun.head_commit.message
+        const versionMatch = commitMessage.match(/v?(\d+\.\d+\.\d+)/)
+        if (versionMatch) {
+          target.version = versionMatch[1]
+        } else {
+          // Generate version based on date and run number
+          const date = new Date(latestRun.created_at)
+          const dateStr = date.toISOString().split('T')[0].replace(/-/g, '.')
+          const shortRunId = latestRun.id.toString().slice(-4)
+          target.version = `${dateStr}.${shortRunId}`
+        }
       } else {
         target.status = 'idle'
       }

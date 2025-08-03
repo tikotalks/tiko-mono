@@ -17,6 +17,7 @@ import ContentSectionsView from '../views/content/SectionsView.vue'
 import ContentPagesView from '../views/content/PagesView.vue'
 import ContentPageDetailView from '../views/content/PageDetailView.vue'
 import DeploymentDashboard from '../views/deployment/DeploymentDashboard.vue'
+import BackupsView from '../views/deployment/BackupsView.vue'
 
 const router = createAppRouter({
   routes: [
@@ -108,6 +109,11 @@ const router = createAppRouter({
           path: 'deployment',
           name: 'Deployment',
           component: DeploymentDashboard
+        },
+        {
+          path: 'deployment/backups',
+          name: 'DeploymentBackups',
+          component: BackupsView
         }
       ]
     }

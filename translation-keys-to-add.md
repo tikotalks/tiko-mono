@@ -1,0 +1,50 @@
+# Translation Keys to Add for Deployment Enhancement
+
+These translation keys need to be added to the database for the deployment and backup features:
+
+## Deployment Keys
+- `admin.navigation.deployments.title` = "Deployments"
+- `admin.navigation.deployments.targets` = "Deployment Targets"
+- `admin.navigation.deployments.backups` = "Database Backups"
+- `deployment.version` = "Version"
+- `deployment.buildNumber` = "Build"
+- `deployment.commit` = "Commit"
+
+## Backup Keys
+- `deployment.backups.title` = "Database Backups"
+- `deployment.backups.subtitle` = "Manage and monitor database backups"
+- `deployment.backups.create` = "Create Backup"
+- `deployment.backups.createFirst` = "Create First Backup"
+- `deployment.backups.loading` = "Loading backups..."
+- `deployment.backups.empty.title` = "No backups found"
+- `deployment.backups.empty.description` = "Create your first backup to get started with database management."
+- `deployment.backups.createdAt` = "Created"
+- `deployment.backups.size` = "Size"
+- `deployment.backups.tables` = "Tables"
+- `deployment.backups.rows` = "Rows"
+- `deployment.backups.tablesIncluded` = "Tables Included"
+- `deployment.backups.metadata` = "Metadata"
+- `deployment.backups.download` = "Download"
+- `deployment.backups.details` = "Details"
+- `deployment.backups.delete` = "Delete"
+- `deployment.backups.status.creating` = "Creating"
+- `deployment.backups.status.success` = "Success"
+- `deployment.backups.status.failed` = "Failed"
+- `deployment.backups.confirm.title` = "Create New Backup"
+- `deployment.backups.confirm.description` = "This will create a new backup of the current database state. Please provide a name and optional description."
+- `deployment.backups.form.name` = "Backup Name"
+- `deployment.backups.form.namePlaceholder` = "Enter backup name"
+- `deployment.backups.form.description` = "Description"
+- `deployment.backups.form.descriptionPlaceholder` = "Optional description"
+- `deployment.backups.success.created` = "Backup created successfully"
+- `deployment.backups.success.deleted` = "Backup deleted successfully"
+- `deployment.backups.error.create` = "Failed to create backup"
+- `deployment.backups.error.delete` = "Failed to delete backup"
+- `deployment.backups.error.load` = "Failed to load backups"
+- `deployment.backups.error.download` = "Failed to download backup"
+- `deployment.backups.delete.title` = "Delete Backup"
+- `deployment.backups.delete.message` = "Are you sure you want to delete backup '{name}'? This action cannot be undone."
+- `deployment.backups.details.title` = "Backup Details for {name}"
+
+## Existing Translation Key Still Needed
+- `auth.skipLogin` = "Skip Login"

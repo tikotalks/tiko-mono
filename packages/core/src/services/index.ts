@@ -70,6 +70,11 @@ export type {
   DeploymentHistory,
   GitHubWorkflowRun
 } from './deployment.service'
+export { backupService } from './backup.service'
+export type {
+  DatabaseBackup,
+  CreateBackupRequest
+} from './backup.service'
 
 // Alternative: Export Supabase implementations
 // import { SupabaseParentModeService } from './parent-mode-supabase.service'

@@ -236,10 +236,23 @@ const navigationItems: NavigationItem[] = [
     ]
   },
   {
-    name: 'deployment',
-    to: { name: 'Deployment' },
+    name: 'deployments',
     icon: Icons.CLOUD_UPLOAD,
-    label: t('admin.navigation.deployment'),
+    label: t('admin.navigation.deployments.title'),
+    items: [
+      {
+        name: 'deployment-targets',
+        to: { name: 'Deployment' },
+        icon: Icons.CLOUD_UPLOAD,
+        label: t('admin.navigation.deployments.targets'),
+      },
+      {
+        name: 'deployment-backups',
+        to: { name: 'DeploymentBackups' },
+        icon: Icons.DATABASE,
+        label: t('admin.navigation.deployments.backups'),
+      },
+    ]
   },
   // {
   //   name: 'analytics',

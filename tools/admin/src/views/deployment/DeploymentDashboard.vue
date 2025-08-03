@@ -63,6 +63,21 @@
               >
             </div>
 
+            <div v-if="target.version" :class="bemm('version-info')">
+              <TIcon :name="Icons.TAG" />
+              <span>{{ t('deployment.version') }}: {{ target.version }}</span>
+            </div>
+
+            <div v-if="target.buildNumber" :class="bemm('build-info')">
+              <TIcon :name="Icons.HASH" />
+              <span>{{ t('deployment.buildNumber') }}: #{{ target.buildNumber }}</span>
+            </div>
+
+            <div v-if="target.commit" :class="bemm('commit-info')">
+              <TIcon :name="Icons.GIT_BRANCH" />
+              <span>{{ t('deployment.commit') }}: {{ target.commit }}</span>
+            </div>
+
             <TButton    :href="target.url" :type="'outline'" :icon="Icons.ARROW_RIGHT" v-if="target.url" :class="bemm('url')">
 
 
@@ -435,6 +450,9 @@ onMounted(async () => {
 
   &__last-deployed,
   &__build-duration,
+  &__version-info,
+  &__build-info,
+  &__commit-info,
   &__url {
     display: flex;
     align-items: center;
