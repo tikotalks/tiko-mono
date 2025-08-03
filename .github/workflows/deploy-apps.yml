@@ -7,16 +7,18 @@ on:
   workflow_dispatch:
     inputs:
       target:
-        description: 'Target app to deploy (timer, cards, radio, todo, or all)'
+        description: 'Target app to deploy (timer, yes-no, cards, radio, todo, type, or all)'
         required: true
         default: 'all'
         type: choice
         options:
           - all
           - timer
+          - yes-no
           - cards
           - radio
           - todo
+          - type
       message:
         description: 'Deployment message'
         required: false
@@ -28,9 +30,11 @@ jobs:
     outputs:
       build-all-apps: ${{ steps.check.outputs.build-all-apps }}
       build-timer: ${{ steps.check.outputs.build-timer }}
+      build-yes-no: ${{ steps.check.outputs.build-yes-no }}
       build-cards: ${{ steps.check.outputs.build-cards }}
       build-radio: ${{ steps.check.outputs.build-radio }}
       build-todo: ${{ steps.check.outputs.build-todo }}
+      build-type: ${{ steps.check.outputs.build-type }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,9 +45,11 @@ jobs:
         run: |
           # Default to no builds
           echo "build-timer=false" >> $GITHUB_OUTPUT
+          echo "build-yes-no=false" >> $GITHUB_OUTPUT
           echo "build-cards=false" >> $GITHUB_OUTPUT
           echo "build-radio=false" >> $GITHUB_OUTPUT
           echo "build-todo=false" >> $GITHUB_OUTPUT
+          echo "build-type=false" >> $GITHUB_OUTPUT
           
           # Handle workflow_dispatch trigger
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
@@ -52,17 +58,23 @@ jobs:
             
             if [[ "$TARGET" == "all" ]]; then
               echo "build-timer=true" >> $GITHUB_OUTPUT
+              echo "build-yes-no=true" >> $GITHUB_OUTPUT
               echo "build-cards=true" >> $GITHUB_OUTPUT
               echo "build-radio=true" >> $GITHUB_OUTPUT
               echo "build-todo=true" >> $GITHUB_OUTPUT
+              echo "build-type=true" >> $GITHUB_OUTPUT
             elif [[ "$TARGET" == "timer" ]]; then
               echo "build-timer=true" >> $GITHUB_OUTPUT
+            elif [[ "$TARGET" == "yes-no" ]]; then
+              echo "build-yes-no=true" >> $GITHUB_OUTPUT
             elif [[ "$TARGET" == "cards" ]]; then
               echo "build-cards=true" >> $GITHUB_OUTPUT
             elif [[ "$TARGET" == "radio" ]]; then
               echo "build-radio=true" >> $GITHUB_OUTPUT
             elif [[ "$TARGET" == "todo" ]]; then
               echo "build-todo=true" >> $GITHUB_OUTPUT
+            elif [[ "$TARGET" == "type" ]]; then
+              echo "build-type=true" >> $GITHUB_OUTPUT
             fi
             exit 0
           fi
@@ -74,9 +86,11 @@ jobs:
           # Check for build all triggers
           if [[ "$COMMIT_MSG" == *"[build:all]"* ]] || [[ "$COMMIT_MSG" == *"[build:apps]"* ]]; then
             echo "build-timer=true" >> $GITHUB_OUTPUT
+            echo "build-yes-no=true" >> $GITHUB_OUTPUT
             echo "build-cards=true" >> $GITHUB_OUTPUT
             echo "build-radio=true" >> $GITHUB_OUTPUT
             echo "build-todo=true" >> $GITHUB_OUTPUT
+            echo "build-type=true" >> $GITHUB_OUTPUT
             exit 0
           fi
           
@@ -93,10 +107,16 @@ jobs:
           if [[ "$COMMIT_MSG" == *"[build:todo]"* ]]; then
             echo "build-todo=true" >> $GITHUB_OUTPUT
           fi
+          if [[ "$COMMIT_MSG" == *"[build:yes-no]"* ]]; then
+            echo "build-yes-no=true" >> $GITHUB_OUTPUT
+          fi
+          if [[ "$COMMIT_MSG" == *"[build:type]"* ]]; then
+            echo "build-type=true" >> $GITHUB_OUTPUT
+          fi
 
   check-environment:
     needs: check-triggers
-    if: needs.check-triggers.outputs.build-timer == 'true' || needs.check-triggers.outputs.build-cards == 'true' || needs.check-triggers.outputs.build-radio == 'true' || needs.check-triggers.outputs.build-todo == 'true'
+    if: needs.check-triggers.outputs.build-timer == 'true' || needs.check-triggers.outputs.build-yes-no == 'true' || needs.check-triggers.outputs.build-cards == 'true' || needs.check-triggers.outputs.build-radio == 'true' || needs.check-triggers.outputs.build-todo == 'true' || needs.check-triggers.outputs.build-type == 'true'
     runs-on: ubuntu-latest
     name: Check Required Environment Variables
     steps:
@@ -171,6 +191,39 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: dc2b7d14a69351375cab6de9a13ddee9
           command: pages deploy ./apps/timer/dist --project-name=tiko-timer --compatibility-date=2024-08-02
+
+  deploy-yes-no:
+    needs: [check-triggers, check-environment]
+    if: needs.check-triggers.outputs.build-yes-no == 'true'
+    runs-on: ubuntu-latest
+    name: Deploy Yes-No App
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+        
+      - name: Build Yes-No app
+        run: |
+          pnpm --filter=@tiko/ui build
+          pnpm --filter=@tiko/core build
+          pnpm --filter=yes-no build
+          
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: dc2b7d14a69351375cab6de9a13ddee9
+          command: pages deploy ./apps/yes-no/dist --project-name=tiko-yes-no --compatibility-date=2024-08-02
 
   deploy-cards:
     needs: [check-triggers, check-environment]
@@ -270,6 +323,39 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: dc2b7d14a69351375cab6de9a13ddee9
           command: pages deploy ./apps/todo/dist --project-name=tiko-todo --compatibility-date=2024-08-02
+
+  deploy-type:
+    needs: [check-triggers, check-environment]
+    if: needs.check-triggers.outputs.build-type == 'true'
+    runs-on: ubuntu-latest
+    name: Deploy Type App
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+        
+      - name: Build Type app
+        run: |
+          pnpm --filter=@tiko/ui build
+          pnpm --filter=@tiko/core build
+          pnpm --filter=type build
+          
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: dc2b7d14a69351375cab6de9a13ddee9
+          command: pages deploy ./apps/type/dist --project-name=tiko-type --compatibility-date=2024-08-02
 
   # Skip tiko app for now as it has build issues
   # deploy-tiko:
