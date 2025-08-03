@@ -56,12 +56,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref } from 'vue'
+import { computed, inject, ref, onMounted } from 'vue'
 import { TFramework, TButton, type FrameworkConfig, popupService as importedPopupService, useI18n } from '@tiko/ui'
 import { useTimer } from './composables/useTimer'
 import TimerSettingsForm from './components/TimerSettingsForm.vue'
 import tikoConfig from '../tiko.config'
 import backgroundImage from './assets/app-icon-timer.png'
+import { initializeTranslations } from './services/translation-init.service'
 
 // Get timer state
 const {
@@ -83,7 +84,13 @@ const { t, keys } = useI18n()
 // Local state for time settings
 const minutes = ref(5)
 const seconds = ref(0)
-const loading = ref(false)
+const loading = ref(true)
+
+// Initialize translations on mount
+onMounted(async () => {
+  await initializeTranslations()
+  loading.value = false
+})
 
 // Framework configuration
 // Try to inject popup service, fallback to imported one

@@ -30,13 +30,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, inject } from 'vue'
+import { computed, ref, inject, onMounted } from 'vue'
 import { TFramework, TButton, type FrameworkConfig, useParentMode, useEventBus, useI18n } from '@tiko/ui'
 import tikoConfig from '../tiko.config'
 import backgroundImage from './assets/app-icon-radio.png'
+import { initializeTranslations } from './services/translation-init.service'
 
-// Loading state (radio app manages loading in components)
-const loading = ref(false)
+// Loading state - start with true while translations load
+const loading = ref(true)
+
+// Initialize translations on mount
+onMounted(async () => {
+  await initializeTranslations()
+  loading.value = false
+})
 
 // Parent mode for radio app
 const parentMode = useParentMode('radio')

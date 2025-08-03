@@ -8,12 +8,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { TFramework, type FrameworkConfig, useI18n } from '@tiko/ui'
 import tikoConfig from '../tiko.config'
+import { initializeTranslations } from './services/translation-init.service'
 
-const loading = ref(false)
+const loading = ref(true)
 const { t, keys } = useI18n()
+
+// Initialize translations on mount
+onMounted(async () => {
+  await initializeTranslations()
+  loading.value = false
+})
 
 // Framework configuration
 const frameworkConfig = computed<FrameworkConfig>(() => ({

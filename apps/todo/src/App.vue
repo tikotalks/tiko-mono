@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject } from 'vue'
+import { computed, inject, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { TFramework, TButton, type FrameworkConfig, useI18n, useParentMode } from '@tiko/ui'
 import { storeToRefs } from 'pinia'
@@ -53,6 +53,7 @@ import backgroundImage from './assets/app-icon-todo.png'
 import AddGroupModal from './components/AddGroupModal.vue'
 import AddTodoModal from './components/AddTodoModal.vue'
 import type { TodoGroup } from './types/todo.types'
+import { initializeTranslations } from './services/translation-init.service'
 
 const todoStore = useTodoStore()
 const route = useRoute()
@@ -64,7 +65,17 @@ const toastService = inject<any>('toastService')
 const popupService = inject<any>('popupService')
 
 // Get state from todo store
-const { loading, groups } = storeToRefs(todoStore)
+const { groups } = storeToRefs(todoStore)
+
+// Loading state - start with true while translations load
+const translationsLoading = ref(true)
+const loading = computed(() => translationsLoading.value || todoStore.loading)
+
+// Initialize translations on mount
+onMounted(async () => {
+  await initializeTranslations()
+  translationsLoading.value = false
+})
 
 // Framework configuration
 const frameworkConfig = computed<FrameworkConfig>(() => ({

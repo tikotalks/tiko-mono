@@ -14,14 +14,18 @@ import { useRouter, useRoute } from 'vue-router'
 import { TFramework, type FrameworkConfig, useI18n } from '@tiko/ui'
 import tikoConfig from '../tiko.config'
 import backgroundImage from './assets/app-icon-tiko.png'
+import { initializeTranslations } from './services/translation-init.service'
 
 const { t, keys } = useI18n()
-const loading = ref(false)
+const loading = ref(true)
 const router = useRouter()
 const route = useRoute()
 
-// Handle deep links
-onMounted(() => {
+// Handle deep links and initialize translations
+onMounted(async () => {
+  // Initialize translations first
+  await initializeTranslations()
+  loading.value = false
   // Check if we're coming from a deep link
   if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
     window.Capacitor.Plugins.App.addListener('appUrlOpen', (data: any) => {

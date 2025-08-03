@@ -33,17 +33,28 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref } from 'vue'
+import { computed, inject, ref, onMounted } from 'vue'
 import { TFramework, TButton, type FrameworkConfig, useParentMode, useI18n } from '@tiko/ui'
 import { useCardsStore } from './stores/cards'
 import CreateCardModal from './components/CreateCardModal.vue'
 import tikoConfig from '../tiko.config'
 import backgroundImage from './assets/app-icon-cards.png'
+import { initializeTranslations } from './services/translation-init.service'
 
 const cardsStore = useCardsStore()
-const { editMode, isLoading, toggleEditMode } = cardsStore
+const { editMode, toggleEditMode } = cardsStore
 const parentMode = useParentMode('cards')
 const { t, keys } = useI18n()
+
+// Loading state
+const loading = ref(true)
+const isLoading = computed(() => loading.value || cardsStore.isLoading.value)
+
+// Initialize translations on mount
+onMounted(async () => {
+  await initializeTranslations()
+  loading.value = false
+})
 
 // Framework configuration
 const frameworkConfig = computed<FrameworkConfig>(() => ({
