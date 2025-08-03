@@ -45,6 +45,7 @@ interface I18nOptions {
 let staticTranslations: Record<string, any> = generatedTranslations || {}
 let staticAvailableLanguages: string[] = generatedLanguages ? [...generatedLanguages] : []
 let staticInitialized = false
+let staticKeys: any = null // Cached keys structure
 
 // Storage key for persistence
 const LOCALE_STORAGE_KEY = 'tiko:locale'
@@ -62,12 +63,66 @@ function initializeStaticMode(): void {
   if (Object.keys(staticTranslations).length === 0) {
     console.error('❌ No translations loaded! Check import from ../i18n/generated')
   } else {
-    // Log sample translation to verify
-    const sampleKey = staticTranslations['en']?.admin?.navigation?.dashboard
-    console.log('📚 Sample translation (en admin.navigation.dashboard):', sampleKey)
+    // Log sample translation to verify structure
+    const enTranslations = staticTranslations['en']
+    if (enTranslations) {
+      // Check if it's flat or nested structure
+      const flatKey = enTranslations['admin.navigation.dashboard']
+      const nestedKey = enTranslations.admin?.navigation?.dashboard
+      console.log('📚 Translation structure check:')
+      console.log('  - Flat key (admin.navigation.dashboard):', flatKey)
+      console.log('  - Nested key:', nestedKey)
+      console.log('  - admin.navigation.data key:', enTranslations['admin.navigation.data'])
+    }
   }
 
   staticInitialized = true
+  
+  // Build keys structure if not already built
+  if (!staticKeys) {
+    staticKeys = buildKeysStructure()
+  }
+}
+
+/**
+ * Build keys structure from available translation keys
+ * Creates a nested object where each leaf contains the full key path as a string
+ */
+function buildKeysStructure(): any {
+  const keys: any = {}
+  
+  // Get all keys from the first available locale (they should all have the same keys)
+  const firstLocale = Object.keys(staticTranslations)[0]
+  if (!firstLocale || !staticTranslations[firstLocale]) {
+    return keys
+  }
+  
+  const translations = staticTranslations[firstLocale]
+  
+  // If translations are in flat format (e.g., "auth.welcomeToTiko": "...")
+  if (typeof translations === 'object') {
+    for (const key in translations) {
+      const parts = key.split('.')
+      let current = keys
+      
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i]
+        
+        if (i === parts.length - 1) {
+          // Leaf node - store the full key path
+          current[part] = key
+        } else {
+          // Intermediate node - create object if it doesn't exist
+          if (!current[part]) {
+            current[part] = {}
+          }
+          current = current[part]
+        }
+      }
+    }
+  }
+  
+  return keys
 }
 
 /**
@@ -161,11 +216,15 @@ export function useI18n(options: I18nOptions = {}) {
   }
 
   /**
-   * Get all keys for current locale
+   * Get translation keys structure
+   * Returns the static keys object that provides autocomplete support
    */
   const keys = computed(() => {
-    if (!isReady.value || !currentLocale.value) return null
-    return staticTranslations[currentLocale.value] || staticTranslations['en'] || null
+    if (!staticKeys) {
+      // Initialize if not done yet
+      initializeStaticMode()
+    }
+    return staticKeys
   })
 
   return {
@@ -195,20 +254,33 @@ function getStaticTranslation(key: string, locale: string): string | null {
     // Try fallback locale
     const fallbackTranslations = staticTranslations['en']
     if (!fallbackTranslations) return null
-    return getNestedValue(fallbackTranslations, key)
+    return getTranslationValue(fallbackTranslations, key)
   }
 
-  const value = getNestedValue(localeTranslations, key)
+  const value = getTranslationValue(localeTranslations, key)
   
   // If not found and current locale is not fallback, try fallback
   if (!value && locale !== 'en') {
     const fallbackTranslations = staticTranslations['en']
     if (fallbackTranslations) {
-      return getNestedValue(fallbackTranslations, key)
+      return getTranslationValue(fallbackTranslations, key)
     }
   }
   
   return value
+}
+
+/**
+ * Get translation value from either flat or nested object structure
+ */
+function getTranslationValue(obj: any, path: string): string | null {
+  // First check if it's a flat structure (key exists directly)
+  if (obj[path] !== undefined) {
+    return typeof obj[path] === 'string' ? obj[path] : null
+  }
+  
+  // Otherwise try nested structure
+  return getNestedValue(obj, path)
 }
 
 /**
@@ -238,6 +310,37 @@ function interpolateParams(text: string, params?: TranslationParams): string {
     const value = params[key]
     return value !== undefined ? String(value) : match
   })
+}
+
+/**
+ * Deep merge two translation objects
+ * Regional translations override base translations
+ */
+function mergeTranslations(base: any, regional: any): any {
+  // Start with a deep copy of base
+  const result = JSON.parse(JSON.stringify(base))
+  
+  // Apply regional overrides
+  const applyOverrides = (target: any, source: any, path: string[] = []) => {
+    for (const key in source) {
+      const currentPath = [...path, key]
+      
+      if (typeof source[key] === 'object' && source[key] !== null) {
+        // Ensure target has the nested structure
+        if (!target[key] || typeof target[key] !== 'object') {
+          target[key] = {}
+        }
+        // Recursively apply overrides
+        applyOverrides(target[key], source[key], currentPath)
+      } else {
+        // Apply the override (regional files now only contain actual overrides)
+        target[key] = source[key]
+      }
+    }
+  }
+  
+  applyOverrides(result, regional)
+  return result
 }
 
 /**

@@ -13,7 +13,7 @@ export interface IconRegistry {
   has(name: string): boolean
 }
 
-const iconRegistryKey: InjectionKey<IconRegistry> = Symbol('iconRegistry')
+export const iconRegistryKey: InjectionKey<IconRegistry> = Symbol('iconRegistry')
 
 export function createIconRegistry(): IconRegistry {
   const icons = reactive<Record<string, Component | string>>({})

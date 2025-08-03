@@ -82,6 +82,16 @@
         <div :class="bemm('translation-details')" v-if="translationStats?.completeness">
           <h3>{{ t('admin.dashboard.completionByLocale') }}</h3>
           <div :class="bemm('locale-list')">
+            <TProgressBar
+              v-for="(data, locale) in translationStats.completeness.filter(item => !item.locale.includes('-'))"
+              :key="locale"
+              :prefix="locale"
+              :value="data.percentage"
+              :show-percentage="true"
+              :max="100"
+              :class="bemm('locale-progress')"
+            />
+<!--
             <div
               v-for="(data, locale) in translationStats.completeness"
               :key="locale"
@@ -95,7 +105,7 @@
                 ></div>
               </div>
               <span :class="bemm('locale-percentage')">{{ data.percentage }}%</span>
-            </div>
+            </div> -->
           </div>
         </div>
       </section>
@@ -153,7 +163,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
-import { useI18n, TCard, TIcon } from '@tiko/ui'
+import { useI18n, TCard, TIcon, TProgressBar } from '@tiko/ui'
 import { userService, translationService, useImages, formatBytes, formatDate, logger } from '@tiko/core'
 import { Icons } from 'open-icon'
 import AdminPageHeader from '../components/AdminPageHeader.vue'

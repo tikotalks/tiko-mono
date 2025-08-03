@@ -113,14 +113,12 @@
               {{ key.category || '-' }}
             </span>
           </TListCell>
-          <TListCell type="text" :content="key.description || '-'" />
+          <TListCell type="text" :size="Size.SMALL" :content="key.description || '-'" />
           <TListCell type="custom">
             <div :class="bemm('translation-count')">
-              <span :class="bemm('translation-count-text')">
-                {{ key.translationCount }} / {{ stats.totalLanguages }}
-              </span>
               <TProgressBar
-                :value="(key.translationCount / stats.totalLanguages) * 100"
+                :prefix="`${key.translationCount} / ${stats.totalLanguages}`"
+                :value="((key?.translationCount || 0) / stats.totalLanguages) * 100"
                 :class="bemm('translation-progress')"
                 size="small"
               />
@@ -133,7 +131,8 @@
               listActions.custom({
                 handler: (e) => { e.stopPropagation(); handleEditKey(e, key) },
                 tooltip: t('admin.i18n.database.editKey', 'Edit Key'),
-                icon: Icons.TAG,
+                icon: Icons.CODE_BRACKETS,
+                buttonType: 'outline',
                 disabled: false
               }),
               listActions.delete((e) => { e.stopPropagation(); handleDelete(e, key) })
@@ -208,7 +207,8 @@ import {
   listActions,
   TInputCheckbox,
   TStatusBar,
-  ConfirmDialog
+  ConfirmDialog,
+  Size
 } from '@tiko/ui';
 import AddTranslationKeyDialog from '../../components/dialogs/AddTranslationKeyDialog.vue';
 import EditKeyDialog from '../../components/dialogs/EditKeyDialog.vue';

@@ -1,4 +1,4 @@
-import { ButtonType } from '../TButton'
+import { Size } from '../../types'
 import type { ListAction } from '../TListItem/TListItem.model'
 
 export interface TListCellProps {
@@ -24,6 +24,8 @@ export interface TListCellProps {
   truncate?: boolean
   /** Actions to display in the cell (for 'actions' type) */
   actions?: ListAction[]
+  /** Custom class for additional styling */
+  size?: Size
 }
 
 export interface ChipData {

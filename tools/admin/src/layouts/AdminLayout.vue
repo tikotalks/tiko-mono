@@ -1,7 +1,7 @@
 <template>
   <div :class="bemm('container')">
     <aside :class="bemm('sidebar')">
-    <AdminNavigation />
+      <AdminNavigation />
     </aside>
     <div :class="bemm('content')">
       <router-view />
@@ -15,9 +15,9 @@
 </template>
 
 <script lang="ts" setup>
-import { inject, computed } from 'vue';
+import { inject } from 'vue';
 import { useBemm } from 'bemm';
-import { useI18n, TStatusBar } from '@tiko/ui';
+import { TStatusBar } from '@tiko/ui';
 import { useUpload } from '@tiko/core';
 import { uploadService } from '../services/upload.service';
 import type { ToastService } from '@tiko/ui';
@@ -44,6 +44,27 @@ const { hasItems } = useUpload(uploadService, toastService);
   &__sidebar {
     width: clamp(240px, 15vw, 320px);
     border-right: 1px solid var(--color-border);
+
+
+    @media screen and (max-width: 768px) {
+      position: fixed;
+      top: var(--spacing);
+      border: 1px solid var(--color-secondary);
+      z-index: 10;
+      background-color: var(--color-background);
+      padding: var(--space);
+      width: auto;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+      border-left: 0;
+      transform: translateX(calc(-100% + var(--space-l)));
+
+      transition: transform 0.3s ease-in-out;
+
+      &:hover{
+        transform: translateX(0);
+
+      }
+    }
   }
 
   &__navigation {
@@ -56,7 +77,7 @@ const { hasItems } = useUpload(uploadService, toastService);
 
   &__content {
     width: 100%;
-    padding: var(--space);
+    padding: var(--spacing);
   }
 
 }

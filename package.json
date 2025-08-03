@@ -31,7 +31,7 @@
     "analyze-icons:all": "for app in apps/*; do echo \"\\n=== Analyzing $app ===\"; node scripts/analyze-icons-accurate.js \"$app\"; done",
     "check:i18n": "node scripts/check-i18n.mjs",
     "check:i18n:json": "node scripts/check-i18n.mjs --json",
-    "i18n": "node -r dotenv/config scripts/generate-i18n-database.js",
+    "i18n": "node scripts/generate-i18n-from-worker.mjs --env=production",
     "i18n:add": "node scripts/i18n-add.mjs",
     "generate:i18n": "node scripts/generate-i18n-database.js",
     "generate:i18n:mock": "node scripts/generate-simple-i18n.js",

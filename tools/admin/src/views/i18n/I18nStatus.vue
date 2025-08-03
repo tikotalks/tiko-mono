@@ -143,6 +143,73 @@
         overflowY: 'auto',
       }">{{ keysPreview }}</pre>
     </TCard>
+
+    <!-- Search Keys -->
+    <TCard :class="bemm('section')">
+      <h2 :class="bemm('section-title')">
+        {{ t('admin.i18n.status.searchKeys') || 'Search Keys' }}
+      </h2>
+      <TInput
+        v-model="keySearch"
+        :placeholder="t('admin.i18n.status.searchPlaceholder') || 'Search for a key (e.g. admin.navigation)'"
+        :icon="Icons.SEARCH_M"
+        :class="bemm('search-input')"
+      />
+      
+      <div v-if="keySearch" :class="bemm('search-results')">
+        <h3 :class="bemm('subsection-title')">
+          {{ t('admin.i18n.status.searchResults') || 'Search Results' }}
+        </h3>
+        <div v-if="searchResults.length === 0" :class="bemm('no-results')">
+          {{ t('admin.i18n.status.noResults') || 'No keys found matching' }} "{{ keySearch }}"
+        </div>
+        <div v-else :class="bemm('results-list')">
+          <div :class="bemm('results-count')">
+            {{ t('admin.i18n.status.foundKeys') || 'Found' }} {{ searchResults.length }} {{ t('admin.i18n.status.keys') || 'keys' }}
+          </div>
+          <div v-for="result in searchResults" :key="result.key" :class="bemm('result-item')">
+            <code :class="bemm('result-key')">{{ result.key }}</code>
+            <span :class="bemm('result-value')">{{ result.value }}</span>
+          </div>
+        </div>
+      </div>
+    </TCard>
+
+    <!-- All Keys List -->
+    <TCard :class="bemm('section')">
+      <h2 :class="bemm('section-title')">
+        {{ t('admin.i18n.status.allKeys') || 'All Translation Keys' }}
+      </h2>
+      <div :class="bemm('key-stats')">
+        <TKeyValue
+          :items="[
+            {
+              key: t('admin.i18n.status.totalKeys') || 'Total Keys',
+              value: allKeysList.length,
+            },
+            {
+              key: t('admin.i18n.status.adminKeys') || 'Admin Keys',
+              value: allKeysList.filter(k => k.startsWith('admin.')).length,
+            },
+            {
+              key: t('admin.i18n.status.commonKeys') || 'Common Keys',
+              value: allKeysList.filter(k => k.startsWith('common.')).length,
+            }
+          ]"
+        />
+      </div>
+      
+      <details :class="bemm('expandable')">
+        <summary :class="bemm('expandable-header')">
+          {{ t('admin.i18n.status.showAllKeys') || 'Show All Keys' }} ({{ allKeysList.length }})
+        </summary>
+        <div :class="bemm('all-keys-list')">
+          <div v-for="key in allKeysList" :key="key" :class="bemm('key-item')">
+            <code>{{ key }}</code>
+          </div>
+        </div>
+      </details>
+    </TCard>
   </div>
 </template>
 
@@ -150,7 +217,8 @@
 import { computed, ref } from 'vue';
 import { useBemm } from 'bemm';
 import { useI18n } from '@tiko/ui';
-import { TCard, TKeyValue, TChip } from '@tiko/ui';
+import { TCard, TKeyValue, TChip, TInput } from '@tiko/ui';
+import { Icons } from 'open-icon';
 
 const bemm = useBemm('i18n-status');
 const { t, currentLocale, availableLocales, isReady, keys, setLocale } =
@@ -217,6 +285,62 @@ const keysPreview = computed(() => {
   }
 
   return JSON.stringify(preview, null, 2);
+});
+
+// Search functionality
+const keySearch = ref('');
+
+// Get all keys as a flat list
+const allKeysList = computed(() => {
+  if (!keys.value) return [];
+  
+  const collectKeys = (obj: any, prefix = ''): string[] => {
+    let result: string[] = [];
+    
+    for (const key in obj) {
+      const fullKey = prefix ? `${prefix}.${key}` : key;
+      
+      if (typeof obj[key] === 'string') {
+        result.push(fullKey);
+      } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+        result = result.concat(collectKeys(obj[key], fullKey));
+      }
+    }
+    
+    return result;
+  };
+  
+  return collectKeys(keys.value).sort();
+});
+
+// Search results
+const searchResults = computed(() => {
+  if (!keySearch.value || !keys.value) return [];
+  
+  const searchLower = keySearch.value.toLowerCase();
+  const results: Array<{ key: string; value: string }> = [];
+  
+  const searchInObject = (obj: any, prefix = '') => {
+    for (const key in obj) {
+      const fullKey = prefix ? `${prefix}.${key}` : key;
+      
+      if (fullKey.toLowerCase().includes(searchLower)) {
+        if (typeof obj[key] === 'string') {
+          results.push({ key: fullKey, value: obj[key] });
+        } else {
+          // If it's an object, just indicate it has sub-keys
+          results.push({ key: fullKey, value: '[object with sub-keys]' });
+        }
+      }
+      
+      if (typeof obj[key] === 'object' && obj[key] !== null) {
+        searchInObject(obj[key], fullKey);
+      }
+    }
+  };
+  
+  searchInObject(keys.value);
+  return results;
 });
 </script>
 
@@ -317,6 +441,89 @@ const keysPreview = computed(() => {
     font-size: var(--font-size-s);
     max-height: 400px;
     overflow-y: auto;
+  }
+
+  &__search-input {
+    margin-bottom: var(--space);
+  }
+
+  &__search-results {
+    margin-top: var(--space);
+  }
+
+  &__no-results {
+    color: var(--color-foreground-secondary);
+    font-style: italic;
+    padding: var(--space);
+    text-align: center;
+  }
+
+  &__results-count {
+    margin-bottom: var(--space-s);
+    color: var(--color-foreground-secondary);
+    font-size: var(--font-size-s);
+  }
+
+  &__result-item {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space);
+    padding: var(--space-xs) var(--space-s);
+    background-color: var(--color-background-secondary);
+    border-radius: var(--radius-s);
+    margin-bottom: var(--space-xs);
+  }
+
+  &__result-key {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-s);
+    color: var(--color-primary);
+    flex-shrink: 0;
+  }
+
+  &__result-value {
+    font-size: var(--font-size-s);
+    color: var(--color-foreground-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__key-stats {
+    margin-bottom: var(--space);
+  }
+
+  &__expandable {
+    margin-top: var(--space);
+  }
+
+  &__expandable-header {
+    cursor: pointer;
+    padding: var(--space-s) var(--space);
+    background-color: var(--color-background-secondary);
+    border-radius: var(--radius-s);
+    font-weight: var(--font-weight-medium);
+    user-select: none;
+    
+    &:hover {
+      background-color: var(--color-background-tertiary);
+    }
+  }
+
+  &__all-keys-list {
+    margin-top: var(--space);
+    max-height: 400px;
+    overflow-y: auto;
+    padding: var(--space);
+    background-color: var(--color-background-secondary);
+    border-radius: var(--radius-s);
+  }
+
+  &__key-item {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-s);
+    padding: var(--space-xxs) 0;
+    color: var(--color-foreground-secondary);
   }
 }
 </style>

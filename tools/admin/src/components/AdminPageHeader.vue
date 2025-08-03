@@ -35,7 +35,8 @@ const bemm = useBemm('admin-page-header')
   display: flex;
   flex-direction: column;
   gap: var(--space);
-  padding: var(--space-l) 0;
+  padding: 0;
+  padding-bottom: var(--spacing);
 
   &__top {
     display: flex;

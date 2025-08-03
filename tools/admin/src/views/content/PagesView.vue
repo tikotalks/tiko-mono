@@ -35,7 +35,7 @@
         { key: 'slug', label: t('common.slug'), width: '20%' },
         { key: 'path', label: t('common.path'), width: '20%' },
         { key: 'project', label: t('common.project'), width: '15%' },
-        { key: 'metadata', label: t('common.status'), width: '15%' },
+        { key: 'metadata', label: t('common.statusLabel'), width: '15%' },
         { key: 'actions', label: t('common.actions'), width: '10%' }
       ]"
       :striped="true"

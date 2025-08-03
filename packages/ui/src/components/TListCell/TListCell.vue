@@ -1,7 +1,9 @@
 <template>
   <div
     :class="bemm('',[
+      '',
       type,
+      size ? `size--${size}` : '',
       loading ? 'loading' : '',
       clickable ? 'clickable' : '',
       truncate ? 'truncate' : '',
@@ -81,13 +83,15 @@ import TChip from '../TChip/TChip.vue'
 import TButton from '../TButton/TButton.vue'
 import type { TListCellProps } from './TListCell.model'
 import type { ListAction } from '../TListItem/TListItem.model'
+import { Size } from '../../types'
 
 const props = withDefaults(defineProps<TListCellProps>(), {
   type: 'text',
   maxChips: 2,
   clickable: false,
   loading: false,
-  truncate: false
+  truncate: false,
+  size: Size.DEFAULT,
 })
 
 const emit = defineEmits<{
@@ -136,6 +140,16 @@ const formatBytes = (bytes: number): string => {
   align-items: center;
   padding: var(--space-s);
   min-width: 0; // Allow flex items to shrink below their minimum content size
+
+  &--size-small{
+    font-size: .75em;
+  }
+  &--size-medium {
+    font-size: 1em;
+  }
+  &--size-large {
+    font-size: 1.25em;
+  }
 
   &--clickable {
     cursor: pointer;

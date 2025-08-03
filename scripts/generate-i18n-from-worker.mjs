@@ -303,6 +303,9 @@ function generateLanguageFile(languageCode, translations, keys) {
   // Convert language code to valid JavaScript variable name
   const variableName = languageCode.replace(/-/g, '_')
   
+  // Check if this is a regional locale (has a hyphen)
+  const isRegionalLocale = languageCode.includes('-')
+  
   const translationEntries = keys.map(key => {
     // Skip invalid keys
     if (!key.key || typeof key.key !== 'string') {
@@ -310,7 +313,15 @@ function generateLanguageFile(languageCode, translations, keys) {
       return null
     }
     
-    const value = translations[key.key] || ''
+    const value = translations[key.key]
+    
+    // For regional locales, only include keys that have actual values (overrides)
+    // For base locales, include all keys with empty string fallback
+    if (isRegionalLocale && (!value || value === '')) {
+      return null
+    }
+    
+    const actualValue = value || ''
     
     // Escape the key properly (in case it contains quotes)
     const escapedKey = key.key
@@ -318,7 +329,7 @@ function generateLanguageFile(languageCode, translations, keys) {
       .replace(/"/g, '\\"')
     
     // Escape quotes and backslashes properly in the value
-    const escapedValue = value
+    const escapedValue = actualValue
       .replace(/\\/g, '\\\\')
       .replace(/"/g, '\\"')
       .replace(/\n/g, '\\n')

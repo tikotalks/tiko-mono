@@ -24,10 +24,25 @@
 
       <TList
         :columns="[
-          { key: 'name', label: t('common.language'), width: '30%', sortable: true },
-          { key: 'code', label: t('common.code'), width: '15%', sortable: true },
-          { key: 'completionPercentage', label: t('common.progress'), width: '35%', sortable: true },
-          { key: 'status', label: t('common.status'), width: '20%' }
+          {
+            key: 'name',
+            label: t('common.language'),
+            width: '30%',
+            sortable: true,
+          },
+          {
+            key: 'code',
+            label: t('common.code'),
+            width: '15%',
+            sortable: true,
+          },
+          {
+            key: 'completionPercentage',
+            label: t('common.progress'),
+            width: '35%',
+            sortable: true,
+          },
+          { key: 'status', label: t('common.statusLabel'), width: '20%' },
         ]"
         :striped="true"
         :bordered="true"
@@ -48,7 +63,7 @@
             <div :class="bemm('language-name')">
               <strong>{{ language.name }}</strong>
               <span v-if="language.native_name" :class="bemm('native-name')">
-                {{ language.native_name}}
+                {{ language.native_name }}
               </span>
             </div>
           </TListCell>
@@ -61,11 +76,17 @@
                 :color="getProgressColor(language.completionPercentage)"
                 size="small"
               />
-              <span :class="bemm('percentage')">{{ language.completionPercentage }}%</span>
+              <span :class="bemm('percentage')"
+                >{{ language.completionPercentage }}%</span
+              >
             </div>
           </TListCell>
           <TListCell type="custom">
-            <span :class="bemm('status', getStatusClass(language.completionPercentage))">
+            <span
+              :class="
+                bemm('status', getStatusClass(language.completionPercentage))
+              "
+            >
               {{ getStatusText(language.completionPercentage) }}
             </span>
           </TListCell>
@@ -74,20 +95,35 @@
     </div>
 
     <!-- Selected Language Info -->
-    <div v-if="selectedLanguage" :class="bemm('section', 'info')">
-      <div :class="bemm('language-info')">
-        <h3>{{ t('admin.i18n.import.selectedLanguage') }}: {{ selectedLanguage.name }}</h3>
-        <div :class="bemm('language-stats')">
-          <p><strong>{{ t('admin.i18n.import.currentProgress') }}:</strong> {{ selectedLanguage.completionPercentage }}%</p>
-          <p><strong>{{ t('admin.i18n.import.missingTranslations') }}:</strong> {{ totalKeysCount - (selectedLanguage.translationCount || 0) }}</p>
-        </div>
+    <TCard
+      v-if="selectedLanguage"
+      :class="bemm('section', 'info')"
+      :title="t('admin.i18n.import.selectedLanguage')"
+    >
+      <div :class="bemm('language-stats')">
+        <p>
+          <strong>{{ t('admin.i18n.import.currentProgress') }}:</strong>
+          {{ selectedLanguage.completionPercentage }}%
+        </p>
+        <p>
+          <strong>{{ t('admin.i18n.import.missingTranslations') }}:</strong>
+          {{ totalKeysCount - (selectedLanguage.translationCount || 0) }}
+        </p>
       </div>
-    </div>
+    </TCard>
 
     <!-- File Upload -->
-    <div v-if="selectedLanguage" :class="bemm('section')">
-      <h2>{{ t('admin.i18n.import.uploadFile') }}</h2>
-      <div :class="bemm('upload-area')" @drop="handleDrop" @dragover.prevent @dragenter.prevent>
+    <TCard
+      v-if="selectedLanguage"
+      :class="bemm('section')"
+      :title="t('admin.i18n.import.uploadFile')"
+    >
+      <div
+        :class="bemm('upload-area')"
+        @drop="handleDrop"
+        @dragover.prevent
+        @dragenter.prevent
+      >
         <input
           type="file"
           ref="fileInput"
@@ -98,82 +134,125 @@
         <TIcon :name="Icons.ARROW_UPLOAD" size="large" />
         <h3>{{ t('admin.i18n.import.dragDropFile') }}</h3>
         <p>{{ t('admin.i18n.import.orBrowse') }}</p>
-        <TButton @click="$refs.fileInput.click()" :icon="Icons.FILE" color="primary">
+        <TButton
+          @click="$refs.fileInput.click()"
+          :icon="Icons.FILE"
+          color="primary"
+        >
           {{ t('admin.i18n.import.browseFiles') }}
         </TButton>
       </div>
-    </div>
+    </TCard>
 
     <!-- File Preview -->
-    <div v-if="fileContent" :class="bemm('section')">
-      <h2>{{ t('admin.i18n.import.preview') }}</h2>
+    <TCard
+      v-if="fileContent"
+      :class="bemm('section')"
+      :title="t('admin.i18n.import.preview')"
+    >
       <div :class="bemm('preview')">
         <div :class="bemm('preview-header')">
           <h3>{{ fileName }}</h3>
-          <TButton @click="clearFile" :icon="Icons.MULTIPLY" type="ghost" size="small">
+          <TButton
+            @click="clearFile"
+            :icon="Icons.MULTIPLY"
+            type="ghost"
+            size="small"
+          >
             {{ t('common.clear') }}
           </TButton>
         </div>
         <div :class="bemm('preview-stats')">
-          <TKeyValue :items="[
-            { key: t('admin.i18n.import.totalKeys'), value: totalKeys },
-            { key: t('admin.i18n.import.newKeys'), value: newKeysCount },
-            { key: t('admin.i18n.import.existingKeys'), value: existingKeysCount }
-          ]" />
+          <TKeyValue
+            :items="[
+              { key: t('admin.i18n.import.totalKeys'), value: totalKeys },
+              { key: t('admin.i18n.import.newKeys'), value: newKeysCount },
+              {
+                key: t('admin.i18n.import.existingKeys'),
+                value: existingKeysCount,
+              },
+            ]"
+          />
         </div>
         <div :class="bemm('preview-content')">
           <pre>{{ previewContent }}</pre>
         </div>
       </div>
-    </div>
+    </TCard>
 
     <!-- Import Options -->
-    <div v-if="fileContent" :class="bemm('section')">
-      <h2>{{ t('admin.i18n.import.options') }}</h2>
-      <div :class="bemm('options')">
-        <label :class="bemm('checkbox')">
-          <input type="checkbox" v-model="publishImmediately" />
-          <span>{{ t('admin.i18n.import.publishImmediately') }}</span>
-        </label>
-        <label :class="bemm('checkbox')">
-          <input type="checkbox" v-model="overwriteExisting" />
-          <span>{{ t('admin.i18n.import.overwriteExisting') }}</span>
-        </label>
-      </div>
-    </div>
+    <TCard
+      v-if="fileContent"
+      :class="bemm('section')"
+      :title="t('admin.i18n.import.options')"
+    >
+      <TFormGroup>
+        <TInputCheckbox
+          v-model="publishImmediately"
+          :label="t('admin.i18n.import.publishImmediately')"
+          :class="bemm('checkbox')"
+        />
+        <TInputCheckbox
+          v-model="overwriteExisting"
+          :label="t('admin.i18n.import.overwriteExisting')"
+          :class="bemm('checkbox')"
+        />
+      </TFormGroup>
+    </TCard>
 
     <!-- Import Progress -->
-    <div v-if="isImporting || importComplete" :class="bemm('section')">
-      <h2>{{ t('admin.i18n.import.progress') }}</h2>
+    <TCard v-if="isImporting || importComplete" :class="bemm('section')" :title="t('admin.i18n.import.progress')">
       <div :class="bemm('progress')">
         <TProgressBar :value="importProgress" :max="100" />
         <p>{{ progressMessage }}</p>
 
         <!-- Detailed Progress -->
         <div v-if="isImporting" :class="bemm('progress-details')">
-          <p>{{ t('admin.i18n.import.processing', { current: processedKeys, total: totalKeys }) }}</p>
-          <p v-if="currentKey">{{ t('admin.i18n.import.currentKey', { key: currentKey }) }}</p>
+          <p>
+            {{
+              t('admin.i18n.import.processing', {
+                current: processedKeys,
+                total: totalKeys,
+              })
+            }}
+          </p>
+          <p v-if="currentKey">
+            {{ t('admin.i18n.import.currentKey', { key: currentKey }) }}
+          </p>
         </div>
 
         <!-- Results -->
         <div v-if="importComplete" :class="bemm('results')">
           <h3>{{ t('admin.i18n.import.complete') }}</h3>
-          <TKeyValue :items="[
-            { key: t('admin.i18n.import.keysCreated'), value: importResult.keys_created },
-            { key: t('admin.i18n.import.translationsCreated'), value: importResult.translations_created },
-            { key: t('admin.i18n.import.translationsUpdated'), value: importResult.translations_updated }
-          ]" />
+          <TKeyValue
+            :items="[
+              {
+                key: t('admin.i18n.import.keysCreated'),
+                value: importResult.keys_created,
+              },
+              {
+                key: t('admin.i18n.import.translationsCreated'),
+                value: importResult.translations_created,
+              },
+              {
+                key: t('admin.i18n.import.translationsUpdated'),
+                value: importResult.translations_updated,
+              },
+            ]"
+          />
 
           <!-- Errors -->
           <div v-if="importResult.errors.length > 0" :class="bemm('errors')">
             <h4>{{ t('admin.i18n.import.errors') }}</h4>
             <ul>
-              <li v-for="(error, index) in importResult.errors" :key="index">{{ error }}</li>
+              <li v-for="(error, index) in importResult.errors" :key="index">
+                {{ error }}
+              </li>
             </ul>
           </div>
         </div>
       </div>
-    </div>
+    </TCard>
 
     <!-- Actions -->
     <div v-if="fileContent && !isImporting" :class="bemm('actions')">
@@ -182,7 +261,7 @@
         :disabled="!selectedLanguage"
         color="primary"
         size="large"
-        :icon="Icons.UPLOAD"
+        :icon="Icons.ARROW_UPLOAD"
       >
         {{ t('admin.i18n.import.startImport') }}
       </TButton>
@@ -191,68 +270,86 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, inject } from 'vue'
-import { useRouter } from 'vue-router'
-import { useBemm } from 'bemm'
-import { Icons } from 'open-icon'
-import { TButton, TIcon, TProgressBar, TKeyValue, TList, TListItem, TListCell, useI18n, ToastService, Colors } from '@tiko/ui'
-import { useI18nDatabaseService, useUserPreferences, USER_PREFERENCE_KEYS } from '@tiko/core'
-import type { Language } from '@tiko/core'
-import AdminPageHeader from '@/components/AdminPageHeader.vue'
+import { ref, computed, onMounted, inject } from 'vue';
+import { useRouter } from 'vue-router';
+import { useBemm } from 'bemm';
+import { Icons } from 'open-icon';
+import {
+  TButton,
+  TIcon,
+  TProgressBar,
+  TKeyValue,
+  TList,
+  TListItem,
+  TListCell,
+  useI18n,
+  ToastService,
+  Colors,
+  TCard,
+  TInputCheckbox,
+  TFormGroup,
+} from '@tiko/ui';
+import {
+  useI18nDatabaseService,
+  useUserPreferences,
+  USER_PREFERENCE_KEYS,
+} from '@tiko/core';
+import type { Language } from '@tiko/core';
+import AdminPageHeader from '@/components/AdminPageHeader.vue';
 
 interface LanguageWithStats extends Language {
-  translationCount?: number
-  totalKeys?: number
-  completionPercentage?: number
+  translationCount?: number;
+  totalKeys?: number;
+  completionPercentage?: number;
 }
 
-const bemm = useBemm('i18n-import-view')
-const { t } = useI18n()
-const router = useRouter()
-const translationService = useI18nDatabaseService()
-const toastService = inject<ToastService>('toastService')
-const { getListPreferences, updateListPreferences, loadPreferences } = useUserPreferences()
+const bemm = useBemm('i18n-import-view');
+const { t } = useI18n();
+const router = useRouter();
+const translationService = useI18nDatabaseService();
+const toastService = inject<ToastService>('toastService');
+const { getListPreferences, updateListPreferences, loadPreferences } =
+  useUserPreferences();
 
 // State
-const activeLanguages = ref<LanguageWithStats[]>([])
-const selectedLanguage = ref<LanguageWithStats | null>(null)
-const totalKeysCount = ref(0)
-const sortBy = ref('completionPercentage')
-const sortDirection = ref<'asc' | 'desc'>('asc')
-const fileInput = ref<HTMLInputElement>()
-const fileName = ref('')
-const fileContent = ref<Record<string, any> | null>(null)
-const publishImmediately = ref(true)
-const overwriteExisting = ref(false)
-const isImporting = ref(false)
-const importComplete = ref(false)
-const importProgress = ref(0)
-const progressMessage = ref('')
-const processedKeys = ref(0)
-const totalKeys = ref(0)
-const currentKey = ref('')
-const newKeysCount = ref(0)
-const existingKeysCount = ref(0)
+const activeLanguages = ref<LanguageWithStats[]>([]);
+const selectedLanguage = ref<LanguageWithStats | null>(null);
+const totalKeysCount = ref(0);
+const sortBy = ref('completionPercentage');
+const sortDirection = ref<'asc' | 'desc'>('asc');
+const fileInput = ref<HTMLInputElement>();
+const fileName = ref('');
+const fileContent = ref<Record<string, any> | null>(null);
+const publishImmediately = ref(true);
+const overwriteExisting = ref(false);
+const isImporting = ref(false);
+const importComplete = ref(false);
+const importProgress = ref(0);
+const progressMessage = ref('');
+const processedKeys = ref(0);
+const totalKeys = ref(0);
+const currentKey = ref('');
+const newKeysCount = ref(0);
+const existingKeysCount = ref(0);
 const importResult = ref({
   keys_created: 0,
   translations_created: 0,
   translations_updated: 0,
-  errors: [] as string[]
-})
+  errors: [] as string[],
+});
 
 // Computed
 const previewContent = computed(() => {
-  if (!fileContent.value) return ''
-  const preview = JSON.stringify(fileContent.value, null, 2)
-  return preview.length > 1000 ? preview.substring(0, 1000) + '...' : preview
-})
+  if (!fileContent.value) return '';
+  const preview = JSON.stringify(fileContent.value, null, 2);
+  return preview.length > 1000 ? preview.substring(0, 1000) + '...' : preview;
+});
 
 const languagesWithStats = computed(() => {
-  let result = activeLanguages.value
-    .map(lang => ({
-      ...lang,
-      completionPercentage: lang.completionPercentage || 0
-    }))
+  let result = activeLanguages.value.map((lang) => ({
+    ...lang,
+    completionPercentage: lang.completionPercentage || 0,
+  }));
 
   // Apply sorting
   if (sortBy.value) {
@@ -281,7 +378,7 @@ const languagesWithStats = computed(() => {
   }
 
   return result;
-})
+});
 
 // Methods
 function handleSort(column: string, direction: 'asc' | 'desc') {
@@ -291,7 +388,7 @@ function handleSort(column: string, direction: 'asc' | 'desc') {
   // Save preferences
   updateListPreferences(USER_PREFERENCE_KEYS.LISTS.I18N_IMPORT_LANGUAGES, {
     sortBy: column,
-    sortDirection: direction
+    sortDirection: direction,
   });
 }
 
@@ -301,73 +398,75 @@ async function loadLanguages() {
     const [languages, keys, languageDetails] = await Promise.all([
       translationService.getActiveLanguages(),
       translationService.getTranslationKeys(),
-      translationService.getLanguageDetails()
-    ])
+      translationService.getLanguageDetails(),
+    ]);
 
-    totalKeysCount.value = keys.length
+    totalKeysCount.value = keys.length;
 
     // Filter to base languages and add stats
-    const baseLanguages = languages.filter(lang => !lang.code.includes('-'))
+    const baseLanguages = languages.filter((lang) => !lang.code.includes('-'));
 
     // Create a map of language stats from details
-    const statsMap = new Map(languageDetails.map(detail => [
-      detail.code,
-      {
-        translationCount: detail.translation_count,
-        completionPercentage: detail.completion_percentage
-      }
-    ]))
+    const statsMap = new Map(
+      languageDetails.map((detail) => [
+        detail.code,
+        {
+          translationCount: detail.translation_count,
+          completionPercentage: detail.completion_percentage,
+        },
+      ]),
+    );
 
     // Merge languages with their stats
-    activeLanguages.value = baseLanguages.map(lang => ({
+    activeLanguages.value = baseLanguages.map((lang) => ({
       ...lang,
       translationCount: statsMap.get(lang.code)?.translationCount || 0,
       totalKeys: totalKeysCount.value,
-      completionPercentage: statsMap.get(lang.code)?.completionPercentage || 0
-    }))
+      completionPercentage: statsMap.get(lang.code)?.completionPercentage || 0,
+    }));
   } catch (error) {
-    console.error('Failed to load languages:', error)
+    console.error('Failed to load languages:', error);
     toastService?.show({
       message: t('admin.i18n.import.loadLanguagesError'),
-      type: 'error'
-    })
+      type: 'error',
+    });
   }
 }
 
 // Helper methods for status display
 function getProgressColor(percentage: number): Colors {
-  if (percentage >= 100) return Colors.SUCCESS
-  if (percentage >= 80) return Colors.PRIMARY
-  if (percentage >= 50) return Colors.WARNING
-  return Colors.ERROR
+  if (percentage >= 100) return Colors.SUCCESS;
+  if (percentage >= 80) return Colors.PRIMARY;
+  if (percentage >= 50) return Colors.WARNING;
+  return Colors.ERROR;
 }
 
 function getStatusClass(percentage: number): string {
-  if (percentage >= 100) return 'complete'
-  if (percentage >= 80) return 'good'
-  if (percentage >= 50) return 'partial'
-  return 'incomplete'
+  if (percentage >= 100) return 'complete';
+  if (percentage >= 80) return 'good';
+  if (percentage >= 50) return 'partial';
+  return 'incomplete';
 }
 
 function getStatusText(percentage: number): string {
-  if (percentage >= 100) return t('common.complete')
-  if (percentage >= 80) return t('common.good')
-  if (percentage >= 50) return t('common.partial')
-  return t('common.incomplete')
+  if (percentage >= 100) return t('common.complete');
+  if (percentage >= 80) return t('common.good');
+  if (percentage >= 50) return t('common.partial');
+  return t('common.incomplete');
 }
 
 function handleDrop(e: DragEvent) {
-  e.preventDefault()
-  const files = e.dataTransfer?.files
+  e.preventDefault();
+  const files = e.dataTransfer?.files;
   if (files && files.length > 0) {
-    processFile(files[0])
+    processFile(files[0]);
   }
 }
 
 function handleFileSelect(e: Event) {
-  const target = e.target as HTMLInputElement
+  const target = e.target as HTMLInputElement;
   if (target.files && target.files.length > 0) {
-    processFile(target.files[0])
+    processFile(target.files[0]);
   }
 }
 
@@ -375,95 +474,98 @@ async function processFile(file: File) {
   if (!file.name.endsWith('.json')) {
     toastService?.show({
       message: t('admin.i18n.import.invalidFileType'),
-      type: 'error'
-    })
-    return
+      type: 'error',
+    });
+    return;
   }
 
-  fileName.value = file.name
+  fileName.value = file.name;
 
   try {
-    const text = await file.text()
-    const json = JSON.parse(text)
-    fileContent.value = json
+    const text = await file.text();
+    const json = JSON.parse(text);
+    fileContent.value = json;
 
     // Analyze the file
-    await analyzeFile(json)
+    await analyzeFile(json);
   } catch (error) {
     toastService?.show({
       message: t('admin.i18n.import.parseError'),
-      type: 'error'
-    })
-    console.error('Failed to parse JSON:', error)
+      type: 'error',
+    });
+    console.error('Failed to parse JSON:', error);
   }
 }
 
 async function analyzeFile(json: Record<string, any>) {
-  const flatKeys = flattenObject(json)
-  totalKeys.value = Object.keys(flatKeys).length
+  const flatKeys = flattenObject(json);
+  totalKeys.value = Object.keys(flatKeys).length;
 
   // Check which keys already exist
   try {
-    const existingKeys = await translationService.getTranslationKeys()
-    const existingKeySet = new Set(existingKeys.map(k => k.key))
+    const existingKeys = await translationService.getTranslationKeys();
+    const existingKeySet = new Set(existingKeys.map((k) => k.key));
 
-    newKeysCount.value = 0
-    existingKeysCount.value = 0
+    newKeysCount.value = 0;
+    existingKeysCount.value = 0;
 
     for (const key of Object.keys(flatKeys)) {
       if (existingKeySet.has(key)) {
-        existingKeysCount.value++
+        existingKeysCount.value++;
       } else {
-        newKeysCount.value++
+        newKeysCount.value++;
       }
     }
   } catch (error) {
-    console.error('Failed to analyze keys:', error)
+    console.error('Failed to analyze keys:', error);
   }
 }
 
-function flattenObject(obj: Record<string, any>, prefix = ''): Record<string, string> {
-  const result: Record<string, string> = {}
+function flattenObject(
+  obj: Record<string, any>,
+  prefix = '',
+): Record<string, string> {
+  const result: Record<string, string> = {};
 
   for (const [key, value] of Object.entries(obj)) {
-    const newKey = prefix ? `${prefix}.${key}` : key
+    const newKey = prefix ? `${prefix}.${key}` : key;
 
     if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-      Object.assign(result, flattenObject(value, newKey))
+      Object.assign(result, flattenObject(value, newKey));
     } else if (typeof value === 'string') {
-      result[newKey] = value
+      result[newKey] = value;
     }
   }
 
-  return result
+  return result;
 }
 
 function clearFile() {
-  fileName.value = ''
-  fileContent.value = null
-  totalKeys.value = 0
-  newKeysCount.value = 0
-  existingKeysCount.value = 0
-  importComplete.value = false
+  fileName.value = '';
+  fileContent.value = null;
+  totalKeys.value = 0;
+  newKeysCount.value = 0;
+  existingKeysCount.value = 0;
+  importComplete.value = false;
   importResult.value = {
     keys_created: 0,
     translations_created: 0,
     translations_updated: 0,
-    errors: []
-  }
+    errors: [],
+  };
   if (fileInput.value) {
-    fileInput.value.value = ''
+    fileInput.value.value = '';
   }
 }
 
 async function startImport() {
-  if (!selectedLanguage.value || !fileContent.value) return
+  if (!selectedLanguage.value || !fileContent.value) return;
 
-  isImporting.value = true
-  importComplete.value = false
-  importProgress.value = 0
-  processedKeys.value = 0
-  progressMessage.value = t('admin.i18n.import.starting')
+  isImporting.value = true;
+  importComplete.value = false;
+  importProgress.value = 0;
+  processedKeys.value = 0;
+  progressMessage.value = t('admin.i18n.import.starting');
 
   try {
     const result = await translationService.importTranslations(
@@ -472,41 +574,43 @@ async function startImport() {
       {
         publishImmediately: publishImmediately.value,
         onProgress: (progress) => {
-          importProgress.value = Math.round(progress * 100)
-          processedKeys.value = Math.floor(progress * totalKeys.value)
+          importProgress.value = Math.round(progress * 100);
+          processedKeys.value = Math.floor(progress * totalKeys.value);
 
           if (progress < 1) {
-            progressMessage.value = t('admin.i18n.import.importing')
+            progressMessage.value = t('admin.i18n.import.importing');
           } else {
-            progressMessage.value = t('admin.i18n.import.finalizing')
+            progressMessage.value = t('admin.i18n.import.finalizing');
           }
-        }
-      }
-    )
+        },
+      },
+    );
 
     importResult.value = {
       keys_created: result.importedCount,
       translations_created: result.importedCount,
       translations_updated: 0,
-      errors: result.errors
-    }
+      errors: result.errors,
+    };
 
-    importComplete.value = true
-    progressMessage.value = t('admin.i18n.import.success')
+    importComplete.value = true;
+    progressMessage.value = t('admin.i18n.import.success');
 
     toastService?.show({
-      message: t('admin.i18n.import.successMessage', { count: result.importedCount }),
-      type: 'success'
-    })
+      message: t('admin.i18n.import.successMessage', {
+        count: result.importedCount,
+      }),
+      type: 'success',
+    });
   } catch (error) {
-    console.error('Import failed:', error)
-    progressMessage.value = t('admin.i18n.import.failed')
+    console.error('Import failed:', error);
+    progressMessage.value = t('admin.i18n.import.failed');
     toastService?.show({
       message: t('admin.i18n.import.errorMessage'),
-      type: 'error'
-    })
+      type: 'error',
+    });
   } finally {
-    isImporting.value = false
+    isImporting.value = false;
   }
 }
 
@@ -516,7 +620,9 @@ onMounted(async () => {
   await loadPreferences();
 
   // Apply saved preferences
-  const savedPrefs = getListPreferences(USER_PREFERENCE_KEYS.LISTS.I18N_IMPORT_LANGUAGES);
+  const savedPrefs = getListPreferences(
+    USER_PREFERENCE_KEYS.LISTS.I18N_IMPORT_LANGUAGES,
+  );
   if (savedPrefs.sortBy) {
     sortBy.value = savedPrefs.sortBy;
   }
@@ -525,8 +631,8 @@ onMounted(async () => {
   }
 
   // Then load languages
-  loadLanguages()
-})
+  loadLanguages();
+});
 </script>
 
 <style lang="scss">
@@ -535,7 +641,6 @@ onMounted(async () => {
   flex-direction: column;
   gap: var(--space-xl);
   padding: var(--space-xl);
-
 
   &__header {
     display: flex;
@@ -742,7 +847,7 @@ onMounted(async () => {
     gap: var(--space-xs);
     cursor: pointer;
 
-    input[type="checkbox"] {
+    input[type='checkbox'] {
       width: 20px;
       height: 20px;
       cursor: pointer;

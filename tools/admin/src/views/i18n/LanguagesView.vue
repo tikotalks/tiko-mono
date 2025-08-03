@@ -81,7 +81,7 @@
           },
           {
             key: 'status',
-            label: t('common.status'),
+            label: t('common.statusLabel'),
             width: '10%',
             sortable: true,
           },

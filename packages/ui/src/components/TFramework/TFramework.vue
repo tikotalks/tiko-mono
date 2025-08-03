@@ -77,6 +77,7 @@ import { Icons } from 'open-icon'
 import { popupService } from '../TPopup'
 import { toastService } from '../TToast'
 import { useTikoConfig } from '../../composables/useTikoConfig'
+import { createIconRegistry, iconRegistryKey } from '../../icons/registry'
 import { useI18n } from '../../composables/useI18n'
 import type { TFrameworkProps, TFrameworkEmits } from './TFramework.model'
 import type { Locale } from '../../i18n/types'
@@ -218,6 +219,10 @@ const showBackButton = computed(() => {
   // Show back button if not on home route
   return route.name !== 'home' && route.matched.length > 1
 })
+
+// Create and provide icon registry
+const iconRegistry = createIconRegistry()
+provide(iconRegistryKey, iconRegistry)
 
 // Provide services to child components
 provide('popupService', popupService)
