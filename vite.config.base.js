@@ -3,20 +3,35 @@ import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 import { execSync } from 'child_process'
+import fs from 'fs'
+import { viteBuildInfo } from './scripts/vite-plugin-build-info.js'
 
 export function createViteConfig(dirname, port = 3000, pwaConfig = null) {
+  let buildInfo = null;
+  
   // Inject build info before build
   if (process.env.NODE_ENV === 'production') {
     try {
       execSync(`node ${path.resolve(__dirname, 'scripts/inject-build-info.js')} ${dirname}`, {
         stdio: 'inherit'
       })
+      
+      // Read the generated build info for the plugin
+      const buildInfoPath = path.join(dirname, 'public', 'build-info.json');
+      if (fs.existsSync(buildInfoPath)) {
+        buildInfo = JSON.parse(fs.readFileSync(buildInfoPath, 'utf8'));
+      }
     } catch (error) {
       console.warn('Failed to inject build info:', error.message)
     }
   }
   
   const plugins = [vue()]
+  
+  // Add build info plugin if we have build information
+  if (buildInfo) {
+    plugins.push(viteBuildInfo(buildInfo))
+  }
   
   if (pwaConfig) {
     plugins.push(VitePWA(pwaConfig))

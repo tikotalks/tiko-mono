@@ -16,6 +16,42 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 
 /**
+ * Read build info from meta tags
+ */
+function readBuildInfoFromMeta(): BuildInfo | null {
+  try {
+    const getMeta = (name: string) => {
+      const meta = document.querySelector(`meta[name="build:${name}"]`)
+      return meta?.getAttribute('content') || null
+    }
+    
+    const version = getMeta('version')
+    const buildNumber = getMeta('number')
+    const commit = getMeta('commit')
+    const branch = getMeta('branch')
+    const buildDate = getMeta('date')
+    const environment = getMeta('environment')
+    
+    if (version && buildNumber && commit) {
+      return {
+        version,
+        buildNumber: parseInt(buildNumber, 10),
+        commit,
+        commitFull: commit, // We only store short SHA in meta
+        branch: branch || 'unknown',
+        buildDate: buildDate || new Date().toISOString(),
+        deploymentUrl: window.location.origin,
+        environment: (environment as 'production' | 'preview') || 'production'
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to read build info from meta tags:', e)
+  }
+  
+  return null
+}
+
+/**
  * Composable to get build information for the current app
  */
 export function useBuildInfo() {
@@ -26,7 +62,14 @@ export function useBuildInfo() {
     error.value = null
     
     try {
-      // Try to fetch build-info.json from public directory
+      // First try to read from meta tags (faster, no network request)
+      const metaBuildInfo = readBuildInfoFromMeta()
+      if (metaBuildInfo) {
+        buildInfo.value = metaBuildInfo
+        return
+      }
+      
+      // Fallback to fetching build-info.json
       const response = await fetch('/build-info.json')
       if (response.ok) {
         buildInfo.value = await response.json()
