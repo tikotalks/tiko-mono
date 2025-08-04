@@ -23,6 +23,7 @@ import {
 } from '@tiko/ui'
 import type { ContentField } from '@tiko/core'
 import ItemsFieldEditor from './ItemsFieldEditor.vue'
+import ListFieldInstance from './ListFieldInstance.vue'
 
 interface Props {
   field: ContentField
@@ -57,6 +58,8 @@ const fieldComponent = computed(() => {
       return TInputSelect
     case 'items':
       return ItemsFieldEditor
+    case 'list':
+      return ListFieldInstance
     default:
       return TInputText
   }

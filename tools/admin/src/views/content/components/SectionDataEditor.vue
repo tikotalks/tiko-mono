@@ -112,6 +112,9 @@ async function loadFields() {
           case 'items':
             fieldValues.value[field.field_key] = []
             break
+          case 'list':
+            fieldValues.value[field.field_key] = ''
+            break
           default:
             fieldValues.value[field.field_key] = ''
         }
