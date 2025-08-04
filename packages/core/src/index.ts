@@ -46,6 +46,7 @@ export * from './types/user'
 // Utils
 export * from './utils/format'
 export * from './utils/logger'
+export * from './utils/field-processing'
 export { createTikoApp } from './utils/createTikoApp'
 export type { TikoAppOptions } from './utils/createTikoApp'
 export { defineConfig } from './utils/defineConfig'
