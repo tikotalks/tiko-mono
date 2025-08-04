@@ -1,11 +1,13 @@
 import { ref, computed } from 'vue'
 import { contentService } from '../services/content.service'
+import { processContentFields } from '../utils/field-processing'
 import type { 
   ContentProject, 
   ContentSection, 
   ContentPage,
   ContentPageSection,
   ContentData,
+  ContentField,
   Language,
   SectionTemplate
 } from '../services/content.service'
@@ -40,6 +42,7 @@ export function useContent(options?: UseContentOptions) {
   const pageCache = new Map<string, PageContent>()
   const sectionTemplateCache = new Map<string, SectionTemplate>()
   const sectionCache = new Map<string, ContentSection>()
+
 
   // Computed
   const projectId = computed(() => opts.projectId || currentProject.value?.id)
@@ -146,21 +149,62 @@ export function useContent(options?: UseContentOptions) {
 
           // Get fields for this section template
           const fields = await contentService.getFieldsBySectionTemplate(sectionTemplateId)
+          console.log(`🔍 [useContent] ALL FIELDS for template ${sectionTemplateId}:`)
+          fields.forEach(field => {
+            console.log(`  - Field: ${field.field_key} | Type: ${field.field_type} | ID: ${field.id}`)
+          })
           
           let content: Record<string, any> = {}
           
           // If this page section references a section instance, load content from there
-          if (pageSection.section_id) {
+          if (pageSection.section_id && sectionInstance) {
             try {
+              console.log(`🔍 [useContent] About to load content for section ${pageSection.section_id}`)
+              console.log(`🔍 [useContent] Section instance:`, sectionInstance)
+              
               // Load content from the section instance
-              content = await contentService.getSectionData(pageSection.section_id, language || page?.language_code || 'en')
-              console.log(`✅ [useContent] Loaded content from section instance ${pageSection.section_id}:`, content)
+              // IMPORTANT: Use the section instance's language_code, not the requested language
+              // Global sections have language_code = null, language-specific sections have their own language_code
+              const sectionLanguage = sectionInstance.language_code
+              console.log(`🔍 [useContent] Loading content for section ${pageSection.section_id} with language: ${sectionLanguage || 'null (global)'}`)
+              
+              console.log(`🔍 [useContent] Calling contentService.getSectionData...`)
+              const rawContent = await contentService.getSectionData(pageSection.section_id, sectionLanguage)
+              console.log(`✅ [useContent] Loaded raw content from section instance ${pageSection.section_id}:`, rawContent)
+              
+              // Process fields for frontend consumption
+              console.log(`🔧 [useContent] About to process fields for section ${pageSection.section_id}`)
+              console.log(`🔧 [useContent] Raw content before processing:`, rawContent)
+              console.log(`🔧 [useContent] Fields for processing:`, fields.map(f => ({ key: f.field_key, type: f.field_type })))
+              
+              // Check specifically for list fields
+              const listFields = fields.filter(f => f.field_type === 'list')
+              if (listFields.length > 0) {
+                console.log(`📋 [useContent] Found ${listFields.length} list fields:`, listFields.map(f => f.field_key))
+                listFields.forEach(field => {
+                  const fieldValue = rawContent[field.field_key]
+                  console.log(`📋 [useContent] List field '${field.field_key}':`, typeof fieldValue, fieldValue)
+                })
+              }
+              
+              content = processContentFields(rawContent, fields)
+              console.log(`✅ [useContent] Processed content fields result:`, content)
+              
+              // Double-check list fields after processing
+              if (listFields.length > 0) {
+                listFields.forEach(field => {
+                  const processedValue = content[field.field_key]
+                  console.log(`📋 [useContent] After processing, '${field.field_key}':`, typeof processedValue, Array.isArray(processedValue) ? 'IS ARRAY' : 'NOT ARRAY', processedValue)
+                })
+              }
               if (Object.keys(content).length === 0) {
                 console.warn(`⚠️ [useContent] Section instance ${pageSection.section_id} has no content data`)
               }
             } catch (error) {
               console.error(`❌ [useContent] Failed to load section instance data for ${pageSection.section_id}:`, error)
             }
+          } else if (pageSection.section_id && !sectionInstance) {
+            console.error(`❌ [useContent] Have section_id ${pageSection.section_id} but no section instance loaded`)
           } else {
             console.log(`❌ [useContent] No section_id found for pageSection ${pageSection.override_name}`)
           }
@@ -171,14 +215,22 @@ export function useContent(options?: UseContentOptions) {
             const fieldValues = await contentService.getFieldValues(page!.id, language || page!.language_code)
             
             // Convert values array to object keyed by field_key
+            const rawContent: Record<string, any> = {}
             fieldValues
               .filter(v => v.section_template_id === sectionTemplateId)
               .forEach(v => {
                 const field = fields.find(f => f.id === v.field_id)
                 if (field) {
-                  content[field.field_key] = v.value
+                  rawContent[field.field_key] = v.value
                 }
               })
+            
+            // Process fields for frontend consumption
+            console.log(`🔧 [useContent] About to process page-specific fields`)
+            console.log(`🔧 [useContent] Raw page content before processing:`, rawContent)
+            console.log(`🔧 [useContent] Fields for processing:`, fields.map(f => ({ key: f.field_key, type: f.field_type })))
+            content = processContentFields(rawContent, fields)
+            console.log(`✅ [useContent] Processed page content fields result:`, content)
           }
 
           return {
