@@ -24,6 +24,9 @@ import tikoConfig from '../tiko.config'
 // import backgroundImage from './assets/app-icon-admin.png'
 const backgroundImage = ''
 
+// Check if development mode
+const isDev = import.meta.env.DEV
+
 const route = useRoute()
 const loading = ref(false)
 

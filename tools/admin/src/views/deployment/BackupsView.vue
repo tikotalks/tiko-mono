@@ -9,7 +9,7 @@
       <div :class="bemm('actions')">
         <TButton
           type="outline"
-          :icon="Icons.REFRESH"
+          :icon="Icons.ARROW_ROTATE_TOP_RIGHT"
           :loading="isRefreshing"
           @click="refreshBackups"
         >
@@ -18,7 +18,7 @@
 
         <TButton
           type="default"
-          :icon="Icons.SAVE"
+          :icon="Icons.ARROW_DOWNLOAD"
           :loading="isCreatingBackup"
           @click="triggerBackup"
         >
@@ -32,12 +32,12 @@
       </div>
 
       <div v-else-if="backups.length === 0" :class="bemm('empty')">
-        <TIcon :name="Icons.DATABASE" />
+        <TIcon :name="Icons.BOARD_MULTI2_HORIZONTAL" />
         <h3>{{ t('deployment.backups.empty.title') }}</h3>
         <p>{{ t('deployment.backups.empty.description') }}</p>
         <TButton
           type="default"
-          :icon="Icons.SAVE"
+          :icon="Icons.ARROW_DOWNLOAD"
           @click="triggerBackup"
         >
           {{ t('deployment.backups.createFirst') }}
@@ -54,14 +54,14 @@
         >
           <TListCell type="custom">
             <div :class="bemm('name-cell')">
-              <TIcon :name="Icons.DATABASE" />
+              <TIcon :name="Icons.BOARD_MULTI2_HORIZONTAL" />
               <div>
                 <h3 :class="bemm('item-title')">{{ backup.name }}</h3>
-                <p v-if="backup.description" :class="bemm('item-description')">{{ backup.description }}</p>
+                <p v-if="backup.description && backup.name !== backup.description" :class="bemm('item-description')">{{ backup.description }}</p>
               </div>
             </div>
           </TListCell>
-          
+
           <TListCell type="custom">
             <TChip
               :icon="getStatusIcon(backup.status)"
@@ -71,38 +71,38 @@
               {{ t(`deployment.backups.status.${backup.status}`) }}
             </TChip>
           </TListCell>
-          
-          <TListCell type="custom">
+
+          <TListCell type="custom" :size="Size.SMALL">
             <div :class="bemm('meta-cell')">
               <div :class="bemm('meta-item')">
                 <TIcon :name="Icons.CLOCK" />
                 {{ formatDate(backup.createdAt) }}
               </div>
-              
+
               <div v-if="backup.commit" :class="bemm('meta-item')">
                 <TIcon :name="Icons.GIT_BRANCH" />
                 {{ backup.commit }}
               </div>
-              
+
               <div v-if="backup.metadata?.actor" :class="bemm('meta-item')">
                 <TIcon :name="Icons.USER" />
                 {{ backup.metadata.actor }}
               </div>
-              
+
               <div v-if="backup.metadata?.workflowName" :class="bemm('meta-item')">
                 <TIcon :name="Icons.PLAYBACK_PLAY" />
                 {{ backup.metadata.workflowName }}
               </div>
             </div>
           </TListCell>
-          
-          <TListCell 
-            type="actions" 
+
+          <TListCell
+            type="actions"
             :actions="[
               listActions.custom({
                 handler: () => downloadBackup(backup),
                 tooltip: t('deployment.backups.viewOnGithub'),
-                icon: Icons.EXTERNAL_LINK,
+                icon: Icons.ARROW_RIGHT,
                 disabled: backup.status !== 'success'
               })
             ]"
@@ -116,7 +116,7 @@
 <script setup lang="ts">
 import { ref, onMounted, inject } from 'vue';
 import { useBemm } from 'bemm';
-import { TList, TListItem, TListCell, TChip, TSpinner, useI18n, listActions } from '@tiko/ui';
+import { TList, TListItem, TListCell, TChip, TSpinner, useI18n, listActions, Size } from '@tiko/ui';
 import { Icons } from 'open-icon';
 import { THeader, TButton, TIcon, type PopupService, type ToastService } from '@tiko/ui';
 import { backupService, type DatabaseBackup } from '@tiko/core';

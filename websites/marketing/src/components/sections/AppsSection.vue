@@ -21,7 +21,7 @@
           v-for="(app, index) in content.apps"
           :key="index"
           :class="bemm('app-item')"
-          :style="`--color: ${app.color || 'var(--color-blue)'};`"
+          :style="`--color: var(--color-${app.color || 'blue'});`"
         >
           <img
             :src="getImageUrl(app.image)"

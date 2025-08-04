@@ -861,7 +861,6 @@ async function handleBatchGenerateAndSave() {
       if (result.updatedKeys.length > 0) {
         message.push(t('admin.i18n.addKey.updatedCount', { count: result.updatedKeys.length }))
       }
-      console.log(message.join(', '))
     }
 
     // Only close if all valid entries were saved successfully
@@ -890,32 +889,24 @@ async function handleBatchGenerateAndSave() {
 // Initialize for edit mode
 async function initializeEditMode() {
   if (props.mode === 'edit' && props.editKey) {
-    console.log('Edit mode - initializing with key:', props.editKey)
     keyData.key = props.editKey.key
     keyData.category = props.editKey.category || ''
     keyData.description = props.editKey.description || ''
 
     // Load existing translations
     try {
-      console.log('Current translations object:', translations.value)
       const existingTranslations = await translationService.getTranslationsForKeyString(props.editKey.key)
-      console.log('Loaded translations for key:', props.editKey.key, existingTranslations)
 
       // Update the translations values
       for (const translation of existingTranslations) {
         // Try both locale_code and language_code
         const langCode = translation.locale_code || translation.language_code
-        console.log('Processing translation:', langCode, translation.value)
-        console.log('Translation object for lang:', translations.value[langCode])
-
         if (langCode && translations.value[langCode]) {
           translations.value[langCode].value = translation.value
-          console.log('Updated translation for', langCode, 'to:', translation.value)
         } else {
           console.warn('Language code not found in translations object:', langCode)
         }
       }
-      console.log('Final translations after update:', translations.value)
     } catch (error) {
       console.error('Failed to load existing translations:', error)
     }
@@ -924,7 +915,6 @@ async function initializeEditMode() {
 
 // Watch for prop changes
 watch(() => props.editKey, async (newVal) => {
-  console.log('EditKey prop changed:', newVal)
   if (newVal && props.mode === 'edit') {
     // Ensure languages are loaded first
     if (activeLanguages.value.length === 0) {
@@ -936,7 +926,6 @@ watch(() => props.editKey, async (newVal) => {
 
 // Lifecycle
 onMounted(async () => {
-  console.log('Component mounted, props:', props)
   await loadLanguages()
   // Use nextTick to ensure DOM and reactive values are updated
   await nextTick()

@@ -20,7 +20,8 @@
           @click.native="item.action"
         >
           <TIcon :name="item.icon" />
-          <span>{{ item.label }}</span>
+          <span :class="bemm('label')">{{ item.label }}</span>
+          <span :class="bemm('active-indicator', ['', isOpen(item.name) ? 'active' : 'inactive'])" v-if="item.items?.length"><TIcon :name="Icons.CHEVRON_DOWN" /></span>
         </router-link>
 
         <div
@@ -30,7 +31,8 @@
           @click="item.action"
         >
           <TIcon :name="item.icon" />
-          <span>{{ item.label }}</span>
+          <span :class="bemm('label')">{{ item.label }}</span>
+          <span :class="bemm('active-indicator', ['', isOpen(item.name) ? 'active' : 'inactive'])" v-if="item.items?.length"><TIcon :name="Icons.CHEVRON_DOWN" /></span>
         </div>
 
         <ul :class="bemm('nav-list', ['', 'sub'])" v-if="item.items">
@@ -166,7 +168,7 @@ const toggleOpen = (name: string) => {
   } else {
     openedItems.value.push(name);
   }
-  
+
   // Save to preferences
   preferences.value[USER_PREFERENCE_KEYS.ADMIN.NAVIGATION] = [...openedItems.value];
 };
@@ -212,7 +214,7 @@ const navigationItems = computed<NavigationItem[]>(() => [
     icon: Icons.USER_GROUP,
     active: isOpen('users'),
     action: () => toggleOpen('users'),
-    label: t('admin.navigation.users'),
+    label: t('admin.navigation.usersLabel'),
     items: [
       {
         name: 'users-list',
@@ -383,9 +385,8 @@ const navigationItems = computed<NavigationItem[]>(() => [
     transition: background-color 0.2s;
     gap: var(--space-xs);
     cursor: pointer;
-
     &:hover:not(.admin-layout__nav-link--header) {
-      background-color: var(--color-primary);
+      background-color: color-mix( in srgb, var(--color-primary), transparent 80%);
     }
 
     &--header {
@@ -415,6 +416,18 @@ const navigationItems = computed<NavigationItem[]>(() => [
         transparent 80%
       );
       // box-shadow: 0 0 0 1px var(--color-primary);
+    }
+  }
+
+  &__label{
+    width: 100%;
+  }
+
+  &__active-indicator{
+    transition: .2s ease-in-out;
+
+    &--active{
+      transform: scale(1,-1);
     }
   }
 }

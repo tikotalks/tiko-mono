@@ -77,9 +77,12 @@ export type { TEmptyStateProps } from './components/TEmptyState/TEmptyState.mode
 // Header Component
 export { default as THeader } from './components/THeader/THeader.vue'
 export type { THeaderProps } from './components/THeader/THeader.model'
+export { default as TI18nDebug } from './components/TI18nDebug/TI18nDebug.vue'
+export type { TI18nDebugProps } from './components/TI18nDebug/TI18nDebug.model'
 
 // Composables
 export { useI18n } from './composables/useI18n'
+export { i18nDevtoolsPlugin, useI18nDevtools } from './composables/useI18nDevtools'
 export { initializeDatabaseKeys, getDatabaseKeys, databaseKeys } from './i18n/database-keys'
 export type { TranslationKey } from './i18n/types'
 

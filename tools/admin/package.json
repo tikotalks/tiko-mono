@@ -4,7 +4,9 @@
   "description": "Tiko Admin - Admin dashboard app",
   "type": "module",
   "scripts": {
+    "predev": "cd ../.. && pnpm build:packages",
     "dev": "vite --force",
+    "dev:no-build": "vite --force",
     "build": "vite build",
     "preview": "vite preview",
     "serve": "vite",

@@ -12,7 +12,9 @@
   "packageManager": "pnpm@8.15.0",
   "scripts": {
     "dev:app": "node scripts/dev.js",
+    "dev:admin": "pnpm build:packages && pnpm --filter=@tiko/admin dev",
     "serve": "node scripts/serve-app.js",
+    "serve:with-build": "pnpm build:packages && node scripts/serve-app.js",
     "build": "node scripts/build-app-interactive.js",
     "build:ci": "node scripts/build-app-interactive.js all",
     "build:core": "pnpm --filter=@tiko/core build",

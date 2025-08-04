@@ -6,7 +6,9 @@
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "typecheck": "vue-tsc --noEmit"
+    "typecheck": "vue-tsc --noEmit",
+    "predev": "cd ../.. && pnpm build:packages",
+    "dev:no-build": "vite"
   },
   "dependencies": {
     "@tiko/ui": "workspace:*",

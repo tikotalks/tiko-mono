@@ -16,28 +16,18 @@
       <!-- Theme Selection -->
       <div :class="bemm('section')">
         <h3 :class="bemm('section-title')">{{ t(keys.settings.theme) }}</h3>
-        <div :class="bemm('theme-options')">
-          <InputOptions :options="themeOptions" :multi="false" :model-value="formData.theme" @update:model-value="value => formData.theme = value">
-            <template #option="{ option }">
-              <TIcon :name="option.icon" :class="bemm('theme-icon')" />
-              <span :class="bemm('theme-label')">{{ t(option.label) }}</span>
-            </template>
-          </InputOptions>
-          <!-- <label
+        <TButtonGroup fluid>
+          <TButton
             v-for="theme in themeOptions"
             :key="theme.value"
-            :class="bemm('theme-option', { active: formData.theme === theme.value })"
+            :type="formData.theme === theme.value ? 'default' : 'outline'"
+            :color="formData.theme === theme.value ? 'primary' : 'secondary'"
+            @click="formData.theme = theme.value"
           >
-            <input
-              type="radio"
-              :value="theme.value"
-              v-model="formData.theme"
-              :class="bemm('theme-radio')"
-            />
-            <TIcon :name="theme.icon" :class="bemm('theme-icon')" />
-            <span :class="bemm('theme-label')">{{ t(theme.label) }}</span>
-          </label> -->
-        </div>
+            <TIcon :name="theme.icon" />
+            {{ t(theme.label) }}
+          </TButton>
+        </TButtonGroup>
       </div>
 
       <!-- Actions -->
@@ -68,13 +58,13 @@ import { useI18n } from '../../composables/useI18n'
 import { useAuthStore } from '@tiko/core'
 import { storeToRefs } from 'pinia'
 import TButton from '../TButton/TButton.vue'
+import TButtonGroup from '../TButton/TButtonGroup.vue'
 import TIcon from '../TIcon/TIcon.vue'
 import TChooseLanguage from '../TChooseLanguage/TChooseLanguage.vue'
 import type { TUserSettingsProps, TUserSettingsEmits, UserSettings } from './TUserSettings.model'
 
 import type { PopupService } from '../TPopup/TPopup.service'
 import type { ToastService } from '../TToast/TToast.service'
-import InputOptions from '../TForm/InputOptions.vue'
 import type { Locale } from '../../i18n/types'
 import { Icons } from 'open-icon'
 
@@ -98,12 +88,12 @@ const formData = ref<UserSettings>({
 
 const isSaving = ref(false)
 
-// Theme options
-const themeOptions = [
-  { value: 'light', icon: Icons.SUN, label: t(keys.settings.lightTheme) },
-  { value: 'dark', icon: Icons.MOON01, label: t(keys.settings.darkTheme) },
-  { value: 'auto', icon: Icons.MOON_DARK_MODE, label: t(keys.settings.autoTheme) }
-]
+// Theme options - make it computed to ensure keys are loaded
+const themeOptions = computed(() => [
+  { value: 'light', icon: Icons.SUN, label: keys.value?.settings?.lightTheme || 'settings.lightTheme' },
+  { value: 'dark', icon: Icons.MOON01, label: keys.value?.settings?.darkTheme || 'settings.darkTheme' },
+  { value: 'auto', icon: Icons.MOON_DARK_MODE, label: keys.value?.settings?.autoTheme || 'settings.autoTheme' }
+])
 
 // Computed
 const currentLanguageDisplay = computed(() => {
@@ -228,52 +218,6 @@ const handleCancel = () => {
     font-size: 1rem;
   }
 
-  &__theme-options {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-s);
-  }
-
-  &__theme-option {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-xs);
-    padding: var(--space);
-    background: var(--color-background);
-    border: 2px solid var(--color-border);
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover {
-      border-color: var(--color-primary);
-      background: var(--color-background-hover);
-    }
-
-    &--active {
-      border-color: var(--color-primary);
-      background: var(--color-primary-bg);
-    }
-  }
-
-  &__theme-radio {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  &__theme-icon {
-    font-size: 2rem;
-    color: var(--color-primary);
-  }
-
-  &__theme-label {
-    font-size: 0.875rem;
-    color: var(--color-foreground);
-    text-align: center;
-  }
 
   &__actions {
     display: flex;
@@ -286,16 +230,6 @@ const handleCancel = () => {
 // Mobile responsiveness
 @media (max-width: 480px) {
   .user-settings {
-    &__theme-options {
-      grid-template-columns: 1fr;
-    }
-
-    &__theme-option {
-      flex-direction: row;
-      justify-content: flex-start;
-      gap: var(--space);
-    }
-
     &__actions {
       flex-direction: column-reverse;
     }

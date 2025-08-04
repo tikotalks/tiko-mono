@@ -227,6 +227,33 @@ export function useI18n(options: I18nOptions = {}) {
     return staticKeys
   })
 
+  // Debug information for Vue DevTools
+  const debugInfo = computed(() => ({
+    mode: 'static',
+    currentLocale: currentLocale.value,
+    availableLocales: staticAvailableLanguages,
+    loadedTranslations: Object.keys(staticTranslations),
+    totalKeys: Object.keys(staticTranslations[currentLocale.value] || {}).length,
+    fallbackLocale,
+    isReady: isReady.value,
+    sampleKeys: Object.keys(staticTranslations[currentLocale.value] || {}).slice(0, 10),
+    initialized: staticInitialized
+  }))
+
+  // Get all translations for current locale (for devtools inspection)
+  const currentTranslations = computed(() => {
+    return staticTranslations[currentLocale.value] || {}
+  })
+
+  // Get translation statistics
+  const translationStats = computed(() => {
+    const stats: Record<string, number> = {}
+    for (const locale of staticAvailableLanguages) {
+      stats[locale] = Object.keys(staticTranslations[locale] || {}).length
+    }
+    return stats
+  })
+
   return {
     t,
     locale: currentLocale,
@@ -241,7 +268,16 @@ export function useI18n(options: I18nOptions = {}) {
     
     // For backwards compatibility
     refreshTranslations: () => Promise.resolve(),
-    _store: null
+    _store: null,
+    
+    // Vue DevTools debugging
+    __devtools: {
+      debugInfo,
+      currentTranslations,
+      translationStats,
+      staticTranslations: computed(() => staticTranslations),
+      staticKeys: computed(() => staticKeys)
+    }
   };
 }
 

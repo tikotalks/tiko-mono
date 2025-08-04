@@ -16,7 +16,9 @@
     "cap:open": "cap open ios",
     "cap:build": "pnpm run build && cap sync",
     "ios:build": "pnpm run build && cap sync ios",
-    "ios:run": "pnpm run build && cap sync ios && cap open ios"
+    "ios:run": "pnpm run build && cap sync ios && cap open ios",
+    "predev": "cd ../.. && pnpm build:packages",
+    "dev:no-build": "vite"
   },
   "dependencies": {
     "@tiko/core": "workspace:*",

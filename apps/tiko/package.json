@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "predev": "cd ../.. && pnpm build:packages",
+    "dev:no-build": "vite"
   },
   "dependencies": {
     "@tiko/ui": "workspace:*",
