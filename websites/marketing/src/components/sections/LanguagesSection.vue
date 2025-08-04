@@ -1,19 +1,17 @@
 <template>
   <section :class="bemm()">
-    <h2
+     <h2
       v-if="content?.title"
       :class="bemm('title')"
       v-html="processTitle(content.title)"
     />
 
-    <div :class="bemm('container')">
+ <div :class="bemm('container')">
       <div :class="bemm('column', ['', 'left'])">
-        <MarkdownRenderer :class="bemm('content')" :content="content.body" />
-
-
-        <ul :class="bemm('language-list')">
-          <li :class="bemm('language-item')" v-for="lang in content?.languages" >
-            {{ getTranslation(lang.code) }}
+        <MarkdownRenderer :class="bemm('content')" :content="content.content" />
+        <ul :class="bemm('language-list')" v-if="content.list">
+          <li :class="bemm('language-item')" v-for="lang in content?.list.filter((lang)=>lang.key.includes('-')).sort()" >
+            {{ getTranslation(lang.key) }}
           </li>
         </ul>
       </div>
@@ -22,11 +20,11 @@
           <TransitionGroup name="fade" tag="ul" :class="bemm('language-card-list')">
             <li
               v-for="(language, index) in visibleLanguages"
-              :key="language.name + language.code"
+              :key="language.key + language.value + index"
               :class="bemm('language-card-item')"
             >
-              <span :class="bemm('language-flag')">{{ language.name }}</span>
-              <span :class="bemm('language-code')">{{ language.code }}</span>
+              <span :class="bemm('language-flag')">{{ language.key }}</span>
+              <span :class="bemm('language-code')">{{ language.value }}</span>
             </li>
           </TransitionGroup>
         </div>
@@ -67,7 +65,7 @@ const totalImages = 12;
 let intervalId: ReturnType<typeof setInterval> | null = null;
 
 function startLanguageRotation() {
-  const allLanguages = props.content?.languages || [];
+  const allLanguages = props.content?.list || [];
 
   if (!allLanguages.length) return;
 
@@ -105,7 +103,11 @@ function startLanguageRotation() {
 }
 
 onMounted(() => {
-  startLanguageRotation();
+  console.log('🌍 [LanguagesSection] Content received:', props.content);
+  console.log('🌍 [LanguagesSection] List field type:', typeof props.content?.list);
+  console.log('🌍 [LanguagesSection] List field value:', props.content?.list);
+
+  // startLanguageRotation();
 });
 
 onUnmounted(() => {
