@@ -7,27 +7,40 @@
       ></div>
       <div :class="bemm('container')">
         <h2 v-if="content?.title" :class="bemm('title')" v-html="processTitle(content.title)" />
+        <h4 v-if="content?.subtitle" :class="bemm('subtitle')" v-html="content.subtitle" />
         <MarkdownRenderer
           :class="bemm('content')"
-          v-if="content?.body"
-          :content="content.body"
+          v-if="content?.content"
+          :content="content.content"
         />
       </div>
     </div>
 
     <div :class="bemm('apps')">
-      <ul v-if="content?.apps" :class="bemm('apps-list')">
+      <ul v-if="content?.items" :class="bemm('apps-list')">
         <li
-          v-for="(app, index) in content.apps"
+          v-for="(app, index) in content.items"
           :key="index"
           :class="bemm('app-item')"
-          :style="`--color: var(--color-${app.color || 'blue'});`"
         >
-          <img
-            :src="getImageUrl(app.image)"
-            :alt="app.title"
-            :class="bemm('app-image')"
-          />
+          <a
+            :href="app.data?.app_link_website || '#'"
+            :target="app.data?.app_link_website ? '_blank' : undefined"
+            :rel="app.data?.app_link_website ? 'noopener noreferrer' : undefined"
+            :class="bemm('app-link')"
+            :style="`--color: var(--color-${app.data?.color || 'blue'});`"
+          >
+            <img
+              v-if="app.data?.app_icon"
+              :src="getImageUrl(app.data.app_icon)"
+              :alt="app.data?.app_title || app.item?.name"
+              :class="bemm('app-image')"
+            />
+            <div v-else :class="bemm('app-placeholder')">
+              {{ app.data?.app_title || app.item?.name }}
+            </div>
+            <span :class="bemm('app-title')">{{ app.data?.app_title || app.item?.name }}</span>
+          </a>
         </li>
       </ul>
     </div>
@@ -168,28 +181,55 @@ onMounted(async () => {
   }
   &__app-item {
     width: 160px;
-    aspect-ratio: 1 / 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    border-radius: var(--border-radius);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
     background: var(--color, var(--color-background));
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     border-radius: var(--border-radius);
     transition: transform 0.3s ease;
+
     &:hover {
       transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     }
+  }
+
+  &__app-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space);
+    text-decoration: none;
+    color: inherit;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 1 / 1;
   }
 
   &__app-image {
     width: 80%;
     height: auto;
+  }
+
+  &__app-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80%;
+    aspect-ratio: 1 / 1;
+    text-align: center;
+    font-size: var(--font-size-sm);
+    color: var(--color-foreground);
+    padding: var(--space-xs);
+    background: var(--color-background-secondary);
+    border-radius: var(--border-radius);
+  }
+
+  &__app-title {
+    margin-top: var(--space-xs);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    text-align: center;
+    color: var(--color-foreground);
   }
 }
 </style>

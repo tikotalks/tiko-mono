@@ -7,6 +7,8 @@
       loading ? 'loading' : '',
       clickable ? 'clickable' : '',
       truncate ? 'truncate' : '',
+      desktopOnly ? 'desktop-only' : '',
+      mobileOnly ? 'mobile-only' : ''
     ])"
     :style="{ width }"
     @click="handleClick"
@@ -39,8 +41,8 @@
     </div>
 
     <!-- ID Cell (monospace styling) -->
-    <span v-else-if="type === 'id'" :class="bemm('id', { truncate })">
-      {{ content }}
+    <span v-else-if="type === 'id'" :class="[bemm('id', { truncate }),'id']">
+     <span>{{ content }}</span>
     </span>
 
     <!-- Size Cell (formatted bytes) -->
@@ -92,6 +94,8 @@ const props = withDefaults(defineProps<TListCellProps>(), {
   loading: false,
   truncate: false,
   size: Size.DEFAULT,
+  desktopOnly: false,
+  mobileOnly: false,
 })
 
 const emit = defineEmits<{
@@ -156,6 +160,17 @@ const formatBytes = (bytes: number): string => {
 
     &:hover {
       background-color: var(--color-background-secondary);
+    }
+  }
+
+  &--desktop-only {
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+  &--mobile-only {
+    @media (min-width: 769px) {
+      display: none;
     }
   }
 
@@ -231,6 +246,7 @@ const formatBytes = (bytes: number): string => {
     color: var(--color-foreground);
     display: block;
     width: 100%;
+    min-width: fit-content;
 
     &--truncate {
       overflow: hidden;
@@ -254,6 +270,7 @@ const formatBytes = (bytes: number): string => {
 
   &__custom {
     width: 100%;
+    min-width: fit-content;
 
     &--truncate {
       overflow: hidden;
@@ -268,6 +285,7 @@ const formatBytes = (bytes: number): string => {
     align-items: center;
     justify-content: flex-end;
     width: 100%;
+    min-width: fit-content;
   }
 }
 </style>

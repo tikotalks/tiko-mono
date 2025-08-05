@@ -15,8 +15,13 @@ import I18nLanguageDetailView from '../views/i18n/DetailView.vue'
 import I18nStatus from '../views/i18n/I18nStatus.vue'
 import ContentProjectsView from '../views/content/ProjectsView.vue'
 import ContentSectionsView from '../views/content/SectionsView.vue'
+import SectionTemplateDetailView from '../views/content/SectionTemplateDetailView.vue'
+import SectionInstanceDetailView from '../views/content/SectionInstanceDetailView.vue'
 import ContentPagesView from '../views/content/PagesView.vue'
 import ContentPageDetailView from '../views/content/PageDetailView.vue'
+import ItemTemplateDetailView from '../views/content/ItemTemplateDetailView.vue'
+import ItemsView from '../views/content/ItemsView.vue'
+import ItemDetailView from '../views/content/ItemDetailView.vue'
 import DeploymentDashboard from '../views/deployment/DeploymentDashboard.vue'
 import BackupsView from '../views/deployment/BackupsView.vue'
 
@@ -102,6 +107,21 @@ const router = createAppRouter({
           component: ContentSectionsView
         },
         {
+          path: 'content/section-templates/:id',
+          name: 'SectionTemplateDetail',
+          component: SectionTemplateDetailView
+        },
+        {
+          path: 'content/sections/create',
+          name: 'SectionInstanceCreate',
+          component: SectionInstanceDetailView
+        },
+        {
+          path: 'content/sections/:id',
+          name: 'SectionInstanceDetail',
+          component: SectionInstanceDetailView
+        },
+        {
           path: 'content/pages',
           name: 'ContentPages',
           component: ContentPagesView
@@ -110,6 +130,26 @@ const router = createAppRouter({
           path: 'content/pages/:id',
           name: 'ContentPageDetail',
           component: ContentPageDetailView
+        },
+        {
+          path: 'content/item-templates/:id',
+          name: 'admin-content-item-template-detail',
+          component: ItemTemplateDetailView
+        },
+        {
+          path: 'content/items',
+          name: 'admin-content-items',
+          component: ItemsView
+        },
+        {
+          path: 'content/items/create',
+          name: 'admin-content-items-create',
+          component: ItemDetailView
+        },
+        {
+          path: 'content/items/:id',
+          name: 'admin-content-item-detail',
+          component: ItemDetailView
         },
         {
           path: 'deployment',

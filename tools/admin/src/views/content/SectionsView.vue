@@ -7,6 +7,7 @@
       <template #inputs>
         <TInputText
           v-model="searchQuery"
+          :label="t('common.search')"
           :placeholder="t('common.search')"
           :icon="Icons.SEARCH_M"
         />
@@ -183,6 +184,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, inject } from 'vue'
+import { useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
 import {
   TButton,
@@ -209,6 +211,7 @@ import AdminPageHeader from '@/components/AdminPageHeader.vue'
 
 const bemm = useBemm('content-sections-view')
 const { t } = useI18n()
+const router = useRouter()
 const toastService = inject<ToastService>('toastService')
 const popupService = inject<PopupService>('popupService')
 
@@ -377,130 +380,26 @@ function getTemplateMetadata(template: SectionTemplate): string[] {
 
 // Section Instance Methods
 function openCreateSectionDialog() {
-  const popupId = popupService?.open({
-    component: CreateSectionInstanceDialog,
-    title: t('admin.content.sections.createInstance'),
-    props: {
-      templates: sectionTemplates.value,
-      onSave: async (data: Omit<ContentSection, 'id' | 'created_at' | 'updated_at'>, fieldValues?: Record<string, any>) => {
-        try {
-          // Create the section
-          const createdSection = await contentService.createSection(data)
-
-          // Save field values if provided
-          if (fieldValues && Object.keys(fieldValues).length > 0) {
-            // Validate language code before using it
-            const validLangCode = (data.language_code && data.language_code.length <= 10 && !data.language_code.includes(' ')) 
-              ? data.language_code 
-              : undefined
-            
-            await contentService.setSectionData(createdSection.id, fieldValues, validLangCode)
-          }
-
-          toastService?.show({
-            message: t('admin.content.sections.instanceCreateSuccess'),
-            type: 'success'
-          })
-          await loadSections()
-          // Close popup after successful save
-          popupService?.close({ id: popupId })
-        } catch (error) {
-          console.error('Failed to create section instance:', error)
-          toastService?.show({
-            message: t('admin.content.sections.instanceCreateError'),
-            type: 'error'
-          })
-          throw error
-        }
-      }
-    },
-    on: {
-      close: () => {
-        popupService?.close({ id: popupId })
-      }
-    }
-  })
+  router.push('/content/sections/create')
 }
 
 async function openEditSectionDialog(section: ContentSection) {
-  // Load field values for this section
-  let fieldValues = {}
-  try {
-    fieldValues = await contentService.getSectionData(section.id, section.language_code)
-  } catch (error) {
-    console.error('Failed to load section data:', error)
-  }
-
-  const sectionWithData = {
-    ...section,
-    fieldValues
-  }
-
-  const popupId = popupService?.open({
-    component: CreateSectionInstanceDialog,
-    title: t('admin.content.sections.editInstance'),
-    props: {
-      templates: sectionTemplates.value,
-      section: sectionWithData,
-      mode: 'edit',
-      onSave: async (data: Partial<ContentSection>, fieldValues?: Record<string, any>) => {
-        try {
-          // Update the section
-          await contentService.updateSection(section.id, data)
-
-          // Update field values if provided
-          if (fieldValues) {
-            // Debug: Check language code value
-            const langCode = data.language_code || section.language_code
-            console.log('Language code for setSectionData:', langCode)
-            
-            // Validate language code before using it
-            const validLangCode = (langCode && langCode.length <= 10 && !langCode.includes(' ')) ? langCode : undefined
-            if (langCode !== validLangCode) {
-              console.warn('Invalid language code detected, using:', validLangCode, 'instead of:', langCode)
-            }
-            
-            await contentService.setSectionData(section.id, fieldValues, validLangCode)
-          }
-
-          toastService?.show({
-            message: t('admin.content.sections.instanceUpdateSuccess'),
-            type: 'success'
-          })
-          await loadSections()
-          // Close popup after successful save
-          popupService?.close({ id: popupId })
-        } catch (error) {
-          console.error('Failed to update section instance:', error)
-          toastService?.show({
-            message: t('admin.content.sections.instanceUpdateError'),
-            type: 'error'
-          })
-          throw error
-        }
-      }
-    },
-    on: {
-      close: () => {
-        popupService?.close({ id: popupId })
-      }
-    }
-  })
+  router.push(`/content/sections/${section.id}`)
 }
 
 async function handleDeleteSection(section: ContentSection) {
   // First check if section is in use
   const usage = await contentService.getSectionUsage(section.id)
-  
+
   let message = t('admin.content.sections.deleteInstanceMessage', { name: section.name })
-  
+
   if (usage.length > 0) {
     const pageList = usage.map(u => u.page_title).join(', ')
-    message = t('admin.content.sections.deleteInstanceInUseMessage', 
+    message = t('admin.content.sections.deleteInstanceInUseMessage',
       { name: section.name, count: usage.length, pages: pageList },
       `"${section.name}" is currently used on ${usage.length} page(s): ${pageList}. You must remove it from these pages before deleting.`)
   }
-  
+
   popupService?.open({
     component: ConfirmDialog,
     props: {
@@ -521,11 +420,11 @@ async function handleDeleteSection(section: ContentSection) {
           await loadSections()
         } catch (error: any) {
           console.error('Failed to delete section instance:', error)
-          
+
           // Check if it's a foreign key constraint error
           if (error?.message?.includes('foreign key constraint') || error?.message?.includes('409')) {
             toastService?.show({
-              message: t('admin.content.sections.instanceInUse', 
+              message: t('admin.content.sections.instanceInUse',
                 'This section is currently used on pages. Remove it from all pages before deleting.'),
               type: 'warning',
               duration: 5000
@@ -543,7 +442,7 @@ async function handleDeleteSection(section: ContentSection) {
 }
 
 function handleSectionClick(section: ContentSection) {
-  console.log('Section instance clicked:', section)
+  router.push(`/content/sections/${section.id}`)
 }
 
 // Section Template Methods
@@ -574,31 +473,8 @@ function openCreateTemplateDialog() {
 }
 
 function openEditTemplateDialog(template: SectionTemplate) {
-  popupService?.open({
-    component: CreateSectionDialog,
-    title: t('admin.content.sections.editTemplate'),
-    props: {
-      section: template,
-      mode: 'edit',
-      onSave: async (data: Partial<SectionTemplate>) => {
-        try {
-          await contentService.updateSectionTemplate(template.id, data)
-          toastService?.show({
-            message: t('admin.content.sections.templateUpdateSuccess'),
-            type: 'success'
-          })
-          await loadSectionTemplates()
-        } catch (error) {
-          console.error('Failed to update template:', error)
-          toastService?.show({
-            message: t('admin.content.sections.templateUpdateError'),
-            type: 'error'
-          })
-          throw error
-        }
-      }
-    }
-  })
+  // Navigate to section template detail view for field management
+  router.push(`/content/section-templates/${template.id}`)
 }
 
 async function handleDeleteTemplate(template: SectionTemplate) {
@@ -632,7 +508,8 @@ async function handleDeleteTemplate(template: SectionTemplate) {
 }
 
 function handleTemplateClick(template: SectionTemplate) {
-  console.log('Template clicked:', template)
+  // Navigate to section template detail view
+  router.push(`/content/section-templates/${template.id}`)
 }
 
 // Lifecycle

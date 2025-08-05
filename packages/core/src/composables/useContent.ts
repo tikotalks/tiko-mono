@@ -187,7 +187,7 @@ export function useContent(options?: UseContentOptions) {
                 })
               }
               
-              content = processContentFields(rawContent, fields)
+              content = await processContentFields(rawContent, fields, resolveLinkedItems, language || page.language_code)
               console.log(`✅ [useContent] Processed content fields result:`, content)
               
               // Double-check list fields after processing
@@ -229,7 +229,7 @@ export function useContent(options?: UseContentOptions) {
             console.log(`🔧 [useContent] About to process page-specific fields`)
             console.log(`🔧 [useContent] Raw page content before processing:`, rawContent)
             console.log(`🔧 [useContent] Fields for processing:`, fields.map(f => ({ key: f.field_key, type: f.field_type })))
-            content = processContentFields(rawContent, fields)
+            content = await processContentFields(rawContent, fields, resolveLinkedItems, language || page!.language_code)
             console.log(`✅ [useContent] Processed page content fields result:`, content)
           }
 
@@ -474,6 +474,158 @@ export function useContent(options?: UseContentOptions) {
   const initPromise = initializeProject()
   loadLanguages()
 
+  // =================== ITEM METHODS ===================
+  
+  // Get a single item with automatic translation handling
+  async function getItem(itemIdOrSlug: string, language?: string) {
+    loading.value = true
+    error.value = null
+    
+    try {
+      let item = null
+      
+      // Try to find the item (base or translation)
+      if (itemIdOrSlug.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+        item = await contentService.getItem(itemIdOrSlug)
+      } else {
+        // Find by slug - first try exact language match
+        item = await contentService.getItemBySlug(itemIdOrSlug, language)
+        
+        // If not found, try base item
+        if (!item && language) {
+          item = await contentService.getItemBySlug(itemIdOrSlug, null)
+        }
+      }
+      
+      if (!item) return null
+      
+      // If we have a base item but need a translation
+      if (!item.language_code && language) {
+        const translation = await contentService.getItemTranslation(item.id, language)
+        if (translation) {
+          item = translation
+        }
+        // If no translation exists, we'll use base item with inheritance
+      }
+      
+      // Get merged data (translated + inherited fields)
+      console.log(`📦 [getItem] Getting data for item ${item.id}`)
+      const data = await contentService.getItemData(item.id, true)
+      console.log(`📦 [getItem] Raw item data:`, data)
+      
+      // Process fields
+      const fields = await contentService.getFieldsByItemTemplate(item.item_template_id)
+      console.log(`📦 [getItem] Fields for template ${item.item_template_id}:`, fields.map(f => f.field_key))
+      const processedData = await processContentFields(data, fields, resolveLinkedItems, language)
+      console.log(`📦 [getItem] Processed item data:`, processedData)
+      
+      return {
+        item,
+        data: processedData,
+        isTranslation: !!item.base_item_id,
+        baseItemId: item.base_item_id || item.id
+      }
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to load item'
+      console.error('Failed to load item:', err)
+      return null
+    } finally {
+      loading.value = false
+    }
+  }
+  
+  // Get multiple items
+  async function getItems(templateId?: string, language?: string) {
+    loading.value = true
+    error.value = null
+    
+    try {
+      const items = await contentService.getItems(templateId, language)
+      return items
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to load items'
+      console.error('Failed to load items:', err)
+      return []
+    } finally {
+      loading.value = false
+    }
+  }
+  
+  // Resolve linked items with automatic translation
+  async function resolveLinkedItems(itemIds: string[], language: string) {
+    if (!itemIds || itemIds.length === 0) return []
+    
+    loading.value = true
+    error.value = null
+    
+    try {
+      console.log(`🔍 [resolveLinkedItems] Resolving ${itemIds.length} items with language:`, language)
+      const resolvedItems = await Promise.all(
+        itemIds.map(async (itemId) => {
+          console.log(`📦 [resolveLinkedItems] Resolving item:`, itemId)
+          const result = await getItem(itemId, language)
+          console.log(`✅ [resolveLinkedItems] Item ${itemId} resolved:`, result ? 'SUCCESS' : 'FAILED')
+          if (result) {
+            console.log(`📄 [resolveLinkedItems] Item data:`, { 
+              name: result.item?.name, 
+              hasData: !!result.data,
+              dataKeys: result.data ? Object.keys(result.data) : []
+            })
+          }
+          return result
+        })
+      )
+      
+      const filtered = resolvedItems.filter(Boolean)
+      console.log(`🎯 [resolveLinkedItems] Returning ${filtered.length} resolved items`)
+      return filtered
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to resolve linked items'
+      console.error('Failed to resolve linked items:', err)
+      return []
+    } finally {
+      loading.value = false
+    }
+  }
+  
+  // Create new item
+  async function createItem(templateId: string, name: string, slug?: string) {
+    loading.value = true
+    error.value = null
+    
+    try {
+      const item = await contentService.createItem({
+        item_template_id: templateId,
+        name,
+        slug,
+        is_active: true
+      })
+      return item
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to create item'
+      console.error('Failed to create item:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+  
+  // Update item data
+  async function updateItemData(itemId: string, data: Record<string, any>) {
+    loading.value = true
+    error.value = null
+    
+    try {
+      await contentService.setItemData(itemId, data)
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to update item data'
+      console.error('Failed to update item data:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     // State
     currentProject: computed(() => currentProject.value),
@@ -482,7 +634,7 @@ export function useContent(options?: UseContentOptions) {
     loading: computed(() => loading.value),
     error: computed(() => error.value),
     
-    // Methods
+    // Page/Section Methods
     getPage,
     getPages,
     getSection,
@@ -492,6 +644,15 @@ export function useContent(options?: UseContentOptions) {
     updateContent,
     createContent,
     clearCache,
+    
+    // Item Methods
+    getItem,
+    getItems,
+    resolveLinkedItems,
+    createItem,
+    updateItemData,
+    
+    // Project Management
     setProject: async (slugOrId: string) => {
       // Try as slug first
       let project = await contentService.getProjectBySlug(slugOrId)

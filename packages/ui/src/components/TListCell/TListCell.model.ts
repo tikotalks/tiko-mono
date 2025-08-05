@@ -26,6 +26,10 @@ export interface TListCellProps {
   actions?: ListAction[]
   /** Custom class for additional styling */
   size?: Size
+
+  desktopOnly?: boolean
+
+  mobileOnly?: boolean
 }
 
 export interface ChipData {

@@ -55,10 +55,11 @@ export interface ItemSubField {
 
 export interface ContentField {
   id: string
-  section_template_id: string
+  section_template_id?: string
+  item_template_id?: string
   field_key: string
   label: string
-  field_type: 'text' | 'textarea' | 'richtext' | 'number' | 'boolean' | 'select' | 'options' | 'media' | 'media_list' | 'list' | 'object' | 'items'
+  field_type: 'text' | 'textarea' | 'richtext' | 'number' | 'boolean' | 'select' | 'options' | 'media' | 'media_list' | 'list' | 'object' | 'items' | 'linked_items'
   is_required: boolean
   is_translatable: boolean
   default_value?: any
@@ -157,6 +158,44 @@ export interface Language {
   is_active: boolean
 }
 
+export interface ItemTemplate {
+  id: string
+  name: string
+  slug: string
+  description?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Item {
+  id: string
+  item_template_id: string
+  name: string
+  slug?: string
+  language_code?: string // null for base items
+  base_item_id?: string // null for base items, points to base for translations
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface ItemData {
+  id: string
+  item_id: string
+  field_id: string
+  value: any
+  created_at: string
+  updated_at: string
+}
+
+export interface LinkedItem {
+  id: string
+  section_id: string
+  field_id: string
+  item_id: string
+  sort_order: number
+}
+
 class ContentService {
   private baseUrl: string
 
@@ -170,6 +209,7 @@ class ContentService {
       const token = session?.access_token || null
 
       const url = `${this.baseUrl}${endpoint}`
+      console.log(`[ContentService] Making request to: ${url}`)
 
       const response = await fetch(url, {
         ...options,
@@ -184,13 +224,17 @@ class ContentService {
 
       if (!response.ok) {
         const errorText = await response.text()
-        console.error(`Content API Error: ${response.status} - ${errorText}`)
+        console.error(`[ContentService] API Error: ${response.status} - ${errorText}`)
+        console.error(`[ContentService] Failed URL: ${url}`)
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      return response.json()
+      const data = await response.json()
+      console.log(`[ContentService] Response from ${endpoint}:`, data)
+      return data
     } catch (error) {
-      console.error('Content service error:', error)
+      console.error('[ContentService] Request error:', error)
+      console.error('[ContentService] Failed endpoint:', endpoint)
       throw error
     }
   }
@@ -329,12 +373,23 @@ class ContentService {
   // =================== FIELDS ===================
 
   async getFieldsBySectionTemplate(sectionTemplateId: string): Promise<ContentField[]> {
-    return this.makeRequest(
+    const fields = await this.makeRequest(
       `/content_fields?section_template_id=eq.${sectionTemplateId}&order=order_index.asc`
     )
+    console.log('[ContentService] Loaded fields for section template', sectionTemplateId, ':', fields)
+    fields.forEach((field: ContentField) => {
+      if (field.config) {
+        console.log('[ContentService] Field', field.field_key, 'has config:', field.config)
+      }
+    })
+    return fields
   }
 
   async createField(field: Omit<ContentField, 'id'>): Promise<ContentField> {
+    console.log('[ContentService] Creating field:', field)
+    if (field.config) {
+      console.log('[ContentService] Field has config:', JSON.stringify(field.config))
+    }
     const result = await this.makeRequest('/content_fields', {
       method: 'POST',
       body: JSON.stringify(field),
@@ -350,9 +405,14 @@ class ContentService {
   }
 
   async deleteField(id: string): Promise<void> {
-    await this.makeRequest(`/content_fields?id=eq.${id}`, {
-      method: 'DELETE',
-    })
+    try {
+      await this.makeRequest(`/content_fields?id=eq.${id}`, {
+        method: 'DELETE',
+      })
+    } catch (error) {
+      console.error('Error deleting field:', error)
+      throw error
+    }
   }
 
   // =================== PAGE TEMPLATES ===================
@@ -605,22 +665,53 @@ class ContentService {
     return this.makeRequest(query)
   }
 
-  async getSectionData(sectionId: string, languageCode?: string): Promise<Record<string, any>> {
+  async getSectionData(sectionId: string, languageCode?: string | null): Promise<Record<string, any>> {
     try {
       let query = `/content_section_data?section_id=eq.${sectionId}`
-      if (languageCode) {
-        query += `&language_code=eq.${languageCode}`
+      
+      // Handle language code properly
+      if (languageCode !== undefined) {
+        if (languageCode === null) {
+          // For global sections with null language_code
+          query += `&language_code=is.null`
+        } else {
+          // For language-specific sections
+          query += `&language_code=eq.${languageCode}`
+        }
+      } else {
+        // If no language code specified, get global sections (null language_code)
+        query += `&language_code=is.null`
       }
 
+      console.log(`[ContentService] Fetching section data with query: ${query}`)
       const data = await this.makeRequest(query)
+      console.log(`[ContentService] Raw section data response:`, data)
 
       // Convert array of field values to object keyed by field_key
       const result: Record<string, any> = {}
       data.forEach((item: any) => {
-        // PostgreSQL JSONB returns the value directly, no need to parse
-        result[item.field_key] = item.value
+        // Try to parse JSON strings for arrays and objects
+        let value = item.value
+        console.log(`[ContentService] Processing field ${item.field_key}, raw value:`, value, 'type:', typeof value)
+        
+        if (typeof value === 'string') {
+          // Check if it looks like JSON
+          if ((value.startsWith('[') && value.endsWith(']')) || 
+              (value.startsWith('{') && value.endsWith('}'))) {
+            try {
+              const parsed = JSON.parse(value)
+              console.log(`[ContentService] Parsed JSON for field ${item.field_key}:`, parsed)
+              value = parsed
+            } catch (e) {
+              // If parsing fails, keep it as string
+              console.warn(`[ContentService] Could not parse JSON value for field ${item.field_key}:`, e)
+            }
+          }
+        }
+        result[item.field_key] = value
       })
 
+      console.log(`[ContentService] Processed section data:`, result)
       return result
     } catch (error) {
       console.error('Failed to get section data:', error)
@@ -630,12 +721,28 @@ class ContentService {
 
   async setSectionData(sectionId: string, fieldValues: Record<string, any>, languageCode?: string): Promise<void> {
     try {
+      console.log(`[ContentService] setSectionData called with:`, {
+        sectionId,
+        fieldValues,
+        languageCode,
+        languageCodeIsNull: languageCode === null,
+        languageCodeIsUndefined: languageCode === undefined
+      })
+
       // First delete existing data for this section
       let deleteQuery = `/content_section_data?section_id=eq.${sectionId}`
-      if (languageCode) {
-        deleteQuery += `&language_code=eq.${languageCode}`
+      if (languageCode !== undefined) {
+        if (languageCode === null) {
+          deleteQuery += `&language_code=is.null`
+        } else {
+          deleteQuery += `&language_code=eq.${languageCode}`
+        }
+      } else {
+        // If languageCode is undefined, treat as null (global)
+        deleteQuery += `&language_code=is.null`
       }
 
+      console.log(`[ContentService] Delete query: ${deleteQuery}`)
       await this.makeRequest(deleteQuery, {
         method: 'DELETE'
       })
@@ -646,8 +753,10 @@ class ContentService {
         field_key,
         // Ensure we're not double-encoding strings
         value: typeof value === 'string' ? value : JSON.stringify(value),
-        language_code: languageCode || null
+        language_code: languageCode === undefined ? null : languageCode
       }))
+
+      console.log(`[ContentService] Data to insert:`, dataToInsert)
 
       if (dataToInsert.length > 0) {
         await this.makeRequest('/content_section_data', {
@@ -837,6 +946,395 @@ class ContentService {
     return {
       page,
       sections: sectionsWithContent
+    }
+  }
+
+  // =================== ITEM TEMPLATES ===================
+
+  async getItemTemplates(): Promise<ItemTemplate[]> {
+    try {
+      return await this.makeRequest('/content_item_templates?order=name')
+    } catch (error) {
+      console.error('Error getting item templates:', error)
+      return []
+    }
+  }
+
+  async getItemTemplate(id: string): Promise<ItemTemplate | null> {
+    try {
+      const templates = await this.makeRequest(`/content_item_templates?id=eq.${id}`)
+      return templates[0] || null
+    } catch (error) {
+      console.error('Error getting item template:', error)
+      return null
+    }
+  }
+
+  async createItemTemplate(template: Omit<ItemTemplate, 'id' | 'created_at' | 'updated_at'>): Promise<ItemTemplate | null> {
+    try {
+      const result = await this.makeRequest('/content_item_templates', {
+        method: 'POST',
+        body: JSON.stringify(template)
+      })
+      return Array.isArray(result) ? result[0] : result
+    } catch (error) {
+      console.error('Error creating item template:', error)
+      return null
+    }
+  }
+
+  async updateItemTemplate(id: string, updates: Partial<ItemTemplate>): Promise<ItemTemplate | null> {
+    try {
+      const result = await this.makeRequest(`/content_item_templates?id=eq.${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(updates)
+      })
+      return result[0] || null
+    } catch (error) {
+      console.error('Error updating item template:', error)
+      return null
+    }
+  }
+
+  async deleteItemTemplate(id: string): Promise<void> {
+    try {
+      await this.makeRequest(`/content_item_templates?id=eq.${id}`, {
+        method: 'DELETE'
+      })
+    } catch (error) {
+      console.error('Error deleting item template:', error)
+      throw error
+    }
+  }
+
+  // =================== ITEMS ===================
+
+  async getItems(templateId?: string, languageCode?: string): Promise<Item[]> {
+    try {
+      let query = '/content_items?order=name'
+      
+      if (templateId) {
+        query += `&item_template_id=eq.${templateId}`
+      }
+      
+      if (languageCode !== undefined) {
+        // null language_code means base items
+        query += languageCode ? `&language_code=eq.${languageCode}` : '&language_code=is.null'
+      }
+      
+      return await this.makeRequest(query)
+    } catch (error) {
+      console.error('Error getting items:', error)
+      return []
+    }
+  }
+
+  async getItem(id: string): Promise<Item | null> {
+    try {
+      const items = await this.makeRequest(`/content_items?id=eq.${id}`)
+      return items[0] || null
+    } catch (error) {
+      console.error('Error getting item:', error)
+      return null
+    }
+  }
+
+  async getItemBySlug(slug: string, languageCode?: string): Promise<Item | null> {
+    try {
+      let query = `/content_items?slug=eq.${slug}`
+      
+      if (languageCode !== undefined) {
+        query += languageCode ? `&language_code=eq.${languageCode}` : '&language_code=is.null'
+      }
+      
+      const items = await this.makeRequest(query)
+      return items[0] || null
+    } catch (error) {
+      console.error('Error getting item by slug:', error)
+      return null
+    }
+  }
+
+  async getItemTranslation(baseItemId: string, languageCode: string): Promise<Item | null> {
+    try {
+      const items = await this.makeRequest(
+        `/content_items?base_item_id=eq.${baseItemId}&language_code=eq.${languageCode}`
+      )
+      return items[0] || null
+    } catch (error) {
+      console.error('Error getting item translation:', error)
+      return null
+    }
+  }
+
+  async getItemTranslations(baseItemId: string): Promise<Item[]> {
+    try {
+      return await this.makeRequest(`/content_items?base_item_id=eq.${baseItemId}&order=language_code`)
+    } catch (error) {
+      console.error('Error getting item translations:', error)
+      return []
+    }
+  }
+
+  async createItem(item: Omit<Item, 'id' | 'created_at' | 'updated_at'>): Promise<Item | null> {
+    try {
+      const result = await this.makeRequest('/content_items', {
+        method: 'POST',
+        body: JSON.stringify(item)
+      })
+      return Array.isArray(result) ? result[0] : result
+    } catch (error) {
+      console.error('Error creating item:', error)
+      return null
+    }
+  }
+
+  async updateItem(id: string, updates: Partial<Item>): Promise<Item | null> {
+    try {
+      const result = await this.makeRequest(`/content_items?id=eq.${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(updates)
+      })
+      return result[0] || null
+    } catch (error) {
+      console.error('Error updating item:', error)
+      return null
+    }
+  }
+
+  async deleteItem(id: string): Promise<void> {
+    try {
+      await this.makeRequest(`/content_items?id=eq.${id}`, {
+        method: 'DELETE'
+      })
+    } catch (error) {
+      console.error('Error deleting item:', error)
+      throw error
+    }
+  }
+
+  // =================== ITEM DATA ===================
+
+  async getRawItemData(itemId: string): Promise<Record<string, any>> {
+    try {
+      const data = await this.makeRequest(`/content_item_data?item_id=eq.${itemId}`)
+      
+      // Convert array of field values to object
+      const dataMap: Record<string, any> = {}
+      for (const row of data) {
+        const field = await this.getFieldById(row.field_id)
+        if (field) {
+          dataMap[field.field_key] = row.value
+        }
+      }
+      
+      return dataMap
+    } catch (error) {
+      console.error('Error getting raw item data:', error)
+      return {}
+    }
+  }
+
+  async getItemData(itemId: string, includeInherited = true): Promise<Record<string, any>> {
+    try {
+      const item = await this.getItem(itemId)
+      if (!item) return {}
+      
+      // Get own data
+      const ownData = await this.getRawItemData(itemId)
+      
+      if (!includeInherited || !item.base_item_id) {
+        return ownData
+      }
+      
+      // Get base item data for non-translatable fields
+      const baseData = await this.getRawItemData(item.base_item_id)
+      const fields = await this.getFieldsByItemTemplate(item.item_template_id)
+      
+      // Merge: base data for non-translatable, own data for translatable
+      const mergedData: Record<string, any> = {}
+      
+      for (const field of fields) {
+        if (field.is_translatable && ownData.hasOwnProperty(field.field_key)) {
+          mergedData[field.field_key] = ownData[field.field_key]
+        } else {
+          mergedData[field.field_key] = baseData[field.field_key]
+        }
+      }
+      
+      return mergedData
+    } catch (error) {
+      console.error('Error getting item data:', error)
+      return {}
+    }
+  }
+
+  async setItemData(itemId: string, data: Record<string, any>): Promise<void> {
+    try {
+      const item = await this.getItem(itemId)
+      if (!item) throw new Error('Item not found')
+      
+      const fields = await this.getFieldsByItemTemplate(item.item_template_id)
+      
+      // Only save data for fields that should be saved
+      // For translations, only save translatable fields
+      const fieldsToSave = item.base_item_id 
+        ? fields.filter(f => f.is_translatable)
+        : fields
+      
+      for (const field of fieldsToSave) {
+        if (data.hasOwnProperty(field.field_key)) {
+          await this.setItemFieldValue(itemId, field.id, data[field.field_key])
+        }
+      }
+    } catch (error) {
+      console.error('Error setting item data:', error)
+      throw error
+    }
+  }
+
+  async setItemFieldValue(itemId: string, fieldId: string, value: any): Promise<void> {
+    try {
+      // Check if value already exists
+      const existing = await this.makeRequest(
+        `/content_item_data?item_id=eq.${itemId}&field_id=eq.${fieldId}`
+      )
+      
+      if (existing.length > 0) {
+        // Update existing
+        await this.makeRequest(
+          `/content_item_data?item_id=eq.${itemId}&field_id=eq.${fieldId}`,
+          {
+            method: 'PATCH',
+            body: JSON.stringify({ value })
+          }
+        )
+      } else {
+        // Create new
+        await this.makeRequest('/content_item_data', {
+          method: 'POST',
+          body: JSON.stringify({
+            item_id: itemId,
+            field_id: fieldId,
+            value
+          })
+        })
+      }
+    } catch (error) {
+      console.error('Error setting item field value:', error)
+      throw error
+    }
+  }
+
+  // =================== FIELD MANAGEMENT FOR ITEMS ===================
+
+  async getFieldsByItemTemplate(templateId: string): Promise<ContentField[]> {
+    try {
+      return await this.makeRequest(`/content_fields?item_template_id=eq.${templateId}&order=order_index`)
+    } catch (error) {
+      console.error('Error getting fields by item template:', error)
+      return []
+    }
+  }
+
+  async getFieldById(fieldId: string): Promise<ContentField | null> {
+    try {
+      const fields = await this.makeRequest(`/content_fields?id=eq.${fieldId}`)
+      return fields[0] || null
+    } catch (error) {
+      console.error('Error getting field by id:', error)
+      return null
+    }
+  }
+
+  async updateItemData(itemId: string, data: Record<string, any>): Promise<void> {
+    try {
+      const item = await this.getItem(itemId)
+      if (!item) throw new Error('Item not found')
+      
+      // Get fields for this item template
+      const fields = await this.getFieldsByItemTemplate(item.item_template_id)
+      const fieldMap = new Map(fields.map(f => [f.field_key, f]))
+      
+      // Update each field value
+      for (const [fieldKey, value] of Object.entries(data)) {
+        const field = fieldMap.get(fieldKey)
+        if (field) {
+          await this.setItemFieldValue(itemId, field.id, value)
+        }
+      }
+    } catch (error) {
+      console.error('Error updating item data:', error)
+      throw error
+    }
+  }
+
+  // =================== LINKED ITEMS ===================
+
+  async getLinkedItems(sectionId: string, fieldId: string): Promise<string[]> {
+    try {
+      const links = await this.makeRequest(
+        `/content_section_linked_items?section_id=eq.${sectionId}&field_id=eq.${fieldId}&order=sort_order`
+      )
+      return links.map((link: LinkedItem) => link.item_id)
+    } catch (error) {
+      console.error('Error getting linked items:', error)
+      return []
+    }
+  }
+
+  async setLinkedItems(sectionId: string, fieldId: string, itemIds: string[]): Promise<void> {
+    try {
+      // Delete existing links
+      await this.makeRequest(
+        `/content_section_linked_items?section_id=eq.${sectionId}&field_id=eq.${fieldId}`,
+        { method: 'DELETE' }
+      )
+      
+      // Create new links
+      const links = itemIds.map((itemId, index) => ({
+        section_id: sectionId,
+        field_id: fieldId,
+        item_id: itemId,
+        sort_order: index
+      }))
+      
+      if (links.length > 0) {
+        await this.makeRequest('/content_section_linked_items', {
+          method: 'POST',
+          body: JSON.stringify(links)
+        })
+      }
+    } catch (error) {
+      console.error('Error setting linked items:', error)
+      throw error
+    }
+  }
+
+  async resolveLinkedItem(itemId: string, language: string): Promise<{
+    item: Item
+    data: Record<string, any>
+  } | null> {
+    try {
+      // Get base item
+      let item = await this.getItem(itemId)
+      if (!item) return null
+      
+      // Try to get translation if needed
+      if (!item.language_code && language) {
+        const translation = await this.getItemTranslation(item.id, language)
+        if (translation) {
+          item = translation
+        }
+      }
+      
+      // Get merged data
+      const data = await this.getItemData(item.id, true)
+      
+      return { item, data }
+    } catch (error) {
+      console.error('Error resolving linked item:', error)
+      return null
     }
   }
 }

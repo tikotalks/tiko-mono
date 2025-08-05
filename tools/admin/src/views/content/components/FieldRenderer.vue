@@ -1,7 +1,7 @@
 <template>
   <component
     :is="fieldComponent"
-    v-model="modelValue"
+    :modelValue="modelValue"
     :label="field.label"
     :placeholder="getPlaceholder"
     :required="field.is_required"
@@ -24,6 +24,8 @@ import {
 import type { ContentField } from '@tiko/core'
 import ItemsFieldEditor from './ItemsFieldEditor.vue'
 import ListFieldInstance from './ListFieldInstance.vue'
+import LinkedItemsFieldInstance from './LinkedItemsFieldInstance.vue'
+import MediaFieldInstance from './MediaFieldInstance.vue'
 
 interface Props {
   field: ContentField
@@ -60,6 +62,11 @@ const fieldComponent = computed(() => {
       return ItemsFieldEditor
     case 'list':
       return ListFieldInstance
+    case 'linked_items':
+      return LinkedItemsFieldInstance
+    case 'media':
+    case 'image':
+      return MediaFieldInstance
     default:
       return TInputText
   }
@@ -91,6 +98,13 @@ const fieldProps = computed(() => {
     case 'items':
       // Pass the config directly for items field
       baseProps.config = props.field.config || { fields: [] }
+      break
+      
+    case 'linked_items':
+      // Pass section and field IDs for linked items
+      baseProps.sectionId = props.field.section_id || ''
+      baseProps.fieldId = props.field.id
+      baseProps.itemTemplateId = props.field.config?.item_template_id
       break
   }
   

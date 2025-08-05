@@ -55,7 +55,11 @@ export type {
   ContentSection,
   ContentPageSection,
   ContentData,
-  Language
+  Language,
+  ItemTemplate,
+  Item,
+  ItemData,
+  LinkedItem
 } from './content.service'
 export { sentenceService } from './sentence.service'
 export type {

@@ -66,6 +66,15 @@ export function processListFieldValue(value: string): Array<string | { key: stri
  */
 export function processFieldValue(value: any, fieldType: string): any {
   console.log('🔧 [field-processing] processFieldValue called with type:', fieldType, 'value:', value)
+  
+  // Special debug for linked_items
+  if (fieldType === 'linked_items') {
+    console.log('🔗 [field-processing] LINKED_ITEMS FIELD DETECTED!')
+    console.log('🔗 [field-processing] Value type:', typeof value)
+    console.log('🔗 [field-processing] Is Array:', Array.isArray(value))
+    console.log('🔗 [field-processing] Raw value:', JSON.stringify(value))
+  }
+  
   switch (fieldType) {
     case 'list':
       // Convert list field from string format to processed arrays
@@ -87,6 +96,16 @@ export function processFieldValue(value: any, fieldType: string): any {
     case 'number':
       return typeof value === 'number' ? value : (parseFloat(value) || 0)
     
+    case 'linked_items':
+      // For linked_items, just ensure it's an array of item IDs
+      if (Array.isArray(value)) {
+        return value // Array of item IDs
+      } else if (typeof value === 'string' && value) {
+        // Handle comma-separated IDs if needed
+        return value.split(',').map(id => id.trim()).filter(id => id)
+      }
+      return []
+    
     default:
       return value
   }
@@ -106,20 +125,51 @@ export interface ContentField {
  * Processes all content fields based on their types
  * @param content - Raw content object from database
  * @param fields - Array of field definitions with types
+ * @param resolveLinkedItems - Optional function to resolve linked items to full objects
+ * @param language - Language code for linked items resolution
  * @returns Processed content object ready for frontend consumption
  */
-export function processContentFields(
+export async function processContentFields(
   content: Record<string, any>, 
-  fields: ContentField[]
-): Record<string, any> {
+  fields: ContentField[],
+  resolveLinkedItems?: (itemIds: string[], language: string) => Promise<any[]>,
+  language: string = 'en'
+): Promise<Record<string, any>> {
   console.log('🔧 [field-processing] processContentFields called with:', Object.keys(content), 'and fields:', fields.map(f => f.field_key))
   console.log('🔧 [field-processing] Raw content values:', content)
   const processed: Record<string, any> = {}
   
   for (const [key, value] of Object.entries(content)) {
     const field = fields.find(f => f.field_key === key)
+    
+    // Debug logging for items field
+    if (key === 'items') {
+      console.log(`🎯 [field-processing] Processing 'items' field:`)
+      console.log(`  - Field found:`, !!field)
+      console.log(`  - Field type:`, field?.field_type)
+      console.log(`  - Value:`, value)
+      console.log(`  - resolveLinkedItems provided:`, !!resolveLinkedItems)
+    }
+    
     if (field) {
-      processed[key] = processFieldValue(value, field.field_type)
+      let processedValue = processFieldValue(value, field.field_type)
+      
+      // Special handling for linked_items - resolve to full objects if resolver provided
+      if (field.field_type === 'linked_items' && resolveLinkedItems && Array.isArray(processedValue) && processedValue.length > 0) {
+        console.log(`🔗 [field-processing] Resolving linked_items for field '${key}' with IDs:`, processedValue)
+        try {
+          processedValue = await resolveLinkedItems(processedValue, language)
+          console.log(`✅ [field-processing] Resolved linked_items for '${key}':`, processedValue.length, 'items')
+          if (processedValue.length > 0) {
+            console.log(`🔍 [field-processing] Sample resolved item:`, processedValue[0])
+          }
+        } catch (error) {
+          console.error(`❌ [field-processing] Failed to resolve linked items:`, error)
+          // Keep the IDs if resolution fails
+        }
+      }
+      
+      processed[key] = processedValue
     } else {
       // Keep untyped fields as-is
       processed[key] = value
