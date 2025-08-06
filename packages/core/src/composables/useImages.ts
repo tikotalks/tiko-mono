@@ -36,6 +36,7 @@ const stats = ref<ImageStats>({
 const loading = ref(false)
 const error = ref<string | null>(null)
 const searchQuery = ref('')
+let loadPromise: Promise<void> | null = null
 
 // Computed values
 const filteredImages = computed(() => {
@@ -61,22 +62,38 @@ export function useImages(publicMode = false): UseImagesReturn {
   const eventBus = useEventBus()
 
   const loadImages = async () => {
-    loading.value = true
-    error.value = null
-
-    try {
-      if (publicMode) {
-        imageList.value = await mediaService.getPublicMediaList()
-      } else {
-        imageList.value = await mediaService.getMediaList()
-      }
-      await refreshStats()
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to load images'
-      console.error('Failed to load images:', err)
-    } finally {
-      loading.value = false
+    // If already loaded and we have images, return early
+    if (imageList.value.length > 0 && !loading.value) {
+      return
     }
+
+    // If currently loading, return the existing promise
+    if (loadPromise) {
+      return loadPromise
+    }
+
+    // Create new load promise
+    loadPromise = (async () => {
+      loading.value = true
+      error.value = null
+
+      try {
+        if (publicMode) {
+          imageList.value = await mediaService.getPublicMediaList()
+        } else {
+          imageList.value = await mediaService.getMediaList()
+        }
+        await refreshStats()
+      } catch (err) {
+        error.value = err instanceof Error ? err.message : 'Failed to load images'
+        console.error('Failed to load images:', err)
+      } finally {
+        loading.value = false
+        loadPromise = null
+      }
+    })()
+
+    return loadPromise
   }
 
   const getImage = (id: string): MediaItem | undefined => {
@@ -119,6 +136,9 @@ export function useImages(publicMode = false): UseImagesReturn {
   }
 
   const refresh = async () => {
+    // Force reload by clearing the list first
+    imageList.value = []
+    loadPromise = null
     await loadImages()
   }
 
