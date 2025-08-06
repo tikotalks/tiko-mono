@@ -139,6 +139,9 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_USE_CONTENT_WORKER: "true"
+          VITE_CONTENT_API_URL: "https://content.tikoapi.org"
+          VITE_DEPLOYED_VERSION_ID: "v1.0.1"
           
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
