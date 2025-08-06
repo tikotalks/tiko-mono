@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { contentService } from '../services/content.service'
+import { ContentWorkerService } from '../services/content-worker.service'
 import { processContentFields } from '../utils/field-processing'
 import type { 
   ContentProject, 
@@ -16,6 +17,10 @@ export interface UseContentOptions {
   projectId?: string
   projectSlug?: string
   autoFetchLanguages?: boolean
+  useWorker?: boolean
+  workerUrl?: string
+  deployedVersionId?: string
+  noCache?: boolean
 }
 
 export interface PageContent {
@@ -27,9 +32,23 @@ export interface PageContent {
   }>
 }
 
+export interface SectionContent {
+  section: ContentSection
+  content: Record<string, any>
+}
+
 export function useContent(options?: UseContentOptions) {
   // Parse options with defaults
   const opts: UseContentOptions = options || {}
+
+  // Initialize service based on options
+  const service = opts.useWorker 
+    ? new ContentWorkerService({
+        apiUrl: opts.workerUrl,
+        deployedVersionId: opts.deployedVersionId,
+        useCache: !opts.noCache
+      })
+    : contentService
 
   // State
   const currentProject = ref<ContentProject | null>(null)
@@ -51,7 +70,7 @@ export function useContent(options?: UseContentOptions) {
   async function loadLanguages() {
     if (languages.value.length === 0 && opts.autoFetchLanguages !== false) {
       try {
-        const response = await contentService.getLanguages()
+        const response = await service.getLanguages()
         languages.value = response
       } catch (err) {
         console.error('Failed to load languages:', err)
@@ -76,18 +95,49 @@ export function useContent(options?: UseContentOptions) {
     error.value = null
 
     try {
+      // Check if we can use the optimized method (only available in worker service)
+      if (service instanceof ContentWorkerService) {
+        console.log('🚀 [useContent] Using optimized getPageWithFullContent method')
+        
+        const result = await service.getPageWithFullContent(
+          pageIdOrSlug,
+          currentProject.value?.id,
+          language || 'en'
+        )
+        
+        if (!result) {
+          throw new Error('Page not found')
+        }
+
+        // The optimized method returns already-processed data
+        // Worker has already simplified the structure
+        const processedResult: PageContent = result
+
+        console.log(`🎯 [useContent] OPTIMIZED RESULT: ${processedResult.sections.length} sections loaded`)
+        processedResult.sections.forEach((section, index) => {
+          console.log(`   ${index}: ${section.section?.name || 'unknown'} (${Object.keys(section.content || {}).length} content fields)`)
+        })
+
+        // Cache the result
+        pageCache.set(cacheKey, processedResult)
+        
+        return processedResult
+      }
+
+      // Fallback to the old method for direct service
+      console.log('📊 [useContent] Using traditional multi-query method (direct service)')
       let page: ContentPage | null = null
       
       // Check if it's a UUID
       if (pageIdOrSlug.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
         // It's an ID
-        page = await contentService.getPage(pageIdOrSlug)
+        page = await service.getPage(pageIdOrSlug)
       } else {
         // It's a slug - need project ID
         if (!currentProject.value?.id) {
           throw new Error('Project not initialized. Cannot query by slug without project.')
         }
-        page = await contentService.getPageBySlug(
+        page = await service.getPageBySlug(
           currentProject.value.id,
           pageIdOrSlug,
           language || 'en'
@@ -99,7 +149,7 @@ export function useContent(options?: UseContentOptions) {
       }
 
       // Get page sections
-      const pageSections = await contentService.getPageSections(page.id)
+      const pageSections = await service.getPageSections(page.id)
       console.log(`🔍 [useContent] Found ${pageSections.length} page sections for page ${page.id}:`, pageSections)
       
       // Check for null section_ids
@@ -122,7 +172,7 @@ export function useContent(options?: UseContentOptions) {
           if (pageSection.section_id) {
             console.log(`🔍 [useContent] Loading section instance ${pageSection.section_id}...`)
             try {
-              sectionInstance = await contentService.getSection(pageSection.section_id)
+              sectionInstance = await service.getSection(pageSection.section_id)
               console.log(`✅ [useContent] Section instance loaded:`, sectionInstance)
             } catch (error) {
               console.error(`❌ [useContent] Failed to load section instance ${pageSection.section_id}:`, error)
@@ -141,14 +191,14 @@ export function useContent(options?: UseContentOptions) {
           const sectionTemplateId = sectionInstance.section_template_id
           let sectionTemplate = sectionTemplateCache.get(sectionTemplateId)
           if (!sectionTemplate) {
-            sectionTemplate = await contentService.getSectionTemplate(sectionTemplateId)
+            sectionTemplate = await service.getSectionTemplate(sectionTemplateId)
             if (sectionTemplate) {
               sectionTemplateCache.set(sectionTemplateId, sectionTemplate)
             }
           }
 
           // Get fields for this section template
-          const fields = await contentService.getFieldsBySectionTemplate(sectionTemplateId)
+          const fields = await service.getFieldsBySectionTemplate(sectionTemplateId)
           console.log(`🔍 [useContent] ALL FIELDS for template ${sectionTemplateId}:`)
           fields.forEach(field => {
             console.log(`  - Field: ${field.field_key} | Type: ${field.field_type} | ID: ${field.id}`)
@@ -168,8 +218,8 @@ export function useContent(options?: UseContentOptions) {
               const sectionLanguage = sectionInstance.language_code
               console.log(`🔍 [useContent] Loading content for section ${pageSection.section_id} with language: ${sectionLanguage || 'null (global)'}`)
               
-              console.log(`🔍 [useContent] Calling contentService.getSectionData...`)
-              const rawContent = await contentService.getSectionData(pageSection.section_id, sectionLanguage)
+              console.log(`🔍 [useContent] Calling service.getSectionData...`)
+              const rawContent = await service.getSectionData(pageSection.section_id, sectionLanguage)
               console.log(`✅ [useContent] Loaded raw content from section instance ${pageSection.section_id}:`, rawContent)
               
               // Process fields for frontend consumption
@@ -212,7 +262,7 @@ export function useContent(options?: UseContentOptions) {
           // If no section instance or it failed, fall back to page-specific field values
           if (Object.keys(content).length === 0) {
             // Get field values for this page and language
-            const fieldValues = await contentService.getFieldValues(page!.id, language || page!.language_code)
+            const fieldValues = await service.getFieldValues(page!.id, language || page!.language_code)
             
             // Convert values array to object keyed by field_key
             const rawContent: Record<string, any> = {}
@@ -283,7 +333,7 @@ export function useContent(options?: UseContentOptions) {
     error.value = null
 
     try {
-      const pages = await contentService.getPages(projectId || opts.projectId || currentProject.value?.id)
+      const pages = await service.getPages(projectId || opts.projectId || currentProject.value?.id)
       return pages
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load pages'
@@ -305,7 +355,8 @@ export function useContent(options?: UseContentOptions) {
     error.value = null
 
     try {
-      const section = await contentService.getSection(sectionIdOrSlug)
+      let section: ContentSection | null = await service.getSection(sectionIdOrSlug)
+      
       if (section) {
         sectionCache.set(sectionIdOrSlug, section)
         sectionCache.set(section.id, section)
@@ -329,7 +380,7 @@ export function useContent(options?: UseContentOptions) {
     error.value = null
 
     try {
-      const contentList = await contentService.getSectionContent(sectionId, language)
+      const contentList = await service.getSectionContent(sectionId, language)
       
       // Group by field key
       const content: Record<string, ContentData[]> = {}
@@ -359,12 +410,14 @@ export function useContent(options?: UseContentOptions) {
     error.value = null
 
     try {
+      let project: ContentProject | null
+      
       // Try to get by slug first (more common use case)
-      let project = await contentService.getProjectBySlug(identifier)
+      project = await service.getProjectBySlug(identifier)
       
       // If not found by slug, try by ID (UUID)
       if (!project && identifier.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-        project = await contentService.getProject(identifier)
+        project = await service.getProject(identifier)
       }
       
       if (project && !projectIdOrSlug) {
@@ -386,7 +439,8 @@ export function useContent(options?: UseContentOptions) {
     error.value = null
 
     try {
-      const projectsList = await contentService.getProjects()
+      let projectsList: ContentProject[] = await service.getProjects()
+      
       projects.value = projectsList
       return projectsList
     } catch (err) {
@@ -403,11 +457,12 @@ export function useContent(options?: UseContentOptions) {
     contentId: string,
     updates: Partial<ContentData>
   ): Promise<void> {
+
     loading.value = true
     error.value = null
 
     try {
-      await contentService.updateContent(contentId, updates)
+      await service.updateContent(contentId, updates)
       // Clear relevant caches
       pageCache.clear()
     } catch (err) {
@@ -426,11 +481,12 @@ export function useContent(options?: UseContentOptions) {
     value: any,
     language?: string
   ): Promise<ContentData> {
+
     loading.value = true
     error.value = null
 
     try {
-      const content = await contentService.createContent({
+      const content = await service.createContent({
         section_id: sectionId,
         field_key: fieldKey,
         value,
@@ -458,12 +514,12 @@ export function useContent(options?: UseContentOptions) {
   // Initialize project
   async function initializeProject() {
     if (opts.projectSlug) {
-      const project = await contentService.getProjectBySlug(opts.projectSlug)
+      const project = await getProject(opts.projectSlug)
       if (project) {
         currentProject.value = project
       }
     } else if (opts.projectId) {
-      const project = await contentService.getProject(opts.projectId)
+      const project = await getProject(opts.projectId)
       if (project) {
         currentProject.value = project
       }
@@ -472,7 +528,9 @@ export function useContent(options?: UseContentOptions) {
 
   // Initialize on creation and wait for it
   const initPromise = initializeProject()
-  loadLanguages()
+  if (!opts.useWorker) {
+    loadLanguages()
+  }
 
   // =================== ITEM METHODS ===================
   
@@ -482,18 +540,19 @@ export function useContent(options?: UseContentOptions) {
     error.value = null
     
     try {
+      // Regular flow
       let item = null
       
       // Try to find the item (base or translation)
       if (itemIdOrSlug.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-        item = await contentService.getItem(itemIdOrSlug)
+        item = await service.getItem(itemIdOrSlug)
       } else {
         // Find by slug - first try exact language match
-        item = await contentService.getItemBySlug(itemIdOrSlug, language)
+        item = await service.getItemBySlug(itemIdOrSlug, language)
         
         // If not found, try base item
         if (!item && language) {
-          item = await contentService.getItemBySlug(itemIdOrSlug, null)
+          item = await service.getItemBySlug(itemIdOrSlug, null)
         }
       }
       
@@ -501,7 +560,7 @@ export function useContent(options?: UseContentOptions) {
       
       // If we have a base item but need a translation
       if (!item.language_code && language) {
-        const translation = await contentService.getItemTranslation(item.id, language)
+        const translation = await service.getItemTranslation(item.id, language)
         if (translation) {
           item = translation
         }
@@ -510,11 +569,11 @@ export function useContent(options?: UseContentOptions) {
       
       // Get merged data (translated + inherited fields)
       console.log(`📦 [getItem] Getting data for item ${item.id}`)
-      const data = await contentService.getItemData(item.id, true)
+      const data = await service.getItemData(item.id, true)
       console.log(`📦 [getItem] Raw item data:`, data)
       
       // Process fields
-      const fields = await contentService.getFieldsByItemTemplate(item.item_template_id)
+      const fields = await service.getFieldsByItemTemplate(item.item_template_id)
       console.log(`📦 [getItem] Fields for template ${item.item_template_id}:`, fields.map(f => f.field_key))
       const processedData = await processContentFields(data, fields, resolveLinkedItems, language)
       console.log(`📦 [getItem] Processed item data:`, processedData)
@@ -540,7 +599,7 @@ export function useContent(options?: UseContentOptions) {
     error.value = null
     
     try {
-      const items = await contentService.getItems(templateId, language)
+      const items = await service.getItems(templateId, language)
       return items
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load items'
@@ -559,6 +618,7 @@ export function useContent(options?: UseContentOptions) {
     error.value = null
     
     try {
+      // Regular flow
       console.log(`🔍 [resolveLinkedItems] Resolving ${itemIds.length} items with language:`, language)
       const resolvedItems = await Promise.all(
         itemIds.map(async (itemId) => {
@@ -590,11 +650,12 @@ export function useContent(options?: UseContentOptions) {
   
   // Create new item
   async function createItem(templateId: string, name: string, slug?: string) {
+
     loading.value = true
     error.value = null
     
     try {
-      const item = await contentService.createItem({
+      const item = await service.createItem({
         item_template_id: templateId,
         name,
         slug,
@@ -612,11 +673,12 @@ export function useContent(options?: UseContentOptions) {
   
   // Update item data
   async function updateItemData(itemId: string, data: Record<string, any>) {
+
     loading.value = true
     error.value = null
     
     try {
-      await contentService.setItemData(itemId, data)
+      await service.setItemData(itemId, data)
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to update item data'
       console.error('Failed to update item data:', err)
@@ -626,6 +688,19 @@ export function useContent(options?: UseContentOptions) {
     }
   }
 
+  // Cache management methods
+  async function refreshCache(method?: string, params?: Record<string, any>) {
+    // UnifiedContentService has built-in caching
+    // Clear local cache
+    clearCache()
+  }
+
+  async function clearWorkerCache(authorization: string, versionId?: string) {
+    // UnifiedContentService manages its own cache
+    clearCache()
+    return true
+  }
+
   return {
     // State
     currentProject: computed(() => currentProject.value),
@@ -633,6 +708,7 @@ export function useContent(options?: UseContentOptions) {
     languages: computed(() => languages.value),
     loading: computed(() => loading.value),
     error: computed(() => error.value),
+    isUsingWorker: computed(() => opts.useWorker === true),
     
     // Page/Section Methods
     getPage,
@@ -652,15 +728,13 @@ export function useContent(options?: UseContentOptions) {
     createItem,
     updateItemData,
     
+    // Worker-specific methods
+    refreshCache,
+    clearWorkerCache,
+    
     // Project Management
     setProject: async (slugOrId: string) => {
-      // Try as slug first
-      let project = await contentService.getProjectBySlug(slugOrId)
-      
-      // If not found and looks like UUID, try as ID
-      if (!project && slugOrId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-        project = await contentService.getProject(slugOrId)
-      }
+      const project = await getProject(slugOrId)
       
       if (project) {
         currentProject.value = project
@@ -673,4 +747,5 @@ export function useContent(options?: UseContentOptions) {
 }
 
 // Export types
-export type { ContentProject, ContentSection, ContentPage, ContentData }
+export type { ContentProject, ContentSection, ContentPage, ContentData, SectionContent }
+export { ContentWorkerService } from '../services/content-worker.service'
