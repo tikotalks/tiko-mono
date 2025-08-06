@@ -28,7 +28,7 @@
  */
 
 import { computed, ref, watch } from 'vue';
-import { translations as generatedTranslations, AVAILABLE_LANGUAGES as generatedLanguages } from '../i18n/generated';
+import { translations as generatedTranslations, AVAILABLE_LANGUAGES as generatedLanguages } from '../i18n/generated/index';
 
 // Types
 interface TranslationParams {
