@@ -227,7 +227,7 @@ watch(
     z-index: 10;
     height: 20vh;
     width: 100%;
-    background-image: linear-gradient(to bottom, var(--color-background) 0%, transparent 100%);
+    background-image: linear-gradient(to bottom, var(--color-dark) 0%, transparent 100%);
   }
 
 
@@ -254,19 +254,10 @@ watch(
     font-size: clamp(4em, 5vw, 8em);
     line-height: 1;
     font-family: var(--header-font-family);
-    color: var(--color-foreground);
+    color: var(--color-light);
     .title-dot {
       color: var(--color-blue);
     }
-  }
-
-  &__subtitle {
-    font-size: var(--font-size-lg);
-    color: var(--color-foreground-secondary);
-    margin-bottom: var(--space-xl);
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
   }
 
   &__cta {

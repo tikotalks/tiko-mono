@@ -92,7 +92,7 @@ watch(
       display: block;
       width: 1.5em;
       height: 0.2em;
-      background-color: var(--color-foreground);
+      background-color: var(--color-dark);
       border-radius: 0.1em;
       transition: transform 0.3s ease;
 
@@ -109,7 +109,7 @@ watch(
     span {
       width: 1.5em;
       height: 0.2em;
-      background-color: var(--color-foreground);
+      background-color: var(--color-light);
     }
     &--active{
       span:nth-child(1) {
