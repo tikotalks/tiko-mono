@@ -135,7 +135,7 @@ jobs:
         run: |
           pnpm --filter=@tiko/ui build
           pnpm --filter=@tiko/core build
-          cd websites/marketing && pnpm vite build
+          pnpm --filter=marketing vite build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
