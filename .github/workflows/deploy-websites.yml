@@ -145,4 +145,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: dc2b7d14a69351375cab6de9a13ddee9
-          command: pages deploy ./websites/marketing/dist --project-name=tiko-marketing --compatibility-date=2024-08-02
+          command: pages deploy ./websites/marketing/dist --project-name=tiko-marketing
