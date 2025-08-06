@@ -22,24 +22,24 @@
           v-for="(app, index) in content.items"
           :key="index"
           :class="bemm('app-item')"
+          :style="`--color: var(--color-${getAppData(app, 'color') || 'blue'}); --image: url(${getImageUrl(getAppData(app, 'app_icon'))})`"
         >
           <a
-            :href="app.data?.app_link_website || '#'"
-            :target="app.data?.app_link_website ? '_blank' : undefined"
-            :rel="app.data?.app_link_website ? 'noopener noreferrer' : undefined"
+            :href="getAppData(app, 'app_link_website') || '#'"
+            :target="getAppData(app, 'app_link_website') ? '_blank' : undefined"
+            :rel="getAppData(app, 'app_link_website') ? 'noopener noreferrer' : undefined"
             :class="bemm('app-link')"
-            :style="`--color: var(--color-${app.data?.color || 'blue'});`"
           >
             <img
-              v-if="app.data?.app_icon"
-              :src="getImageUrl(app.data.app_icon)"
-              :alt="app.data?.app_title || app.item?.name"
+              v-if="getAppData(app, 'app_icon')"
+              :src="getImageUrl(getAppData(app, 'app_icon'))"
+              :alt="getAppData(app, 'app_title') || app.item?.name"
               :class="bemm('app-image')"
             />
             <div v-else :class="bemm('app-placeholder')">
-              {{ app.data?.app_title || app.item?.name }}
+              {{ getAppData(app, 'app_title') || app.item?.name }}
             </div>
-            <span :class="bemm('app-title')">{{ app.data?.app_title || app.item?.name }}</span>
+            <span :class="bemm('app-title')">{{ getAppData(app, 'app_title') || app.item?.name }}</span>
           </a>
         </li>
       </ul>
@@ -74,6 +74,15 @@ const getImageUrl = (imageId: string) => {
   }
   return '';
 };
+
+// Helper to get app data from the item structure
+const getAppData = (app: any, key: string) => {
+  // The app should have a 'data' object with the field values
+  if (app && app.data && app.data[key] !== undefined) {
+    return app.data[key];
+  }
+  return null;
+};
 const imageUrl = ref('');
 
 const loadImage = async () => {
@@ -91,6 +100,18 @@ const loadImage = async () => {
 onMounted(async () => {
   await loadImages();
   loadImage();
+  
+  // Debug app items
+  console.log('Apps Section - Items:', props.content?.items);
+  props.content?.items?.forEach((item: any, index: number) => {
+    console.log(`App ${index}:`, {
+      name: item.item?.name,
+      data: item.data,
+      app_title: getAppData(item, 'app_title'),
+      color: getAppData(item, 'color'),
+      app_icon: getAppData(item, 'app_icon')
+    });
+  });
 });
 </script>
 
@@ -180,15 +201,29 @@ onMounted(async () => {
     justify-content: center;
   }
   &__app-item {
-    width: 160px;
+    width: 15vw;
+    --app-color:var(--color, var(--color-background));
+    --app-color-dark: color-mix(in srgb, var(--color-dark), var(--app-color) 50%);
+    --app-color-light: color-mix(in srgb, var(--color-light), var(--app-color) 50%);
     background: var(--color, var(--color-background));
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    // box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     border-radius: var(--border-radius);
     transition: transform 0.3s ease;
+
+    background-image: radial-gradient(
+      circle at 50% 50%,
+      var(--app-color-light) 0%,
+      var(--app-color) 100%
+    );
 
     &:hover {
       transform: scale(1.05);
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+
+      .apps-section__app-title {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
   }
 
@@ -206,7 +241,7 @@ onMounted(async () => {
   }
 
   &__app-image {
-    width: 80%;
+    width: 100%;
     height: auto;
   }
 
@@ -229,7 +264,15 @@ onMounted(async () => {
     font-size: var(--font-size-sm);
     font-weight: 600;
     text-align: center;
-    color: var(--color-foreground);
+    color: var(--color-light);
+    background-color: var(--color-dark);
+    border-radius: 1em;
+    padding: .1em 0.5em;
+    transform: scale(.5);
+    opacity: 0;
+transition: .3s ease-in-out;
+    position: absolute;
+    top: 100%;
   }
 }
 </style>

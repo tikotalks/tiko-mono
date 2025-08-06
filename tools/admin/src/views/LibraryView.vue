@@ -6,6 +6,14 @@
     >
       <template #actions>
         <TButton
+          type="outline"
+          :icon="Icons.CURSOR_CLICK"
+          @click="testMediaSelector"
+        >
+          Test Media Selector
+        </TButton>
+        
+        <TButton
           color="primary"
           :icon="Icons.ARROW_UPLOAD"
           @click="router.push('/upload')"
@@ -20,6 +28,12 @@
           :placeholder="t('admin.library.searchPlaceholder')"
           :icon="Icons.SEARCH_L"
           @input="searchImages(searchQuery)"
+        />
+
+        <TInputSelect
+          v-model="privacyFilter"
+          :label="t('admin.media.visibility')"
+          :options="privacyFilterOptions"
         />
 
         <TViewToggle
@@ -99,6 +113,14 @@
           type="text"
           :content="media.title || media.original_filename"
         />
+        <TListCell type="custom">
+          <TChip 
+            :color="media.is_private ? 'warning' : 'success'" 
+            size="small"
+          >
+            {{ media.is_private ? t('admin.media.private') : t('admin.media.public') }}
+          </TChip>
+        </TListCell>
         <TListCell type="size" :content="media.file_size" />
         <TListCell type="chips" :chips="media.tags" :max-chips="2" />
         <TListCell type="chips" :chips="media.categories" :max-chips="2" />
@@ -131,14 +153,17 @@ import {
   TInputSelect,
   TInputText,
   TKeyValue,
+  TChip,
 } from '@tiko/ui';
 import AdminPageHeader from '../components/AdminPageHeader.vue';
+import { useMediaSelector } from '@/composables/useMediaSelector';
 
 const toastService = inject<ToastService>('toastService');
 const { getImageVariants } = useImageUrl();
 const { imageList, stats, loading, searchImages, filteredImages, loadImages } =
   useImages();
 const { settings, loadSettings, setSetting } = useUserSettings('admin');
+const { openMediaSelector } = useMediaSelector();
 
 const bemm = useBemm('library-view');
 const { t } = useI18n();
@@ -150,11 +175,13 @@ const searchQuery = ref('');
 type ViewMode = 'tiles' | 'list';
 type SortField = 'upload_date' | 'name' | 'size' | 'title';
 type SortOrder = 'asc' | 'desc';
+type PrivacyFilter = 'all' | 'public' | 'private';
 
 // Initialize from user settings with defaults
 const viewMode = ref<ViewMode>('tiles');
 const sortField = ref<SortField>('upload_date');
 const sortOrder = ref<SortOrder>('desc');
+const privacyFilter = ref<PrivacyFilter>('all');
 
 const sortOptions = [
   { value: 'upload_date', label: t('admin.library.sortBy.uploadDate') },
@@ -168,9 +195,16 @@ const orderOptions = [
   { value: 'desc', label: t('admin.library.order.descending') },
 ];
 
+const privacyFilterOptions = [
+  { value: 'all', label: t('admin.media.filter.all') },
+  { value: 'public', label: t('admin.media.filter.public') },
+  { value: 'private', label: t('admin.media.filter.private') },
+];
+
 const listColumns = [
   { key: 'image', label: t('common.image'), width: '80px' },
   { key: 'title', label: t('common.title'), width: '1fr' },
+  { key: 'visibility', label: t('admin.media.visibility'), width: '100px' },
   { key: 'size', label: t('common.size'), width: '120px' },
   { key: 'tags', label: t('common.tags'), width: '1fr' },
   { key: 'categories', label: t('common.categories'), width: '1fr' },
@@ -187,7 +221,14 @@ const formatBytes = (bytes: number): string => {
 
 // Computed property for sorted images
 const sortedImages = computed(() => {
-  const images = [...filteredImages.value];
+  let images = [...filteredImages.value];
+
+  // Apply privacy filter
+  if (privacyFilter.value === 'public') {
+    images = images.filter(img => !img.is_private);
+  } else if (privacyFilter.value === 'private') {
+    images = images.filter(img => img.is_private);
+  }
 
   images.sort((a, b) => {
     let compareValue = 0;
@@ -225,6 +266,36 @@ const selectMedia = (e: Event, media: MediaItem) => {
   // Navigate to media detail page
   router.push(`/media/${media.id}`);
 };
+
+// Test function for Media Selector
+async function testMediaSelector() {
+  try {
+    const selectedMedia = await openMediaSelector({
+      multiple: true,
+      title: 'Test Media Selector'
+    });
+    
+    if (selectedMedia.length > 0) {
+      toastService?.show({
+        message: `Selected ${selectedMedia.length} media item(s): ${selectedMedia.map(m => m.title || m.filename).join(', ')}`,
+        type: 'success',
+        duration: 5000
+      });
+      console.log('Selected media:', selectedMedia);
+    } else {
+      toastService?.show({
+        message: 'No media selected',
+        type: 'info'
+      });
+    }
+  } catch (error) {
+    console.error('Media selector error:', error);
+    toastService?.show({
+      message: 'Error opening media selector',
+      type: 'error'
+    });
+  }
+}
 
 // Watch for changes and save to user settings
 watch(viewMode, async (newValue) => {

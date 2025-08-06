@@ -12,10 +12,10 @@
     <div :class="bemm('content')">
       <!-- Tiko Logo -->
       <div :class="bemm('logo-wrapper')">
-        <TTikoLogo
+        <TLogo
           :class="bemm('logo')"
-          :color="logoColor"
           size="large"
+          :animate="true"
         />
       </div>
 
@@ -30,7 +30,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useBemm } from 'bemm'
-import { TTikoLogo } from '../TTikoLogo'
+import { TLogo } from '../TLogo'
 import type { TSplashScreenProps, TSplashScreenEmits } from './TSplashScreen.model'
 
 const props = withDefaults(defineProps<TSplashScreenProps>(), {
@@ -59,9 +59,6 @@ const splashStyles = computed(() => {
 
   return styles
 })
-
-// Logo color should match the text color
-const logoColor = computed(() => 'var(--color-primary-text)')
 
 // Auto-hide functionality
 const setupAutoHide = () => {

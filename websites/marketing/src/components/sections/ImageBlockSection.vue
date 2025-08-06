@@ -32,7 +32,7 @@ interface ImageBlockSectionProps {
 defineProps<ImageBlockSectionProps>();
 const bemm = useBemm('image-block-section');
 
-const { getImage, loadImages } = useImages(true); // Use public mode for marketing site
+const { getImage } = useImages(true); // Use public mode for marketing site
 const { getImageVariants } = useImageUrl();
 
 const getImageUrl = (imageId: string) => {

@@ -60,4 +60,8 @@ const frameworkConfig: FrameworkConfig = {
 
 <style lang="scss">
 @use '@tiko/ui/styles/app.scss';
+
+body{
+  font-size: 16px;
+}
 </style>

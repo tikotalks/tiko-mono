@@ -6,7 +6,7 @@ A comprehensive header component that provides navigation, user information, and
 
 ```vue
 <template>
-  <TTopBar 
+  <TTopBar
     title="My App"
     subtitle="Welcome back!"
     @profile="navigateToProfile"
@@ -108,16 +108,16 @@ const router = useRouter()
 <template>
   <TTopBar title="Dashboard">
     <template #actions>
-      <TButton 
-        icon="search" 
+      <TButton
+        icon="search"
         type="ghost"
-        @click="openSearch" 
+        @click="openSearch"
       />
-      <TButton 
-        icon="bell" 
+      <TButton
+        icon="bell"
         :badge="notificationCount"
         type="ghost"
-        @click="showNotifications" 
+        @click="showNotifications"
       />
     </template>
   </TTopBar>
@@ -270,12 +270,12 @@ onMounted(async () => {
     @menu-item-click="handleMenuItem"
   >
     <template #center>
-      <TBadge 
+      <TChip
         v-if="hasUpdates"
         type="info"
       >
         Updates Available
-      </TBadge>
+      </TChip>
     </template>
 
     <template #actions>
@@ -291,7 +291,7 @@ onMounted(async () => {
         type="ghost"
         @click="toggleTheme"
       />
-      
+
       <TButton
         icon="bell"
         type="ghost"
@@ -304,7 +304,7 @@ onMounted(async () => {
 
 <script setup>
 import { computed } from 'vue'
-import { TTopBar, TButton, TBadge } from '@tiko/ui'
+import { TTopBar, TButton, TChip } from '@tiko/ui'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth, useTheme, useNotifications } from '@/composables'
 
@@ -325,7 +325,7 @@ const isLoading = computed(() => route.meta.loading)
 
 const adminMenuItems = computed(() => {
   if (!isAdmin.value) return []
-  
+
   return [
     {
       id: 'admin-dashboard',
@@ -451,4 +451,4 @@ Custom items can be added via `customMenuItems` prop.
 - `TContextMenu` - Powers the user dropdown
 - `TButton` - For actions and navigation
 - `TParentMode` - Parent mode system
-- `TBadge` - For notifications and status
+- `TChip` - For notifications and status

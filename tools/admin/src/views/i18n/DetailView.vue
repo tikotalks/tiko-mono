@@ -13,9 +13,8 @@
           {{ t('common.back') }}
         </TButton>
         <TChip
-          :type="language?.is_active ? 'success' : 'default'"
-          :text="language?.is_active ? t('admin.i18n.languages.active') : t('admin.i18n.languages.inactive')"
-        />
+          :color="language?.is_active ? Colors.SUCCESS : Colors.WARNING"
+        >{{ language?.is_active ? t('common.active') : t('common.inactive') }}</TChip>
         <TButton
           @click="exportTranslations"
           :icon="Icons.ARROW_DOWNLOAD"
@@ -110,10 +109,9 @@
           </TListCell>
           <TListCell key="key" type="custom">
             <div :class="bemm('key-cell')">
-              <span :class="[bemm('key-text'),'id']">{{ item.key.key }}</span>
-              <!-- <span v-if="item.key.category" :class="bemm('key-category')">
-                {{ item.key.category }}
-              </span> -->
+              <span :class="[bemm('key-text'),'id']">
+                <span>{{ item.key.key }}</span>
+              </span>
             </div>
           </TListCell>
           <TListCell key="value" type="custom">

@@ -71,7 +71,7 @@
 
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
-import { defineProps, type PropType } from 'vue';
+import { type PropType } from 'vue';
 import type ContextPanel from './ContextPanel.vue';
 import TIcon from '../TIcon/TIcon.vue';
 import TButton from '../TButton/TButton.vue';

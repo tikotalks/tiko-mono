@@ -63,15 +63,15 @@ import { TChip } from '@tiko/ui'
     <TChip icon="check" color="success">
       Completed
     </TChip>
-    
+
     <TChip icon="clock" color="warning">
       Pending
     </TChip>
-    
+
     <TChip icon="x" color="error">
       Failed
     </TChip>
-    
+
     <TChip icon="star" color="accent">
       Featured
     </TChip>
@@ -87,11 +87,11 @@ import { TChip } from '@tiko/ui'
     <TChip :count="5">
       Messages
     </TChip>
-    
+
     <TChip :count="12" color="primary">
       Notifications
     </TChip>
-    
+
     <TChip :count="99" icon="bell" color="error">
       Alerts
     </TChip>
@@ -104,15 +104,15 @@ import { TChip } from '@tiko/ui'
 ```vue
 <template>
   <div class="chip-tooltips">
-    <TChip 
+    <TChip
       tooltip="This feature is in beta"
       icon="info"
       color="warning"
     >
       Beta
     </TChip>
-    
-    <TChip 
+
+    <TChip
       tooltip="Available to premium users only"
       icon="crown"
       color="accent"
@@ -129,23 +129,23 @@ import { TChip } from '@tiko/ui'
 <template>
   <div class="responsive-chips">
     <!-- Hide label on mobile, show icon only -->
-    <TChip 
+    <TChip
       icon="home"
       label-hide="mobile"
     >
       Dashboard
     </TChip>
-    
+
     <!-- Hide icon on desktop, show label only -->
-    <TChip 
+    <TChip
       icon="user"
       icon-hide="desktop"
     >
       Profile
     </TChip>
-    
+
     <!-- Different visibility per screen size -->
-    <TChip 
+    <TChip
       icon="settings"
       label-hide="mobile"
       icon-hide="desktop"
@@ -162,15 +162,15 @@ import { TChip } from '@tiko/ui'
 <template>
   <TChip color="primary">
     <template #pre-content>
-      <img 
-        src="/avatar.jpg" 
+      <img
+        src="/avatar.jpg"
         alt="User"
         class="chip-avatar"
       />
     </template>
     John Doe
     <template #post-content>
-      <TButton 
+      <TButton
         size="tiny"
         type="ghost"
         icon="x"
@@ -195,23 +195,23 @@ import { TChip } from '@tiko/ui'
 ```vue
 <template>
   <div class="status-chips">
-    <TChip 
+    <TChip
       v-if="isOnline"
       icon="circle"
       color="success"
     >
       Online
     </TChip>
-    
-    <TChip 
+
+    <TChip
       v-else
       icon="circle"
       color="error"
     >
       Offline
     </TChip>
-    
-    <TChip 
+
+    <TChip
       v-if="isPending"
       icon="clock"
       color="warning"
@@ -237,7 +237,7 @@ const pendingCount = ref(3)
 ```vue
 <template>
   <div class="tag-list">
-    <TChip 
+    <TChip
       v-for="tag in tags"
       :key="tag.id"
       :color="tag.color"
@@ -273,14 +273,14 @@ const tags = [
 ```vue
 <template>
   <div class="filter-chips">
-    <TChip 
+    <TChip
       v-for="filter in activeFilters"
       :key="filter.id"
       color="primary"
     >
       {{ filter.label }}
       <template #post-content>
-        <button 
+        <button
           class="remove-filter"
           @click="removeFilter(filter.id)"
         >
@@ -288,8 +288,8 @@ const tags = [
         </button>
       </template>
     </TChip>
-    
-    <TChip 
+
+    <TChip
       v-if="activeFilters.length > 0"
       @click="clearAllFilters"
       style="cursor: pointer"
@@ -340,7 +340,7 @@ const clearAllFilters = () => {
 ```vue
 <template>
   <div class="category-chips">
-    <TChip 
+    <TChip
       v-for="category in categories"
       :key="category.id"
       :color="category.color"
@@ -375,11 +375,11 @@ The component uses CSS custom properties for theming:
   --chip-background: color-mix(in srgb, var(--chip-color), transparent 50%);
   --chip-text-color: color-mix(in srgb, var(--chip-color), var(--color-foreground) 50%);
   --chip-border-color: color-mix(in srgb, var(--chip-color), var(--color-foreground) 0%);
-  
+
   /* Count badge colors */
   --chip-count-background: color-mix(in srgb, var(--chip-color), var(--color-background) 100%);
   --chip-count-color: color-mix(in srgb, var(--chip-color), var(--color-foreground) 50%);
-  
+
   /* Layout */
   display: inline-flex;
   padding: calc(var(--space) / 4) calc(var(--space) / 2);
@@ -451,7 +451,6 @@ The component uses CSS custom properties for theming:
 
 ## Related Components
 
-- `TBadge` - Similar but typically attached to other elements
 - `TButton` - For actionable elements
 - `TTag` - Alternative tag component
 - `ChipGroup` - For managing multiple chips

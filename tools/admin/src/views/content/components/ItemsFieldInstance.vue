@@ -5,7 +5,7 @@
       <TButton
         type="ghost"
         size="small"
-        :icon="Icons.ADD"
+        :icon="Icons.ADD_M"
         @click="addItem"
         :disabled="items.length >= maxItems"
       >
@@ -17,12 +17,7 @@
       <p>{{ t('admin.content.field.noItems', 'No items added yet.') }}</p>
     </div>
 
-    <TDraggableList
-      v-else
-      v-model="items"
-      :class="bemm('items')"
-      @update:model-value="handleReorder"
-    >
+    <div v-else :class="bemm('items')">
       <div
         v-for="(item, index) in items"
         :key="item.id"
@@ -36,19 +31,19 @@
             <TButton
               type="ghost"
               size="small"
-              :icon="Icons.EDIT"
+              :icon="Icons.EDIT_M"
               @click="editItem(index)"
             />
             <TButton
               type="ghost"
               size="small"
-              :icon="Icons.DELETE"
+              :icon="Icons.MULTIPLY_M"
               color="error"
               @click="removeItem(index)"
             />
           </div>
         </div>
-        
+
         <div v-if="expandedItems.has(index)" :class="bemm('item-content')">
           <TFormGroup v-for="field in itemFields" :key="field.key">
             <!-- Text Field -->
@@ -57,9 +52,9 @@
               v-model="item[field.key]"
               :label="field.label"
               :required="field.required"
-              @update:model-value="updateItem(index, field.key, $event)"
+              @blur="emitUpdate"
             />
-            
+
             <!-- Textarea Field -->
             <TTextArea
               v-else-if="field.type === 'textarea'"
@@ -67,26 +62,26 @@
               :label="field.label"
               :required="field.required"
               :rows="3"
-              @update:model-value="updateItem(index, field.key, $event)"
+              @blur="emitUpdate"
             />
-            
+
             <!-- Number Field -->
             <TInputNumber
               v-else-if="field.type === 'number'"
               v-model="item[field.key]"
               :label="field.label"
               :required="field.required"
-              @update:model-value="updateItem(index, field.key, $event)"
+              @blur="emitUpdate"
             />
-            
+
             <!-- Boolean Field -->
             <TInputCheckbox
               v-else-if="field.type === 'boolean'"
               v-model="item[field.key]"
               :label="field.label"
-              @update:model-value="updateItem(index, field.key, $event)"
+              @update:model-value="emitUpdate"
             />
-            
+
             <!-- Select Field -->
             <TInputSelect
               v-else-if="field.type === 'select' && field.options"
@@ -94,12 +89,32 @@
               :label="field.label"
               :options="field.options"
               :required="field.required"
-              @update:model-value="updateItem(index, field.key, $event)"
+              @update:model-value="emitUpdate"
+            />
+
+            <!-- Image Field -->
+            <MediaFieldInstance
+              v-else-if="field.type === 'image'"
+              v-model="item[field.key]"
+              :label="field.label"
+              :required="field.required"
+              :multiple="false"
+              @update:model-value="emitUpdate"
+            />
+
+            <!-- Images Field (Multiple) -->
+            <MediaFieldInstance
+              v-else-if="field.type === 'images'"
+              v-model="item[field.key]"
+              :label="field.label"
+              :required="field.required"
+              :multiple="true"
+              @update:model-value="emitUpdate"
             />
           </TFormGroup>
         </div>
       </div>
-    </TDraggableList>
+    </div>
 
     <div v-if="showError" :class="bemm('error')">
       <p>{{ errorMessage }}</p>
@@ -110,18 +125,18 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useBemm } from 'bemm'
-import { 
-  TButton, 
-  TInputText, 
-  TTextArea, 
+import {
+  TButton,
+  TInputText,
+  TTextArea,
   TInputNumber,
   TInputCheckbox,
   TInputSelect,
   TFormGroup,
-  TDraggableList,
-  useI18n 
+  useI18n
 } from '@tiko/ui'
 import { Icons } from 'open-icon'
+import MediaFieldInstance from './MediaFieldInstance.vue'
 
 interface ItemFieldConfig {
   key: string
@@ -160,42 +175,79 @@ const emit = defineEmits<Emits>()
 const bemm = useBemm('items-field-instance')
 const { t } = useI18n()
 
+console.log('[ItemsFieldInstance] Component initialized with:', {
+  modelValue: props.modelValue,
+  label: props.label,
+  config: props.config,
+  required: props.required
+})
+
 const items = ref<Item[]>([])
 const expandedItems = ref<Set<number>>(new Set())
 const showError = ref(false)
 const errorMessage = ref('')
 
 // Get configuration
-const itemFields = computed(() => props.config?.fields || [])
+const itemFields = computed(() => {
+  const fields = props.config?.fields || []
+  console.log('[ItemsFieldInstance] Item fields from config:', fields)
+  return fields
+})
 const minItems = computed(() => props.config?.min_items || 0)
 const maxItems = computed(() => props.config?.max_items || 100)
 
 // Initialize items from modelValue
 watch(() => props.modelValue, (newValue) => {
-  if (Array.isArray(newValue)) {
-    items.value = newValue.map((item, index) => ({
-      id: item.id || `item_${Date.now()}_${index}`,
-      ...item
-    }))
+  console.log('[ItemsFieldInstance] modelValue changed:', newValue, 'type:', typeof newValue, 'isArray:', Array.isArray(newValue))
+  
+  // Handle case where value is a JSON string
+  let actualValue = newValue
+  if (typeof newValue === 'string' && newValue.startsWith('[')) {
+    try {
+      actualValue = JSON.parse(newValue)
+      console.log('[ItemsFieldInstance] Parsed JSON string to array:', actualValue)
+    } catch (e) {
+      console.error('[ItemsFieldInstance] Failed to parse JSON string:', e)
+      actualValue = []
+    }
+  }
+  
+  if (Array.isArray(actualValue) && actualValue.length > 0) {
+    // Only update if the value is different from current items
+    const currentData = items.value.map(({ id, ...item }) => item)
+    const newData = actualValue
+    
+    if (JSON.stringify(currentData) !== JSON.stringify(newData)) {
+      items.value = actualValue.map((item, index) => ({
+        id: item.id || `item_${Date.now()}_${index}`,
+        ...item
+      }))
+      console.log('[ItemsFieldInstance] Updated items from modelValue:', items.value)
+    }
+  } else if (!actualValue || (Array.isArray(actualValue) && actualValue.length === 0)) {
+    items.value = []
+    console.log('[ItemsFieldInstance] Reset items to empty array')
   }
 }, { immediate: true })
 
+// Remove automatic watcher - we'll emit updates manually when needed
+
 function getItemTitle(item: Item, index: number): string {
   // Try to find a field that could be used as title
-  const titleField = itemFields.value.find(f => 
+  const titleField = itemFields.value.find(f =>
     f.key === 'title' || f.key === 'name' || f.key === 'label'
   )
-  
+
   if (titleField && item[titleField.key]) {
     return item[titleField.key]
   }
-  
+
   // Fall back to first text field
   const firstTextField = itemFields.value.find(f => f.type === 'text')
   if (firstTextField && item[firstTextField.key]) {
     return item[firstTextField.key]
   }
-  
+
   return t('admin.content.field.itemNumber', 'Item {number}', { number: index + 1 })
 }
 
@@ -206,11 +258,11 @@ function addItem() {
     setTimeout(() => { showError.value = false }, 3000)
     return
   }
-  
+
   const newItem: Item = {
     id: `item_${Date.now()}`
   }
-  
+
   // Initialize with default values
   itemFields.value.forEach(field => {
     switch (field.type) {
@@ -224,9 +276,11 @@ function addItem() {
         newItem[field.key] = ''
     }
   })
-  
+
   items.value.push(newItem)
   expandedItems.value.add(items.value.length - 1)
+  
+  // Emit update after adding item
   emitUpdate()
 }
 
@@ -237,9 +291,10 @@ function removeItem(index: number) {
     setTimeout(() => { showError.value = false }, 3000)
     return
   }
-  
+
   items.value.splice(index, 1)
   expandedItems.value.delete(index)
+  // Emit update after removing item
   emitUpdate()
 }
 
@@ -251,21 +306,17 @@ function editItem(index: number) {
   }
 }
 
-function updateItem(index: number, field: string, value: any) {
-  if (items.value[index]) {
-    items.value[index][field] = value
-    emitUpdate()
-  }
-}
 
-function handleReorder(newItems: Item[]) {
-  items.value = newItems
-  emitUpdate()
-}
+// Temporarily disabled until TDraggableList is properly configured
+// function handleReorder(newItems: Item[]) {
+//   items.value = newItems
+//   emitUpdate()
+// }
 
 function emitUpdate() {
   // Remove the id field before emitting
   const cleanedItems = items.value.map(({ id, ...item }) => item)
+  console.log('[ItemsFieldInstance] Emitting update with items:', cleanedItems)
   emit('update:modelValue', cleanedItems)
 }
 
@@ -346,7 +397,7 @@ if (props.required && items.value.length < minItems.value) {
     padding: var(--space);
     background-color: var(--color-error-background);
     border-radius: var(--border-radius);
-    
+
     p {
       margin: 0;
       font-size: 0.9em;

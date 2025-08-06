@@ -14,4 +14,6 @@ export interface TListColumn {
   width?: string
   align?: 'left' | 'center' | 'right'
   sortable?: boolean
+  desktopOnly?: boolean
+  mobileOnly?: boolean
 }

@@ -37,11 +37,19 @@ const openModal = () => {
 		return;
 	}
 
+	const popupSlots: Record<string, any> = {};
+	
+	// Pass through the footer slot if it exists
+	if (slots.footer) {
+		popupSlots.footer = slots.footer;
+	}
+
 	popupService.showPopup({
 		id: props.id,
 		title: props.title,
 		...props.config,
 		component: slots.content ? slots.content : props.config.component,
+		slots: popupSlots,
 	});
 };
 </script>

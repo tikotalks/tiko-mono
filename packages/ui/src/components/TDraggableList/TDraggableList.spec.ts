@@ -1,17 +1,14 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { Icons } from 'open-icon'
 import TDraggableList from './TDraggableList.vue'
 
 // Mock the useDraggable composable
 const mockUseDraggable = {
-  isDragging: false,
-  draggedItem: null,
-  draggedOverItem: null,
   handleDragStart: vi.fn(),
   handleDragOver: vi.fn(),
-  handleDragEnd: vi.fn(),
-  handleTouchMove: vi.fn(),
-  isEnabled: true
+  handleDrop: vi.fn(),
+  handleDragEnd: vi.fn()
 }
 
 vi.mock('../../composables/useDraggable', () => ({
@@ -36,10 +33,6 @@ describe('TDraggableList.vue', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mockUseDraggable.isDragging = false
-    mockUseDraggable.draggedItem = null
-    mockUseDraggable.draggedOverItem = null
-    mockUseDraggable.isEnabled = true
   })
 
   it('renders correctly with items', () => {
@@ -78,8 +71,6 @@ describe('TDraggableList.vue', () => {
   })
 
   it('hides drag handles when disabled', () => {
-    mockUseDraggable.isEnabled = false
-    
     const wrapper = mount(TDraggableList, {
       props: {
         items: mockItems,
@@ -95,45 +86,7 @@ describe('TDraggableList.vue', () => {
     expect(wrapper.findAll('.draggable-list__handle')).toHaveLength(0)
   })
 
-  it('applies dragging class to dragged item', () => {
-    mockUseDraggable.draggedItem = { id: '2', title: 'Item 2' }
-    
-    const wrapper = mount(TDraggableList, {
-      props: {
-        items: mockItems
-      },
-      slots: {
-        default: `<template #default="{ item }">
-          <div class="item-content">{{ item.title }}</div>
-        </template>`
-      }
-    })
-    
-    const items = wrapper.findAll('.draggable-list__item')
-    expect(items[1].classes()).toContain('draggable-list__item--dragging')
-  })
-
-  it('applies drag-over class to target item', () => {
-    mockUseDraggable.draggedOverItem = { id: '3', title: 'Item 3' }
-    
-    const wrapper = mount(TDraggableList, {
-      props: {
-        items: mockItems
-      },
-      slots: {
-        default: `<template #default="{ item }">
-          <div class="item-content">{{ item.title }}</div>
-        </template>`
-      }
-    })
-    
-    const items = wrapper.findAll('.draggable-list__item')
-    expect(items[2].classes()).toContain('draggable-list__item--drag-over')
-  })
-
   it('applies disabled class when not enabled', () => {
-    mockUseDraggable.isEnabled = false
-    
     const wrapper = mount(TDraggableList, {
       props: {
         items: mockItems,
@@ -171,24 +124,6 @@ describe('TDraggableList.vue', () => {
     })
   })
 
-  it('sets correct data attributes', () => {
-    const wrapper = mount(TDraggableList, {
-      props: {
-        items: mockItems
-      },
-      slots: {
-        default: `<template #default="{ item }">
-          <div class="item-content">{{ item.title }}</div>
-        </template>`
-      }
-    })
-    
-    const items = wrapper.findAll('.draggable-list__item')
-    expect(items[0].attributes('data-draggable-id')).toBe('1')
-    expect(items[1].attributes('data-draggable-id')).toBe('2')
-    expect(items[2].attributes('data-draggable-id')).toBe('3')
-  })
-
   it('calls drag handlers on drag events', async () => {
     const wrapper = mount(TDraggableList, {
       props: {
@@ -210,32 +145,10 @@ describe('TDraggableList.vue', () => {
     await firstItem.trigger('dragover')
     expect(mockUseDraggable.handleDragOver).toHaveBeenCalled()
     
+    await firstItem.trigger('drop')
+    expect(mockUseDraggable.handleDrop).toHaveBeenCalled()
+    
     await firstItem.trigger('dragend')
-    expect(mockUseDraggable.handleDragEnd).toHaveBeenCalled()
-  })
-
-  it('calls touch handlers on touch events', async () => {
-    const wrapper = mount(TDraggableList, {
-      props: {
-        items: mockItems,
-        enabled: true
-      },
-      slots: {
-        default: `<template #default="{ item }">
-          <div class="item-content">{{ item.title }}</div>
-        </template>`
-      }
-    })
-    
-    const firstItem = wrapper.find('.draggable-list__item')
-    
-    await firstItem.trigger('touchstart')
-    expect(mockUseDraggable.handleDragStart).toHaveBeenCalled()
-    
-    await firstItem.trigger('touchmove')
-    expect(mockUseDraggable.handleTouchMove).toHaveBeenCalled()
-    
-    await firstItem.trigger('touchend')
     expect(mockUseDraggable.handleDragEnd).toHaveBeenCalled()
   })
 
@@ -308,7 +221,7 @@ describe('TDraggableList.vue', () => {
     
     const icons = wrapper.findAllComponents({ name: 'TIcon' })
     icons.forEach(icon => {
-      expect(icon.props('name')).toBe('drag-handle')
+      expect(icon.props('name')).toBe(Icons.THREE_DOTS_VERTICAL)
       expect(icon.props('size')).toBe('1.5rem')
     })
   })

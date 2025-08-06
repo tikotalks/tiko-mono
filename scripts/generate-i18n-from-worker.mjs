@@ -7,11 +7,13 @@
  * static TypeScript files for use in the build process.
  * 
  * Usage:
- *   node scripts/generate-i18n-from-worker.js [--app=appName] [--env=production]
+ *   node scripts/generate-i18n-from-worker.js [--app=appName] [--env=production] [--lang=languageCode]
  * 
  * Examples:
  *   node scripts/generate-i18n-from-worker.js --app=timer
  *   node scripts/generate-i18n-from-worker.js --env=production
+ *   node scripts/generate-i18n-from-worker.js --lang=en
+ *   node scripts/generate-i18n-from-worker.js --lang=nl --env=production
  */
 
 import fs from 'fs'
@@ -33,14 +35,19 @@ const OUTPUT_DIR = path.join(__dirname, '../packages/ui/src/i18n/generated')
 const args = process.argv.slice(2)
 const appArg = args.find(arg => arg.startsWith('--app='))?.split('=')[1]
 const envArg = args.find(arg => arg.startsWith('--env='))?.split('=')[1] || 'development'
+const langArg = args.find(arg => arg.startsWith('--lang='))?.split('=')[1]
 
 const WORKER_URL = WORKER_URLS[envArg] || WORKER_URLS.development
 
 /**
  * Fetch translation data using the per-language approach
  */
-async function fetchTranslationData(app = null) {
-  console.log(`🌐 Fetching translation data using per-language approach...`)
+async function fetchTranslationData(app = null, specificLang = null) {
+  if (specificLang) {
+    console.log(`🌐 Fetching translation data for language: ${specificLang}...`)
+  } else {
+    console.log(`🌐 Fetching translation data using per-language approach...`)
+  }
   
   try {
     // Step 1: Get all languages
@@ -84,7 +91,16 @@ async function fetchTranslationData(app = null) {
     const translations = {}
     let totalTranslations = 0
     
-    for (const language of languages) {
+    // If specific language is requested, filter the languages array
+    const languagesToFetch = specificLang 
+      ? languages.filter(lang => lang.code === specificLang)
+      : languages
+    
+    if (specificLang && languagesToFetch.length === 0) {
+      throw new Error(`Language '${specificLang}' not found in available languages`)
+    }
+    
+    for (const language of languagesToFetch) {
       process.stdout.write(`  📥 ${language.code}... `)
       
       const langResponse = await fetch(`${WORKER_URL}/translations/${language.code}`, {
@@ -436,7 +452,7 @@ export function isLanguageSupported(language: string): language is AvailableLang
 /**
  * Write generated files to disk
  */
-function writeFiles(generatedContent, outputDir) {
+function writeFiles(generatedContent, outputDir, specificLang = null) {
   // Ensure output directory exists
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true })
@@ -444,19 +460,37 @@ function writeFiles(generatedContent, outputDir) {
   
   console.log(`📝 Writing TypeScript files to: ${outputDir}`)
   
-  // Write types file
-  fs.writeFileSync(path.join(outputDir, 'types.ts'), generatedContent.types)
-  console.log(`  ✅ types.ts`)
-  
-  // Write language files
-  for (const [languageCode, content] of Object.entries(generatedContent.languages)) {
-    fs.writeFileSync(path.join(outputDir, `${languageCode}.ts`), content)
-    console.log(`  ✅ ${languageCode}.ts`)
+  if (specificLang) {
+    // When updating a specific language, write types and that language file
+    console.log(`📝 Updating types and language: ${specificLang}`)
+    
+    // Always write types file to ensure we have all keys
+    fs.writeFileSync(path.join(outputDir, 'types.ts'), generatedContent.types)
+    console.log(`  ✅ types.ts (updated with latest keys)`)
+    
+    // Write the specific language file
+    if (generatedContent.languages[specificLang]) {
+      fs.writeFileSync(path.join(outputDir, `${specificLang}.ts`), generatedContent.languages[specificLang])
+      console.log(`  ✅ ${specificLang}.ts`)
+    } else {
+      console.error(`  ❌ Language '${specificLang}' not found in generated content`)
+    }
+  } else {
+    // Write all files when no specific language is requested
+    // Write types file
+    fs.writeFileSync(path.join(outputDir, 'types.ts'), generatedContent.types)
+    console.log(`  ✅ types.ts`)
+    
+    // Write language files
+    for (const [languageCode, content] of Object.entries(generatedContent.languages)) {
+      fs.writeFileSync(path.join(outputDir, `${languageCode}.ts`), content)
+      console.log(`  ✅ ${languageCode}.ts`)
+    }
+    
+    // Write index file
+    fs.writeFileSync(path.join(outputDir, 'index.ts'), generatedContent.index)
+    console.log(`  ✅ index.ts`)
   }
-  
-  // Write index file
-  fs.writeFileSync(path.join(outputDir, 'index.ts'), generatedContent.index)
-  console.log(`  ✅ index.ts`)
 }
 
 /**
@@ -470,17 +504,21 @@ async function main() {
       console.log(`🎯 App filter: ${appArg}`)
     }
     
+    if (langArg) {
+      console.log(`🌐 Language filter: ${langArg}`)
+    }
+    
     console.log(`🌍 Environment: ${envArg}`)
     
     // Fetch translation data
-    const translationData = await fetchTranslationData(appArg)
+    const translationData = await fetchTranslationData(appArg, langArg)
     
     // Generate TypeScript content
     console.log(`⚙️  Generating TypeScript files...`)
     const generatedContent = generateTypeScript(translationData)
     
     // Write files
-    writeFiles(generatedContent, OUTPUT_DIR)
+    writeFiles(generatedContent, OUTPUT_DIR, langArg)
     
     console.log(`\\n🎉 Successfully generated i18n TypeScript files!`)
     console.log(`📁 Output directory: ${OUTPUT_DIR}`)

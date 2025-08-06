@@ -67,38 +67,32 @@
         <p :class="bemm('help-text')">{{ t('common.fieldsHelp') }}</p>
 
         <div :class="bemm('fields-list')">
-          <div
+          <TCard
             v-for="(field, index) in formData.fields"
             :key="field.id"
             :class="bemm('field-item')"
+            :title="field.label || field.field_key || t('admin.content.sections.newField')"
+            @remove="removeField(index)"
+            :removable="true"
           >
-            <div :class="bemm('field-header')">
-              <span>{{ field.label || field.field_key || t('admin.content.sections.newField') }}</span>
-              <TButton
-                type="ghost"
-                size="small"
-                :icon="Icons.DELETE"
-                color="error"
-                @click="removeField(index)"
-              />
-            </div>
-
             <TFormGroup>
-              <TInputText
-          :inline="true"
-                v-model="field.field_key"
-                :label="t('admin.content.sections.fieldKey')"
-                :placeholder="t('admin.content.sections.fieldKeyPlaceholder')"
-                :required="true"
-                @input="() => validateFieldKey(field, index)"
-              />
-
               <TInputText
           :inline="true"
                 v-model="field.label"
                 :label="t('admin.content.sections.fieldLabel')"
                 :placeholder="t('admin.content.sections.fieldLabelPlaceholder')"
                 :required="true"
+                @update:model-value="() => onFieldLabelChange(field, index)"
+              />
+
+              <TInputText
+          :inline="true"
+                v-model="field.field_key"
+                :label="t('admin.content.sections.fieldKey')"
+                :placeholder="t('admin.content.sections.fieldKeyPlaceholder')"
+                :help="t('admin.content.sections.fieldKeyHelp', 'Auto-generated from label. Can be customized if needed.')"
+                :required="true"
+                @input="() => validateFieldKey(field, index)"
               />
               <TInputSelect
           :inline="true"
@@ -106,6 +100,7 @@
                 :label="t('admin.content.sections.fieldType')"
                 :options="fieldTypeOptions"
                 :required="true"
+                @update:modelValue="() => handleFieldTypeChange(field)"
               />
 
               <div :class="bemm('field-options')">
@@ -121,7 +116,6 @@
               </div>
             </TFormGroup>
 
-            <!-- Additional config for specific field types -->
             <div v-if="field.field_type === 'select'" :class="bemm('field-config')">
               <TTextArea
                 v-model="field.select_options"
@@ -134,6 +128,7 @@
             <div v-if="field.field_type === 'options'" :class="bemm('field-config')">
               <FieldOptionsEditor
                 v-model="field.config"
+                @update:modelValue="(value) => handleFieldConfigUpdate(index, value)"
               />
             </div>
 
@@ -142,7 +137,7 @@
                 v-model="field.config"
               />
             </div>
-          </div>
+          </TCard>
 
           <TButton
             type="outline"
@@ -182,9 +177,11 @@ import {
   TFormGroup,
   useI18n,
   TInputCheckbox,
-  TInputSelect
+  TInputSelect,
+  TCard
 } from '@tiko/ui'
 import { Icons } from 'open-icon'
+import { kebabCase } from '@sil/case'
 import { contentService, translationService } from '@tiko/core'
 import type { SectionTemplate, ContentField, Language } from '@tiko/core'
 import FieldOptionsEditor from './FieldOptionsEditor.vue'
@@ -333,6 +330,13 @@ function removeField(index: number) {
   })
 }
 
+function onFieldLabelChange(field: FieldForm, index: number) {
+  // Auto-generate field key if it's empty or was previously auto-generated
+  if (!field.field_key || field.field_key === kebabCase(field.label || '').replace(/-/g, '_')) {
+    field.field_key = kebabCase(field.label || '').replace(/-/g, '_')
+  }
+}
+
 function validateFieldKey(field: FieldForm, index: number) {
   // Ensure field key is valid identifier
   if (field.field_key) {
@@ -342,6 +346,28 @@ function validateFieldKey(field: FieldForm, index: number) {
       .replace(/[^a-z0-9_]/g, '') // Keep only lowercase letters, numbers, and underscores
       .replace(/^_+|_+$/g, '') // Remove leading/trailing underscores
   }
+}
+
+function handleFieldConfigUpdate(index: number, value: any) {
+  console.log('[CreateSectionDialog] Field config updated for index', index, ':', value)
+  console.log('[CreateSectionDialog] Value type:', typeof value)
+  console.log('[CreateSectionDialog] Value keys:', Object.keys(value || {}))
+  console.log('[CreateSectionDialog] Value.options:', value?.options)
+  console.log('[CreateSectionDialog] Before assignment - current config:', formData.fields[index].config)
+
+  formData.fields[index].config = value
+
+  console.log('[CreateSectionDialog] After assignment - new config:', formData.fields[index].config)
+  console.log('[CreateSectionDialog] Config type:', typeof formData.fields[index].config)
+  console.log('[CreateSectionDialog] Config keys:', Object.keys(formData.fields[index].config || {}))
+}
+
+function handleFieldTypeChange(field: FieldForm) {
+  // Initialize config when field type changes to options or items
+  if ((field.field_type === 'options' || field.field_type === 'items') && !field.config) {
+    field.config = {}
+  }
+  console.log('[CreateSectionDialog] Field type changed to:', field.field_type, 'config:', field.config)
 }
 
 function handleClose() {
@@ -394,21 +420,26 @@ async function handleSave() {
 
         processed.config = { options }
       }
-
       // Handle options field type (already has config from FieldOptionsEditor)
-      if (field.field_type === 'options' && field.config) {
-        processed.config = field.config
+      else if (field.field_type === 'options') {
+        // Always set config, even if empty
+        processed.config = field.config || {}
+        console.log('[CreateSectionDialog] Processing options field:', field.field_key, 'with config:', processed.config)
+        console.log('[CreateSectionDialog] Config type:', typeof processed.config)
+        console.log('[CreateSectionDialog] Config keys:', Object.keys(processed.config || {}))
+        console.log('[CreateSectionDialog] Config.options:', processed.config?.options)
+        console.log('[CreateSectionDialog] Original field config:', field.config)
       }
 
       // Handle items field type (already has config from ItemsFieldEditor)
-      if (field.field_type === 'items' && field.config) {
-        processed.config = field.config
+      else if (field.field_type === 'items') {
+        processed.config = field.config || {}
       }
 
       return processed
     })
 
-    await props.onSave?.({
+    const saveData = {
       name: formData.name.trim(),
       slug: formData.slug.trim(),
       description: formData.description.trim(),
@@ -417,7 +448,12 @@ async function handleSave() {
       is_reusable: formData.is_reusable,
       is_active: formData.is_active,
       fields: processedFields
-    })
+    }
+
+    console.log('[CreateSectionDialog] Saving section template with data:', saveData)
+    console.log('[CreateSectionDialog] Fields with config:', processedFields.filter(f => f.config))
+
+    await props.onSave?.(saveData)
 
     handleClose()
   } catch (error) {
@@ -449,12 +485,13 @@ async function loadExistingFields() {
               field.config.options) :
             ''
         }
-        
+
         // Also preserve config for options and items field types
         if ((field.field_type === 'options' || field.field_type === 'items') && field.config) {
           fieldForm.config = field.config
+          console.log('[CreateSectionDialog] Loading existing field config for', field.field_key, ':', field.config)
         }
-        
+
         return fieldForm
       })
     } catch (error) {

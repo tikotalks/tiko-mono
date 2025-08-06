@@ -14,6 +14,7 @@
 				:id="id"
 				ref="control"
 				:value="inputValue"
+				:rows="rows"
 				:style="textareaStyle"
 				:class="[bemm('control'), { 'no-resize': !allowResize }]"
 				:placeholder="placeholder"
@@ -42,6 +43,7 @@
 				ref="control"
 				:value="inputValue"
 				:style="textareaStyle"
+				:rows="rows"
 				:class="[bemm('control'), { 'no-resize': !allowResize }]"
 				:placeholder="placeholder"
 				:disabled="disabled"
@@ -75,6 +77,7 @@ interface Props {
 	minRows?: number;
 	maxRows?: number;
 	description?: string;
+	rows?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -83,6 +86,7 @@ const props = withDefaults(defineProps<Props>(), {
 	placeholder: '',
 	autoGrow: true,
 	allowResize: false,
+	rows: 3,
 	minRows: 3,
 	maxRows: 10,
 });

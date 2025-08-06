@@ -5,6 +5,7 @@
         :class="
           bemm('nav-item', [
             '',
+            'main',
             item.active ? 'active' : '',
             item.items ? 'has-children' : '',
             item.name,
@@ -15,13 +16,22 @@
         <router-link
           v-if="item.to"
           :to="item.to"
-          :class="bemm('nav-link')"
+          :class="bemm('nav-link', ['','main'])"
           :key="item.name"
           @click.native="item.action"
         >
           <TIcon :name="item.icon" />
           <span :class="bemm('label')">{{ item.label }}</span>
-          <span :class="bemm('active-indicator', ['', isOpen(item.name) ? 'active' : 'inactive'])" v-if="item.items?.length"><TIcon :name="Icons.CHEVRON_DOWN" /></span>
+          <span
+            :class="
+              bemm('active-indicator', [
+                '',
+                isOpen(item.name) ? 'active' : 'inactive',
+              ])
+            "
+            v-if="item.items?.length"
+            ><TIcon :name="Icons.CHEVRON_DOWN"
+          /></span>
         </router-link>
 
         <div
@@ -32,7 +42,16 @@
         >
           <TIcon :name="item.icon" />
           <span :class="bemm('label')">{{ item.label }}</span>
-          <span :class="bemm('active-indicator', ['', isOpen(item.name) ? 'active' : 'inactive'])" v-if="item.items?.length"><TIcon :name="Icons.CHEVRON_DOWN" /></span>
+          <span
+            :class="
+              bemm('active-indicator', [
+                '',
+                isOpen(item.name) ? 'active' : 'inactive',
+              ])
+            "
+            v-if="item.items?.length"
+            ><TIcon :name="Icons.CHEVRON_DOWN"
+          /></span>
         </div>
 
         <ul :class="bemm('nav-list', ['', 'sub'])" v-if="item.items">
@@ -44,7 +63,7 @@
             <router-link
               v-if="subItem.to"
               :to="subItem.to"
-              :class="bemm('nav-link')"
+              :class="bemm('nav-link',['', 'sub'])"
             >
               <TIcon :name="subItem.icon" />
               <span>{{ subItem.label }}</span>
@@ -72,7 +91,11 @@ import { inject, computed, ref, onMounted } from 'vue';
 import { useBemm } from 'bemm';
 import { Icons } from 'open-icon';
 import { TIcon, useI18n } from '@tiko/ui';
-import { useI18nDatabaseService, useUserPreferences, USER_PREFERENCE_KEYS } from '@tiko/core';
+import {
+  useI18nDatabaseService,
+  useUserPreferences,
+  USER_PREFERENCE_KEYS,
+} from '@tiko/core';
 
 import type { ToastService, PopupService } from '@tiko/ui';
 
@@ -83,7 +106,6 @@ const translationService = useI18nDatabaseService();
 const { t } = useI18n();
 const bemm = useBemm('admin-navigation');
 const { preferences, loadPreferences } = useUserPreferences();
-
 
 interface NavigationItem {
   name: string;
@@ -97,13 +119,13 @@ interface NavigationItem {
 
 const openedItems = ref<string[]>([]);
 
-
 onMounted(async () => {
   // Load user preferences
   await loadPreferences();
 
   // Initialize opened items from preferences
-  const savedOpenItems = preferences.value[USER_PREFERENCE_KEYS.ADMIN.NAVIGATION] || [];
+  const savedOpenItems =
+    preferences.value[USER_PREFERENCE_KEYS.ADMIN.NAVIGATION] || [];
   openedItems.value = savedOpenItems;
 });
 
@@ -170,12 +192,13 @@ const toggleOpen = (name: string) => {
   }
 
   // Save to preferences
-  preferences.value[USER_PREFERENCE_KEYS.ADMIN.NAVIGATION] = [...openedItems.value];
+  preferences.value[USER_PREFERENCE_KEYS.ADMIN.NAVIGATION] = [
+    ...openedItems.value,
+  ];
 };
 const isOpen = (name: string) => {
   return openedItems.value.includes(name);
 };
-
 
 const navigationItems = computed<NavigationItem[]>(() => [
   {
@@ -283,16 +306,22 @@ const navigationItems = computed<NavigationItem[]>(() => [
         label: t('admin.navigation.content.projects'),
       },
       {
+        name: 'content-pages',
+        to: { name: 'ContentPages' },
+        icon: Icons.BOARD_SPLIT_T_UP,
+        label: t('admin.navigation.content.pages'),
+      },
+      {
         name: 'content-sections',
         to: { name: 'ContentSections' },
         icon: Icons.BOARD_MULTI2_HORIZONTAL,
         label: t('admin.navigation.content.sections'),
       },
       {
-        name: 'content-pages',
-        to: { name: 'ContentPages' },
-        icon: Icons.BOARD_SPLIT_T_UP,
-        label: t('admin.navigation.content.pages'),
+        name: 'content-items',
+        to: { name: 'admin-content-items' },
+        icon: Icons.FOLDER,
+        label: t('admin.navigation.content.items'),
       },
     ],
   },
@@ -321,6 +350,7 @@ const navigationItems = computed<NavigationItem[]>(() => [
 </script>
 
 <style lang="scss">
+
 .admin-navigation {
   display: flex;
   flex-direction: column;
@@ -328,6 +358,14 @@ const navigationItems = computed<NavigationItem[]>(() => [
   border-right: 1px solid var(--color-border);
   padding: var(--space);
 
+  container-type: inline-size;
+
+  @container (max-width: 200px) {
+  border: 2px solid red;
+}
+@container (min-width: 200px) {
+  border: 2px solid green;
+}
   &__nav-list {
     list-style: none;
     padding: 0;
@@ -349,9 +387,19 @@ const navigationItems = computed<NavigationItem[]>(() => [
     }
   }
   &__nav-item {
-    .icon{ color: color-mix(in srgb, var(--color-secondary), var(--color-foreground) 50%); }
+    .icon {
+      color: color-mix(
+        in srgb,
+        var(--color-secondary),
+        var(--color-foreground) 50%
+      );
+    }
+
+    &--main{
+      .icon{}
+    }
     &--sub {
-      font-size: .75em;
+      font-size: 0.75em;
     }
 
     &--active {
@@ -363,8 +411,6 @@ const navigationItems = computed<NavigationItem[]>(() => [
     &--has-children {
       // border: 2px solid red;
     }
-
-
 
     &--active {
       .admin-navigation__nav-list {
@@ -386,7 +432,11 @@ const navigationItems = computed<NavigationItem[]>(() => [
     gap: var(--space-xs);
     cursor: pointer;
     &:hover:not(.admin-layout__nav-link--header) {
-      background-color: color-mix( in srgb, var(--color-primary), transparent 80%);
+      background-color: color-mix(
+        in srgb,
+        var(--color-primary),
+        transparent 80%
+      );
     }
 
     &--header {
@@ -419,15 +469,15 @@ const navigationItems = computed<NavigationItem[]>(() => [
     }
   }
 
-  &__label{
+  &__label {
     width: 100%;
   }
 
-  &__active-indicator{
-    transition: .2s ease-in-out;
+  &__active-indicator {
+    transition: 0.2s ease-in-out;
 
-    &--active{
-      transform: scale(1,-1);
+    &--active {
+      transform: scale(1, -1);
     }
   }
 }

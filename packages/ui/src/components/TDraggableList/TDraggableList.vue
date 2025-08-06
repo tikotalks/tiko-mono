@@ -1,38 +1,35 @@
 <template>
   <div :class="bemm()">
-    <TransitionGroup name="draggable-list" tag="div" :class="bemm('container')">
+    <div :class="bemm('container')">
       <div
-        v-for="item in items"
+        v-for="(item, index) in items"
         :key="item.id"
-        :data-draggable-id="item.id"
         :class="bemm('item', {
-          dragging: draggedItem?.id === item.id,
-          'drag-over': draggedOverItem?.id === item.id,
-          disabled: !isEnabled
+          disabled: !enabled
         })"
-        :draggable="isEnabled"
-        @dragstart="handleDragStart($event, item)"
-        @dragover="handleDragOver($event, item)"
-        @dragend="handleDragEnd"
-        @drop="handleDragEnd"
-        @touchstart="handleTouchStart($event, item)"
-        @touchmove="handleTouchMove"
-        @touchend="handleTouchEnd"
+        :draggable="enabled"
+        @dragstart="enabled && handleDragStart($event, index)"
+        @dragenter="enabled && handleDragEnter($event)"
+        @dragleave="enabled && handleDragLeave($event)"
+        @dragover="enabled && handleDragOver($event)"
+        @drop="enabled && handleDrop($event, index)"
+        @dragend="enabled && handleDragEnd($event)"
       >
-        <div v-if="isEnabled" :class="bemm('handle')">
-          <TIcon name="drag-handle" size="1.5rem" />
+        <div v-if="enabled" :class="bemm('handle')">
+          <TIcon :name="Icons.THREE_DOTS_VERTICAL" size="1.5rem" />
         </div>
         <div :class="bemm('content')">
-          <slot :item="item" :index="items.indexOf(item)" />
+          <slot :item="item" :index="index" />
         </div>
       </div>
-    </TransitionGroup>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts" generic="T extends DraggableItem">
-import { computed, toRef } from 'vue'
+import { toRef } from 'vue'
 import { useBemm } from 'bemm'
+import { Icons } from 'open-icon'
 import { useDraggable, type DraggableItem } from '../../composables/useDraggable'
 import TIcon from '../TIcon/TIcon.vue'
 
@@ -50,27 +47,15 @@ const bemm = useBemm('draggable-list')
 const itemsRef = toRef(props, 'items')
 
 const {
-  isDragging,
-  draggedItem,
-  draggedOverItem,
   handleDragStart,
+  handleDragEnter,
+  handleDragLeave,
   handleDragOver,
-  handleDragEnd,
-  handleTouchMove,
-  isEnabled
+  handleDrop,
+  handleDragEnd
 } = useDraggable(itemsRef, {
-  onReorder: props.onReorder,
-  enabled: computed(() => props.enabled)
+  onReorder: props.onReorder
 })
-
-// Touch event handlers with proper types
-const handleTouchStart = (event: TouchEvent, item: T) => {
-  handleDragStart(event, item)
-}
-
-const handleTouchEnd = (event: TouchEvent) => {
-  handleDragEnd(event)
-}
 </script>
 
 <style lang="scss" scoped>
@@ -91,25 +76,22 @@ const handleTouchEnd = (event: TouchEvent) => {
     padding: var(--space-s);
     transition: all 0.2s ease;
     user-select: none;
-    -webkit-user-select: none;
-    touch-action: none;
 
-    &--dragging {
-      opacity: 0.5;
-      transform: scale(0.95);
-    }
-
-    &--drag-over {
-      border-color: var(--color-primary);
-      background-color: var(--color-primary-light);
+    &:not(.draggable-list__item--disabled) {
+      cursor: grab;
+      
+      &:active {
+        cursor: grabbing;
+      }
+      
+      &:hover {
+        border-color: var(--color-accent-hover);
+      }
     }
 
     &--disabled {
       cursor: default;
-    }
-
-    &:not(.draggable-list__item--disabled) {
-      cursor: move;
+      opacity: 0.6;
     }
   }
 
@@ -119,6 +101,12 @@ const handleTouchEnd = (event: TouchEvent) => {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+    
+    .draggable-list__item:hover & {
+      opacity: 1;
+    }
   }
 
   &__content {
@@ -127,24 +115,15 @@ const handleTouchEnd = (event: TouchEvent) => {
   }
 }
 
-.draggable-list-move,
-.draggable-list-enter-active,
-.draggable-list-leave-active {
-  transition: all 0.3s ease;
+// Drag state styles
+.dragging {
+  opacity: 0.5;
+  transform: scale(0.98);
 }
 
-.draggable-list-enter-from {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.draggable-list-leave-to {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-.draggable-list-leave-active {
-  position: absolute;
-  width: 100%;
+.drag-over {
+  border-color: var(--color-primary) !important;
+  background-color: rgba(var(--color-primary-rgb), 0.1) !important;
+  transform: translateY(-2px);
 }
 </style>

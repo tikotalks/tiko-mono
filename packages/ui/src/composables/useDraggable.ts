@@ -1,4 +1,4 @@
-import { ref, computed, type Ref } from 'vue'
+import { ref, type Ref } from 'vue'
 
 export interface DraggableItem {
   id: string
@@ -7,134 +7,102 @@ export interface DraggableItem {
 
 export interface UseDraggableOptions {
   onReorder?: (items: DraggableItem[]) => void | Promise<void>
-  enabled?: Ref<boolean> | boolean
 }
 
 export function useDraggable<T extends DraggableItem>(
   items: Ref<T[]>,
   options: UseDraggableOptions = {}
 ) {
-  const { onReorder, enabled = true } = options
+  const { onReorder } = options
   
-  const isDragging = ref(false)
-  const draggedItem = ref<T | null>(null)
-  const draggedOverItem = ref<T | null>(null)
-  const touchStartY = ref(0)
-  const touchCurrentY = ref(0)
+  let dragSrcEl: HTMLElement | null = null
+  let dragSrcIndex: number = -1
   
-  const isEnabled = computed(() => 
-    typeof enabled === 'boolean' ? enabled : enabled.value
-  )
-
-  // Handle drag start (mouse/touch)
-  const handleDragStart = (event: DragEvent | TouchEvent, item: T) => {
-    if (!isEnabled.value) return
+  const handleDragStart = (e: DragEvent, index: number) => {
+    const target = e.currentTarget as HTMLElement
+    dragSrcEl = target
+    dragSrcIndex = index
     
-    isDragging.value = true
-    draggedItem.value = item
+    // Add dragging class
+    target.classList.add('dragging')
     
-    if (event instanceof DragEvent && event.dataTransfer) {
-      event.dataTransfer.effectAllowed = 'move'
-      event.dataTransfer.setData('text/plain', item.id)
-      
-      // Create a drag image
-      const target = event.target as HTMLElement
-      if (target) {
-        const dragImage = target.cloneNode(true) as HTMLElement
-        dragImage.style.opacity = '0.5'
-        document.body.appendChild(dragImage)
-        event.dataTransfer.setDragImage(dragImage, 0, 0)
-        setTimeout(() => dragImage.remove(), 0)
-      }
-    } else if (event instanceof TouchEvent) {
-      // For touch events, store the initial Y position
-      touchStartY.value = event.touches[0].clientY
-      touchCurrentY.value = event.touches[0].clientY
-      
-      // Add class to the element being dragged
-      const target = event.target as HTMLElement
-      target.classList.add('dragging')
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = 'move'
+      e.dataTransfer.setData('text/html', target.innerHTML)
     }
   }
-
-  // Handle drag over
-  const handleDragOver = (event: DragEvent | TouchEvent, item: T) => {
-    if (!isEnabled.value || !isDragging.value) return
-    
-    event.preventDefault()
-    draggedOverItem.value = item
-    
-    if (event instanceof TouchEvent) {
-      touchCurrentY.value = event.touches[0].clientY
+  
+  const handleDragEnter = (e: DragEvent) => {
+    const target = e.currentTarget as HTMLElement
+    if (target && target !== dragSrcEl) {
+      target.classList.add('drag-over')
     }
   }
-
-  // Handle drag end
-  const handleDragEnd = (event: DragEvent | TouchEvent) => {
-    if (!isEnabled.value || !isDragging.value) return
-    
-    if (event instanceof TouchEvent) {
-      // Remove dragging class
-      const target = event.target as HTMLElement
-      target.classList.remove('dragging')
+  
+  const handleDragLeave = (e: DragEvent) => {
+    const target = e.currentTarget as HTMLElement
+    if (target) {
+      target.classList.remove('drag-over')
+    }
+  }
+  
+  const handleDragOver = (e: DragEvent) => {
+    if (e.preventDefault) {
+      e.preventDefault()
     }
     
-    if (draggedItem.value && draggedOverItem.value && draggedItem.value.id !== draggedOverItem.value.id) {
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = 'move'
+    }
+    
+    return false
+  }
+  
+  const handleDrop = (e: DragEvent, dropIndex: number) => {
+    if (e.stopPropagation) {
+      e.stopPropagation()
+    }
+    
+    const target = e.currentTarget as HTMLElement
+    target.classList.remove('drag-over')
+    
+    if (dragSrcIndex !== -1 && dragSrcIndex !== dropIndex) {
+      // Reorder the items
       const newItems = [...items.value]
-      const draggedIndex = newItems.findIndex(item => item.id === draggedItem.value!.id)
-      const draggedOverIndex = newItems.findIndex(item => item.id === draggedOverItem.value!.id)
+      const [draggedItem] = newItems.splice(dragSrcIndex, 1)
+      newItems.splice(dropIndex, 0, draggedItem)
       
-      if (draggedIndex !== -1 && draggedOverIndex !== -1) {
-        // Remove dragged item
-        const [removed] = newItems.splice(draggedIndex, 1)
-        // Insert at new position
-        newItems.splice(draggedOverIndex, 0, removed)
-        
-        // Update the items array
-        items.value = newItems
-        
-        // Call the reorder callback
-        if (onReorder) {
-          onReorder(newItems)
-        }
+      // Update the reactive array
+      items.value = newItems
+      
+      // Call the callback
+      if (onReorder) {
+        onReorder(newItems)
       }
     }
     
-    // Reset state
-    isDragging.value = false
-    draggedItem.value = null
-    draggedOverItem.value = null
+    return false
   }
-
-  // Touch move handler (to track the element under touch)
-  const handleTouchMove = (event: TouchEvent) => {
-    if (!isEnabled.value || !isDragging.value) return
+  
+  const handleDragEnd = (e: DragEvent) => {
+    const target = e.currentTarget as HTMLElement
+    target.classList.remove('dragging')
     
-    event.preventDefault()
-    const touch = event.touches[0]
-    const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY)
+    // Clean up any remaining drag-over classes
+    const dragOverElements = document.querySelectorAll('.drag-over')
+    dragOverElements.forEach(el => el.classList.remove('drag-over'))
     
-    if (elementBelow) {
-      // Find the draggable item container
-      const itemElement = elementBelow.closest('[data-draggable-id]')
-      if (itemElement) {
-        const itemId = itemElement.getAttribute('data-draggable-id')
-        const item = items.value.find(i => i.id === itemId)
-        if (item && item.id !== draggedItem.value?.id) {
-          draggedOverItem.value = item
-        }
-      }
-    }
+    // Cleanup
+    dragSrcEl = null
+    dragSrcIndex = -1
   }
-
+  
   return {
-    isDragging,
-    draggedItem,
-    draggedOverItem,
     handleDragStart,
+    handleDragEnter,
+    handleDragLeave,
     handleDragOver,
-    handleDragEnd,
-    handleTouchMove,
-    isEnabled
+    handleDrop,
+    handleDragEnd
   }
 }

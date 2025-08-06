@@ -68,7 +68,8 @@ export class UploadService {
         description: data.description || '',
         tags: data.tags || [],
         categories: data.categories || [],
-        ai_analyzed: !!(data.description || (data.tags && data.tags.length > 0))
+        ai_analyzed: !!(data.description || (data.tags && data.tags.length > 0)),
+        is_private: false
       }
       
       console.log('Saving to database:', mediaData) // Debug log

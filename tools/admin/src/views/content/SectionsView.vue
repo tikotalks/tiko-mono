@@ -478,15 +478,26 @@ function openEditTemplateDialog(template: SectionTemplate) {
 }
 
 async function handleDeleteTemplate(template: SectionTemplate) {
+  // Count sections using this template
+  const sectionsUsingTemplate = sections.value.filter(s => s.section_template_id === template.id).length
+  
+  let warningMessage = t('admin.content.sections.deleteTemplateMessage', { name: template.name })
+  if (sectionsUsingTemplate > 0) {
+    warningMessage += '\n\n' + t('admin.content.sections.templateInUseWarning', 
+      `Warning: ${sectionsUsingTemplate} section(s) are using this template. You must delete them first.`,
+      { count: sectionsUsingTemplate })
+  }
+
   popupService?.open({
     component: ConfirmDialog,
     props: {
       title: t('admin.content.sections.deleteTemplateConfirm'),
-      message: t('admin.content.sections.deleteTemplateMessage', { name: template.name }),
+      message: warningMessage,
       confirmLabel: t('common.delete'),
       cancelLabel: t('common.cancel'),
       confirmColor: 'error',
       icon: Icons.ALERT_CIRCLE,
+      disabled: sectionsUsingTemplate > 0,
       onConfirm: async () => {
         try {
           await contentService.deleteSectionTemplate(template.id)
@@ -495,12 +506,23 @@ async function handleDeleteTemplate(template: SectionTemplate) {
             type: 'success'
           })
           await loadSectionTemplates()
-        } catch (error) {
+        } catch (error: any) {
           console.error('Failed to delete template:', error)
-          toastService?.show({
-            message: t('admin.content.sections.templateDeleteError'),
-            type: 'error'
-          })
+          
+          // Check if it's a foreign key constraint error
+          if (error.message?.includes('foreign key constraint') || error.message?.includes('is still referenced')) {
+            toastService?.show({
+              message: t('admin.content.sections.templateDeleteConstraintError', 
+                'Cannot delete this template because it has sections using it. Delete all sections of this type first.'),
+              type: 'error',
+              duration: 5000
+            })
+          } else {
+            toastService?.show({
+              message: t('admin.content.sections.templateDeleteError'),
+              type: 'error'
+            })
+          }
         }
       }
     }

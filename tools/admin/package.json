@@ -21,6 +21,7 @@
     "ios:run": "pnpm run build && cap sync ios && cap open ios"
   },
   "dependencies": {
+    "@sil/case": "^0.3.1",
     "@tiko/core": "workspace:*",
     "@tiko/ui": "workspace:*",
     "bemm": "^1.2.2",

@@ -70,7 +70,7 @@
             :disabled="isLoading"
             :class="bemm('skip-button')"
             data-cy="skip-auth-button"
-            >{{ t(keys.auth.skipLogin) || 'Skip Login' }}</TButton
+            >{{ t(keys.auth.skipLogin) }}</TButton
           >
 
           <!-- Register Link -->

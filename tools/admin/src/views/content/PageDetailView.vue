@@ -80,7 +80,7 @@
 
 
         <div v-else-if="pageSections.length > 0" :class="bemm('sections-list')">
-          <TDraggableList
+          <TDragList
             :items="pageSections"
             :enabled="true"
             :on-reorder="handleSectionsReorder"
@@ -111,7 +111,7 @@
                 </div>
               </div>
             </template>
-          </TDraggableList>
+          </TDragList>
         </div>
 
         <TEmptyState
@@ -139,15 +139,6 @@
         <pre :class="bemm('page-data')">{{ JSON.stringify(page.page_data, null, 2) }}</pre>
       </TCard>
 
-      <!-- Field Values Debug (temporary) -->
-      <TCard :class="bemm('section')">
-        <h3 :class="bemm('section-title')">Field Values Debug</h3>
-        <FieldValuesDebug
-          :page-id="page.id"
-          :language-code="page.language_code"
-        />
-      </TCard>
-
       <!-- Actions -->
       <TCard :class="bemm('section')">
         <h3 :class="bemm('section-title')">{{ t('admin.content.page.actions') }}</h3>
@@ -155,7 +146,7 @@
         <div :class="bemm('actions')">
           <TButton
             color="primary"
-            :icon="Icons.EDIT"
+            :icon="Icons.EDIT_M"
             @click="handleEdit"
           >
             {{ t('common.edit') }}
@@ -164,7 +155,7 @@
           <TButton
             v-if="!page.is_published"
             color="success"
-            :icon="Icons.CHECK"
+            :icon="Icons.CHECK_M"
             @click="handlePublish"
           >
             {{ t('admin.content.page.publish') }}
@@ -173,7 +164,7 @@
           <TButton
             v-else
             color="warning"
-            :icon="Icons.PAUSE"
+            :icon="Icons.PLAYBACK_PAUSE"
             @click="handleUnpublish"
           >
             {{ t('admin.content.page.unpublish') }}
@@ -181,7 +172,7 @@
 
           <TButton
             color="error"
-            :icon="Icons.DELETE"
+            :icon="Icons.MULTIPLY_M"
             @click="handleDelete"
           >
             {{ t('common.delete') }}
@@ -192,7 +183,7 @@
 
     <TEmptyState
       v-else
-      :icon="Icons.DOCUMENT"
+      :icon="Icons.FILE_INFO"
       :title="t('admin.content.page.notFound')"
       :description="t('admin.content.page.notFoundDescription')"
     >
@@ -221,7 +212,7 @@ import {
   TList,
   TListItem,
   TListCell,
-  TDraggableList,
+  TDragList,
   TIcon,
   ConfirmDialog,
   useI18n
@@ -283,6 +274,9 @@ async function loadPageSections() {
     // Load page sections
     const sections = await contentService.getPageSections(page.value.id)
 
+    // Debug: Log what we get from the API
+    console.log('Loaded page sections from API:', sections)
+
     // Debug: Check section_id values in raw data
     let nullSectionCount = 0
     sections?.forEach((section, index) => {
@@ -335,7 +329,9 @@ async function loadPageSections() {
           pageSection: {
             ...pageSection,
             // NEVER use section_template_id as section_id - they are different concepts!
-            section_id: pageSection.section_id // Keep the actual section_id, even if null
+            section_id: pageSection.section_id, // Keep the actual section_id, even if null
+            // Ensure section_template_id is ALWAYS preserved
+            section_template_id: pageSection.section_template_id || template?.id
           },
           section: sectionInstance || template, // Use section instance if available, fallback to template
           content: sectionContent, // Actual content from section instance
@@ -348,7 +344,8 @@ async function loadPageSections() {
         sectionsWithTemplates.push({
           pageSection: {
             ...pageSection,
-            section_id: pageSection.section_id // Preserve section_id even in error case
+            section_id: pageSection.section_id, // Preserve section_id even in error case
+            section_template_id: pageSection.section_template_id // ALWAYS preserve section_template_id
           },
           section: null,
           content: {},
@@ -484,6 +481,12 @@ async function handleAddSection(sectionData: Omit<PageSection, 'page_id'> & { se
 async function handleSectionsReorder(newSections: any[]) {
   if (!page.value) return
 
+  // Debug: Log what we receive
+  console.log('handleSectionsReorder called with:', newSections)
+  if (newSections && newSections.length > 0) {
+    console.log('First section data:', JSON.stringify(newSections[0], null, 2))
+  }
+
   // Store the original sections in case we need to restore them
   const originalSections = [...pageSections.value]
 
@@ -499,6 +502,11 @@ async function handleSectionsReorder(newSections: any[]) {
     const updatedSections = newSections.map((section, index) => {
       // Deep clone to ensure we don't lose any properties
       const clonedSection = JSON.parse(JSON.stringify(section))
+
+      // Debug: Check if section_template_id exists before and after clone
+      console.log(`Section ${index} before clone - section_template_id:`, section.pageSection?.section_template_id)
+      console.log(`Section ${index} after clone - section_template_id:`, clonedSection.pageSection?.section_template_id)
+
       clonedSection.pageSection.order_index = index
       return clonedSection
     })
@@ -523,15 +531,38 @@ async function handleSectionsReorder(newSections: any[]) {
           duration: 5000
         })
       }
-      
-      // Get section_template_id from the pageSection or fall back to section
-      const section_template_id = s.pageSection?.section_template_id || s.section?.section_template_id
-      
+
+      // Get section_template_id from the pageSection
+      const section_template_id = s.pageSection?.section_template_id
+
       if (!section_template_id) {
-        console.error('❌ Missing section_template_id for section:', s)
-        throw new Error(`Section "${s.pageSection?.override_name || 'unknown'}" is missing section_template_id`)
+        console.warn('Section without section_template_id:', s.pageSection?.override_name || 'unknown')
+        
+        // Try to get it from the section (template/instance) if available
+        const fallbackTemplateId = s.section?.section_template_id || s.section?.id
+        if (fallbackTemplateId) {
+          console.warn('Using fallback section_template_id from section:', fallbackTemplateId)
+          // Fix the data for the API call
+          return {
+            page_id: s.pageSection.page_id,
+            section_template_id: fallbackTemplateId,
+            section_id: s.pageSection.section_id,
+            order_index: s.pageSection.order_index,
+            override_name: s.pageSection.override_name
+          }
+        }
+
+        // Allow sections without template_id (they might be special sections)
+        console.warn('Allowing section without template_id:', s.pageSection?.override_name)
+        return {
+          page_id: s.pageSection.page_id,
+          section_template_id: null,
+          section_id: s.pageSection.section_id,
+          order_index: s.pageSection.order_index,
+          override_name: s.pageSection.override_name
+        }
       }
-      
+
       return {
         page_id: s.pageSection.page_id,
         section_template_id: section_template_id,

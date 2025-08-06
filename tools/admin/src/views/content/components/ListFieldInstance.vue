@@ -4,11 +4,11 @@
     <p v-if="helpText" :class="bemm('help')">{{ helpText }}</p>
     
     <TTextArea
-      v-model="modelValue"
+      :modelValue="modelValue"
       :placeholder="placeholder"
       :rows="8"
       :required="required"
-      @update:model-value="emit('update:modelValue', $event)"
+      @update:modelValue="emit('update:modelValue', $event)"
     />
     
     <div :class="bemm('preview')" v-if="parsedItems.length > 0">

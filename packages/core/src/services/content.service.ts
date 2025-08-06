@@ -84,12 +84,15 @@ export interface ContentPage {
   project_id: string
   template_id?: string
   parent_id?: string
+  depth?: number
   language_code: string
   slug: string
   title: string
   full_path: string
   is_home: boolean
   is_published: boolean
+  show_in_navigation: boolean
+  navigation_order: number
   page_data?: Record<string, any>
   seo_title?: string
   seo_description?: string
@@ -1335,6 +1338,35 @@ class ContentService {
     } catch (error) {
       console.error('Error resolving linked item:', error)
       return null
+    }
+  }
+
+  async updatePagesOrder(pages: Array<{ id: string; navigation_order: number }>): Promise<void> {
+    try {
+      // Update each page with its new order
+      const updates = pages.map(page => 
+        this.makeRequest(`/content_pages?id=eq.${page.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ navigation_order: page.navigation_order })
+        })
+      )
+      
+      await Promise.all(updates)
+    } catch (error) {
+      console.error('Failed to update pages order:', error)
+      throw error
+    }
+  }
+
+  async togglePageNavigation(pageId: string, showInNavigation: boolean): Promise<void> {
+    try {
+      await this.makeRequest(`/content_pages?id=eq.${pageId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ show_in_navigation: showInNavigation })
+      })
+    } catch (error) {
+      console.error('Failed to toggle page navigation:', error)
+      throw error
     }
   }
 }

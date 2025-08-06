@@ -1,10 +1,12 @@
 <template>
   <section :class="bemm()">
+    {{ content.template }}
     <div :class="bemm('container')">
-      <h2 v-if="content?.title" :class="bemm('title')">
+      <h6 v-if="content?.subtitle">{{ content.subtitle }}</h6>
+      <h2 v-if="content?.title" :class="[bemm('title'),'title']">
         {{ content.title }}
       </h2>
-      <div v-if="content?.body" :class="bemm('content')" v-html="content.body"></div>
+      <MarkdownRenderer v-if="content?.content" :class="bemm('content')" :content="content.content" />
     </div>
   </section>
 </template>
@@ -12,6 +14,7 @@
 <script setup lang="ts">
 import { useBemm } from 'bemm'
 import type { ContentSection } from '@tiko/core'
+import MarkdownRenderer from '../MarkdownRenderer.vue';
 
 interface TextSectionProps {
   section: ContentSection
@@ -24,25 +27,20 @@ const bemm = useBemm('text-section')
 
 <style lang="scss">
 .text-section {
-  padding: var(--space-xl) 0;
-  border: 1px solid red;
+  padding: var(--spacing);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
 
   &__container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 var(--space);
+display: flex;
+    flex-direction: column;
+    gap: var(--space);
   }
 
   &__title {
-    font-size: var(--font-size-2xl);
-    text-align: center;
-    margin-bottom: var(--space-xl);
-    color: var(--color-foreground);
   }
 
   &__content {
-    max-width: 800px;
-    margin: 0 auto;
     color: var(--color-foreground-secondary);
     line-height: 1.6;
 

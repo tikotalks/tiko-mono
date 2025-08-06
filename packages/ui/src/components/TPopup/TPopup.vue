@@ -290,11 +290,12 @@ const hasSlot = (name: string) => {
 		background-color: color-mix(in srgb, var(--color-tertiary), var(--color-background) 90%);
 		z-index: 10;
 		position: sticky;
-		top: 0;
+		bottom: 0;
 
 		display: flex;
 		gap: var(--space);
 		align-items: center;
+		justify-content: flex-end;
 
 		&:has(.popup__close) {
 			padding-right: var(--space-xl);

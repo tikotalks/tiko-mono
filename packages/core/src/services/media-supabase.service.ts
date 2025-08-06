@@ -56,7 +56,8 @@ export class SupabaseMediaService implements MediaService {
           description: data.description,
           tags: data.tags,
           categories: data.categories,
-          ai_analyzed: data.ai_analyzed
+          ai_analyzed: data.ai_analyzed,
+          is_private: data.is_private || false
         })
       })
 
@@ -104,6 +105,7 @@ export class SupabaseMediaService implements MediaService {
   async getPublicMediaList(): Promise<MediaItem[]> {
     try {
       console.log('[MediaService] Fetching public media list...')
+      // TODO: Add back &is_private=eq.false filter after database migration is applied
       const response = await fetch(`${this.API_URL}/media?select=*&order=created_at.desc`, {
         headers: {
           'apikey': this.ANON_KEY,
@@ -127,8 +129,13 @@ export class SupabaseMediaService implements MediaService {
       }
 
       const data = await response.json()
-      console.log('[MediaService] Successfully fetched', data.length, 'media items')
-      return data || []
+      
+      // TODO: Remove this client-side filter after database migration is applied
+      // For now, filter out private media on the client side
+      const publicMedia = (data || []).filter((item: MediaItem) => !item.is_private)
+      
+      console.log('[MediaService] Successfully fetched', publicMedia.length, 'public media items')
+      return publicMedia
     } catch (error) {
       console.error('[MediaService] Error in getPublicMediaList:', error)
       throw error

@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import { useBemm } from 'bemm';
-import { ref, defineProps } from 'vue';
+import { ref } from 'vue';
 
 const bemm = useBemm('yes-no-button');
 

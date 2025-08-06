@@ -78,7 +78,7 @@
 
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
-import { ref, reactive, onMounted, watch, defineProps, defineModel } from 'vue';
+import { ref, reactive, onMounted, watch } from 'vue';
 import { Icons } from 'open-icon';
 import Icon from '../Icon.vue';
 import { eventBus } from '@/utils/eventBus';

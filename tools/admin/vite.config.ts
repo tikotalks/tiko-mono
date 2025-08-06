@@ -3,6 +3,9 @@ import { createViteConfig } from '../../vite.config.base'
 const pwaConfig = {
   registerType: 'autoUpdate',
   includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+  workbox: {
+    maximumFileSizeToCacheInBytes: 3 * 1024 * 1024 // 3 MB
+  },
   manifest: {
     name: 'Admin - Tiko',
     short_name: 'Admin',

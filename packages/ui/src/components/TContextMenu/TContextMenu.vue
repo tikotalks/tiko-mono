@@ -19,7 +19,7 @@
 
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
-import { defineProps, ref, watch, type PropType } from 'vue';
+import { ref, watch, type PropType } from 'vue';
 import { type ContextMenuConfig, ContextMenuConfigDefault } from './ContextMenu.model';
 import ContextMenuItems from './ContextMenuItems.vue';
 import { processMenuItems } from './ContextMenu.utils';

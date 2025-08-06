@@ -90,7 +90,7 @@
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
 import type { PropType } from 'vue';
-import { ref, defineProps, defineModel, computed, watch, useId } from 'vue';
+import { ref, computed, watch, useId } from 'vue';
 import TIcon from '../TIcon/TIcon.vue';
 import TInputText from './inputs/TInputText/TInputText.vue';
 import { type CollapseOptions, collapseOptions } from './options';

@@ -5,7 +5,7 @@
       :description="t(keys.admin.languages.description)"
     >
       <template #actions>
-        <TButton :icon="Icons.ADD" @click="showAddLanguage">
+        <TButton :icon="Icons.ADD_M" @click="showAddLanguage">
           {{ t(keys.admin.languages.addLanguage) }}
         </TButton>
       </template>
@@ -32,7 +32,7 @@
           :clickable="true"
           @click="editLanguage(language)"
         >
-          <TListCell type="text" :content="language.code" />
+          <TListCell type="id" :content="language.code" />
           <TListCell type="text" :content="language.name" />
           <TListCell type="text" :content="language.native_name" />
           <TListCell type="custom">

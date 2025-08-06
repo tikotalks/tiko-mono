@@ -181,6 +181,12 @@ const getSortIcon = (column: string) => {
     flex-direction: column;
   }
 
+  &__empty {
+    padding: var(--space-xl);
+    text-align: center;
+    color: var(--color-text-secondary);
+  }
+
   &__list-header {
     display: flex;
     justify-content: space-between;

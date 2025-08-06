@@ -5,11 +5,13 @@
     </div>
     <div :class="bemm('container')" >
       <h2 v-if="content?.title" :class="bemm('title')" v-html="processTitle(content.title)" />
-      <div
-        v-if="content?.body"
+      <h4 v-if="content?.subtitle" :class="bemm('subtitle')" v-html="content.subtitle" />
+
+      <MarkdownRenderer
+        v-if="content?.content"
         :class="bemm('content')"
-        v-html="content.body"
-      ></div>
+        :content="content.content"
+      />
 
       <TButtonGroup v-if="content?.ctas">
         <TButton
@@ -26,7 +28,7 @@
     </div>
 
   </section>
-  image: {{ imageUrl }}
+
 </template>
 
 <script setup lang="ts">
@@ -36,6 +38,7 @@ import { useImages, useImageUrl } from '@tiko/core';
 import {  onMounted, ref } from 'vue';
 import { TButton, TButtonGroup } from '@tiko/ui';
 import { processTitle } from '@/utils/processTitle';
+import MarkdownRenderer from '../MarkdownRenderer.vue';
 
 interface TextSectionProps {
   section: ContentSection | null;
@@ -50,9 +53,18 @@ const { getImageVariants } = useImageUrl();
 
 const imageUrl = ref('');
 
+
+const getFirst = (val: string | string[]) => {
+  if (Array.isArray(val)) {
+    return val[0];
+  }
+  return val;
+};
+
 const loadImage = async () => {
   if (props.content.image) {
-    const image = getImage(props.content.image);
+    const imageId = getFirst(props.content.image);
+    const image = getImage(imageId);
     console.log('Image:', image);
     if (image) {
       imageUrl.value = getImageVariants(image.original_url).large;
@@ -62,14 +74,12 @@ const loadImage = async () => {
   }
 };
 
-const handleAction = (cta: any) => {
-  if (cta.link) {
-    if (cta.link.startsWith('http')) {
-      window.open(cta.link, '_blank');
-    } else {
-      // Handle internal navigation if needed
-      console.warn('Internal links not implemented in this section');
-    }
+const handleAction = (cta: { type?: string; color?: string; size?: string; text: string; action: string }) => {
+  if (cta.action.startsWith('http')) {
+    window.open(cta.action, '_blank');
+  } else {
+    // Handle internal actions
+    console.log(`Action: ${cta.action}`);
   }
 };
 

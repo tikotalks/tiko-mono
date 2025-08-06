@@ -397,6 +397,17 @@
 		background-position: right 0.7rem top 50%;
 		background-size: 1em auto;
 	}
+	&__control-container{
+		&::after{
+			width: .5em; height: .5em; border: 1px solid var(--color-primary);
+			border-top-color: transparent;
+			border-left-color: transparent;
+			bottom:1.125em;
+			transform: rotate(45deg);
+			z-index: 10;
+			position: absolute; right: var(--space); display: block;content: "";
+		}
+	}
 }
 
 @mixin inputSelectIcon() {

@@ -474,20 +474,33 @@ class TranslationService {
       // Get current versions for this batch - use simpler approach per key/language pair
       const versionMap = new Map<string, number>()
       
-      // Fetch versions for each key-language pair individually to avoid complex OR queries
-      for (const t of batch) {
-        try {
-          const existing = await this.makeRequest(
-            `/i18n_translations?key_id=eq.${t.key_id}&language_code=eq.${t.language_code}&order=version.desc&limit=1`
-          )
-          if (existing.length > 0) {
-            const mapKey = `${t.key_id}-${t.language_code}`
-            versionMap.set(mapKey, existing[0].version)
+      // Get all unique key IDs in this batch
+      const uniqueKeyIds = [...new Set(batch.map(t => t.key_id))]
+      
+      // Fetch all existing translations for these keys in one query
+      try {
+        const keyIdList = uniqueKeyIds.join(',')
+        const existingTranslations = await this.makeRequest(
+          `/i18n_translations?key_id=in.(${keyIdList})&select=key_id,language_code,version&order=key_id,language_code,version.desc`
+        )
+        
+        // Build version map from results
+        const latestVersions = new Map<string, number>()
+        for (const trans of existingTranslations) {
+          const mapKey = `${trans.key_id}-${trans.language_code}`
+          // Only keep the highest version for each key-language pair
+          if (!latestVersions.has(mapKey) || trans.version > latestVersions.get(mapKey)!) {
+            latestVersions.set(mapKey, trans.version)
           }
-        } catch (error) {
-          console.warn(`Failed to fetch version for key ${t.key_id}, language ${t.language_code}:`, error)
-          // Continue with version 1 for this translation
         }
+        
+        // Set the versions in our map
+        for (const [key, version] of latestVersions) {
+          versionMap.set(key, version)
+        }
+      } catch (error) {
+        console.warn(`Failed to fetch versions for batch:`, error)
+        // Continue with version 1 for all translations
       }
 
       // Add versions to translations

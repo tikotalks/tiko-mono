@@ -46,7 +46,7 @@ const { hasItems } = useUpload(uploadService, toastService);
     border-right: 1px solid var(--color-border);
 
 
-    @media screen and (max-width: 768px) {
+    @media screen and (max-width: 1024px) {
       position: fixed;
       top: var(--spacing);
       border: 1px solid var(--color-secondary);

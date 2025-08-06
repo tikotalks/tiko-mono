@@ -138,6 +138,12 @@
             :description="t('admin.media.categoriesHelp')"
             :placeholder="t('admin.media.categoriesPlaceholder')"
           />
+
+          <TInputCheckbox
+            v-model="editForm.is_private"
+            :label="t('admin.media.private')"
+            :description="t('admin.media.privateHelp')"
+          />
         </TFormGroup>
         <div class="content" v-else>
           <dl>
@@ -159,6 +165,13 @@
           <dd><TChipGroup :class="bemm('category')">
             <TChip v-for="category in media.categories" :key="category">{{ category }}</TChip>
           </TChipGroup></dd>
+
+          <dt>{{ t('admin.media.visibility') }}</dt>
+          <dd>
+            <TChip :color="media.is_private ? 'warning' : 'success'">
+              {{ media.is_private ? t('admin.media.private') : t('admin.media.public') }}
+            </TChip>
+          </dd>
 
         </dl>
         </div>
@@ -219,7 +232,7 @@ import { ref, onMounted, computed, inject } from 'vue';
 import { Icons } from 'open-icon';
 import { useRoute, useRouter } from 'vue-router';
 import { useBemm } from 'bemm';
-import { TTextArea, useI18n, TFormGroup, TChip,  TCard, TButton, TIcon, TSpinner, TInput, TChipGroup, ConfirmDialog, ButtonType } from '@tiko/ui';
+import { TTextArea, useI18n, TFormGroup, TChip,  TCard, TButton, TIcon, TSpinner, TInput, TInputCheckbox, TChipGroup, ConfirmDialog, ButtonType } from '@tiko/ui';
 import { useImageUrl, mediaService, mediaAnalysisService } from '@tiko/core';
 import { uploadService } from '../services/upload.service';
 import type { ToastService, PopupService, MediaItem  } from '@tiko/ui';
@@ -245,6 +258,7 @@ const editForm = ref({
   description: '',
   tags: [] as string[],
   categories: [] as string[],
+  is_private: false,
 });
 
 const imageUrls = computed(() => {
@@ -290,6 +304,7 @@ const loadMedia = async () => {
         description: media.value.description || '',
         tags: Array.isArray(media.value.tags) ? [...media.value.tags] : [],
         categories: Array.isArray(media.value.categories) ? [...media.value.categories] : [],
+        is_private: media.value.is_private || false,
       };
       console.log('Edit form after load:', editForm.value); // Debug log
     }
@@ -317,6 +332,7 @@ const cancelEditing = () => {
     description: media.value.description || '',
     tags: Array.isArray(media.value.tags) ? [...media.value.tags] : [],
     categories: Array.isArray(media.value.categories) ? [...media.value.categories] : [],
+    is_private: media.value.is_private || false,
   };
 };
 
@@ -330,6 +346,7 @@ const handleSave = async () => {
       description: editForm.value.description,
       tags: editForm.value.tags,
       categories: editForm.value.categories,
+      is_private: editForm.value.is_private,
     });
 
     media.value = updatedMedia;

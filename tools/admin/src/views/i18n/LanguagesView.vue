@@ -58,7 +58,7 @@
           {
             key: 'code',
             label: t('common.code'),
-            width: '10%',
+            width: '50px',
             sortable: true,
           },
           {
@@ -66,6 +66,7 @@
             label: t('common.name'),
             width: '20%',
             sortable: true,
+            desktopOnly: true,
           },
           {
             key: 'native_name',
@@ -104,11 +105,12 @@
           :key="language.id"
           :data="language"
         >
-          <TListCell key="code" type="text" :content="language.code" />
+          <TListCell key="code" type="id" :content="language.code" />
           <TListCell key="name" type="text" :content="language.name" />
           <TListCell
             key="native_name"
             type="text"
+            :desktopOnly="true"
             :content="language.native_name || language.name"
           />
           <TListCell key="coverage" type="custom">

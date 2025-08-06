@@ -12,7 +12,7 @@ html {
 	background: var(--color-background);
 
 	height: 100vh;
-  scroll-snap-type: y mandatory;
+	scroll-snap-type: y mandatory;
 	overflow-x: hidden;
 
 
@@ -20,12 +20,10 @@ html {
 
 body {
 	background-color: var(--color-accent);
-	background-image: radial-gradient(
-		ellipse at center,
-		var(--color-background) 0%,
-		var(--color-background) 50%,
-		var(--color-accent) 100%
-	);
+	background-image: radial-gradient(ellipse at center,
+			var(--color-background) 0%,
+			var(--color-background) 50%,
+			var(--color-accent) 100%);
 	background-attachment: fixed;
 	background-size: 100% 100%;
 	color: var(--color-foreground);
@@ -72,4 +70,26 @@ body {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	transition: all 0.2s ease-in-out;
+
+	span {
+		position: relative;
+		left: 0;
+    width: fit-content;
+    transform: translateX(0%);
+		transition: all 0.2s ease-in-out;
+	}
+
+	&:hover {
+		text-overflow: none;
+
+		span{
+			transition: none;
+			left: 100%;
+    position: relative;
+    display: block;
+    transform: translateX(-100%);
+    width: fit-content;
+		}
+	}
 }

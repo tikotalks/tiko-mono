@@ -8,7 +8,7 @@
     />
 
       <div :class="bemm('column', ['', 'left'])">
-        <MarkdownRenderer :class="bemm('content')" :content="content.body" />
+        <MarkdownRenderer :class="bemm('content')" :content="content.content" />
       </div>
       <div :class="bemm('column', ['', 'right'])"></div>
     </div>
@@ -46,9 +46,7 @@ const bemm = useBemm('open-section');
 
 
   &__title {
-    font-size: clamp(3em, 4vw, 6em);
-    line-height: 1;
-    font-family: var(--header-font-family);
+
     color: var(--color-orange);
 
     .title-dot {

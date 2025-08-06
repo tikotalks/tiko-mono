@@ -62,6 +62,14 @@ export function createViteConfig(dirname, port = 3000, pwaConfig = null, appName
         'bemm': path.resolve(dirname, '../../node_modules/bemm/dist/index.mjs')
       }
     },
+    css: {
+      preprocessorOptions: {
+        scss: {
+          api: 'modern-compiler',
+          silenceDeprecations: ['legacy-js-api']
+        }
+      }
+    },
     server: {
       port,
       strictPort: false,

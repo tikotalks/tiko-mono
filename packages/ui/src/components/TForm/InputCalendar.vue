@@ -57,7 +57,7 @@
 
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
-import { ref, reactive, onMounted, watch, defineProps, defineModel, computed, type PropType } from 'vue';
+import { ref, reactive, onMounted, watch, defineModel, computed, type PropType } from 'vue';
 import { DefaultDatePickerOptions, type DatePickerOptions } from './DatePicker/DatePicker.model';
 import DatePicker from './DatePicker/DatePicker.vue';
 import { eventBus, EventAction, EventChannel, type EventData } from '@/utils/eventBus';

@@ -85,7 +85,7 @@
 
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
-import { ref, defineProps, defineModel, watch } from 'vue';
+import { ref, watch } from 'vue';
 import Chip from '../Chip/Chip.vue';
 import { type CollapseOptions, collapseOptions } from './options';
 

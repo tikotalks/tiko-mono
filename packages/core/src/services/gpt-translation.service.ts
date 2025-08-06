@@ -1,6 +1,6 @@
 /**
  * GPT Translation Service
- * 
+ *
  * This service provides AI-powered translation capabilities using OpenAI's GPT models.
  * Currently returns placeholder translations - implement the actual GPT API calls
  * when you have an API key configured.
@@ -53,8 +53,8 @@ class GPTTranslationService {
    * Translate a single text
    */
   async translate(request: TranslationRequest): Promise<string> {
-    console.log('GPT Translation Request:', request);
-    
+    // console.log('GPT Translation Request:', request);
+
     if (!this.apiKey) {
       console.warn('No OpenAI API key configured. Using placeholder translation.');
       return `[AUTO-${request.targetLocale}] ${request.text}`;
@@ -72,7 +72,7 @@ class GPTTranslationService {
           messages: [
             {
               role: 'system',
-              content: `You are a professional translator for a children's educational app. Translate the following text from ${this.getLanguageName(request.sourceLocale)} to ${this.getLanguageName(request.targetLocale)}. 
+              content: `You are a professional translator for a children's educational app. Translate the following text from ${this.getLanguageName(request.sourceLocale)} to ${this.getLanguageName(request.targetLocale)}.
                        Maintain a friendly, clear tone suitable for children and parents. If there are any placeholders like {name} or {count}, keep them exactly as-is.
                        Return ONLY the translated text, no explanations or notes.
                        ${request.context ? `Context: ${request.context}` : ''}`
@@ -106,7 +106,7 @@ class GPTTranslationService {
    * Translate multiple texts in a single request (more efficient)
    */
   async translateBatch(request: BatchTranslationRequest): Promise<Record<string, string>> {
-    console.log('GPT Batch Translation Request:', request);
+    // console.log('GPT Batch Translation Request:', request);
 
     if (!this.apiKey) {
       console.warn('No OpenAI API key configured. Using placeholder translations.');
@@ -119,7 +119,7 @@ class GPTTranslationService {
 
     try {
       // Format all texts into a single prompt for efficiency
-      const prompt = request.texts.map((item, index) => 
+      const prompt = request.texts.map((item, index) =>
         `${index + 1}. [${item.key}]: "${item.text}"${item.context ? ` (Context: ${item.context})` : ''}`
       ).join('\n');
 
@@ -157,7 +157,7 @@ class GPTTranslationService {
 
       const data = await response.json();
       const responseText = data.choices[0].message.content;
-      
+
       // Parse the response and map back to keys
       const results: Record<string, string> = {};
       const lines = responseText.split('\n');
@@ -168,7 +168,7 @@ class GPTTranslationService {
           results[match[1]] = match[2];
         }
       }
-      
+
       // Fill in any missing translations with placeholders
       for (const item of request.texts) {
         if (!results[item.key]) {
@@ -176,7 +176,7 @@ class GPTTranslationService {
           results[item.key] = `[AUTO-${request.targetLocale}] ${item.text}`;
         }
       }
-      
+
       return results;
     } catch (error) {
       console.error('Batch translation error:', error);
@@ -193,8 +193,8 @@ class GPTTranslationService {
    * Translate a single text to multiple languages in one request
    */
   async translateToMultipleLanguages(request: MultiLanguageTranslationRequest): Promise<Record<string, string>> {
-    console.log('GPT Multi-language Translation Request:', request);
-    
+    // console.log('GPT Multi-language Translation Request:', request);
+
     if (!this.apiKey) {
       console.warn('No OpenAI API key configured. Using placeholder translations.');
       const results: Record<string, string> = {};
@@ -206,7 +206,7 @@ class GPTTranslationService {
 
     try {
       // Create a prompt that asks for translations to all target languages at once
-      const targetLanguages = request.targetLocales.map(locale => 
+      const targetLanguages = request.targetLocales.map(locale =>
         `${locale}: ${this.getLanguageName(locale)}`
       ).join('\n');
 
@@ -221,10 +221,10 @@ class GPTTranslationService {
           messages: [
             {
               role: 'system',
-              content: `You are a professional translator for a children's educational app. 
+              content: `You are a professional translator for a children's educational app.
                        Translate the given text from ${this.getLanguageName(request.sourceLocale)} to the following languages:
                        ${targetLanguages}
-                       
+
                        Return the translations in JSON format with locale codes as keys.
                        Maintain a friendly, clear tone suitable for children and parents.
                        Keep any placeholders like {name} or {count} exactly as-is.
@@ -251,27 +251,27 @@ class GPTTranslationService {
 
       const data = await response.json();
       const responseText = data.choices[0].message.content;
-      
+
       try {
         // Clean up the response - GPT sometimes includes markdown code blocks
         let cleanedResponse = responseText.trim();
-        
+
         // Remove markdown code blocks if present
         if (cleanedResponse.startsWith('```json')) {
           cleanedResponse = cleanedResponse.substring(7); // Remove ```json
         } else if (cleanedResponse.startsWith('```')) {
           cleanedResponse = cleanedResponse.substring(3); // Remove ```
         }
-        
+
         if (cleanedResponse.endsWith('```')) {
           cleanedResponse = cleanedResponse.substring(0, cleanedResponse.length - 3); // Remove trailing ```
         }
-        
+
         cleanedResponse = cleanedResponse.trim();
-        
+
         // Parse the JSON response
         const translations = JSON.parse(cleanedResponse);
-        
+
         // Validate all requested languages are present
         const results: Record<string, string> = {};
         for (const locale of request.targetLocales) {
@@ -282,7 +282,7 @@ class GPTTranslationService {
             results[locale] = `[AUTO-${locale}] ${request.text}`;
           }
         }
-        
+
         return results;
       } catch (parseError) {
         console.error('Failed to parse translation response:', parseError);
@@ -363,7 +363,7 @@ class GPTTranslationService {
     // Rough estimation based on average tokens
     const totalChars = texts.reduce((sum, text) => sum + text.length, 0);
     const estimatedTokens = totalChars / 4; // Rough estimate: 1 token ≈ 4 chars
-    
+
     // GPT-4 pricing (as of 2024)
     const pricing = {
       'gpt-4-turbo-preview': { input: 0.01, output: 0.03 }, // per 1K tokens
@@ -371,11 +371,11 @@ class GPTTranslationService {
     };
 
     const price = pricing[model as keyof typeof pricing] || pricing['gpt-4-turbo-preview'];
-    
+
     // Assume output is similar length to input
     const inputCost = (estimatedTokens / 1000) * price.input;
     const outputCost = (estimatedTokens / 1000) * price.output;
-    
+
     return inputCost + outputCost;
   }
 }

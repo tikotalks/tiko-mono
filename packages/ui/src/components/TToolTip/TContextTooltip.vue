@@ -21,7 +21,7 @@
 
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
-import { defineProps, ref, type PropType } from 'vue';
+import { ref, type PropType } from 'vue';
 import { ToolTipPosition } from './TToolTip.model';
 import ToolTip from './TToolTip.vue';
 

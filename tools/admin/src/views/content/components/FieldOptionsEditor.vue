@@ -1,11 +1,11 @@
 <template>
   <div :class="bemm()">
     <div :class="bemm('header')">
-      <label :class="bemm('label')">{{ t('admin.content.field.options') }}</label>
+      <label :class="bemm('label')">{{ t('admin.content.field.options', 'Options') }}</label>
       <TButton
         type="ghost"
         size="small"
-        :icon="Icons.INFO"
+        :icon="Icons.CIRCLED_INFO"
         @click="showHelp = !showHelp"
       >
         {{ t('common.help') }}
@@ -22,12 +22,16 @@
     <TTextArea
       v-model="optionsText"
       :rows="8"
-      :placeholder="t('admin.content.field.optionsPlaceholder', 'Enter options...\nOne per line\nOr use key:value format')"
+      :placeholder="'Enter options...\nOne per line\nOr use key:value format'"
+      @input="parseOptions"
       @blur="parseOptions"
     />
 
     <div v-if="parsedOptions.length > 0" :class="bemm('preview')">
-      <h4 :class="bemm('preview-title')">{{ t('admin.content.field.preview') }}</h4>
+      <h4 :class="bemm('preview-title')">{{ t('admin.content.field.preview', 'Preview') }}</h4>
+      <div style="margin-bottom: 10px; font-size: 12px; color: #666;">
+        Parsed {{ parsedOptions.length }} options: {{ JSON.stringify(parsedOptions) }}
+      </div>
       <TInputSelect
         :options="selectOptions"
         :placeholder="t('admin.content.field.selectPreview', 'Preview of select field')"
@@ -101,15 +105,19 @@ function parseOptions() {
     return line
   })
 
+  const configToEmit = { options: parsedOptions.value }
+  console.log('[FieldOptionsEditor] Parsing options and emitting:', configToEmit)
+  console.log('[FieldOptionsEditor] Parsed options array:', parsedOptions.value)
+
   // Emit the parsed options
-  emit('update:modelValue', { options: parsedOptions.value })
+  emit('update:modelValue', configToEmit)
 }
 
 // Initialize from modelValue
 onMounted(() => {
   if (props.modelValue?.options) {
     const options = props.modelValue.options
-    
+
     // Convert options back to text format
     const lines = options.map((opt: any) => {
       if (typeof opt === 'string') {
@@ -117,7 +125,7 @@ onMounted(() => {
       }
       return `${opt.key}:${opt.value}`
     })
-    
+
     optionsText.value = lines.join('\n')
     parsedOptions.value = options
   }
@@ -160,13 +168,13 @@ watch(() => props.modelValue, (newValue) => {
     background-color: var(--color-background-secondary);
     padding: var(--space);
     border-radius: var(--border-radius);
-    
+
     p {
       margin: 0;
       margin-bottom: var(--space-xs);
       font-size: 0.9em;
       color: var(--color-foreground-secondary);
-      
+
       &:last-child {
         margin-bottom: 0;
       }

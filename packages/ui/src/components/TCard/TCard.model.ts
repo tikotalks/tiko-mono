@@ -94,6 +94,12 @@ export interface TCardProps {
    * Accessibility label
    */
   ariaLabel?: string
+
+  /**
+   * Whether the card is removable
+   * @default false
+   */
+  removable?: boolean
 }
 
 export interface TCardEmits {
@@ -102,6 +108,7 @@ export interface TCardEmits {
    */
   click: [event: Event]
   action: [action: CardAction]
+  remove: [event: Event]
 }
 
 export interface TCardSlots {

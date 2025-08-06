@@ -1,23 +1,16 @@
 <template>
   <div :class="bemm()">
     <router-link to="/">
-      <Logo :class="bemm('logo')" />
-      <!-- <TTikoLogo /> -->
+      <TLogo :class="bemm('logo')" size="medium" />
     </router-link>
-    <nav :class="bemm('nav')">
-      <router-link to="/about" :class="bemm('nav-link')">About</router-link>
-      <router-link to="/apps" :class="bemm('nav-link')">Apps</router-link>
-      <router-link to="/sponsors" :class="bemm('nav-link')"
-        >Sponsors</router-link
-      >
-    </nav>
+   <Navigation :class="bemm('nav')" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { useBemm } from 'bemm';
-import Logo from './Logo.vue';
-import { TTikoLogo } from '@tiko/ui';
+import { TLogo } from '@tiko/ui';
+import Navigation from './Navigation.vue';
 
 const bemm = useBemm('page-header');
 </script>
@@ -40,27 +33,6 @@ const bemm = useBemm('page-header');
       height: 100%;
     }
   }
-  &__nav {
-    padding: var(--space);
-    display: flex;
-    gap: var(--space);
-    background-color: rgba(0, 0, 0, 0.5);
-    border-radius: calc(var(--border-radius) + var(--space));
-  }
-  &__nav-link {
-    background-color: color-mix(in srgb, var(--color-light), transparent 100%);
-    padding: var(--space-xs) var(--space);
-    border-radius: var(--border-radius);
-    transition: background-color 0.3s ease;
-    color: var(--color-light);
-    &:hover {
-      background-color: color-mix(
-        in srgb,
-        var(--color-primary),
-        transparent 0%
-      );
-      color: var(--color-light);
-    }
-  }
+
 }
 </style>

@@ -21,6 +21,7 @@ export interface MediaItem {
   tags: string[]
   categories: string[]
   ai_analyzed: boolean
+  is_private: boolean
   created_at: string
   updated_at: string
 }
@@ -39,6 +40,7 @@ export interface MediaUploadData {
   tags: string[]
   categories: string[]
   ai_analyzed: boolean
+  is_private?: boolean
 }
 
 export interface MediaSearchOptions {

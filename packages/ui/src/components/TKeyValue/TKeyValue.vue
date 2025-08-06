@@ -39,14 +39,17 @@ const props = withDefaults(
   // color-mix(in srgb, var(--color-primary), transparent 75%);
   display: flex;
   flex-direction: var(--direction, column);
-  background:var(--key-value-background);
+  // background:var(--key-value-background);
   border: 1px solid var(--key-value-border);
   border-radius: var(--border-radius);
   width: fit-content;
   max-width: 100%;
   margin: auto;
-  box-shadow: 2px 2px 1em 0 color-mix(in srgb, var(--color-light), transparent 90%) inset,
-    -2px -2px 1em 0 color-mix(in srgb, var(--color-primary), transparent 50%) inset;
+  flex-wrap: wrap;
+  overflow: hidden;
+  justify-content: stretch;
+  // box-shadow: 2px 2px 1em 0 color-mix(in srgb, var(--color-light), transparent 90%) inset,
+  //   -2px -2px 1em 0 color-mix(in srgb, var(--color-primary), transparent 50%) inset;
 
 
 
@@ -58,7 +61,9 @@ const props = withDefaults(
   }
 
   &__list-item {
+    margin-bottom: -1px;
     display: flex;
+    border-bottom: 1px solid var(--key-value-border);
     flex-direction: column;
     justify-content: space-between;
     border-right: 1px solid var(--key-value-border);

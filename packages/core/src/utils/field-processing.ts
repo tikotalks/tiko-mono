@@ -67,28 +67,44 @@ export function processListFieldValue(value: string): Array<string | { key: stri
 export function processFieldValue(value: any, fieldType: string): any {
   console.log('🔧 [field-processing] processFieldValue called with type:', fieldType, 'value:', value)
   
-  // Special debug for linked_items
-  if (fieldType === 'linked_items') {
-    console.log('🔗 [field-processing] LINKED_ITEMS FIELD DETECTED!')
+  // Special debug for all array-like fields
+  if (['linked_items', 'items', 'list'].includes(fieldType)) {
+    console.log(`🔗 [field-processing] ARRAY FIELD DETECTED: ${fieldType}`)
     console.log('🔗 [field-processing] Value type:', typeof value)
     console.log('🔗 [field-processing] Is Array:', Array.isArray(value))
     console.log('🔗 [field-processing] Raw value:', JSON.stringify(value))
   }
   
+  // First, try to parse JSON strings for array-like fields
+  if (typeof value === 'string' && ['items', 'linked_items', 'list'].includes(fieldType)) {
+    try {
+      const parsed = JSON.parse(value)
+      console.log(`🔧 [field-processing] Successfully parsed JSON for ${fieldType}:`, parsed)
+      value = parsed
+    } catch (e) {
+      console.log(`🔧 [field-processing] Value is not JSON for ${fieldType}, treating as string:`, value)
+    }
+  }
+  
   switch (fieldType) {
     case 'list':
       // Convert list field from string format to processed arrays
-      if (typeof value === 'string' && value.trim()) {
-        return processListFieldValue(value)
-      } else if (Array.isArray(value)) {
-        // Handle case where it might already be an array (backwards compatibility)
+      if (Array.isArray(value)) {
+        // If already an array (from JSON parsing), return as-is
         return value
+      } else if (typeof value === 'string' && value.trim()) {
+        return processListFieldValue(value)
       }
       return []
     
     case 'items':
-      // Items field should already be an array
-      return Array.isArray(value) ? value : []
+      // Items field should be an array of item IDs
+      if (Array.isArray(value)) {
+        console.log(`🎯 [field-processing] Items field is array with ${value.length} items:`, value)
+        return value
+      }
+      console.log(`⚠️ [field-processing] Items field is not array, returning empty:`, value)
+      return []
     
     case 'boolean':
       return Boolean(value)
@@ -97,13 +113,29 @@ export function processFieldValue(value: any, fieldType: string): any {
       return typeof value === 'number' ? value : (parseFloat(value) || 0)
     
     case 'linked_items':
-      // For linked_items, just ensure it's an array of item IDs
+      // For linked_items, ensure it's an array of item IDs
       if (Array.isArray(value)) {
+        console.log(`🔗 [field-processing] Linked items is array with ${value.length} items:`, value)
         return value // Array of item IDs
       } else if (typeof value === 'string' && value) {
-        // Handle comma-separated IDs if needed
-        return value.split(',').map(id => id.trim()).filter(id => id)
+        // Try to parse JSON first for array strings like ["id1","id2"]
+        if (value.startsWith('[') && value.endsWith(']')) {
+          try {
+            const parsed = JSON.parse(value)
+            if (Array.isArray(parsed)) {
+              console.log(`🔗 [field-processing] Successfully parsed JSON array for linked_items:`, parsed)
+              return parsed
+            }
+          } catch (e) {
+            console.warn(`🔗 [field-processing] Failed to parse JSON array for linked_items:`, e)
+          }
+        }
+        
+        // Handle comma-separated IDs if needed (fallback)
+        console.log(`🔗 [field-processing] Parsing comma-separated linked_items:`, value)
+        return value.split(',').map(id => id.trim().replace(/^"(.*)"$/, '$1')).filter(id => id)
       }
+      console.log(`⚠️ [field-processing] Linked items field is not array, returning empty:`, value)
       return []
     
     default:
@@ -142,17 +174,23 @@ export async function processContentFields(
   for (const [key, value] of Object.entries(content)) {
     const field = fields.find(f => f.field_key === key)
     
-    // Debug logging for items field
-    if (key === 'items') {
-      console.log(`🎯 [field-processing] Processing 'items' field:`)
+    // Debug logging for array-like fields
+    if (['items', 'linked_items', 'list'].includes(key) || (field && ['items', 'linked_items', 'list'].includes(field.field_type))) {
+      console.log(`🎯 [field-processing] Processing '${key}' field:`)
       console.log(`  - Field found:`, !!field)
       console.log(`  - Field type:`, field?.field_type)
-      console.log(`  - Value:`, value)
+      console.log(`  - Raw value type:`, typeof value)
+      console.log(`  - Raw value:`, value)
       console.log(`  - resolveLinkedItems provided:`, !!resolveLinkedItems)
     }
     
     if (field) {
       let processedValue = processFieldValue(value, field.field_type)
+      
+      // Debug after processing
+      if (['items', 'linked_items', 'list'].includes(field.field_type)) {
+        console.log(`🔧 [field-processing] After processFieldValue for '${key}':`, processedValue)
+      }
       
       // Special handling for linked_items - resolve to full objects if resolver provided
       if (field.field_type === 'linked_items' && resolveLinkedItems && Array.isArray(processedValue) && processedValue.length > 0) {
@@ -165,6 +203,21 @@ export async function processContentFields(
           }
         } catch (error) {
           console.error(`❌ [field-processing] Failed to resolve linked items:`, error)
+          // Keep the IDs if resolution fails
+        }
+      }
+      
+      // Special handling for items field - resolve to full objects if resolver provided
+      if (field.field_type === 'items' && resolveLinkedItems && Array.isArray(processedValue) && processedValue.length > 0) {
+        console.log(`🎯 [field-processing] Resolving items for field '${key}' with IDs:`, processedValue)
+        try {
+          processedValue = await resolveLinkedItems(processedValue, language)
+          console.log(`✅ [field-processing] Resolved items for '${key}':`, processedValue.length, 'items')
+          if (processedValue.length > 0) {
+            console.log(`🔍 [field-processing] Sample resolved item:`, processedValue[0])
+          }
+        } catch (error) {
+          console.error(`❌ [field-processing] Failed to resolve items:`, error)
           // Keep the IDs if resolution fails
         }
       }

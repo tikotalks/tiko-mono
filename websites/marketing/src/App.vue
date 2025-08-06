@@ -7,12 +7,15 @@
   >
   <PageHeader/>
     <router-view />
+    <PageFooter />
   </TFramework>
 </template>
 
 <script setup lang="ts">
 import { TFramework, type FrameworkConfig } from '@tiko/ui'
 import PageHeader from './components/PageHeader.vue';
+
+import PageFooter from './components/PageFooter.vue';
 
 const frameworkConfig: FrameworkConfig = {
   id: 'marketing',
