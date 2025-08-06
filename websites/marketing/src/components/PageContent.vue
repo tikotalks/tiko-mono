@@ -51,7 +51,7 @@ const content = useContent({
   useWorker: import.meta.env.VITE_USE_CONTENT_WORKER === 'true',
   workerUrl: import.meta.env.VITE_CONTENT_API_URL,
   deployedVersionId: import.meta.env.VITE_DEPLOYED_VERSION_ID,
-  noCache: true
+  noCache: false
 });
 
 // Page content
