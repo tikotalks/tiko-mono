@@ -72,9 +72,9 @@
               :required="field.is_required"
             />
 
-            <!-- Select Field -->
+            <!-- Select/Options Field -->
             <TInputSelect
-              v-else-if="field.field_type === 'select'"
+              v-else-if="field.field_type === 'select' || field.field_type === 'options'"
               v-model="fieldValues[field.field_key]"
               :label="field.label"
               :options="getSelectOptions(field)"
@@ -119,16 +119,6 @@
               :field-id="field.id"
               :section-id="sectionId"
               :item-template-id="field.config?.item_template_id"
-              :required="field.is_required"
-            />
-
-            <!-- Select/Options Field -->
-            <TInputSelect
-              v-else-if="field.field_type === 'select' || field.field_type === 'options'"
-              v-model="fieldValues[field.field_key]"
-              :label="field.label"
-              :options="getSelectOptions(field)"
-              :placeholder="`Select ${field.label.toLowerCase()}`"
               :required="field.is_required"
             />
 
