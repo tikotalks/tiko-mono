@@ -10,8 +10,14 @@
       <div :class="bemm('column', ['', 'left'])">
         <MarkdownRenderer :class="bemm('content')" :content="content.content" />
         <ul :class="bemm('language-list')" v-if="content.list">
-          <li :class="bemm('language-item')" v-for="lang in content?.list.filter((lang)=>lang.key.includes('-')).sort()" >
-            {{ getTranslation(lang.key) }}
+          <li :class="bemm('language-item')" v-for="lang in content?.list.filter((lang:string)=>{
+            const code = lang.split(' : ')[0];
+            return !code.includes('-');
+          }).map((lang:string)=>{
+            const code = lang.split(' : ')[0];
+            return getTranslation(code);
+          }).sort()" >
+            {{ lang }}
           </li>
         </ul>
       </div>
@@ -20,11 +26,11 @@
           <TransitionGroup name="fade" tag="ul" :class="bemm('language-card-list')">
             <li
               v-for="(language, index) in visibleLanguages"
-              :key="language.key + language.value + index"
+              :key="language.key + language.value"
               :class="bemm('language-card-item')"
             >
-              <span :class="bemm('language-flag')">{{ language.key }}</span>
-              <span :class="bemm('language-code')">{{ language.value }}</span>
+              <span :class="bemm('language-flag')">{{ language.value }}</span>
+              <span :class="bemm('language-code')">{{ language.key }}</span>
             </li>
           </TransitionGroup>
         </div>
@@ -64,8 +70,21 @@ const rotationInterval = 3000;
 const totalImages = 12;
 let intervalId: ReturnType<typeof setInterval> | null = null;
 
+
+interface KeyValue {
+  key: string;
+  value: string;
+}
+
+
 function startLanguageRotation() {
-  const allLanguages = props.content?.list || [];
+  // Convert string array to KeyValue array
+  const listAsKeyValue = ((props.content?.list as string[]) || []).map((lang: string) => {
+    const [key, value] = lang.split(' : ');
+    return { key: key.trim(), value: value?.trim() || '' };
+  });
+  
+  const allLanguages = listAsKeyValue.filter((lang: KeyValue) => lang.key.includes('-'));
 
   if (!allLanguages.length) return;
 
@@ -88,11 +107,11 @@ function startLanguageRotation() {
     const removeIndex = Math.floor(Math.random() * visibleLanguages.value.length);
     visibleLanguages.value.splice(removeIndex, 1);
 
-    // Get the names of those already shown
-    const currentNames = new Set(visibleLanguages.value.map(l => l.name));
+    // Get the keys of those already shown
+    const currentKeys = new Set(visibleLanguages.value.map(l => l.key));
 
     // Filter available not-shown languages
-    const available = allLanguages.filter((l:any) => !currentNames.has(l.name));
+    const available = allLanguages.filter((l:any) => !currentKeys.has(l.key));
 
     // Add one random available language
     if (available.length) {
@@ -107,7 +126,7 @@ onMounted(() => {
   console.log('🌍 [LanguagesSection] List field type:', typeof props.content?.list);
   console.log('🌍 [LanguagesSection] List field value:', props.content?.list);
 
-  // startLanguageRotation();
+  startLanguageRotation();
 });
 
 onUnmounted(() => {

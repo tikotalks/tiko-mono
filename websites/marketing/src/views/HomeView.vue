@@ -7,14 +7,13 @@
       <div :class="bemm('loading-spinner')"></div>
     </div>
 
-    <template v-if="!loading && pageData?.sections?.length">
+    <template v-if="!loading && pageData?.sections?.length"  v-for="section in pageData.sections"         :key="section.section.id">
       <SectionRenderer
-        v-for="section in pageData.sections"
-        :key="section.section.id"
         :section="section.section"
         :content="section.content"
         :show-debug="false"
       />
+
     </template>
 
     <!-- No Sections State -->
@@ -31,14 +30,28 @@
 
 <script setup lang="ts">
 import { useBemm } from 'bemm';
-import { useContent, type PageContent, type ContentSection } from '@tiko/core';
+import { useContent, type PageContent } from '@tiko/core';
 import { useI18n } from '@tiko/ui';
 import { ref, onMounted, watch } from 'vue';
 import SectionRenderer from '../components/SectionRenderer.vue';
 
 const bemm = useBemm('home-view');
 const { locale } = useI18n();
-const content = useContent({ projectSlug: 'marketing' });
+
+// Debug environment variables
+console.log('Content Worker Config:', {
+  useWorker: import.meta.env.VITE_USE_CONTENT_WORKER,
+  workerUrl: import.meta.env.VITE_CONTENT_API_URL,
+  deployedVersionId: import.meta.env.VITE_DEPLOYED_VERSION_ID
+});
+
+const content = useContent({
+  projectSlug: 'marketing',
+  useWorker: import.meta.env.VITE_USE_CONTENT_WORKER === 'true',
+  workerUrl: import.meta.env.VITE_CONTENT_API_URL,
+  deployedVersionId: import.meta.env.VITE_DEPLOYED_VERSION_ID,
+  noCache: true // Enable caching for better performance
+});
 
 // Page content
 const pageData = ref<PageContent | null>(null);
@@ -51,10 +64,13 @@ async function loadContent() {
     loading.value = true;
     error.value = null;
 
+    // Log if worker is being used
+    console.log('Using Content Worker:', content.isUsingWorker.value);
+
     // Get language code from locale (e.g., 'en-GB' -> 'en')
     const languageCode = locale.value.split('-')[0];
 
-    const page = await content.getPage('home', languageCode, true);
+    const page = await content.getPage('home', languageCode, false);
     console.log('Page response:', page);
 
     if (page) {
