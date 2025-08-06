@@ -1,27 +1,40 @@
 <template>
   <div :class="bemm()">
-    <!-- Loading State -->
-    <div v-if="loading" :class="bemm('loading')">
-      <div :class="bemm('loading-spinner')"></div>
-    </div>
+    <!-- Transition wrapper for smooth content changes -->
+    <Transition name="page-fade" mode="out-in">
+      <!-- Loading State with Skeleton -->
+      <div v-if="loading" :class="bemm('loading')" key="loading">
+        <div :class="bemm('skeleton')">
+          <div :class="bemm('skeleton-header')"></div>
+          <div :class="bemm('skeleton-content')">
+            <div :class="bemm('skeleton-line')"></div>
+            <div :class="bemm('skeleton-line', 'short')"></div>
+            <div :class="bemm('skeleton-line')"></div>
+          </div>
+        </div>
+      </div>
 
-    <template v-if="!loading && pageData?.sections?.length" v-for="section in pageData.sections" :key="section.section.id">
-      <SectionRenderer
-        :section="section.section"
-        :content="section.content"
-        :show-debug="showDebug"
-      />
-    </template>
+      <!-- Content -->
+      <div v-else-if="pageData?.sections?.length" key="content">
+        <template v-for="section in pageData.sections" :key="section.section.id">
+          <SectionRenderer
+            :section="section.section"
+            :content="section.content"
+            :show-debug="showDebug"
+          />
+        </template>
+      </div>
 
-    <!-- No Sections State -->
-    <div v-else-if="!loading && pageData && (!pageData.sections || pageData.sections.length === 0)" :class="bemm('no-sections')">
-      <p>No sections found for "{{ pageSlug }}" page.</p>
-    </div>
+      <!-- No Sections State -->
+      <div v-else-if="pageData && (!pageData.sections || pageData.sections.length === 0)" :class="bemm('no-sections')" key="no-sections">
+        <p>No sections found for "{{ pageSlug }}" page.</p>
+      </div>
 
-    <!-- Error State -->
-    <div v-else-if="!loading && error" :class="bemm('error')">
-      <p>{{ error }}</p>
-    </div>
+      <!-- Error State -->
+      <div v-else-if="error" :class="bemm('error')" key="error">
+        <p>{{ error }}</p>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -104,25 +117,54 @@ watch(pageSlug, () => {
 .page-content {
   // Loading state
   &__loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     min-height: 50vh;
     padding: var(--space-2xl);
   }
 
-  &__loading-spinner {
-    width: 48px;
-    height: 48px;
-    border: 4px solid var(--color-primary-20);
-    border-top-color: var(--color-primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+  // Skeleton loader
+  &__skeleton {
+    max-width: 1200px;
+    margin: 0 auto;
+    animation: pulse 1.5s ease-in-out infinite;
   }
 
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
+  &__skeleton-header {
+    height: 120px;
+    background: linear-gradient(90deg, 
+      var(--color-background-secondary) 0%, 
+      var(--color-background) 50%, 
+      var(--color-background-secondary) 100%);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--space-xl);
+  }
+
+  &__skeleton-content {
+    padding: var(--space-xl);
+  }
+
+  &__skeleton-line {
+    height: 20px;
+    background: linear-gradient(90deg, 
+      var(--color-background-secondary) 0%, 
+      var(--color-background) 50%, 
+      var(--color-background-secondary) 100%);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--space);
+    
+    &--short {
+      width: 60%;
+    }
+  }
+
+  @keyframes pulse {
+    0% {
+      opacity: 0.6;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.6;
     }
   }
 
@@ -143,5 +185,27 @@ watch(pageSlug, () => {
   &__no-sections {
     color: var(--color-foreground-secondary);
   }
+}
+
+// Smooth page transitions
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.page-fade-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.page-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.page-fade-enter-to,
+.page-fade-leave-from {
+  opacity: 1;
+  transform: translateY(0);
 }
 </style>

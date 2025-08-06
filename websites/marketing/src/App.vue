@@ -14,8 +14,11 @@
 <script setup lang="ts">
 import { TFramework, type FrameworkConfig } from '@tiko/ui'
 import PageHeader from './components/PageHeader.vue';
-
 import PageFooter from './components/PageFooter.vue';
+import { usePrefetch } from './composables/usePrefetch';
+
+// Initialize prefetch hints for better performance
+usePrefetch();
 
 const frameworkConfig: FrameworkConfig = {
   id: 'marketing',

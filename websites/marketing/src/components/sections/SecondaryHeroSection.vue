@@ -175,7 +175,7 @@ onMounted(async () => {
     font-size: clamp(4em, 5vw, 8em);
     line-height: 1;
     font-family: var(--header-font-family);
-    color: var(--color-foreground);
+    color: var(--color-light);
     .title-dot {
       color: var(--section-color);
     }

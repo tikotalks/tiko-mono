@@ -13,7 +13,12 @@
     <div :class="bemm('container', ['', active ? 'active' : ''])">
       <ul :class="bemm('list')">
         <li :class="bemm('item')" v-for="item in items" :key="item.name">
-          <router-link :to="item.link" :class="bemm('link')">
+          <router-link
+            :to="item.link"
+            :class="bemm('link')"
+            @mouseenter="preloadPage(item.link)"
+            @focus="preloadPage(item.link)"
+          >
             <span v-if="item.icon" :class="bemm('icon')">
               <TIcon :name="item.icon" />
             </span>
@@ -32,11 +37,15 @@ import { TIcon } from '@tiko/ui';
 import { useBemm } from 'bemm';
 import { Icons } from 'open-icon';
 import { ref, watch } from 'vue';
+import { useContent } from '@tiko/core';
+import { useI18n } from '@tiko/ui';
 const bemm = useBemm('navigation');
 
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const active = ref(false);
+const router = useRouter();
+const { locale } = useI18n();
 
 interface NavigationItem {
   name: string;
@@ -50,6 +59,30 @@ const items: NavigationItem[] = [
   { name: 'Apps', link: '/apps' },
   { name: 'Sponsors', link: '/sponsors' },
 ];
+
+// Initialize content service for preloading
+const content = useContent({
+  projectSlug: 'marketing',
+  useWorker: import.meta.env.VITE_USE_CONTENT_WORKER === 'true',
+  workerUrl: import.meta.env.VITE_CONTENT_API_URL,
+  deployedVersionId: import.meta.env.VITE_DEPLOYED_VERSION_ID,
+  noCache: false
+});
+
+// Preload page content on hover
+const preloadPage = (path: string) => {
+  // Extract slug from path (e.g., /about -> about)
+  const slug = path.replace('/', '') || 'home';
+
+  // Don't preload the current page
+  const currentSlug = router.currentRoute.value.path.replace('/', '') || 'home';
+  if (slug === currentSlug) return;
+
+  // Preload the page content
+  content.loadPage('marketing', slug, locale.value).catch(() => {
+    // Silently fail if preload doesn't work
+  });
+};
 
 watch(
   () => useRoute(),
@@ -76,7 +109,7 @@ watch(
     justify-content: center;
     border-radius: 50%;
     flex-direction: column;
-    background-color: var(--color-background);
+    background-color: var(--color-dark);
     border: none;
     top: 0;
     right: 0;
@@ -85,14 +118,14 @@ watch(
     transition: background-color 0.3s ease;
 
     &:hover {
-      background-color: var(--color-background-secondary);
+      background-color: var(--color-primary);
     }
 
     span {
       display: block;
       width: 1.5em;
       height: 0.2em;
-      background-color: var(--color-dark);
+      background-color: var(--color-light);
       border-radius: 0.1em;
       transition: transform 0.3s ease;
 
@@ -111,6 +144,7 @@ watch(
       height: 0.2em;
       background-color: var(--color-light);
     }
+
     &--active{
       span:nth-child(1) {
         transform: rotate(45deg) translateY(0.3em);
