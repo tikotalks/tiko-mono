@@ -122,6 +122,16 @@
               :required="field.is_required"
             />
 
+            <!-- Select/Options Field -->
+            <TInputSelect
+              v-else-if="field.field_type === 'select' || field.field_type === 'options'"
+              v-model="fieldValues[field.field_key]"
+              :label="field.label"
+              :options="getSelectOptions(field)"
+              :placeholder="`Select ${field.label.toLowerCase()}`"
+              :required="field.is_required"
+            />
+
             <!-- Default Text for other field types -->
             <TInputTextArea
               v-else
@@ -443,7 +453,11 @@ function getSelectOptions(
       if (typeof option === 'string') {
         return { value: option, label: option };
       }
-      return { value: option.value, label: option.label };
+      // Handle both formats: {value, label} and {key, value}
+      if (option.key && option.value) {
+        return { value: option.key, label: option.value };
+      }
+      return { value: option.value || option.key, label: option.label || option.value };
     });
   }
 
