@@ -70,11 +70,12 @@ const navigation = computed<
   }>
 >(() => [
   {
-    label: 'Company',
+    label: 'Tiko',
     items: [
-      { text: 'About Us', url: '/about' },
-      { text: 'Careers', url: '/careers' },
-      { text: 'Blog', url: '/blog' },
+      { text: 'About', url: '/about' },
+      { text: 'Funding', url: '/funding' },
+      { text: 'Sponsors', url: '/sponsors' },
+      { text: 'Technology', url: '/technology' },
     ],
   },
   {
@@ -93,7 +94,11 @@ const navigation = computed<
   background-color: var(--color-light);
   color: var(--color-light);
   padding: var(--space);
-  background-image: linear-gradient(to top, var(--color-dark) 10%, var(--color-light));
+  background-image: linear-gradient(
+    to top,
+    var(--color-dark) 10%,
+    var(--color-light)
+  );
 
   &__container {
     background-color: var(--color-dark);
@@ -106,6 +111,11 @@ const navigation = computed<
     width: 50%;
     &--left {
       text-align: left;
+      @media screen and (max-width: 768px) {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
     }
     &--right {
       display: flex;
@@ -131,12 +141,14 @@ const navigation = computed<
 
   &__nav-label {
     font-weight: bold;
-    margin-bottom: var(--space-xs);
+    color: var(--color-primary);
   }
   &__nav-list {
     margin: 0;
     padding: 0;
-
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-s);
 
     list-style: none;
   }
@@ -157,6 +169,10 @@ const navigation = computed<
 
   &__top {
     display: flex;
+    @media screen and (max-width: 768px) {
+      flex-direction: column;
+      align-items: center;
+    }
   }
   &__content {
     margin-bottom: var(--space-md);
@@ -166,7 +182,18 @@ const navigation = computed<
     display: flex;
     justify-content: space-between;
     padding: var(--space-s) var(--space);
-    border-top: 1px solid var(--color-light);
+    gap: var(--space);
+    opacity: 0.5;
+    font-size: var(--font-size-s);
+    @media screen and (max-width: 768px) {
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+
+  &__links {
+    display: flex;
+    gap: var(--space);
   }
 }
 </style>

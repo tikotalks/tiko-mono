@@ -46,6 +46,8 @@ const getImageUrl = (imageId: string) => {
 
 <style lang="scss">
 .image-block-section {
+  $b: &;
+
   background-color: var(--color-light);
   color: var(--color-dark);
   display: flex;
@@ -80,7 +82,6 @@ const getImageUrl = (imageId: string) => {
     background-position: center;
     background-repeat: no-repeat;
 
-
     &:first-child {
       border-radius: 0 var(--border-radius) var(--border-radius) 0;
     }
@@ -88,12 +89,18 @@ const getImageUrl = (imageId: string) => {
       margin-top: var(--spacing);
       border-radius: var(--border-radius) 0 0 var(--border-radius);
     }
-    img{
-      transition: all 0.3s ease;
+  }
+  &__img {
+    transition: all 0.3s ease;
+    @media screen and (max-width: 720px) {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
     }
-    &:hover img {
-      transform: scale(1.05);
-    }
+  }
+
+  &:hover #{$b}__img {
+    transform: scale(1.05);
   }
 }
 </style>

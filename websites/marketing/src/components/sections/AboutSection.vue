@@ -5,7 +5,11 @@
       :style="`--background-image: url(${imageUrl})`"
     ></div>
     <div :class="bemm('container')">
-      <h2 v-if="content?.title" :class="bemm('title')" v-html="processTitle(content.title)" />
+      <h2
+        v-if="content?.title"
+        :class="bemm('title')"
+        v-html="processTitle(content.title)"
+      />
       <MarkdownRenderer
         v-if="content?.content"
         :class="bemm('content')"
@@ -35,7 +39,6 @@ const { getImage, loadImages } = useImages(true); // Use public mode for marketi
 const { getImageVariants } = useImageUrl();
 
 const imageUrl = ref('');
-
 
 const getFirst = (val: string | string[]) => {
   if (Array.isArray(val)) {
@@ -91,6 +94,27 @@ onMounted(async () => {
     background-size: contain;
     transform: translateY(-50%) translateX(-25%) rotate(90deg);
 
+    animation:
+      imageIn linear forwards,
+      imageOut linear forwards;
+    animation-timeline: view();
+    animation-range:
+      entry 30%,
+      exit 30%;
+      transform: translateY(0%) translateX(-25%) rotate(90deg);
+
+
+    @keyframes imageIn {
+      to {  transform: translateY(-50%) translateX(-25%) rotate(90deg);
+        opacity: 1;
+      }
+    }
+    @keyframes imageOut {
+      to {  transform: translateY(-100%) translateX(-25%) rotate(90deg);
+        opacity: 0;
+      }
+    }
+
     @media (max-width: 720px) {
       width: 100vw;
       height: 100vw;
@@ -102,12 +126,23 @@ onMounted(async () => {
   }
 
   &__container {
-    width: calc(50% + (var(--spacing) * .5));
+    width: calc(50% + (var(--spacing) * 0.5));
     padding: 0;
     display: flex;
     flex-direction: column;
     gap: var(--space-l);
 
+    //     animation: adjustPositionReverse linear forwards;
+    //     animation-timeline: view();
+
+    // @keyframes adjustPosition {
+    //   0% {
+    //     transform: translateY(calc(100% - 100vh));
+    //   }
+    //   100% {
+    //     transform: translateY(calc(-100% + 100vh));
+    //   }
+    // }
     @media (max-width: 720px) {
       padding: 0;
       width: 100%;
@@ -124,7 +159,7 @@ onMounted(async () => {
     line-height: 1;
     font-family: var(--header-font-family);
     color: var(--color-blue);
-    .title-dot{
+    .title-dot {
       color: var(--color-orange);
     }
   }

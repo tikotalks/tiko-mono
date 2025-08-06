@@ -6,8 +6,16 @@
         :style="`--background-image: url(${imageUrl})`"
       ></div>
       <div :class="bemm('container')">
-        <h2 v-if="content?.title" :class="bemm('title')" v-html="processTitle(content.title)" />
-        <h4 v-if="content?.subtitle" :class="bemm('subtitle')" v-html="content.subtitle" />
+        <h2
+          v-if="content?.title"
+          :class="bemm('title')"
+          v-html="processTitle(content.title)"
+        />
+        <h4
+          v-if="content?.subtitle"
+          :class="bemm('subtitle')"
+          v-html="content.subtitle"
+        />
         <MarkdownRenderer
           :class="bemm('content')"
           v-if="content?.content"
@@ -27,7 +35,11 @@
           <a
             :href="getAppData(app, 'app_link_website') || '#'"
             :target="getAppData(app, 'app_link_website') ? '_blank' : undefined"
-            :rel="getAppData(app, 'app_link_website') ? 'noopener noreferrer' : undefined"
+            :rel="
+              getAppData(app, 'app_link_website')
+                ? 'noopener noreferrer'
+                : undefined
+            "
             :class="bemm('app-link')"
           >
             <img
@@ -39,7 +51,9 @@
             <div v-else :class="bemm('app-placeholder')">
               {{ getAppData(app, 'app_title') || app.item?.name }}
             </div>
-            <span :class="bemm('app-title')">{{ getAppData(app, 'app_title') || app.item?.name }}</span>
+            <span :class="bemm('app-title')">{{
+              getAppData(app, 'app_title') || app.item?.name
+            }}</span>
           </a>
         </li>
       </ul>
@@ -65,7 +79,6 @@ const bemm = useBemm('apps-section');
 
 const { getImage, loadImages } = useImages(true); // Use public mode for marketing site
 const { getImageVariants } = useImageUrl();
-
 
 const getImageUrl = (imageId: string) => {
   const imageData = getImage(imageId);
@@ -100,7 +113,7 @@ const loadImage = async () => {
 onMounted(async () => {
   await loadImages();
   loadImage();
-  
+
   // Debug app items
   console.log('Apps Section - Items:', props.content?.items);
   props.content?.items?.forEach((item: any, index: number) => {
@@ -109,7 +122,7 @@ onMounted(async () => {
       data: item.data,
       app_title: getAppData(item, 'app_title'),
       color: getAppData(item, 'color'),
-      app_icon: getAppData(item, 'app_icon')
+      app_icon: getAppData(item, 'app_icon'),
     });
   });
 });
@@ -122,6 +135,10 @@ onMounted(async () => {
   color: var(--color-dark);
 
   position: relative;
+
+  @media screen and (max-width: 720px) {
+    padding-top: calc(var(--spacing) * 3);
+  }
 
   &__wrapper {
     display: flex;
@@ -151,7 +168,13 @@ onMounted(async () => {
     border-radius: var(--border-radius);
     padding: var(--spacing);
     transform: translateX(var(--spacing));
-    // margin-right: calc(var(--spacing) * -1);
+
+    @media screen and (max-width: 720px) {
+      width: 100%;
+      padding: var(--spacing);
+      transform: translateX(0);
+    }
+
   }
 
   &__title {
@@ -163,8 +186,17 @@ onMounted(async () => {
     left: 0;
     transform: translateX(-100%);
     width: calc(50vw - var(--spacing));
-    span{
+    span {
       color: var(--color-green);
+    }
+
+
+    @media screen and (max-width: 720px) {
+      position: relative;
+      width: 100%;
+      // background-color: transparent;
+      transform: translateY(calc(var(--spacing) * -1));
+      margin-bottom: calc(var(--spacing) * -1);
     }
   }
 
@@ -201,10 +233,19 @@ onMounted(async () => {
     justify-content: center;
   }
   &__app-item {
+    --app-color: var(--color, var(--color-background));
+    --app-color-dark: color-mix(
+      in srgb,
+      var(--color-dark),
+      var(--app-color) 50%
+    );
+    --app-color-light: color-mix(
+      in srgb,
+      var(--color-light),
+      var(--app-color) 50%
+    );
+
     width: 15vw;
-    --app-color:var(--color, var(--color-background));
-    --app-color-dark: color-mix(in srgb, var(--color-dark), var(--app-color) 50%);
-    --app-color-light: color-mix(in srgb, var(--color-light), var(--app-color) 50%);
     background: var(--color, var(--color-background));
     // box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     border-radius: var(--border-radius);
@@ -216,6 +257,10 @@ onMounted(async () => {
       var(--app-color) 100%
     );
 
+    @media screen and (max-width: 720px) {
+      width: 30vw;
+    }
+
     &:hover {
       transform: scale(1.05);
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
@@ -223,6 +268,27 @@ onMounted(async () => {
       .apps-section__app-title {
         transform: scale(1);
         opacity: 1;
+      }
+    }
+
+
+    view-timeline-name: --revealing-image;
+    view-timeline-axis: block;
+    animation: linear reveal-center both;
+    animation-timeline: --revealing-image;
+    animation-range: entry 0% cover 20%;
+    // box-shadow: inset 0 0 0 1px var(--color-secondary);
+    @at-root {
+      @keyframes reveal-center {
+        0% {
+        transform: scale(0);
+        }
+        80% {
+          transform: scale(1.2);
+        }
+        100% {
+          transform: scale(1);
+        }
       }
     }
   }
@@ -267,10 +333,10 @@ onMounted(async () => {
     color: var(--color-light);
     background-color: var(--color-dark);
     border-radius: 1em;
-    padding: .1em 0.5em;
-    transform: scale(.5);
+    padding: 0.1em 0.5em;
+    transform: scale(0.5);
     opacity: 0;
-transition: .3s ease-in-out;
+    transition: 0.3s ease-in-out;
     position: absolute;
     top: 100%;
   }

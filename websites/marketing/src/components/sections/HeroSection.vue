@@ -1,7 +1,11 @@
 <template>
   <section :class="bemm()">
     <div :class="bemm('container')">
-      <h1 v-if="content?.title" :class="bemm('title')" v-html="processTitle(content.title)" />
+      <h1
+        v-if="content?.title"
+        :class="bemm('title')"
+        v-html="processTitle(content.title)"
+      />
       <p v-if="content?.subtitle" :class="bemm('subtitle')">
         {{ content.subtitle }}
       </p>
@@ -217,7 +221,19 @@ watch(
   align-items: flex-start;
   justify-content: flex-start;
 
-  &::before{
+  animation: headerSize linear both;
+  animation-timeline: scroll();
+  animation-range: 0 100vh;
+
+  @at-root {
+    @keyframes headerSize {
+      to {
+      transform: translateY(50%)
+      }
+    }
+  }
+
+  &::before {
     content: '';
     position: absolute;
     top: 0;
@@ -227,14 +243,17 @@ watch(
     z-index: 10;
     height: 20vh;
     width: 100%;
-    background-image: linear-gradient(to bottom, var(--color-dark) 0%, transparent 100%);
+    background-image: linear-gradient(
+      to bottom,
+      var(--color-dark) 0%,
+      transparent 100%
+    );
   }
-
 
   @media (max-width: 720px) {
     overflow: hidden;
     clip-path: inset(0 0 0 0);
-    padding:0;
+    padding: 0;
     padding-top: calc(var(--space-l) * 5);
   }
 
@@ -246,7 +265,11 @@ watch(
     @media (max-width: 720px) {
       width: 100%;
       padding: var(--spacing);
-      background-image: linear-gradient(to top, var(--color-dark) 0%, transparent 100%);
+      background-image: linear-gradient(
+        to top,
+        var(--color-dark) 0%,
+        transparent 100%
+      );
     }
   }
 

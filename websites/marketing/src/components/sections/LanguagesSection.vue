@@ -1,31 +1,47 @@
 <template>
   <section :class="bemm()">
-     <h2
+    <h2
       v-if="content?.title"
       :class="bemm('title')"
       v-html="processTitle(content.title)"
     />
 
- <div :class="bemm('container')">
+    <div :class="bemm('container')">
       <div :class="bemm('column', ['', 'left'])">
         <MarkdownRenderer :class="bemm('content')" :content="content.content" />
         <ul :class="bemm('language-list')" v-if="content.list">
-          <li :class="bemm('language-item')" v-for="lang in content?.list.filter((lang:any)=>{
-            const code = typeof lang === 'string' ? lang.split(' : ')[0] : lang.key || lang.code || '';
-            return !code.includes('-');
-          }).map((lang:any)=>{
-            const code = typeof lang === 'string' ? lang.split(' : ')[0] : lang.key || lang.code || '';
-            return getTranslation(code);
-          }).sort()" >
+          <li
+            :class="bemm('language-item')"
+            v-for="lang in content?.list
+              .filter((lang: any) => {
+                const code =
+                  typeof lang === 'string'
+                    ? lang.split(' : ')[0]
+                    : lang.key || lang.code || '';
+                return !code.includes('-');
+              })
+              .map((lang: any) => {
+                const code =
+                  typeof lang === 'string'
+                    ? lang.split(' : ')[0]
+                    : lang.key || lang.code || '';
+                return getTranslation(code);
+              })
+              .sort()"
+          >
             {{ lang }}
           </li>
         </ul>
       </div>
       <div :class="bemm('column', ['', 'right'])">
         <div :class="bemm('language-card-container')">
-          <TransitionGroup name="fade" tag="ul" :class="bemm('language-card-list')">
+          <TransitionGroup
+            name="fade"
+            tag="ul"
+            :class="bemm('language-card-list')"
+          >
             <li
-              v-for="(language, index) in visibleLanguages"
+              v-for="(language, index) in visibleLocales"
               :key="language.key + language.value"
               :class="bemm('language-card-item')"
             >
@@ -43,102 +59,54 @@
 import { useBemm } from 'bemm';
 import type { ContentSection } from '@tiko/core';
 import { processTitle } from '@/utils/processTitle';
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 
 import { useI18n } from '@tiko/ui';
 import MarkdownRenderer from '../MarkdownRenderer.vue';
 
-const {t} = useI18n();
+const { t } = useI18n();
 
 interface TextSectionProps {
   section: ContentSection | null;
   content: any;
 }
 
-
-const getTranslation = (lang: string): string=>{
-
+const getTranslation = (lang: string): string => {
   const langKey = `languageNames.${lang.toLowerCase()}`;
   return t(langKey);
-}
+};
 
 const props = defineProps<TextSectionProps>();
 const bemm = useBemm('languages-section');
 
-const visibleLanguages = ref<any[]>([]);
-const rotationInterval = 3000;
-const totalImages = 12;
-let intervalId: ReturnType<typeof setInterval> | null = null;
+const languages = ref<any[]>([]);
 
+const visibleLocales = computed(() => {
+  return languages.value.filter((lang: KeyValue) => lang.key.includes('-'));
+});
+const visibleLanguages = computed(() => {
+  return languages.value
+    .filter((lang: KeyValue) => !lang.key.includes('-'))
+    .map((lang: KeyValue) => t(`languageNames.${lang.key}`));
+});
 
 interface KeyValue {
   key: string;
   value: string;
 }
 
-
-function startLanguageRotation() {
-  // Convert array to KeyValue array (handle both string and object formats)
-  const listAsKeyValue = ((props.content?.list as any[]) || []).map((lang: any) => {
-    if (typeof lang === 'string') {
-      const [key, value] = lang.split(' : ');
-      return { key: key.trim(), value: value?.trim() || '' };
-    } else {
-      // Handle object format
-      return { 
-        key: lang.key || lang.code || '', 
-        value: lang.value || lang.flag || lang.name || '' 
-      };
-    }
-  });
-  
-  const allLanguages = listAsKeyValue.filter((lang: KeyValue) => lang.key.includes('-'));
-
-  if (!allLanguages.length) return;
-
-  // Initialize the visible list
-  const initial = new Set<number>();
-  visibleLanguages.value = [];
-
-  while (visibleLanguages.value.length < totalImages && initial.size < allLanguages.length) {
-    const idx = Math.floor(Math.random() * allLanguages.length);
-    if (!initial.has(idx)) {
-      initial.add(idx);
-      visibleLanguages.value.push(allLanguages[idx]);
-    }
-  }
-
-  intervalId = setInterval(() => {
-    if (allLanguages.length <= totalImages) return;
-
-    // Pick one to remove
-    const removeIndex = Math.floor(Math.random() * visibleLanguages.value.length);
-    visibleLanguages.value.splice(removeIndex, 1);
-
-    // Get the keys of those already shown
-    const currentKeys = new Set(visibleLanguages.value.map(l => l.key));
-
-    // Filter available not-shown languages
-    const available = allLanguages.filter((l:any) => !currentKeys.has(l.key));
-
-    // Add one random available language
-    if (available.length) {
-      const newLang = available[Math.floor(Math.random() * available.length)];
-      visibleLanguages.value.push(newLang);
-    }
-  }, rotationInterval);
-}
-
 onMounted(() => {
-  console.log('🌍 [LanguagesSection] Content received:', props.content);
-  console.log('🌍 [LanguagesSection] List field type:', typeof props.content?.list);
-  console.log('🌍 [LanguagesSection] List field value:', props.content?.list);
-
-  startLanguageRotation();
-});
-
-onUnmounted(() => {
-  if (intervalId) clearInterval(intervalId);
+  if (props.content?.list) {
+    languages.value = props.content.list.map((lang: string | KeyValue) => {
+      if (typeof lang === 'string') {
+        const [key, value] = lang.split(' : ');
+        return { key, value };
+      } else if (typeof lang === 'object' && lang.key && lang.value) {
+        return { key: lang.key, value: lang.value };
+      }
+      return { key: '', value: '' };
+    });
+  }
 });
 </script>
 
@@ -168,10 +136,19 @@ onUnmounted(() => {
     flex-direction: row;
     gap: var(--space-l);
     margin-top: var(--spacing);
+
+    @media screen and (max-width: 720px) {
+      flex-direction: column;
+      gap: var(--spacing);
+    }
   }
 
   &__column {
     width: 50%;
+
+    @media screen and (max-width: 720px) {
+      width: 100%;
+    }
   }
 
   &__title {
@@ -180,11 +157,18 @@ onUnmounted(() => {
     font-family: var(--header-font-family);
     color: var(--color-green);
 
+    max-width: 50%;
+
     .title-dot {
       color: var(--color-pink);
     }
 
-    max-width: 50%;
+    @media screen and (max-width: 720px) {
+      width: 100%;
+      font-size: clamp(2em, 3vw, 4em);
+      text-align: center;
+      max-width: fit-content;
+    }
   }
 
   &__content {
@@ -195,24 +179,36 @@ onUnmounted(() => {
     p {
       margin-bottom: var(--space);
     }
+
+    @media screen and (max-width: 720px) {
+      width: 100%;
+    }
   }
 
-  &__language-list{
+  &__language-list {
     margin-top: var(--space);
     display: flex;
     flex-wrap: wrap;
   }
-  &__language-item{
+
+  &__language-item {
     width: 50%;
     color: var(--color-primary);
   }
 
   &__language-card-container {
-    background-color: var(--color-pink);
+    background-color: var(--color-primary);
     width: 100%;
     transform: translateX(var(--spacing)) translateY(calc(var(--spacing) * -1));
     border-radius: var(--border-radius) 0 0 var(--border-radius);
     margin-bottom: calc(var(--spacing) * -1);
+
+    @media screen and (max-width: 720px) {
+      width: 100%;
+      transform: translateX(0) translateY(0);
+      border-radius: var(--border-radius);
+      margin-bottom: 0;
+    }
   }
 
   &__language-card-list {
@@ -221,42 +217,64 @@ onUnmounted(() => {
     gap: var(--space);
     flex-wrap: wrap;
     padding: var(--space);
-    transform: rotate(-10deg);
+
+    @media screen and (max-width: 720px) {
+      flex-direction: row;
+      align-items: space-between;
+      justify-content: center;
+    }
   }
 
   &__language-card-item {
     --item-size: clamp(4em, 8vw, 12em);
     width: var(--item-size);
     height: var(--item-size);
+    background-color: var(--color-dark);
     position: relative;
     overflow: hidden;
     border-radius: var(--border-radius);
-    box-shadow: inset 0 0 0 1px var(--color-secondary);
 
-    &:nth-child(1) {
-      margin-left: calc(var(--item-size) * 0.5);
+    view-timeline-name: --revealing-image;
+    view-timeline-axis: block;
+    animation: linear reveal-center both;
+    animation-timeline: --revealing-image;
+    animation-range: entry 0% cover 20%;
+    // box-shadow: inset 0 0 0 1px var(--color-secondary);
+    @at-root {
+      @keyframes reveal-center {
+        0% {
+          transform: scale(0);
+        }
+        80% {
+          transform: scale(1.2);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
     }
   }
 
-  &__language-flag {
-    font-size: calc(clamp(4em, 8vw, 12em) * 2.5);
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%) rotate(-10deg);
-    filter: blur(5px);
+  &__language-code {
+    display: none;
+    // font-size: calc(clamp(4em, 8vw, 12em) * 2.5);
+    // position: absolute;
+    // left: 50%;
+    // top: 50%;
+    // transform: translate(-50%, -50%) rotate(-10deg);
+    // filter: blur(5px);
   }
 
-  &__language-code {
+  &__language-flag {
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    font-size: calc(clamp(4em, 8vw, 12em) * 0.25);
+    font-size: calc(clamp(4em, 8vw, 12em) * 0.5);
     white-space: nowrap;
     color: var(--color-foreground);
     font-weight: bold;
-    text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    // text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   }
 }
 

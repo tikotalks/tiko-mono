@@ -100,6 +100,13 @@ onMounted(async () => {
   justify-content: flex-start;
   position: relative;
 
+  @media screen and (max-width: 720px) {
+    flex-direction: column-reverse;
+    align-items: center;
+  }
+
+
+
   &__image{
     width: 50vw;
     height: 100%;
@@ -111,6 +118,14 @@ onMounted(async () => {
     background-position: center center;
     background-size: contain;
     transform: translateY(25%) translateX(25%);
+
+    @media screen and (max-width: 720px) {
+      width: 100vw;
+      height: 100vw;
+      position: relative;
+      margin-top: calc(-35vw);
+      transform: translateY(35%) translateX(25%);
+    }
   }
 
   &__container {
@@ -119,6 +134,11 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     gap: var(--space-l);
+
+    @media screen and (max-width: 720px) {
+      width: 100%;
+      padding:0;
+    }
   }
 
   &__title {
