@@ -1,0 +1,32 @@
+name = "tiko-content-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# Production route is now configured via custom domain in Cloudflare dashboard
+# content.tikoapi.org -> tiko-content-api worker
+
+[env.staging]
+routes = [
+  { pattern = "content-staging.tikoapi.org/*", zone_name = "tikoapi.org" }
+]
+
+# KV namespace for caching
+[[kv_namespaces]]
+binding = "CONTENT_CACHE"
+id = "19e053c7a4c94f16a1ee4a436bfac34a"
+
+# Environment variables (set these in Cloudflare dashboard)
+[vars]
+CACHE_TTL = "86400" # 24 hours in seconds
+SUPABASE_URL = "https://kejvhvszhevfwgsztedf.supabase.co"
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlanZodnN6aGV2Zndnc3p0ZWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4ODg2MTIsImV4cCI6MjA2NzQ2NDYxMn0.xUYXxNodJTpTwChlKbuBSojVJqX9CDW87aVISEUc2rE"
+
+# Durable Objects for advanced caching (optional)
+# [[durable_objects.bindings]]
+# name = "CACHE_MANAGER"
+# class_name = "CacheManager"
+
+# R2 bucket for large content (optional)
+# [[r2_buckets]]
+# binding = "CONTENT_BUCKET"
+# bucket_name = "tiko-content"
