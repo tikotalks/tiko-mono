@@ -79,6 +79,10 @@ export type {
   DatabaseBackup,
   CreateBackupRequest
 } from './backup.service'
+export { ContentWorkerService } from './content-worker.service'
+export type { ContentWorkerConfig } from './content-worker.service'
+export { UnifiedContentService } from './unified-content.service'
+export type { UnifiedContentConfig, QueryOptions, FullPageContent, FullSectionContent, FullItemContent } from './unified-content.service'
 
 // Alternative: Export Supabase implementations
 // import { SupabaseParentModeService } from './parent-mode-supabase.service'
