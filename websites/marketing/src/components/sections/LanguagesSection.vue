@@ -10,11 +10,11 @@
       <div :class="bemm('column', ['', 'left'])">
         <MarkdownRenderer :class="bemm('content')" :content="content.content" />
         <ul :class="bemm('language-list')" v-if="content.list">
-          <li :class="bemm('language-item')" v-for="lang in content?.list.filter((lang:string)=>{
-            const code = lang.split(' : ')[0];
+          <li :class="bemm('language-item')" v-for="lang in content?.list.filter((lang:any)=>{
+            const code = typeof lang === 'string' ? lang.split(' : ')[0] : lang.key || lang.code || '';
             return !code.includes('-');
-          }).map((lang:string)=>{
-            const code = lang.split(' : ')[0];
+          }).map((lang:any)=>{
+            const code = typeof lang === 'string' ? lang.split(' : ')[0] : lang.key || lang.code || '';
             return getTranslation(code);
           }).sort()" >
             {{ lang }}
@@ -78,10 +78,18 @@ interface KeyValue {
 
 
 function startLanguageRotation() {
-  // Convert string array to KeyValue array
-  const listAsKeyValue = ((props.content?.list as string[]) || []).map((lang: string) => {
-    const [key, value] = lang.split(' : ');
-    return { key: key.trim(), value: value?.trim() || '' };
+  // Convert array to KeyValue array (handle both string and object formats)
+  const listAsKeyValue = ((props.content?.list as any[]) || []).map((lang: any) => {
+    if (typeof lang === 'string') {
+      const [key, value] = lang.split(' : ');
+      return { key: key.trim(), value: value?.trim() || '' };
+    } else {
+      // Handle object format
+      return { 
+        key: lang.key || lang.code || '', 
+        value: lang.value || lang.flag || lang.name || '' 
+      };
+    }
   });
   
   const allLanguages = listAsKeyValue.filter((lang: KeyValue) => lang.key.includes('-'));
