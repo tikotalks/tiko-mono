@@ -36,7 +36,7 @@
 import { TIcon } from '@tiko/ui';
 import { useBemm } from 'bemm';
 import { Icons } from 'open-icon';
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useContent } from '@tiko/core';
 import { useI18n } from '@tiko/ui';
 const bemm = useBemm('navigation');
@@ -70,7 +70,7 @@ const content = useContent({
 });
 
 // Preload page content on hover
-const preloadPage = (path: string) => {
+const preloadPage = async (path: string) => {
   // Extract slug from path (e.g., /about -> about)
   const slug = path.replace('/', '') || 'home';
 
@@ -78,11 +78,27 @@ const preloadPage = (path: string) => {
   const currentSlug = router.currentRoute.value.path.replace('/', '') || 'home';
   if (slug === currentSlug) return;
 
-  // Preload the page content
-  content.loadPage('marketing', slug, locale.value).catch(() => {
-    // Silently fail if preload doesn't work
-  });
+  console.log(`🔄 [Navigation] Preloading page: ${slug}`);
+  
+  try {
+    // Preload the page content
+    const result = await content.loadPage('marketing', slug, locale.value);
+    console.log(`✅ [Navigation] Successfully preloaded ${slug}`, result);
+  } catch (error) {
+    console.log(`⚠️ [Navigation] Failed to preload ${slug}:`, error);
+  }
 };
+
+// Preload all pages after initial load
+onMounted(() => {
+  // Wait a bit for the initial page to load
+  setTimeout(() => {
+    console.log('🚀 [Navigation] Starting background preload of all pages');
+    items.forEach(item => {
+      preloadPage(item.link);
+    });
+  }, 3000); // Wait 3 seconds after mount
+});
 
 watch(
   () => useRoute(),
