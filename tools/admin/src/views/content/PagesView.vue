@@ -31,10 +31,9 @@
         <div :class="bemm('table-header-content')">
           <div :class="bemm('header-cell')"></div>
           <div :class="bemm('header-cell')">{{ t('common.title') }}</div>
-          <div :class="bemm('header-cell')">
-           {{ t('common.path') }}
-          </div>
           <div :class="bemm('header-cell')">{{ t('common.project') }}</div>
+          <div :class="bemm('header-cell', 'toggle')">{{ t('admin.content.pages.inNavigation') || 'In Navigation' }}</div>
+          <div :class="bemm('header-cell', 'toggle')">{{ t('common.published') || 'Published' }}</div>
           <div :class="bemm('header-cell')">{{ t('common.statusLabel') }}</div>
           <div :class="bemm('header-cell')">{{ t('common.actions') }}</div>
         </div>
@@ -62,13 +61,30 @@
                   @click.stop="handlePageClick(item)"
                 >
                   {{ item.title }}
-                </a> <br/><TChip>{{ item.slug }}</TChip>
-              </div>
-              <div :class="bemm('cell', ['', 'path'])">
-                {{ item.full_path }}
+                </a>
+                <br/>
+                <TChip size="small" type="outline">{{ item.slug }}</TChip>
               </div>
               <div :class="bemm('cell', ['', 'project'])">
                 {{ getProjectName(item.project_id) }}
+              </div>
+              <div :class="bemm('cell', ['', 'toggle'])">
+                <TToggle
+                  :model-value="item.show_in_navigation"
+                  @update:model-value="
+                    (value) => handleNavigationToggle(item, value)
+                  "
+                  size="small"
+                />
+              </div>
+              <div :class="bemm('cell', ['', 'toggle'])">
+                <TToggle
+                  :model-value="item.is_published"
+                  @update:model-value="
+                    (value) => handlePublishedToggle(item, value)
+                  "
+                  size="small"
+                />
               </div>
               <div :class="bemm('cell', ['', 'metadata'])">
                 <div :class="bemm('metadata')">
@@ -84,13 +100,6 @@
               </div>
               <div :class="bemm('cell', ['', 'actions'])">
                 <div :class="bemm('actions')">
-                  <TToggle
-                    :model-value="item.show_in_navigation"
-                    @update:model-value="
-                      (value) => handleNavigationToggle(item, value)
-                    "
-                    size="small"
-                  />
                   <TButton
                     type="ghost"
                     size="small"
@@ -283,9 +292,6 @@ function getPageMetadata(page: ContentPage): string[] {
 
   // Add language
   metadata.push(page.language_code.toUpperCase());
-
-  // Add status
-  metadata.push(page.is_published ? t('common.published') : t('common.draft'));
 
   // Add home page indicator
   if (page.is_home) {
@@ -540,6 +546,36 @@ async function handleNavigationToggle(
   }
 }
 
+async function handlePublishedToggle(
+  page: ContentPage,
+  isPublished: boolean,
+) {
+  try {
+    await contentService.updatePage(page.id, {
+      is_published: isPublished,
+    });
+
+    // Update local state
+    const pageIndex = pages.value.findIndex((p) => p.id === page.id);
+    if (pageIndex !== -1) {
+      pages.value[pageIndex].is_published = isPublished;
+    }
+
+    toastService?.show({
+      message: isPublished
+        ? t('admin.content.pages.publishSuccess') || 'Page published successfully'
+        : t('admin.content.pages.unpublishSuccess') || 'Page unpublished successfully',
+      type: 'success',
+    });
+  } catch (error) {
+    console.error('Failed to toggle page published status:', error);
+    toastService?.show({
+      message: t('admin.content.pages.publishToggleError') || 'Failed to update publish status',
+      type: 'error',
+    });
+  }
+}
+
 // Lifecycle
 onMounted(() => {
   loadPages();
@@ -681,7 +717,7 @@ onMounted(() => {
     border-bottom: 1px solid var(--color-primary-accent);
   }
 
-  --grid-template: 100px 80px 80px 15% 120px;
+  --grid-template: 40px 1fr 150px 120px 100px 150px 150px;
 
   &__table-header-content {
     display: grid;
@@ -694,6 +730,10 @@ onMounted(() => {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    
+    &--toggle {
+      text-align: center;
+    }
   }
 
   &__list-row {
@@ -724,9 +764,10 @@ onMounted(() => {
       color: var(--color-foreground-secondary);
     }
 
-    &--navigation {
+    &--toggle {
       display: flex;
       align-items: center;
+      justify-content: center;
     }
 
     &--actions {
