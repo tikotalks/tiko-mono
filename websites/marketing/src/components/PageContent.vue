@@ -53,6 +53,10 @@ const props = withDefaults(defineProps<PageContentProps>(), {
   showDebug: false
 });
 
+const emit = defineEmits<{
+  'page-not-found': [slug: string]
+}>();
+
 const { pageSlug } = toRefs(props);
 
 const bemm = useBemm('page-content');
@@ -106,6 +110,8 @@ async function loadContent() {
       pageData.value = page;
     } else {
       error.value = `No content found for "${pageSlug.value}" page in ${languageCode}.`;
+      // Emit event to notify parent that page was not found
+      emit('page-not-found', pageSlug.value);
     }
   } catch (err) {
     console.error(`[PageContent] Failed to load ${pageSlug.value} page:`, err);

@@ -325,7 +325,7 @@ async function handleSave(
   mode?: 'create' | 'edit',
 ) {
   console.log('PagesView: handleSave called with:', { pageData, mode });
-  
+
   try {
     if (mode === 'edit' && pageData.id) {
       console.log('PagesView: Updating page:', pageData.id);
@@ -377,7 +377,7 @@ async function handleSave(
 
 function handleCreateClick() {
   console.log('PagesView: Opening create page dialog');
-  
+
   const popupId = popupService?.open({
     component: CreatePageDialog,
     title: t('admin.content.pages.create'),
@@ -392,6 +392,7 @@ function handleCreateClick() {
       onClose: () => {
         console.log('PagesView: Dialog closed');
       }
+    }
   });
 }
 

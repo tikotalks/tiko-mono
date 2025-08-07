@@ -8,35 +8,14 @@ const routes: RouteRecordRaw[] = [
     component: HomeView
   },
   {
-    path: '/about',
-    name: 'about',
-    component: () => import('../views/AboutView.vue')
-  },
-  {
-    path: '/apps',
-    name: 'apps',
-    component: () => import('../views/AppsView.vue')
-  },
-  {
-    path: '/privacy',
-    name: 'privacy',
-    component: () => import('../views/PrivacyView.vue')
-  },
-  {
-    path: '/terms',
-    name: 'terms',
-    component: () => import('../views/TermsView.vue')
-  },
-  {
-    path: '/contact',
-    name: 'contact',
-    component: () => import('../views/ContactView.vue')
-  },
-  // Catch all 404
-  {
-    path: '/:pathMatch(.*)*',
-    name: 'not-found',
+    path: '/404',
+    name: 'notFound',
     component: () => import('../views/NotFoundView.vue')
+  },
+  {
+    path: '/:view(.*)*',
+    name: 'content',
+    component: () => import('../views/ContentView.vue')
   }
 ]
 
