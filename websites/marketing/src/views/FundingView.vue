@@ -1,0 +1,8 @@
+<template>
+  <PageContent page-slug="home" />
+</template>
+
+<script setup lang="ts">
+import PageContent from '../components/PageContent.vue';
+</script>
+

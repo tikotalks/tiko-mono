@@ -1,21 +1,20 @@
 <template>
   <div :class="bemm()">
-    <!-- Transition wrapper for smooth content changes -->
-    <Transition name="page-fade" mode="out-in">
-      <!-- Loading State with Skeleton -->
-      <div v-if="loading" :class="bemm('loading')" key="loading">
-        <div :class="bemm('skeleton')">
-          <div :class="bemm('skeleton-header')"></div>
-          <div :class="bemm('skeleton-content')">
-            <div :class="bemm('skeleton-line')"></div>
-            <div :class="bemm('skeleton-line', 'short')"></div>
-            <div :class="bemm('skeleton-line')"></div>
-          </div>
+    <!-- Show loading skeleton only for initial load -->
+    <div v-if="loading && !pageData" :class="bemm('loading')">
+      <div :class="bemm('skeleton')">
+        <div :class="bemm('skeleton-header')"></div>
+        <div :class="bemm('skeleton-content')">
+          <div :class="bemm('skeleton-line')"></div>
+          <div :class="bemm('skeleton-line', 'short')"></div>
+          <div :class="bemm('skeleton-line')"></div>
         </div>
       </div>
+    </div>
 
-      <!-- Content -->
-      <div v-else-if="pageData?.sections?.length" key="content">
+    <!-- Content - Keep visible during transitions -->
+    <Transition name="page-fade">
+      <div v-if="pageData?.sections?.length" :key="currentPageKey">
         <template v-for="section in pageData.sections" :key="section.section.id">
           <SectionRenderer
             :section="section.section"
@@ -72,20 +71,39 @@ const pageData = ref<PageContent | null>(null);
 const loading = ref(true);
 const error = ref<string | null>(null);
 
+// Keep track of current page to avoid flashing loading state
+const currentPageKey = ref<string>('');
+
 // Function to load content for current language
 async function loadContent() {
   try {
-    loading.value = true;
-    error.value = null;
-
     // Get language code from locale (e.g., 'en-GB' -> 'en')
     const languageCode = locale.value.split('-')[0];
+    const pageKey = `${pageSlug.value}-${languageCode}`;
 
+    // Only show loading for initial page load (when no content exists)
+    if (!pageData.value) {
+      loading.value = true;
+    }
+    
+    // Update the key for transitions
+    currentPageKey.value = pageKey;
+    error.value = null;
+
+    // Track loading time to detect cache hits
+    const startTime = Date.now();
     const page = await content.getPage(pageSlug.value, languageCode, false);
+    const loadTime = Date.now() - startTime;
+    
+    console.log(`[PageContent] Loaded "${pageSlug.value}" in ${loadTime}ms (${loadTime < 50 ? 'from cache' : 'from network'})`);
 
     if (page) {
+      // For cached content, add small delay for smoother transition
+      if (loadTime < 50 && pageData.value) {
+        await new Promise(resolve => setTimeout(resolve, 150));
+      }
+      
       pageData.value = page;
-      console.log(`[PageContent] Loaded "${pageSlug.value}" page:`, pageData.value);
     } else {
       error.value = `No content found for "${pageSlug.value}" page in ${languageCode}.`;
     }
@@ -115,9 +133,10 @@ watch(pageSlug, () => {
 
 <style lang="scss">
 .page-content {
+  background-color: var(--color-light);
   // Loading state
   &__loading {
-    min-height: 50vh;
+    min-height: 100vh;
     padding: var(--space-2xl);
   }
 
@@ -130,9 +149,9 @@ watch(pageSlug, () => {
 
   &__skeleton-header {
     height: 120px;
-    background: linear-gradient(90deg, 
-      var(--color-background-secondary) 0%, 
-      var(--color-background) 50%, 
+    background: linear-gradient(90deg,
+      var(--color-background-secondary) 0%,
+      var(--color-background) 50%,
       var(--color-background-secondary) 100%);
     border-radius: var(--border-radius);
     margin-bottom: var(--space-xl);
@@ -144,13 +163,13 @@ watch(pageSlug, () => {
 
   &__skeleton-line {
     height: 20px;
-    background: linear-gradient(90deg, 
-      var(--color-background-secondary) 0%, 
-      var(--color-background) 50%, 
+    background: linear-gradient(90deg,
+      var(--color-background-secondary) 0%,
+      var(--color-background) 50%,
       var(--color-background-secondary) 100%);
     border-radius: var(--border-radius);
     margin-bottom: var(--space);
-    
+
     &--short {
       width: 60%;
     }
@@ -187,20 +206,23 @@ watch(pageSlug, () => {
   }
 }
 
-// Smooth page transitions
-.page-fade-enter-active,
+// Smooth page transitions with crossfade
+.page-fade-enter-active {
+  transition: opacity 0.2s ease;
+}
+
 .page-fade-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity 0.2s ease;
+  position: absolute;
+  width: 100%;
 }
 
 .page-fade-enter-from {
   opacity: 0;
-  transform: translateY(10px);
 }
 
 .page-fade-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
 }
 
 .page-fade-enter-to,
