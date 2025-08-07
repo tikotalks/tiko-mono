@@ -32,8 +32,8 @@
           <div :class="bemm('header-cell')"></div>
           <div :class="bemm('header-cell')">{{ t('common.title') }}</div>
           <div :class="bemm('header-cell')">{{ t('common.project') }}</div>
-          <div :class="bemm('header-cell', 'toggle')">{{ t('admin.content.pages.inNavigation') || 'In Navigation' }}</div>
-          <div :class="bemm('header-cell', 'toggle')">{{ t('common.published') || 'Published' }}</div>
+          <div :class="bemm('header-cell', ['','toggle'])">{{ t('admin.content.pages.inNavigation') || 'In Navigation' }}</div>
+          <div :class="bemm('header-cell', ['','toggle'])">{{ t('common.published') || 'Published' }}</div>
           <div :class="bemm('header-cell')">{{ t('common.statusLabel') }}</div>
           <div :class="bemm('header-cell')">{{ t('common.actions') }}</div>
         </div>
@@ -710,27 +710,29 @@ onMounted(() => {
 
   &__table-header {
     background: var(--color-background-secondary);
-    padding: var(--space);
     font-weight: 600;
     font-size: var(--font-size-s);
     color: var(--color-text-secondary);
     border-bottom: 1px solid var(--color-primary-accent);
   }
 
-  --grid-template: 40px 1fr 150px 120px 100px 150px 150px;
+  --grid-template: 40px 1fr 150px 40px 40px 120px 150px;
 
   &__table-header-content {
     display: grid;
     grid-template-columns:var(--grid-template);
     gap: var(--space);
     align-items: center;
+    padding: var(--space);
+    // Add padding to match the drag handle
+    padding-left: calc(var(--space) + 40px);
   }
 
   &__header-cell {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    
+
     &--toggle {
       text-align: center;
     }
