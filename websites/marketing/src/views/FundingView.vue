@@ -1,5 +1,5 @@
 <template>
-  <PageContent page-slug="home" />
+  <PageContent page-slug="funding" />
 </template>
 
 <script setup lang="ts">

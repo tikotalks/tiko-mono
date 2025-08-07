@@ -112,7 +112,8 @@ import {
   TInputCheckbox,
   TInputSelect,
   useI18n,
-  type PopupService
+  type PopupService,
+  type ToastService
 } from '@tiko/ui'
 import { Icons } from 'open-icon'
 import { contentService } from '@tiko/core'
@@ -122,6 +123,8 @@ interface Props {
   page?: ContentPage
   mode?: 'create' | 'edit'
   projects?: ContentProject[]
+  onSave?: (data: Partial<ContentPage>) => Promise<void> | void
+  onClose?: () => void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -137,6 +140,7 @@ const emit = defineEmits<{
 const bemm = useBemm('create-page-dialog')
 const { t } = useI18n()
 const popupService = inject<PopupService>('popupService')
+const toastService = inject<ToastService>('toastService')
 
 // State
 const templates = ref<PageTemplate[]>([])
@@ -262,10 +266,15 @@ async function handleSlugInput() {
 
 
 function handleClose() {
+  if (props.onClose) {
+    props.onClose()
+  }
   emit('close')
 }
 
 async function handleSave() {
+  console.log('CreatePageDialog: handleSave called')
+  
   // Validate
   if (!formData.title.trim()) {
     errors.title = t('validation.required')
@@ -282,7 +291,10 @@ async function handleSave() {
     return
   }
 
-  if (!isValid.value) return
+  if (!isValid.value) {
+    console.log('CreatePageDialog: Form is not valid', errors)
+    return
+  }
 
   saving.value = true
 
@@ -300,13 +312,23 @@ async function handleSave() {
       language_code: formData.language_code
     }
 
-    console.log('Saving page data:', pageData)
-    console.log('template_id value:', formData.template_id)
-    console.log('template_id type:', typeof formData.template_id)
-
-    emit('save', pageData)
+    console.log('CreatePageDialog: Calling save handler with data:', pageData)
+    
+    // Call the prop callback if provided
+    if (props.onSave) {
+      await props.onSave(pageData)
+      console.log('CreatePageDialog: onSave prop callback completed')
+    } else {
+      // Fallback to emit for backwards compatibility
+      emit('save', pageData)
+      console.log('CreatePageDialog: Save event emitted (no onSave prop)')
+    }
   } catch (error) {
-    console.error('Failed to save page:', error)
+    console.error('CreatePageDialog: Failed to prepare page data:', error)
+    toastService?.show({
+      message: 'Failed to save page. Please check the console for details.',
+      type: 'error'
+    })
   } finally {
     saving.value = false
   }

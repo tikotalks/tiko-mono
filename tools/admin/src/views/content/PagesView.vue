@@ -307,10 +307,10 @@ function handleEdit(page: ContentPage) {
       page,
       mode: 'edit',
       projects: projects.value,
-    },
-    onSave: (pageData: Partial<ContentPage>) => {
-      handleSave(pageData, 'edit');
-      popupService?.close({ id: popupId });
+      onSave: (pageData: Partial<ContentPage>) => {
+        handleSave(pageData, 'edit');
+        popupService?.close({ id: popupId });
+      },
     },
   });
 }
@@ -324,15 +324,20 @@ async function handleSave(
   pageData: Partial<ContentPage>,
   mode?: 'create' | 'edit',
 ) {
+  console.log('PagesView: handleSave called with:', { pageData, mode });
+  
   try {
     if (mode === 'edit' && pageData.id) {
+      console.log('PagesView: Updating page:', pageData.id);
       await contentService.updatePage(pageData.id, pageData);
       toastService?.show({
         message: t('admin.content.pages.updateSuccess'),
         type: 'success',
       });
     } else {
-      await contentService.createPage(pageData);
+      console.log('PagesView: Creating new page');
+      const result = await contentService.createPage(pageData);
+      console.log('PagesView: Page created successfully:', result);
       toastService?.show({
         message: t('admin.content.pages.createSuccess'),
         type: 'success',
@@ -340,7 +345,12 @@ async function handleSave(
     }
     await loadPages();
   } catch (error: any) {
-    console.error('Failed to save page:', error);
+    console.error('PagesView: Failed to save page:', error);
+    console.error('Error details:', {
+      message: error?.message,
+      response: error?.response,
+      data: error?.response?.data
+    });
 
     // Check for duplicate page error
     if (
@@ -366,17 +376,22 @@ async function handleSave(
 }
 
 function handleCreateClick() {
+  console.log('PagesView: Opening create page dialog');
+  
   const popupId = popupService?.open({
     component: CreatePageDialog,
     title: t('admin.content.pages.create'),
     props: {
       mode: 'create',
       projects: projects.value,
-    },
-    onSave: (pageData: Partial<ContentPage>) => {
-      handleSave(pageData, 'create');
-      popupService?.close({ id: popupId });
-    },
+      onSave: (pageData: Partial<ContentPage>) => {
+        console.log('PagesView: onSave callback triggered with:', pageData);
+        handleSave(pageData, 'create');
+        popupService?.close({ id: popupId });
+      },
+      onClose: () => {
+        console.log('PagesView: Dialog closed');
+      }
   });
 }
 
