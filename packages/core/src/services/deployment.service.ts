@@ -128,6 +128,14 @@ class DeploymentService {
         description: 'Main marketing and information website',
         url: 'https://tiko-marketing.pages.dev'
       },
+      {
+        id: 'media',
+        name: 'Media Website',
+        type: 'website',
+        trigger: '[build:media]',
+        description: 'Media library and gallery website',
+        url: 'https://tiko-media.pages.dev'
+      },
       // Workers
       {
         id: 'i18n-translator',
@@ -453,6 +461,7 @@ class DeploymentService {
       
       // Websites
       'marketing': 'deploy-websites.yml',
+      'media': 'deploy-websites.yml',
       
       // Workers
       'i18n-translator': 'deploy-workers.yml',
@@ -468,43 +477,63 @@ class DeploymentService {
    */
   async getDeploymentStatus(): Promise<DeploymentTarget[]> {
     const targets = this.getDeploymentTargets()
-    const workflowRuns = await this.getWorkflowRuns()
+    
+    try {
+      const workflowRuns = await this.getWorkflowRuns()
 
-    // Map workflow runs to targets based on triggers found in commit messages
-    for (const target of targets) {
-      const relevantRuns = workflowRuns.filter(run => 
-        run.head_commit.message.includes(target.trigger) ||
-        this.getWorkflowNameForTarget(target.type) === run.name
-      )
+      // Only process workflow runs if we got some data
+      if (workflowRuns.length > 0) {
+        // Map workflow runs to targets based on triggers found in commit messages
+        for (const target of targets) {
+          const relevantRuns = workflowRuns.filter(run => 
+            run.head_commit.message.includes(target.trigger) ||
+            this.getWorkflowNameForTarget(target.type) === run.name
+          )
 
-      if (relevantRuns.length > 0) {
-        const latestRun = relevantRuns[0]
-        target.status = this.mapWorkflowStatus(latestRun.status, latestRun.conclusion)
-        target.lastDeployed = new Date(latestRun.updated_at)
-        
-        if (latestRun.conclusion) {
-          const started = new Date(latestRun.created_at)
-          const completed = new Date(latestRun.updated_at)
-          target.buildDuration = completed.getTime() - started.getTime()
-        }
+          if (relevantRuns.length > 0) {
+            const latestRun = relevantRuns[0]
+            target.status = this.mapWorkflowStatus(latestRun.status, latestRun.conclusion)
+            target.lastDeployed = new Date(latestRun.updated_at)
+            
+            if (latestRun.conclusion) {
+              const started = new Date(latestRun.created_at)
+              const completed = new Date(latestRun.updated_at)
+              target.buildDuration = completed.getTime() - started.getTime()
+            }
 
-        // Extract version info from workflow run
-        target.commit = latestRun.head_commit.id.substring(0, 7)
-        target.buildNumber = latestRun.id
-        
-        // Extract version from commit message or use date-based version
-        const commitMessage = latestRun.head_commit.message
-        const versionMatch = commitMessage.match(/v?(\d+\.\d+\.\d+)/)
-        if (versionMatch) {
-          target.version = versionMatch[1]
-        } else {
-          // Generate version based on date and run number
-          const date = new Date(latestRun.created_at)
-          const dateStr = date.toISOString().split('T')[0].replace(/-/g, '.')
-          const shortRunId = latestRun.id.toString().slice(-4)
-          target.version = `${dateStr}.${shortRunId}`
+            // Extract version info from workflow run
+            target.commit = latestRun.head_commit.id.substring(0, 7)
+            target.buildNumber = latestRun.id
+            
+            // Extract version from commit message or use date-based version
+            const commitMessage = latestRun.head_commit.message
+            const versionMatch = commitMessage.match(/v?(\d+\.\d+\.\d+)/)
+            if (versionMatch) {
+              target.version = versionMatch[1]
+            } else {
+              // Generate version based on date and run number
+              const date = new Date(latestRun.created_at)
+              const dateStr = date.toISOString().split('T')[0].replace(/-/g, '.')
+              const shortRunId = latestRun.id.toString().slice(-4)
+              target.version = `${dateStr}.${shortRunId}`
+            }
+          } else {
+            target.status = 'idle'
+          }
         }
       } else {
+        // No workflow data available - show targets with unknown status
+        console.info('No GitHub workflow data available - showing deployment targets only')
+        for (const target of targets) {
+          target.status = 'idle'
+          // Add a note that status is unavailable
+          target.description = target.description + ' (Status unavailable - GitHub token required)'
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching deployment status:', error)
+      // Still return targets even if we can't get their status
+      for (const target of targets) {
         target.status = 'idle'
       }
     }
