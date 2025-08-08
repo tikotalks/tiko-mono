@@ -1,11 +1,11 @@
 <template>
-  <div :class="bemm('',['',responsive ? 'responsive' : ''])" :style="gridStyles">
+  <div :class="bemm('',['',responsive ? 'responsive' : ''])" :style="gridStyles" ref="gridRef">
     <slot />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, provide, ref } from 'vue'
 import { useBemm } from 'bemm'
 import type { TGridProps } from './TGrid.model'
 
@@ -13,10 +13,22 @@ const props = withDefaults(defineProps<TGridProps>(), {
   columns: 'auto-fill',
   gap: 'var(--space)',
   minItemWidth: '250px',
-  responsive: true
+  responsive: true,
+  lazy: false,
+  lazyRootMargin: '50px',
+  lazyThreshold: 0.1
 })
 
 const bemm = useBemm('t-grid')
+const gridRef = ref<HTMLElement>()
+
+// Provide lazy loading context to children
+provide('gridLazy', {
+  enabled: props.lazy,
+  rootMargin: props.lazyRootMargin,
+  threshold: props.lazyThreshold,
+  gridRef
+})
 
 const gridStyles = computed(() => {
   const styles: Record<string, string> = {

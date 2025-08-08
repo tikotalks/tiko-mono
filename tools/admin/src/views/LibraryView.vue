@@ -84,7 +84,12 @@
     </div>
 
     <!-- Tiles View -->
-    <TGrid v-else-if="viewMode === 'tiles'" :min-item-width="'250px'">
+    <TGrid 
+      v-else-if="viewMode === 'tiles'" 
+      :min-item-width="'250px'"
+      :lazy="true"
+      :lazy-root-margin="'100px'"
+    >
       <TMediaTile
         v-for="media in sortedImages"
         :key="media.id"

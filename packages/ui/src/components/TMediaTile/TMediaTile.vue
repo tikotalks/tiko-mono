@@ -3,13 +3,20 @@
     :class="bemm()"
     :href="href"
     @click="handleClick"
+    ref="tileRef"
   >
     <div :class="bemm('image-container')">
+      <div v-if="!isVisible || !imageLoaded" :class="bemm('placeholder')">
+        <TIcon :name="Icons.IMAGE" size="large" />
+      </div>
       <img
+        v-if="isVisible"
         :src="thumbnailUrl"
         :alt="media.original_filename"
         loading="lazy"
-        :class="bemm('image')"
+        :class="bemm('image', { loaded: imageLoaded })"
+        @load="imageLoaded = true"
+        @error="imageError = true"
       />
     </div>
 
@@ -25,9 +32,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed, inject, onMounted, onUnmounted } from 'vue'
 import { useBemm } from 'bemm'
+import { Icons } from 'open-icon'
 import { useI18n } from '../../composables/useI18n'
+import { TIcon } from '../TIcon'
 import { TChip, TChipGroup } from '../TChip'
 import type { TMediaTileProps } from './TMediaTile.model'
 
@@ -42,6 +51,15 @@ const emit = defineEmits<{
 
 const bemm = useBemm('t-media-tile')
 const { t } = useI18n()
+
+// Refs
+const tileRef = ref<HTMLElement>()
+const imageLoaded = ref(false)
+const imageError = ref(false)
+const isVisible = ref(false)
+
+// Check if parent grid has lazy loading enabled
+const gridLazy = inject<any>('gridLazy', null)
 
 const displayTitle = computed(() =>
   props.media.title || props.media.original_filename
@@ -67,6 +85,43 @@ const formatBytes = (bytes: number): string => {
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
+
+// Intersection Observer for lazy loading
+let observer: IntersectionObserver | null = null
+
+onMounted(() => {
+  // If lazy loading is disabled or not supported, show image immediately
+  if (!gridLazy?.enabled || !window.IntersectionObserver) {
+    isVisible.value = true
+    return
+  }
+
+  observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          isVisible.value = true
+          // Once visible, we can disconnect the observer
+          observer?.disconnect()
+        }
+      })
+    },
+    {
+      rootMargin: gridLazy.rootMargin,
+      threshold: gridLazy.threshold
+    }
+  )
+
+  if (tileRef.value) {
+    observer.observe(tileRef.value)
+  }
+})
+
+onUnmounted(() => {
+  if (observer) {
+    observer.disconnect()
+  }
+})
 </script>
 
 <style lang="scss">
@@ -92,14 +147,9 @@ const formatBytes = (bytes: number): string => {
   &__image-container {
     position: relative;
     overflow: hidden;
-  }
-
-  &__image {
-    width: 100%;
     height: 200px;
-    object-fit: contain;
-
-    // Checkerboard pattern for transparent images
+    
+    // Checkerboard pattern background
     --dot-color: color-mix(in srgb, var(--color-foreground), transparent 90%);
     background-image:
       linear-gradient(45deg, var(--dot-color) 25%, transparent 25%),
@@ -108,6 +158,35 @@ const formatBytes = (bytes: number): string => {
       linear-gradient(-45deg, transparent 75%, var(--dot-color) 75%);
     background-size: 20px 20px;
     background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  }
+
+  &__placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-background-secondary);
+    
+    .t-icon {
+      color: var(--color-foreground-secondary);
+      opacity: 0.3;
+    }
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    opacity: 0;
+    transition: opacity 0.3s;
+
+    &--loaded {
+      opacity: 1;
+    }
   }
 
   &__chip-group {
