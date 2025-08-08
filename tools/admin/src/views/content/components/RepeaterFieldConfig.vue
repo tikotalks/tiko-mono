@@ -11,10 +11,10 @@
           <template #header>
             <div :class="bemm('field-header')">
               <span>{{ field.label || t('admin.content.fields.repeater.field') }} {{ index + 1 }}</span>
-              <TButton 
-                type="ghost" 
-                size="small" 
-                :icon="Icons.TRASH" 
+              <TButton
+                type="ghost"
+                size="small"
+                :icon="Icons.TRASH"
                 @click="removeField(index)"
                 :disabled="schema.length === 1"
               />
@@ -51,43 +51,19 @@
             />
 
             <!-- Options for select type -->
-            <div v-if="field.type === 'select'" :class="bemm('select-options')">
-              <label>{{ t('admin.content.fields.options') }}</label>
-              <div v-for="(option, optIndex) in field.options || []" :key="optIndex" :class="bemm('option-row')">
-                <TInputText
-                  :model-value="option.value"
-                  :placeholder="t('admin.content.fields.optionValue')"
-                  @update:model-value="updateFieldOption(index, optIndex, 'value', $event)"
-                />
-                <TInputText
-                  :model-value="option.label"
-                  :placeholder="t('admin.content.fields.optionLabel')"
-                  @update:model-value="updateFieldOption(index, optIndex, 'label', $event)"
-                />
-                <TButton 
-                  type="ghost" 
-                  size="small" 
-                  :icon="Icons.TRASH" 
-                  @click="removeFieldOption(index, optIndex)"
-                />
-              </div>
-              <TButton 
-                type="ghost" 
-                size="small" 
-                :icon="Icons.ADD_M"
-                @click="addFieldOption(index)"
-              >
-                {{ t('admin.content.fields.addOption') }}
-              </TButton>
-            </div>
+            <FieldOptionsEditor
+              v-if="field.type === 'select'"
+              :model-value="{ options: field.options || [] }"
+              @update:model-value="updateFieldOptions(index, $event)"
+            />
           </TFormGroup>
         </TCard>
       </div>
     </div>
 
     <div :class="bemm('actions')">
-      <TButton 
-        type="outline" 
+      <TButton
+        type="outline"
         :icon="Icons.ADD_M"
         @click="addField"
       >
@@ -111,6 +87,7 @@ import {
 } from '@tiko/ui'
 import { Icons } from 'open-icon'
 import { kebabCase } from '@sil/case'
+import FieldOptionsEditor from './FieldOptionsEditor.vue'
 
 interface RepeaterField {
   id: string
@@ -149,12 +126,12 @@ const schema = ref<RepeaterField[]>(props.modelValue.length > 0 ? [...props.mode
 
 // Field type options for repeater sub-fields
 const fieldTypeOptions = computed(() => [
-  { value: 'text', label: t('admin.content.fields.types.text') },
-  { value: 'textarea', label: t('admin.content.fields.types.textarea') },
-  { value: 'number', label: t('admin.content.fields.types.number') },
-  { value: 'boolean', label: t('admin.content.fields.types.boolean') },
-  { value: 'select', label: t('admin.content.fields.types.select') },
-  { value: 'media', label: t('admin.content.fields.types.media') }
+  { value: 'text', label: t('admin.content.field.types.text') },
+  { value: 'textarea', label: t('admin.content.field.types.textarea') },
+  { value: 'number', label: t('admin.content.field.types.number') },
+  { value: 'boolean', label: t('admin.content.field.types.boolean') },
+  { value: 'select', label: t('admin.content.field.types.select') },
+  { value: 'media', label: t('admin.content.field.types.media') }
 ])
 
 // Watch for changes and emit
@@ -186,7 +163,7 @@ function updateField(index: number, property: keyof RepeaterField, value: any) {
   const field = schema.value[index]
   if (field) {
     field[property] = value as never
-    
+
     // Auto-generate key from label
     if (property === 'label' && value) {
       field.key = kebabCase(value)
@@ -194,27 +171,10 @@ function updateField(index: number, property: keyof RepeaterField, value: any) {
   }
 }
 
-function addFieldOption(fieldIndex: number) {
+function updateFieldOptions(fieldIndex: number, config: { options: any[] }) {
   const field = schema.value[fieldIndex]
   if (field) {
-    if (!field.options) {
-      field.options = []
-    }
-    field.options.push({ value: '', label: '' })
-  }
-}
-
-function removeFieldOption(fieldIndex: number, optionIndex: number) {
-  const field = schema.value[fieldIndex]
-  if (field && field.options) {
-    field.options.splice(optionIndex, 1)
-  }
-}
-
-function updateFieldOption(fieldIndex: number, optionIndex: number, property: 'value' | 'label', value: string) {
-  const field = schema.value[fieldIndex]
-  if (field && field.options && field.options[optionIndex]) {
-    field.options[optionIndex][property] = value
+    field.options = config.options
   }
 }
 </script>
@@ -223,12 +183,12 @@ function updateFieldOption(fieldIndex: number, optionIndex: number, property: 'v
 .repeater-field-config {
   &__header {
     margin-bottom: var(--space-lg);
-    
+
     h4 {
       margin: 0 0 var(--space-xs);
       font-size: var(--font-size-lg);
     }
-    
+
     p {
       margin: 0;
       color: var(--color-foreground-secondary);
@@ -250,7 +210,7 @@ function updateFieldOption(fieldIndex: number, optionIndex: number, property: 'v
 
   &__select-options {
     margin-top: var(--space);
-    
+
     label {
       display: block;
       margin-bottom: var(--space-xs);
