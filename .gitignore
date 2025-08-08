@@ -25,3 +25,4 @@ scripts/.temp/
 # Build info files (generated at build time)
 **/src/build-info.ts
 **/public/build-info.json
+.env.local

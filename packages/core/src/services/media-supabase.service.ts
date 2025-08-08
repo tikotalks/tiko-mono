@@ -201,15 +201,13 @@ export class SupabaseMediaService implements MediaService {
   }
 
   async getMediaById(id: string): Promise<MediaItem | null> {
-    const session = this.getSession()
-    if (!session) throw new Error('Not authenticated')
-
+    // Allow public access to individual media items
     try {
       const response = await fetch(`${this.API_URL}/media?select=*&id=eq.${id}`, {
         headers: {
           'apikey': this.ANON_KEY,
-          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
+          // No Authorization header for public access
         }
       })
 

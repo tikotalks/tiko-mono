@@ -7,11 +7,11 @@
     <div v-else-if="!media" :class="bemm('not-found')">
       <TEmptyState
         :icon="Icons.IMAGE"
-        :title="t('media.detail.notFound')"
-        :description="t('media.detail.notFoundDescription')"
+        :title="t('media.detail.notFound', 'Media not found')"
+        :description="t('media.detail.notFoundDescription', 'We couldn\'t find this media item, maybe go back and try again?')"
       >
         <TButton @click="router.push('/library')">
-          {{ t('media.detail.backToLibrary') }}
+          {{ t('media.detail.backToLibrary', 'Back to Library') }}
         </TButton>
       </TEmptyState>
     </div>
@@ -19,7 +19,7 @@
     <div v-else :class="bemm('content')">
       <!-- Breadcrumb -->
       <nav :class="bemm('breadcrumb')">
-        <router-link to="/library">{{ t('media.library.title') }}</router-link>
+        <router-link to="/library">{{ t('media.library.title', 'Library') }}</router-link>
         <span>/</span>
         <span>{{ media.title || media.original_filename }}</span>
       </nav>
@@ -50,7 +50,7 @@
           
           <!-- Tags -->
           <div v-if="media.tags?.length" :class="bemm('tags')">
-            <h3>{{ t('media.detail.tags') }}</h3>
+            <h3>{{ t('media.detail.tags', 'Tags') }}</h3>
             <TChipGroup>
               <TChip v-for="tag in media.tags" :key="tag">
                 {{ tag }}
@@ -60,7 +60,7 @@
           
           <!-- Categories -->
           <div v-if="media.categories?.length" :class="bemm('categories')">
-            <h3>{{ t('media.detail.categories') }}</h3>
+            <h3>{{ t('media.detail.categories', 'Categories') }}</h3>
             <TChipGroup>
               <TChip v-for="category in media.categories" :key="category" color="secondary">
                 {{ category }}
@@ -70,7 +70,7 @@
           
           <!-- Download Options -->
           <div :class="bemm('downloads')">
-            <h3>{{ t('media.detail.downloadOptions') }}</h3>
+            <h3>{{ t('media.detail.downloadOptions', 'Download Options') }}</h3>
             <div :class="bemm('download-grid')">
               <TButton
                 v-for="format in downloadFormats"
@@ -95,14 +95,14 @@
               :class="bemm('download-original')"
               size="large"
             >
-              {{ t('media.detail.downloadOriginal') }}
+              {{ t('media.detail.downloadOriginal', 'Download Original') }}
               <span :class="bemm('file-size')">{{ formatFileSize(media.file_size) }}</span>
             </TButton>
           </div>
           
           <!-- Share Options -->
           <div :class="bemm('share')">
-            <h3>{{ t('media.detail.share') }}</h3>
+            <h3>{{ t('media.detail.share', 'Share') }}</h3>
             <div :class="bemm('share-buttons')">
               <TButton
                 type="ghost"
@@ -110,7 +110,7 @@
                 @click="copyLink"
                 size="small"
               >
-                {{ t('media.detail.copyLink') }}
+                {{ t('media.detail.copyLink', 'Copy Link') }}
               </TButton>
               <TButton
                 type="ghost"
@@ -118,7 +118,7 @@
                 @click="copyEmbed"
                 size="small"
               >
-                {{ t('media.detail.copyEmbed') }}
+                {{ t('media.detail.copyEmbed', 'Copy Embed Code') }}
               </TButton>
             </div>
           </div>
@@ -169,11 +169,11 @@ const metadataItems = computed(() => {
   if (!media.value) return []
   
   return [
-    { key: t('media.detail.filename'), value: media.value.original_filename },
-    { key: t('media.detail.fileSize'), value: formatFileSize(media.value.file_size) },
-    { key: t('media.detail.uploadDate'), value: formatDate(media.value.created_at) },
-    { key: t('media.detail.dimensions'), value: `${media.value.width || 'N/A'} × ${media.value.height || 'N/A'}` },
-    { key: t('media.detail.format'), value: media.value.mime_type || 'N/A' }
+    { key: t('media.detail.filename', 'Filename'), value: media.value.original_filename },
+    { key: t('media.detail.fileSize', 'File Size'), value: formatFileSize(media.value.file_size) },
+    { key: t('media.detail.uploadDate', 'Upload Date'), value: formatDate(media.value.created_at) },
+    { key: t('media.detail.dimensions', 'Dimensions'), value: `${media.value.width || 'N/A'} × ${media.value.height || 'N/A'}` },
+    { key: t('media.detail.format', 'Format'), value: media.value.mime_type || 'N/A' }
   ]
 })
 
@@ -210,7 +210,7 @@ async function downloadImage(format: { key: string; label: string }) {
   link.click()
   
   toastService?.show({
-    message: t('media.detail.downloadStarted', { format: format.label }),
+    message: t('media.detail.downloadStarted', `Download started: ${format.label}`, { format: format.label }),
     type: 'success'
   })
 }
@@ -225,7 +225,7 @@ async function downloadOriginal() {
   link.click()
   
   toastService?.show({
-    message: t('media.detail.downloadStarted', { format: 'Original' }),
+    message: t('media.detail.downloadStarted', 'Download started: Original', { format: 'Original' }),
     type: 'success'
   })
 }
@@ -236,7 +236,7 @@ async function copyLink() {
   await navigator.clipboard.writeText(url)
   
   toastService?.show({
-    message: t('media.detail.linkCopied'),
+    message: t('media.detail.linkCopied', 'Link copied to clipboard'),
     type: 'success'
   })
 }
@@ -249,7 +249,7 @@ async function copyEmbed() {
   await navigator.clipboard.writeText(embedCode)
   
   toastService?.show({
-    message: t('media.detail.embedCopied'),
+    message: t('media.detail.embedCopied', 'Embed code copied to clipboard'),
     type: 'success'
   })
 }
@@ -260,7 +260,7 @@ async function loadMedia() {
   
   try {
     const mediaId = route.params.id as string
-    const result = await mediaService.getMediaItem(mediaId)
+    const result = await mediaService.getMediaById(mediaId)
     media.value = result
   } catch (error) {
     console.error('[MediaDetail] Failed to load media:', error)
