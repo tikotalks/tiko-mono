@@ -97,6 +97,26 @@ export function processFieldValue(value: any, fieldType: string): any {
       }
       return []
     
+    case 'repeater':
+      // Repeater field should be an array of objects
+      if (Array.isArray(value)) {
+        console.log(`🔄 [field-processing] Repeater field is array with ${value.length} items:`, value)
+        return value
+      } else if (typeof value === 'string' && value.trim()) {
+        // Try to parse JSON for repeater data
+        try {
+          const parsed = JSON.parse(value)
+          if (Array.isArray(parsed)) {
+            console.log(`🔄 [field-processing] Successfully parsed JSON array for repeater:`, parsed)
+            return parsed
+          }
+        } catch (e) {
+          console.warn(`🔄 [field-processing] Failed to parse JSON for repeater:`, e)
+        }
+      }
+      console.log(`⚠️ [field-processing] Repeater field is not array, returning empty:`, value)
+      return []
+    
     case 'items':
       // Items field should be an array of item IDs
       if (Array.isArray(value)) {
@@ -195,8 +215,16 @@ export async function processContentFields(
       // Special handling for linked_items - resolve to full objects if resolver provided
       if (field.field_type === 'linked_items' && resolveLinkedItems && Array.isArray(processedValue) && processedValue.length > 0) {
         console.log(`🔗 [field-processing] Resolving linked_items for field '${key}' with IDs:`, processedValue)
+        // Ensure all values are strings before passing to resolveLinkedItems
+        const stringIds = processedValue.map(id => {
+          if (typeof id === 'string') return id
+          if (typeof id === 'object' && id !== null && 'id' in id) return id.id
+          console.warn(`🔗 [field-processing] Converting non-string ID to string:`, id)
+          return String(id)
+        }).filter(id => id && id !== 'null' && id !== 'undefined')
+        
         try {
-          processedValue = await resolveLinkedItems(processedValue, language)
+          processedValue = await resolveLinkedItems(stringIds, language)
           console.log(`✅ [field-processing] Resolved linked_items for '${key}':`, processedValue.length, 'items')
           if (processedValue.length > 0) {
             console.log(`🔍 [field-processing] Sample resolved item:`, processedValue[0])

@@ -1,6 +1,5 @@
 <template>
-  <!-- <TAuthWrapper :backgroundImage="backgroundImage" :title="'Yes/No'"> -->
-    <TAppLayout
+  <TAppLayout
     :title="t(keys.yesno.yesOrNo)"
     :show-header="true"
     @profile="handleProfile"
@@ -8,6 +7,17 @@
     @logout="handleLogout"
   >
     <template #app-controls>
+      <!-- Speech permission button (only on iOS if not granted) -->
+      <TButton
+        v-if="!hasPermission && localSettings.autoSpeak"
+        icon="volume-iii"
+        type="outline"
+        color="warning"
+        @click="handleSpeechPermission"
+        :aria-label="'Enable speech'"
+        title="Tap to enable speech on iOS"
+      />
+
       <!-- App-specific controls on the left -->
       <TButton
         icon="edit"
@@ -26,6 +36,10 @@
         @click="handleAppSettings"
         :aria-label="t(keys.yesno.yesnoSettings)"
       />
+
+      <TButton :type="localSettings.buttonStyle == 'text' ? 'default' : 'outline'" @click="localSettings.buttonStyle = 'text'">yes/no</TButton>
+      <TButton :type="localSettings.buttonStyle == 'icons' ? 'default' : 'outline'" @click="localSettings.buttonStyle = 'icons'">icons</TButton>
+      <TButton :type="localSettings.buttonStyle == 'hands' ? 'default' : 'outline'" @click="localSettings.buttonStyle = 'hands'">hands</TButton>
     </template>
 
     <div :class="bemm('', ['', showFeedback ? feedbackType : ''])">
@@ -37,8 +51,7 @@
           data-cy="question-display"
           :disabled="isPlaying"
         >
-          <div :class="bemm('question-text')"
-          @click.stop="speakQuestion">
+          <div :class="bemm('question-text')" @click.stop="speakQuestion">
             {{ currentQuestion }}
           </div>
 
@@ -46,13 +59,17 @@
             <TButton
               :icon="'edit'"
               type="outline"
+              :size="'large'"
               @click.stop="showQuestionInput"
+              :tooltip="t(keys.yesno.editQuestion)"
               :aria-label="t(keys.yesno.editQuestion)"
             />
             <TButton
               :icon="isPlaying ? Icons.VOLUME_MUTE : Icons.VOLUME_III"
               type="outline"
+              :size="'large'"
               @click.stop="speakQuestion"
+              :tooltip="t(keys.common.speak)"
               :aria-label="t(keys.common.speak)"
             />
           </div>
@@ -60,38 +77,32 @@
 
         <!-- Answer buttons -->
         <div :class="bemm('answers', ['', localSettings.buttonSize])">
-          <YesNoButton
-          :class="bemm('answer',['','yes'])"
-            :mode="0"
+
+            <YesNoButton
+            :class="bemm('answer', ['', 'yes'])"
+            :mode="1"
+            :style="localSettings.buttonStyle"
             :size="localSettings.buttonSize"
             @click="() => handleAnswer('yes')"
-          ></YesNoButton>
-          <YesNoButton
-          :class="bemm('answer',['','no'])"
-            :mode="1"
+          />
+            <YesNoButton
+            :class="bemm('answer', ['', 'no'])"
+            :mode="0"
+            :style="localSettings.buttonStyle"
             :size="localSettings.buttonSize"
             @click="() => handleAnswer('no')"
-          ></YesNoButton>
+          />
+
         </div>
       </main>
-
-      <!-- Feedback overlay -->
-      <div
-        v-if="showFeedback"
-        :class="bemm('feedback', ['', feedbackType as string])"
-      >
-        <TIcon :name="feedbackIcon" size="4rem" />
-        <span :class="bemm('feedback', 'text')">{{ feedbackText }}</span>
-      </div>
     </div>
   </TAppLayout>
-  <!-- </TAuthWrapper> -->
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive, watch, toRefs, inject } from 'vue';
 import { useBemm } from 'bemm';
-import { TButton, TIcon, TAppLayout, useI18n, useParentMode } from '@tiko/ui';
+import { TButton, TIcon, TAppLayout, useI18n, useParentMode, useTextToSpeech } from '@tiko/ui';
 import { Icons } from 'open-icon';
 import { useYesNoStore } from '../stores/yesno';
 import YesNoSettingsForm from '../components/YesNoSettingsForm.vue';
@@ -102,6 +113,7 @@ const bemm = useBemm('yes-no');
 const yesNoStore = useYesNoStore();
 const { t, keys } = useI18n();
 const parentMode = useParentMode('yes-no');
+const { hasPermission, requestPermission } = useTextToSpeech();
 
 // Inject the popup service from TFramework
 const popupService = inject<any>('popupService');
@@ -115,17 +127,11 @@ const localSettings = reactive({
   buttonSize: 'large' as 'small' | 'medium' | 'large',
   autoSpeak: true,
   hapticFeedback: true,
+  buttonStyle: 'icons' as 'hands' | 'icons' | 'text',
 });
 
 // Computed
 const { currentQuestion, isPlaying, settings } = toRefs(yesNoStore);
-
-const feedbackIcon = computed(() =>
-  feedbackType.value === 'yes' ? 'check-m' : 'multiply-m',
-);
-const feedbackText = computed(() =>
-  feedbackType.value === 'yes' ? t(keys.yesno.yes) : t(keys.yesno.no),
-);
 
 // Watch settings and update local copy
 watch(
@@ -137,7 +143,15 @@ watch(
 );
 
 // Methods
-const speakQuestion = () => {
+const speakQuestion = async () => {
+  // Request permission if needed before speaking
+  if (!hasPermission.value) {
+    const granted = await requestPermission();
+    if (!granted) {
+      console.warn('Cannot speak without permission');
+      return;
+    }
+  }
   yesNoStore.speakQuestion();
 };
 
@@ -145,17 +159,8 @@ const handleAnswer = async (answer: 'yes' | 'no') => {
   feedbackType.value = answer;
   showFeedback.value = true;
 
-  // Haptic feedback if enabled
-  if (localSettings.hapticFeedback && 'vibrate' in navigator) {
-    navigator.vibrate(50);
-  }
-
+  // The store's handleAnswer already handles haptic feedback and speaking
   await yesNoStore.handleAnswer(answer);
-
-  // Speak answer if autoSpeak is enabled
-  if (localSettings.autoSpeak) {
-    yesNoStore.speakText(answer === 'yes' ? t(keys.yesno.yes) : t(keys.yesno.no));
-  }
 
   // Hide feedback after 1.5 seconds
   setTimeout(() => {
@@ -171,11 +176,11 @@ const showQuestionInput = () => {
   try {
     popupService.open({
       component: QuestionInputForm,
-      title: t(keys.yesno.editQuestion),
+      title: t('yesno.editQuestion'),
       config: {
         background: true,
         position: 'center',
-        canClose: true
+        canClose: true,
       },
       props: {
         onApply: async (question: string) => {
@@ -194,7 +199,7 @@ const showQuestionInput = () => {
 const handleAppSettings = () => {
   popupService.open({
     component: YesNoSettingsForm,
-    title: t(keys.yesno.yesnoSettings),
+    title: t('yesno.yesnoSettings'),
     props: {
       settings: settings.value,
       onApply: async (newSettings: any) => {
@@ -224,6 +229,14 @@ const handleLogout = () => {
   // The auth store handles the logout, this is just for any cleanup
 };
 
+const handleSpeechPermission = async () => {
+  const granted = await requestPermission();
+  if (granted) {
+    console.log('Speech permission granted');
+  } else {
+    console.warn('Speech permission denied');
+  }
+};
 
 // Initialize
 onMounted(async () => {
@@ -243,6 +256,8 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   position: relative;
+  height: 100vh; width: 100vw;
+  overflow: hidden;
 
   &::before {
     content: '';
@@ -257,13 +272,15 @@ onMounted(async () => {
     );
     transition: background-color 0.3s ease;
     opacity: 1;
+    z-index: 0;
+    pointer-events: none;
   }
 
   &--yes {
-    --layout-background-color: var(--color-green);
+    --layout-background-color: color-mix(in srgb, var(--color-success), var(--color-background) 50%);
   }
   &--no {
-    --layout-background-color: var(--color-red);
+    --layout-background-color: color-mix(in srgb, var(--color-error), var(--color-background) 50%);
   }
 
   &__header {
@@ -282,35 +299,15 @@ onMounted(async () => {
     justify-content: center;
     padding: 2rem;
     gap: 3rem;
+    z-index: 8;
   }
 
   &__answers {
     display: flex;
-    gap: var(--space-s);
+    // gap: var(--space-s);
     width: 100%;
     justify-content: center;
     font-size: 20vmin;
-
-    // &--small {
-    //   font-size: 10vmin;
-    // }
-
-    // &--medium {
-    //   font-size: 15vmin;
-    // }
-
-    // &--large {
-    //   font-size: 20vmin;
-    // }
-  }
-
-  &:has(:hover){
-    .yes-no__answer{
-      transform: scale(0.75);
-      &:hover{
-        transform: scale(1.1);
-      }
-    }
   }
 
   &__question {
@@ -336,7 +333,6 @@ onMounted(async () => {
     &-controls {
       display: flex;
       gap: var(--space-s);
-      opacity: 0.8;
 
       .yes-no__question:hover & {
         opacity: 1;

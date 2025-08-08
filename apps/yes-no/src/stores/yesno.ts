@@ -137,8 +137,8 @@ export const useYesNoStore = defineStore('yesno', () => {
       
       // Get translated answer
       const translatedAnswer = answer === 'yes' 
-        ? t(keys.common.yes) 
-        : t(keys.common.no)
+        ? t('common.yes') 
+        : t('common.no')
       
       // Speak with language-aware voice
       await tts.speak(translatedAnswer, {

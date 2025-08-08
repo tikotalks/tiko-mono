@@ -620,8 +620,19 @@ export function useContent(options?: UseContentOptions) {
     try {
       // Regular flow
       console.log(`🔍 [resolveLinkedItems] Resolving ${itemIds.length} items with language:`, language)
+      console.log(`🔍 [resolveLinkedItems] Item IDs:`, itemIds)
+      
+      // Ensure all items are strings
+      const validItemIds = itemIds.filter(id => {
+        if (typeof id !== 'string') {
+          console.error(`❌ [resolveLinkedItems] Invalid item ID (not a string):`, id, typeof id)
+          return false
+        }
+        return true
+      })
+      
       const resolvedItems = await Promise.all(
-        itemIds.map(async (itemId) => {
+        validItemIds.map(async (itemId) => {
           console.log(`📦 [resolveLinkedItems] Resolving item:`, itemId)
           const result = await getItem(itemId, language)
           console.log(`✅ [resolveLinkedItems] Item ${itemId} resolved:`, result ? 'SUCCESS' : 'FAILED')
@@ -701,6 +712,43 @@ export function useContent(options?: UseContentOptions) {
     return true
   }
 
+  // Navigation helper
+  const navigation = computed(() => {
+    // Return a reactive computed that provides navigation items
+    return {
+      async getItems(language?: string) {
+        if (!currentProject.value) {
+          console.error('[useContent] No project set for navigation')
+          return []
+        }
+        
+        const pages = await getPages(currentProject.value.id)
+        
+        // Get language code from provided language or default to 'en'
+        const languageCode = language ? language.split('-')[0] : 'en'
+        
+        // Filter pages for navigation
+        const navPages = pages.filter(page => 
+          page.show_in_navigation && 
+          page.is_published && 
+          page.language_code === languageCode &&
+          !page.is_home
+        )
+        
+        // Sort by navigation order
+        navPages.sort((a, b) => a.navigation_order - b.navigation_order)
+        
+        // Convert to navigation items
+        return navPages.map(page => ({
+          name: page.title,
+          link: `/${page.slug}`,
+          slug: page.slug,
+          id: page.id
+        }))
+      }
+    }
+  })
+
   return {
     // State
     currentProject: computed(() => currentProject.value),
@@ -709,6 +757,9 @@ export function useContent(options?: UseContentOptions) {
     loading: computed(() => loading.value),
     error: computed(() => error.value),
     isUsingWorker: computed(() => opts.useWorker === true),
+    
+    // Navigation
+    navigation,
     
     // Page/Section Methods
     getPage,

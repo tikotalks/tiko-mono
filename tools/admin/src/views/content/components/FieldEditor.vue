@@ -13,7 +13,7 @@
           v-model="form.field_key"
           :label="t('common.key')"
           :placeholder="t('common.keyPlaceholder')"
-          :help="t('admin.content.fields.keyHelp', 'Auto-generated from label. Can be customized if needed.')"
+          :help="t('admin.content.fields.keyHelp')"
           required
         />
 
@@ -53,7 +53,7 @@
       </TFormGroup>
 
     <div :class="bemm('actions')">
-      <TButton type="ghost" @click="$emit('close')">
+      <TButton type="ghost" @click="handleCancel">
         {{ t('common.cancel') }}
       </TButton>
       <TButton color="primary" @click="save" :disabled="!isValid">
@@ -79,11 +79,14 @@ import { contentService, type ContentField } from '@tiko/core'
 import { kebabCase } from '@sil/case'
 import FieldOptionsEditor from './FieldOptionsEditor.vue'
 import ItemsFieldConfig from './ItemsFieldConfig.vue'
+import RepeaterFieldConfig from './RepeaterFieldConfig.vue'
 
 interface Props {
   field?: ContentField | null
   templateId?: string
   templateType: 'section' | 'item'
+  onSave?: () => void
+  onClose?: () => void
 }
 
 const props = defineProps<Props>()
@@ -121,7 +124,8 @@ const fieldTypeOptions = computed(() => {
     { value: 'select', label: t('admin.content.fields.types.select') },
     { value: 'media', label: t('admin.content.fields.types.media') },
     { value: 'list', label: t('admin.content.fields.types.list') },
-    { value: 'items', label: t('admin.content.fields.types.items') }
+    { value: 'items', label: t('admin.content.fields.types.items') },
+    { value: 'repeater', label: t('admin.content.fields.types.repeater') }
   ]
 
   // Add linked_items only for sections
@@ -144,6 +148,8 @@ const configComponent = computed(() => {
       return FieldOptionsEditor
     case 'items':
       return ItemsFieldConfig
+    case 'repeater':
+      return RepeaterFieldConfig
     case 'linked_items':
       return ItemsFieldConfig // Reuse for selecting item template
     default:
@@ -196,27 +202,40 @@ async function save() {
       // Update existing field
       await contentService.updateField(props.field.id, fieldData)
       toastService?.show({
-        message: t('admin.content.fields.updateSuccess'),
+        message: t('messages.success.fieldUpdated'),
         type: 'success'
       })
     } else {
       // Create new field
       await contentService.createField(fieldData as Omit<ContentField, 'id'>)
       toastService?.show({
-        message: t('admin.content.fields.createSuccess'),
+        message: t('messages.success.fieldCreated'),
         type: 'success'
       })
     }
 
+    // Call callback props if provided (for popup service)
+    props.onSave?.()
+    props.onClose?.()
+
+    // Also emit events for backward compatibility
     emit('save')
     emit('close')
   } catch (error) {
     console.error('Failed to save field:', error)
     toastService?.show({
-      message: t('admin.content.fields.saveError'),
+      message: t('messages.error.fieldSave'),
       type: 'error'
     })
   }
+}
+
+function handleCancel() {
+  // Call callback props if provided (for popup service)
+  props.onClose?.()
+
+  // Also emit events for backward compatibility
+  emit('close')
 }
 </script>
 

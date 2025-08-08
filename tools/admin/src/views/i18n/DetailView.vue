@@ -260,7 +260,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, inject } from 'vue'
+import { ref, computed, onMounted, inject, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
 import { TPopupWrapper, useI18n, TButton, TList, TListCell, TListItem, TChip, TInputText, TInputSelect, TButtonGroup, TStatusBar, TIcon, TInputCheckbox, TKeyValue, i18nService, Colors } from '@tiko/ui'
@@ -672,7 +672,7 @@ async function generateAITranslations() {
 
   // Show progress dialog
   const popupService = inject<PopupService>('popupService')
-  let progressDialog: any = null
+  let progressDialogId: string | null = null
 
   try {
     const selectedKeyIds = Array.from(selectedKeys.value)
@@ -684,22 +684,31 @@ async function generateAITranslations() {
     let skippedCount = 0
     let currentIndex = 0
 
-    // Show progress dialog
-    progressDialog = popupService?.open({
-      component: 'ProgressDialog',
-      props: {
-        title: t('admin.i18n.language.generatingTranslations'),
-        progress: 0,
-        total: selectedKeyIds.length,
-        statusText: t('admin.i18n.language.loadingSourceTranslations'),
-        showStats: true,
-        successCount: 0,
-        errorCount: 0,
-        successLabel: t('admin.i18n.language.translated'),
-        errorLabel: t('admin.i18n.language.failed')
-      },
-      closable: false
+    // Create a reactive progress state
+    const progressState = reactive({
+      title: t('admin.i18n.language.generatingTranslations'),
+      progress: 0,
+      total: selectedKeyIds.length,
+      statusText: t('admin.i18n.language.loadingSourceTranslations'),
+      showStats: true,
+      successCount: 0,
+      errorCount: 0,
+      successLabel: t('admin.i18n.language.translated'),
+      errorLabel: t('admin.i18n.language.failed'),
+      currentItem: '',
+      details: [] as Array<{ label: string; value: number; type: string }>
     })
+    
+    // Show progress dialog
+    progressDialogId = popupService?.open({
+      component: 'ProgressDialog',
+      props: progressState,
+      config: {
+        canClose: false,
+        background: true,
+        position: 'center'
+      }
+    }) || null
 
     // Get all English translations in one batch to reduce API calls
     const englishVariants = ['en', 'en-GB', 'en-US']
@@ -724,14 +733,12 @@ async function generateAITranslations() {
       currentIndex++
 
       // Update progress
-      progressDialog?.updateProps({
-        progress: currentIndex,
-        statusText: t('admin.i18n.language.translatingKey', {
-          current: currentIndex,
-          total: selectedKeyIds.length
-        }),
-        currentItem: keys.value.find(k => k.id === keyId)?.key
+      progressState.progress = currentIndex
+      progressState.statusText = t('admin.i18n.language.translatingKey', {
+        current: currentIndex,
+        total: selectedKeyIds.length
       })
+      progressState.currentItem = keys.value.find(k => k.id === keyId)?.key
       try {
         // Get the key details first
         const key = keys.value.find(k => k.id === keyId)
@@ -752,16 +759,14 @@ async function generateAITranslations() {
           skippedCount++
 
           // Update progress dialog stats
-          progressDialog?.updateProps({
-            progress: currentIndex,
-            successCount,
-            errorCount,
-            details: [{
-              label: t('admin.i18n.language.skipped'),
-              value: skippedCount,
-              type: 'warning'
-            }]
-          })
+          progressState.progress = currentIndex
+          progressState.successCount = successCount
+          progressState.errorCount = errorCount
+          progressState.details = [{
+            label: t('admin.i18n.language.skipped'),
+            value: skippedCount,
+            type: 'warning'
+          }]
 
           continue
         }
@@ -777,12 +782,10 @@ async function generateAITranslations() {
         })
 
         // Update progress with current key name
-        progressDialog?.updateProps({
-          statusText: t('admin.i18n.language.savingTranslation', {
-            key: key.key,
-            current: currentIndex,
-            total: selectedKeyIds.length
-          })
+        progressState.statusText = t('admin.i18n.language.savingTranslation', {
+          key: key.key,
+          current: currentIndex,
+          total: selectedKeyIds.length
         })
 
         // Create the translation
@@ -808,28 +811,26 @@ async function generateAITranslations() {
         successCount++
 
         // Update progress dialog stats
-        progressDialog?.updateProps({
-          progress: currentIndex,
-          successCount,
-          errorCount
-        })
+        progressState.progress = currentIndex
+        progressState.successCount = successCount
+        progressState.errorCount = errorCount
       } catch (error) {
         console.error(`Failed to translate key ${keyId}:`, error)
         errorCount++
 
         // Update progress dialog stats
-        progressDialog?.updateProps({
-          progress: currentIndex,
-          successCount,
-          errorCount
-        })
+        progressState.progress = currentIndex
+        progressState.successCount = successCount
+        progressState.errorCount = errorCount
       }
     }
 
     console.log(`AI Translation complete: ${successCount} succeeded, ${errorCount} failed, ${skippedCount} skipped (no source)`)
 
     // Close progress dialog
-    progressDialog?.close()
+    if (progressDialogId) {
+      popupService?.close({ id: progressDialogId })
+    }
 
     // Show results to user
     const toastService = inject<ToastService>('toastService')

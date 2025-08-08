@@ -68,7 +68,7 @@
         :disabled="selectedIds.length === 0"
         @click="confirmSelection"
       >
-        {{ t('common.confirm') }}
+        {{ t('common.confirmLabel') }}
       </TButton>
     </div>
   </div>

@@ -44,6 +44,7 @@ const sectionComponents = {
     () => import('./sections/FeaturesSection.vue'),
   ),
   apps: defineAsyncComponent(() => import('./sections/AppsSection.vue')),
+  appsList: defineAsyncComponent(() => import('./sections/AppsListSection.vue')),
   funding: defineAsyncComponent(() => import('./sections/FundingSection.vue')),
   open: defineAsyncComponent(() => import('./sections/OpenSection.vue')),
   languages: defineAsyncComponent(

@@ -240,6 +240,7 @@ const buttonStyles = computed(() => {
     gap: var(--space-xs, 0.5em);
     border-radius: inherit;
     box-shadow: 0 0 0 var(--button-border-width, 0) var(--button-border-color, transparent) inset;
+    width: 100%;
 
     &--direction-reverse {
       flex-direction: row-reverse;

@@ -1,13 +1,13 @@
 <template>
   <div :class="bemm()">
     <p :class="bemm('message')">{{ message }}</p>
-    
+
     <div :class="bemm('footer')">
       <TButton type="ghost" @click="$emit('close')">
         {{ cancelLabel || t('common.cancel') }}
       </TButton>
       <TButton :color="confirmColor || 'primary'" @click="handleConfirm">
-        {{ confirmLabel || t('common.confirm') }}
+        {{ confirmLabel || t('common.confirmLabel') }}
       </TButton>
     </div>
   </div>
@@ -48,7 +48,7 @@ async function handleConfirm() {
     margin: 0;
     color: var(--color-foreground);
   }
-  
+
   &__footer {
     display: flex;
     justify-content: flex-end;

@@ -1,5 +1,5 @@
 <template>
-  <div :class="bemm()">
+  <div :class="bemm()" :style="`--grid-template: ${gridTemplate.join(' ')}`">
     <AdminPageHeader
       :title="t('admin.content.pages.title')"
       :description="t('admin.content.pages.description')"
@@ -12,6 +12,7 @@
 
       <template #inputs>
         <TInputSelect
+          :inline="true"
           v-model="selectedProjectId"
           :label="t('filter.filterByProject')"
           :options="projectFilterOptions"
@@ -29,12 +30,17 @@
       <!-- Table header -->
       <div :class="bemm('table-header')">
         <div :class="bemm('table-header-content')">
-          <div :class="bemm('header-cell')"></div>
           <div :class="bemm('header-cell')">{{ t('common.title') }}</div>
-          <div :class="bemm('header-cell')">{{ t('common.project') }}</div>
-          <div :class="bemm('header-cell', ['','toggle'])">{{ t('admin.content.pages.inNavigation') || 'In Navigation' }}</div>
-          <div :class="bemm('header-cell', ['','toggle'])">{{ t('common.published') || 'Published' }}</div>
+          <div v-if="selectedProjectId === 'all'" :class="bemm('header-cell')">
+            {{ t('common.project') }}
+          </div>
           <div :class="bemm('header-cell')">{{ t('common.statusLabel') }}</div>
+          <div :class="bemm('header-cell', ['', 'toggle'])">
+            {{ t('admin.content.pages.inNavigation') || 'Nav' }}
+          </div>
+          <div :class="bemm('header-cell', ['', 'toggle'])">
+            {{ t('common.published') || 'Pub' }}
+          </div>
           <div :class="bemm('header-cell')">{{ t('common.actions') }}</div>
         </div>
       </div>
@@ -51,43 +57,73 @@
             <div :class="bemm('list-row-content')">
               <div
                 :class="bemm('cell', ['', 'title'])"
-                :style="{ paddingLeft: `${(item.depth || 0) * 24 + 16}px` }"
+                :style="{ paddingLeft: `${(item.depth || 0) * 24}px` }"
               >
-                <span v-if="item.depth > 0" :class="bemm('indent-line')"
-                  >└</span
-                >
-                <a
-                  :class="bemm('page-link')"
-                  @click.stop="handlePageClick(item)"
-                >
-                  {{ item.title }}
-                </a>
-                <br/>
-                <TChip size="small" type="outline">{{ item.slug }}</TChip>
+                <span v-if="item.depth > 0" :class="bemm('indent-line')">└</span>
+
+                <div :class="bemm('page-info')">
+                  <div :class="bemm('page-header')">
+                    <a
+                      :class="bemm('page-link')"
+                      @click.stop="handlePageClick(item)"
+                    >
+                      {{ item.title }}
+                    </a>
+                    <TChip size="small" type="outline">{{ item.language_code.toUpperCase() }}</TChip>
+                  </div>
+                  
+                  <!-- Show translations inline if they exist -->
+                  <div v-if="item.translations && item.translations.length > 0" :class="bemm('translations')">
+                    <div
+                      v-for="translation in item.translations"
+                      :key="translation.id"
+                      :class="bemm('translation-item')"
+                    >
+                      <TButton
+                        type="ghost"
+                        size="small"
+                        @click.stop="handlePageClick(translation)"
+                        :class="bemm('translation-link')"
+                      >
+                        {{ translation.language_code.toUpperCase() }}: {{ translation.title }}
+                      </TButton>
+                      <div :class="bemm('translation-actions')">
+                        <TToggle
+                          :model-value="translation.is_published"
+                          @update:model-value="(value) => handlePublishedToggle(translation, value)"
+                          size="small"
+                        />
+                        <TButton
+                          type="ghost"
+                          size="small"
+                          :icon="Icons.EDIT_M"
+                          @click.stop="handleEdit(translation)"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div :class="bemm('cell', ['', 'project'])">
+              
+              <div
+                v-if="selectedProjectId === 'all'"
+                :class="bemm('cell', ['', 'project'])"
+              >
                 {{ getProjectName(item.project_id) }}
               </div>
-              <div :class="bemm('cell', ['', 'toggle'])">
-                <TToggle
-                  :model-value="item.show_in_navigation"
-                  @update:model-value="
-                    (value) => handleNavigationToggle(item, value)
-                  "
-                  size="small"
-                />
-              </div>
-              <div :class="bemm('cell', ['', 'toggle'])">
-                <TToggle
-                  :model-value="item.is_published"
-                  @update:model-value="
-                    (value) => handlePublishedToggle(item, value)
-                  "
-                  size="small"
-                />
-              </div>
+              
               <div :class="bemm('cell', ['', 'metadata'])">
                 <div :class="bemm('metadata')">
+                  <!-- Show available translation count -->
+                  <TChip
+                    v-if="item.translations && item.translations.length > 0"
+                    size="small"
+                    type="outline"
+                  >
+                    {{ item.translations.length }} {{ item.translations.length === 1 ? 'translation' : 'translations' }}
+                  </TChip>
+                  
+                  <!-- Other metadata -->
                   <TChip
                     v-for="meta in getPageMetadata(item)"
                     :key="meta"
@@ -98,8 +134,32 @@
                   </TChip>
                 </div>
               </div>
+              
+              <div :class="bemm('cell', ['', 'toggle'])">
+                <TToggle
+                  :model-value="item.show_in_navigation"
+                  @update:model-value="(value) => handleNavigationToggle(item, value)"
+                  size="small"
+                />
+              </div>
+              
+              <div :class="bemm('cell', ['', 'toggle'])">
+                <TToggle
+                  :model-value="item.is_published"
+                  @update:model-value="(value) => handlePublishedToggle(item, value)"
+                  size="small"
+                />
+              </div>
+
               <div :class="bemm('cell', ['', 'actions'])">
                 <div :class="bemm('actions')">
+                  <TButton
+                    type="ghost"
+                    size="small"
+                    :icon="Icons.SPEECH_BALLOON"
+                    @click.stop="handleCreateTranslation(item)"
+                    :title="t('common.translations')"
+                  />
                   <TButton
                     type="ghost"
                     size="small"
@@ -126,7 +186,6 @@
       </TDragList>
     </div>
 
-
     <TEmptyState
       v-else-if="!loading && filteredPages.length === 0"
       :icon="Icons.FILE_BINARY"
@@ -145,24 +204,25 @@ import { ref, computed, onMounted, inject } from 'vue';
 import { useRouter } from 'vue-router';
 import { useBemm } from 'bemm';
 import {
-  TList,
-  TListItem,
-  TListCell,
   TButton,
   TEmptyState,
   TChip,
   TSpinner,
   TInputSelect,
   TToggle,
-  TIcon,
   TDragList,
   useI18n,
-  listActions,
   type ToastService,
   type PopupService,
 } from '@tiko/ui';
 import { contentService } from '@tiko/core';
 import type { ContentPage, ContentProject } from '@tiko/core';
+
+// Extend ContentPage type to include translations
+interface ContentPageWithTranslations extends ContentPage {
+  translations?: ContentPage[];
+  depth?: number;
+}
 import { Icons } from 'open-icon';
 import CreatePageDialog from './components/CreatePageDialog.vue';
 import AdminPageHeader from '@/components/AdminPageHeader.vue';
@@ -180,17 +240,22 @@ const loading = ref(false);
 const selectedProjectId = ref<string>('all');
 const isReordering = ref(false);
 const originalOrder = ref<ContentPage[]>([]);
+// Removed expandedPages - translations are always shown inline
 
-// Computed
+const gridTemplate = computed(() => {
+  return ['1fr', selectedProjectId.value == 'all' ? '150px' : null, '120px', '50px', '50px', '140px'].filter(Boolean);
+});
+
+// Computed - Only return base pages for dragging
 const hierarchicalPages = computed(() => {
-  // Build hierarchical structure from flat list
-  const pages = [...filteredPages.value];
-  const pageMap = new Map(pages.map((p) => [p.id, p]));
+  // Only return base pages, translations are handled within each item
+  const basePagesOnly = [...filteredPages.value];
+  const pageMap = new Map(basePagesOnly.map((p) => [p.id, p]));
   const rootPages: ContentPage[] = [];
-  const result: ContentPage[] = [];
+  const result: ContentPageWithTranslations[] = [];
 
   // First pass: identify root pages
-  pages.forEach((page) => {
+  basePagesOnly.forEach((page) => {
     if (!page.parent_id) {
       rootPages.push(page);
     }
@@ -201,12 +266,16 @@ const hierarchicalPages = computed(() => {
 
   // Recursive function to add page and its children
   function addPageWithChildren(page: ContentPage, depth: number = 0) {
-    // Add depth info to page
-    const pageWithDepth = { ...page, depth };
+    // Add depth info and translations to page
+    const pageWithDepth = { 
+      ...page, 
+      depth,
+      translations: getPageTranslations(page.id)
+    };
     result.push(pageWithDepth);
 
-    // Find and add children
-    const children = pages
+    // Find and add child pages
+    const children = basePagesOnly
       .filter((p) => p.parent_id === page.id)
       .sort((a, b) => a.navigation_order - b.navigation_order);
 
@@ -241,6 +310,9 @@ const projectFilterOptions = computed(() => {
 const filteredPages = computed(() => {
   let filtered = pages.value;
 
+  // Only show base pages (not translations) at the root level
+  filtered = filtered.filter((page) => !page.base_page_id);
+
   if (selectedProjectId.value !== 'all') {
     filtered = filtered.filter(
       (page) => page.project_id === selectedProjectId.value,
@@ -266,6 +338,7 @@ async function loadPages() {
       show_in_navigation: page.show_in_navigation ?? true,
       navigation_order: page.navigation_order ?? 0,
       depth: page.depth ?? 0,
+      base_page_id: page.base_page_id ?? null,
     }));
 
     projects.value = projectsData;
@@ -290,15 +363,28 @@ function getProjectName(projectId: string): string {
 function getPageMetadata(page: ContentPage): string[] {
   const metadata = [];
 
-  // Add language
-  metadata.push(page.language_code.toUpperCase());
-
   // Add home page indicator
   if (page.is_home) {
     metadata.push(t('admin.content.pages.homePage'));
   }
 
   return metadata;
+}
+
+// Helper functions for translations
+function getPageTranslations(pageId: string): ContentPage[] {
+  return pages.value.filter((p) => p.base_page_id === pageId);
+}
+
+// Removed togglePageExpanded - translations are always shown inline
+
+function handleCreateTranslation(page: ContentPage) {
+  // TODO: Open dialog to create a translation
+  console.log('Create translation for page:', page);
+  toastService?.show({
+    message: 'Translation creation coming soon',
+    type: 'info',
+  });
 }
 
 function handlePageClick(page: ContentPage) {
@@ -355,7 +441,7 @@ async function handleSave(
     console.error('Error details:', {
       message: error?.message,
       response: error?.response,
-      data: error?.response?.data
+      data: error?.response?.data,
     });
 
     // Check for duplicate page error
@@ -397,8 +483,8 @@ function handleCreateClick() {
       },
       onClose: () => {
         console.log('PagesView: Dialog closed');
-      }
-    }
+      },
+    },
   });
 }
 
@@ -448,7 +534,7 @@ async function saveOrder() {
 }
 
 async function handleReorder(
-  reorderedPages: ContentPage[],
+  reorderedPages: ContentPageWithTranslations[],
   parentChanges?: Array<{ id: string; parentId: string | null }>,
 ) {
   console.log(
@@ -546,10 +632,7 @@ async function handleNavigationToggle(
   }
 }
 
-async function handlePublishedToggle(
-  page: ContentPage,
-  isPublished: boolean,
-) {
+async function handlePublishedToggle(page: ContentPage, isPublished: boolean) {
   try {
     await contentService.updatePage(page.id, {
       is_published: isPublished,
@@ -563,14 +646,18 @@ async function handlePublishedToggle(
 
     toastService?.show({
       message: isPublished
-        ? t('admin.content.pages.publishSuccess') || 'Page published successfully'
-        : t('admin.content.pages.unpublishSuccess') || 'Page unpublished successfully',
+        ? t('admin.content.pages.publishSuccess') ||
+          'Page published successfully'
+        : t('admin.content.pages.unpublishSuccess') ||
+          'Page unpublished successfully',
       type: 'success',
     });
   } catch (error) {
     console.error('Failed to toggle page published status:', error);
     toastService?.show({
-      message: t('admin.content.pages.publishToggleError') || 'Failed to update publish status',
+      message:
+        t('admin.content.pages.publishToggleError') ||
+        'Failed to update publish status',
       type: 'error',
     });
   }
@@ -716,16 +803,14 @@ onMounted(() => {
     border-bottom: 1px solid var(--color-primary-accent);
   }
 
-  --grid-template: 40px 1fr 150px 40px 40px 120px 150px;
-
   &__table-header-content {
     display: grid;
-    grid-template-columns:var(--grid-template);
+    grid-template-columns: var(--grid-template);
     gap: var(--space);
     align-items: center;
     padding: var(--space);
-    // Add padding to match the drag handle
-    padding-left: calc(var(--space) + 40px);
+    // Account for drag handle width
+    margin-left: 48px;
   }
 
   &__header-cell {
@@ -745,10 +830,10 @@ onMounted(() => {
 
   &__list-row-content {
     display: grid;
-    grid-template-columns:var(--grid-template);
+    grid-template-columns: var(--grid-template);
     gap: var(--space);
     align-items: center;
-    padding: var(--space);
+    padding: var(--space) 0;
   }
 
   &__cell {
@@ -779,6 +864,51 @@ onMounted(() => {
 
   &__actions {
     display: flex;
+    gap: var(--space-xs);
+  }
+
+  &__page-info {
+    flex: 1;
+  }
+
+  &__page-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+  }
+
+  &__translations {
+    margin-top: var(--space-xs);
+    padding-left: var(--space);
+    border-left: 2px solid var(--color-border);
+  }
+
+  &__translation-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-xs) 0;
+    
+    &:not(:last-child) {
+      border-bottom: 1px solid var(--color-border-light);
+    }
+  }
+
+  &__translation-link {
+    flex: 1;
+    justify-content: flex-start;
+    padding: 0;
+    font-size: var(--font-size-s);
+    color: var(--color-foreground-secondary);
+    
+    &:hover {
+      color: var(--color-primary);
+    }
+  }
+
+  &__translation-actions {
+    display: flex;
+    align-items: center;
     gap: var(--space-xs);
   }
 }

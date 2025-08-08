@@ -325,7 +325,12 @@ onMounted(async () => {
   sortOrder.value = settings.value.librarySortOrder || 'desc';
 
   // Load images
-  loadImages();
+  await loadImages();
+  
+  // Debug: Check if created_at exists on loaded images
+  console.log('Sample image data:', imageList.value[0]);
+  console.log('Images with created_at:', imageList.value.filter(img => img.created_at).length);
+  console.log('Total images:', imageList.value.length);
 
   // Temporary: Add mock data for testing if no images are loaded
   setTimeout(() => {

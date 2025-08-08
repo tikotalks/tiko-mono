@@ -1,0 +1,21 @@
+// Global styles for the media website
+@use '@tiko/ui/styles/app.scss';
+
+:root {
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --max-width: 1400px;
+
+  // Custom spacing for media site
+  --page-padding-top: calc(var(--space-l) * 4); // Account for fixed header
+}
+
+body {
+  padding-top: var(--page-padding-top);
+}
+
+// Typography
+.title {
+  font-size: clamp(2em, 3vw, 4em);
+  line-height: 1.2;
+  font-weight: var(--font-weight-bold);
+}

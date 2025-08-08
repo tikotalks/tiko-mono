@@ -44,30 +44,35 @@ const isAuthCallbackRoute = computed(() => {
 })
 
 // Framework configuration - use computed to ensure translations are reactive
-const frameworkConfig = computed<FrameworkConfig>(() => ({
-  ...tikoConfig,
-  auth: {
-    ...tikoConfig.auth,
-    skipAuth: true // Ensure skipAuth is explicitly set
-  },
-  topBar: {
-    showUser: true,
-    showTitle: true,
-    showSubtitle: false,
-    showCurrentRoute: false
-  },
-  settings: {
-    enabled: true,
-    sections: [
-      {
-        id: 'yes-no-settings',
-        title: t(keys.yesno.yesnoSettings),
-        icon: 'circle-question',
-        order: 10
-      }
-    ]
+const frameworkConfig = computed<FrameworkConfig>(() => {
+  // Safely access the yesno settings key
+  const yesnoSettingsKey = keys.value?.yesno?.yesnoSettings || 'yesno.yesnoSettings'
+  
+  return {
+    ...tikoConfig,
+    auth: {
+      ...tikoConfig.auth,
+      skipAuth: true // Ensure skipAuth is explicitly set
+    },
+    topBar: {
+      showUser: true,
+      showTitle: true,
+      showSubtitle: false,
+      showCurrentRoute: false
+    },
+    settings: {
+      enabled: true,
+      sections: [
+        {
+          id: 'yes-no-settings',
+          title: t(yesnoSettingsKey),
+          icon: 'circle-question',
+          order: 10
+        }
+      ]
+    }
   }
-}));
+});
 </script>
 
 <style lang="scss">

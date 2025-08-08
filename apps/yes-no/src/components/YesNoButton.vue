@@ -1,22 +1,33 @@
 <template>
-  <button :class="bemm('', ['', current ? 'x' : 'v', size])">
-    <div :class="bemm('char', ['', current ? 'x' : 'v'])">
-      <div :class="bemm('char-leg', ['', '1'])"></div>
-      <div :class="bemm('char-leg', ['', '2'])"></div>
-    </div>
-  </button>
+  <div
+    :class="
+      bemm('', ['', props.style, props.mode === 0 ? 'no' : 'yes', props.size])
+    "
+  >
+    <img v-if="imageUrl" :src="imageUrl" :alt="props.style" />
+    <span :class="bemm('text')" v-else>
+      {{ mode == 0 ? t('common.no') : t('common.yes') }}
+    </span>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { useBemm } from 'bemm';
-import { ref } from 'vue';
+import { computed, onMounted, PropType, ref } from 'vue';
+import { useImages, useImageUrl } from '@tiko/core';
+import { useI18n } from '@tiko/ui';
 
 const bemm = useBemm('yes-no-button');
+const { t } = useI18n();
 
 const props = defineProps({
   mode: {
     type: Number,
     default: 0,
+  },
+  style: {
+    type: String as PropType<'hands' | 'icons' | 'text'>,
+    required: true,
   },
   toggleMode: {
     type: Boolean,
@@ -29,12 +40,51 @@ const props = defineProps({
   },
 });
 
-const current = ref(props.mode || 0);
+const { getImage, loadImages } = useImages(true); // Use public mode for marketing site
+const { getImageVariants } = useImageUrl();
 
-const toggle = () => {
-  if (props.toggleMode) {
+const imageUrl = computed(() => {
+  let currentImageData;
+
+  console.log('hi', props.style, props.mode);
+
+  switch (props.style) {
+    case 'hands':
+      console.log('doing hands');
+      currentImageData = imageData.hands[props.mode === 0 ? 'no' : 'yes'];
+      break;
+    case 'icons':
+      console.log('doing icons');
+      currentImageData = imageData.icons[props.mode === 0 ? 'no' : 'yes'];
+      break;
   }
-  current.value = current.value === 0 ? 1 : 0;
+
+  if (!!currentImageData) {
+    const img = getImage(currentImageData);
+    if (img) {
+      return getImageVariants(img.original_url).original;
+    }
+  }
+  return null;
+});
+
+onMounted(async () => {
+  await loadImages();
+});
+
+const imageData = {
+  hands: {
+    no: 'c3c40f22-8968-413c-82d5-8cbd5bf57c55',
+    yes: 'c8bfb9e8-0427-4cd9-89e2-74e09d20b8ec',
+  },
+  icons: {
+    yes: 'd60868e9-dcc8-4775-b8a4-ddd4f68bbaf5',
+    no: '42112b80-889c-4d96-ad89-9a935528f81c',
+  },
+  text: {
+    yes: 'Yes',
+    no: 'No',
+  },
 };
 </script>
 
@@ -44,103 +94,121 @@ const toggle = () => {
 .yes-no-button {
   $b: &;
 
-  --inner-shadow-size: 0.25em;
-  --inner-shadow-offset: 0.025em;
-  --inner-shadow-color-light: rgba(255, 255, 255, 0.5);
-  --inner-shadow-color-dark: rgba(0, 0, 0, 0.5);
+  width: 100%;
+  aspect-ratio: 1/1;
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.15s ease-in-out;
 
-  --outer-shadow-size: 0.025em;
-
-  --light-color: color-mix(in srgb, var(--color), white 25%);
-  --dark-color: color-mix(in srgb, var(--color), black 25%);
-
-  background-color: var(--color-primary);
-  display: block;
-  border-radius: var(--border-radius-s);
-  position: relative;
-  padding: 0.25em;
-  border: none;
-
-
-  background-image: linear-gradient(
-    to top,
-    var(--light-color),
-    var(--dark-color)
-  );
-
-  box-shadow:
-    0 0.025em 0 var(--light-color) inset,
-    0 -0.025em 0 var(--dark-color) inset,
-    0.025em 0.025em 0.025em rgba(0, 0, 0, 0.25),
-    0.25em 0.25em 0.25em rgba(0, 0, 0, 0.5);
-
-  transition: all 0.2s ease-in-out;
-
-
-  // Size variants
-  &--small {
-    font-size: 0.5em;
+  img {
+    width: 100%;
   }
 
-  &--medium {
-    font-size: 0.75em;
+  &--text {
+    margin: var(--space-xs);
+    border-radius: var(--space-xs);
+    padding: var(--space-xs);
+    font-weight: 600;
+    color: var(--color-text);
+    width: 100%;
+    aspect-ratio: 1/1;
+    flex-shrink: 1;
+    &#{$b}--yes {
+      background-color: var(--color-success);
+    }
+    &#{$b}--no {
+      background-color: var(--color-error);
+    }
+
+    &:hover {
+      transform: scale(1.1);
+    }
   }
 
-  &--large {
-    font-size: 1em;
-  }
-
-  &--x {
-    --color: var(--color-red);
-  }
-  &--v {
-    --color: var(--color-green);
-  }
-  &:focus {
-    --color: var(--color-purple);
-  }
-
-  &__char {
-    position: relative;
-    width: 1em;
-    height: 1em;
-    position: relative;
-    filter: drop-shadow(0.025em 0.025em 0.025em rgba(0, 0, 0, 0.5))
-      drop-shadow(0.1em 0.1em 0.05em rgba(0, 0, 0, 0.25));
-
-    &--x {
-      #{$b}__char-leg--1 {
-        transform: translate(-50%, -50%) rotate(-45deg);
+  &--icons {
+    &:hover {
+      &#{$b}--yes {
+        animation: iconYes 0.8s ease-in-out forwards;
       }
-      #{$b}__char-leg--2 {
-        transform: translate(-50%, -50%) rotate(45deg);
+      &#{$b}--no {
+        animation: iconNo 0.8s ease-in-out forwards;
       }
     }
-    &--v {
-      #{$b}__char-leg--1 {
-        top: 40%;
-        left: 40%;
-        transform: rotate(45deg) translate(-60%, -50%);
+    @keyframes iconYes {
+      0%,
+      100% {
+        transform: scale(1) translateY(0);
       }
-      #{$b}__char-leg--2 {
-        top: 40%;
-        left: 40%;
-        height: 0.6em;
-        transform: rotate(-45deg) translate(-30%, -30%);
+      20%, 60% {
+        transform: scale(1) translateY(-0.2em);
+      }
+      40%, 80% {
+        transform: scale(1) translateY(0.2em);
+      }
+    }
+    @keyframes iconNo {
+      0%,
+      100% {
+        transform: scale(1) translateY(0);
+      }
+      20%, 60% {
+        transform: scale(1) translateX(-0.2em);
+      }
+      40%, 80% {
+        transform: scale(1) translateX(0.2em);
       }
     }
   }
-  &__char-leg {
-    --leg-width: 0.2em;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: var(--leg-width);
-    height: 1em;
-    border-radius: 0.05em;
-    transition: 0.3s ease-in-out;
 
-    background-color: white;
+  &--hands {
+    &#{$b}--yes {
+      transform: translateY(-0.25em);
+    }
+    &#{$b}--no {
+      transform: translateY(0.25em);
+    }
+
+    &:hover {
+      &#{$b}--yes {
+        animation: handYes 0.8s ease-in-out forwards;
+      }
+      &#{$b}--no {
+        animation: handNo 0.8s ease-in-out forwards;
+      }
+    }
+
+    @keyframes handYes {
+      0%,
+      100% {
+        transform: translateY(-0.25em);
+      }
+      25% {
+        transform: translateY(-0.5em);
+      }
+      50% {
+        transform: translateY(-0.25em);
+      }
+      75% {
+        transform: translateY(-0.5em);
+      }
+    }
+    @keyframes handNo {
+      0%,
+      100% {
+        transform: translateY(0.25em);
+      }
+      25% {
+        transform: translateY(0.5em);
+      }
+      50% {
+        transform: translateY(0.25em);
+      }
+      75% {
+        transform: translateY(0.5em);
+      }
+    }
   }
 }
 </style>

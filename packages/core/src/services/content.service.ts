@@ -59,7 +59,7 @@ export interface ContentField {
   item_template_id?: string
   field_key: string
   label: string
-  field_type: 'text' | 'textarea' | 'richtext' | 'number' | 'boolean' | 'select' | 'options' | 'media' | 'media_list' | 'list' | 'object' | 'items' | 'linked_items'
+  field_type: 'text' | 'textarea' | 'richtext' | 'number' | 'boolean' | 'select' | 'options' | 'media' | 'media_list' | 'list' | 'object' | 'items' | 'linked_items' | 'repeater'
   is_required: boolean
   is_translatable: boolean
   default_value?: any

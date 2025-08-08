@@ -89,7 +89,7 @@ async function loadContent() {
     if (!pageData.value) {
       loading.value = true;
     }
-    
+
     // Update the key for transitions
     currentPageKey.value = pageKey;
     error.value = null;
@@ -98,7 +98,7 @@ async function loadContent() {
     const startTime = Date.now();
     const page = await content.getPage(pageSlug.value, languageCode, false);
     const loadTime = Date.now() - startTime;
-    
+
     console.log(`[PageContent] Loaded "${pageSlug.value}" in ${loadTime}ms (${loadTime < 50 ? 'from cache' : 'from network'})`);
 
     if (page) {
@@ -106,7 +106,7 @@ async function loadContent() {
       if (loadTime < 50 && pageData.value) {
         await new Promise(resolve => setTimeout(resolve, 150));
       }
-      
+
       pageData.value = page;
     } else {
       error.value = `No content found for "${pageSlug.value}" page in ${languageCode}.`;

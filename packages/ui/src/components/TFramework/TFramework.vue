@@ -91,6 +91,7 @@ const props = withDefaults(defineProps<TFrameworkProps>(), {
 
 const emit = defineEmits<TFrameworkEmits>()
 
+
 const bemm = useBemm('framework')
 const route = useRoute()
 const router = useRouter()

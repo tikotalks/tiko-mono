@@ -26,6 +26,7 @@ import ItemsFieldEditor from './ItemsFieldEditor.vue'
 import ListFieldInstance from './ListFieldInstance.vue'
 import LinkedItemsFieldInstance from './LinkedItemsFieldInstance.vue'
 import MediaFieldInstance from './MediaFieldInstance.vue'
+import RepeaterFieldInstance from './RepeaterFieldInstance.vue'
 
 interface Props {
   field: ContentField
@@ -64,6 +65,8 @@ const fieldComponent = computed(() => {
       return ListFieldInstance
     case 'linked_items':
       return LinkedItemsFieldInstance
+    case 'repeater':
+      return RepeaterFieldInstance
     case 'media':
     case 'image':
       return MediaFieldInstance
@@ -105,6 +108,11 @@ const fieldProps = computed(() => {
       baseProps.sectionId = props.field.section_id || ''
       baseProps.fieldId = props.field.id
       baseProps.itemTemplateId = props.field.config?.item_template_id
+      break
+      
+    case 'repeater':
+      // Pass the field itself for repeater to access schema from config
+      baseProps.field = props.field
       break
   }
   

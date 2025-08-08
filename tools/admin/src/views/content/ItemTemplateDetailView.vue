@@ -8,10 +8,10 @@
       <template #actions>
         <TButton
           type="ghost"
-          :icon="Icons.EDIT"
+          :icon="Icons.EDIT_M"
           @click="openEditDialog"
         >
-          {{ t('common.edit') }}
+          {{ t('common.actions.edit') }}
         </TButton>
       </template>
     </AdminPageHeader>
@@ -27,20 +27,19 @@
       <TCard :class="bemm('section')">
         <template #header>
           <div :class="bemm('section-header')">
-            <h3>{{ t('admin.content.fields.title') }}</h3>
+            <h3>{{ t('common.fields') }}</h3>
             <TButton
               color="primary"
               size="small"
               :icon="Icons.ADD"
               @click="openCreateFieldDialog"
             >
-              {{ t('admin.content.fields.add') }}
+              {{ t('common.add') }}
             </TButton>
           </div>
         </template>
 
         <div v-if="fields.length > 0">
-          <p>Debug: {{ fields.length }} fields loaded</p>
           <TDraggableList
             :items="fields"
             :class="bemm('fields')"
@@ -56,11 +55,11 @@
                       {{ t('common.required') }}
                     </TChip>
                     <TChip v-if="field.is_translatable" color="primary" size="small">
-                      {{ t('admin.content.fields.translatable') }}
+                      {{ t('common.translatable') }}
                     </TChip>
                   </div>
                   <div :class="bemm('field-meta')">
-                    <span>{{ t('admin.content.fields.key') }}: {{ field.field_key }}</span>
+                    <span>{{ t('common.key') }}: {{ field.field_key }}</span>
                   </div>
                 </div>
 
@@ -68,13 +67,14 @@
                   <TButton
                     type="ghost"
                     size="small"
-                    :icon="Icons.EDIT"
+                    :icon="Icons.EDIT_M"
                     @click="editField(field)"
                   />
                   <TButton
                     type="ghost"
                     size="small"
-                    :icon="Icons.DELETE"
+                    :color="Colors.ERROR"
+                    :icon="Icons.TRASH"
                     @click="confirmDeleteField(field)"
                   />
                 </div>
@@ -103,7 +103,7 @@
               :icon="Icons.ADD"
               @click="createItem"
             >
-              {{ t('admin.content.items.create') }}
+              {{ t('common.create') }}
             </TButton>
           </div>
         </template>
@@ -158,7 +158,8 @@ import {
   useI18n,
   TChip,
   type ToastService,
-  type PopupService
+  type PopupService,
+  Colors
 } from '@tiko/ui'
 import { Icons } from 'open-icon'
 import { contentService, type ItemTemplate, type Item, type ContentField } from '@tiko/core'
@@ -207,7 +208,7 @@ async function loadTemplate() {
   } catch (error) {
     console.error('Failed to load item template:', error)
     toastService?.show({
-      message: t('admin.content.itemTemplates.loadError'),
+      message: t('messages.error.loadFailed'),
       type: 'error'
     })
   } finally {
@@ -251,15 +252,13 @@ async function updateFieldOrder(reorderedFields: ContentField[]) {
 function editField(field: ContentField) {
   popupService?.open({
     component: FieldEditor,
-    title: t('admin.content.fields.edit'),
+    title: t('common.edit'),
     props: {
       field,
       templateId: template.value?.id,
-      templateType: 'item'
-    },
-    events: {
-      save: handleFieldSave,
-      close: () => popupService?.close()
+      templateType: 'item',
+      onSave: handleFieldSave,
+      onClose: () => popupService?.close()
     }
   })
 }
@@ -283,14 +282,14 @@ async function deleteField(field: ContentField) {
   try {
     await contentService.deleteField(field.id)
     toastService?.show({
-      message: t('admin.content.fields.deleteSuccess'),
+      message: t('messages.success.itemDeleted'),
       type: 'success'
     })
     await loadFields()
   } catch (error) {
     console.error('Failed to delete field:', error)
     toastService?.show({
-      message: t('admin.content.fields.deleteError'),
+      message: t('messages.error.deleteFailed'),
       type: 'error'
     })
   }
@@ -298,17 +297,15 @@ async function deleteField(field: ContentField) {
 
 function openCreateFieldDialog() {
   if (!template.value) return
-  
+
   popupService?.open({
     component: FieldEditor,
-    title: t('admin.content.fields.create'),
+    title: t('common.create'),
     props: {
       templateId: template.value.id,
-      templateType: 'item'
-    },
-    events: {
-      save: handleFieldSave,
-      close: () => popupService?.close()
+      templateType: 'item',
+      onSave: handleFieldSave,
+      onClose: () => popupService?.close()
     }
   })
 }
@@ -320,10 +317,10 @@ async function handleFieldSave() {
 
 function openEditDialog() {
   if (!template.value) return
-  
+
   popupService?.open({
     component: EditItemTemplateDialog,
-    title: t('admin.content.itemTemplates.edit'),
+    title: t('common.edit'),
     props: {
       template: template.value,
       onSave: async (data: Partial<ItemTemplate>) => {

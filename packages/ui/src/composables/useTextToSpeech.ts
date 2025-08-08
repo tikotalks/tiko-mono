@@ -14,6 +14,58 @@ export function useTextToSpeech() {
   const isPlaying = ref(false)
   const isSupported = ref('speechSynthesis' in window)
   const voices = ref<SpeechSynthesisVoice[]>([])
+  const hasPermission = ref(false)
+  
+  // Check if we're on iOS
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+  
+  // Request speech permission (especially important on iOS)
+  const requestPermission = async (): Promise<boolean> => {
+    if (!isSupported.value) {
+      return false
+    }
+    
+    // On iOS, we need to trigger speech from a user gesture to get permission
+    if (isIOS && !hasPermission.value) {
+      try {
+        // Create a short, silent utterance to test permission
+        const testUtterance = new SpeechSynthesisUtterance('')
+        testUtterance.volume = 0
+        testUtterance.rate = 10 // Make it very fast
+        
+        return new Promise((resolve) => {
+          testUtterance.onstart = () => {
+            hasPermission.value = true
+            speechSynthesis.cancel() // Cancel immediately
+            resolve(true)
+          }
+          
+          testUtterance.onerror = () => {
+            hasPermission.value = false
+            resolve(false)
+          }
+          
+          // Timeout fallback
+          setTimeout(() => {
+            if (!hasPermission.value) {
+              speechSynthesis.cancel()
+              // Assume permission is granted if no error
+              hasPermission.value = true
+              resolve(true)
+            }
+          }, 100)
+          
+          speechSynthesis.speak(testUtterance)
+        })
+      } catch (error) {
+        console.warn('Failed to request speech permission:', error)
+        return false
+      }
+    } else {
+      hasPermission.value = true
+      return true
+    }
+  }
   
   // Load available voices
   const loadVoices = () => {
@@ -55,6 +107,15 @@ export function useTextToSpeech() {
   ): Promise<void> => {
     if (!isSupported.value || !text || isPlaying.value) {
       return Promise.resolve()
+    }
+    
+    // Request permission on first use (especially important on iOS)
+    if (!hasPermission.value) {
+      const granted = await requestPermission()
+      if (!granted) {
+        console.warn('Speech permission not granted')
+        return Promise.resolve()
+      }
     }
     
     return new Promise((resolve, reject) => {
@@ -132,6 +193,8 @@ export function useTextToSpeech() {
     isSupported: computed(() => isSupported.value),
     isPlaying: computed(() => isPlaying.value),
     voices: computed(() => voices.value),
+    hasPermission: computed(() => hasPermission.value),
+    requestPermission,
     speak,
     stop,
     pause,

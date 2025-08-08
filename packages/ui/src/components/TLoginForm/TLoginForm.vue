@@ -5,7 +5,9 @@
       <template v-if="currentStep === 'email'">
         <!-- Header -->
         <div :class="bemm('header')">
-          <h4 :class="bemm('title')" data-cy="login-title">{{ t(keys.auth.loginToAccount) }}</h4>
+          <h4 :class="bemm('title')" data-cy="login-title">
+            {{ t(keys.auth.loginToAccount) }}
+          </h4>
         </div>
         <!-- Email Step -->
         <div :class="bemm('content')">
@@ -41,17 +43,17 @@
           </div>
 
           <!-- SSO Button (only show if not in Tiko app and SSO is enabled) -->
-          <TSSOButton
+          <!-- <TSSOButton
             v-if="enableSSO && appId && appId !== 'tiko'"
             :app-id="appId"
             :app-name="appName"
             size="large"
             :disabled="isLoading"
             :class="bemm('sso-button')"
-          />
+          /> -->
 
           <!-- Apple Sign-In -->
-          <TButton
+          <!-- <TButton
             icon="arrow-right"
             color="black"
             size="large"
@@ -59,13 +61,15 @@
             :disabled="isLoading"
             :class="bemm('apple-button')"
             >{{ t(keys.auth.loginWithApple) }}</TButton
-          >
+          > -->
 
           <!-- Skip Auth Button -->
           <TButton
             v-if="allowSkipAuth"
-            type="ghost"
+            type="outline"
             size="large"
+            :color="BaseColors.BLUE"
+            :icon="Icons.ARROW_RIGHT"
             @click="handleSkipAuth"
             :disabled="isLoading"
             :class="bemm('skip-button')"
@@ -75,15 +79,19 @@
 
           <!-- Register Link -->
           <div :class="bemm('register')">
-            <span :class="bemm('register-text')">{{ t(keys.auth.dontHaveAccount) }}</span>
-            <button
-              type="button"
+            <span :class="bemm('register-text')"
+              >{{ t(keys.auth.dontHaveAccount) }}&nbsp;</span
+            >
+            <TButton
+              size="small"
+              :color="BaseColors.BLUE"
               :class="bemm('register-link')"
+              :icon="Icons.USER_ADD"
               @click="toggleMode"
               data-cy="toggle-register"
             >
               {{ t(keys.auth.register) }}
-            </button>
+            </TButton>
           </div>
         </div>
       </template>
@@ -93,7 +101,10 @@
         <div :class="bemm('content')">
           <div :class="bemm('verification-info')" data-cy="verification-info">
             <TIcon name="mail" :class="bemm('verification-icon')" />
-            <p :class="bemm('verification-text')" data-cy="verification-message">
+            <p
+              :class="bemm('verification-text')"
+              data-cy="verification-message"
+            >
               We've sent you an email with two options:<br />
               <strong data-cy="verification-email">{{ email }}</strong>
             </p>
@@ -107,7 +118,10 @@
             </div>
           </div>
 
-          <TForm @submit.prevent="handleVerificationSubmit" data-cy="verification-form">
+          <TForm
+            @submit.prevent="handleVerificationSubmit"
+            data-cy="verification-form"
+          >
             <TInputText
               v-model="verificationCode"
               type="text"
@@ -145,7 +159,9 @@
               {{
                 resendCooldown > 0
                   ? `Resend in ${resendCooldown}s`
-                  : t(keys.auth.didntReceiveCode) + ' ' + t(keys.auth.resendCode)
+                  : t(keys.auth.didntReceiveCode) +
+                    ' ' +
+                    t(keys.auth.resendCode)
               }}
             </TButton>
 
@@ -164,7 +180,9 @@
       <!-- Register Step -->
       <template v-else-if="currentStep === 'register'">
         <div :class="bemm('header')">
-          <h2 :class="bemm('title')" data-cy="register-title">{{ t(keys.auth.createAccount) }}</h2>
+          <h2 :class="bemm('title')" data-cy="register-title">
+            {{ t(keys.auth.createAccount) }}
+          </h2>
         </div>
         <div :class="bemm('content')">
           <TForm @submit.prevent="handleRegisterSubmit" data-cy="register-form">
@@ -205,7 +223,9 @@
 
           <!-- Back to Login -->
           <div :class="bemm('register')">
-            <span :class="bemm('register-text')">{{ t(keys.auth.alreadyHaveAccount) }}</span>
+            <span :class="bemm('register-text')">{{
+              t(keys.auth.alreadyHaveAccount)
+            }}</span>
             <button
               type="button"
               :class="bemm('register-link')"
@@ -246,17 +266,20 @@ import TIcon from '../TIcon/TIcon.vue';
 import TForm from '../TForm/TForm.vue';
 import TInputText from '../TForm/inputs/TInputText/TInputText.vue';
 import TInputEmail from '../TForm/InputEmail/InputEmail.vue';
-import TSSOButton from '../TSSOButton/TSSOButton.vue';
+// import TSSOButton from '../TSSOButton/TSSOButton.vue';
 import type {
   TLoginFormProps,
   TLoginFormEmits,
   LoginFormStep,
 } from './TLoginForm.model';
+import { Icons } from 'open-icon';
+import { BaseColors, Colors } from '../../types';
 
 const props = withDefaults(defineProps<TLoginFormProps>(), {
   isLoading: false,
   error: null,
   enableSSO: true,
+  allowSkipAuth: false,
 });
 
 const emit = defineEmits<TLoginFormEmits>();
@@ -435,20 +458,6 @@ onUnmounted(() => {
     gap: 1.5rem;
   }
 
-  &__register-link {
-    color: var(--color-primary);
-    text-decoration: none;
-    font-weight: 500;
-    cursor: pointer;
-    background-color: transparent;
-    font-size: 1em;
-    border: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-
   &__divider {
     position: relative;
     text-align: center;
@@ -483,6 +492,14 @@ onUnmounted(() => {
     background: color-mix(in srgb, var(--color-primary), transparent 95%);
     border-radius: var(--border-radius-s);
     border-left: 3px solid var(--color-primary);
+  }
+
+  &__register {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  &__register-link {
+    width: auto;
   }
 
   &__option {

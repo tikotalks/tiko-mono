@@ -14,7 +14,7 @@
         :src="thumbnailUrl"
         :alt="media.original_filename"
         loading="lazy"
-        :class="bemm('image', { loaded: imageLoaded })"
+        :class="bemm('image', ['', imageLoaded ? 'loaded' :''])"
         @load="imageLoaded = true"
         @error="imageError = true"
       />
@@ -22,11 +22,6 @@
 
     <div :class="bemm('info')">
       <p :class="bemm('title')">{{ displayTitle }}</p>
-      <!-- <p :class="bemm('meta')">
-        <span>{{ formatBytes(media.file_size) }}</span>
-        <span v-if="media.tags?.length">• {{ media.tags.length }} {{ t('common.tags') }}</span>
-        <span v-if="media.categories?.length">• {{ media.categories.length }} {{ t('common.categories') }}</span>
-      </p> -->
     </div>
   </a>
 </template>
@@ -37,7 +32,6 @@ import { useBemm } from 'bemm'
 import { Icons } from 'open-icon'
 import { useI18n } from '../../composables/useI18n'
 import { TIcon } from '../TIcon'
-import { TChip, TChipGroup } from '../TChip'
 import type { TMediaTileProps } from './TMediaTile.model'
 
 const props = withDefaults(defineProps<TMediaTileProps>(), {
@@ -148,7 +142,7 @@ onUnmounted(() => {
     position: relative;
     overflow: hidden;
     height: 200px;
-    
+
     // Checkerboard pattern background
     --dot-color: color-mix(in srgb, var(--color-foreground), transparent 90%);
     background-image:
@@ -170,7 +164,7 @@ onUnmounted(() => {
     align-items: center;
     justify-content: center;
     background: var(--color-background-secondary);
-    
+
     .t-icon {
       color: var(--color-foreground-secondary);
       opacity: 0.3;

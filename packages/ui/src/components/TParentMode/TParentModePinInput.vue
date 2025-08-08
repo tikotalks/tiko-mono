@@ -242,7 +242,7 @@ const handleSubmit = async () => {
       await props.onPinEntered(pinValue.value);
     }
   } catch (err) {
-    error.value = t(keys.common.error);
+    error.value = t(`common.errorLabel`);
     console.error('PIN input error:', err);
   } finally {
     isProcessing.value = false;

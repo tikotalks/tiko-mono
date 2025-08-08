@@ -1,6 +1,6 @@
 <template>
   <div :class="bemm('',['',tikoConfig?.isApp ? 'is-app' : 'is-website'])" data-cy="auth-wrapper">
-    <div :class="bemm('background')" v-if="!isAuthenticated">
+    <div :class="bemm('background')" v-if="!isAuthenticated && requireAuth">
       <img
         v-if="props.backgroundImage"
         :src="props.backgroundImage"
@@ -123,7 +123,7 @@ const isAuthCallbackRoute = computed(() => route?.path === '/auth/callback');
 const splashConfig = computed(() => {
   // Try to get config for the specific app, otherwise use a default
   const appConfig = defaultTikoSplashConfigs[props.appName as keyof typeof defaultTikoSplashConfigs];
-  
+
   // If no config found, create a default one using the app name from props
   const config = appConfig || {
     appName: props.title || props.appName,
@@ -387,6 +387,7 @@ onMounted(async () => {
     align-items: center;
     justify-content: center;
     animation: comeUpLogin 0.25s cubic-bezier(0.075, 0.82, 0.165, 1);
+    padding: var(--spacing);
     @keyframes comeUpLogin {
       from {
         transform: translateY(var(--space));

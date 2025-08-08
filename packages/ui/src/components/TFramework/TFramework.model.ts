@@ -24,6 +24,10 @@ export interface FrameworkConfig extends TikoConfig {
     enabled?: boolean
     sections?: SettingsSection[]
   }
+  auth?: {
+    skipAuth?: boolean
+    [key: string]: any
+  }
 }
 
 export interface TFrameworkProps {

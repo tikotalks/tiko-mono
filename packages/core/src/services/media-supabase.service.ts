@@ -80,7 +80,7 @@ export class SupabaseMediaService implements MediaService {
     if (!session) throw new Error('Not authenticated')
 
     try {
-      const response = await fetch(`${this.API_URL}/media?select=*&order=created_at.desc`, {
+      const response = await fetch(`${this.API_URL}/media?select=*`, {
         headers: {
           'apikey': this.ANON_KEY,
           'Authorization': `Bearer ${session.access_token}`,
@@ -106,7 +106,7 @@ export class SupabaseMediaService implements MediaService {
     try {
       console.log('[MediaService] Fetching public media list...')
       // TODO: Add back &is_private=eq.false filter after database migration is applied
-      const response = await fetch(`${this.API_URL}/media?select=*&order=created_at.desc`, {
+      const response = await fetch(`${this.API_URL}/media?select=*`, {
         headers: {
           'apikey': this.ANON_KEY,
           'Content-Type': 'application/json'
@@ -147,7 +147,7 @@ export class SupabaseMediaService implements MediaService {
     if (!session) throw new Error('Not authenticated')
 
     try {
-      let queryParams = ['select=*', 'order=created_at.desc']
+      let queryParams = ['select=*']
 
       // Add text search if query provided
       if (options.query) {

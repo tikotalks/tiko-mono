@@ -91,8 +91,8 @@ const navigation = computed<
 
 <style lang="scss">
 .footer {
-  background-color: var(--color-light);
-  color: var(--color-light);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
   padding: var(--space);
   background-image: linear-gradient(
     to top,
@@ -101,8 +101,8 @@ const navigation = computed<
   );
 
   &__container {
-    background-color: var(--color-dark);
-    color: var(--color-light);
+    background-color: var(--color-foreground);
+    color: var(--color-background);
     padding: calc(var(--spacing) - var(--space));
     border-radius: var(--border-radius);
   }
