@@ -7,13 +7,14 @@ on:
   workflow_dispatch:
     inputs:
       target:
-        description: 'Target website to deploy (marketing, or all)'
+        description: 'Target website to deploy (marketing, media, or all)'
         required: true
         default: 'all'
         type: choice
         options:
           - all
           - marketing
+          - media
       message:
         description: 'Deployment message'
         required: false
@@ -25,6 +26,7 @@ jobs:
     outputs:
       should-build: ${{ steps.check.outputs.should-build }}
       build-marketing: ${{ steps.check.outputs.build-marketing }}
+      build-media: ${{ steps.check.outputs.build-media }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,15 +38,23 @@ jobs:
           # Default to no builds
           echo "should-build=false" >> $GITHUB_OUTPUT
           echo "build-marketing=false" >> $GITHUB_OUTPUT
+          echo "build-media=false" >> $GITHUB_OUTPUT
           
           # Handle workflow_dispatch trigger
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             TARGET="${{ github.event.inputs.target }}"
             echo "Workflow dispatch target: $TARGET"
             
-            if [[ "$TARGET" == "all" ]] || [[ "$TARGET" == "marketing" ]]; then
+            if [[ "$TARGET" == "all" ]]; then
               echo "should-build=true" >> $GITHUB_OUTPUT
               echo "build-marketing=true" >> $GITHUB_OUTPUT
+              echo "build-media=true" >> $GITHUB_OUTPUT
+            elif [[ "$TARGET" == "marketing" ]]; then
+              echo "should-build=true" >> $GITHUB_OUTPUT
+              echo "build-marketing=true" >> $GITHUB_OUTPUT
+            elif [[ "$TARGET" == "media" ]]; then
+              echo "should-build=true" >> $GITHUB_OUTPUT
+              echo "build-media=true" >> $GITHUB_OUTPUT
             fi
             exit 0
           fi
@@ -57,12 +67,18 @@ jobs:
           if [[ "$COMMIT_MSG" == *"[build:all]"* ]] || [[ "$COMMIT_MSG" == *"[build:websites]"* ]]; then
             echo "should-build=true" >> $GITHUB_OUTPUT
             echo "build-marketing=true" >> $GITHUB_OUTPUT
+            echo "build-media=true" >> $GITHUB_OUTPUT
             exit 0
           fi
           
           # Check for specific website triggers
           if [[ "$COMMIT_MSG" == *"[build:marketing]"* ]]; then
             echo "build-marketing=true" >> $GITHUB_OUTPUT
+            echo "should-build=true" >> $GITHUB_OUTPUT
+          fi
+          
+          if [[ "$COMMIT_MSG" == *"[build:media]"* ]]; then
+            echo "build-media=true" >> $GITHUB_OUTPUT
             echo "should-build=true" >> $GITHUB_OUTPUT
           fi
 
@@ -149,3 +165,48 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: dc2b7d14a69351375cab6de9a13ddee9
           command: pages deploy ./websites/marketing/dist --project-name=tiko-marketing
+
+  deploy-media:
+    needs: [check-triggers, check-environment]
+    if: needs.check-triggers.outputs.build-media == 'true'
+    runs-on: ubuntu-latest
+    name: Deploy Media Website
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+        
+      - name: Install Wrangler
+        run: pnpm add -w wrangler@3.90.0 --save-dev
+        
+      - name: Generate i18n translations
+        run: pnpm generate:i18n:worker:prod
+        
+      - name: Build Media website
+        run: |
+          pnpm --filter=@tiko/ui build
+          pnpm --filter=@tiko/core build
+          pnpm --filter=media exec vite build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_USE_CONTENT_WORKER: "true"
+          VITE_CONTENT_API_URL: "https://content.tikoapi.org"
+          VITE_DEPLOYED_VERSION_ID: "v1.0.1"
+          
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: dc2b7d14a69351375cab6de9a13ddee9
+          command: pages deploy ./websites/media/dist --project-name=tiko-media
