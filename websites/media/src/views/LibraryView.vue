@@ -61,6 +61,18 @@
           :options="categoryOptions"
         />
 
+        <TInputSelect
+          v-model="sortBy"
+          :label="t('common.sortBy')"
+          :options="sortOptions"
+        />
+
+        <TInputSelect
+          v-model="sortOrder"
+          :label="t('common.orderDirectionLabel')"
+          :options="sortOrderOptions"
+        />
+
         <TViewToggle
           v-model="viewMode"
           :tiles-label="t('common.views.tiles')"
@@ -123,7 +135,7 @@
           />
           <TListCell type="chips" :chips="media.categories" :max-chips="2" />
           <TListCell type="size" :content="media.file_size" />
-          <TListCell type="date" :content="media.created_at" />
+          <TListCell type="date" :content="formatDate(media.created_at)" />
         </TListItem>
       </router-link>
     </TList>
@@ -135,7 +147,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useBemm } from 'bemm';
 import { Icons } from 'open-icon';
-import { useImageUrl, useImages } from '@tiko/core';
+import { useImageUrl, useImages, formatRelativeDate } from '@tiko/core';
 import {
   useI18n,
   TGrid,
@@ -163,6 +175,8 @@ const searchQuery = ref('');
 const categoryFilter = ref<string>('all');
 const tagFilter = ref<string | null>(null);
 const viewMode = ref<'tiles' | 'list'>('tiles');
+const sortBy = ref<'date' | 'name' | 'size' | 'category'>('date');
+const sortOrder = ref<'asc' | 'desc'>('desc');
 
 // Computed
 const categoryOptions = computed(() => {
@@ -185,6 +199,35 @@ const listColumns = [
   { key: 'date', label: t('common.uploadDate'), width: '150px' },
 ];
 
+const sortOptions = computed(() => [
+  { value: 'date', label: t('common.sortBy.date') },
+  { value: 'name', label: t('common.sortBy.name') },
+  { value: 'size', label: t('common.sortBy.size') },
+  { value: 'category', label: t('common.sortBy.category') },
+]);
+
+const sortOrderOptions = [
+  { value: 'desc', label: t('common.sortBy.desc') },
+  { value: 'asc', label: t('common.sortBy.asc') },
+];
+
+// Format date for display with i18n support
+function formatDate(dateString: string): string {
+  const relativeDate = formatRelativeDate(dateString);
+  
+  // Map English strings to i18n keys
+  if (relativeDate === 'Today') {
+    return t('common.today');
+  } else if (relativeDate === 'Yesterday') {
+    return t('common.yesterday');
+  } else if (relativeDate.includes('days ago')) {
+    const days = parseInt(relativeDate.split(' ')[0]);
+    return t('common.daysAgo', { days });
+  }
+  
+  return relativeDate;
+}
+
 // Use filtered images from useImages and apply category and tag filters
 const filteredByCategoryImages = computed(() => {
   let result = filteredImages.value;
@@ -200,6 +243,32 @@ const filteredByCategoryImages = computed(() => {
   if (tagFilter.value) {
     result = result.filter((img) => img.tags?.includes(tagFilter.value));
   }
+
+  // Apply sorting
+  result = [...result].sort((a, b) => {
+    let comparison = 0;
+
+    switch (sortBy.value) {
+      case 'date':
+        comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        break;
+      case 'name':
+        const nameA = (a.title || a.original_filename).toLowerCase();
+        const nameB = (b.title || b.original_filename).toLowerCase();
+        comparison = nameA.localeCompare(nameB);
+        break;
+      case 'size':
+        comparison = a.file_size - b.file_size;
+        break;
+      case 'category':
+        const catA = (a.categories?.[0] || '').toLowerCase();
+        const catB = (b.categories?.[0] || '').toLowerCase();
+        comparison = catA.localeCompare(catB);
+        break;
+    }
+
+    return sortOrder.value === 'asc' ? comparison : -comparison;
+  });
 
   return result;
 });
