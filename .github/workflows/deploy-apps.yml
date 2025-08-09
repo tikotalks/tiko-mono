@@ -80,7 +80,10 @@ jobs:
           fi
           
           # Handle push trigger - check commit message
-          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          COMMIT_MSG=$(cat <<'EOF'
+${{ github.event.head_commit.message }}
+EOF
+)
           echo "Commit message: $COMMIT_MSG"
           
           # Check for build all triggers
