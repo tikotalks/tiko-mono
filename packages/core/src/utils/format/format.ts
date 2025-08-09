@@ -78,3 +78,33 @@ export function formatDuration(seconds: number, format: 'short' | 'long' = 'shor
 
   return parts.join(' ')
 }
+
+/**
+ * Formats a date relative to now (e.g., "Today", "Yesterday", "3 days ago")
+ * @param date - Date to format
+ * @param locale - Locale string (defaults to 'en-US')
+ * @returns Relative date string
+ */
+export function formatRelativeDate(
+  date: Date | string,
+  locale: string = 'en-US'
+): string {
+  const inputDate = typeof date === 'string' ? new Date(date) : date
+  const now = new Date()
+  const diffTime = Math.abs(now.getTime() - inputDate.getTime())
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+  
+  if (diffDays === 0) {
+    return 'Today'
+  } else if (diffDays === 1) {
+    return 'Yesterday'
+  } else if (diffDays < 7) {
+    return `${diffDays} days ago`
+  } else {
+    return formatDate(inputDate, locale, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    })
+  }
+}
