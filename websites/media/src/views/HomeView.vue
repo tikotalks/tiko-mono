@@ -14,10 +14,10 @@
           </TButton>
           <TButton
             type="outline"
-            @click="router.push('/collections')"
+            @click="router.push('/categories')"
             size="large"
           >
-            {{ t('media.home.viewCollections') }}
+            {{ t('media.home.viewCategories') }}
           </TButton>
         </div>
       </div>
@@ -118,7 +118,7 @@ const featuredImages = computed(() => {
 const recentImages = computed(() => {
   return [...imageList.value]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 8)
+    .slice(0, 9)
 })
 
 // Stats

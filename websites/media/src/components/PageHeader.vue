@@ -22,7 +22,7 @@ const bemm = useBemm('page-header')
 // Static navigation for now
 const navigationItems = ref<NavigationItem[]>([
   { id: '1', title: 'Library', path: '/library', order: 1 },
-  { id: '2', title: 'Collections', path: '/collections', order: 2 },
+  { id: '2', title: 'Categories', path: '/categories', order: 2 },
   { id: '3', title: 'About', path: '/about', order: 3 }
 ])
 </script>

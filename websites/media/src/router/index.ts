@@ -18,10 +18,16 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/MediaDetailView.vue')
   },
   {
-    path: '/collections',
-    name: 'collections',
-    component: () => import('../views/CollectionsView.vue')
+    path: '/categories',
+    name: 'categories',
+    component: () => import('../views/CategoriesView.vue')
   },
+  // Collections disabled for now - not implemented yet
+  // {
+  //   path: '/collections',
+  //   name: 'collections',
+  //   component: () => import('../views/CollectionsView.vue')
+  // },
   {
     path: '/about',
     name: 'about',
