@@ -1,8 +1,8 @@
 <template>
   <div :class="bemm()">
     <div :class="bemm('header')">
-      <h4>{{ t('admin.content.fields.repeater.schema') }}</h4>
-      <p>{{ t('admin.content.fields.repeater.schemaHelp') }}</p>
+      <h4>{{ t('common.fields.schema') }}</h4>
+      <p>{{ t('common.fields.schemaHelp') }}</p>
     </div>
 
     <div :class="bemm('schema-fields')">
@@ -10,7 +10,7 @@
         <TCard>
           <template #header>
             <div :class="bemm('field-header')">
-              <span>{{ field.label || t('admin.content.fields.repeater.field') }} {{ index + 1 }}</span>
+              <span>{{ field.label || t('common.fields.field') }} {{ index + 1 }}</span>
               <TButton
                 type="ghost"
                 size="small"
@@ -67,7 +67,7 @@
         :icon="Icons.ADD_M"
         @click="addField"
       >
-        {{ t('admin.content.fields.repeater.addField') }}
+        {{ t('common.fields.addField') }}
       </TButton>
     </div>
   </div>

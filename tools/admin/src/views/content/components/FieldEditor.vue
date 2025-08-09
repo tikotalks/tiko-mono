@@ -13,7 +13,7 @@
           v-model="form.field_key"
           :label="t('common.key')"
           :placeholder="t('common.keyPlaceholder')"
-          :help="t('admin.content.fields.keyHelp')"
+          :help="t('common.fields.keyHelp')"
           required
         />
 
@@ -27,13 +27,13 @@
         <TInputCheckbox
           v-model="form.is_required"
           :label="t('common.required')"
-          :help="t('admin.content.fields.requiredHelp')"
+          :help="t('common.fields.requiredHelp')"
         />
 
         <TInputCheckbox
           v-model="form.is_translatable"
           :label="t('common.translatable')"
-          :help="t('admin.content.fields.translatableHelp')"
+          :help="t('common.fields.translatableHelp')"
         />
 
         <!-- Type-specific configuration -->
@@ -116,16 +116,16 @@ const fieldTypeOptions = computed(() => {
   console.log('🔥 FieldEditor loaded! templateType:', props.templateType)
 
   const types = [
-    { value: 'text', label: t('admin.content.fields.types.text') },
-    { value: 'textarea', label: t('admin.content.fields.types.textarea') },
-    { value: 'richtext', label: t('admin.content.fields.types.richtext') },
-    { value: 'number', label: t('admin.content.fields.types.number') },
-    { value: 'boolean', label: t('admin.content.fields.types.boolean') },
-    { value: 'select', label: t('admin.content.fields.types.select') },
-    { value: 'media', label: t('admin.content.fields.types.media') },
-    { value: 'list', label: t('admin.content.fields.types.list') },
-    { value: 'items', label: t('admin.content.fields.types.items') },
-    { value: 'repeater', label: t('admin.content.fields.types.repeater') }
+    { value: 'text', label: t('admin.content.field.types.text') },
+    { value: 'textarea', label: t('admin.content.field.types.textarea') },
+    { value: 'richtext', label: t('admin.content.field.types.richtext') },
+    { value: 'number', label: t('admin.content.field.types.number') },
+    { value: 'boolean', label: t('admin.content.field.types.boolean') },
+    { value: 'select', label: t('admin.content.field.types.select') },
+    { value: 'media', label: t('admin.content.field.types.media') },
+    { value: 'list', label: t('admin.content.field.types.list') },
+    { value: 'items', label: t('admin.content.field.types.items') },
+    { value: 'repeater', label: t('admin.content.field.types.repeater') }
   ]
 
   // Add linked_items only for sections

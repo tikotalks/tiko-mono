@@ -196,7 +196,7 @@ function openCreateFieldDialog() {
 
   popupService?.open({
     component: FieldEditor,
-    title: t('admin.content.fields.create'),
+    title: t('common.fields.create'),
     props: {
       templateId: template.value.id,
       templateType: 'section'
@@ -213,7 +213,7 @@ function openEditFieldDialog(field: ContentField) {
 
   popupService?.open({
     component: FieldEditor,
-    title: t('admin.content.fields.edit'),
+    title: t('common.fields.edit'),
     props: {
       field,
       templateId: template.value.id,
@@ -230,7 +230,7 @@ async function handleFieldSave() {
   popupService?.close()
   await loadFields()
   toastService?.show({
-    message: t('admin.content.fields.saveSuccess'),
+    message: t('common.fields.saveSuccess'),
     type: 'success'
   })
 }
@@ -239,8 +239,8 @@ function confirmDeleteField(field: ContentField) {
   popupService?.open({
     component: ConfirmDialog,
     props: {
-      title: t('admin.content.fields.deleteConfirm'),
-      message: t('admin.content.fields.deleteMessage', { name: field.label }),
+      title: t('common.fields.deleteConfirm'),
+      message: t('common.fields.deleteMessage', { name: field.label }),
       confirmLabel: t('common.delete'),
       cancelLabel: t('common.cancel'),
       confirmColor: 'error',
@@ -249,14 +249,14 @@ function confirmDeleteField(field: ContentField) {
         try {
           await contentService.deleteField(field.id)
           toastService?.show({
-            message: t('admin.content.fields.deleteSuccess'),
+            message: t('common.fields.deleteSuccess'),
             type: 'success'
           })
           await loadFields()
         } catch (error) {
           console.error('Failed to delete field:', error)
           toastService?.show({
-            message: t('admin.content.fields.deleteError'),
+            message: t('common.fields.deleteError'),
             type: 'error'
           })
         }
@@ -282,7 +282,7 @@ function getFieldTypeColor(type: string): string {
 }
 
 function getFieldTypeLabel(type: string): string {
-  return t(`admin.content.fields.types.${type}`, type)
+  return t(`admin.content.field.types.${type}`, type)
 }
 
 function formatDate(dateString: string): string {

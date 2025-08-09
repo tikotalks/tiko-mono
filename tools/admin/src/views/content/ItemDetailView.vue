@@ -67,7 +67,7 @@
       <!-- Fields Card -->
       <TCard :class="bemm('fields')">
         <template #header>
-          <h3>{{ t('admin.content.fields.title') }}</h3>
+          <h3>{{ t('common.fields.title') }}</h3>
         </template>
 
         <TFormGroup v-if="fields.length > 0">
@@ -83,8 +83,8 @@
         <TEmptyState
           v-else
           :icon="Icons.TEXT_FIELDS"
-          :title="t('admin.content.fields.empty.title')"
-          :description="t('admin.content.fields.empty.description')"
+          :title="t('common.fields.empty.title')"
+          :description="t('common.fields.empty.description')"
           :compact="true"
         />
       </TCard>
@@ -211,7 +211,7 @@ async function loadItem() {
 
     // Load item data
     const data = await contentService.getItemData(itemId.value, true)
-    
+
     // Initialize formData with all fields to ensure reactivity
     const initialData: Record<string, any> = {}
     for (const field of fields.value) {
@@ -238,7 +238,7 @@ async function loadItem() {
       }
       initialData[field.field_key] = defaultValue
     }
-    
+
     formData.value = initialData
     originalData.value = { ...initialData }
 
@@ -318,7 +318,7 @@ async function saveItem() {
 
 function openTranslateDialog() {
   if (!item.value) return
-  
+
   popupService?.open({
     component: CreateTranslationDialog,
     title: t('admin.content.items.addTranslation'),

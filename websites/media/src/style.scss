@@ -3,7 +3,8 @@
 
 :root {
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --max-width: 1400px;
+  --font-family: 'Nunito', sans-serif;
+  --header-font-family: 'Lora', serif;
 
   // Custom spacing for media site
   --page-padding-top: calc(var(--space-l) * 4); // Account for fixed header
@@ -18,4 +19,10 @@ body {
   font-size: clamp(2em, 3vw, 4em);
   line-height: 1.2;
   font-weight: var(--font-weight-bold);
+  font-family: var(--header-font-family);
+}
+
+// Typography
+h1,h2,h3,.title {
+  font-family: var(--header-font-family);
 }

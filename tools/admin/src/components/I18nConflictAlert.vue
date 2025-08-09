@@ -13,44 +13,72 @@
 
       <div :class="bemm('conflicts')">
         <details
-          v-for="(conflict, _) in conflicts"
-          :key="conflict.parentKey"
+          v-for="(conflict, index) in conflicts"
+          :key="conflict.type === 'hierarchical' ? conflict.parentKey : `duplicate-${conflict.key}-${index}`"
           :class="bemm('conflict')"
         >
           <summary :class="bemm('conflict-summary')">
-            <code>{{ conflict.parentKey }}</code> -
-            <span :class="bemm('conflict-count')">
-              {{ t('i18n.conflicts.childCount', { count: conflict.childKeys.length }) }}
-            </span>
-             <TButton :href="`#${conflict.parentKey}`" :icon="Icons.ARROW_DOWN" />
+            <template v-if="conflict.type === 'hierarchical'">
+              <code>{{ conflict.parentKey }}</code> -
+              <span :class="bemm('conflict-count')">
+                {{ t('i18n.conflicts.childCount', { count: conflict.childKeys.length }) }}
+              </span>
+              <TButton :href="`#${conflict.parentKey}`" :icon="Icons.ARROW_DOWN" />
+            </template>
+            <template v-else>
+              <code>{{ conflict.key }}</code> -
+              <span :class="bemm('conflict-count')">
+                {{ t('i18n.conflicts.duplicateCount', { count: conflict.duplicateIds.length }) }}
+              </span>
+              <TButton :href="`#${conflict.key}`" :icon="Icons.ARROW_DOWN" />
+            </template>
           </summary>
 
           <div :class="bemm('conflict-details')">
-            <p :class="bemm('explanation')">
-              {{ t('i18n.conflicts.explanation', { key: conflict.parentKey }) }}
-            </p>
+            <template v-if="conflict.type === 'hierarchical'">
+              <p :class="bemm('explanation')">
+                {{ t('i18n.conflicts.explanation', { key: conflict.parentKey }) }}
+              </p>
 
-            <div :class="bemm('child-list')">
-              <h4>{{ t('i18n.conflicts.conflictingKeys') }}</h4>
-              <ul>
-                <li v-for="child in conflict.childKeys.slice(0, 10)" :key="child">
-                  <code>{{ child }}</code>
-                </li>
-                <li v-if="conflict.childKeys.length > 10" :class="bemm('more')">
-                  {{ t('i18n.conflicts.andMore', { count: conflict.childKeys.length - 10 }) }}
-                </li>
-              </ul>
-            </div>
-
-            <div v-if="conflict.suggestions.length > 0" :class="bemm('suggestions')">
-              <h4>{{ t('i18n.conflicts.suggestedFix') }}</h4>
-              <p>{{ t('i18n.conflicts.renameParentTo') }}</p>
-              <div :class="bemm('suggestion-list')">
-                <code v-for="suggestion in conflict.suggestions" :key="suggestion">
-                  {{ suggestion }}
-                </code>
+              <div :class="bemm('child-list')">
+                <h4>{{ t('i18n.conflicts.conflictingKeys') }}</h4>
+                <ul>
+                  <li v-for="child in conflict.childKeys.slice(0, 10)" :key="child">
+                    <code>{{ child }}</code>
+                  </li>
+                  <li v-if="conflict.childKeys.length > 10" :class="bemm('more')">
+                    {{ t('i18n.conflicts.andMore', { count: conflict.childKeys.length - 10 }) }}
+                  </li>
+                </ul>
               </div>
-            </div>
+
+              <div v-if="conflict.suggestions.length > 0" :class="bemm('suggestions')">
+                <h4>{{ t('i18n.conflicts.suggestedFix') }}</h4>
+                <p>{{ t('i18n.conflicts.renameParentTo') }}</p>
+                <div :class="bemm('suggestion-list')">
+                  <code v-for="suggestion in conflict.suggestions" :key="suggestion">
+                    {{ suggestion }}
+                  </code>
+                </div>
+              </div>
+            </template>
+            <template v-else>
+              <p :class="bemm('explanation')">
+                {{ t('i18n.conflicts.duplicateExplanation', { key: conflict.key }) }}
+              </p>
+
+              <div :class="bemm('duplicate-list')">
+                <h4>{{ t('i18n.conflicts.duplicateIds') }}</h4>
+                <ul>
+                  <li v-for="id in conflict.duplicateIds" :key="id">
+                    <code>{{ id }}</code>
+                  </li>
+                </ul>
+                <p :class="bemm('duplicate-suggestion')">
+                  {{ t('i18n.conflicts.duplicateSuggestion') }}
+                </p>
+              </div>
+            </template>
           </div>
         </details>
       </div>
@@ -68,11 +96,20 @@ interface Props {
   keys: Array<{ id: string; key: string }>
 }
 
-interface KeyConflict {
+interface HierarchicalConflict {
+  type: 'hierarchical'
   parentKey: string
   childKeys: string[]
   suggestions: string[]
 }
+
+interface DuplicateConflict {
+  type: 'duplicate'
+  key: string
+  duplicateIds: string[]
+}
+
+type KeyConflict = HierarchicalConflict | DuplicateConflict
 
 const props = defineProps<Props>()
 const bemm = useBemm('i18n-conflict-alert')
@@ -84,6 +121,28 @@ const conflicts = computed(() => {
   const sortedKeys = [...props.keys].sort((a, b) => a.key.localeCompare(b.key))
   const processedKeys = new Set<string>()
 
+  // Check for duplicate keys first
+  const keyGroups = new Map<string, string[]>()
+  props.keys.forEach(keyData => {
+    if (!keyGroups.has(keyData.key)) {
+      keyGroups.set(keyData.key, [])
+    }
+    keyGroups.get(keyData.key)!.push(keyData.id)
+  })
+
+  // Add duplicate conflicts
+  keyGroups.forEach((ids, key) => {
+    if (ids.length > 1) {
+      foundConflicts.push({
+        type: 'duplicate',
+        key,
+        duplicateIds: ids
+      })
+      processedKeys.add(key)
+    }
+  })
+
+  // Check for hierarchical conflicts
   for (const keyData of sortedKeys) {
     if (processedKeys.has(keyData.key)) continue
 
@@ -114,6 +173,7 @@ const conflicts = computed(() => {
         }
 
         foundConflicts.push({
+          type: 'hierarchical',
           parentKey: parentPath,
           childKeys: conflictingChildren,
           suggestions: suggestions.filter(s => !conflictingChildren.includes(s))
@@ -214,6 +274,7 @@ const conflicts = computed(() => {
   }
 
   &__child-list,
+  &__duplicate-list,
   &__suggestions {
     margin-bottom: var(--space);
 
@@ -272,6 +333,13 @@ const conflicts = computed(() => {
       border-radius: var(--border-radius-xs);
       border: 1px solid var(--color-success-border);
     }
+  }
+
+  &__duplicate-suggestion {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-top: var(--space-s);
+    font-style: italic;
   }
 }
 </style>

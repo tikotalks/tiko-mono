@@ -79,6 +79,10 @@
         <div :class="bemm('stat-value')">{{ totalCategories }}</div>
         <div :class="bemm('stat-label')">{{ t('media.home.totalCategories') }}</div>
       </div>
+      <div :class="bemm('stat')">
+        <div :class="bemm('stat-value')">{{ totalTags }}</div>
+        <div :class="bemm('stat-label')">{{ t('media.home.totalTags') }}</div>
+      </div>
     </section>
   </div>
 </template>
@@ -128,6 +132,14 @@ const totalCategories = computed(() => {
   return categories.size
 })
 
+const totalTags = computed(() => {
+  const tags = new Set<string>()
+  imageList.value.forEach(img => {
+    img.tags?.forEach(tag => tags.add(tag))
+  })
+  return tags.size
+})
+
 onMounted(() => {
   loadImages()
 })
@@ -136,27 +148,27 @@ onMounted(() => {
 <style lang="scss">
 .home-view {
   &__hero {
-    padding: calc(var(--space-2xl) * 2) var(--space-lg);
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-    color: var(--color-primary-text);
+    padding: var(--spacing);
+    color: var(--color-foreground);
     text-align: center;
   }
 
   &__hero-content {
-    max-width: 800px;
+    display: flex; justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-l);
     margin: 0 auto;
   }
 
   &__hero-title {
+    color: var(--color-primary);
     font-size: clamp(2.5em, 5vw, 4em);
-    font-weight: var(--font-weight-bold);
-    margin: 0 0 var(--space) 0;
+    line-height: 1;
   }
 
   &__hero-description {
     font-size: var(--font-size-lg);
-    margin: 0 0 var(--space-xl) 0;
-    opacity: 0.9;
   }
 
   &__hero-actions {
@@ -177,7 +189,7 @@ onMounted(() => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--space-lg);
+    margin-bottom: var(--space-l);
   }
 
   &__section-title {
@@ -219,7 +231,7 @@ onMounted(() => {
   }
 
   &__stat-value {
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-xxl);
     font-weight: var(--font-weight-bold);
     color: var(--color-primary);
   }

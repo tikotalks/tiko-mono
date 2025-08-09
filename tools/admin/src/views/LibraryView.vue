@@ -7,12 +7,21 @@
       <template #actions>
         <TButton
           type="outline"
+          :icon="Icons.RELOAD"
+          @click="forceRefresh"
+          :disabled="loading"
+        >
+          {{ t('common.refresh') }}
+        </TButton>
+        
+        <TButton
+          type="outline"
           :icon="Icons.CURSOR_CLICK"
           @click="testMediaSelector"
         >
           Test Media Selector
         </TButton>
-        
+
         <TButton
           color="primary"
           :icon="Icons.ARROW_UPLOAD"
@@ -32,7 +41,7 @@
 
         <TInputSelect
           v-model="privacyFilter"
-          :label="t('admin.media.visibility')"
+          :label="t('common.visibility')"
           :options="privacyFilterOptions"
         />
 
@@ -84,8 +93,8 @@
     </div>
 
     <!-- Tiles View -->
-    <TGrid 
-      v-else-if="viewMode === 'tiles'" 
+    <TGrid
+      v-else-if="viewMode === 'tiles'"
       :min-item-width="'250px'"
       :lazy="true"
       :lazy-root-margin="'100px'"
@@ -119,11 +128,11 @@
           :content="media.title || media.original_filename"
         />
         <TListCell type="custom">
-          <TChip 
-            :color="media.is_private ? 'warning' : 'success'" 
+          <TChip
+            :color="media.is_private ? 'warning' : 'success'"
             size="small"
           >
-            {{ media.is_private ? t('admin.media.private') : t('admin.media.public') }}
+            {{ media.is_private ? t('common.private') : t('common.public') }}
           </TChip>
         </TListCell>
         <TListCell type="size" :content="media.file_size" />
@@ -165,7 +174,7 @@ import { useMediaSelector } from '@/composables/useMediaSelector';
 
 const toastService = inject<ToastService>('toastService');
 const { getImageVariants } = useImageUrl();
-const { imageList, stats, loading, searchImages, filteredImages, loadImages } =
+const { imageList, stats, loading, searchImages, filteredImages, loadImages, refresh } =
   useImages();
 const { settings, loadSettings, setSetting } = useUserSettings('admin');
 const { openMediaSelector } = useMediaSelector();
@@ -209,7 +218,7 @@ const privacyFilterOptions = [
 const listColumns = [
   { key: 'image', label: t('common.image'), width: '80px' },
   { key: 'title', label: t('common.title'), width: '1fr' },
-  { key: 'visibility', label: t('admin.media.visibility'), width: '100px' },
+  { key: 'visibility', label: t('common.visibility'), width: '100px' },
   { key: 'size', label: t('common.size'), width: '120px' },
   { key: 'tags', label: t('common.tags'), width: '1fr' },
   { key: 'categories', label: t('common.categories'), width: '1fr' },
@@ -272,6 +281,13 @@ const selectMedia = (e: Event, media: MediaItem) => {
   router.push(`/media/${media.id}`);
 };
 
+// Force refresh all images
+async function forceRefresh() {
+  console.log('[LibraryView] Force refreshing images...');
+  await refresh();
+  console.log('[LibraryView] Refresh complete. Total images:', imageList.value.length);
+}
+
 // Test function for Media Selector
 async function testMediaSelector() {
   try {
@@ -279,7 +295,7 @@ async function testMediaSelector() {
       multiple: true,
       title: 'Test Media Selector'
     });
-    
+
     if (selectedMedia.length > 0) {
       toastService?.show({
         message: `Selected ${selectedMedia.length} media item(s): ${selectedMedia.map(m => m.title || m.filename).join(', ')}`,
@@ -326,7 +342,7 @@ onMounted(async () => {
 
   // Load images
   await loadImages();
-  
+
   // Debug: Check if created_at exists on loaded images
   console.log('Sample image data:', imageList.value[0]);
   console.log('Images with created_at:', imageList.value.filter(img => img.created_at).length);

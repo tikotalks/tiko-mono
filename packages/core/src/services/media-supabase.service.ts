@@ -80,22 +80,133 @@ export class SupabaseMediaService implements MediaService {
     if (!session) throw new Error('Not authenticated')
 
     try {
-      const response = await fetch(`${this.API_URL}/media?select=*`, {
-        headers: {
-          'apikey': this.ANON_KEY,
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
-        }
-      })
+      const allMedia: MediaItem[] = []
+      let offset = 0
+      const limit = 1000
+      let hasMore = true
+      let pageCount = 0
 
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('Failed to fetch media:', errorText)
-        throw new Error(`Failed to fetch media: ${response.statusText}`)
+      console.log(`[MediaService] Starting pagination loop for authenticated user`)
+      
+      while (hasMore) {
+        console.log(`[MediaService] Fetching page ${pageCount + 1}: offset=${offset}, limit=${limit}, hasMore=${hasMore}`)
+        
+        // Use Supabase pagination with offset and limit
+        const url = `${this.API_URL}/media?select=*&order=created_at.desc&offset=${offset}&limit=${limit}`
+        console.log(`[MediaService] Fetching from URL: ${url}`)
+        
+        const response = await fetch(url, {
+          headers: {
+            'apikey': this.ANON_KEY,
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'count=exact'
+          }
+        })
+
+        console.log(`[MediaService] Response status: ${response.status} ${response.statusText}`)
+        
+        if (!response.ok && response.status !== 206) {
+          const errorText = await response.text()
+          console.error('Failed to fetch media:', errorText)
+          throw new Error(`Failed to fetch media: ${response.statusText}`)
+        }
+
+        const data = await response.json()
+        const contentRange = response.headers.get('content-range')
+        
+        // Debug all response headers
+        console.log('[MediaService] Response headers:')
+        response.headers.forEach((value, key) => {
+          console.log(`  ${key}: ${value}`)
+        })
+        
+        console.log(`[MediaService] Response headers - content-range: ${contentRange}`)
+        console.log(`[MediaService] Fetched ${data.length} items in this page`)
+        console.log(`[MediaService] First item ID: ${data[0]?.id}, Last item ID: ${data[data.length - 1]?.id}`)
+        
+        if (data && Array.isArray(data) && data.length > 0) {
+          allMedia.push(...data)
+          offset += data.length
+          pageCount++
+          
+          // Default: if we got a full page, assume there might be more
+          hasMore = data.length === limit
+          console.log(`[MediaService] Added ${data.length} items. Default hasMore=${hasMore} (based on full page check)`)
+          
+          // Check if we have more pages based on content-range header
+          if (contentRange) {
+            const match = contentRange.match(/(\d+)-(\d+)\/(\d+|\*)/)
+            if (match) {
+              const rangeStart = parseInt(match[1])
+              const rangeEnd = parseInt(match[2])
+              const total = match[3] === '*' ? -1 : parseInt(match[3])
+              
+              console.log(`[MediaService] Parsed content-range: ${rangeStart}-${rangeEnd}/${total}`)
+              
+              if (total > 0) {
+                // If we know the total, use it to determine if there are more pages
+                hasMore = offset < total
+                console.log(`[MediaService] Based on total count: hasMore = ${offset} < ${total} = ${hasMore}`)
+              }
+              // If total is unknown (*), keep the default behavior (full page = more pages)
+            } else {
+              console.log(`[MediaService] Could not parse content-range: ${contentRange}`)
+            }
+          } else {
+            console.log(`[MediaService] No content-range header, using data length check: ${data.length} === ${limit} = ${hasMore}`)
+          }
+        } else {
+          hasMore = false
+        }
+        
+        console.log(`[MediaService] Page ${pageCount} complete. Total items so far: ${allMedia.length}`)
+        console.log(`[MediaService] Decision: hasMore = ${hasMore}`)
+        
+        // Special logging for exactly 1000 items
+        if (allMedia.length === 1000 && pageCount === 1) {
+          console.log(`[MediaService] WARNING: Exactly 1000 items after first page!`)
+          console.log(`[MediaService] Data length: ${data.length}, Limit: ${limit}, hasMore: ${hasMore}`)
+          console.log(`[MediaService] This likely means there are more items to fetch`)
+        }
+        
+        console.log(`[MediaService] End of loop iteration ${pageCount}, hasMore=${hasMore}, will continue=${hasMore}`)
       }
 
-      const data = await response.json()
-      return data || []
+      console.log(`[MediaService] FINAL: Fetched ${allMedia.length} total items across ${pageCount} pages`)
+      
+      // CRITICAL DEBUG: Alert if we stopped at exactly 1000
+      if (allMedia.length === 1000 && pageCount === 1) {
+        console.error('[MediaService] WARNING: Stopped at exactly 1000 items after 1 page!')
+        console.error('[MediaService] FORCING a second page attempt...')
+        
+        // Force try page 2
+        const testUrl = `${this.API_URL}/media?select=*&order=created_at.desc&offset=1000&limit=${limit}`
+        console.error('[MediaService] Testing URL:', testUrl)
+        
+        try {
+          const testResponse = await fetch(testUrl, {
+            headers: {
+              'apikey': this.ANON_KEY,
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'count=exact'
+            }
+          })
+          
+          const testData = await testResponse.json()
+          console.error('[MediaService] Page 2 test returned:', testData.length, 'items')
+          console.error('[MediaService] Page 2 content-range:', testResponse.headers.get('content-range'))
+          
+          if (testData.length > 0) {
+            console.error('[MediaService] THERE ARE MORE ITEMS! Pagination logic failed!')
+          }
+        } catch (e) {
+          console.error('[MediaService] Page 2 test failed:', e)
+        }
+      }
+      
+      return allMedia
     } catch (error) {
       console.error('Failed to fetch media:', error)
       throw error
@@ -105,36 +216,96 @@ export class SupabaseMediaService implements MediaService {
   async getPublicMediaList(): Promise<MediaItem[]> {
     try {
       console.log('[MediaService] Fetching public media list...')
-      // TODO: Add back &is_private=eq.false filter after database migration is applied
-      const response = await fetch(`${this.API_URL}/media?select=*`, {
-        headers: {
-          'apikey': this.ANON_KEY,
-          'Content-Type': 'application/json'
-          // Explicitly no Authorization header for public access
-        }
-      })
+      const allMedia: MediaItem[] = []
+      let offset = 0
+      const limit = 1000
+      let hasMore = true
+      let pageCount = 0
+      const maxPages = 100 // Safety limit to prevent infinite loops
 
-      console.log('[MediaService] Response status:', response.status)
-      
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('[MediaService] Failed to fetch public media:', response.status, errorText)
+      while (hasMore && pageCount < maxPages) {
+        // TODO: Add back &is_private=eq.false filter after database migration is applied
+        console.log(`[MediaService] Fetching public page: offset=${offset}, limit=${limit}`)
         
-        // Check if it's an auth error
-        if (response.status === 401 || errorText.includes('JWT')) {
-          throw new Error('Authentication required - RLS policy may need update')
+        // Use Supabase pagination with offset and limit
+        const url = `${this.API_URL}/media?select=*&order=created_at.desc&offset=${offset}&limit=${limit}`
+        console.log(`[MediaService] Fetching from URL: ${url}`)
+        
+        const response = await fetch(url, {
+          headers: {
+            'apikey': this.ANON_KEY,
+            'Content-Type': 'application/json',
+            'Prefer': 'count=exact'
+            // Explicitly no Authorization header for public access
+          }
+        })
+
+        console.log('[MediaService] Response status:', response.status, 'for offset:', offset)
+        
+        if (!response.ok) {
+          const errorText = await response.text()
+          console.error('[MediaService] Failed to fetch public media:', response.status, errorText)
+          
+          // Check if it's an auth error
+          if (response.status === 401 || errorText.includes('JWT')) {
+            throw new Error('Authentication required - RLS policy may need update')
+          }
+          
+          throw new Error(`Failed to fetch public media: ${response.statusText}`)
+        }
+
+        const data = await response.json()
+        const contentRange = response.headers.get('content-range')
+        console.log(`[MediaService] Public response headers - content-range: ${contentRange}`)
+        console.log(`[MediaService] Fetched ${data.length} public items in this page`)
+        
+        if (data && data.length > 0) {
+          allMedia.push(...data)
+          offset += data.length
+          pageCount++
+          
+          // Default: if we got a full page, assume there might be more
+          hasMore = data.length === limit
+          
+          // Check if we have more pages based on content-range header
+          if (contentRange) {
+            const match = contentRange.match(/(\d+)-(\d+)\/(\d+|\*)/)
+            if (match) {
+              const rangeStart = parseInt(match[1])
+              const rangeEnd = parseInt(match[2])
+              const total = match[3] === '*' ? -1 : parseInt(match[3])
+              
+              console.log(`[MediaService] Parsed content-range: ${rangeStart}-${rangeEnd}/${total}`)
+              
+              if (total > 0) {
+                // If we know the total, use it to determine if there are more pages
+                hasMore = offset < total
+                console.log(`[MediaService] Based on total count: hasMore = ${offset} < ${total} = ${hasMore}`)
+              }
+              // If total is unknown (*), keep the default behavior (full page = more pages)
+            } else {
+              console.log(`[MediaService] Could not parse content-range: ${contentRange}`)
+            }
+          } else {
+            console.log(`[MediaService] No content-range header, using data length check: ${data.length} === ${limit} = ${hasMore}`)
+          }
+        } else {
+          hasMore = false
         }
         
-        throw new Error(`Failed to fetch public media: ${response.statusText}`)
+        console.log(`[MediaService] Page ${pageCount} complete. Total items so far: ${allMedia.length}`)
       }
-
-      const data = await response.json()
+      
+      if (pageCount >= maxPages) {
+        console.warn(`[MediaService] Reached maximum page limit (${maxPages}). There may be more items.`)
+      }
       
       // TODO: Remove this client-side filter after database migration is applied
       // For now, filter out private media on the client side
-      const publicMedia = (data || []).filter((item: MediaItem) => !item.is_private)
+      const publicMedia = allMedia.filter((item: MediaItem) => !item.is_private)
       
-      console.log('[MediaService] Successfully fetched', publicMedia.length, 'public media items')
+      console.log('[MediaService] Successfully fetched', publicMedia.length, 'public media items from', allMedia.length, 'total')
+      console.log('[MediaService] Pagination debug - fetched', allMedia.length, 'items across multiple pages')
       return publicMedia
     } catch (error) {
       console.error('[MediaService] Error in getPublicMediaList:', error)

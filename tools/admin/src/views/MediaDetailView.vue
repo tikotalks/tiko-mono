@@ -166,10 +166,10 @@
             <TChip v-for="category in media.categories" :key="category">{{ category }}</TChip>
           </TChipGroup></dd>
 
-          <dt>{{ t('admin.media.visibility') }}</dt>
+          <dt>{{ t('common.visibility') }}</dt>
           <dd>
             <TChip :color="media.is_private ? 'warning' : 'success'">
-              {{ media.is_private ? t('admin.media.private') : t('admin.media.public') }}
+              {{ media.is_private ? t('common.private') : t('common.public') }}
             </TChip>
           </dd>
 

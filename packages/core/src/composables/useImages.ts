@@ -63,7 +63,9 @@ export function useImages(publicMode = false): UseImagesReturn {
 
   const loadImages = async () => {
     // If already loaded and we have images, return early
+    // NOTE: This caches the result. Use refresh() to force reload all images
     if (imageList.value.length > 0 && !loading.value) {
+      console.log('[useImages] Images already loaded, returning cached data. Use refresh() to force reload.')
       return
     }
 
@@ -81,6 +83,7 @@ export function useImages(publicMode = false): UseImagesReturn {
         if (publicMode) {
           imageList.value = await mediaService.getPublicMediaList()
         } else {
+          console.log('[useImages] Loading images from authenticated service')
           imageList.value = await mediaService.getMediaList()
         }
         await refreshStats()

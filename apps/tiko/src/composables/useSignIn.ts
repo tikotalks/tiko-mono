@@ -73,7 +73,7 @@ export function useSignIn() {
       // For email sign in, we'd typically show a form
       // For now, let's redirect to a magic link flow
       const email = prompt('Enter your email address:')
-      
+
       if (!email) {
         throw new Error('Email is required')
       }
@@ -85,7 +85,6 @@ export function useSignIn() {
       }
 
       // Show success message
-      alert('Check your email for the sign in link!')
     }
   }
 

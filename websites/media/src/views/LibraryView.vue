@@ -4,8 +4,51 @@
       <h1 :class="bemm('title')">{{ t('media.library.title') }}</h1>
       <p :class="bemm('description')">{{ t('media.library.description') }}</p>
 
+      <!-- Active Filter Display -->
+      <div
+        v-if="categoryFilter !== 'all' || tagFilter"
+        :class="bemm('active-filter')"
+      >
+        <span :class="bemm('filter-label')"
+          >{{ t('media.library.filtering') }}:</span
+        >
+        <TChip
+          v-if="categoryFilter !== 'all'"
+          color="secondary"
+          removable
+          @remove="categoryFilter = 'all'"
+        >
+          {{ t('media.library.category') }}: {{ categoryFilter }}
+        </TChip>
+        <TChip
+          v-if="tagFilter"
+          removable
+          @remove="
+            tagFilter = null;
+            searchQuery = '';
+          "
+        >
+          {{ t('media.library.tag') }}: {{ tagFilter }}
+        </TChip>
+      </div>
+
+      <div :class="bemm('stats')">
+        <span v-if="filteredByCategoryImages.length == imageList.length">
+          {{ t('media.library.showingAll', { count: imageList.length }) }}
+        </span>
+        <span v-else>
+          {{
+            t('media.library.showingFiltered', {
+              count: filteredByCategoryImages.length,
+              total: imageList.length,
+            })
+          }}
+        </span>
+      </div>
+
       <div :class="bemm('filters')">
         <TInputText
+          :label="t('media.library.search')"
           v-model="searchQuery"
           :placeholder="t('media.library.searchPlaceholder')"
           :icon="Icons.SEARCH_L"
@@ -32,7 +75,10 @@
       <TSpinner />
     </div>
 
-    <div v-else-if="filteredByCategoryImages.length === 0" :class="bemm('empty')">
+    <div
+      v-else-if="filteredByCategoryImages.length === 0"
+      :class="bemm('empty')"
+    >
       <TEmptyState
         :icon="Icons.IMAGE"
         :title="t('media.library.noImages')"
@@ -53,10 +99,7 @@
         :to="`/media/${media.id}`"
         :class="bemm('tile-link')"
       >
-        <TMediaTile
-          :media="media"
-          :get-image-variants="getImageVariants"
-        />
+        <TMediaTile :media="media" :get-image-variants="getImageVariants" />
       </router-link>
     </TGrid>
 
@@ -66,7 +109,7 @@
         v-for="media in filteredByCategoryImages"
         :key="media.id"
         :to="`/media/${media.id}`"
-        style="text-decoration: none; color: inherit;"
+        style="text-decoration: none; color: inherit"
       >
         <TListItem clickable>
           <TListCell
@@ -88,10 +131,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useBemm } from 'bemm'
-import { Icons } from 'open-icon'
-import { useImageUrl, useImages } from '@tiko/core'
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { useBemm } from 'bemm';
+import { Icons } from 'open-icon';
+import { useImageUrl, useImages } from '@tiko/core';
 import {
   useI18n,
   TGrid,
@@ -103,53 +147,90 @@ import {
   TInputText,
   TViewToggle,
   TSpinner,
-  TEmptyState
-} from '@tiko/ui'
+  TEmptyState,
+  TChip,
+} from '@tiko/ui';
 
-const bemm = useBemm('library-view')
-const { t } = useI18n()
-const { getImageVariants } = useImageUrl()
-const { imageList, loading, searchImages, filteredImages, loadImages } = useImages(true) // Use public mode
+const bemm = useBemm('library-view');
+const { t } = useI18n();
+const route = useRoute();
+const { getImageVariants } = useImageUrl();
+const { imageList, loading, searchImages, filteredImages, loadImages } =
+  useImages(true); // Use public mode
 
 // State
-const searchQuery = ref('')
-const categoryFilter = ref<string>('all')
-const viewMode = ref<'tiles' | 'list'>('tiles')
+const searchQuery = ref('');
+const categoryFilter = ref<string>('all');
+const tagFilter = ref<string | null>(null);
+const viewMode = ref<'tiles' | 'list'>('tiles');
 
 // Computed
 const categoryOptions = computed(() => {
-  const categories = new Set<string>()
-  imageList.value.forEach(img => {
-    img.categories?.forEach(cat => categories.add(cat))
-  })
+  const categories = new Set<string>();
+  imageList.value.forEach((img) => {
+    img.categories?.forEach((cat) => categories.add(cat));
+  });
 
   return [
     { value: 'all', label: t('common.all') },
-    ...Array.from(categories).map(cat => ({ value: cat, label: cat }))
-  ]
-})
+    ...Array.from(categories).map((cat) => ({ value: cat, label: cat })),
+  ];
+});
 
 const listColumns = [
   { key: 'image', label: t('common.image'), width: '100px' },
   { key: 'title', label: t('common.title'), width: '1fr' },
   { key: 'categories', label: t('common.categories'), width: '200px' },
   { key: 'size', label: t('common.size'), width: '120px' },
-  { key: 'date', label: t('common.uploadDate'), width: '150px' }
-]
+  { key: 'date', label: t('common.uploadDate'), width: '150px' },
+];
 
-// Use filtered images from useImages and apply category filter
+// Use filtered images from useImages and apply category and tag filters
 const filteredByCategoryImages = computed(() => {
-  if (categoryFilter.value === 'all') {
-    return filteredImages.value
+  let result = filteredImages.value;
+
+  // Apply category filter
+  if (categoryFilter.value !== 'all') {
+    result = result.filter((img) =>
+      img.categories?.includes(categoryFilter.value),
+    );
   }
-  return filteredImages.value.filter(img =>
-    img.categories?.includes(categoryFilter.value)
-  )
-})
+
+  // Apply tag filter
+  if (tagFilter.value) {
+    result = result.filter((img) => img.tags?.includes(tagFilter.value));
+  }
+
+  return result;
+});
+
+// Watch for query parameter changes
+watch(
+  () => route.query,
+  (query) => {
+    if (query.category) {
+      categoryFilter.value = query.category as string;
+      tagFilter.value = null;
+    } else if (query.tag) {
+      tagFilter.value = query.tag as string;
+      categoryFilter.value = 'all';
+      searchQuery.value = query.tag as string;
+      searchImages(searchQuery.value);
+    }
+  },
+  { immediate: true },
+);
+
+// Clear tag filter when category changes manually
+watch(categoryFilter, (newValue) => {
+  if (newValue !== 'all' && tagFilter.value) {
+    tagFilter.value = null;
+  }
+});
 
 onMounted(() => {
-  loadImages()
-})
+  loadImages();
+});
 </script>
 
 <style lang="scss">
@@ -162,15 +243,47 @@ onMounted(() => {
     margin-bottom: var(--space-xl);
   }
 
-  &__title {
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-bold);
-    margin: 0 0 var(--space-s) 0;
-  }
-
   &__description {
     color: var(--color-foreground-secondary);
     margin: 0 0 var(--space-lg) 0;
+  }
+
+  &__stats {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-lg);
+  }
+
+  &__stat-count {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+  }
+
+  &__stat-total {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-foreground);
+  }
+
+  &__stat-label {
+    color: var(--color-foreground-secondary);
+  }
+
+  &__active-filter {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    margin-bottom: var(--space);
+    padding: var(--space-s);
+    background: color-mix(in srgb, var(--color-info), transparent 90%);
+    border-radius: var(--border-radius);
+  }
+
+  &__filter-label {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-foreground-secondary);
   }
 
   &__filters {
@@ -178,6 +291,11 @@ onMounted(() => {
     gap: var(--space);
     align-items: center;
     flex-wrap: wrap;
+    padding: var(--space);
+    border: 1px solid color-mix(in srgb, var(--color-primary), transparent 75%);
+    background: color-mix(in srgb, var(--color-primary), transparent 90%);
+    border-radius: var(--border-radius);
+    margin-top: var(--space-l);
   }
 
   &__loading {

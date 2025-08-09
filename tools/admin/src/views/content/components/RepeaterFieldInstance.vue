@@ -7,36 +7,36 @@
           {{ t('common.required') }}
         </TChip>
       </label>
-      <TButton 
-        type="outline" 
+      <TButton
+        type="outline"
         size="small"
         :icon="Icons.ADD_M"
         @click="addItem"
       >
-        {{ t('admin.content.fields.repeater.addItem') }}
+        {{ t('common.fields.addItem') }}
       </TButton>
     </div>
 
     <div v-if="items.length === 0" :class="bemm('empty')">
       <TEmptyState
         :icon="Icons.LIST"
-        :title="t('admin.content.fields.repeater.empty.title')"
-        :description="t('admin.content.fields.repeater.empty.description')"
+        :title="t('common.fields.empty.title')"
+        :description="t('common.fields.empty.description')"
         :compact="true"
       >
-        <TButton 
+        <TButton
           color="primary"
           :icon="Icons.ADD_M"
           @click="addItem"
         >
-          {{ t('admin.content.fields.repeater.addFirstItem') }}
+          {{ t('common.fields.addFirstItem') }}
         </TButton>
       </TEmptyState>
     </div>
 
-    <TDraggableList 
+    <TDraggableList
       v-else
-      :items="items" 
+      :items="items"
       :class="bemm('items')"
       :onReorder="reorderItems"
     >
@@ -45,21 +45,21 @@
           <template #header>
             <div :class="bemm('item-header')">
               <span :class="bemm('item-title')">
-                {{ t('admin.content.fields.repeater.item') }} {{ index + 1 }}
+                {{ t('common.fields.item') }} {{ index + 1 }}
                 <span v-if="getItemPreview(item)" :class="bemm('item-preview')">
                   - {{ getItemPreview(item) }}
                 </span>
               </span>
               <div :class="bemm('item-actions')">
-                <TButton 
-                  type="ghost" 
-                  size="small" 
+                <TButton
+                  type="ghost"
+                  size="small"
                   :icon="Icons.COPY"
                   @click="duplicateItem(index)"
                 />
-                <TButton 
-                  type="ghost" 
-                  size="small" 
+                <TButton
+                  type="ghost"
+                  size="small"
                   :icon="Icons.TRASH"
                   :color="Colors.ERROR"
                   @click="removeItem(index)"
@@ -69,9 +69,9 @@
           </template>
 
           <TFormGroup>
-            <div 
-              v-for="schemaField in schema" 
-              :key="schemaField.key" 
+            <div
+              v-for="schemaField in schema"
+              :key="schemaField.key"
               :class="bemm('field')"
             >
               <!-- Text Input -->
@@ -122,11 +122,11 @@
               <!-- Media -->
               <MediaFieldInstance
                 v-else-if="schemaField.type === 'media'"
-                :field="{ 
-                  ...schemaField, 
+                :field="{
+                  ...schemaField,
                   field_key: schemaField.key,
                   field_type: 'media',
-                  is_required: schemaField.required 
+                  is_required: schemaField.required
                 }"
                 :model-value="item[schemaField.key]"
                 @update:model-value="updateItemField(index, schemaField.key, $event)"
@@ -212,7 +212,7 @@ function generateId(): string {
 
 function createEmptyItem(): Record<string, any> {
   const item: Record<string, any> = { _id: generateId() }
-  
+
   // Set default values based on schema
   schema.value.forEach(field => {
     switch (field.type) {
@@ -232,7 +232,7 @@ function createEmptyItem(): Record<string, any> {
         break
     }
   })
-  
+
   return item
 }
 
@@ -266,13 +266,13 @@ function reorderItems(newItems: Array<Record<string, any>>) {
 function getItemPreview(item: Record<string, any>): string {
   // Try to find a meaningful field to show as preview
   const previewFields = ['label', 'title', 'name', 'text']
-  
+
   for (const fieldKey of previewFields) {
     if (item[fieldKey] && typeof item[fieldKey] === 'string') {
       return item[fieldKey].substring(0, 30) + (item[fieldKey].length > 30 ? '...' : '')
     }
   }
-  
+
   // Fallback to first text field in schema
   for (const schemaField of schema.value) {
     if (schemaField.type === 'text' || schemaField.type === 'textarea') {
@@ -282,7 +282,7 @@ function getItemPreview(item: Record<string, any>): string {
       }
     }
   }
-  
+
   return ''
 }
 </script>

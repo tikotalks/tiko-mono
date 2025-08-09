@@ -86,8 +86,8 @@
         <TEmptyState
           v-else
           :icon="Icons.TEXT_FIELDS"
-          :title="t('admin.content.fields.empty.title')"
-          :description="t('admin.content.fields.empty.description')"
+          :title="t('common.fields.empty.title')"
+          :description="t('common.fields.empty.description')"
           :compact="true"
         />
       </TCard>
@@ -267,8 +267,8 @@ function confirmDeleteField(field: ContentField) {
   popupService?.open({
     component: ConfirmDialog,
     props: {
-      title: t('admin.content.fields.deleteConfirm.title'),
-      message: t('admin.content.fields.deleteConfirm.message', { label: field.label }),
+      title: t('common.fields.deleteConfirm.title'),
+      message: t('common.fields.deleteConfirm.message', { label: field.label }),
       confirmLabel: t('common.delete'),
       confirmColor: 'error',
       onConfirm: async () => {
