@@ -61,7 +61,7 @@ interface Props {
   category: CategoryInfo
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const bemm = useBemm('category-card')
 const { t } = useI18n()

@@ -21,7 +21,7 @@
           :icon="Icons.SEARCH_M"
           @input="handleSearch"
         />
-        
+
         <TInputSelect
           v-model="categoryFilter"
           :options="categoryOptions"
@@ -29,7 +29,7 @@
           :clearable="true"
           @update:model-value="loadMedia"
         />
-        
+
         <TInputSelect
           v-model="tagFilter"
           :options="tagOptions"
@@ -43,10 +43,10 @@
         <TInputSelect
           v-model="sortBy"
           :options="sortOptions"
-          :placeholder="t('common.sortBy')"
+          :placeholder="t('common.sortByLabel')"
           @update:model-value="loadMedia"
         />
-        
+
         <TViewToggle
           v-model="viewMode"
           :tiles-label="t('common.tiles')"
@@ -175,7 +175,7 @@
           {{ t('admin.media.selectedCount', `${selectedMedia.length} selected`, { count: selectedMedia.length }) }}
         </span>
       </div>
-      
+
       <div :class="bemm('actions')">
         <TButton
           type="ghost"
@@ -183,7 +183,7 @@
         >
           {{ t('common.cancel') }}
         </TButton>
-        
+
         <TButton
           color="primary"
           :disabled="selectedMedia.length === 0 || (!multiple && selectedMedia.length !== 1)"
@@ -294,7 +294,7 @@ const filteredMedia = computed(() => {
         ...(item.tags || []),
         ...(item.categories || [])
       ].filter(Boolean).join(' ').toLowerCase()
-      
+
       return searchableText.includes(query)
     })
   }
@@ -370,7 +370,7 @@ async function loadMedia() {
     console.log('[MediaSelector] Loading media...')
     media.value = await mediaService.getMediaList()
     console.log('[MediaSelector] Loaded media items:', media.value.length, media.value)
-    
+
     // If no media from service, add some mock data for testing
     if (media.value.length === 0) {
       console.log('[MediaSelector] No media found, adding mock data for testing')
@@ -434,7 +434,7 @@ async function loadMedia() {
         }
       ]
     }
-    
+
     // Initialize selected items based on props
     if (props.selectedIds.length > 0) {
       selectedMedia.value = media.value.filter(item =>
@@ -477,7 +477,7 @@ function isSelected(item: MediaItem): boolean {
 
 function toggleSelection(item: MediaItem) {
   const index = selectedMedia.value.findIndex(selected => selected.id === item.id)
-  
+
   if (index > -1) {
     // Deselect
     selectedMedia.value.splice(index, 1)
@@ -588,7 +588,7 @@ onMounted(() => {
     transition: all 0.2s ease;
     border-radius: var(--radius-md);
     overflow: hidden;
-    
+
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);

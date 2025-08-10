@@ -147,7 +147,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useBemm } from 'bemm';
 import { Icons } from 'open-icon';
-import { useImageUrl, useImages, formatRelativeDate } from '@tiko/core';
+import { useImageUrl, useImages } from '@tiko/core';
 import {
   useI18n,
   TGrid,
@@ -213,19 +213,25 @@ const sortOrderOptions = [
 
 // Format date for display with i18n support
 function formatDate(dateString: string): string {
-  const relativeDate = formatRelativeDate(dateString);
+  const inputDate = new Date(dateString);
+  const now = new Date();
+  const diffTime = Math.abs(now.getTime() - inputDate.getTime());
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
   
-  // Map English strings to i18n keys
-  if (relativeDate === 'Today') {
+  if (diffDays === 0) {
     return t('common.today');
-  } else if (relativeDate === 'Yesterday') {
+  } else if (diffDays === 1) {
     return t('common.yesterday');
-  } else if (relativeDate.includes('days ago')) {
-    const days = parseInt(relativeDate.split(' ')[0]);
-    return t('common.daysAgo', { days });
+  } else if (diffDays < 7) {
+    return t('common.daysAgo', { days: diffDays });
+  } else {
+    // Format as regular date
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    }).format(inputDate);
   }
-  
-  return relativeDate;
 }
 
 // Use filtered images from useImages and apply category and tag filters
