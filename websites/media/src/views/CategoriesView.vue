@@ -17,7 +17,7 @@
       />
     </div>
 
-    <TGrid v-else :min-item-width="'200px'" :lazy="true">
+    <TGrid v-else :min-item-width="'150px'" :lazy="true">
       <router-link
         v-for="category in categories"
         :key="category.name"
@@ -59,7 +59,7 @@ const { imageList, loading, loadImages } = useImages(true) // Use public mode
 // Compute categories with their images
 const categories = computed<CategoryInfo[]>(() => {
   const categoryMap = new Map<string, MediaItem[]>()
-  
+
   // Group images by category
   imageList.value.forEach(image => {
     if (image.categories && image.categories.length > 0) {
@@ -71,7 +71,7 @@ const categories = computed<CategoryInfo[]>(() => {
       })
     }
   })
-  
+
   // Convert to array and sort by count
   return Array.from(categoryMap.entries())
     .map(([name, images]) => ({
@@ -99,9 +99,6 @@ onMounted(() => {
   }
 
   &__title {
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-bold);
-    margin: 0 0 var(--space-s) 0;
   }
 
   &__description {
@@ -117,6 +114,13 @@ onMounted(() => {
 
   &__empty {
     padding: var(--space-2xl);
+  }
+
+  // Override TGrid's mobile behavior to show 2 columns
+  .t-grid {
+    @media (max-width: 768px) {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
   }
 }
 </style>

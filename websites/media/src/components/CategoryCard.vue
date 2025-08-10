@@ -1,50 +1,51 @@
 <template>
   <div :class="bemm()">
     <div :class="bemm('preview')">
-      <div 
-        v-if="category.previewImages.length === 0" 
+      <div
+        v-if="category.previewImages.length === 0"
         :class="bemm('empty-preview')"
       >
         <TIcon :name="Icons.FOLDER" :size="48" />
       </div>
-      <div 
+      <div
         v-else-if="category.previewImages.length === 1"
         :class="bemm('single-preview')"
       >
         <img
-          v-if="category.previewImages[0] && category.previewImages[0].original_url"
+          v-if="category.previewImages[0]?.original_url"
           :src="getImageVariants(category.previewImages[0].original_url).medium"
           :alt="category.previewImages[0].original_filename || 'Image'"
           :class="bemm('image')"
           loading="lazy"
         />
       </div>
-      <div 
+      <div
         v-else
         :class="bemm('grid-preview')"
       >
-        <img
-          v-for="(image, index) in category.previewImages.slice(0, 4)"
-          :key="image.id || index"
-          v-if="image && image.original_url"
-          :src="getImageVariants(image.original_url).small"
-          :alt="image.original_filename || 'Image'"
-          :class="bemm('grid-image')"
-          loading="lazy"
-        />
+        <template v-for="(image, index) in category.previewImages.slice(0, 4)" :key="image?.id || index">
+          <img
+            v-if="image?.original_url"
+            :src="getImageVariants(image.original_url).thumbnail"
+            :alt="image.original_filename || 'Image'"
+            :class="bemm('grid-image')"
+            loading="lazy"
+          />
+        </template>
       </div>
     </div>
-    
+
     <div :class="bemm('content')">
-      <h3 :class="bemm('title')">{{ category.name }}</h3>
+      <h4 :class="bemm('title')">{{ category.name }}</h4>
       <div :class="bemm('meta')">
-        <span :class="bemm('count')">{{ category.count }} {{ category.count === 1 ? t('common.image') : t('common.images') }}</span>
+        <span :class="bemm('count')">{{ category.count }} {{ t('common.images', { count: category.count }) }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useBemm } from 'bemm'
 import { Icons } from 'open-icon'
 import { useImageUrl } from '@tiko/core'
@@ -73,8 +74,8 @@ const { getImageVariants } = useImageUrl()
   height: 100%;
   display: block;
   background: var(--color-background);
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius-lg);
+  border: 1px solid color-mix(in srgb, var(--color-primary), transparent 75%);
+  border-radius: var(--border-radius);
   overflow: hidden;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -83,6 +84,10 @@ const { getImageVariants } = useImageUrl()
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
     border-color: var(--color-primary);
+
+    .category-card__grid-image {
+      --offset: 10% !important;
+    }
   }
 
   &__preview {
@@ -111,17 +116,40 @@ const { getImageVariants } = useImageUrl()
 
   &__grid-preview {
     display: grid;
-    gap: 2px;
     height: 100%;
 
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
+
+    --dot-color: color-mix(in srgb, var(--color-foreground), transparent 90%);
+    background-image:
+      linear-gradient(45deg, var(--dot-color) 25%, transparent 25%),
+      linear-gradient(-45deg, var(--dot-color) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, var(--dot-color) 75%),
+      linear-gradient(-45deg, transparent 75%, var(--dot-color) 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
   }
 
   &__grid-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    --offset: 20%;
+    transition: transform 0.2s ease;
+
+    &:nth-child(1){
+      transform: translate(var(--offset),var(--offset));
+    }
+    &:nth-child(2){
+      transform: translate(calc(var(--offset) * -1),var(--offset));
+    }
+    &:nth-child(3){
+      transform: translate(var(--offset),calc(var(--offset) * -1),);
+    }
+    &:nth-child(4){
+      transform: translate(calc(var(--offset) * -1),calc(var(--offset) * -1),);
+    }
   }
 
   &__content {
@@ -140,6 +168,7 @@ const { getImageVariants } = useImageUrl()
     display: flex;
     align-items: center;
     gap: var(--space-xs);
+    color: var(--color-primary);
   }
 
   &__count {
