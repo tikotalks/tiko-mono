@@ -85,21 +85,22 @@
     </div>
 
     <!-- Tiles View -->
-    <TGrid
+    <VirtualGrid
       v-else-if="viewMode === 'tiles'"
-      :min-item-width="'250px'"
-      :lazy="true"
-      :lazy-root-margin="'100px'"
+      :items="sortedImages"
+      :min-item-width="250"
+      :gap="16"
+      :aspect-ratio="'3:2'"
     >
-      <TMediaTile
-        v-for="media in sortedImages"
-        :key="media.id"
-        :media="media"
-        :href="`/media/${media.id}`"
-        :get-image-variants="getImageVariants"
-        @click="()=>selectMedia"
-      />
-    </TGrid>
+      <template #default="{ item }">
+        <TMediaTile
+          :media="item"
+          :href="`/media/${item.id}`"
+          :get-image-variants="getImageVariants"
+          @click="(e) => selectMedia(e, item)"
+        />
+      </template>
+    </VirtualGrid>
 
     <!-- List View -->
     <TList v-else :columns="listColumns" :show-stats="true">
@@ -162,6 +163,7 @@ import {
   TChip,
 } from '@tiko/ui';
 import AdminPageHeader from '../components/AdminPageHeader.vue';
+import VirtualGrid from '../components/VirtualGrid.vue';
 import { useMediaSelector } from '@/composables/useMediaSelector';
 
 const toastService = inject<ToastService>('toastService');

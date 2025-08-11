@@ -85,32 +85,34 @@
       </TEmptyState>
 
       <!-- Grid view -->
-      <TGrid
+      <VirtualGrid
         v-else-if="viewMode === 'tiles'"
+        :items="filteredMedia"
         :min-item-width="200"
         :gap="16"
+        :aspect-ratio="'3:2'"
       >
-        <div
-          v-for="item in filteredMedia"
-          :key="item.id"
-          :class="[
-            bemm('media-item'),
-            { [bemm('media-item', 'selected')]: isSelected(item) }
-          ]"
-          @click="toggleSelection(item)"
-        >
-          <TMediaTile
-            :media="item"
-            :get-image-variants="getImageVariants"
-          />
+        <template #default="{ item }">
           <div
-            v-if="isSelected(item)"
-            :class="bemm('selection-indicator')"
+            :class="[
+              bemm('media-item'),
+              { [bemm('media-item', 'selected')]: isSelected(item) }
+            ]"
+            @click="toggleSelection(item)"
           >
-            <TIcon :name="Icons.CHECK_M" />
+            <TMediaTile
+              :media="item"
+              :get-image-variants="getImageVariants"
+            />
+            <div
+              v-if="isSelected(item)"
+              :class="bemm('selection-indicator')"
+            >
+              <TIcon :name="Icons.CHECK_M" />
+            </div>
           </div>
-        </div>
-      </TGrid>
+        </template>
+      </VirtualGrid>
 
       <!-- List view -->
       <TList
@@ -218,6 +220,7 @@ import { Icons } from 'open-icon'
 import { mediaService } from '@tiko/core'
 import type { MediaItem } from '@tiko/core'
 import { useImageUrl } from '@tiko/core'
+import VirtualGrid from './VirtualGrid.vue'
 // Simple debounce implementation
 function debounce<T extends (...args: any[]) => any>(func: T, delay: number): T {
   let timeoutId: ReturnType<typeof setTimeout>
