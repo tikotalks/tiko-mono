@@ -206,7 +206,7 @@ onMounted(async () => {
     list-style: none;
     padding: 0;
     margin: 0;
-    display: flex;
+    display: flex;flex-direction: column;
     flex-wrap: wrap;
     gap: var(--space);
     justify-content: center;
@@ -225,17 +225,7 @@ onMounted(async () => {
       var(--app-color) 50%
     );
 
-    width: 15vw;
-    background: var(--color, var(--color-background));
-    // box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border-radius: var(--border-radius);
-    transition: transform 0.3s ease;
 
-    background-image: radial-gradient(
-      circle at 50% 50%,
-      var(--app-color-light) 0%,
-      var(--app-color) 100%
-    );
 
     @media screen and (max-width: 720px) {
       width: 30vw;

@@ -45,6 +45,9 @@ const { t } = useI18n()
 
 // Determine which component to use based on field type
 const fieldComponent = computed(() => {
+  // Debug: Log all fields to see their types
+  console.log(`Rendering field "${props.field.label}" with type: "${props.field.field_type}"`)
+  
   switch (props.field.field_type) {
     case 'text':
       return TInputText

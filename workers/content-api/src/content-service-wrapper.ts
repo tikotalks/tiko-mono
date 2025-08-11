@@ -214,7 +214,8 @@ export class ContentServiceWrapper {
    * This dramatically reduces the number of database calls from 20+ to just 2-3
    */
   private async getPageWithFullContent(params: any): Promise<QueryResult> {
-    const { pageIdOrSlug, projectId, language } = params;
+    const { pageIdOrSlug, id, slug, projectId, language } = params;
+    const pageIdentifier = pageIdOrSlug || id || slug;
     
     try {
       // If no projectId is provided, try to look up the marketing project
@@ -233,7 +234,11 @@ export class ContentServiceWrapper {
       
       // Step 1: Get the page (1 query)
       let page = null;
-      if (pageIdOrSlug.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      if (!pageIdentifier) {
+        return { data: null, error: 'Page identifier is required' };
+      }
+      
+      if (pageIdentifier.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
         // It's an ID
         const { data, error } = await this.supabase
           .from('content_pages')
@@ -241,7 +246,7 @@ export class ContentServiceWrapper {
             *,
             template:content_page_templates(*)
           `)
-          .eq('id', pageIdOrSlug)
+          .eq('id', pageIdentifier)
           .single();
         
         if (error) return { data: null, error: error.message };
@@ -254,7 +259,7 @@ export class ContentServiceWrapper {
             *,
             template:content_page_templates(*)
           `)
-          .eq('slug', pageIdOrSlug)
+          .eq('slug', pageIdentifier)
           .eq('language_code', language || 'en')
           .eq('is_published', true);
           
@@ -468,13 +473,63 @@ export class ContentServiceWrapper {
               processedContent[key] = value;
             }
           } else if (field && field.field_type === 'list') {
-            // Process list fields - convert newline-separated string to array
+            // Process list fields - handle various storage formats
             if (typeof value === 'string') {
-              processedContent[key] = value.split('\n').map(item => item.trim()).filter(item => item);
+              // First try to parse as JSON (in case it's a stringified array)
+              try {
+                const parsed = JSON.parse(value);
+                if (Array.isArray(parsed)) {
+                  // Handle double-encoded empty arrays like ["[]"]
+                  if (parsed.length === 1 && parsed[0] === '[]') {
+                    processedContent[key] = [];
+                  } else {
+                    processedContent[key] = parsed;
+                  }
+                } else {
+                  // If not an array, treat as newline-separated string
+                  processedContent[key] = value.split('\n').map(item => item.trim()).filter(item => item);
+                }
+              } catch {
+                // If not valid JSON, treat as newline-separated string
+                processedContent[key] = value.split('\n').map(item => item.trim()).filter(item => item);
+              }
+            } else if (Array.isArray(value)) {
+              // Handle arrays that might contain stringified empty arrays
+              if (value.length === 1 && value[0] === '[]') {
+                processedContent[key] = [];
+              } else {
+                processedContent[key] = value;
+              }
+            } else {
+              processedContent[key] = [];
+            }
+          } else if (field && field.field_type === 'repeater') {
+            // Process repeater fields - parse JSON string to array
+            if (typeof value === 'string') {
+              try {
+                const parsed = JSON.parse(value);
+                processedContent[key] = Array.isArray(parsed) ? parsed : [];
+              } catch {
+                processedContent[key] = [];
+              }
             } else if (Array.isArray(value)) {
               processedContent[key] = value;
             } else {
+              processedContent[key] = [];
+            }
+          } else if (field && field.field_type === 'items') {
+            // Process items fields that are stored as JSON (not linked items)
+            if (typeof value === 'string') {
+              try {
+                const parsed = JSON.parse(value);
+                processedContent[key] = Array.isArray(parsed) ? parsed : [];
+              } catch {
+                processedContent[key] = [];
+              }
+            } else if (Array.isArray(value)) {
               processedContent[key] = value;
+            } else {
+              processedContent[key] = [];
             }
           } else {
             processedContent[key] = value;
@@ -483,7 +538,7 @@ export class ContentServiceWrapper {
         
         // Then, add linked items from the junction table
         fields.forEach((field: any) => {
-          if (field.field_type === 'linked_items' || field.field_type === 'items') {
+          if (field.field_type === 'linked_items') {
             const key = `${pageSection.section_id}-${field.id}`;
             const linkedItems = linkedItemsBySection.get(key) || [];
             
@@ -504,9 +559,10 @@ export class ContentServiceWrapper {
                       console.log(`Field ${field.field_key} has inline item data:`, parsed.length, 'items');
                       processedContent[field.field_key] = parsed;
                     } else if (parsed.length > 0 && typeof parsed[0] === 'string') {
-                      // It's an array of IDs but no linked items found
-                      console.log(`Field ${field.field_key} has item IDs but no linked items in junction table:`, parsed);
-                      processedContent[field.field_key] = [];
+                      // It's an array of IDs - we need to fetch the items
+                      console.log(`Field ${field.field_key} has item IDs, fetching items:`, parsed);
+                      // Note: We'll fetch these items after this loop
+                      processedContent[field.field_key] = parsed; // Keep the IDs for now
                     } else {
                       processedContent[field.field_key] = parsed;
                     }
@@ -540,22 +596,112 @@ export class ContentServiceWrapper {
         };
       }) || [];
 
-      // Simplify the result structure - only return what's needed
-      const simplifiedSections = sectionsWithContent.map(section => {
-        // Process list fields before simplifying
-        const processedContent = { ...section.content };
+      // Fetch items for linked_items fields that have IDs stored directly
+      const itemIdsToFetch = new Set<string>();
+      const fieldItemsMap = new Map<string, string[]>(); // key: sectionId-fieldKey, value: itemIds
+      
+      sectionsWithContent.forEach(section => {
         section.fields.forEach((field: any) => {
-          if (field.field_type === 'list' && typeof processedContent[field.field_key] === 'string') {
-            // Convert newline-separated string to array
-            console.log(`Processing list field ${field.field_key} for section ${section.section.name}`);
-            processedContent[field.field_key] = processedContent[field.field_key]
-              .split('\n')
-              .map((item: string) => item.trim())
-              .filter((item: string) => item);
-            console.log(`Converted to array with ${processedContent[field.field_key].length} items`);
+          if (field.field_type === 'linked_items') {
+            const value = section.content[field.field_key];
+            if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'string') {
+              // These are item IDs that need to be fetched
+              value.forEach(id => itemIdsToFetch.add(id));
+              fieldItemsMap.set(`${section.section.id}-${field.field_key}`, value);
+            }
+          }
+        });
+      });
+      
+      // Fetch all needed items in one query
+      let itemsById = new Map<string, any>();
+      if (itemIdsToFetch.size > 0) {
+        const { data: items } = await this.supabase
+          .from('content_items')
+          .select(`
+            *,
+            template:content_item_templates(*),
+            data:content_item_data(*)
+          `)
+          .in('id', Array.from(itemIdsToFetch));
+          
+        // Get unique template IDs
+        const templateIds = new Set<string>();
+        items?.forEach(item => {
+          if (item.item_template_id) {
+            templateIds.add(item.item_template_id);
           }
         });
         
+        // Fetch fields for all templates
+        const templateFieldsMap = new Map<string, any[]>();
+        if (templateIds.size > 0) {
+          const { data: fields } = await this.supabase
+            .from('content_fields')
+            .select('*')
+            .in('item_template_id', Array.from(templateIds))
+            .order('order_index');
+            
+          // Group fields by template
+          fields?.forEach(field => {
+            if (!templateFieldsMap.has(field.item_template_id)) {
+              templateFieldsMap.set(field.item_template_id, []);
+            }
+            templateFieldsMap.get(field.item_template_id)!.push(field);
+          });
+        }
+          
+        items?.forEach(item => {
+          // Transform item data
+          const itemData: Record<string, any> = {};
+          
+          // Create a map of field_id to field_key for this template
+          const fieldKeyMap = new Map<string, string>();
+          const templateFields = templateFieldsMap.get(item.item_template_id) || [];
+          templateFields.forEach((field: any) => {
+            fieldKeyMap.set(field.id, field.field_key);
+          });
+          
+          // If no template fields were fetched, try using the template.fields if available
+          if (fieldKeyMap.size === 0 && item.template?.fields) {
+            item.template.fields.forEach((field: any) => {
+              fieldKeyMap.set(field.id, field.field_key);
+            });
+          }
+          
+          item.data?.forEach((fieldData: any) => {
+            // If field_key is "undefined" or null, try to look it up by field_id
+            let key = fieldData.field_key;
+            if (key === 'undefined' || key === null || key === undefined) {
+              key = fieldKeyMap.get(fieldData.field_id) || 'undefined';
+            }
+            itemData[key] = fieldData.value;
+          });
+          
+          itemsById.set(item.id, {
+            ...item,
+            data: itemData
+          });
+        });
+      }
+      
+      // Update content with fetched items
+      sectionsWithContent.forEach(section => {
+        section.fields.forEach((field: any) => {
+          if (field.field_type === 'linked_items') {
+            const key = `${section.section.id}-${field.field_key}`;
+            const itemIds = fieldItemsMap.get(key);
+            if (itemIds) {
+              section.content[field.field_key] = itemIds
+                .map(id => itemsById.get(id))
+                .filter(item => item !== undefined);
+            }
+          }
+        });
+      });
+
+      // Simplify the result structure - only return what's needed
+      const simplifiedSections = sectionsWithContent.map(section => {
         return {
           pageSection: {
             id: section.pageSection.id,
@@ -570,7 +716,7 @@ export class ContentServiceWrapper {
               slug: section.section.template.slug
             }
           },
-          content: processedContent
+          content: section.content
         };
       });
 
@@ -840,8 +986,20 @@ export class ContentServiceWrapper {
     // Transform item data
     const transformedItems = data?.map(item => {
       const itemData: Record<string, any> = {};
+      
+      // Create a map of field_id to field_key for this template
+      const fieldKeyMap = new Map<string, string>();
+      item.template?.fields?.forEach((field: any) => {
+        fieldKeyMap.set(field.id, field.field_key);
+      });
+      
       item.data?.forEach((fieldData: any) => {
-        itemData[fieldData.field_key] = fieldData.value;
+        // If field_key is "undefined" or null, try to look it up by field_id
+        let key = fieldData.field_key;
+        if (key === 'undefined' || key === null || key === undefined) {
+          key = fieldKeyMap.get(fieldData.field_id) || fieldData.field_key || 'undefined';
+        }
+        itemData[key] = fieldData.value;
       });
       
       return {
@@ -883,8 +1041,20 @@ export class ContentServiceWrapper {
     // Transform item data
     const transformedItems = data?.map(item => {
       const itemData: Record<string, any> = {};
+      
+      // Create a map of field_id to field_key for this template
+      const fieldKeyMap = new Map<string, string>();
+      item.template?.fields?.forEach((field: any) => {
+        fieldKeyMap.set(field.id, field.field_key);
+      });
+      
       item.data?.forEach((fieldData: any) => {
-        itemData[fieldData.field_key] = fieldData.value;
+        // If field_key is "undefined" or null, try to look it up by field_id
+        let key = fieldData.field_key;
+        if (key === 'undefined' || key === null || key === undefined) {
+          key = fieldKeyMap.get(fieldData.field_id) || fieldData.field_key || 'undefined';
+        }
+        itemData[key] = fieldData.value;
       });
       
       return {
@@ -918,8 +1088,20 @@ export class ContentServiceWrapper {
 
     // Transform item data
     const itemData: Record<string, any> = {};
+    
+    // Create a map of field_id to field_key for this template
+    const fieldKeyMap = new Map<string, string>();
+    data.template?.fields?.forEach((field: any) => {
+      fieldKeyMap.set(field.id, field.field_key);
+    });
+    
     data.data?.forEach((fieldData: any) => {
-      itemData[fieldData.field_key] = fieldData.value;
+      // If field_key is "undefined" or null, try to look it up by field_id
+      let key = fieldData.field_key;
+      if (key === 'undefined' || key === null || key === undefined) {
+        key = fieldKeyMap.get(fieldData.field_id) || fieldData.field_key || 'undefined';
+      }
+      itemData[key] = fieldData.value;
     });
 
     return { 
@@ -958,8 +1140,20 @@ export class ContentServiceWrapper {
 
     // Transform item data
     const itemData: Record<string, any> = {};
+    
+    // Create a map of field_id to field_key for this template
+    const fieldKeyMap = new Map<string, string>();
+    data.template?.fields?.forEach((field: any) => {
+      fieldKeyMap.set(field.id, field.field_key);
+    });
+    
     data.data?.forEach((fieldData: any) => {
-      itemData[fieldData.field_key] = fieldData.value;
+      // If field_key is "undefined" or null, try to look it up by field_id
+      let key = fieldData.field_key;
+      if (key === 'undefined' || key === null || key === undefined) {
+        key = fieldKeyMap.get(fieldData.field_id) || fieldData.field_key || 'undefined';
+      }
+      itemData[key] = fieldData.value;
     });
 
     return { 
@@ -994,8 +1188,20 @@ export class ContentServiceWrapper {
 
     // Transform item data
     const itemData: Record<string, any> = {};
+    
+    // Create a map of field_id to field_key for this template
+    const fieldKeyMap = new Map<string, string>();
+    data.template?.fields?.forEach((field: any) => {
+      fieldKeyMap.set(field.id, field.field_key);
+    });
+    
     data.data?.forEach((fieldData: any) => {
-      itemData[fieldData.field_key] = fieldData.value;
+      // If field_key is "undefined" or null, try to look it up by field_id
+      let key = fieldData.field_key;
+      if (key === 'undefined' || key === null || key === undefined) {
+        key = fieldKeyMap.get(fieldData.field_id) || fieldData.field_key || 'undefined';
+      }
+      itemData[key] = fieldData.value;
     });
 
     return { 

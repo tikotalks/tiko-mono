@@ -1,5 +1,6 @@
 import { createAppRouter } from '@tiko/ui'
 import AdminLayout from '../layouts/AdminLayout.vue';
+import ContentSectionsView from '../views/content/SectionsView.vue'
 
 
 // Lazy load all route components
@@ -17,7 +18,7 @@ const I18nLanguagesView = () => import('../views/i18n/LanguagesView.vue')
 const I18nLanguageDetailView = () => import('../views/i18n/DetailView.vue')
 const I18nStatus = () => import('../views/i18n/I18nStatus.vue')
 const ContentProjectsView = () => import('../views/content/ProjectsView.vue')
-const ContentSectionsView = () => import('../views/content/SectionsView.vue')
+// const ContentSectionsView = () => import('../views/content/SectionsView.vue')
 const SectionTemplateDetailView = () => import('../views/content/SectionTemplateDetailView.vue')
 const SectionInstanceDetailView = () => import('../views/content/SectionInstanceDetailView.vue')
 const ContentPagesView = () => import('../views/content/PagesView.vue')

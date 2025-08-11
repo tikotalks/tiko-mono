@@ -1,0 +1,24 @@
+name = "user-media-upload"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# Custom domain for user media
+# The custom domain is already configured in Cloudflare DNS
+# We'll use a regular route pattern instead
+routes = [
+  { pattern = "https://user-media.tikocdn.org/*", zone_name = "tikocdn.org" }
+]
+
+# R2 bucket binding
+[[r2_buckets]]
+binding = "USER_MEDIA_BUCKET"
+bucket_name = "user-media"
+
+# Environment variables (add these in Cloudflare dashboard)
+# [vars]
+# SUPABASE_URL = "your-supabase-url"
+# SUPABASE_SERVICE_KEY = "your-service-key"
+
+# Development settings
+[env.development]
+vars = { ENVIRONMENT = "development" }

@@ -110,6 +110,7 @@ async function loadFields() {
             fieldValues.value[field.field_key] = 0
             break
           case 'items':
+          case 'repeater':
             fieldValues.value[field.field_key] = []
             break
           case 'list':

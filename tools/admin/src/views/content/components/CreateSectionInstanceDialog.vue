@@ -222,6 +222,15 @@
               :required="field.is_required"
             />
 
+            <!-- Repeater Field -->
+            <RepeaterFieldInstance
+              v-else-if="field.field_type === 'repeater'"
+              v-model="fieldValues[field.field_key]"
+              :label="field.label"
+              :field="field"
+              :required="field.is_required"
+            />
+
             <!-- Default Text for other field types -->
             <TInputTextArea
               v-else
@@ -278,6 +287,7 @@ import type {
 import ItemsFieldInstance from './ItemsFieldInstance.vue';
 import MediaFieldInstance from './MediaFieldInstance.vue';
 import LinkedItemsFieldInstance from './LinkedItemsFieldInstance.vue';
+import RepeaterFieldInstance from './RepeaterFieldInstance.vue';
 
 interface SectionWithData extends ContentSection {
   fieldValues?: Record<string, any>;
@@ -444,6 +454,7 @@ function getDefaultValueForFieldType(fieldType: string): any {
     case 'media_list':
     case 'items':
     case 'linked_items':
+    case 'repeater':
       return [];
     case 'object':
       return {};
