@@ -1,121 +1,199 @@
 <template>
-  <a
+  <component
+    :is="href ? 'a' : 'div'"
     :class="bemm()"
     :href="href"
     @click="handleClick"
     ref="tileRef"
   >
-    <div :class="bemm('image-container')">
-      <div v-if="!isVisible || !imageLoaded" :class="bemm('placeholder')">
-        <TIcon :name="Icons.IMAGE" size="large" />
-      </div>
-      <img
-        v-if="isVisible"
-        :src="thumbnailUrl"
-        :alt="media.original_filename"
-        loading="lazy"
-        :class="bemm('image', ['', imageLoaded ? 'loaded' :''])"
-        @load="imageLoaded = true"
-        @error="imageError = true"
-      />
+    <!-- Actions Slot (positioned at top) -->
+    <div v-if="$slots.actions" :class="bemm('actions')" @click.stop.prevent>
+      <slot name="actions" />
     </div>
 
-    <div :class="bemm('info')">
-      <p :class="bemm('title')">{{ displayTitle }}</p>
+    <!-- Image Container -->
+    <div :class="bemm('image-container')">
+      <!-- Empty State -->
+      <div v-if="!hasImages" :class="bemm('placeholder')">
+        <TIcon :name="emptyIcon || Icons.IMAGE" size="large" />
+      </div>
+
+      <!-- Single Image -->
+      <template v-else-if="displayImages.length === 1">
+        <div v-if="!isVisible || !imageLoaded" :class="bemm('placeholder')">
+          <TIcon :name="Icons.IMAGE" size="large" />
+        </div>
+        <img
+          v-if="isVisible"
+          :src="getImageUrl(displayImages[0], 'medium')"
+          :alt="displayImages[0].original_filename"
+          loading="lazy"
+          :class="bemm('image', ['', imageLoaded ? 'loaded' : ''])"
+          @load="imageLoaded = true"
+          @error="imageError = true"
+        />
+      </template>
+
+      <!-- Multiple Images Grid -->
+      <div v-else :class="bemm('grid-preview', ['',gridClass])">
+        <div v-if="!isVisible" :class="bemm('placeholder')">
+          <TIcon :name="Icons.IMAGE" size="large" />
+        </div>
+        <template
+          v-else
+          v-for="(image, index) in displayImages.slice(0, 4)"
+          :key="image?.id || index"
+        >
+          <img
+            v-if="image && image.original_url"
+            :src="getImageUrl(image, 'thumbnail')"
+            :alt="image.original_filename || 'Image'"
+            :class="bemm('grid-image')"
+            loading="lazy"
+          />
+        </template>
+      </div>
     </div>
-  </a>
+
+    <!-- Content Section -->
+    <div
+      v-if="displayTitle || description || meta || $slots.content"
+      :class="bemm('content')"
+    >
+      <h4 v-if="displayTitle" :class="bemm('title')">{{ displayTitle }}</h4>
+      <p v-if="description" :class="bemm('description')">{{ description }}</p>
+      <span v-if="meta" :class="bemm('meta')">{{ meta }}</span>
+      <slot name="content" />
+    </div>
+
+    <!-- Default slot for additional content -->
+    <slot />
+  </component>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, onMounted, onUnmounted } from 'vue'
-import { useBemm } from 'bemm'
-import { Icons } from 'open-icon'
-import { useI18n } from '../../composables/useI18n'
-import { TIcon } from '../TIcon'
-import type { TMediaTileProps } from './TMediaTile.model'
+import { ref, computed, inject, onMounted, onUnmounted } from 'vue';
+import { useBemm } from 'bemm';
+import { Icons } from 'open-icon';
+import { TIcon } from '../TIcon';
+import type { TMediaTileProps, MediaItem } from './TMediaTile.model';
 
 const props = withDefaults(defineProps<TMediaTileProps>(), {
   showId: true,
-  getImageVariants: undefined
-})
+  aspectRatio: '3:2',
+  emptyIcon: undefined,
+  getImageVariants: undefined,
+});
 
 const emit = defineEmits<{
-  click: [event: Event, media: TMediaTileProps['media']]
-}>()
+  click: [event: Event, media?: MediaItem];
+}>();
 
-const bemm = useBemm('t-media-tile')
-const { t } = useI18n()
+const bemm = useBemm('t-media-tile');
 
 // Refs
-const tileRef = ref<HTMLElement>()
-const imageLoaded = ref(false)
-const imageError = ref(false)
-const isVisible = ref(false)
+const tileRef = ref<HTMLElement>();
+const imageLoaded = ref(false);
+const imageError = ref(false);
+const isVisible = ref(false);
 
 // Check if parent grid has lazy loading enabled
-const gridLazy = inject<any>('gridLazy', null)
+const gridLazy = inject<any>('gridLazy', null);
 
-const displayTitle = computed(() =>
-  props.media.title || props.media.original_filename
-)
-
-const thumbnailUrl = computed(() => {
-  if (props.getImageVariants) {
-    return props.getImageVariants(props.media.original_url).medium
+// Computed
+const displayImages = computed(() => {
+  if (props.images && props.images.length > 0) {
+    return props.images;
   }
-  return props.media.original_url
-})
+  if (props.media) {
+    return [props.media];
+  }
+  return [];
+});
 
-const href = computed(() => props.href || `#${props.media.id}`)
+const hasImages = computed(() => displayImages.value.length > 0);
+
+const displayTitle = computed(() => {
+  if (props.title) return props.title;
+  if (props.media) return props.media.title || props.media.original_filename;
+  return '';
+});
+
+const gridClass = computed(() => {
+  const count = displayImages.value.length;
+  if (count === 2) return 'two';
+  if (count === 3) return 'three';
+  if (count >= 4) return 'four';
+  return '';
+});
+
+const aspectRatioCss = computed(() => {
+  if (!props.aspectRatio) return '3 / 2'; // Default if not provided
+  const parts = props.aspectRatio.split(':');
+  if (parts.length !== 2) return '3 / 2'; // Default if invalid format
+  const [width, height] = parts.map(Number);
+  if (!width || !height || isNaN(width) || isNaN(height)) return '3 / 2'; // Default if invalid numbers
+  return `${width} / ${height}`;
+});
+
+// Methods
+const getImageUrl = (
+  image: MediaItem,
+  size: 'thumbnail' | 'medium' | 'large' = 'medium',
+) => {
+  if (props.getImageVariants && image.original_url) {
+    return props.getImageVariants(image.original_url)[size];
+  }
+  return image.original_url;
+};
 
 const handleClick = (event: Event) => {
-  emit('click', event, props.media)
-}
-
-const formatBytes = (bytes: number): string => {
-  if (bytes === 0) return '0 Bytes'
-  const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-}
+  if (!props.href) {
+    event.preventDefault();
+  }
+  emit('click', event, props.media);
+};
 
 // Intersection Observer for lazy loading
-let observer: IntersectionObserver | null = null
+let observer: IntersectionObserver | null = null;
 
 onMounted(() => {
   // If lazy loading is disabled or not supported, show image immediately
   if (!gridLazy?.enabled || !window.IntersectionObserver) {
-    isVisible.value = true
-    return
+    isVisible.value = true;
+    return;
   }
 
-  observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          isVisible.value = true
-          // Once visible, we can disconnect the observer
-          observer?.disconnect()
-        }
-      })
-    },
-    {
-      rootMargin: gridLazy.rootMargin,
-      threshold: gridLazy.threshold
+  // Small delay to ensure DOM is ready
+  setTimeout(() => {
+    observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            isVisible.value = true;
+            // Once visible, we can disconnect the observer
+            observer?.disconnect();
+          }
+        });
+      },
+      {
+        root: null, // Use viewport as root
+        rootMargin: gridLazy.rootMargin || '50px',
+        threshold: gridLazy.threshold || 0,
+      },
+    );
+
+    if (tileRef.value) {
+      observer.observe(tileRef.value);
     }
-  )
-
-  if (tileRef.value) {
-    observer.observe(tileRef.value)
-  }
-})
+  }, 100);
+});
 
 onUnmounted(() => {
   if (observer) {
-    observer.disconnect()
+    observer.disconnect();
   }
-})
+});
 </script>
 
 <style lang="scss">
@@ -125,23 +203,36 @@ onUnmounted(() => {
   border-radius: var(--border-radius);
   overflow: hidden;
   background: var(--color-background);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border: 1px solid color-mix(in srgb, var(--color-primary), transparent 75%);
   text-decoration: none;
   color: inherit;
   display: flex;
   flex-direction: column;
+  height: 100%;
 
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: var(--color-primary);
+  }
+
+  &__actions {
+    position: absolute;
+    top: var(--space-s);
+    right: var(--space-s);
+    z-index: 1;
+    display: flex;
+    gap: var(--space-xs);
   }
 
   &__image-container {
     position: relative;
     overflow: hidden;
-    height: 200px;
+    aspect-ratio: v-bind(aspectRatioCss);
 
     // Checkerboard pattern background
     --dot-color: color-mix(in srgb, var(--color-foreground), transparent 90%);
@@ -151,7 +242,11 @@ onUnmounted(() => {
       linear-gradient(45deg, transparent 75%, var(--dot-color) 75%),
       linear-gradient(-45deg, transparent 75%, var(--dot-color) 75%);
     background-size: 20px 20px;
-    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    background-position:
+      0 0,
+      0 10px,
+      10px -10px,
+      -10px 0px;
   }
 
   &__placeholder {
@@ -164,10 +259,23 @@ onUnmounted(() => {
     align-items: center;
     justify-content: center;
     background: var(--color-background-secondary);
+    font-size: 4em;
 
-    .t-icon {
-      color: var(--color-foreground-secondary);
-      opacity: 0.3;
+    .icon {
+      opacity: 0.25;
+      transform: rotate(-10deg);
+      animation: iconPulse 2s infinite;
+      @keyframes iconPulse {
+        0% {
+          transform: rotate(-10deg) scale(1);
+        }
+        50% {
+          transform: rotate(-10deg) scale(1.1);
+        }
+        100% {
+          transform: rotate(-10deg) scale(1);
+        }
+      }
     }
   }
 
@@ -183,18 +291,39 @@ onUnmounted(() => {
     }
   }
 
-  &__chip-group {
-    gap: var(--space-xs);
+  &__grid-preview {
+    display: grid;
+    height: 100%;
+    gap: 2px;
+    background: var(--color-border);
 
-    .t-chip {
-      background: rgba(255, 255, 255, 0.2);
-      color: var(--color-background);
-      border: 1px solid rgba(255, 255, 255, 0.3);
+    &--two {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    &--three {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+
+      .t-media-tile__grid-image:first-child {
+        grid-column: 1 / -1;
+      }
+    }
+
+    &--four {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
     }
   }
 
-  &__info {
-    padding: var(--space-s) var(--space);
+  &__grid-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &__content {
+    padding: var(--space-s);
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -202,35 +331,31 @@ onUnmounted(() => {
   }
 
   &__title {
-    font-weight: 500;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    margin: 0;
+    color: var(--color-foreground);
+    line-height: 1.2;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    margin: 0;
   }
 
-  &__id {
+  &__description {
     font-size: var(--font-size-xs);
-    color: var(--color-text-secondary);
-    font-family: monospace;
-    opacity: 0.6;
+    color: var(--color-foreground-secondary);
+    margin: 0;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
-    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   &__meta {
-    font-size: var(--font-size-s);
-    color: var(--color-text-secondary);
-    display: flex;
-    gap: var(--space-xs);
-    opacity: 0.5;
+    font-size: var(--font-size-xs);
+    color: var(--color-foreground-tertiary);
     margin: 0;
-
-    span {
-      white-space: nowrap;
-    }
   }
 }
 </style>

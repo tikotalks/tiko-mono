@@ -14,6 +14,8 @@ export type { IconRegistry, IconRegistryPluginOptions } from './icons'
 export * from './components/TInput'
 export * from './components/TLoginForm'
 export * from './components/TAuthWrapper'
+// export * from './components/TAvatar'
+// export * from './components/TUserMenu'
 export * from './components/TTopBar'
 export * from './components/TContextMenu'
 export * from './components/TAppLayout'
@@ -48,6 +50,8 @@ export * from './components/TStatusBar'
 export * from './components/TProgressBar'
 export * from './components/TKeyValue'
 export * from './components/TText'
+export * from './components/TCountUp'
+export * from './components/TMarkdownRenderer'
 
 export { default as TInputText } from './components/TForm/inputs/TInputText/TInputText.vue';
 export { default as TInputNumber } from './components/TForm/inputs/TInputNumber/TInputNumber.vue';
@@ -57,6 +61,7 @@ export { default as TInputTextArea } from './components/TForm/InputTextArea.vue'
 export { default as TInputSelect } from './components/TForm/inputs/TInputSelect/TInputSelect.vue';
 export { default as TInputCheckbox } from './components/TForm/inputs/TInputCheckbox/TInputCheckbox.vue';
 export { default as TInputRadio } from './components/TForm/inputs/TInputRadio/TInputRadio.vue';
+export { default as TInputSwitch } from './components/TForm/inputs/TInputSwitch/TInputSwitch.vue';
 export { default as TTextArea } from './components/TForm/inputs/TInputTextArea/TInputTextArea.vue';
 export { default as TFormGroup } from './components/TForm/TFormGroup.vue';
 export { default as TFormField } from './components/TForm/TFormField.vue';
@@ -67,7 +72,7 @@ export { default as TFormField } from './components/TForm/TFormField.vue';
 // export * from './components/TBanner'
 export * from './components/TToast'
 // export * from './components/TChip'
-// export * from './components/TToolTip'
+export * from './components/TToolTip'
 
 // Specialized Components
 export { default as TCardCommunication } from './components/TCard/TCardCommunication.vue'

@@ -97,7 +97,7 @@
           :class="bemm('form-group')">
 
           <TInput
-            :label="t('admin.media.title')"
+            :label="t('common.title')"
             v-model="editForm.title"
             :placeholder="t('admin.media.titlePlaceholder')"
           />
@@ -148,7 +148,7 @@
         <div class="content" v-else>
           <dl>
 
-            <dt>{{ t('admin.media.title') }}</dt>
+            <dt>{{ t('common.title') }}</dt>
           <dd>{{ media.title }}</dd>
 
           <dt>{{ t('admin.media.description') }}</dt>
@@ -183,7 +183,7 @@
               @click="startEditing"
               :icon="Icons.FILE_EDIT"
             >
-              {{ t('admin.media.edit') }}
+              {{ t('common.edit') }}
             </TButton>
 
             <TButton
@@ -191,7 +191,7 @@
               color="secondary"
               @click="analyzeImage"
               :loading="analyzing"
-              :icon="Icons.SPARKLES"
+              :icon="Icons.STAR_M"
             >
               {{ t('admin.media.analyze') }}
             </TButton>
@@ -203,7 +203,7 @@
                 :loading="saving"
                 :icon="Icons.ARROW_RIGHT"
               >
-                {{ t('admin.media.save') }}
+                {{ t('common.save') }}
               </TButton>
               <TButton
                 color="secondary"

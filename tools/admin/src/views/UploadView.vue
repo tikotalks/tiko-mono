@@ -4,7 +4,7 @@
       :title="t('admin.upload.title')"
       :description="t('admin.upload.description')"
     />
-    
+
     <div
       :class="bemm('upload-area', { dragging: isDragging })"
       @drop="handleDrop"
@@ -245,28 +245,35 @@ onMounted(() => {
     padding: var(--space-s);
     background: var(--color-background);
     border-radius: var(--border-radius);
-    border:1px solid var(--color-primary);
+    border: 2px solid var(--color-primary);
 
 
     &--pending {
-      opacity: 0.7;
+      opacity: 0.5;
+      background-color: color-mix(in srgb, var(--color-primary), transparent 80%);
+
     }
     &--uploading {
       opacity: 1;
       border-color: var(--color-primary);
-      background-color: var(--color-primary-alpha-10);
-    }
-    &--success {
-      opacity: 1;
-     border-color: var(--color-success)
+      background-color: color-mix(in srgb, var(--color-primary), transparent 80%);
+
     }
     &--error {
       opacity: 1;
-     border-color: var(--color-error)
+     border-color: var(--color-error);
+     background-color: color-mix(in srgb, var(--color-error), transparent 80%);
+
     }
     &--duplicate {
       border-color: var(--color-warning);
-      background-color: var(--color-warning-alpha-10);
+      background-color: color-mix(in srgb, var(--color-warning), transparent 80%);
+
+    }
+    &--success {
+      opacity: 1;
+     border-color: var(--color-success);
+     background-color: color-mix(in srgb, var(--color-success), transparent 80%);
     }
 
     img {

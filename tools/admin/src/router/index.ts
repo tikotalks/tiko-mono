@@ -1,29 +1,32 @@
 import { createAppRouter } from '@tiko/ui'
-import AdminLayout from '../layouts/AdminLayout.vue'
-import AdminDashboard from '../views/Dashboard.vue'
-import LibraryView from '../views/LibraryView.vue'
-import MediaDashboardView from '../views/MediaDashboardView.vue'
-import MediaDetailView from '../views/MediaDetailView.vue'
-import UploadView from '../views/UploadView.vue'
-import UsersView from '../views/UsersView.vue'
-import I18nTranslationAdminView from '../views/i18n/AdminView.vue'
-import I18nDatabaseView from '../views/i18n/DatabaseView.vue'
-import I18nImportView from '../views/i18n/ImportView.vue'
-import I18nKeysView from '../views/i18n/KeysView.vue'
-import I18nLanguagesView from '../views/i18n/LanguagesView.vue'
-import I18nLanguageDetailView from '../views/i18n/DetailView.vue'
-import I18nStatus from '../views/i18n/I18nStatus.vue'
-import ContentProjectsView from '../views/content/ProjectsView.vue'
-import ContentSectionsView from '../views/content/SectionsView.vue'
-import SectionTemplateDetailView from '../views/content/SectionTemplateDetailView.vue'
-import SectionInstanceDetailView from '../views/content/SectionInstanceDetailView.vue'
-import ContentPagesView from '../views/content/PagesView.vue'
-import ContentPageDetailView from '../views/content/PageDetailView.vue'
-import ItemTemplateDetailView from '../views/content/ItemTemplateDetailView.vue'
-import ItemsView from '../views/content/ItemsView.vue'
-import ItemDetailView from '../views/content/ItemDetailView.vue'
-import DeploymentDashboard from '../views/deployment/DeploymentDashboard.vue'
-import BackupsView from '../views/deployment/BackupsView.vue'
+import AdminLayout from '../layouts/AdminLayout.vue';
+
+
+// Lazy load all route components
+const AdminDashboard = () => import('../views/Dashboard.vue')
+const LibraryView = () => import('../views/LibraryView.vue')
+const MediaDashboardView = () => import('../views/MediaDashboardView.vue')
+const MediaDetailView = () => import('../views/MediaDetailView.vue')
+const UploadView = () => import('../views/UploadView.vue')
+const UsersView = () => import('../views/UsersView.vue')
+const I18nTranslationAdminView = () => import('../views/i18n/AdminView.vue')
+const I18nDatabaseView = () => import('../views/i18n/DatabaseView.vue')
+const I18nImportView = () => import('../views/i18n/ImportView.vue')
+const I18nKeysView = () => import('../views/i18n/KeysView.vue')
+const I18nLanguagesView = () => import('../views/i18n/LanguagesView.vue')
+const I18nLanguageDetailView = () => import('../views/i18n/DetailView.vue')
+const I18nStatus = () => import('../views/i18n/I18nStatus.vue')
+const ContentProjectsView = () => import('../views/content/ProjectsView.vue')
+const ContentSectionsView = () => import('../views/content/SectionsView.vue')
+const SectionTemplateDetailView = () => import('../views/content/SectionTemplateDetailView.vue')
+const SectionInstanceDetailView = () => import('../views/content/SectionInstanceDetailView.vue')
+const ContentPagesView = () => import('../views/content/PagesView.vue')
+const ContentPageDetailView = () => import('../views/content/PageDetailView.vue')
+const ItemTemplateDetailView = () => import('../views/content/ItemTemplateDetailView.vue')
+const ItemsView = () => import('../views/content/ItemsView.vue')
+const ItemDetailView = () => import('../views/content/ItemDetailView.vue')
+const DeploymentDashboard = () => import('../views/deployment/DeploymentDashboard.vue')
+const BackupsView = () => import('../views/deployment/BackupsView.vue')
 
 const router = createAppRouter({
   routes: [

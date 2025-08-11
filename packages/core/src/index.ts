@@ -4,6 +4,8 @@ export * from './services'
 // Stores
 export * from './stores/auth'
 export * from './stores/app'
+export { useFavoritesStore } from './stores/favorites.store'
+export { useCollectionsStore, type Collection } from './stores/collections.store'
 
 // Auth API (excluding types that are already exported from services)
 export { authAPI } from './lib/auth-api'

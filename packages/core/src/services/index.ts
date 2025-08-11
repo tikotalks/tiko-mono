@@ -21,17 +21,20 @@ export * from './media-analysis.service'
 export * from './user.service'
 export * from './translation.service'
 export * from './gpt-translation.service'
+export * from './collections.service'
 
 // Export Supabase implementations
 export { SupabaseParentModeService } from './parent-mode-supabase.service'
 export { SupabaseUserSettingsService } from './user-settings-supabase.service'
 export { SupabaseItemService } from './item-supabase.service'
 export { SupabaseMediaService } from './media-supabase.service'
+export { collectionsSupabaseService } from './collections-supabase.service'
 
 // Export active service instances
 // Currently using localStorage implementations due to Supabase SDK issues
 // To switch to Supabase, uncomment the Supabase imports and comment out localStorage ones
 export { authService } from './auth.service'
+export { authSyncService } from './auth-sync.service'
 export { parentModeService } from './parent-mode.service'
 export { userSettingsService } from './user-settings.service'
 export { itemService } from './item.service'
@@ -41,6 +44,7 @@ export { mediaAnalysisService } from './media-analysis.service'
 export { userService } from './user.service'
 export { translationService } from './translation.service'
 export { gptTranslationService } from './gpt-translation.service'
+export { collectionsSupabaseService as collectionsService } from './collections-supabase.service'
 export { contentService } from './content.service'
 export type { 
   ContentProject, 

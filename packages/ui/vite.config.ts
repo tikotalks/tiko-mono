@@ -1,9 +1,17 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
+// import CircularDependencyPlugin from 'vite-plugin-circular-dependency'
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    // CircularDependencyPlugin({
+    //   circleImportThrowErr: false,
+    //   circleImportReplace: true,
+    //   exclude: /node_modules/
+    // })
+  ],
   css: {
     preprocessorOptions: {
       scss: {

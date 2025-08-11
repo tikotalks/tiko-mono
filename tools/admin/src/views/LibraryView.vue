@@ -7,19 +7,11 @@
       <template #actions>
         <TButton
           type="outline"
-          :icon="Icons.RELOAD"
+          :icon="Icons.ARROW_ROTATE_TOP_LEFT"
           @click="forceRefresh"
           :disabled="loading"
         >
           {{ t('common.refresh') }}
-        </TButton>
-        
-        <TButton
-          type="outline"
-          :icon="Icons.CURSOR_CLICK"
-          @click="testMediaSelector"
-        >
-          Test Media Selector
         </TButton>
 
         <TButton
@@ -105,7 +97,7 @@
         :media="media"
         :href="`/media/${media.id}`"
         :get-image-variants="getImageVariants"
-        @click="selectMedia"
+        @click="()=>selectMedia"
       />
     </TGrid>
 
@@ -288,36 +280,6 @@ async function forceRefresh() {
   console.log('[LibraryView] Refresh complete. Total images:', imageList.value.length);
 }
 
-// Test function for Media Selector
-async function testMediaSelector() {
-  try {
-    const selectedMedia = await openMediaSelector({
-      multiple: true,
-      title: 'Test Media Selector'
-    });
-
-    if (selectedMedia.length > 0) {
-      toastService?.show({
-        message: `Selected ${selectedMedia.length} media item(s): ${selectedMedia.map(m => m.title || m.filename).join(', ')}`,
-        type: 'success',
-        duration: 5000
-      });
-      console.log('Selected media:', selectedMedia);
-    } else {
-      toastService?.show({
-        message: 'No media selected',
-        type: 'info'
-      });
-    }
-  } catch (error) {
-    console.error('Media selector error:', error);
-    toastService?.show({
-      message: 'Error opening media selector',
-      type: 'error'
-    });
-  }
-}
-
 // Watch for changes and save to user settings
 watch(viewMode, async (newValue) => {
   await setSetting('libraryViewMode', newValue);
@@ -347,33 +309,6 @@ onMounted(async () => {
   console.log('Sample image data:', imageList.value[0]);
   console.log('Images with created_at:', imageList.value.filter(img => img.created_at).length);
   console.log('Total images:', imageList.value.length);
-
-  // Temporary: Add mock data for testing if no images are loaded
-  setTimeout(() => {
-    if (imageList.value.length === 0) {
-      imageList.value = [
-        {
-          id: 'test-1',
-          title: 'Test Image 1',
-          original_filename: 'test1.jpg',
-          original_url: 'https://via.placeholder.com/300x200',
-          file_size: 1024000,
-          tags: ['test', 'demo'],
-          categories: ['sample'],
-        },
-        {
-          id: 'test-2',
-          title: 'Test Image 2',
-          original_filename: 'test2.png',
-          original_url: 'https://via.placeholder.com/400x300',
-          file_size: 2048000,
-          tags: ['test'],
-          categories: ['sample', 'demo'],
-        },
-      ];
-      stats.value.totalImages = 2;
-    }
-  }, 1000);
 });
 </script>
 

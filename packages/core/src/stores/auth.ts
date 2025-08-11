@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { authService } from '../services'
+import { authSyncService } from '../services/auth-sync.service'
 import type { AuthUser, AuthSession } from '../services/auth.service'
 
 // User profile settings interface (for auth store)
@@ -57,7 +58,11 @@ export const useAuthStore = defineStore('auth', () => {
           // Continue without settings - don't break auth flow
         }
       }
-      if (result.session) session.value = result.session
+      if (result.session) {
+        session.value = result.session
+        // Sync with Supabase for RLS
+        await authSyncService.syncWithSupabase(result.session)
+      }
       
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Authentication failed'
@@ -155,7 +160,11 @@ export const useAuthStore = defineStore('auth', () => {
           // Continue without settings - don't break auth flow
         }
       }
-      if (result.session) session.value = result.session
+      if (result.session) {
+        session.value = result.session
+        // Sync with Supabase for RLS
+        await authSyncService.syncWithSupabase(result.session)
+      }
 
       return result
       
@@ -206,6 +215,8 @@ export const useAuthStore = defineStore('auth', () => {
       if (!result.success) {
         console.warn('Logout error:', result.error)
       }
+      // Clear Supabase session
+      await authSyncService.clearSupabaseSession()
     } catch (err) {
       console.warn('Logout failed:', err)
     } finally {
@@ -327,6 +338,9 @@ export const useAuthStore = defineStore('auth', () => {
       if (currentSession) {
         user.value = currentSession.user
         session.value = currentSession
+        
+        // Sync with Supabase for RLS
+        await authSyncService.syncWithSupabase(currentSession)
         
         // If user has settings in metadata, merge them with localStorage
         // localStorage takes precedence as it may have more recent changes

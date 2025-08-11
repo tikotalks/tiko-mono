@@ -40,7 +40,7 @@
 import { computed } from 'vue';
 import { useBemm } from 'bemm';
 import { Icons } from 'open-icon';
-import { TIcon } from '@tiko/ui';
+import TIcon from '../TIcon/TIcon.vue';
 import type { TListProps } from './TList.model';
 
 const props = withDefaults(defineProps<TListProps>(), {

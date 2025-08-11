@@ -16,10 +16,16 @@ export interface MediaItem {
 }
 
 export interface TMediaTileProps {
-  media: MediaItem
+  media?: MediaItem
+  images?: MediaItem[] // For multiple images
   href?: string
   showOverlay?: boolean
   showId?: boolean
+  title?: string // Custom title override
+  description?: string // Custom description
+  meta?: string // Additional meta info (e.g., "12 images")
+  emptyIcon?: string // Icon to show when no images
+  aspectRatio?: string // Aspect ratio like "3:2", "16:9", "1:1" (default)
   getImageVariants?: (url: string) => {
     thumbnail: string
     medium: string

@@ -68,6 +68,43 @@ export interface TAppLayoutProps {
    * configuration object for the app layout
    */
   config?: TikoConfig
+
+  /**
+   * Whether to show the user menu
+   * @default true
+   */
+  showUserMenu?: boolean
+
+  /**
+   * User display name for the avatar
+   */
+  userDisplayName?: string
+
+  /**
+   * User avatar URL
+   */
+  userAvatar?: string
+
+  /**
+   * User initials for avatar fallback
+   */
+  userInitials?: string
+
+  /**
+   * User avatar background color
+   */
+  userAvatarColor?: string
+
+  /**
+   * User role/title
+   */
+  userRole?: string
+
+  /**
+   * Whether to show parent mode indicator
+   * @default false
+   */
+  showParentModeIndicator?: boolean
 }
 
 export interface TAppLayoutEmits {

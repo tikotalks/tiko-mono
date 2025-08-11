@@ -14,6 +14,13 @@
         :is-loading="isLoading"
         :custom-menu-items="customMenuItems"
         :app-name="appName"
+        :show-user-menu="showUserMenu"
+        :user-display-name="userDisplayName"
+        :user-avatar="userAvatar"
+        :user-initials="userInitials"
+        :user-avatar-color="userAvatarColor"
+        :user-role="userRole"
+        :show-parent-mode-indicator="showParentModeIndicator"
         @back="$emit('back')"
         @profile="$emit('profile')"
         @settings="$emit('settings')"
@@ -58,7 +65,9 @@ withDefaults(defineProps<TAppLayoutProps>(), {
   showOnlineStatus: true,
   showHeader: true,
   isUserOnline: true,
-  isLoading: false
+  isLoading: false,
+  showUserMenu: true,
+  showParentModeIndicator: false
 });
 
 defineEmits<TAppLayoutEmits>();
