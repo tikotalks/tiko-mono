@@ -85,7 +85,7 @@
     </div>
 
     <!-- Tiles View -->
-    <VirtualGrid
+    <TVirtualGrid
       v-else-if="viewMode === 'tiles'"
       :items="sortedImages"
       :min-item-width="250"
@@ -100,7 +100,7 @@
           @click="(e) => selectMedia(e, item)"
         />
       </template>
-    </VirtualGrid>
+    </TVirtualGrid>
 
     <!-- List View -->
     <TList v-else :columns="listColumns" :show-stats="true">
@@ -161,9 +161,9 @@ import {
   TInputText,
   TKeyValue,
   TChip,
+  TVirtualGrid,
 } from '@tiko/ui';
 import AdminPageHeader from '../components/AdminPageHeader.vue';
-import VirtualGrid from '../components/VirtualGrid.vue';
 import { useMediaSelector } from '@/composables/useMediaSelector';
 
 const toastService = inject<ToastService>('toastService');

@@ -85,7 +85,7 @@
       </TEmptyState>
 
       <!-- Grid view -->
-      <VirtualGrid
+      <TVirtualGrid
         v-else-if="viewMode === 'tiles'"
         :items="filteredMedia"
         :min-item-width="200"
@@ -112,7 +112,7 @@
             </div>
           </div>
         </template>
-      </VirtualGrid>
+      </TVirtualGrid>
 
       <!-- List view -->
       <TList
@@ -215,12 +215,12 @@ import {
   TSpinner,
   TIcon,
   useI18n,
+  TVirtualGrid,
 } from '@tiko/ui'
 import { Icons } from 'open-icon'
 import { mediaService } from '@tiko/core'
 import type { MediaItem } from '@tiko/core'
 import { useImageUrl } from '@tiko/core'
-import VirtualGrid from './VirtualGrid.vue'
 // Simple debounce implementation
 function debounce<T extends (...args: any[]) => any>(func: T, delay: number): T {
   let timeoutId: ReturnType<typeof setTimeout>

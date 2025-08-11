@@ -36,13 +36,13 @@
       </TButton>
     </div>
 
-    <VirtualGrid
+    <TVirtualGrid
       v-else
       :items="mediaItems"
       :gap="16"
       :min-item-width="200"
     >
-      <template #item="{ item }">
+      <template #default="{ item }">
         <MediaTile
           :media="item"
           @click="viewMedia(item)"
@@ -60,7 +60,7 @@
           </template>
         </MediaTile>
       </template>
-    </VirtualGrid>
+    </TVirtualGrid>
 
     <ConfirmDialog ref="confirmDialog" />
   </div>
@@ -73,9 +73,8 @@ import { useBemm } from 'bemm'
 import { Icons } from 'open-icon'
 import { useCollectionsStore, useImages, useImageUrl, useAuthStore } from '@tiko/core'
 import type { MediaItem, PopupService } from '@tiko/ui'
-import { TButton, TIcon, useI18n } from '@tiko/ui'
+import { TButton, TIcon, useI18n, TVirtualGrid } from '@tiko/ui'
 import PageHeader from '../components/PageHeader.vue'
-import VirtualGrid from '../components/VirtualGrid.vue'
 import MediaTile from '../components/MediaTile.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 

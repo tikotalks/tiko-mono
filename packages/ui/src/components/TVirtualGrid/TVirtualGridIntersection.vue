@@ -48,7 +48,7 @@ const props = withDefaults(defineProps<Props>(), {
   aspectRatio: '1:1'
 })
 
-const bemm = useBemm('virtual-grid-intersection')
+const bemm = useBemm('t-virtual-grid-intersection')
 
 // Refs
 const containerRef = ref<HTMLElement>()
@@ -217,7 +217,7 @@ watch(() => props.items.length, (newLength, oldLength) => {
 </script>
 
 <style lang="scss">
-.virtual-grid-intersection {
+.t-virtual-grid-intersection {
   position: relative;
   width: 100%;
   

@@ -52,6 +52,7 @@ export * from './components/TKeyValue'
 export * from './components/TText'
 export * from './components/TCountUp'
 export * from './components/TMarkdownRenderer'
+export * from './components/TVirtualGrid'
 
 export { default as TInputText } from './components/TForm/inputs/TInputText/TInputText.vue';
 export { default as TInputNumber } from './components/TForm/inputs/TInputNumber/TInputNumber.vue';

@@ -35,7 +35,7 @@ const props = withDefaults(defineProps<Props>(), {
   aspectRatio: '1:1'
 })
 
-const bemm = useBemm('virtual-grid')
+const bemm = useBemm('t-virtual-grid')
 
 // Refs
 const containerRef = ref<HTMLElement>()
@@ -395,7 +395,7 @@ watch(containerWidth, () => {
 </script>
 
 <style lang="scss">
-.virtual-grid {
+.t-virtual-grid {
   position: relative;
   width: 100%;
 
