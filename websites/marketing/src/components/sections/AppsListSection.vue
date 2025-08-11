@@ -28,12 +28,26 @@
     </pre> -->
     <div :class="bemm('apps')">
       <div v-if="content?.items" :class="bemm('apps-list')">
-        <div v-for="(app, index) in content.items" :key="index" :class="bemm('app-item')">
+        <div
+          v-for="(app, index) in content.items"
+          :key="index"
+          :class="bemm('app-item')"
+          :style="`--app-color: ${app.data?.color ? `var(--color-${app.data.color})` : '#000'};`"
+        >
+          <h3>{{ app.data.app_title }}</h3>
           <AppIcon :app="app" />
-          {{ app }}
-          <div :class="bemm('app-title')">{{ app.item?.name }}</div>
-        </div>
+          <div :class="bemm('app-description')">
+            <TMarkdownRenderer
+              v-if="app.data.app_description"
+              :content="app.description"
+              :class="bemm('app-description-content')"
+            />
 
+            <TButton :color="app.data.color" :link="app.data.app_link"
+              >Go to</TButton
+            >
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -41,7 +55,7 @@
 
 <script setup lang="ts">
 import { useBemm } from 'bemm';
-import { TMarkdownRenderer } from '@tiko/ui';
+import { TButton, TMarkdownRenderer } from '@tiko/ui';
 import type { ContentSection } from '@tiko/core';
 import { useImages, useImageUrl } from '@tiko/core';
 import { onMounted, ref } from 'vue';
@@ -109,7 +123,6 @@ onMounted(async () => {
 
 <style lang="scss">
 .apps-list-section {
-
   background-color: var(--color-light);
   color: var(--color-dark);
 
@@ -153,7 +166,6 @@ onMounted(async () => {
       padding: var(--spacing);
       transform: translateX(0);
     }
-
   }
 
   &__title {
@@ -168,7 +180,6 @@ onMounted(async () => {
     span {
       color: var(--color-green);
     }
-
 
     @media screen and (max-width: 720px) {
       position: relative;
@@ -206,31 +217,26 @@ onMounted(async () => {
     list-style: none;
     padding: 0;
     margin: 0;
-    display: flex;flex-direction: column;
+    display: flex;
+    flex-direction: column;
     flex-wrap: wrap;
-    gap: var(--space);
     justify-content: center;
     font-size: clamp(1em, 2vw, 3em);
+    width: 100%;
+    gap: var(--spacing);
+    padding: var(--spacing);
   }
   &__app-item {
-    --app-color: var(--color, var(--color-background));
-    --app-color-dark: color-mix(
+    background-color: color-mix(
       in srgb,
-      var(--color-dark),
-      var(--app-color) 50%
+      var(--app-color),
+      var(--color-background) 50%
     );
-    --app-color-light: color-mix(
-      in srgb,
-      var(--color-light),
-      var(--app-color) 50%
-    );
-
+    color: var(--color-foreground);
     padding: var(--spacing);
-
-
-    @media screen and (max-width: 720px) {
-      width: 30vw;
-    }
+    border-radius: calc(var(--border-radius) * 2);
+display: flex; flex-direction: column; gap: var(--space);
+    width: 100%;
 
     &:hover {
       transform: scale(1.05);
@@ -242,7 +248,6 @@ onMounted(async () => {
       }
     }
 
-
     view-timeline-name: --revealing-image;
     view-timeline-axis: block;
     animation: linear reveal-center both;
@@ -252,7 +257,7 @@ onMounted(async () => {
     @at-root {
       @keyframes reveal-center {
         0% {
-        transform: scale(0);
+          transform: scale(0);
         }
         80% {
           transform: scale(1.2);
