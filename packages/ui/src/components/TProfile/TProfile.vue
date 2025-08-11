@@ -109,7 +109,7 @@ import { ref, computed, inject } from 'vue'
 import { useBemm } from 'bemm'
 import { useI18n } from '../../composables/useI18n'
 import { useParentMode } from '../../composables/useParentMode'
-import { fileService, useAuthStore } from '@tiko/core'
+import { useAuthStore, userMediaService } from '@tiko/core'
 import TIcon from '../TIcon/TIcon.vue'
 import TButton from '../TButton/TButton.vue'
 import type { TProfileProps } from './TProfile.model'
@@ -221,14 +221,15 @@ const handleFileSelect = async (event: Event) => {
     }
     reader.readAsDataURL(file)
 
-    // Upload file
-    const uploadedUrl = await fileService.uploadAvatar(file, props.user.id)
-
-    // Update user metadata
-    await authStore.updateUserMetadata({
-      ...props.user.user_metadata,
-      avatar_url: uploadedUrl
+    // Upload file using user media service
+    const media = await userMediaService.uploadUserMedia({
+      file,
+      usageType: 'profile_picture'
     })
+    
+    // The service automatically updates the user metadata
+    // Just update the local preview
+    avatarPreview.value = media.url
 
     toastService?.show({
       message: t(keys.profile.profileUpdated),

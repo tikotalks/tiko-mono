@@ -22,6 +22,7 @@ export * from './user.service'
 export * from './translation.service'
 export * from './gpt-translation.service'
 export * from './collections.service'
+export * from './user-media.service'
 
 // Export Supabase implementations
 export { SupabaseParentModeService } from './parent-mode-supabase.service'
@@ -45,6 +46,7 @@ export { userService } from './user.service'
 export { translationService } from './translation.service'
 export { gptTranslationService } from './gpt-translation.service'
 export { collectionsSupabaseService as collectionsService } from './collections-supabase.service'
+export { userMediaService } from './user-media.service'
 export { contentService } from './content.service'
 export type { 
   ContentProject, 
