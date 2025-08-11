@@ -8,6 +8,7 @@
         </TChip>
       </label>
       <TButton
+        v-if="schema.length > 0"
         type="outline"
         size="small"
         :icon="Icons.ADD_M"
@@ -17,7 +18,17 @@
       </TButton>
     </div>
 
-    <div v-if="items.length === 0" :class="bemm('empty')">
+    <div v-if="schema.length === 0" :class="bemm('error')">
+      <TEmptyState
+        :icon="Icons.WARNING"
+        :title="'No schema defined'"
+        :description="'This repeater field needs a schema configuration to define its fields.'"
+        :compact="true"
+        color="warning"
+      />
+    </div>
+
+    <div v-else-if="items.length === 0" :class="bemm('empty')">
       <TEmptyState
         :icon="Icons.LIST"
         :title="t('common.fields.empty.title')"
@@ -140,7 +151,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, nextTick } from 'vue'
 import { useBemm } from 'bemm'
 import {
   TButton,
@@ -188,7 +199,19 @@ const { t } = useI18n()
 
 // Get schema from field config
 const schema = computed<RepeaterField[]>(() => {
-  return props.field.config?.schema || []
+  // If config is directly an array, that's the schema
+  if (Array.isArray(props.field.config)) {
+    console.log('Config is directly the schema array:', props.field.config)
+    return props.field.config
+  }
+  
+  // Otherwise check for schema in various locations
+  const possibleSchema = 
+    props.field.config?.schema || 
+    props.field.config?.fields ||
+    []
+  
+  return Array.isArray(possibleSchema) ? possibleSchema : []
 })
 
 // Local state for items
@@ -196,14 +219,25 @@ const items = ref<Array<Record<string, any>>>(
   props.modelValue.length > 0 ? [...props.modelValue] : []
 )
 
+// Track if update is from internal change to prevent loops
+let isInternalUpdate = false
+
 // Watch for external changes
 watch(() => props.modelValue, (newValue) => {
-  items.value = newValue ? [...newValue] : []
+  if (!isInternalUpdate) {
+    items.value = newValue ? [...newValue] : []
+  }
 }, { deep: true })
 
 // Watch for changes and emit
 watch(items, (newItems) => {
-  emit('update:modelValue', newItems)
+  console.log('[RepeaterFieldInstance] Emitting update:', newItems)
+  isInternalUpdate = true
+  emit('update:modelValue', [...newItems])
+  // Reset flag after next tick
+  nextTick(() => {
+    isInternalUpdate = false
+  })
 }, { deep: true })
 
 function generateId(): string {
@@ -255,7 +289,8 @@ function duplicateItem(index: number) {
 function updateItemField(index: number, key: string, value: any) {
   const item = items.value[index]
   if (item) {
-    item[key] = value
+    // Create a new object to ensure Vue's reactivity is triggered
+    items.value[index] = { ...item, [key]: value }
   }
 }
 

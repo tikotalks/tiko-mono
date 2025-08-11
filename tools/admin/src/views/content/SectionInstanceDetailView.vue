@@ -122,6 +122,15 @@
               :required="field.is_required"
             />
 
+            <!-- Repeater Field -->
+            <RepeaterFieldInstance
+              v-else-if="field.field_type === 'repeater'"
+              v-model="fieldValues[field.field_key]"
+              :label="field.label"
+              :field="field"
+              :required="field.is_required"
+            />
+
             <!-- Default Text for other field types -->
             <TInputTextArea
               v-else
@@ -225,6 +234,7 @@ import AdminPageHeader from '@/components/AdminPageHeader.vue';
 import ItemsFieldInstance from './components/ItemsFieldInstance.vue';
 import MediaFieldInstance from './components/MediaFieldInstance.vue';
 import LinkedItemsFieldInstance from './components/LinkedItemsFieldInstance.vue';
+import RepeaterFieldInstance from './components/RepeaterFieldInstance.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -302,15 +312,33 @@ const hasFormChanges = computed(() => {
 const hasFieldChanges = computed(() => {
   if (!isEditMode.value) return true; // Always allow save in create mode
 
-  return (
-    JSON.stringify(fieldValues.value) !==
-    JSON.stringify(originalFieldValues.value)
-  );
+  // Deep comparison that handles Vue reactivity properly
+  const deepCompare = (obj1: any, obj2: any): boolean => {
+    if (obj1 === obj2) return true;
+    if (typeof obj1 !== 'object' || typeof obj2 !== 'object') return false;
+    if (obj1 === null || obj2 === null) return false;
+    
+    const keys1 = Object.keys(obj1);
+    const keys2 = Object.keys(obj2);
+    
+    if (keys1.length !== keys2.length) return false;
+    
+    for (const key of keys1) {
+      if (!keys2.includes(key)) return false;
+      if (!deepCompare(obj1[key], obj2[key])) return false;
+    }
+    
+    return true;
+  };
+
+  return !deepCompare(fieldValues.value, originalFieldValues.value);
 });
 
 const canSave = computed(() => {
   return isValid.value && (hasFormChanges.value || hasFieldChanges.value);
 });
+
+// Removed debug watcher to prevent performance issues
 
 // Methods
 async function loadData() {
@@ -408,8 +436,8 @@ async function loadSectionData() {
     );
     fieldValues.value = { ...fieldValues.value, ...data };
 
-    // Store original field values for change tracking
-    originalFieldValues.value = { ...fieldValues.value };
+    // Store original field values for change tracking (deep clone)
+    originalFieldValues.value = JSON.parse(JSON.stringify(fieldValues.value));
   } catch (error) {
     console.error('Failed to load section data:', error);
   }
@@ -425,6 +453,7 @@ function getDefaultValueForFieldType(fieldType: string): any {
     case 'media_list':
     case 'items':
     case 'linked_items':
+    case 'repeater':
       return [];
     case 'object':
       return {};
