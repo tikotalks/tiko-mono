@@ -91,14 +91,11 @@ onMounted(async () => {
 
 <style lang="scss">
 .column-right-section {
-  padding: var(--spacing);
   background-color: var(--color-light);
   color: var(--color-dark);
   position: relative;
 
-  position: relative;
   @media (max-width: 720px) {
-    padding: var(--spacing);
     flex-direction: column-reverse;
     align-items: center;
   }
@@ -149,8 +146,9 @@ onMounted(async () => {
     flex-direction: row-reverse;
     border-radius: var(--border-radius);
 
+    padding: var(--spacing);
     @media (max-width: 720px) {
-      padding: 0;
+
       width: 100%;
       flex-direction: column;
     }

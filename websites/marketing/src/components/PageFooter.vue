@@ -73,19 +73,18 @@ const navigation = computed<
     label: 'Tiko',
     items: [
       { text: 'About', url: '/about' },
-      { text: 'Funding', url: '/funding' },
-      { text: 'Sponsors', url: '/sponsors' },
-      { text: 'Technology', url: '/technology' },
+      { text: 'Apps', url: '/apps' },
+      { text: 'Sponsors', url: '/sponsors' }
     ],
   },
-  {
-    label: 'Support',
-    items: [
-      { text: 'Help Center', url: '/help' },
-      { text: 'Contact Support', url: '/support' },
-      { text: 'FAQ', url: '/faq' },
-    ],
-  },
+  // {
+  //   label: 'Support',
+  //   items: [
+  //     { text: 'Help Center', url: '/help' },
+  //     { text: 'Contact Support', url: '/support' },
+  //     { text: 'FAQ', url: '/faq' },
+  //   ],
+  // },
 ]);
 </script>
 
@@ -154,7 +153,7 @@ const navigation = computed<
   }
 
   &__nav-link {
-    color: var(--color-light);
+    color: var(--color-background);
     text-decoration: none;
     width: 100%;
     transition: color 0.2s;
@@ -164,7 +163,7 @@ const navigation = computed<
     }
   }
   &__nav-text {
-    color: var(--color-light);
+    color: var(--color-background);
   }
 
   &__top {

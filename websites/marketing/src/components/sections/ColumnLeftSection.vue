@@ -90,7 +90,6 @@ onMounted(async () => {
 
 <style lang="scss">
 .column-left-section {
-  padding: calc(var(--spacing) * 2) var(--spacing);
   background-color: var(--color-light);
   color: var(--color-dark);
   position: relative;
@@ -98,20 +97,23 @@ onMounted(async () => {
   position: relative;
 
   @media (max-width: 720px) {
-    padding: var(--spacing);
     flex-direction: column-reverse;
     align-items: center;
   }
 
-  &--blocked{
+  &--blocked {
     .column-left-section__container {
       padding: var(--spacing);
-      background-color: color-mix(in srgb, var(--section-color), transparent 75%);
+      background-color: color-mix(
+        in srgb,
+        var(--section-color),
+        transparent 75%
+      );
     }
   }
 
-  &--background{
-      background-color: color-mix(in srgb, var(--section-color), transparent 75%);
+  &--background {
+    background-color: color-mix(in srgb, var(--section-color), transparent 75%);
   }
 
   &__image {
@@ -143,15 +145,13 @@ onMounted(async () => {
     display: flex;
     position: relative;
     border-radius: var(--border-radius);
-
+    padding: var(--spacing);
     @media (max-width: 720px) {
-      padding: 0;
+
       width: 100%;
       flex-direction: column;
     }
   }
-
-
 
   &__content {
     width: 50%;
@@ -163,7 +163,6 @@ onMounted(async () => {
     @media (max-width: 720px) {
       width: 100%;
     }
-
   }
 
   &__title {

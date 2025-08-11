@@ -24,8 +24,9 @@
       <div v-if="content?.items" :class="bemm('apps-list')">
         <AppIcon
           v-for="(app, index) in content.items"
+
           :key="index"
-          :app="app"
+          :app="app" @click="goToApp(app)"
         />
       </div>
     </div>
@@ -38,6 +39,10 @@ import { TMarkdownRenderer } from '@tiko/ui';
 import type { ContentSection } from '@tiko/core';
 import { processTitle } from '@/utils/processTitle';
 import AppIcon from '../blocks/AppIcon.vue';
+import { kebabCase } from '@sil/case';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 interface TextSectionProps {
   section: ContentSection;
@@ -46,6 +51,16 @@ interface TextSectionProps {
 
 defineProps<TextSectionProps>();
 const bemm = useBemm('apps-section');
+
+
+const goToApp = (app: any) => {
+  if (app.data) {
+    router.push({
+      path: '/apps',
+      hash: `#app-${kebabCase(app.data.app_title)}`,
+    })
+  }
+};
 
 </script>
 

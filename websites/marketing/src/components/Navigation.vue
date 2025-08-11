@@ -78,9 +78,9 @@ async function loadNavigationItems() {
       console.error('[Navigation] Marketing project not found');
       throw new Error('Marketing project not found');
     }
-    
+
     console.log('[Navigation] Marketing project:', project);
-    
+
     // Also try direct service call
     try {
       const directPages = await contentService.getPages(project.id);
@@ -88,11 +88,11 @@ async function loadNavigationItems() {
     } catch (error) {
       console.error('[Navigation] Direct service error:', error);
     }
-    
+
     // Get all pages for this project
     const pages = await content.getPages(project.id);
     console.log('[Navigation] All pages:', pages.length, pages);
-    
+
     // Debug: Show all page details
     pages.forEach(page => {
       console.log('[Navigation] Page details:', {
@@ -105,19 +105,19 @@ async function loadNavigationItems() {
         navigation_order: page.navigation_order
       });
     });
-    
+
     // Get language code from locale (e.g., 'en-GB' -> 'en')
     const languageCode = locale.value.split('-')[0];
     console.log('[Navigation] Current locale:', locale.value);
     console.log('[Navigation] Using language code:', languageCode);
-    
+
     // Filter pages that should show in navigation
     const navPages = pages.filter(page => {
-      const matches = page.show_in_navigation && 
-        page.is_published && 
+      const matches = page.show_in_navigation &&
+        page.is_published &&
         page.language_code === languageCode &&
         !page.is_home;
-      
+
       if (!matches) {
         console.log(`[Navigation] Page "${page.slug}" filtered out:`, {
           show_in_navigation: page.show_in_navigation,
@@ -126,21 +126,21 @@ async function loadNavigationItems() {
           is_home: page.is_home
         });
       }
-      
+
       return matches;
     });
-    
+
     console.log('[Navigation] Filtered pages:', navPages.length, navPages);
-    
+
     // Sort by navigation order
     navPages.sort((a, b) => a.navigation_order - b.navigation_order);
-    
+
     // Convert to navigation items
     items.value = navPages.map(page => ({
       name: page.title,
       link: `/${page.slug}`
     }));
-    
+
     console.log('[Navigation] Loaded navigation items:', items.value);
   } catch (error) {
     console.error('[Navigation] Failed to load navigation items:', error);
@@ -148,7 +148,7 @@ async function loadNavigationItems() {
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined
     });
-    
+
     // Fallback to hardcoded items
     console.warn('[Navigation] Using fallback hardcoded navigation items');
     items.value = [
@@ -169,7 +169,7 @@ const preloadPage = async (path: string) => {
   if (slug === currentSlug) return;
 
   console.log(`🔄 [Navigation] Preloading page: ${slug}`);
-  
+
   try {
     // Preload the page content using getPage from useContent
     const result = await content.getPage(slug, locale.value);
@@ -186,7 +186,7 @@ const preloadPage = async (path: string) => {
 onMounted(async () => {
   // Load navigation items from CMS
   await loadNavigationItems();
-  
+
   // Wait a bit for the initial page to load, then preload all pages
   setTimeout(() => {
     console.log('🚀 [Navigation] Starting background preload of all pages');
@@ -341,6 +341,11 @@ watch(
         transparent 0%
       );
       color: var(--color-light);
+    }
+
+    &.router-link-active {
+      background-color: var(--color-secondary);
+      color: var(--color-secondary-text);
     }
   }
 }

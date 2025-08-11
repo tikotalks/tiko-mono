@@ -3,12 +3,7 @@
     :class="bemm()"
     :style="`--color: var(--color-${getAppData(app, 'color') || 'blue'}); --image: url(${getImageUrl(getAppData(app, 'app_icon'))})`"
   >
-    <a
-      :href="getAppData(app, 'app_link_website') || '#'"
-      :target="getAppData(app, 'app_link_website') ? '_blank' : undefined"
-      :rel="
-        getAppData(app, 'app_link_website') ? 'noopener noreferrer' : undefined
-      "
+    <span
       :class="bemm('link')"
     >
       <img
@@ -23,7 +18,7 @@
       <span :class="bemm('title')">{{
         getAppData(app, 'app_title') || app.item?.name
       }}</span>
-    </a>
+    </span>
   </div>
 </template>
 

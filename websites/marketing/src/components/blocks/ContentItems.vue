@@ -26,7 +26,7 @@
         :class="bemm('cta')"
         :color="item.data.color"
         size="large"
-        @click="handleClick(item.data.cta)"
+        @click="handleClick(item)"
       >
         {{ item.data['link-label'] || 'Learn More' }}
       </TButton>
@@ -58,12 +58,14 @@ const getImageUrl = (imageId: string) => {
   return '';
 };
 
-const handleClick = (cta: string) => {
-  if (cta.startsWith('http')) {
-    window.open(cta, '_blank');
+const handleClick = (cta: { data: { link: string } }) => {
+  console.log(cta.data.link);
+const { link } = cta.data;
+  if(link.startsWith('http')) {
+    window.open(link, '_blank');
   } else {
-    // Handle internal navigation if needed
-    console.log(`Internal action: ${cta}`);
+    // Handle internal links if necessary
+    console.warn('Internal links are not supported in this context.');
   }
 };
 
@@ -79,20 +81,36 @@ onMounted(async () => {
   display: flex;
   gap: var(--space);
 
+  padding: var(--spacing);
+
+  overflow: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: var(--spacing);
+  justify-content: flex-start;
+  align-items: flex-start;
+
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+
   &__item {
+    scroll-snap-align: start;
     padding: var(--space);
     border-radius: var(--border-radius);
-    background-color: color-mix(in srgb, var(--item-color, var(--color-light)), transparent 75%);
+    background-color: color-mix(
+      in srgb,
+      var(--item-color, var(--color-light)),
+      transparent 75%
+    );
     box-shadow: var(--shadow);
 
-    display:flex;
+    display: flex;
     flex-direction: column;
     gap: var(--space);
     // color: var(--item-text-color);
   }
 
-  &__image{
-    margin-top: calc(var(--space-xl) * 2 * -1);
+  &__image {
+    margin-top: calc(var(--space-xl) * 1.5 * -1);
   }
 }
 </style>

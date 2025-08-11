@@ -30,6 +30,7 @@
       <div v-if="content?.items" :class="bemm('apps-list')">
         <div
           v-for="(app, index) in content.items"
+          :id="`app-${kebabCase(app.data?.app_title)}`"
           :key="index"
           :class="bemm('app-item')"
           :style="`--app-color: ${app.data?.color ? `var(--color-${app.data.color})` : '#000'};`"
@@ -39,7 +40,7 @@
           <div :class="bemm('app-description')">
             <TMarkdownRenderer
               v-if="app.data.app_description"
-              :content="app.description"
+              :content="app.data.app_description"
               :class="bemm('app-description-content')"
             />
 
@@ -59,6 +60,7 @@ import { TButton, TMarkdownRenderer } from '@tiko/ui';
 import type { ContentSection } from '@tiko/core';
 import { useImages, useImageUrl } from '@tiko/core';
 import { onMounted, ref } from 'vue';
+import { kebabCase } from "@sil/case"
 import { processTitle } from '@/utils/processTitle';
 import AppIcon from '../blocks/AppIcon.vue';
 
@@ -235,7 +237,9 @@ onMounted(async () => {
     color: var(--color-foreground);
     padding: var(--spacing);
     border-radius: calc(var(--border-radius) * 2);
-display: flex; flex-direction: column; gap: var(--space);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space);
     width: 100%;
 
     &:hover {
@@ -258,9 +262,6 @@ display: flex; flex-direction: column; gap: var(--space);
       @keyframes reveal-center {
         0% {
           transform: scale(0);
-        }
-        80% {
-          transform: scale(1.2);
         }
         100% {
           transform: scale(1);

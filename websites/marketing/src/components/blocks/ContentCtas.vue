@@ -49,7 +49,7 @@ const handleAction = (cta: {
   }
 };
 
-const bemm = useBemm('content-items'); // Use bemm for styling
+const bemm = useBemm('content-ctas'); // Use bemm for styling
 </script>
 
 <style lang="scss"></style>
