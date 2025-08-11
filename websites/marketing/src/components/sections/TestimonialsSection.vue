@@ -3,7 +3,7 @@
     <div :class="bemm('container')">
       <h2 v-if="content?.title" :class="bemm('title')">{{ content.title }}</h2>
       <p v-if="content?.subtitle" :class="bemm('subtitle')">{{ content.subtitle }}</p>
-      
+
       <ItemsRenderer
         :items="content?.testimonials"
         display-type="grid"
@@ -47,13 +47,13 @@ const bemm = useBemm('testimonials-section')
 .testimonials-section {
   padding: var(--space-xl) 0;
   background: var(--color-background-secondary);
-  
+
   &__container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 var(--space-lg);
   }
-  
+
   &__title {
     font-size: var(--font-size-xl);
     font-weight: 700;
@@ -61,21 +61,21 @@ const bemm = useBemm('testimonials-section')
     color: var(--color-foreground);
     margin: 0 0 var(--space) 0;
   }
-  
+
   &__subtitle {
     font-size: var(--font-size-lg);
     text-align: center;
     color: var(--color-foreground-secondary);
     margin: 0 0 var(--space-xl) 0;
   }
-  
+
   &__testimonial {
     height: 100%;
     display: flex;
     flex-direction: column;
     gap: var(--space);
   }
-  
+
   &__quote {
     flex: 1;
     font-style: italic;
@@ -83,46 +83,46 @@ const bemm = useBemm('testimonials-section')
     color: var(--color-foreground);
     margin: 0;
     line-height: 1.6;
-    
+
     &::before {
       content: '"';
       font-size: 2em;
       color: var(--color-primary);
     }
-    
+
     &::after {
       content: '"';
       font-size: 2em;
       color: var(--color-primary);
     }
   }
-  
+
   &__author-info {
     display: flex;
     flex-direction: column;
     gap: var(--space-xs);
   }
-  
+
   &__author {
     font-weight: 600;
     color: var(--color-foreground);
     font-style: normal;
   }
-  
+
   &__role {
     color: var(--color-foreground-secondary);
     font-size: var(--font-size-sm);
   }
-  
+
   &__rating {
     display: flex;
     gap: 2px;
   }
-  
+
   &__star {
     color: var(--color-border);
     font-size: var(--font-size-lg);
-    
+
     &--filled {
       color: var(--color-warning);
     }

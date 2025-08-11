@@ -16,7 +16,7 @@
           :class="bemm('subtitle')"
           v-html="content.subtitle"
         />
-        <MarkdownRenderer
+        <TMarkdownRenderer
           :class="bemm('content')"
           v-if="content?.content"
           :content="content.content"
@@ -24,15 +24,16 @@
       </div>
     </div>
 
-    <pre>{{ content }}
-    </pre>
+    <!-- <pre>{{ content }}
+    </pre> -->
     <div :class="bemm('apps')">
       <div v-if="content?.items" :class="bemm('apps-list')">
-        <AppIcon
-          v-for="(app, index) in content.items"
-          :key="index"
-          :app="app"
-        />
+        <div v-for="(app, index) in content.items" :key="index" :class="bemm('app-item')">
+          <AppIcon :app="app" />
+          {{ app }}
+          <div :class="bemm('app-title')">{{ app.item?.name }}</div>
+        </div>
+
       </div>
     </div>
   </section>
@@ -40,10 +41,10 @@
 
 <script setup lang="ts">
 import { useBemm } from 'bemm';
+import { TMarkdownRenderer } from '@tiko/ui';
 import type { ContentSection } from '@tiko/core';
 import { useImages, useImageUrl } from '@tiko/core';
 import { onMounted, ref } from 'vue';
-import MarkdownRenderer from '../MarkdownRenderer.vue';
 import { processTitle } from '@/utils/processTitle';
 import AppIcon from '../blocks/AppIcon.vue';
 

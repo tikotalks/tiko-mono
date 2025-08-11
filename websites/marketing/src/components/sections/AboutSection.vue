@@ -10,7 +10,7 @@
         :class="bemm('title')"
         v-html="processTitle(content.title)"
       />
-      <MarkdownRenderer
+      <TMarkdownRenderer
         v-if="content?.content"
         :class="bemm('content')"
         :content="content.content"
@@ -21,10 +21,10 @@
 
 <script setup lang="ts">
 import { useBemm } from 'bemm';
+import { TMarkdownRenderer } from '@tiko/ui';
 import type { ContentSection } from '@tiko/core';
 import { useImages, useImageUrl } from '@tiko/core';
 import { onMounted, ref } from 'vue';
-import MarkdownRenderer from '../MarkdownRenderer.vue';
 import { processTitle } from '@/utils/processTitle';
 
 interface TextSectionProps {

@@ -6,7 +6,7 @@
       <h2 v-if="content?.title" :class="[bemm('title'),'title']">
         {{ content.title }}
       </h2>
-      <MarkdownRenderer v-if="content?.content" :class="bemm('content')" :content="content.content" />
+      <TMarkdownRenderer v-if="content?.content" :class="bemm('content')" :content="content.content" />
     </div>
   </section>
 </template>
@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import { useBemm } from 'bemm'
 import type { ContentSection } from '@tiko/core'
-import MarkdownRenderer from '../MarkdownRenderer.vue';
+import { TMarkdownRenderer } from '@tiko/ui'
 
 interface TextSectionProps {
   section: ContentSection

@@ -7,7 +7,7 @@
       <h2 v-if="content?.title" :class="bemm('title')" v-html="processTitle(content.title)" />
       <h4 v-if="content?.subtitle" :class="bemm('subtitle')" v-html="content.subtitle" />
 
-      <MarkdownRenderer
+      <TMarkdownRenderer
         v-if="content?.content"
         :class="bemm('content')"
         :content="content.content"
@@ -36,9 +36,8 @@ import { useBemm } from 'bemm';
 import type { ContentSection } from '@tiko/core';
 import { useImages, useImageUrl } from '@tiko/core';
 import {  onMounted, ref } from 'vue';
-import { TButton, TButtonGroup } from '@tiko/ui';
+import { TButton, TButtonGroup, TMarkdownRenderer } from '@tiko/ui';
 import { processTitle } from '@/utils/processTitle';
-import MarkdownRenderer from '../MarkdownRenderer.vue';
 
 interface TextSectionProps {
   section: ContentSection | null;

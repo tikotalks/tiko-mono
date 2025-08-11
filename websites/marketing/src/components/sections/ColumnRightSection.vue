@@ -1,13 +1,33 @@
 <template>
-  <section :class="bemm()" :style="`--section-image: url(${imageUrl}); --section-color: ${content.color || 'var(--color-primary)'};`">
-    <div :class="bemm('image')"></div>
+  <section
+    :id="section?.slug"
+    :class="bemm('', ['', sectionBlock])"
+    :style="`--section-image: url(${imageUrl}); --section-color: ${content.color || 'var(--color-primary)'};`"
+  >
     <div :class="bemm('container')">
-      <h2 v-if="content?.title" :class="bemm('title')" v-html="processTitle(content.title)" />
-      <MarkdownRenderer
-        v-if="content?.content"
-        :class="bemm('content')"
-        :content="content.content"
-      />
+      <div :class="bemm('image')">
+        <img v-if="imageUrl" :src="imageUrl" alt="Section Image" />
+      </div>
+
+      <div :class="bemm('content')">
+        <h2
+          v-if="content?.title"
+          :class="bemm('title')"
+          v-html="processTitle(content.title)"
+        />
+        <TMarkdownRenderer
+          v-if="content?.content"
+          :class="bemm('markdown')"
+          :content="content.content"
+        />
+        <ContentCtas
+          :items="content.cta"
+          v-if="content.cta && content.cta.length"
+        />
+      </div>
+    </div>
+    <div :class="bemm('items')" v-if="content.items && content.items.length">
+      <ContentItems :items="content?.items" />
     </div>
   </section>
 </template>
@@ -16,9 +36,11 @@
 import { useBemm } from 'bemm';
 import type { ContentSection } from '@tiko/core';
 import { useImages, useImageUrl } from '@tiko/core';
-import { onMounted, ref } from 'vue';
-import MarkdownRenderer from '../MarkdownRenderer.vue';
+import { computed, onMounted, ref } from 'vue';
 import { processTitle } from '@/utils/processTitle';
+import ContentItems from '../blocks/ContentItems.vue';
+import ContentCtas from '../blocks/ContentCtas.vue';
+import { TMarkdownRenderer } from '@tiko/ui';
 
 interface ColumnSectionProps {
   section: ContentSection;
@@ -33,13 +55,20 @@ const { getImageVariants } = useImageUrl();
 
 const imageUrl = ref('');
 
-
 const getFirst = (val: string | string[]) => {
   if (Array.isArray(val)) {
     return val[0];
   }
   return val;
 };
+
+const sectionBlock = computed(() => {
+  if (props.content['section-block-type']) {
+    return props.content['section-block-type'];
+  } else {
+    return 'default';
+  }
+});
 
 const loadImage = async () => {
   if (props.content.image) {
@@ -62,57 +91,80 @@ onMounted(async () => {
 
 <style lang="scss">
 .column-right-section {
-  padding: calc(var(--spacing) * 2) var(--spacing);
+  padding: var(--spacing);
   background-color: var(--color-light);
   color: var(--color-dark);
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-start;
   position: relative;
 
+  position: relative;
   @media (max-width: 720px) {
     padding: var(--spacing);
     flex-direction: column-reverse;
     align-items: center;
   }
 
+  &--blocked {
+    .column-right-section__container {
+      padding: var(--spacing);
+      background-color: color-mix(
+        in srgb,
+        var(--section-color),
+        transparent 75%
+      );
+    }
+  }
+
+  &--background {
+    background-color: color-mix(in srgb, var(--section-color), transparent 75%);
+  }
+
   &__image {
-    width: 50vw;
-    height: 50vw;
-    position: absolute;
-    right: 0;
-    top: 50%;
-    background-image: var(--section-image);
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: contain;
-    transform: translateY(-50%) translateX(25%);
+    width: 50%;
+    aspect-ratio: 1/1;
+    position: relative;
+
+    img {
+      width: calc(50vw + var(--spacing));
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%) translateX(0);
+    }
 
     @media (max-width: 720px) {
-      width: 100vw;
-      height: 100vw;
-      left: 0;
-      top: 0;
-      position: relative;
-      transform: translateY(0) translateX(0) rotate(0);
+      width: 100%;
+      img {
+        width: 110vw;
+        position: relative;
+        top: 0;
+        transform: translateY(0) translateX(0);
+      }
     }
   }
 
   &__container {
-    width: calc(50% + (var(--spacing) * .5));
-    padding: 0;
+    width: 100%;
+    display: flex;
+    position: relative;
+    flex-direction: row-reverse;
+    border-radius: var(--border-radius);
+
+    @media (max-width: 720px) {
+      padding: 0;
+      width: 100%;
+      flex-direction: column;
+    }
+  }
+
+  &__content {
+    width: 50%;
+
     display: flex;
     flex-direction: column;
     gap: var(--space-l);
 
     @media (max-width: 720px) {
-      padding: 0;
       width: 100%;
-      background-image: linear-gradient(
-        to top,
-        var(--color-light) 0%,
-        transparent 100%
-      );
     }
   }
 
@@ -120,8 +172,8 @@ onMounted(async () => {
     font-size: clamp(3em, 4vw, 6em);
     line-height: 1;
     font-family: var(--header-font-family);
-    color: var(--color-blue);
-    .title-dot{
+    color: var(--section-color);
+    .title-dot {
       color: var(--color-orange);
     }
   }

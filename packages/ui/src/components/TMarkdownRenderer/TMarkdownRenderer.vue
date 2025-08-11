@@ -149,7 +149,7 @@ const renderedMarkdown = computed(() => parseMarkdown(props.content))
   }
 
   code {
-    background-color: var(--color-background-secondary);
+    background-color: var(--color-secondary);
     padding: 0.2em 0.4em;
     border-radius: var(--border-radius-small);
     font-family: monospace;
@@ -157,7 +157,8 @@ const renderedMarkdown = computed(() => parseMarkdown(props.content))
   }
 
   pre {
-    background-color: var(--color-background-secondary);
+    background-color: var(--color-background);
+    color: var(--color-foreground);
     padding: var(--space);
     border-radius: var(--border-radius);
     overflow-x: auto;

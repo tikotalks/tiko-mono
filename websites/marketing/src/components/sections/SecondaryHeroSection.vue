@@ -1,5 +1,5 @@
 <template>
-  <section :class="bemm()" :style="`--image: url(${imageUrl}); --section-color: ${content.color || 'var(--color-primary)'};`">
+  <section :id="section?.slug" :class="bemm()" :style="`--image: url(${imageUrl}); --section-color: ${content.color || 'var(--color-primary)'};`">
     <div :class="bemm('container')">
       <h1
         v-if="content?.title"
@@ -10,27 +10,27 @@
         {{ content.subtitle }}
       </p>
       <div v-if="content?.content" :class="bemm('content')">
-        <MarkdownRenderer :content="content.content" />
+        <TMarkdownRenderer :content="content.content" />
       </div>
       <div v-if="content?.ctaText" :class="bemm('cta')">
         <TButton color="primary" size="large" @click="handleCTAClick">
           {{ content.ctaText }}
         </TButton>
       </div>
+      <ContentCtas :items="content.cta" v-if="content.cta && content.cta.length" />
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
 import { useBemm } from 'bemm';
-import { TButton } from '@tiko/ui';
+import { TButton, TMarkdownRenderer } from '@tiko/ui';
 import { useRouter } from 'vue-router';
 import { useImages, useImageUrl } from '@tiko/core';
 import type { ContentSection } from '@tiko/core';
 import { onMounted, ref } from 'vue';
-import ImageGrid from '../ImageGrid.vue';
-import MarkdownRenderer from '../MarkdownRenderer.vue';
 import { processTitle } from '@/utils/processTitle';
+import ContentCtas from '../blocks/ContentCtas.vue';
 
 interface SecondaryHeroSectionProps {
   section: ContentSection | null;
@@ -64,6 +64,18 @@ const getFirst = (val: string | string[]) => {
   return val;
 };
 
+const handleCta = (cta: {
+  label: string;
+  action: string;
+}) => {
+  if (cta.action.startsWith('http')) {
+    window.open(cta.action, '_blank');
+  } else {
+    // Handle internal actions
+    console.log(`Action: ${cta.action}`);
+  }
+};
+
 const loadImage = async () => {
   if (props.content.image) {
     const imageId = getFirst(props.content.image);
@@ -74,21 +86,6 @@ const loadImage = async () => {
     } else {
       imageUrl.value = '';
     }
-  }
-};
-
-const handleAction = (cta: {
-  type?: string;
-  color?: string;
-  size?: string;
-  text: string;
-  action: string;
-}) => {
-  if (cta.action.startsWith('http')) {
-    window.open(cta.action, '_blank');
-  } else {
-    // Handle internal actions
-    console.log(`Action: ${cta.action}`);
   }
 };
 
@@ -191,6 +188,12 @@ onMounted(async () => {
   }
 
   &__cta {
+    display: flex;
+    justify-content: center;
+    gap: var(--space);
+  }
+
+  &__ctas {
     display: flex;
     justify-content: center;
     gap: var(--space);

@@ -12,7 +12,7 @@
           :class="bemm('subtitle')"
           v-html="content.subtitle"
         />
-        <MarkdownRenderer
+        <TMarkdownRenderer
           :class="bemm('content')"
           v-if="content?.content"
           :content="content.content"
@@ -34,8 +34,8 @@
 
 <script setup lang="ts">
 import { useBemm } from 'bemm';
+import { TMarkdownRenderer } from '@tiko/ui';
 import type { ContentSection } from '@tiko/core';
-import MarkdownRenderer from '../MarkdownRenderer.vue';
 import { processTitle } from '@/utils/processTitle';
 import AppIcon from '../blocks/AppIcon.vue';
 

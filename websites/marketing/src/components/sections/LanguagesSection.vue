@@ -8,7 +8,7 @@
 
     <div :class="bemm('container')">
       <div :class="bemm('column', ['', 'left'])">
-        <MarkdownRenderer :class="bemm('content')" :content="content.content" />
+        <TMarkdownRenderer :class="bemm('content')" :content="content.content" />
         <ul :class="bemm('language-list')" v-if="content.list">
           <li
             :class="bemm('language-item')"
@@ -58,11 +58,11 @@
 <script setup lang="ts">
 import { useBemm } from 'bemm';
 import type { ContentSection } from '@tiko/core';
+import { TMarkdownRenderer } from '@tiko/ui';
 import { processTitle } from '@/utils/processTitle';
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 
 import { useI18n } from '@tiko/ui';
-import MarkdownRenderer from '../MarkdownRenderer.vue';
 
 const { t } = useI18n();
 

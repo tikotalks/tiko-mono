@@ -10,7 +10,7 @@
         {{ content.subtitle }}
       </p>
       <div v-if="content?.content" :class="bemm('content')">
-        <MarkdownRenderer :content="content.content" />
+        <TMarkdownRenderer :content="content.content" />
       </div>
       <div v-if="content?.ctaText" :class="bemm('cta')">
         <TButton color="primary" size="large" @click="handleCTAClick">
@@ -27,13 +27,12 @@
 
 <script setup lang="ts">
 import { useBemm } from 'bemm';
-import { TButton } from '@tiko/ui';
+import { TButton, TMarkdownRenderer } from '@tiko/ui';
 import { useRouter } from 'vue-router';
 import { useImages, useImageUrl } from '@tiko/core';
 import type { ContentSection } from '@tiko/core';
 import { computed, onMounted, ref, onUnmounted, watch } from 'vue';
 import ImageGrid from '../ImageGrid.vue';
-import MarkdownRenderer from '../MarkdownRenderer.vue';
 import { getCachedAverageColor } from '../../utils/getAverageColor';
 import { processTitle } from '@/utils/processTitle';
 
