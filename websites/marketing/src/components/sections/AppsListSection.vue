@@ -225,6 +225,7 @@ onMounted(async () => {
       var(--app-color) 50%
     );
 
+    padding: var(--spacing);
 
 
     @media screen and (max-width: 720px) {
