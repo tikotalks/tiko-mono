@@ -41,7 +41,7 @@
 							v-if="popup.config.canClose"
 							:class="bemm('close')"
 							:icon="Icons.MULTIPLY_M"
-							:size="ButtonSize.SMALL"
+							size="small"
 							@click="popupService.close({ id: popup.id })"
 						/>
 						<component
@@ -92,7 +92,7 @@ import { Icons } from 'open-icon';
 import { useEventBus } from '@tiko/core';
 import type { TikoEvents } from '@tiko/core';
 import TButton from '../TButton/TButton.vue';
-import type { ButtonSize } from '../TButton/TButton.model';
+import { ButtonSize } from '../TButton/TButton.model';
 import { ComponentPublicInstance, computed, useSlots, onMounted, onUnmounted } from 'vue';
 
 const bemm = useBemm('popup');
