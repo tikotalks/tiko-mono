@@ -16,6 +16,7 @@
     <Transition name="page-fade">
       <div v-if="pageData?.sections?.length" :key="currentPageKey">
         <template v-for="section in pageData.sections" :key="section.section.id">
+
           <SectionRenderer
             :section="section.section"
             :content="section.content"
@@ -100,6 +101,8 @@ async function loadContent() {
     const loadTime = Date.now() - startTime;
 
     console.log(`[PageContent] Loaded "${pageSlug.value}" in ${loadTime}ms (${loadTime < 50 ? 'from cache' : 'from network'})`);
+    console.log(`[PageContent] Page data:`, page);
+    console.log(`[PageContent] Sections found:`, page?.sections?.length || 0);
 
     if (page) {
       // For cached content, add small delay for smoother transition

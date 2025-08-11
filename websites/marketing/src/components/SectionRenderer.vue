@@ -39,7 +39,7 @@ const sectionComponents = {
   hero2: defineAsyncComponent(() => import('./sections/SecondaryHeroSection.vue')),
   about: defineAsyncComponent(() => import('./sections/AboutSection.vue')),
   columnleft: defineAsyncComponent(() => import('./sections/ColumnLeftSection.vue')),
-  columnRight: defineAsyncComponent(() => import('./sections/ColumnRightSection.vue')),
+  columnright: defineAsyncComponent(() => import('./sections/ColumnRightSection.vue')),
   features: defineAsyncComponent(
     () => import('./sections/FeaturesSection.vue'),
   ),
@@ -64,20 +64,32 @@ const sectionComponents = {
 
 // Get section type from slug or name
 const sectionType = computed(() => {
-  return (
-    props.content?.template ||
+  const type = props.content?.template ||
     props.section.slug ||
     props.section.name?.toLowerCase() ||
-    'text'
-  );
+    'text';
+  
+  // Log for debugging
+  console.log('[SectionRenderer] Section type:', type, 'Available:', Object.keys(sectionComponents));
+  console.log('[SectionRenderer] Section data:', props.section);
+  console.log('[SectionRenderer] Content data:', props.content);
+  
+  return type;
 });
 
 // Get the component based on section type
 const sectionComponent = computed(() => {
-  return (
-    sectionComponents[sectionType.value as keyof typeof sectionComponents] ||
-    sectionComponents.text
-  );
+  // First try exact match
+  let component = sectionComponents[sectionType.value as keyof typeof sectionComponents];
+  
+  // If not found, try lowercase version
+  if (!component) {
+    const lowercaseType = sectionType.value.toLowerCase();
+    component = sectionComponents[lowercaseType as keyof typeof sectionComponents];
+  }
+  
+  // Fallback to text component
+  return component || sectionComponents.text;
 });
 </script>
 
