@@ -1,5 +1,7 @@
 <template>
-  <PageContent page-slug="home" />
+  <div>
+    <PageContent page-slug="home" />
+  </div>
 </template>
 
 <script setup lang="ts">

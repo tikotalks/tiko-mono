@@ -224,6 +224,9 @@ watch(
   animation-timeline: scroll();
   animation-range: 0 100vh;
 
+  --radius: calc(var(--border-radius) * 4);
+  border-radius: 0 0 0 var(--radius);
+
   @at-root {
     @keyframes headerSize {
       to {
