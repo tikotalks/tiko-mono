@@ -43,7 +43,7 @@ interface MediaRecord {
 }
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url)
     
     // CORS headers
@@ -58,6 +58,18 @@ export default {
     }
 
     try {
+      // Validate environment variables
+      if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_KEY) {
+        console.error('Missing environment variables:', {
+          SUPABASE_URL: !!env.SUPABASE_URL,
+          SUPABASE_SERVICE_KEY: !!env.SUPABASE_SERVICE_KEY
+        })
+        return new Response(JSON.stringify({ error: 'Server configuration error' }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
       // Initialize clients
       const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY)
       const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY })
@@ -126,7 +138,7 @@ export default {
         }
 
         // Start processing in the background
-        request.ctx.waitUntil(processGenerationQueue(mediaRecords, env, supabase, openai))
+        ctx.waitUntil(processGenerationQueue(mediaRecords, env, supabase, openai))
 
         return new Response(JSON.stringify({ 
           success: true, 
@@ -180,10 +192,15 @@ export default {
         return new Response(stream, { headers })
       }
 
-      return new Response('Not Found', { status: 404 })
+      return new Response('Not Found', { status: 404, headers: corsHeaders })
     } catch (error) {
       console.error('Worker error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      return new Response(JSON.stringify({ 
+        error: 'Internal server error',
+        message: errorMessage,
+        stack: error instanceof Error ? error.stack : undefined
+      }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })

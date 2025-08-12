@@ -1,18 +1,17 @@
 <template>
-  <TAppLayout>
-    <template #default>
+
       <div :class="bemm()">
         <!-- Header -->
         <div :class="bemm('header')">
-          <h1>{{ t('admin.generate.title', 'AI Image Generation') }}</h1>
-          <p>{{ t('admin.generate.description', 'Generate images using AI and manage your generation queue') }}</p>
+          <h1>{{ t('admin.generate.title') }}</h1>
+          <p>{{ t('admin.generate.description') }}</p>
         </div>
 
         <!-- Main Content -->
         <div :class="bemm('content')">
           <!-- Left Panel: Queue Management -->
           <div :class="bemm('panel', 'queue')">
-            <h2 :class="bemm('panel-title')">{{ t('admin.generate.queue', 'Generation Queue') }}</h2>
+            <h2 :class="bemm('panel-title')">{{ t('admin.generate.queue') }}</h2>
 
             <!-- Scope Selector -->
             <div :class="bemm('scope-selector')">
@@ -40,7 +39,7 @@
                 />
                 <TInputText
                   v-model="newItem.prompt"
-                  :placeholder="t('admin.generate.prompt', 'Describe the image...')"
+                  :placeholder="t('admin.generate.prompt')"
                   @keydown.enter="addToQueue"
                 />
                 <TButton
@@ -54,12 +53,12 @@
               <div v-if="generationScope === 'global'" :class="bemm('form-row')">
                 <TInputText
                   v-model="newItem.category"
-                  :placeholder="t('admin.generate.category', 'Category')"
+                  :placeholder="t('common.category', 'Category')"
                   size="small"
                 />
                 <TInputText
                   v-model="newItem.tags"
-                  :placeholder="t('admin.generate.tags', 'Tags (comma separated)')"
+                  :placeholder="t('admin.generate.tags')"
                   size="small"
                 />
               </div>
@@ -72,14 +71,14 @@
                   size="small"
                   @click="showBulkImport = !showBulkImport"
                 >
-                  {{ t('admin.generate.bulkImport', 'Bulk Import') }}
+                  {{ t('common.bulkImport') }}
                 </TButton>
               </div>
 
               <div v-if="showBulkImport" :class="bemm('bulk-import')">
                 <TInputTextArea
                   v-model="bulkImportText"
-                  :placeholder="t('admin.generate.bulkFormat', 'Format: name | prompt (one per line)')"
+                  :placeholder="t('admin.generate.bulkFormat')"
                   :rows="5"
                 />
                 <TButton
@@ -87,7 +86,7 @@
                   @click="processBulkImport"
                   :disabled="!bulkImportText"
                 >
-                  {{ t('admin.generate.importItems', 'Import Items') }}
+                  {{ t('common.importItems') }}
                 </TButton>
               </div>
             </div>
@@ -124,10 +123,10 @@
                 :loading="isProcessing"
                 @click="startGeneration"
               >
-                {{ t('admin.generate.startGeneration', `Generate ${queue.length} Images`) }}
+                {{ t('admin.generate.startGeneration', {total: queue.length}) }}
               </TButton>
               <TButton
-                type="ghost"
+                type="outline"
                 @click="clearQueue"
               >
                 {{ t('admin.generate.clearQueue', 'Clear Queue') }}
@@ -141,17 +140,18 @@
               <h2 :class="bemm('panel-title')">{{ t('admin.generate.results', 'Generated Images') }}</h2>
 
               <!-- Filter Tabs -->
-              <div :class="bemm('tabs')">
+              <TButtonGroup fluid :class="bemm('tabs')">
                 <TButton
                   v-for="tab in tabs"
                   :key="tab.value"
-                  :class="bemm('tab', { active: activeTab === tab.value })"
+                  :type="activeTab == tab.value  ? 'default' : 'outline'"
+                  :class="bemm('tab', ['', activeTab == tab.value  ? 'active' : ''])"
                   @click="activeTab = tab.value"
                 >
                   {{ tab.label }}
                   <span v-if="tab.count > 0" :class="bemm('tab-count')">{{ tab.count }}</span>
                 </TButton>
-              </div>
+              </TButtonGroup>
             </div>
 
             <!-- Progress Indicators -->
@@ -162,72 +162,80 @@
                 :class="bemm('progress-item')"
               >
                 <TSpinner size="small" />
-                <span>{{ t('admin.generate.generating', 'Generating') }} {{ item.original_filename }}...</span>
+                <span>{{ t('admin.generate.generating') }} {{ item.original_filename }}...</span>
               </div>
             </div>
 
             <!-- Results Grid -->
-            <div :class="bemm('grid')">
-              <div
-                v-for="media in filteredMedia"
-                :key="media.id"
-                :class="bemm('media-item', [media.status])"
-              >
-                <div :class="bemm('media-preview')">
-                  <img
-                    v-if="media.url"
-                    :src="media.thumbnail_url || media.url"
-                    :alt="media.original_filename"
-                  />
-                  <div v-else :class="bemm('media-placeholder')">
-                    <TIcon name="image" />
+            <TVirtualGrid
+              :items="filteredMedia"
+              :min-item-width="250"
+              :gap="16"
+              :aspect-ratio="'1:1'"
+            >
+              <template #default="{ item }">
+                <div :class="bemm('media-wrapper')">
+                  <TMediaTile
+                    :media="item"
+                    :get-image-variants="getImageVariants"
+                  >
+                    <template #overlay>
+                      <!-- Status Badge -->
+                      <div :class="bemm('media-status')">
+                        <TChip :type="getStatusType(item.status)" size="small">
+                          {{ item.status }}
+                        </TChip>
+                      </div>
+                    </template>
+                    
+                    <template #details>
+                      <div :class="bemm('media-details')">
+                        <p v-if="item.generation_data?.prompt" :class="bemm('prompt')">
+                          {{ item.generation_data.prompt }}
+                        </p>
+                        <p v-if="item.error_message" :class="bemm('error')">
+                          {{ item.error_message }}
+                        </p>
+                      </div>
+                    </template>
+                  </TMediaTile>
+                  
+                  <!-- Action Buttons -->
+                  <div :class="bemm('media-actions')">
+                    <TButton
+                      v-if="item.status === 'generated'"
+                      type="primary"
+                      size="small"
+                      icon="check"
+                      fluid
+                      @click="approveMedia(item.id)"
+                    >
+                      {{ t('common.approve') }}
+                    </TButton>
+                    <TButton
+                      v-if="item.status === 'generated'"
+                      type="outline"
+                      size="small"
+                      icon="x"
+                      fluid
+                      @click="rejectMedia(item.id)"
+                    >
+                      {{ t('common.reject') }}
+                    </TButton>
+                    <TButton
+                      v-if="item.status === 'failed'"
+                      type="outline"
+                      size="small"
+                      icon="rotate-cw"
+                      fluid
+                      @click="retryMedia(item)"
+                    >
+                      {{ t('common.retry') }}
+                    </TButton>
                   </div>
-
-                  <!-- Status Overlay -->
-                  <div :class="bemm('media-status')">
-                    <TChip :type="getStatusType(media.status)" size="small">
-                      {{ media.status }}
-                    </TChip>
-                  </div>
                 </div>
-
-                <div :class="bemm('media-info')">
-                  <h4>{{ media.original_filename }}</h4>
-                  <p v-if="media.generation_data?.prompt">{{ media.generation_data.prompt }}</p>
-                  <p v-if="media.error_message" :class="bemm('error')">{{ media.error_message }}</p>
-                </div>
-
-                <div :class="bemm('media-actions')">
-                  <TButton
-                    v-if="media.status === 'generated'"
-                    type="primary"
-                    size="small"
-                    icon="check"
-                    @click="approveMedia(media.id)"
-                  >
-                    {{ t('admin.generate.approve', 'Approve') }}
-                  </TButton>
-                  <TButton
-                    v-if="media.status === 'generated'"
-                    type="outline"
-                    size="small"
-                    icon="x"
-                    @click="rejectMedia(media.id)"
-                  >
-                    {{ t('admin.generate.reject', 'Reject') }}
-                  </TButton>
-                  <TButton
-                    v-if="media.status === 'failed'"
-                    type="outline"
-                    size="small"
-                    icon="rotate-cw"
-                    @click="retryMedia(media)"
-                  >
-                    {{ t('admin.generate.retry', 'Retry') }}
-                  </TButton>
-                </div>
-              </div>
-            </div>
+              </template>
+            </TVirtualGrid>
 
             <!-- Empty State -->
             <div v-if="filteredMedia.length === 0 && !isLoading" :class="bemm('empty-state')">
@@ -237,8 +245,6 @@
           </div>
         </div>
       </div>
-    </template>
-  </TAppLayout>
 </template>
 
 <script setup lang="ts">
@@ -254,13 +260,17 @@ import {
   TInputTextArea,
   TIcon,
   TSpinner,
-  TChip
+  TChip,
+  TMediaTile,
+  TVirtualGrid
 } from '@tiko/ui'
+import { useImageUrl } from '@tiko/core'
 
 const bemm = useBemm('generate-view')
 const { t } = useI18n()
 const toastService = inject<ToastService>('toastService')
 const authStore = useAuthStore()
+const { getImageVariants } = useImageUrl()
 
 // State
 const generationScope = ref<'personal' | 'global'>('personal')
@@ -393,11 +403,13 @@ const startGeneration = async () => {
         items: queue.value
       })
     })
-    
+
     if (!response.ok) {
-      throw new Error('Failed to queue image generation')
+      const errorText = await response.text()
+      console.error('Generation API error:', response.status, errorText)
+      throw new Error(`Failed to queue image generation: ${response.status} ${errorText}`)
     }
-    
+
     const result = await response.json()
 
     toastService?.show({
@@ -647,11 +659,9 @@ onUnmounted(() => {
     flex-direction: column;
 
     &--queue {
-      max-height: 100%;
     }
 
     &--results {
-      overflow-y: auto;
     }
   }
 
@@ -659,11 +669,10 @@ onUnmounted(() => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--space);
+ gap: var(--space);
   }
 
   &__panel-title {
-    margin: 0 0 var(--space) 0;
     font-size: 1.25rem;
   }
 
@@ -677,9 +686,8 @@ onUnmounted(() => {
 
   &__form-row {
     display: grid;
-    grid-template-columns: 1fr 2fr auto;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: var(--space-s);
-    margin-bottom: var(--space-s);
   }
 
   &__bulk-actions {
@@ -741,30 +749,8 @@ onUnmounted(() => {
     gap: var(--space-s);
   }
 
-  &__tabs {
-    display: flex;
-    gap: var(--space-s);
-  }
 
-  &__tab {
-    padding: var(--space-xs) var(--space);
-    background: none;
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    font-size: 0.875rem;
-    transition: all 0.2s ease;
 
-    &:hover {
-      background: var(--color-background-secondary);
-    }
-
-    &--active {
-      background: var(--color-primary);
-      color: white;
-      border-color: var(--color-primary);
-    }
-  }
 
   &__tab-count {
     margin-left: var(--space-xs);
@@ -792,78 +778,38 @@ onUnmounted(() => {
     }
   }
 
-  &__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: var(--space);
-  }
-
-  &__media-item {
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    transition: all 0.2s ease;
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    &--failed {
-      border-color: var(--color-error);
-    }
-  }
-
-  &__media-preview {
-    position: relative;
-    aspect-ratio: 1;
-    background: var(--color-background-secondary);
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-  }
-
-  &__media-placeholder {
-    width: 100%;
-    height: 100%;
+  &__media-wrapper {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-text-secondary);
-    font-size: 3rem;
+    flex-direction: column;
+    gap: var(--space-s);
   }
 
   &__media-status {
     position: absolute;
     top: var(--space-s);
     right: var(--space-s);
+    z-index: 1;
   }
 
-  &__media-info {
-    padding: var(--space);
+  &__media-details {
+    padding: var(--space-s);
+  }
 
-    h4 {
-      margin: 0 0 var(--space-xs) 0;
-      font-size: 0.875rem;
-    }
-
-    p {
-      margin: 0;
-      font-size: 0.75rem;
-      color: var(--color-text-secondary);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
+  &__prompt {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   &__media-actions {
-    padding: 0 var(--space) var(--space);
     display: flex;
-    gap: var(--space-s);
+    gap: var(--space-xs);
+    flex-wrap: wrap;
   }
 
   &__error {
