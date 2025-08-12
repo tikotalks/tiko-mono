@@ -242,11 +242,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, inject } from 'vue'
 import { useBemm } from 'bemm'
-import { useI18n } from '@tiko/ui'
+import { useI18n, type ToastService } from '@tiko/ui'
 import { useAuthStore, userMediaService, type UserMedia, type MediaStatus } from '@tiko/core'
-import { useToast } from '@/composables/useToast'
 import {
   TAppLayout,
   TButton,
@@ -260,7 +259,7 @@ import {
 
 const bemm = useBemm('generate-view')
 const { t } = useI18n()
-const { showToast } = useToast()
+const toastService = inject<ToastService>('toastService')
 const authStore = useAuthStore()
 
 // State
@@ -370,7 +369,7 @@ const processBulkImport = () => {
   showBulkImport.value = false
   localStorage.setItem(`generation-queue-${generationScope.value}`, JSON.stringify(queue.value))
   
-  showToast({
+  toastService?.show({
     message: t('admin.generate.itemsImported', `${lines.length} items imported`),
     type: 'success'
   })
@@ -388,7 +387,7 @@ const startGeneration = async () => {
       queue.value
     )
     
-    showToast({
+    toastService?.show({
       message: t('admin.generate.generationStarted', `${result.queued} images queued for generation`),
       type: 'success'
     })
@@ -397,7 +396,7 @@ const startGeneration = async () => {
     await loadGeneratedMedia()
   } catch (error) {
     console.error('Failed to start generation:', error)
-    showToast({
+    toastService?.show({
       message: t('admin.generate.generationFailed', 'Failed to start generation'),
       type: 'error'
     })
@@ -436,13 +435,13 @@ const approveMedia = async (mediaId: string) => {
       const { mediaService } = await import('@tiko/core')
       await mediaService.updateMediaStatus(mediaId, 'published')
     }
-    showToast({
+    toastService?.show({
       message: t('admin.generate.imageApproved', 'Image approved'),
       type: 'success'
     })
   } catch (error) {
     console.error('Failed to approve media:', error)
-    showToast({
+    toastService?.show({
       message: t('admin.generate.approveFailed', 'Failed to approve image'),
       type: 'error'
     })
@@ -457,13 +456,13 @@ const rejectMedia = async (mediaId: string) => {
       const { mediaService } = await import('@tiko/core')
       await mediaService.updateMediaStatus(mediaId, 'rejected')
     }
-    showToast({
+    toastService?.show({
       message: t('admin.generate.imageRejected', 'Image rejected'),
       type: 'success'
     })
   } catch (error) {
     console.error('Failed to reject media:', error)
-    showToast({
+    toastService?.show({
       message: t('admin.generate.rejectFailed', 'Failed to reject image'),
       type: 'error'
     })
@@ -478,7 +477,7 @@ const retryMedia = async (media: UserMedia) => {
     })
     localStorage.setItem(`generation-queue-${generationScope.value}`, JSON.stringify(queue.value))
     
-    showToast({
+    toastService?.show({
       message: t('admin.generate.addedToQueue', 'Added to queue for retry'),
       type: 'info'
     })
