@@ -13,7 +13,7 @@
           <!-- Left Panel: Queue Management -->
           <div :class="bemm('panel', 'queue')">
             <h2 :class="bemm('panel-title')">{{ t('admin.generate.queue', 'Generation Queue') }}</h2>
-            
+
             <!-- Scope Selector -->
             <div :class="bemm('scope-selector')">
               <TButtonGroup fluid>
@@ -49,7 +49,7 @@
                   :disabled="!newItem.name || !newItem.prompt"
                 />
               </div>
-              
+
               <!-- Additional fields for global scope -->
               <div v-if="generationScope === 'global'" :class="bemm('form-row')">
                 <TInputText
@@ -63,7 +63,7 @@
                   size="small"
                 />
               </div>
-              
+
               <!-- Bulk Import -->
               <div :class="bemm('bulk-actions')">
                 <TButton
@@ -75,9 +75,9 @@
                   {{ t('admin.generate.bulkImport', 'Bulk Import') }}
                 </TButton>
               </div>
-              
+
               <div v-if="showBulkImport" :class="bemm('bulk-import')">
-                <TInputTextarea
+                <TInputTextArea
                   v-model="bulkImportText"
                   :placeholder="t('admin.generate.bulkFormat', 'Format: name | prompt (one per line)')"
                   :rows="5"
@@ -110,7 +110,7 @@
                   @click="removeFromQueue(index)"
                 />
               </div>
-              
+
               <div v-if="queue.length === 0" :class="bemm('empty-state')">
                 {{ t('admin.generate.emptyQueue', 'No items in queue') }}
               </div>
@@ -139,10 +139,10 @@
           <div :class="bemm('panel', 'results')">
             <div :class="bemm('panel-header')">
               <h2 :class="bemm('panel-title')">{{ t('admin.generate.results', 'Generated Images') }}</h2>
-              
+
               <!-- Filter Tabs -->
               <div :class="bemm('tabs')">
-                <button
+                <TButton
                   v-for="tab in tabs"
                   :key="tab.value"
                   :class="bemm('tab', { active: activeTab === tab.value })"
@@ -150,7 +150,7 @@
                 >
                   {{ tab.label }}
                   <span v-if="tab.count > 0" :class="bemm('tab-count')">{{ tab.count }}</span>
-                </button>
+                </TButton>
               </div>
             </div>
 
@@ -182,7 +182,7 @@
                   <div v-else :class="bemm('media-placeholder')">
                     <TIcon name="image" />
                   </div>
-                  
+
                   <!-- Status Overlay -->
                   <div :class="bemm('media-status')">
                     <TChip :type="getStatusType(media.status)" size="small">
@@ -190,13 +190,13 @@
                     </TChip>
                   </div>
                 </div>
-                
+
                 <div :class="bemm('media-info')">
                   <h4>{{ media.original_filename }}</h4>
                   <p v-if="media.generation_data?.prompt">{{ media.generation_data.prompt }}</p>
                   <p v-if="media.error_message" :class="bemm('error')">{{ media.error_message }}</p>
                 </div>
-                
+
                 <div :class="bemm('media-actions')">
                   <TButton
                     v-if="media.status === 'generated'"
@@ -251,7 +251,7 @@ import {
   TButton,
   TButtonGroup,
   TInputText,
-  TInputTextarea,
+  TInputTextArea,
   TIcon,
   TSpinner,
   TChip
@@ -283,7 +283,7 @@ const scopeOptions = [
 // Computed
 const userId = computed(() => authStore.user?.id)
 
-const generatingItems = computed(() => 
+const generatingItems = computed(() =>
   generatedMedia.value.filter(m => m.status === 'generating')
 )
 
@@ -330,16 +330,16 @@ const addToQueue = () => {
       name: newItem.value.name,
       prompt: newItem.value.prompt
     }
-    
+
     // Add global-specific fields
     if (generationScope.value === 'global') {
       item.category = newItem.value.category || 'generated'
       item.tags = newItem.value.tags ? newItem.value.tags.split(',').map(t => t.trim()) : []
     }
-    
+
     queue.value.push(item)
     newItem.value = { name: '', prompt: '', category: '', tags: '' }
-    
+
     // Save queue to localStorage with scope
     localStorage.setItem(`generation-queue-${generationScope.value}`, JSON.stringify(queue.value))
   }
@@ -357,18 +357,18 @@ const clearQueue = () => {
 
 const processBulkImport = () => {
   const lines = bulkImportText.value.trim().split('\n')
-  
+
   lines.forEach(line => {
     const [name, prompt] = line.split('|').map(s => s.trim())
     if (name && prompt) {
       queue.value.push({ name, prompt })
     }
   })
-  
+
   bulkImportText.value = ''
   showBulkImport.value = false
   localStorage.setItem(`generation-queue-${generationScope.value}`, JSON.stringify(queue.value))
-  
+
   toastService?.show({
     message: t('admin.generate.itemsImported', `${lines.length} items imported`),
     type: 'success'
@@ -377,21 +377,34 @@ const processBulkImport = () => {
 
 const startGeneration = async () => {
   if (!userId.value || queue.value.length === 0) return
-  
+
   isProcessing.value = true
-  
+
   try {
-    const result = await userMediaService.queueImageGeneration(
-      userId.value,
-      generationScope.value,
-      queue.value
-    )
+    // Call the image generation worker directly
+    const response = await fetch('https://generate.tikocdn.org/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: userId.value,
+        scope: generationScope.value,
+        items: queue.value
+      })
+    })
     
+    if (!response.ok) {
+      throw new Error('Failed to queue image generation')
+    }
+    
+    const result = await response.json()
+
     toastService?.show({
       message: t('admin.generate.generationStarted', `${result.queued} images queued for generation`),
       type: 'success'
     })
-    
+
     clearQueue()
     await loadGeneratedMedia()
   } catch (error) {
@@ -407,9 +420,9 @@ const startGeneration = async () => {
 
 const loadGeneratedMedia = async () => {
   if (!userId.value) return
-  
+
   isLoading.value = true
-  
+
   try {
     if (generationScope.value === 'personal') {
       const media = await userMediaService.getGeneratedMedia(userId.value)
@@ -476,7 +489,7 @@ const retryMedia = async (media: UserMedia) => {
       prompt: media.generation_data.prompt
     })
     localStorage.setItem(`generation-queue-${generationScope.value}`, JSON.stringify(queue.value))
-    
+
     toastService?.show({
       message: t('admin.generate.addedToQueue', 'Added to queue for retry'),
       type: 'info'
@@ -516,13 +529,13 @@ const getEmptyMessage = () => {
 // Subscribe to realtime updates
 const subscribeToUpdates = async () => {
   if (!userId.value) return
-  
+
   if (generationScope.value === 'personal') {
     unsubscribe = userMediaService.subscribeToGenerationUpdates(
       userId.value,
       (payload) => {
         console.log('Realtime update:', payload)
-        
+
         // Update local state based on the change
         if (payload.eventType === 'INSERT') {
           generatedMedia.value.unshift(payload.new)
@@ -542,7 +555,7 @@ const subscribeToUpdates = async () => {
       userId.value,
       (payload) => {
         console.log('Realtime update (global):', payload)
-        
+
         // Update local state based on the change
         if (payload.eventType === 'INSERT') {
           generatedMedia.value.unshift(payload.new)
@@ -566,7 +579,7 @@ watch(generationScope, async () => {
     unsubscribe()
     unsubscribe = null
   }
-  
+
   // Load queue for new scope
   const savedQueue = localStorage.getItem(`generation-queue-${generationScope.value}`)
   if (savedQueue) {
@@ -574,7 +587,7 @@ watch(generationScope, async () => {
   } else {
     queue.value = []
   }
-  
+
   // Reload media and resubscribe
   await loadGeneratedMedia()
   await subscribeToUpdates()
@@ -587,7 +600,7 @@ onMounted(() => {
   if (savedQueue) {
     queue.value = JSON.parse(savedQueue)
   }
-  
+
   loadGeneratedMedia()
   subscribeToUpdates()
 })
@@ -602,28 +615,28 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 .generate-view {
   padding: var(--space-xl);
-  
+
   &__header {
     margin-bottom: var(--space-xl);
-    
+
     h1 {
       margin: 0 0 var(--space-xs) 0;
       font-size: 2rem;
     }
-    
+
     p {
       margin: 0;
       color: var(--color-text-secondary);
     }
   }
-  
+
   &__content {
     display: grid;
     grid-template-columns: 400px 1fr;
     gap: var(--space-xl);
     height: calc(100vh - 200px);
   }
-  
+
   &__panel {
     background: var(--color-background);
     border: 1px solid var(--color-border);
@@ -632,64 +645,64 @@ onUnmounted(() => {
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    
+
     &--queue {
       max-height: 100%;
     }
-    
+
     &--results {
       overflow-y: auto;
     }
   }
-  
+
   &__panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: var(--space);
   }
-  
+
   &__panel-title {
     margin: 0 0 var(--space) 0;
     font-size: 1.25rem;
   }
-  
+
   &__scope-selector {
     margin-bottom: var(--space);
   }
-  
+
   &__add-form {
     margin-bottom: var(--space);
   }
-  
+
   &__form-row {
     display: grid;
     grid-template-columns: 1fr 2fr auto;
     gap: var(--space-s);
     margin-bottom: var(--space-s);
   }
-  
+
   &__bulk-actions {
     margin-top: var(--space);
   }
-  
+
   &__bulk-import {
     margin-top: var(--space);
     padding: var(--space);
     background: var(--color-background-secondary);
     border-radius: var(--border-radius);
-    
+
     button {
       margin-top: var(--space-s);
     }
   }
-  
+
   &__queue-list {
     flex: 1;
     overflow-y: auto;
     margin-bottom: var(--space);
   }
-  
+
   &__queue-item {
     display: flex;
     justify-content: space-between;
@@ -698,21 +711,21 @@ onUnmounted(() => {
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius);
     margin-bottom: var(--space-s);
-    
+
     &:hover {
       background: var(--color-background-secondary);
     }
   }
-  
+
   &__queue-item-info {
     flex: 1;
     min-width: 0;
-    
+
     strong {
       display: block;
       margin-bottom: var(--space-xs);
     }
-    
+
     span {
       display: block;
       font-size: 0.875rem;
@@ -722,17 +735,17 @@ onUnmounted(() => {
       white-space: nowrap;
     }
   }
-  
+
   &__queue-actions {
     display: flex;
     gap: var(--space-s);
   }
-  
+
   &__tabs {
     display: flex;
     gap: var(--space-s);
   }
-  
+
   &__tab {
     padding: var(--space-xs) var(--space);
     background: none;
@@ -741,18 +754,18 @@ onUnmounted(() => {
     cursor: pointer;
     font-size: 0.875rem;
     transition: all 0.2s ease;
-    
+
     &:hover {
       background: var(--color-background-secondary);
     }
-    
+
     &--active {
       background: var(--color-primary);
       color: white;
       border-color: var(--color-primary);
     }
   }
-  
+
   &__tab-count {
     margin-left: var(--space-xs);
     padding: 0 var(--space-xs);
@@ -760,59 +773,59 @@ onUnmounted(() => {
     border-radius: var(--border-radius-sm);
     font-size: 0.75rem;
   }
-  
+
   &__progress {
     margin-bottom: var(--space);
     padding: var(--space);
     background: var(--color-info-bg);
     border-radius: var(--border-radius);
   }
-  
+
   &__progress-item {
     display: flex;
     align-items: center;
     gap: var(--space-s);
     margin-bottom: var(--space-s);
-    
+
     &:last-child {
       margin-bottom: 0;
     }
   }
-  
+
   &__grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: var(--space);
   }
-  
+
   &__media-item {
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius);
     overflow: hidden;
     transition: all 0.2s ease;
-    
+
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
-    
+
     &--failed {
       border-color: var(--color-error);
     }
   }
-  
+
   &__media-preview {
     position: relative;
     aspect-ratio: 1;
     background: var(--color-background-secondary);
-    
+
     img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
   }
-  
+
   &__media-placeholder {
     width: 100%;
     height: 100%;
@@ -822,21 +835,21 @@ onUnmounted(() => {
     color: var(--color-text-secondary);
     font-size: 3rem;
   }
-  
+
   &__media-status {
     position: absolute;
     top: var(--space-s);
     right: var(--space-s);
   }
-  
+
   &__media-info {
     padding: var(--space);
-    
+
     h4 {
       margin: 0 0 var(--space-xs) 0;
       font-size: 0.875rem;
     }
-    
+
     p {
       margin: 0;
       font-size: 0.75rem;
@@ -846,23 +859,23 @@ onUnmounted(() => {
       white-space: nowrap;
     }
   }
-  
+
   &__media-actions {
     padding: 0 var(--space) var(--space);
     display: flex;
     gap: var(--space-s);
   }
-  
+
   &__error {
     color: var(--color-error);
   }
-  
+
   &__empty-state {
     text-align: center;
     padding: var(--space-xl);
     color: var(--color-text-secondary);
   }
-  
+
   &__empty-icon {
     font-size: 3rem;
     margin-bottom: var(--space);
@@ -873,7 +886,7 @@ onUnmounted(() => {
 @media (max-width: 1200px) {
   .generate-view__content {
     grid-template-columns: 1fr;
-    
+
     .generate-view__panel--queue {
       max-height: 400px;
     }
