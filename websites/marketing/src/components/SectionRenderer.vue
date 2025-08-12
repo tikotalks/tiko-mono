@@ -1,5 +1,6 @@
 <template>
-  <div>    <!-- Debug info (remove in production) -->
+  <div>
+    <!-- Debug info (remove in production) -->
     <pre v-if="showDebug">
       Section: {{ section.name || section.slug }}
       Template: {{ section.section_template_id }}
@@ -36,15 +37,23 @@ const props = withDefaults(defineProps<SectionRendererProps>(), {
 // Map section types to components
 const sectionComponents = {
   hero: defineAsyncComponent(() => import('./sections/HeroSection.vue')),
-  hero2: defineAsyncComponent(() => import('./sections/SecondaryHeroSection.vue')),
+  hero2: defineAsyncComponent(
+    () => import('./sections/SecondaryHeroSection.vue'),
+  ),
   about: defineAsyncComponent(() => import('./sections/AboutSection.vue')),
-  columnleft: defineAsyncComponent(() => import('./sections/ColumnLeftSection.vue')),
-  columnright: defineAsyncComponent(() => import('./sections/ColumnRightSection.vue')),
+  columnleft: defineAsyncComponent(
+    () => import('./sections/ColumnLeftSection.vue'),
+  ),
+  columnright: defineAsyncComponent(
+    () => import('./sections/ColumnRightSection.vue'),
+  ),
   features: defineAsyncComponent(
     () => import('./sections/FeaturesSection.vue'),
   ),
   apps: defineAsyncComponent(() => import('./sections/AppsSection.vue')),
-  appsList: defineAsyncComponent(() => import('./sections/AppsListSection.vue')),
+  appsList: defineAsyncComponent(
+    () => import('./sections/AppsListSection.vue'),
+  ),
   funding: defineAsyncComponent(() => import('./sections/FundingSection.vue')),
   open: defineAsyncComponent(() => import('./sections/OpenSection.vue')),
   languages: defineAsyncComponent(
@@ -60,34 +69,38 @@ const sectionComponents = {
   testimonials: defineAsyncComponent(
     () => import('./sections/TestimonialsSection.vue'),
   ),
+  'tile-gallery': defineAsyncComponent(
+    () => import('./sections/ImageStreamSection.vue'),
+  ),
 };
 
 // Get section type from slug or name
 const sectionType = computed(() => {
-  const type = props.content?.template ||
+  const type =
+    props.content?.template ||
+   (props.section as any).template?.slug ||
     props.section.slug ||
     props.section.name?.toLowerCase() ||
     'text';
-  
-  // Log for debugging
-  console.log('[SectionRenderer] Section type:', type, 'Available:', Object.keys(sectionComponents));
-  console.log('[SectionRenderer] Section data:', props.section);
-  console.log('[SectionRenderer] Content data:', props.content);
-  
+
   return type;
 });
 
 // Get the component based on section type
 const sectionComponent = computed(() => {
+
+  const type = sectionType.value as keyof typeof sectionComponents;
+
   // First try exact match
-  let component = sectionComponents[sectionType.value as keyof typeof sectionComponents];
-  
+  let component = sectionComponents[type];
+
   // If not found, try lowercase version
   if (!component) {
     const lowercaseType = sectionType.value.toLowerCase();
-    component = sectionComponents[lowercaseType as keyof typeof sectionComponents];
+    component =
+      sectionComponents[lowercaseType as keyof typeof sectionComponents];
   }
-  
+
   // Fallback to text component
   return component || sectionComponents.text;
 });
