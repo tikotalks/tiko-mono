@@ -89,6 +89,13 @@ export default {
         const mediaRecords: any[] = []
         const tableName = data.scope === 'global' ? 'media' : 'user_media'
         
+        console.log('Processing generation request:', {
+          userId: data.userId,
+          scope: data.scope,
+          tableName,
+          itemCount: data.items.length
+        })
+        
         for (const item of data.items) {
           const id = crypto.randomUUID()
           const filename = `${id}-${item.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}.png`
@@ -131,17 +138,27 @@ export default {
 
           if (error) {
             console.error(`Failed to insert ${tableName} record:`, error)
-            continue
+            // Return error response instead of silently continuing
+            return new Response(JSON.stringify({ 
+              error: `Failed to insert record: ${error.message}`,
+              details: error
+            }), {
+              status: 500,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
           }
 
           mediaRecords.push({ ...mediaRecord, _table: tableName })
         }
 
-        // Start processing in the background
-        ctx.waitUntil(processGenerationQueue(mediaRecords, env, supabase, openai))
+        // Only process if we have records
+        if (mediaRecords.length > 0) {
+          // Start processing in the background
+          ctx.waitUntil(processGenerationQueue(mediaRecords, env, supabase, openai))
+        }
 
         return new Response(JSON.stringify({ 
-          success: true, 
+          success: mediaRecords.length > 0, 
           queued: mediaRecords.length,
           records: mediaRecords 
         }), {

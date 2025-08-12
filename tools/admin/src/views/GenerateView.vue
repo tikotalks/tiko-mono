@@ -391,6 +391,13 @@ const startGeneration = async () => {
   isProcessing.value = true
 
   try {
+    // Log the request for debugging
+    console.log('Sending generation request:', {
+      userId: userId.value,
+      scope: generationScope.value,
+      items: queue.value
+    })
+    
     // Call the image generation worker directly
     const response = await fetch('https://generate.tikocdn.org/generate', {
       method: 'POST',
@@ -411,14 +418,20 @@ const startGeneration = async () => {
     }
 
     const result = await response.json()
+    
+    console.log('Generation response:', result)
 
-    toastService?.show({
-      message: t('admin.generate.generationStarted', `${result.queued} images queued for generation`),
-      type: 'success'
-    })
-
-    clearQueue()
-    await loadGeneratedMedia()
+    if (result.success && result.queued > 0) {
+      toastService?.show({
+        message: t('admin.generate.generationStarted', `${result.queued} images queued for generation`),
+        type: 'success'
+      })
+      
+      clearQueue()
+      await loadGeneratedMedia()
+    } else {
+      throw new Error(result.error || 'No items were queued')
+    }
   } catch (error) {
     console.error('Failed to start generation:', error)
     toastService?.show({
