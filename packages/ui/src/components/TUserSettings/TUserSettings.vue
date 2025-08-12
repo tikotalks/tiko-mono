@@ -1,6 +1,6 @@
 <template>
   <div :class="bemm()">
-    <form @submit.prevent="handleSave">
+    <form :class="bemm('form')" @submit.prevent="handleSave">
       <!-- Language Selection -->
       <div :class="bemm('section')">
         <h3 :class="bemm('section-title')">{{ t(keys.settings.language) }}</h3>
@@ -21,7 +21,7 @@
             v-for="theme in themeOptions"
             :key="theme.value"
             :type="formData.theme === theme.value ? 'default' : 'outline'"
-            :color="formData.theme === theme.value ? 'primary' : 'secondary'"
+            :color="'primary'"
             @click="formData.theme = theme.value"
           >
             <TIcon :name="theme.icon" />
@@ -33,8 +33,8 @@
       <!-- Actions -->
       <div :class="[bemm('actions'), 'popup-footer']">
         <TButton
-          type="ghost"
-          color="secondary"
+          type="outline"
+          color="primary"
           @click="handleCancel"
         >
           {{ t(keys.common.cancel) }}
@@ -52,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject } from 'vue'
+import { ref, computed, inject, watch } from 'vue'
 import { useBemm } from 'bemm'
 import { useI18n } from '../../composables/useI18n'
 import { useAuthStore } from '@tiko/core'
@@ -80,10 +80,10 @@ const { userSettings } = storeToRefs(authStore)
 const popupService = inject<PopupService>('popupService')
 const toastService = inject<ToastService>('toastService')
 
-// Form data - initialize from store settings
+// Form data - initialize from store settings with proper defaults
 const formData = ref<UserSettings>({
-  language: userSettings.value.language || locale.value,
-  theme: userSettings.value.theme || 'auto'
+  language: userSettings.value?.language || locale.value || 'en-US',
+  theme: userSettings.value?.theme || 'auto'
 })
 
 const isSaving = ref(false)
@@ -97,20 +97,37 @@ const themeOptions = computed(() => [
 
 // Computed
 const currentLanguageDisplay = computed(() => {
-  const currentLocale = formData.value.language as Locale
+  const currentLocale = formData.value?.language as Locale
+  if (!currentLocale) return locale.value || 'en-US'
   const localeInfo = availableLocales.value.find(l => l.code === currentLocale)
   return localeInfo ? `${localeInfo.name} (${currentLocale})` : currentLocale
 })
+
+// Watch for changes in user settings to update form data
+watch(userSettings, (newSettings) => {
+  if (newSettings) {
+    formData.value = {
+      language: newSettings.language || locale.value || 'en-US',
+      theme: newSettings.theme || 'auto'
+    }
+  }
+}, { immediate: true })
 
 // Methods
 const openLanguageSelector = () => {
   if (!popupService) return
 
+  // Ensure formData is properly initialized
+  if (!formData.value) {
+    console.error('Form data not initialized')
+    return
+  }
+
   popupService.open({
     component: TChooseLanguage,
-    title: t(keys.settings.language),
+    title: t(keys.settings?.language || 'settings.language'),
     props: {
-      currentLocale: formData.value.language,
+      currentLocale: formData.value.language || locale.value || 'en-US',
       onSelect: (language: string) => {
         formData.value.language = language
         popupService.close()
@@ -167,16 +184,19 @@ const handleCancel = () => {
 
 <style lang="scss" scoped>
 .user-settings {
-  &__section {
-    margin-bottom: var(--space-lg);
 
-    &:last-child {
-      margin-bottom: 0;
-    }
+  &__form{
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--space);}
+
+  &__section {
+// border: 1px solid red;
   }
 
   &__section-title {
-    font-size: 1rem;
+    font-size: 1em;
     font-weight: 600;
     color: var(--color-foreground);
     margin: 0 0 var(--space-s) 0;
@@ -185,7 +205,7 @@ const handleCancel = () => {
   &__language-selector {
     padding: var(--space-s) var(--space);
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 2px solid var(--color-primary);
     border-radius: var(--border-radius);
     cursor: pointer;
     transition: all 0.2s ease;

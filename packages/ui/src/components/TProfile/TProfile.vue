@@ -1,7 +1,7 @@
 <template>
   <div :class="bemm()">
     <!-- Profile Header -->
-    <div :class="bemm('header')">
+    <section :class="bemm('header')">
       <!-- Avatar Section with Hover Upload -->
       <div :class="bemm('avatar-section')">
         <div :class="bemm('avatar-wrapper')">
@@ -22,20 +22,33 @@
             </div>
           </div>
 
-          <!-- Upload overlay - only visible on hover -->
-          <label :class="bemm('avatar-upload')">
-            <input
-              ref="fileInput"
-              type="file"
-              accept="image/*"
-              :class="bemm('avatar-input')"
-              @change="handleFileSelect"
-              :disabled="isProcessing"
-            />
-            <div :class="bemm('avatar-overlay')">
-              <TIcon name="camera" :class="bemm('avatar-icon')" />
+          <!-- Upload overlay with context menu -->
+          <TContextMenu
+            ref="avatarMenuRef"
+            :config="avatarMenuConfig"
+          >
+            <div 
+              :class="bemm('avatar-upload')"
+              role="button"
+              tabindex="0"
+              :aria-label="t('profile.changeAvatar')"
+            >
+              <div :class="bemm('avatar-overlay')">
+                <TIcon name="camera" :class="bemm('avatar-icon')" />
+              </div>
             </div>
-          </label>
+          </TContextMenu>
+          
+          <!-- Hidden file input -->
+          <input
+            ref="fileInput"
+            type="file"
+            accept="image/*"
+            :class="bemm('avatar-input')"
+            @change="handleFileSelect"
+            :disabled="isProcessing"
+            style="display: none;"
+          />
         </div>
 
         <div v-if="uploadError" :class="bemm('error')">
@@ -48,38 +61,38 @@
         <h2 :class="bemm('name')">{{ displayName }}</h2>
         <p :class="bemm('email')">{{ user.email }}</p>
       </div>
-    </div>
+    </section>
 
     <!-- Profile Details -->
-    <div :class="bemm('details')">
+    <section :class="bemm('details')">
       <!-- Member Since -->
       <div :class="bemm('detail-item')">
-        <span :class="bemm('detail-label')">{{ t(keys.profile.memberSince) }}</span>
+        <span :class="bemm('detail-label')">{{ t('profile.memberSince') }}</span>
         <span :class="bemm('detail-value')">{{ memberSinceDate }}</span>
       </div>
 
       <!-- Language -->
       <div :class="bemm('detail-item')">
-        <span :class="bemm('detail-label')">{{ t(keys.profile.language) }}</span>
+        <span :class="bemm('detail-label')">{{ t('profile.language') }}</span>
         <span :class="bemm('detail-value')">{{ currentLanguageDisplay }}</span>
       </div>
 
       <!-- Parent Mode Status -->
       <div v-if="parentMode.isEnabled.value" :class="bemm('detail-item')">
-        <span :class="bemm('detail-label')">{{ t(keys.profile.parentMode) }}</span>
+        <span :class="bemm('detail-label')">{{ t('profile.parentMode') }}</span>
         <span :class="bemm('detail-value')">
           <TIcon
             :name="parentMode.isUnlocked.value ? 'shield' : 'lock'"
             :class="bemm('detail-icon', parentMode.isUnlocked.value ? 'active' : 'inactive')"
           />
-          {{ parentMode.isUnlocked.value ? t(keys.common.enabled) : t(keys.common.disabled) }}
+          {{ parentMode.isUnlocked.value ? t('common.enabled') : t('common.disabled') }}
         </span>
       </div>
-    </div>
+    </section>
 
     <!-- Account Actions -->
-    <div :class="bemm('actions')">
-      <h3 :class="bemm('actions-title')">{{ t(keys.profile.accountActions) }}</h3>
+    <section :class="bemm('actions')">
+      <h3 :class="bemm('actions-title')">{{ t('profile.accountActions') }}</h3>
       <div :class="bemm('actions-list')">
         <TButton
           type="outline"
@@ -87,7 +100,7 @@
           @click="handleChangePassword"
           :class="bemm('action-button')"
         >
-          {{ t(keys.profile.changePassword) }}
+          {{ t('profile.changePassword') }}
         </TButton>
 
         <TButton
@@ -97,10 +110,10 @@
           @click="handleSetupParentMode"
           :class="bemm('action-button')"
         >
-          {{ t(keys.profile.setupParentMode) }}
+          {{ t('profile.setupParentMode') }}
         </TButton>
       </div>
-    </div>
+    </section>
   </div>
 </template>
 
@@ -112,6 +125,8 @@ import { useParentMode } from '../../composables/useParentMode'
 import { useAuthStore, userMediaService } from '@tiko/core'
 import TIcon from '../TIcon/TIcon.vue'
 import TButton from '../TButton/TButton.vue'
+import { TContextMenu, type ContextMenuItem, type ContextMenuConfig, ContextMenuConfigDefault } from '../TContextMenu'
+import TMediaPicker from '../TMediaPicker/TMediaPicker.vue'
 import type { TProfileProps } from './TProfile.model'
 import type { PopupService } from '../TPopup/TPopup.service'
 import type { ToastService } from '../TToast/TToast.service'
@@ -129,6 +144,7 @@ const toastService = inject<ToastService>('toastService')
 
 // Refs
 const fileInput = ref<HTMLInputElement>()
+const avatarMenuRef = ref<InstanceType<typeof TContextMenu>>()
 const avatarPreview = ref<string>('')
 const uploadError = ref<string>('')
 const isProcessing = ref(false)
@@ -150,8 +166,11 @@ const initials = computed(() => {
 })
 
 const avatarUrl = computed(() => {
-  return props.user.user_metadata?.avatar_url ||
-         props.user.user_metadata?.picture ||
+  // Use auth store user for real-time updates, fallback to props
+  const currentUser = authStore.user || props.user
+  return currentUser.avatar_url ||
+         currentUser.user_metadata?.avatar_url ||
+         currentUser.user_metadata?.picture ||
          null
 })
 
@@ -186,9 +205,36 @@ const currentLanguageDisplay = computed(() => {
   return localeInfo ? localeInfo.name : userLanguage
 })
 
+const avatarMenuItems = computed<Partial<ContextMenuItem>[]>(() => [
+  {
+    id: 'upload',
+    label: t('profile.uploadImage'),
+    icon: 'upload',
+    action: handleUploadImage,
+    type: 'default'
+  },
+  {
+    id: 'choose',
+    label: t('profile.chooseFromMedia'),
+    icon: 'image',
+    action: handleChooseFromMedia,
+    type: 'default'
+  }
+])
+
+const avatarMenuConfig = computed<ContextMenuConfig>(() => ({
+  ...ContextMenuConfigDefault,
+  id: 'avatar-menu',
+  menu: avatarMenuItems.value,
+  position: 'bottom-left',
+  clickMode: 'short'
+}))
+
 // Methods
 const handleAvatarError = () => {
   console.warn('Avatar failed to load')
+  // Clear the preview to show fallback
+  avatarPreview.value = ''
 }
 
 const handleFileSelect = async (event: Event) => {
@@ -199,14 +245,14 @@ const handleFileSelect = async (event: Event) => {
 
   // Validate file type
   if (!file.type.startsWith('image/')) {
-    uploadError.value = t(keys.profile.invalidFileType)
+    uploadError.value = t('profile.invalidFileType')
     return
   }
 
   // Validate file size (max 5MB)
   const maxSize = 5 * 1024 * 1024
   if (file.size > maxSize) {
-    uploadError.value = t(keys.profile.fileTooLarge)
+    uploadError.value = t('profile.fileTooLarge')
     return
   }
 
@@ -226,32 +272,137 @@ const handleFileSelect = async (event: Event) => {
       file,
       usageType: 'profile_picture'
     })
-    
+
     // The service automatically updates the user metadata
     // Just update the local preview
     avatarPreview.value = media.url
+    
+    // Force refresh the user data in auth store to ensure avatar is updated everywhere
+    try {
+      // Add a small delay to ensure Supabase has processed the update
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      if (typeof authStore.refreshUserData === 'function') {
+        await authStore.refreshUserData()
+      } else {
+        // For older versions without refreshUserData, fetch fresh session
+        await authStore.initializeFromStorage()
+      }
+    } catch (updateError) {
+      console.error('Failed to update user data in store:', updateError)
+    }
 
     toastService?.show({
-      message: t(keys.profile.profileUpdated),
+      message: t('profile.profileUpdated'),
       type: 'success'
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to upload avatar:', error)
-    uploadError.value = t(keys.profile.imageProcessingFailed)
-    avatarPreview.value = ''
 
-    toastService?.show({
-      message: t(keys.profile.updateFailed),
-      type: 'error'
-    })
+    // Handle specific storage errors
+    if (error.message?.includes('row-level security policy')) {
+      uploadError.value = 'Permission denied. Please check your account settings.'
+      toastService?.show({
+        message: 'Permission denied. Please check your account settings.',
+        type: 'error'
+      })
+    } else {
+      uploadError.value = t('profile.imageProcessingFailed')
+      toastService?.show({
+        message: t('profile.updateFailed'),
+        type: 'error'
+      })
+    }
+
+    avatarPreview.value = ''
   } finally {
     isProcessing.value = false
   }
 }
 
+const handleUploadImage = () => {
+  // Trigger the file input
+  fileInput.value?.click()
+}
+
+const handleChooseFromMedia = async () => {
+  if (!popupService) {
+    console.error('PopupService not available')
+    return
+  }
+
+  try {
+    // Get user's existing media
+    const existingMedia = await userMediaService.getUserMedia(authStore.user?.id)
+    
+    // Filter to only show images
+    const imageMedia = existingMedia.filter(m => 
+      m.mime_type.startsWith('image/') && 
+      !m.url.startsWith('data:')
+    )
+    
+    if (imageMedia.length === 0) {
+      toastService?.show({
+        message: t('profile.noMediaFound'),
+        type: 'info'
+      })
+      return
+    }
+    
+    // Open the media picker popup
+    const popupId = popupService.open({
+      component: TMediaPicker,
+      title: t('profile.chooseFromMedia'),
+      props: {
+        mediaItems: imageMedia
+      },
+      on: {
+        select: async (media: any) => {
+          popupService.close({ id: popupId })
+          
+          // Update the user's profile picture
+          await userMediaService.updateUserProfilePicture(media.url)
+          avatarPreview.value = media.url
+          
+          // Refresh user data
+          try {
+            await new Promise(resolve => setTimeout(resolve, 1000))
+            
+            if (typeof authStore.refreshUserData === 'function') {
+              await authStore.refreshUserData()
+            } else {
+              await authStore.initializeFromStorage()
+            }
+          } catch (updateError) {
+            console.error('Failed to update user data in store:', updateError)
+          }
+          
+          toastService?.show({
+            message: t('profile.profileUpdated'),
+            type: 'success'
+          })
+        },
+        cancel: () => {
+          popupService.close({ id: popupId })
+        }
+      },
+      config: {
+        width: '600px',
+        maxHeight: '80vh'
+      }
+    })
+  } catch (error) {
+    console.error('Failed to choose from media:', error)
+    toastService?.show({
+      message: t('profile.chooseFromMediaFailed'),
+      type: 'error'
+    })
+  }
+}
+
 const handleChangePassword = () => {
   toastService?.show({
-    message: t(keys.settings.passwordChangeNotImplemented),
+    message: t('settings.passwordChangeNotImplemented'),
     type: 'info'
   })
 }
@@ -267,25 +418,30 @@ const handleSetupParentMode = () => {
 .profile {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
-  padding: var(--space);
+  width: 320px;
 
   &__header {
     display: flex;
     align-items: center;
-    gap: var(--space-lg);
-    padding-bottom: var(--space-lg);
-    border-bottom: 1px solid var(--color-border);
+    gap: var(--space);
+    border-bottom: 1px solid var(--color-primary);
+    padding: var(--space);
   }
 
   &__avatar-section {
     position: relative;
+    gap: var(--space);
+    display: flex;
   }
 
   &__avatar-wrapper {
     position: relative;
     width: 6rem;
     height: 6rem;
+    border: 2px solid var(--color-primary);
+    background-color: color-mix(in srgb, var(--color-primary), transparent 75%);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
   }
 
   &__avatar {
@@ -293,8 +449,6 @@ const handleSetupParentMode = () => {
     height: 100%;
     border-radius: 50%;
     overflow: hidden;
-    background: var(--color-background);
-    border: 3px solid var(--color-border);
   }
 
   &__avatar-image {
@@ -391,6 +545,7 @@ const handleSetupParentMode = () => {
     display: flex;
     flex-direction: column;
     gap: var(--space);
+    padding: var(--space);
   }
 
   &__detail-item {
@@ -401,12 +556,12 @@ const handleSetupParentMode = () => {
   }
 
   &__detail-label {
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
+    font-size: 0.875em;
+    opacity: .5;
   }
 
   &__detail-value {
-    font-size: 0.875rem;
+    font-size: 0.875em;
     font-weight: 500;
     color: var(--color-foreground);
     display: flex;
@@ -427,9 +582,8 @@ const handleSetupParentMode = () => {
   }
 
   &__actions {
-    margin-top: var(--space);
-    padding-top: var(--space-lg);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-primary);
+    padding: var(--space);
   }
 
   &__actions-title {

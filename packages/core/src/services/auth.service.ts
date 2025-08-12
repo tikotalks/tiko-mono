@@ -259,6 +259,13 @@ export interface AuthService {
    * @returns {Promise<boolean>} True if user has the role (or higher)
    */
   hasRole(requiredRole: 'editor' | 'admin'): Promise<boolean>
+  
+  /**
+   * Get fresh user data from the API
+   * 
+   * @returns {Promise<AuthResult>} Current user data if authenticated
+   */
+  getCurrentUser(): Promise<AuthResult>
 }
 
 /**
@@ -364,32 +371,79 @@ export class ManualAuthService implements AuthService {
   }
 
   async verifyOtp(email: string, token: string): Promise<AuthResult> {
+    console.log('[AuthService] verifyOtp called with:', { email, token })
     try {
-      const response = await fetch(`${this.API_URL}/verify`, {
+      const url = `${this.API_URL}/verify`
+      const body = {
+        type: 'email',
+        email,
+        token
+      }
+      
+      console.log('[AuthService] Sending POST request to:', url)
+      console.log('[AuthService] Request body:', body)
+      
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'apikey': this.ANON_KEY
         },
-        body: JSON.stringify({
-          type: 'email',
-          email,
-          token
-        })
+        body: JSON.stringify(body)
       })
 
-      const data = await response.json()
+      console.log('[AuthService] Response status:', response.status)
+      console.log('[AuthService] Response headers:', response.headers)
+      
+      let data
+      const contentType = response.headers.get('content-type')
+      
+      if (contentType && contentType.includes('application/json')) {
+        try {
+          data = await response.json()
+          console.log('[AuthService] Response data:', data)
+        } catch (jsonError) {
+          console.error('[AuthService] Failed to parse response as JSON:', jsonError)
+          return { success: false, error: 'Invalid JSON response from server' }
+        }
+      } else {
+        // Response is not JSON, read as text
+        const text = await response.text()
+        console.error('[AuthService] Non-JSON response:', text)
+        return { success: false, error: 'Server returned non-JSON response' }
+      }
 
       if (!response.ok) {
+        console.error('[AuthService] Verification failed:', data)
         return { success: false, error: data.error_description || data.msg || 'Verification failed' }
       }
 
-      const session = this.formatSession(data)
-      this.storeSession(session)
+      // Check if the response contains the required session data
+      if (!data || !data.access_token) {
+        console.error('[AuthService] Invalid response - missing access_token:', data)
+        return { success: false, error: 'Invalid response from server - no access token provided' }
+      }
 
-      return { success: true, session, user: session.user }
+      try {
+        const session = this.formatSession(data)
+        this.storeSession(session)
+        return { success: true, session, user: session.user }
+      } catch (formatError) {
+        console.error('[AuthService] Error formatting session:', formatError)
+        return { success: false, error: 'Failed to process authentication response' }
+      }
     } catch (error) {
-      return { success: false, error: 'Network error occurred' }
+      console.error('[AuthService] Network error in verifyOtp:', error)
+      
+      // More specific error handling
+      if (error instanceof TypeError) {
+        if (error.message.includes('Failed to fetch')) {
+          return { success: false, error: 'Cannot connect to authentication service. Please check your internet connection.' }
+        }
+      }
+      
+      // Return the actual error message for debugging
+      return { success: false, error: error instanceof Error ? error.message : 'Network error occurred' }
     }
   }
 
@@ -582,9 +636,68 @@ export class ManualAuthService implements AuthService {
         return { success: false, error: data.error_description || data.msg || 'Update failed' }
       }
 
-      return { success: true, user: data.user }
+      // Update the session with new user data
+      const updatedUser = this.formatUserFromSupabase(data)
+      const updatedSession = {
+        ...session,
+        user: updatedUser
+      }
+      
+      // Store the updated session
+      this.storeSession(updatedSession)
+
+      return { success: true, user: updatedUser, session: updatedSession }
     } catch (error) {
       return { success: false, error: 'Network error occurred' }
+    }
+  }
+
+  /**
+   * Clean up data URL avatar from user metadata
+   */
+  async cleanupDataUrlAvatar(): Promise<AuthResult> {
+    try {
+      const session = await this.getSession()
+      if (!session) {
+        return { success: false, error: 'Not authenticated' }
+      }
+
+      // Check if avatar_url is a data URL
+      if (session.user?.user_metadata?.avatar_url?.startsWith('data:')) {
+        console.log('[AuthService] Cleaning up data URL avatar')
+        
+        // Update user metadata to remove the data URL
+        const cleanMetadata = {
+          ...session.user.user_metadata,
+          avatar_url: '' // Clear the data URL
+        }
+        
+        const response = await fetch(`${this.API_URL}/user`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': this.ANON_KEY,
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({
+            data: cleanMetadata
+          })
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          return { success: false, error: data.error_description || data.msg || 'Failed to clean avatar' }
+        }
+
+        console.log('[AuthService] Successfully cleaned up data URL avatar')
+        return { success: true, user: data.user }
+      }
+
+      return { success: true, user: session.user }
+    } catch (error) {
+      console.error('[AuthService] Error cleaning up avatar:', error)
+      return { success: false, error: 'Failed to clean up avatar' }
     }
   }
 
@@ -592,7 +705,31 @@ export class ManualAuthService implements AuthService {
    * Format API response into standardized session object
    */
   private formatSession(data: any): AuthSession {
-    const user: AuthUser = data.user || this.decodeJwtUser(data.access_token)
+    let user: AuthUser
+    
+    if (data.user) {
+      // Convert Supabase user format to our AuthUser format
+      const supabaseUser = data.user
+      // Get avatar_url from user_metadata
+      let avatarUrl = supabaseUser.user_metadata?.avatar_url || ''
+      
+      user = {
+        id: supabaseUser.id,
+        email: supabaseUser.email || '',
+        phone: supabaseUser.phone || '',
+        full_name: supabaseUser.user_metadata?.full_name || '',
+        avatar_url: avatarUrl,
+        email_verified: supabaseUser.email_confirmed_at ? true : false,
+        phone_verified: supabaseUser.user_metadata?.phone_verified || false,
+        app_metadata: supabaseUser.app_metadata || {},
+        user_metadata: supabaseUser.user_metadata || {},
+        created_at: supabaseUser.created_at || new Date().toISOString(),
+        updated_at: supabaseUser.updated_at || new Date().toISOString()
+      }
+    } else {
+      // Fallback to decoding from JWT if no user object provided
+      user = this.decodeJwtUser(data.access_token)
+    }
     
     return {
       access_token: data.access_token,
@@ -683,13 +820,110 @@ export class ManualAuthService implements AuthService {
   }
 
   /**
+   * Get fresh user data from the API
+   */
+  async getCurrentUser(): Promise<AuthResult> {
+    try {
+      const session = await this.getSession()
+      if (!session) {
+        return { success: false, error: 'Not authenticated' }
+      }
+
+      const response = await fetch(`${this.API_URL}/user`, {
+        method: 'GET',
+        headers: {
+          'apikey': this.ANON_KEY,
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
+
+      const userData = await response.json()
+
+      if (!response.ok) {
+        return { success: false, error: userData.error_description || userData.msg || 'Failed to get user' }
+      }
+
+      // Update the session with fresh user data
+      const updatedSession = {
+        ...session,
+        user: this.formatUserFromSupabase(userData)
+      }
+      
+      this.storeSession(updatedSession)
+
+      return { success: true, user: updatedSession.user, session: updatedSession }
+    } catch (error) {
+      return { success: false, error: 'Network error occurred' }
+    }
+  }
+
+  /**
+   * Format user data from Supabase response
+   */
+  private formatUserFromSupabase(supabaseUser: any): AuthUser {
+    let avatarUrl = supabaseUser.user_metadata?.avatar_url || 
+                    supabaseUser.user_metadata?.picture || ''
+    
+    return {
+      id: supabaseUser.id,
+      email: supabaseUser.email || '',
+      phone: supabaseUser.phone || '',
+      full_name: supabaseUser.user_metadata?.full_name || '',
+      avatar_url: avatarUrl,
+      email_verified: supabaseUser.email_confirmed_at ? true : false,
+      phone_verified: supabaseUser.user_metadata?.phone_verified || false,
+      app_metadata: supabaseUser.app_metadata || {},
+      user_metadata: supabaseUser.user_metadata || {},
+      created_at: supabaseUser.created_at || new Date().toISOString(),
+      updated_at: supabaseUser.updated_at || new Date().toISOString()
+    }
+  }
+
+  /**
    * Store session in localStorage
    */
   private storeSession(session: AuthSession): void {
-    localStorage.setItem('tiko_auth_session', JSON.stringify(session))
+    // Clean up any large data URLs before storing to avoid localStorage limits
+    const cleanSession = { ...session }
     
-    // Also store in the format Supabase expects for compatibility
-    localStorage.setItem('supabase.auth.token', JSON.stringify(session))
+    // Clean avatar_url if it's a data URL
+    if (cleanSession.user?.avatar_url?.startsWith('data:')) {
+      cleanSession.user = {
+        ...cleanSession.user,
+        avatar_url: ''
+      }
+    }
+    
+    // Also clean it from user_metadata if present
+    if (cleanSession.user?.user_metadata?.avatar_url?.startsWith('data:')) {
+      cleanSession.user = {
+        ...cleanSession.user,
+        user_metadata: {
+          ...cleanSession.user.user_metadata,
+          avatar_url: ''
+        }
+      }
+    }
+    
+    try {
+      localStorage.setItem('tiko_auth_session', JSON.stringify(cleanSession))
+      
+      // Also store in the format Supabase expects for compatibility
+      localStorage.setItem('supabase.auth.token', JSON.stringify(cleanSession))
+    } catch (error) {
+      console.error('[AuthService] Failed to store session in localStorage:', error)
+      // If it still fails, try storing without user metadata
+      const minimalSession = {
+        ...cleanSession,
+        user: {
+          ...cleanSession.user,
+          user_metadata: {},
+          app_metadata: {}
+        }
+      }
+      localStorage.setItem('tiko_auth_session', JSON.stringify(minimalSession))
+      localStorage.setItem('supabase.auth.token', JSON.stringify(minimalSession))
+    }
   }
 }
 

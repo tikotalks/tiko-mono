@@ -34,6 +34,7 @@ async function saveToSupabase(env: Env, record: Omit<UserMediaRecord, 'id' | 'cr
   const response = await fetch(`${env.SUPABASE_URL}/rest/v1/user_media`, {
     method: 'POST',
     headers: {
+      'apikey': env.SUPABASE_SERVICE_KEY,
       'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY}`,
       'Content-Type': 'application/json',
       'Prefer': 'return=representation'
@@ -131,7 +132,10 @@ async function handleUpload(request: Request, env: Env): Promise<Response> {
       original_filename: file.name,
       file_size: file.size,
       mime_type: file.type,
-      ...urls,
+      url: urls.url,
+      thumbnail_url: urls.thumbnailUrl,
+      medium_url: urls.mediumUrl,
+      large_url: urls.largeUrl,
       ...dimensions,
       metadata: uploadData.metadata || {},
       usage_type: uploadData.usageType

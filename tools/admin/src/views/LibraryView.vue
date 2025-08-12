@@ -26,7 +26,8 @@
       <template #inputs>
         <TInputText
           v-model="searchQuery"
-          :placeholder="t('admin.library.searchPlaceholder')"
+          :label="t('common.search')"
+          :placeholder="t('common.searchPlaceholder')"
           :icon="Icons.SEARCH_L"
           @input="searchImages(searchQuery)"
         />

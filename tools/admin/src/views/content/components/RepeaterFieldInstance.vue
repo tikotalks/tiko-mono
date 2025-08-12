@@ -88,6 +88,7 @@
               <!-- Text Input -->
               <TInputText
                 v-if="schemaField.type === 'text'"
+                :inline="true"
                 :model-value="item[schemaField.key] || ''"
                 :label="schemaField.label"
                 :required="schemaField.required"
@@ -97,6 +98,7 @@
               <!-- Textarea -->
               <TInputTextArea
                 v-else-if="schemaField.type === 'textarea'"
+                :inline="true"
                 :model-value="item[schemaField.key] || ''"
                 :label="schemaField.label"
                 :required="schemaField.required"
@@ -106,6 +108,7 @@
               <!-- Number -->
               <TInputNumber
                 v-else-if="schemaField.type === 'number'"
+                :inline="true"
                 :model-value="item[schemaField.key] || 0"
                 :label="schemaField.label"
                 :required="schemaField.required"
@@ -115,6 +118,7 @@
               <!-- Boolean -->
               <TInputCheckbox
                 v-else-if="schemaField.type === 'boolean'"
+                :inline="true"
                 :model-value="item[schemaField.key] || false"
                 :label="schemaField.label"
                 @update:model-value="updateItemField(index, schemaField.key, $event)"
@@ -123,6 +127,7 @@
               <!-- Select -->
               <TInputSelect
                 v-else-if="schemaField.type === 'select'"
+                :inline="true"
                 :model-value="item[schemaField.key] || ''"
                 :label="schemaField.label"
                 :options="schemaField.options || []"
@@ -204,13 +209,13 @@ const schema = computed<RepeaterField[]>(() => {
     console.log('Config is directly the schema array:', props.field.config)
     return props.field.config
   }
-  
+
   // Otherwise check for schema in various locations
-  const possibleSchema = 
-    props.field.config?.schema || 
+  const possibleSchema =
+    props.field.config?.schema ||
     props.field.config?.fields ||
     []
-  
+
   return Array.isArray(possibleSchema) ? possibleSchema : []
 })
 
@@ -374,8 +379,6 @@ function getItemPreview(item: Record<string, any>): string {
   }
 
   &__field {
-    margin-bottom: var(--space);
-
     &:last-child {
       margin-bottom: 0;
     }

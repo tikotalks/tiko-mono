@@ -476,6 +476,58 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  const cleanupDataUrlAvatar = async () => {
+    try {
+      const result = await authService.cleanupDataUrlAvatar()
+      
+      if (result.success && result.user) {
+        user.value = result.user
+        
+        // Update session with cleaned user data
+        if (session.value) {
+          session.value = {
+            ...session.value,
+            user: result.user
+          }
+        }
+      }
+      
+      return result
+    } catch (err) {
+      console.error('[Auth Store] Error cleaning up avatar:', err)
+      return { success: false, error: 'Failed to clean up avatar' }
+    }
+  }
+
+  const refreshUserData = async () => {
+    try {
+      // Get fresh user data from the API
+      const result = await authService.getCurrentUser()
+      
+      if (result.success && result.user) {
+        // Update the user in the store
+        user.value = result.user
+        
+        // Update session with fresh user data
+        if (result.session) {
+          session.value = result.session
+        } else if (session.value) {
+          session.value = {
+            ...session.value,
+            user: result.user
+          }
+        }
+        
+        return { success: true, user: result.user }
+      }
+      
+      return { success: false, error: result.error || 'Failed to refresh user data' }
+    } catch (err) {
+      console.error('[Auth Store] Error refreshing user data:', err)
+      return { success: false, error: 'Failed to refresh user data' }
+    }
+  }
+
   return {
     // State
     user,
@@ -504,6 +556,8 @@ export const useAuthStore = defineStore('auth', () => {
     updateTheme,
     updateSetting,
     updateSettings,
-    handleMagicLinkCallback
+    handleMagicLinkCallback,
+    cleanupDataUrlAvatar,
+    refreshUserData
   }
 })

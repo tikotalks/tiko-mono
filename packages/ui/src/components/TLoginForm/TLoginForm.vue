@@ -244,7 +244,7 @@
         <p :class="bemm('error-message')">{{ error }}</p>
         <TButton
           :label="t(keys.auth.tryAgain)"
-          type="ghost"
+          type="outline"
           color="secondary"
           size="small"
           @click="clearError"
@@ -513,6 +513,14 @@ onUnmounted(() => {
 
   &__sso-button {
     margin-bottom: var(--space-s);
+  }
+
+  &__error{
+    padding: var(--space);
+    background-color: color-mix(in srgb, var(--color-error), transparent 75%);
+    border: 1px solid var(--color-error);
+    margin: var(--space);
+    border-radius: var(--border-radius);
   }
 }
 </style>

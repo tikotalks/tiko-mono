@@ -37,86 +37,63 @@ class UserMediaService {
       throw new Error('User not authenticated')
     }
 
-    // TEMPORARY: Use Supabase Storage until worker is configured
-    // Generate unique filename
-    const timestamp = Date.now()
-    const randomStr = Math.random().toString(36).substring(2, 8)
-    const extension = options.file.name.match(/\.[^.]+$/)?.[0] || ''
-    const filename = `${user.id}/${options.usageType}/${timestamp}-${randomStr}${extension}`
+    try {
+      // Try Cloudflare worker first
+      const formData = new FormData()
+      formData.append('file', options.file)
+      formData.append('data', JSON.stringify({
+        userId: user.id,
+        usageType: options.usageType,
+        metadata: options.metadata || {}
+      }))
 
-    // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('user-media')
-      .upload(filename, options.file, {
-        cacheControl: '3600',
-        upsert: false
+      const response = await fetch(this.uploadUrl, {
+        method: 'POST',
+        body: formData
       })
 
-    if (uploadError) {
-      // If bucket doesn't exist, create it
-      if (uploadError.message?.includes('not found')) {
-        const { error: createError } = await supabase.storage.createBucket('user-media', {
-          public: true,
-          fileSizeLimit: 10485760 // 10MB
-        })
+      console.log('Upload response status:', response.status)
+      
+      if (response.ok) {
+        const result = await response.json()
+        console.log('Upload result:', result)
         
-        if (createError && !createError.message?.includes('already exists')) {
-          throw createError
-        }
-
-        // Try upload again
-        const { error: retryError } = await supabase.storage
-          .from('user-media')
-          .upload(filename, options.file, {
-            cacheControl: '3600',
-            upsert: false
-          })
-
-        if (retryError) {
-          throw retryError
+        if (result.success && result.url) {
+          // Create a media record to return
+          const mediaRecord: UserMedia = {
+            id: result.id || `upload-${Date.now()}`,
+            user_id: user.id,
+            filename: options.file.name,
+            original_filename: options.file.name,
+            file_size: options.file.size,
+            mime_type: options.file.type,
+            url: result.url,
+            thumbnail_url: result.thumbnailUrl || result.url,
+            medium_url: result.mediumUrl || result.url,
+            large_url: result.largeUrl || result.url,
+            metadata: options.metadata || {},
+            usage_type: options.usageType,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+          
+          // If it's a profile picture, update user metadata
+          if (options.usageType === 'profile_picture') {
+            await this.updateUserProfilePicture(result.url)
+          }
+          
+          return mediaRecord
         }
       } else {
-        throw uploadError
+        const errorText = await response.text()
+        console.error('Upload failed:', response.status, errorText)
       }
+    } catch (workerError) {
+      console.warn('Cloudflare worker upload failed, falling back to direct update:', workerError)
     }
 
-    // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from('user-media')
-      .getPublicUrl(filename)
-
-    // Create database record
-    const mediaRecord = {
-      user_id: user.id,
-      filename,
-      original_filename: options.file.name,
-      file_size: options.file.size,
-      mime_type: options.file.type,
-      url: publicUrl,
-      thumbnail_url: publicUrl,
-      medium_url: publicUrl,
-      large_url: publicUrl,
-      metadata: options.metadata || {},
-      usage_type: options.usageType
-    }
-
-    const { data, error } = await supabase
-      .from('user_media')
-      .insert(mediaRecord)
-      .select()
-      .single()
-
-    if (error) {
-      await supabase.storage.from('user-media').remove([filename])
-      throw error
-    }
-
-    // If it's a profile picture, update user metadata
-    if (options.usageType === 'profile_picture') {
-      await this.updateUserProfilePicture(publicUrl)
-    }
-
-    return data
+    // Fallback: Don't use data URLs as they cause storage issues
+    throw new Error('Upload failed - storage service unavailable. Please try again later.')
   }
 
   async updateUserProfilePicture(url: string): Promise<void> {

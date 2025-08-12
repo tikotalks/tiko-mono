@@ -5,23 +5,23 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useBemm } from 'bemm'
-import type { TButtonGroupProps } from './TButtonGroup.model'
+import { computed } from 'vue';
+import { useBemm } from 'bemm';
+import type { TButtonGroupProps } from './TButtonGroup.model';
 
 const props = withDefaults(defineProps<TButtonGroupProps>(), {
   direction: 'row',
   fluid: false,
-  gap: 's'
-})
+  gap: 's',
+});
 
-const bemm = useBemm('button-group')
+const bemm = useBemm('button-group');
 
 const modifiers = computed(() => ({
   [props.direction]: true,
   fluid: props.fluid,
-  [`gap-${props.gap}`]: true
-}))
+  [`gap-${props.gap}`]: true,
+}));
 </script>
 
 <style lang="scss">
@@ -42,7 +42,14 @@ const modifiers = computed(() => ({
     width: 100%;
 
     .button {
+      --border-radius: 0;
       flex: 1;
+      &:nth-child(1) {
+        --border-radius: 1em 0 0 1em;
+      }
+      &:last-child {
+        --border-radius: 0 1em 1em 0;
+      }
     }
   }
 
@@ -67,7 +74,8 @@ const modifiers = computed(() => ({
   }
 
   .button {
-    &, & + .button {
+    &,
+    & + .button {
       margin: 0;
     }
   }
