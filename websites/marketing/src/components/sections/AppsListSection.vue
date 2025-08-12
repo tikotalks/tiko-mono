@@ -33,20 +33,22 @@
           :id="`app-${kebabCase(app.data?.app_title)}`"
           :key="index"
           :class="bemm('app-item')"
-          :style="`--app-color: ${app.data?.color ? `var(--color-${app.data.color})` : '#000'};`"
+          :style="`--app-color: ${app.data?.color ? `var(--color-${app.data.color})` : '#000'}; --app-color-text: ${app.data?.color ? `var(--color-${app.data.color}-text)` : '#fff'};`"
         >
-          <h3>{{ app.data.app_title }}</h3>
-          <AppIcon :app="app" />
-          <div :class="bemm('app-description')">
-            <TMarkdownRenderer
-              v-if="app.data.app_description"
-              :content="app.data.app_description"
-              :class="bemm('app-description-content')"
-            />
+          <h3 :class="bemm('app-title')">{{ app.data.app_title }}</h3>
+          <div :class="bemm('app-content')">
+            <AppIcon :app="app" />
+            <div :class="bemm('app-description')">
+              <TMarkdownRenderer
+                v-if="app.data.app_description"
+                :content="app.data.app_description"
+                :class="bemm('app-description-content')"
+              />
 
-            <TButton :color="app.data.color" :link="app.data.app_link"
-              >Go to</TButton
-            >
+              <TButton :color="app.data.color" :link="app.data.app_link"
+                >Go to</TButton
+              >
+            </div>
           </div>
         </div>
       </div>
@@ -60,7 +62,7 @@ import { TButton, TMarkdownRenderer } from '@tiko/ui';
 import type { ContentSection } from '@tiko/core';
 import { useImages, useImageUrl } from '@tiko/core';
 import { onMounted, ref } from 'vue';
-import { kebabCase } from "@sil/case"
+import { kebabCase } from '@sil/case';
 import { processTitle } from '@/utils/processTitle';
 import AppIcon from '../blocks/AppIcon.vue';
 
@@ -242,16 +244,6 @@ onMounted(async () => {
     gap: var(--space);
     width: 100%;
 
-    &:hover {
-      transform: scale(1.05);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-
-      .apps-section__app-title {
-        transform: scale(1);
-        opacity: 1;
-      }
-    }
-
     view-timeline-name: --revealing-image;
     view-timeline-axis: block;
     animation: linear reveal-center both;
@@ -303,19 +295,22 @@ onMounted(async () => {
   }
 
   &__app-title {
-    margin-top: var(--space-xs);
-    font-size: var(--font-size-sm);
-    font-weight: 600;
-    text-align: center;
-    color: var(--color-light);
-    background-color: var(--color-dark);
-    border-radius: 1em;
-    padding: 0.1em 0.5em;
-    transform: scale(0.5);
-    opacity: 0;
-    transition: 0.3s ease-in-out;
-    position: absolute;
-    top: 100%;
+    font-size: clamp(3em, 4vw, 6em);
+    line-height: 1;
+    color: var(--app-color-text);
+    // color: color-mix(in srgb, var(--app-color), var(--app-color-text) 50%);
+    font-family: var(--header-font-family);
+
+  }
+  &__app-content {
+    display: flex;
+    flex-direction: row;
+    gap: var(--space);
+    align-items: flex-start;
+    @media screen and (max-width: 720px) {
+      flex-direction: column;
+      align-items: center;
+    }
   }
 }
 </style>

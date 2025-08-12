@@ -4,6 +4,7 @@
       <TButton
         :color="cta.color.toLowerCase() || 'primary'"
         size="large"
+        :icon="cta.icon"
         @click="handleAction(cta)"
         v-for="cta in items"
       >

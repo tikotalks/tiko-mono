@@ -94,14 +94,21 @@ onMounted(async () => {
   background-color: var(--color-light);
   color: var(--color-dark);
   position: relative;
-
   @media (max-width: 720px) {
     flex-direction: column-reverse;
     align-items: center;
   }
 
+  &--default{
+    .column-right-section__container{
+      padding: var(--spacing);
+    }
+  }
+
   &--blocked {
+    padding: var(--spacing);
     .column-right-section__container {
+
       padding: var(--spacing);
       background-color: color-mix(
         in srgb,
@@ -146,9 +153,7 @@ onMounted(async () => {
     flex-direction: row-reverse;
     border-radius: var(--border-radius);
 
-    padding: var(--spacing);
     @media (max-width: 720px) {
-
       width: 100%;
       flex-direction: column;
     }
