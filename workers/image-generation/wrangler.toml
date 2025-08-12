@@ -1,0 +1,22 @@
+name = "image-generation"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[env.production]
+name = "image-generation"
+route = { pattern = "generate.tikocdn.org/*", zone_name = "tikocdn.org" }
+
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "tiko-media"
+
+[[analytics_engine_datasets]]
+binding = "ANALYTICS"
+
+[vars]
+ENVIRONMENT = "production"
+
+# Secrets to be set via wrangler secret:
+# - OPENAI_API_KEY
+# - SUPABASE_URL
+# - SUPABASE_SERVICE_KEY

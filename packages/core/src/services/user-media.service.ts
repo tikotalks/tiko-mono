@@ -1,5 +1,7 @@
 import { getSupabase } from '../lib/supabase-lazy'
 
+export type MediaStatus = 'queued' | 'generating' | 'generated' | 'published' | 'failed' | 'rejected'
+
 export interface UserMedia {
   id: string
   user_id: string
@@ -14,7 +16,21 @@ export interface UserMedia {
   width?: number
   height?: number
   metadata: Record<string, any>
-  usage_type: 'profile_picture' | 'card_media' | 'general'
+  usage_type: 'profile_picture' | 'card_media' | 'general' | 'generated'
+  status?: MediaStatus
+  generation_data?: {
+    prompt: string
+    size?: string
+    style?: string
+    revised_prompt?: string
+    queued_at?: string
+    started_at?: string
+    completed_at?: string
+    failed_at?: string
+  }
+  error_message?: string
+  generated_at?: string
+  published_at?: string
   created_at: string
   updated_at: string
 }
@@ -210,6 +226,130 @@ class UserMediaService {
     })
     
     return stats
+  }
+
+  async getGeneratedMedia(
+    userId: string,
+    status?: MediaStatus | MediaStatus[]
+  ): Promise<UserMedia[]> {
+    const supabase = getSupabase()
+    
+    let query = supabase
+      .from('user_media')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('usage_type', 'generated')
+    
+    if (status) {
+      if (Array.isArray(status)) {
+        query = query.in('status', status)
+      } else {
+        query = query.eq('status', status)
+      }
+    }
+    
+    query = query.order('created_at', { ascending: false })
+    
+    const { data, error } = await query
+    
+    if (error) {
+      throw error
+    }
+    
+    return data || []
+  }
+
+  async updateMediaStatus(
+    mediaId: string,
+    status: MediaStatus
+  ): Promise<void> {
+    const supabase = getSupabase()
+    
+    const { error } = await supabase.rpc('transition_media_status', {
+      media_id: mediaId,
+      new_status: status
+    })
+    
+    if (error) {
+      throw error
+    }
+  }
+
+  async bulkUpdateMediaStatus(
+    mediaIds: string[],
+    status: MediaStatus
+  ): Promise<void> {
+    const supabase = getSupabase()
+    
+    // Use Promise.all to update multiple items
+    const promises = mediaIds.map(id => 
+      this.updateMediaStatus(id, status)
+    )
+    
+    await Promise.all(promises)
+  }
+
+  async queueImageGeneration(
+    userId: string,
+    scope: 'personal' | 'global',
+    items: Array<{ 
+      name: string; 
+      prompt: string; 
+      size?: string; 
+      style?: string;
+      category?: string;
+      tags?: string[];
+    }>
+  ): Promise<{ success: boolean; queued: number; records: any[] }> {
+    // Call the image generation worker
+    const response = await fetch('https://generate.tikocdn.org/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId,
+        scope,
+        items
+      })
+    })
+    
+    if (!response.ok) {
+      throw new Error('Failed to queue image generation')
+    }
+    
+    return response.json()
+  }
+
+  subscribeToGenerationUpdates(
+    userId: string,
+    callback: (payload: any) => void
+  ) {
+    const supabase = getSupabase()
+    
+    const channel = supabase
+      .channel(`generation-${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_media',
+          filter: `user_id=eq.${userId}`
+        },
+        (payload) => {
+          // Only notify for generated items
+          if (payload.new?.usage_type === 'generated') {
+            callback(payload)
+          }
+        }
+      )
+      .subscribe()
+    
+    // Return unsubscribe function
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }
 }
 

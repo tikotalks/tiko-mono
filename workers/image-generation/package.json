@@ -1,0 +1,24 @@
+{
+  "name": "@tiko/image-generation-worker",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker for AI image generation",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240117.0",
+    "@types/node": "^20.11.5",
+    "typescript": "^5.3.3",
+    "wrangler": "^3.24.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.3",
+    "openai": "^4.24.7"
+  }
+}

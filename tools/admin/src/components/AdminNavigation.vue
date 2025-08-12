@@ -229,6 +229,12 @@ const navigationItems = computed<NavigationItem[]>(() => [
         icon: Icons.ARROW_UPLOAD,
         label: t('admin.navigation.upload'),
       },
+      {
+        name: 'generate',
+        to: { name: 'Generate' },
+        icon: Icons.SPARKLE,
+        label: t('admin.navigation.generate'),
+      },
     ],
   },
   {

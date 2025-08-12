@@ -6,8 +6,10 @@ import type {
   MediaService, 
   MediaItem, 
   MediaUploadData, 
-  MediaSearchOptions 
+  MediaSearchOptions,
+  MediaStatus 
 } from './media.service'
+import { getSupabase } from '../lib/supabase-lazy'
 
 export class SupabaseMediaService implements MediaService {
   private readonly API_URL = 'https://kejvhvszhevfwgsztedf.supabase.co/rest/v1'
@@ -455,6 +457,140 @@ export class SupabaseMediaService implements MediaService {
     } catch (error) {
       console.error('Failed to delete media:', error)
       throw error
+    }
+  }
+
+  async getGeneratedMedia(
+    status?: MediaStatus | MediaStatus[],
+    generatedBy?: string
+  ): Promise<MediaItem[]> {
+    const session = this.getSession()
+    
+    try {
+      let queryParams = ['select=*']
+      
+      // Filter by generation_data existence
+      queryParams.push('generation_data=not.is.null')
+      
+      // Filter by status if provided
+      if (status) {
+        if (Array.isArray(status)) {
+          queryParams.push(`status=in.(${status.join(',')})`)
+        } else {
+          queryParams.push(`status=eq.${status}`)
+        }
+      }
+      
+      // Filter by generated_by if provided
+      if (generatedBy) {
+        queryParams.push(`generated_by=eq.${generatedBy}`)
+      }
+      
+      queryParams.push('order=created_at.desc')
+      
+      const url = `${this.API_URL}/media?${queryParams.join('&')}`
+      
+      const headers: any = {
+        'apikey': this.ANON_KEY,
+        'Content-Type': 'application/json'
+      }
+      
+      // Add auth header if we have a session
+      if (session) {
+        headers['Authorization'] = `Bearer ${session.access_token}`
+      }
+      
+      const response = await fetch(url, { headers })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Failed to fetch generated media:', errorText)
+        throw new Error(`Failed to fetch generated media: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      return data || []
+    } catch (error) {
+      console.error('Failed to fetch generated media:', error)
+      throw error
+    }
+  }
+
+  async updateMediaStatus(
+    mediaId: string,
+    status: MediaStatus
+  ): Promise<void> {
+    const supabase = getSupabase()
+    
+    const { error } = await supabase.rpc('transition_global_media_status', {
+      media_id: mediaId,
+      new_status: status
+    })
+    
+    if (error) {
+      throw error
+    }
+  }
+
+  async queueImageGeneration(
+    generatedBy: string,
+    items: Array<{ 
+      name: string; 
+      prompt: string; 
+      size?: string; 
+      style?: string;
+      category?: string;
+      tags?: string[];
+    }>
+  ): Promise<{ success: boolean; queued: number; records: any[] }> {
+    // Call the image generation worker
+    const response = await fetch('https://generate.tikocdn.org/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: generatedBy,
+        scope: 'global',
+        items
+      })
+    })
+    
+    if (!response.ok) {
+      throw new Error('Failed to queue image generation')
+    }
+    
+    return response.json()
+  }
+
+  subscribeToGenerationUpdates(
+    generatedBy: string,
+    callback: (payload: any) => void
+  ): () => void {
+    const supabase = getSupabase()
+    
+    const channel = supabase
+      .channel(`generation-global-${generatedBy}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'media',
+          filter: `generated_by=eq.${generatedBy}`
+        },
+        (payload) => {
+          // Only notify for generated items
+          if (payload.new?.generation_data) {
+            callback(payload)
+          }
+        }
+      )
+      .subscribe()
+    
+    // Return unsubscribe function
+    return () => {
+      supabase.removeChannel(channel)
     }
   }
 }

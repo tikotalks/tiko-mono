@@ -28,6 +28,7 @@ const ItemsView = () => import('../views/content/ItemsView.vue')
 const ItemDetailView = () => import('../views/content/ItemDetailView.vue')
 const DeploymentDashboard = () => import('../views/deployment/DeploymentDashboard.vue')
 const BackupsView = () => import('../views/deployment/BackupsView.vue')
+const GenerateView = () => import('../views/GenerateView.vue')
 
 const router = createAppRouter({
   routes: [
@@ -54,6 +55,11 @@ const router = createAppRouter({
           path: 'upload',
           name: 'Upload',
           component: UploadView
+        },
+        {
+          path: 'generate',
+          name: 'Generate',
+          component: GenerateView
         },
         {
           path: 'media/:id',
