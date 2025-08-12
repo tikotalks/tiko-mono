@@ -2,21 +2,40 @@ name = "image-generation"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
 
+# Development configuration
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "media"
+
+[[r2_buckets]]
+binding = "USER_MEDIA_BUCKET"
+bucket_name = "user-media"
+
+[vars]
+ENVIRONMENT = "development"
+SUPABASE_URL = "https://kejvhvszhevfwgsztedf.supabase.co"
+
+# Production configuration
 [env.production]
 name = "image-generation"
 route = { pattern = "generate.tikocdn.org/*", zone_name = "tikocdn.org" }
 
-[[r2_buckets]]
+[[env.production.r2_buckets]]
 binding = "MEDIA_BUCKET"
-bucket_name = "tiko-media"
+bucket_name = "media"
 
-[[analytics_engine_datasets]]
-binding = "ANALYTICS"
+[[env.production.r2_buckets]]
+binding = "USER_MEDIA_BUCKET"
+bucket_name = "user-media"
 
-[vars]
+[env.production.vars]
 ENVIRONMENT = "production"
+SUPABASE_URL = "https://kejvhvszhevfwgsztedf.supabase.co"
+
+# Analytics Engine - uncomment after enabling in dashboard
+# [[analytics_engine_datasets]]
+# binding = "ANALYTICS"
 
 # Secrets to be set via wrangler secret:
 # - OPENAI_API_KEY
-# - SUPABASE_URL
 # - SUPABASE_SERVICE_KEY

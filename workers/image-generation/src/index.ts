@@ -2,8 +2,9 @@ import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 
 export interface Env {
-  MEDIA_BUCKET: R2Bucket
-  ANALYTICS: AnalyticsEngineDataset
+  MEDIA_BUCKET: R2Bucket  // For global/public media
+  USER_MEDIA_BUCKET: R2Bucket  // For personal media
+  ANALYTICS?: AnalyticsEngineDataset
   OPENAI_API_KEY: string
   SUPABASE_URL: string
   SUPABASE_SERVICE_KEY: string
@@ -233,13 +234,15 @@ async function processGenerationQueue(
       // Analyze image (basic analysis for now)
       const imageAnalysis = await analyzeImage(arrayBuffer)
 
-      // Upload to R2
+      // Upload to R2 - use correct bucket based on scope
       const userId = record.user_id || record.generated_by
-      const r2Key = tableName === 'media' 
-        ? `media/generated/${record.filename}`
-        : `generated/${userId}/${record.filename}`
+      const isGlobal = tableName === 'media'
+      const bucket = isGlobal ? env.MEDIA_BUCKET : env.USER_MEDIA_BUCKET
+      const r2Key = isGlobal 
+        ? `generated/${record.filename}`
+        : `${userId}/generated/${record.filename}`
         
-      await env.MEDIA_BUCKET.put(r2Key, arrayBuffer, {
+      await bucket.put(r2Key, arrayBuffer, {
         httpMetadata: {
           contentType: 'image/png',
         },
@@ -247,13 +250,15 @@ async function processGenerationQueue(
           userId: userId,
           prompt: record.generation_data.prompt,
           generatedAt: new Date().toISOString(),
-          scope: tableName === 'media' ? 'global' : 'personal',
+          scope: isGlobal ? 'global' : 'personal',
           ...imageAnalysis
         }
       })
 
-      // Generate CDN URL
-      const cdnUrl = `https://media.tikocdn.org/${r2Key}`
+      // Generate CDN URL - use correct domain based on scope
+      const cdnUrl = isGlobal 
+        ? `https://media.tikocdn.org/${r2Key}`
+        : `https://user-media.tikocdn.org/${r2Key}`
 
       // Update media record with success
       const updateData: any = {
@@ -281,11 +286,13 @@ async function processGenerationQueue(
         .update(updateData)
         .eq('id', record.id)
 
-      // Track analytics
-      env.ANALYTICS.writeDataPoint({
-        blobs: [userId, 'image_generated', tableName],
-        doubles: [1],
-      })
+      // Track analytics (if available)
+      if (env.ANALYTICS) {
+        env.ANALYTICS.writeDataPoint({
+          blobs: [userId, 'image_generated', tableName],
+          doubles: [1],
+        })
+      }
 
     } catch (error) {
       console.error(`Failed to generate image for ${record.id}:`, error)
@@ -303,11 +310,14 @@ async function processGenerationQueue(
         })
         .eq('id', record.id)
 
-      // Track failure
-      env.ANALYTICS.writeDataPoint({
-        blobs: [userId, 'image_generation_failed', tableName],
-        doubles: [1],
-      })
+      // Track failure (if analytics available)
+      const userId = record.user_id || record.generated_by
+      if (env.ANALYTICS) {
+        env.ANALYTICS.writeDataPoint({
+          blobs: [userId, 'image_generation_failed', tableName],
+          doubles: [1],
+        })
+      }
     }
   }
 }
