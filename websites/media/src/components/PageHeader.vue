@@ -9,21 +9,25 @@
       :show-logo="false"
       :class="bemm('nav')"
     />
+    <TUserMenu v-if="authStore.user" :class="bemm('user-menu')" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useBemm } from 'bemm'
-import { TLogo, TNavigation, type NavigationItem } from '@tiko/ui'
+import { TLogo, TNavigation, TUserMenu, type NavigationItem } from '@tiko/ui'
+import { useAuthStore } from '@tiko/core'
 
 const bemm = useBemm('page-header')
+const authStore = useAuthStore()
 
 // Static navigation for now
 const navigationItems = ref<NavigationItem[]>([
   { id: '1', title: 'Library', path: '/library', order: 1 },
-  { id: '2', title: 'Categories', path: '/categories', order: 2 },
-  { id: '3', title: 'About', path: '/about', order: 3 }
+  { id: '2', title: 'Collections', path: '/collections', order: 2 },
+  { id: '3', title: 'Categories', path: '/categories', order: 3 },
+  { id: '4', title: 'About', path: '/about', order: 4 }
 ])
 </script>
 
@@ -48,6 +52,19 @@ const navigationItems = ref<NavigationItem[]>([
     height: calc(var(--space-l) * 2);
     svg {
       height: 100%;
+    }
+  }
+
+  &__nav {
+    flex: 0;
+    justify-content: center;
+  }
+
+  &__user-menu {
+    margin-right: 0;
+
+    @media screen and (max-width: 768px) {
+      margin-right: var(--space-xl);
     }
   }
 }

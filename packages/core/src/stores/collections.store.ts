@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { collectionsSupabaseService } from '../services/collections-supabase.service'
-import type { MediaCollection } from '../services/collections.service'
+import type { MediaCollection, CollectionItem, CreateCollectionData, UpdateCollectionData, AddItemToCollectionData } from '../services/collections.service'
 import { useAuthStore } from './auth'
 import { logger } from '../utils/logger'
 
@@ -15,6 +15,8 @@ export const useCollectionsStore = defineStore('collections', () => {
   // State
   const collections = ref<Collection[]>([])
   const publicCollections = ref<Collection[]>([])
+  const curatedCollections = ref<Collection[]>([])
+  const allCollections = ref<Collection[]>([])
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
@@ -27,8 +29,10 @@ export const useCollectionsStore = defineStore('collections', () => {
   }
 
   // Get collections containing a specific media item
-  const getCollectionsForMedia = (mediaId: string) => {
-    return collections.value.filter(c => c.media_ids.includes(mediaId))
+  const getCollectionsForMedia = (mediaId: string, mediaType: 'media' | 'user_media' = 'media') => {
+    return collections.value.filter(c => 
+      c.items?.some(item => item.item_id === mediaId && item.item_type === mediaType)
+    )
   }
 
   // Load user collections
@@ -63,19 +67,55 @@ export const useCollectionsStore = defineStore('collections', () => {
     }
   }
 
+  // Load curated collections
+  const loadCuratedCollections = async () => {
+    console.log('loadCuratedCollections - Starting load')
+    isLoading.value = true
+    error.value = null
+    try {
+      curatedCollections.value = await collectionsSupabaseService.getCuratedCollections()
+      console.log('loadCuratedCollections - Loaded collections:', curatedCollections.value)
+      logger.info('collections-store', 'Curated collections loaded', { count: curatedCollections.value.length })
+    } catch (err) {
+      console.error('loadCuratedCollections - Error:', err)
+      error.value = err instanceof Error ? err.message : 'Failed to load curated collections'
+      logger.error('collections-store', 'Failed to load curated collections', err)
+    } finally {
+      isLoading.value = false
+      console.log('loadCuratedCollections - Finished loading, isLoading:', isLoading.value)
+    }
+  }
+
+  // Load all collections (admin view)
+  const loadAllCollections = async () => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const allCollectionsData = await collectionsSupabaseService.getAllCollections()
+      allCollections.value = allCollectionsData || []
+      logger.info('collections-store', 'All collections loaded', { count: allCollections.value.length })
+    } catch (err) {
+      // Initialize with empty array if load fails
+      allCollections.value = []
+      error.value = err instanceof Error ? err.message : 'Failed to load all collections'
+      logger.error('collections-store', 'Failed to load all collections', err)
+      console.error('Collections load error:', err)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   // Create a new collection
-  const createCollection = async (name: string, isPublic = false) => {
+  const createCollection = async (data: CreateCollectionData) => {
     if (!authStore.user) throw new Error('User not authenticated')
     
     try {
-      const newCollection = await collectionsSupabaseService.createCollection({
-        user_id: authStore.user.id,
-        name,
-        media_ids: [],
-        is_public: isPublic
-      })
+      const newCollection = await collectionsSupabaseService.createCollection(data)
       
       collections.value = [...collections.value, newCollection]
+      if (data.is_public) {
+        publicCollections.value = [...publicCollections.value, newCollection]
+      }
       
       logger.info('collections-store', 'Collection created', { 
         id: newCollection.id, 
@@ -91,19 +131,42 @@ export const useCollectionsStore = defineStore('collections', () => {
   }
 
   // Update collection
-  const updateCollection = async (id: string, updates: { name?: string; is_public?: boolean }) => {
+  const updateCollection = async (id: string, updates: UpdateCollectionData) => {
     if (!authStore.user) throw new Error('User not authenticated')
     
     try {
-      const updatedCollection = await collectionsSupabaseService.updateCollection(
-        id,
-        authStore.user.id,
-        updates
-      )
+      const updatedCollection = await collectionsSupabaseService.updateCollection(id, updates)
       
+      // Update in user collections
       const index = collections.value.findIndex(c => c.id === id)
       if (index !== -1) {
         collections.value[index] = updatedCollection
+      }
+      
+      // Update in public collections if necessary
+      const publicIndex = publicCollections.value.findIndex(c => c.id === id)
+      if (updates.is_public && publicIndex === -1) {
+        publicCollections.value.push(updatedCollection)
+      } else if (!updates.is_public && publicIndex !== -1) {
+        publicCollections.value.splice(publicIndex, 1)
+      } else if (publicIndex !== -1) {
+        publicCollections.value[publicIndex] = updatedCollection
+      }
+      
+      // Update in curated collections if necessary
+      const curatedIndex = curatedCollections.value.findIndex(c => c.id === id)
+      if (updates.is_curated && curatedIndex === -1) {
+        curatedCollections.value.push(updatedCollection)
+      } else if (!updates.is_curated && curatedIndex !== -1) {
+        curatedCollections.value.splice(curatedIndex, 1)
+      } else if (curatedIndex !== -1) {
+        curatedCollections.value[curatedIndex] = updatedCollection
+      }
+      
+      // Update in all collections
+      const allIndex = allCollections.value.findIndex(c => c.id === id)
+      if (allIndex !== -1) {
+        allCollections.value[allIndex] = updatedCollection
       }
       
       logger.info('collections-store', 'Collection updated', { id })
@@ -119,8 +182,11 @@ export const useCollectionsStore = defineStore('collections', () => {
     if (!authStore.user) throw new Error('User not authenticated')
     
     try {
-      await collectionsSupabaseService.deleteCollection(id, authStore.user.id)
+      await collectionsSupabaseService.deleteCollection(id)
       collections.value = collections.value.filter(c => c.id !== id)
+      publicCollections.value = publicCollections.value.filter(c => c.id !== id)
+      curatedCollections.value = curatedCollections.value.filter(c => c.id !== id)
+      allCollections.value = allCollections.value.filter(c => c.id !== id)
       logger.info('collections-store', 'Collection deleted', { id })
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to delete collection'
@@ -128,65 +194,118 @@ export const useCollectionsStore = defineStore('collections', () => {
     }
   }
 
-  // Add media to collection
-  const addToCollection = async (collectionId: string, mediaId: string) => {
+  // Add item to collection
+  const addItemToCollection = async (collectionId: string, data: AddItemToCollectionData) => {
     if (!authStore.user) throw new Error('User not authenticated')
     
     try {
-      const updatedCollection = await collectionsSupabaseService.addMediaToCollection(
-        collectionId,
-        mediaId,
-        authStore.user.id
-      )
+      const newItem = await collectionsSupabaseService.addItemToCollection(collectionId, data)
       
-      const index = collections.value.findIndex(c => c.id === collectionId)
-      if (index !== -1) {
-        collections.value[index] = updatedCollection
+      // Update the collection's items array
+      const updateCollectionItems = (collection: Collection) => {
+        if (collection.id === collectionId) {
+          if (!collection.items) {
+            collection.items = []
+          }
+          collection.items.push(newItem)
+        }
       }
       
-      logger.info('collections-store', 'Media added to collection', { collectionId, mediaId })
+      collections.value.forEach(updateCollectionItems)
+      publicCollections.value.forEach(updateCollectionItems)
+      curatedCollections.value.forEach(updateCollectionItems)
+      allCollections.value.forEach(updateCollectionItems)
+      
+      logger.info('collections-store', 'Item added to collection', { 
+        collectionId, 
+        itemId: data.item_id,
+        itemType: data.item_type 
+      })
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to add media to collection'
+      error.value = err instanceof Error ? err.message : 'Failed to add item to collection'
       throw err
     }
   }
 
-  // Remove media from collection
-  const removeFromCollection = async (collectionId: string, mediaId: string) => {
+  // Remove item from collection
+  const removeItemFromCollection = async (collectionId: string, itemId: string, itemType: 'media' | 'user_media') => {
     if (!authStore.user) throw new Error('User not authenticated')
     
     try {
-      const updatedCollection = await collectionsSupabaseService.removeMediaFromCollection(
-        collectionId,
-        mediaId,
-        authStore.user.id
-      )
+      await collectionsSupabaseService.removeItemFromCollection(collectionId, itemId, itemType)
       
-      const index = collections.value.findIndex(c => c.id === collectionId)
-      if (index !== -1) {
-        collections.value[index] = updatedCollection
+      // Update the collection's items array
+      const updateCollectionItems = (collection: Collection) => {
+        if (collection.id === collectionId && collection.items) {
+          collection.items = collection.items.filter(
+            item => !(item.item_id === itemId && item.item_type === itemType)
+          )
+        }
       }
       
-      logger.info('collections-store', 'Media removed from collection', { collectionId, mediaId })
+      collections.value.forEach(updateCollectionItems)
+      publicCollections.value.forEach(updateCollectionItems)
+      curatedCollections.value.forEach(updateCollectionItems)
+      allCollections.value.forEach(updateCollectionItems)
+      
+      logger.info('collections-store', 'Item removed from collection', { 
+        collectionId, 
+        itemId,
+        itemType 
+      })
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to remove media from collection'
+      error.value = err instanceof Error ? err.message : 'Failed to remove item from collection'
       throw err
     }
   }
 
-  // Check if media is in collection
-  const isInCollection = (collectionId: string, mediaId: string) => {
+  // Check if item is in collection
+  const isItemInCollection = (collectionId: string, itemId: string, itemType: 'media' | 'user_media' = 'media') => {
     const collection = getCollectionById(collectionId)
-    return collection ? collection.media_ids.includes(mediaId) : false
+    return collection ? 
+      collection.items?.some(item => item.item_id === itemId && item.item_type === itemType) ?? false : 
+      false
   }
 
-  // Get a single collection
-  const getCollection = async (id: string) => {
+  // Toggle collection like
+  const toggleCollectionLike = async (collectionId: string) => {
+    if (!authStore.user) throw new Error('User not authenticated')
+    
     try {
-      const collection = await collectionsSupabaseService.getCollection(
-        id,
-        authStore.user?.id
-      )
+      const isLiked = await collectionsSupabaseService.toggleCollectionLike(collectionId)
+      
+      // Update the like status and count in all collections
+      const updateCollectionLike = (collection: Collection) => {
+        if (collection.id === collectionId) {
+          collection.is_liked = isLiked
+          collection.like_count = isLiked ? 
+            (collection.like_count || 0) + 1 : 
+            Math.max((collection.like_count || 0) - 1, 0)
+        }
+      }
+      
+      collections.value.forEach(updateCollectionLike)
+      publicCollections.value.forEach(updateCollectionLike)
+      curatedCollections.value.forEach(updateCollectionLike)
+      allCollections.value.forEach(updateCollectionLike)
+      
+      logger.info('collections-store', 'Collection like toggled', { collectionId, isLiked })
+      return isLiked
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to toggle collection like'
+      throw err
+    }
+  }
+
+  // Get a single collection with items
+  const getCollection = async (id: string, loadItems = true) => {
+    try {
+      const collection = await collectionsSupabaseService.getCollectionById(id)
+      
+      if (loadItems && collection) {
+        collection.items = await collectionsSupabaseService.getCollectionItems(id)
+      }
+      
       return collection
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to get collection'
@@ -194,22 +313,39 @@ export const useCollectionsStore = defineStore('collections', () => {
     }
   }
 
+  // Get collections for a specific media item
+  const getCollectionsForMediaItem = async (mediaId: string, mediaType: 'media' | 'user_media') => {
+    try {
+      const result = await collectionsSupabaseService.getCollectionsForMedia(mediaId, mediaType)
+      return result
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to get collections for media'
+      throw err
+    }
+  }
+
   return {
     collections,
     publicCollections,
+    curatedCollections,
+    allCollections,
     collectionCount,
     isLoading,
     error,
     loadCollections,
     loadPublicCollections,
+    loadCuratedCollections,
+    loadAllCollections,
     getCollection,
     getCollectionById,
     getCollectionsForMedia,
+    getCollectionsForMediaItem,
     createCollection,
     updateCollection,
     deleteCollection,
-    addToCollection,
-    removeFromCollection,
-    isInCollection
+    addItemToCollection,
+    removeItemFromCollection,
+    isItemInCollection,
+    toggleCollectionLike
   }
 })
