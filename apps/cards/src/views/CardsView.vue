@@ -10,7 +10,7 @@
       <!-- Back button when in sub-level -->
       <TButton
         v-if="currentGroupId"
-        :icon="Icons.ARROW_LEFT"
+        :icon="Icons.ARROW_THICK_LEFT"
         type="outline"
         color="primary"
         @click="handleBack"
@@ -25,6 +25,18 @@
         @click="toggleEditMode"
         :aria-label="isEditMode ? t('common.exitEditMode') : t('common.enterEditMode')"
       >{{ isEditMode ? t('common.exitEditMode') : t('common.enterEditMode') }}</TButton>
+
+      <!-- Bulk Add button (only in edit mode) -->
+      <TButton
+        v-if="isEditMode"
+        :icon="Icons.STACK_M"
+        type="outline"
+        color="accent"
+        @click="openBulkAddMode"
+        :aria-label="t('cards.bulkAdd')"
+      >
+        {{ t('cards.bulkAdd', 'Bulk Add') }}
+      </TButton>
       
       <!-- Selection mode toggle (only in edit mode) -->
       <TButton
@@ -38,7 +50,7 @@
         {{ selectionMode ? t('cards.selectTiles') : t('cards.select') }}
         <span v-if="selectedTileIds.size > 0">({{ selectedTileIds.size }})</span>
       </TButton>
-      
+
       <!-- Select All button (only in selection mode) -->
       <TButton
         v-if="selectionMode"
@@ -46,9 +58,9 @@
         type="ghost"
         size="small"
         @click="toggleSelectAll"
-        :aria-label="isAllSelected ? t('cards.deselectAll') : t('cards.selectAll')"
+        :aria-label="isAllSelected ? t('common.deselectAll') : t('common.selectAll')"
       >
-        {{ isAllSelected ? t('cards.deselectAll') : t('cards.selectAll') }}
+        {{ isAllSelected ? t('common.deselectAll') : t('common.selectAll') }}
       </TButton>
       <!-- App settings button (only visible in parent mode) -->
       <TButton
@@ -116,7 +128,7 @@
             >
               Move to Group
             </TButton>
-            
+
             <TButton
               size="small"
               type="outline"
@@ -125,7 +137,7 @@
             >
               Change Color
             </TButton>
-            
+
             <TButton
               size="small"
               type="outline"
@@ -170,6 +182,7 @@ import CardsSettingsForm from '../components/CardsSettingsForm.vue';
 import CardGrid from '../components/CardGrid.vue';
 import CardForm from '../components/CardForm.vue';
 import GroupSelector from '../components/GroupSelector.vue';
+import BulkCardCreator from '../components/BulkCardCreator.vue';
 import { CardTile,mockCardTile } from '../components/CardTile/CardTile.model';
 import { useEditMode } from '../composables/useEditMode';
 import { cardsService } from '../services/cards.service';
@@ -225,7 +238,7 @@ const toggleTileSelection = (tileId: string) => {
     newSet.add(tileId);
   }
   selectedTileIds.value = newSet;
-  
+
   // Exit selection mode if no tiles selected
   if (newSet.size === 0 && selectionMode.value) {
     selectionMode.value = false;
@@ -242,7 +255,7 @@ const clearSelection = () => {
 const toggleSelectAll = () => {
   const realCards = cards.value.filter(card => !card.id.startsWith('empty-'));
   const allSelected = realCards.every(card => selectedTileIds.value.has(card.id));
-  
+
   if (allSelected) {
     // Deselect all
     selectedTileIds.value = new Set<string>();
@@ -357,7 +370,7 @@ const handleCardClick = (card: CardTile, index: number) => {
     toggleTileSelection(card.id);
     return;
   }
-  
+
   if (isEditMode.value) {
     // In edit mode, open form to create/edit card
     const isNewCard = card.id.startsWith('empty-');
@@ -535,7 +548,7 @@ const handleCardDrop = async (droppedCard: CardTile, targetCard: CardTile) => {
     // Get existing children to find the next available index
     const existingChildren = await cardsService.loadCards(targetCard.id);
     const nextIndex = existingChildren.length;
-    
+
     // When dropping on an existing tile, always move it INTO that tile as a child
     const updatedCard = {
       ...droppedCard,
@@ -606,18 +619,18 @@ const handleMultiCardDrop = async (droppedCards: CardTile[], targetCard: CardTil
 
   // Move all selected cards into the target group
   const originalCards = [...cards.value];
-  
+
   try {
     // First, get existing children in the target group to find the next available index
     const existingChildren = await cardsService.loadCards(targetCard.id);
     const nextIndex = existingChildren.length;
-    
+
     // Remove all dropped cards from current view
     cards.value = cards.value.filter(c => !droppedCards.some(dc => dc.id === c.id));
-    
+
     // Sort dropped cards by their current index to maintain order
     const sortedDroppedCards = [...droppedCards].sort((a, b) => a.index - b.index);
-    
+
     // Update parent_id and index for all dropped cards
     for (let i = 0; i < sortedDroppedCards.length; i++) {
       const card = sortedDroppedCards[i];
@@ -628,17 +641,17 @@ const handleMultiCardDrop = async (droppedCards: CardTile[], targetCard: CardTil
       };
       await cardsService.saveCard(updatedCard, targetCard.id, updatedCard.index);
     }
-    
+
     // Mark target as having children and update the preview
     tilesWithChildren.value.add(targetCard.id);
-    
+
     // Update the children preview for the target tile
     const allChildren = [...existingChildren, ...sortedDroppedCards];
     tileChildrenMap.value.set(targetCard.id, allChildren);
-    
+
     // Clear selection after successful drop
     clearSelection();
-    
+
     console.log(`Moved ${droppedCards.length} cards into "${targetCard.title}" starting at index ${nextIndex}`);
   } catch (error) {
     console.error('Failed to move multiple cards:', error);
@@ -649,38 +662,38 @@ const handleMultiCardDrop = async (droppedCards: CardTile[], targetCard: CardTil
 // Multi-card reorder handler
 const handleMultiCardReorder = async (reorderedCards: CardTile[], targetIndex: number) => {
   const originalCards = [...cards.value];
-  
+
   try {
     // Create a working array with all cards (including empty slots)
     const maxIndex = Math.max(
       ...cards.value.map(c => c.index),
       targetIndex
     );
-    
+
     // Create array with all positions
     const allCards: (CardTile | null)[] = new Array(maxIndex + 1).fill(null);
-    
+
     // Place existing cards in their positions (excluding the ones being moved)
     cards.value.forEach(card => {
       if (!reorderedCards.some(rc => rc.id === card.id)) {
         allCards[card.index] = card;
       }
     });
-    
+
     // Find the actual target position accounting for gaps
     let actualTargetIndex = targetIndex;
-    
+
     // If we're moving to a position that's beyond current cards,
     // we need to ensure the cards go to that exact position
     if (targetIndex > cards.value.length - reorderedCards.length) {
       actualTargetIndex = targetIndex;
     }
-    
+
     // Place the reordered cards starting at the target index
     reorderedCards.forEach((card, i) => {
       allCards[actualTargetIndex + i] = card;
     });
-    
+
     // Compact the array and update indices
     const updatedCards: CardTile[] = [];
     allCards.forEach((card, index) => {
@@ -691,33 +704,33 @@ const handleMultiCardReorder = async (reorderedCards: CardTile[], targetIndex: n
         });
       }
     });
-    
+
     // Add empty cards if needed
-    const highestIndex = updatedCards.length > 0 
+    const highestIndex = updatedCards.length > 0
       ? Math.max(...updatedCards.map(c => c.index))
       : -1;
-      
+
     // Fill any gaps with empty cards
     for (let i = 0; i <= highestIndex; i++) {
       if (!updatedCards.some(c => c.index === i)) {
         updatedCards.push(createEmptyCard(i));
       }
     }
-    
+
     // Sort by index
     updatedCards.sort((a, b) => a.index - b.index);
     cards.value = updatedCards;
-    
+
     // Save all updated indices
     for (const card of updatedCards) {
       if (!card.id.startsWith('empty-')) {
         await cardsService.saveCard(card, currentGroupId.value, card.index);
       }
     }
-    
+
     // Clear selection after successful reorder
     clearSelection();
-    
+
     console.log(`Reordered ${reorderedCards.length} cards to position ${targetIndex}`);
   } catch (error) {
     console.error('Failed to reorder multiple cards:', error);
@@ -729,7 +742,7 @@ const handleMultiCardReorder = async (reorderedCards: CardTile[], targetIndex: n
 const moveSelectedToGroup = () => {
   const selectedCards = cards.value.filter(c => selectedTileIds.value.has(c.id));
   const availableGroups = cards.value.filter(c => !c.id.startsWith('empty-') && !selectedTileIds.value.has(c.id));
-  
+
   popupService.open({
     component: GroupSelector,
     title: 'Move to Group',
@@ -746,16 +759,16 @@ const moveSelectedToGroup = () => {
               parent_id: group.id
             }, group.id);
           }
-          
+
           // Remove moved cards from current view
           cards.value = cards.value.filter(c => !selectedTileIds.value.has(c.id));
-          
+
           // Clear selection
           clearSelection();
-          
+
           // Update target group cache
           tilesWithChildren.value.add(group.id);
-          
+
           popupService.close();
         } catch (error) {
           console.error('Failed to move cards:', error);
@@ -780,19 +793,19 @@ const changeSelectedColor = () => {
       onUpdate: async (color: string) => {
         try {
           const selectedCards = cards.value.filter(c => selectedTileIds.value.has(c.id));
-          
+
           // Update color for all selected cards
           for (const card of selectedCards) {
             const updatedCard = { ...card, color: color as any };
             await cardsService.saveCard(updatedCard, currentGroupId.value);
-            
+
             // Update in UI
             const index = cards.value.findIndex(c => c.id === card.id);
             if (index >= 0) {
               cards.value[index] = updatedCard;
             }
           }
-          
+
           // Clear selection
           clearSelection();
           popupService.close();
@@ -808,11 +821,11 @@ const changeSelectedColor = () => {
 const deleteSelected = () => {
   const selectedCount = selectedTileIds.value.size;
   const hasGroups = Array.from(selectedTileIds.value).some(id => tilesWithChildren.value.has(id));
-  
+
   const message = hasGroups
     ? `Are you sure you want to delete ${selectedCount} card(s)? Some are groups and will delete all their contents.`
     : `Are you sure you want to delete ${selectedCount} card(s)?`;
-    
+
   if (confirm(message)) {
     deleteSelectedCards();
   }
@@ -821,25 +834,73 @@ const deleteSelected = () => {
 const deleteSelectedCards = async () => {
   try {
     const selectedIds = Array.from(selectedTileIds.value);
-    
+
     // Delete all selected cards
     for (const cardId of selectedIds) {
       await cardsService.deleteCard(cardId);
-      
+
       // Clear from cache
       tilesWithChildren.value.delete(cardId);
       tileChildrenMap.value.delete(cardId);
     }
-    
+
     // Remove from UI
     cards.value = cards.value.filter(c => !selectedTileIds.value.has(c.id));
-    
+
     // Clear selection
     clearSelection();
   } catch (error) {
     console.error('Failed to delete cards:', error);
     alert('Failed to delete some cards. Please try again.');
   }
+};
+
+// Bulk add mode
+const openBulkAddMode = () => {
+  popupService.open({
+    component: BulkCardCreator,
+    title: 'Bulk Add Cards',
+    size: 'large',
+    props: {
+      onCreate: async (newCards: Partial<CardTile>[]) => {
+        try {
+          // Find the next available index
+          const maxIndex = cards.value.reduce((max, card) => Math.max(max, card.index), -1);
+          let nextIndex = maxIndex + 1;
+          
+          // Create all cards
+          for (const cardData of newCards) {
+            const savedId = await cardsService.saveCard(
+              { ...cardData, index: nextIndex },
+              currentGroupId.value,
+              nextIndex
+            );
+            
+            if (savedId) {
+              const newCard: CardTile = {
+                ...cardData,
+                id: savedId,
+                index: nextIndex,
+              } as CardTile;
+              cards.value.push(newCard);
+              nextIndex++;
+            }
+          }
+          
+          // Sort cards by index
+          cards.value.sort((a, b) => a.index - b.index);
+          
+          popupService.close();
+        } catch (error) {
+          console.error('Failed to create cards:', error);
+          alert('Failed to create some cards. Please try again.');
+        }
+      },
+      onCancel: () => {
+        popupService.close();
+      }
+    }
+  });
 };
 
 // Initialize
