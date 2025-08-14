@@ -95,16 +95,72 @@
         />
       </div>
     </div>
+
+    <!-- Selection Status Bar -->
+    <TStatusBar :show="selectedTileIds.size > 0 && selectionMode">
+      <div :class="bemm('selection-status')">
+        <div :class="bemm('selection-info')">
+          <TIcon :name="Icons.CHECK_M" />
+          <span>
+            {{ selectedTileIds.size }} {{ selectedTileIds.size === 1 ? 'card' : 'cards' }} selected
+          </span>
+        </div>
+
+        <div :class="bemm('selection-actions')">
+          <TButtonGroup>
+            <TButton
+              size="small"
+              type="outline"
+              :icon="Icons.FOLDER_PLUS"
+              @click="moveSelectedToGroup"
+            >
+              Move to Group
+            </TButton>
+            
+            <TButton
+              size="small"
+              type="outline"
+              :icon="Icons.PALETTE"
+              @click="changeSelectedColor"
+            >
+              Change Color
+            </TButton>
+            
+            <TButton
+              size="small"
+              type="outline"
+              color="error"
+              :icon="Icons.TRASH"
+              @click="deleteSelected"
+            >
+              Delete
+            </TButton>
+
+            <TButton
+              size="small"
+              type="ghost"
+              @click="clearSelection"
+            >
+              Clear Selection
+            </TButton>
+          </TButtonGroup>
+        </div>
+      </div>
+    </TStatusBar>
   </TAppLayout>
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, watch, inject, ref } from 'vue';
+import { onMounted, reactive, watch, inject, ref, computed } from 'vue';
 import { useBemm } from 'bemm';
 import {
   TButton,
   TAppLayout,
   TIcon,
+  TStatusBar,
+  TButtonGroup,
+  TColorPicker,
+  BaseColors,
   useI18n,
   useParentMode,
   useTextToSpeech,
@@ -113,6 +169,7 @@ import { useCardStore } from '../stores/cards';
 import CardsSettingsForm from '../components/CardsSettingsForm.vue';
 import CardGrid from '../components/CardGrid.vue';
 import CardForm from '../components/CardForm.vue';
+import GroupSelector from '../components/GroupSelector.vue';
 import { CardTile,mockCardTile } from '../components/CardTile/CardTile.model';
 import { useEditMode } from '../composables/useEditMode';
 import { cardsService } from '../services/cards.service';
@@ -668,6 +725,123 @@ const handleMultiCardReorder = async (reorderedCards: CardTile[], targetIndex: n
   }
 };
 
+// Bulk action handlers
+const moveSelectedToGroup = () => {
+  const selectedCards = cards.value.filter(c => selectedTileIds.value.has(c.id));
+  const availableGroups = cards.value.filter(c => !c.id.startsWith('empty-') && !selectedTileIds.value.has(c.id));
+  
+  popupService.open({
+    component: GroupSelector,
+    title: 'Move to Group',
+    props: {
+      groups: availableGroups,
+      selectedCount: selectedCards.length,
+      onSelect: async (group: CardTile) => {
+        try {
+          // Move all selected cards to the target group
+          for (const card of selectedCards) {
+            await cardsService.saveCard({
+              ...card,
+              parentId: group.id,
+              parent_id: group.id
+            }, group.id);
+          }
+          
+          // Remove moved cards from current view
+          cards.value = cards.value.filter(c => !selectedTileIds.value.has(c.id));
+          
+          // Clear selection
+          clearSelection();
+          
+          // Update target group cache
+          tilesWithChildren.value.add(group.id);
+          
+          popupService.close();
+        } catch (error) {
+          console.error('Failed to move cards:', error);
+          alert('Failed to move cards. Please try again.');
+        }
+      },
+      onCancel: () => {
+        popupService.close();
+      }
+    }
+  });
+};
+
+const changeSelectedColor = () => {
+  // Show color picker for bulk color change
+  popupService.open({
+    component: TColorPicker,
+    title: 'Change Color for Selected Cards',
+    props: {
+      colors: Object.values(BaseColors),
+      modelValue: 'primary',
+      onUpdate: async (color: string) => {
+        try {
+          const selectedCards = cards.value.filter(c => selectedTileIds.value.has(c.id));
+          
+          // Update color for all selected cards
+          for (const card of selectedCards) {
+            const updatedCard = { ...card, color: color as any };
+            await cardsService.saveCard(updatedCard, currentGroupId.value);
+            
+            // Update in UI
+            const index = cards.value.findIndex(c => c.id === card.id);
+            if (index >= 0) {
+              cards.value[index] = updatedCard;
+            }
+          }
+          
+          // Clear selection
+          clearSelection();
+          popupService.close();
+        } catch (error) {
+          console.error('Failed to update colors:', error);
+          alert('Failed to update colors. Please try again.');
+        }
+      }
+    }
+  });
+};
+
+const deleteSelected = () => {
+  const selectedCount = selectedTileIds.value.size;
+  const hasGroups = Array.from(selectedTileIds.value).some(id => tilesWithChildren.value.has(id));
+  
+  const message = hasGroups
+    ? `Are you sure you want to delete ${selectedCount} card(s)? Some are groups and will delete all their contents.`
+    : `Are you sure you want to delete ${selectedCount} card(s)?`;
+    
+  if (confirm(message)) {
+    deleteSelectedCards();
+  }
+};
+
+const deleteSelectedCards = async () => {
+  try {
+    const selectedIds = Array.from(selectedTileIds.value);
+    
+    // Delete all selected cards
+    for (const cardId of selectedIds) {
+      await cardsService.deleteCard(cardId);
+      
+      // Clear from cache
+      tilesWithChildren.value.delete(cardId);
+      tileChildrenMap.value.delete(cardId);
+    }
+    
+    // Remove from UI
+    cards.value = cards.value.filter(c => !selectedTileIds.value.has(c.id));
+    
+    // Clear selection
+    clearSelection();
+  } catch (error) {
+    console.error('Failed to delete cards:', error);
+    alert('Failed to delete some cards. Please try again.');
+  }
+};
+
 // Initialize
 onMounted(async () => {
   console.log('[CardsView] Component mounted, loading cards...');
@@ -778,6 +952,25 @@ onMounted(async () => {
     .icon {
       opacity: 0.5;
     }
+  }
+
+  &__selection-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  &__selection-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-weight: 500;
+  }
+
+  &__selection-actions {
+    display: flex;
+    gap: var(--space);
   }
 }
 
