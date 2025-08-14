@@ -15,7 +15,7 @@
       </div>
 
       <div :class="bemm('field')">
-        <TInputTextarea
+        <TInputTextArea
           v-model="form.description"
           :label="t('media.collections.description')"
           :placeholder="t('media.collections.descriptionPlaceholder')"
@@ -58,7 +58,7 @@ import {
   useI18n,
   TPopup,
   TInputText,
-  TInputTextarea,
+  TInputTextArea,
   TInputCheckbox,
   TButton
 } from '@tiko/ui'
