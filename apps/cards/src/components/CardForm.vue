@@ -89,20 +89,32 @@
       <!-- Form Actions -->
       <TFormActions>
         <TButton
-          type="outline"
-          color="secondary"
-          @click="handleCancel"
+          v-if="isEditing"
+          icon="trash"
+          type="ghost"
+          color="error"
+          @click="handleDelete"
+          :class="bemm('delete-button')"
         >
-          Cancel
+          Delete
         </TButton>
-        <TButton
-          type="default"
-          color="primary"
-          htmlButtonType="submit"
-          :disabled="!isValid"
-        >
-          {{ isEditing ? 'Save Changes' : 'Create Card' }}
-        </TButton>
+        <div :class="bemm('main-actions')">
+          <TButton
+            type="outline"
+            color="secondary"
+            @click="handleCancel"
+          >
+            Cancel
+          </TButton>
+          <TButton
+            type="default"
+            color="primary"
+            htmlButtonType="submit"
+            :disabled="!isValid"
+          >
+            {{ isEditing ? 'Save Changes' : 'Create Card' }}
+          </TButton>
+        </div>
       </TFormActions>
     </TForm>
   </div>
@@ -134,11 +146,13 @@ const { getImageVariants } = useImageUrl();
 const props = defineProps<{
   card?: CardTile;
   index?: number;
+  hasChildren?: boolean;
 }>();
 
 const emit = defineEmits<{
   submit: [card: Partial<CardTile>, index: number];
   cancel: [];
+  delete: [];
 }>();
 
 const isEditing = computed(() => !!props.card && !props.card.id.startsWith('empty-'));
@@ -222,6 +236,16 @@ const handleSubmit = () => {
 
 const handleCancel = () => {
   emit('cancel');
+};
+
+const handleDelete = () => {
+  const message = props.hasChildren 
+    ? 'Are you sure you want to delete this group? This will also delete all cards inside it.'
+    : 'Are you sure you want to delete this card?';
+
+  if (confirm(message)) {
+    emit('delete');
+  }
 };
 
 const openImageSelector = async () => {
@@ -342,6 +366,24 @@ watch(() => props.card, (newCard) => {
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+  }
+
+  // Form actions with delete button
+  :deep(.form-actions) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  &__main-actions {
+    display: flex;
+    gap: var(--space);
+    margin-left: auto;
+  }
+
+  &__delete-button {
+    margin-right: auto;
   }
 }
 </style>

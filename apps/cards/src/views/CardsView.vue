@@ -16,7 +16,7 @@
         @click="handleBack"
         :aria-label="t('common.back')"
       >{{ t('common.back') }}</TButton>
-      
+
       <!-- Edit mode toggle -->
       <TButton
         :icon="isEditMode ? Icons.EDIT_M : Icons.EDIT_LINE"
@@ -25,6 +25,31 @@
         @click="toggleEditMode"
         :aria-label="isEditMode ? t('common.exitEditMode') : t('common.enterEditMode')"
       >{{ isEditMode ? t('common.exitEditMode') : t('common.enterEditMode') }}</TButton>
+      
+      <!-- Selection mode toggle (only in edit mode) -->
+      <TButton
+        v-if="isEditMode && cards.length > 0"
+        :icon="Icons.CHECK_M"
+        :type="selectionMode ? 'default' : 'outline'"
+        :color="selectionMode ? 'accent' : 'secondary'"
+        @click="toggleSelectionMode"
+        :aria-label="selectionMode ? t('cards.exitSelectionMode') : t('cards.enterSelectionMode')"
+      >
+        {{ selectionMode ? t('cards.selectTiles') : t('cards.select') }}
+        <span v-if="selectedTileIds.size > 0">({{ selectedTileIds.size }})</span>
+      </TButton>
+      
+      <!-- Select All button (only in selection mode) -->
+      <TButton
+        v-if="selectionMode"
+        :icon="Icons.CHECK_FAT"
+        type="ghost"
+        size="small"
+        @click="toggleSelectAll"
+        :aria-label="isAllSelected ? t('cards.deselectAll') : t('cards.selectAll')"
+      >
+        {{ isAllSelected ? t('cards.deselectAll') : t('cards.selectAll') }}
+      </TButton>
       <!-- App settings button (only visible in parent mode) -->
       <TButton
         v-if="parentMode.isUnlocked.value"
@@ -36,7 +61,7 @@
       />
     </template>
 
-    <div :class="bemm('')">
+    <div :class="bemm('container')">
       <!-- Breadcrumb navigation -->
       <nav v-if="breadcrumbs.length > 0" :class="bemm('breadcrumbs')">
         <button
@@ -51,7 +76,7 @@
       </nav>
 
       <!-- Main question display -->
-      <main :class="bemm('main')">
+      <div :class="bemm('main')">
         <CardGrid
           :cards="cards"
           :show-arrows="true"
@@ -59,12 +84,16 @@
           :tiles-with-children="tilesWithChildren"
           :tile-children-map="tileChildrenMap"
           :is-tile-dragging="isTileDragging"
+          :selection-mode="selectionMode"
+          :selected-tile-ids="selectedTileIds"
           @card-click="handleCardClick"
           @card-drop="handleCardDrop"
           @card-reorder="handleCardReorder"
+          @cards-drop="handleMultiCardDrop"
+          @cards-reorder="handleMultiCardReorder"
           @update:tile-dragging="isTileDragging = $event"
         />
-      </main>
+      </div>
     </div>
   </TAppLayout>
 </template>
@@ -112,6 +141,76 @@ const cards = ref<CardTile[]>([]);
 const currentGroupId = ref<string | undefined>(undefined);
 const breadcrumbs = ref<Array<{ id?: string; title: string }>>([]);
 
+// Multi-select state
+const selectionMode = ref(false);
+const selectedTileIds = ref<Set<string>>(new Set());
+
+// Check if all non-empty tiles are selected
+const isAllSelected = computed(() => {
+  const realCards = cards.value.filter(card => !card.id.startsWith('empty-'));
+  return realCards.length > 0 && realCards.every(card => selectedTileIds.value.has(card.id));
+});
+
+// Toggle selection mode
+const toggleSelectionMode = () => {
+  selectionMode.value = !selectionMode.value;
+  if (!selectionMode.value) {
+    selectedTileIds.value.clear();
+  }
+};
+
+// Toggle individual tile selection
+const toggleTileSelection = (tileId: string) => {
+  const newSet = new Set(selectedTileIds.value);
+  if (newSet.has(tileId)) {
+    newSet.delete(tileId);
+  } else {
+    newSet.add(tileId);
+  }
+  selectedTileIds.value = newSet;
+  
+  // Exit selection mode if no tiles selected
+  if (newSet.size === 0 && selectionMode.value) {
+    selectionMode.value = false;
+  }
+};
+
+// Clear all selections
+const clearSelection = () => {
+  selectedTileIds.value.clear();
+  selectionMode.value = false;
+};
+
+// Toggle select all visible tiles
+const toggleSelectAll = () => {
+  const realCards = cards.value.filter(card => !card.id.startsWith('empty-'));
+  const allSelected = realCards.every(card => selectedTileIds.value.has(card.id));
+  
+  if (allSelected) {
+    // Deselect all
+    selectedTileIds.value = new Set<string>();
+  } else {
+    // Select all
+    const newSet = new Set<string>();
+    realCards.forEach(card => {
+      newSet.add(card.id);
+    });
+    selectedTileIds.value = newSet;
+  }
+};
+
+// Create empty card placeholder
+const createEmptyCard = (index: number): CardTile => ({
+  id: `empty-${index}`,
+  title: '',
+  icon: 'plus' as any,
+  color: 'gray' as any,
+  type: 'empty' as any,
+  image: '',
+  speech: '',
+  index: index,
+});
+
 const loadCards = async () => {
   // First try to load from Supabase
   const savedCards = await cardsService.loadCards(currentGroupId.value);
@@ -122,7 +221,7 @@ const loadCards = async () => {
     // Check which tiles have children and load them for preview
     const newTilesWithChildren = new Set<string>();
     const newTileChildrenMap = new Map<string, CardTile[]>();
-    
+
     for (const card of savedCards) {
       if (!card.id.startsWith('empty-')) {
         const children = await cardsService.loadCards(card.id);
@@ -132,7 +231,7 @@ const loadCards = async () => {
         }
       }
     }
-    
+
     tilesWithChildren.value = newTilesWithChildren;
     tileChildrenMap.value = newTileChildrenMap;
   } else {
@@ -196,6 +295,12 @@ const handleSpeechPermission = async () => {
 };
 
 const handleCardClick = (card: CardTile, index: number) => {
+  // In selection mode, toggle selection instead of normal behavior
+  if (selectionMode.value && !card.id.startsWith('empty-')) {
+    toggleTileSelection(card.id);
+    return;
+  }
+  
   if (isEditMode.value) {
     // In edit mode, open form to create/edit card
     const isNewCard = card.id.startsWith('empty-');
@@ -206,6 +311,7 @@ const handleCardClick = (card: CardTile, index: number) => {
       props: {
         card: card,
         index: index,
+        hasChildren: tilesWithChildren.value.has(card.id),
         onSubmit: async (cardData: Partial<CardTile>, cardIndex: number) => {
           try {
             if (isNewCard) {
@@ -241,6 +347,24 @@ const handleCardClick = (card: CardTile, index: number) => {
         onCancel: () => {
           popupService.close();
         },
+        onDelete: async () => {
+          try {
+            const success = await cardsService.deleteCard(card.id);
+            if (success) {
+              // Remove from UI
+              cards.value = cards.value.filter(c => c.id !== card.id);
+              // Clear from cache
+              tilesWithChildren.value.delete(card.id);
+              tileChildrenMap.value.delete(card.id);
+              popupService.close();
+            } else {
+              alert('Failed to delete card. Please try again.');
+            }
+          } catch (error) {
+            console.error('Failed to delete card:', error);
+            alert('Failed to delete card. Please try again.');
+          }
+        },
       },
     });
   } else {
@@ -260,10 +384,10 @@ const handleTileAction = async (tile: CardTile) => {
     navigateToTile(tile);
   } else if (tile.speech) {
     // No children, speak the content with optimized settings
-    speak(tile.speech, { 
+    speak(tile.speech, {
       rate: 1.1, // Slightly faster for responsiveness
       volume: 1.0,
-      pitch: 1.0 
+      pitch: 1.0
     });
   }
 };
@@ -341,28 +465,35 @@ const handleCardDrop = async (droppedCard: CardTile, targetCard: CardTile) => {
   // Optimistic update - immediately update UI
   const originalCards = [...cards.value];
   const originalTilesWithChildren = new Set(tilesWithChildren.value);
-  
+
   // Remove the card from current view immediately
   cards.value = cards.value.filter(c => c.id !== droppedCard.id);
-  
+
   // Mark the target as having children immediately
   tilesWithChildren.value.add(targetCard.id);
-  
-  // Update the children map for immediate preview
-  const currentChildren = tileChildrenMap.value.get(targetCard.id) || [];
-  tileChildrenMap.value.set(targetCard.id, [...currentChildren, droppedCard]);
+
+  // Don't update the children map here - wait for the actual save to succeed
 
   try {
+    // Get existing children to find the next available index
+    const existingChildren = await cardsService.loadCards(targetCard.id);
+    const nextIndex = existingChildren.length;
+    
     // When dropping on an existing tile, always move it INTO that tile as a child
     const updatedCard = {
       ...droppedCard,
       parentId: targetCard.id,
-      index: 0, // Reset index when moving to a new parent
+      parent_id: targetCard.id, // Make sure we use the correct field name
+      index: nextIndex, // Use next available index instead of always 0
     };
 
-    await cardsService.saveCard(updatedCard, targetCard.id, 0);
+    await cardsService.saveCard(updatedCard, targetCard.id, nextIndex);
 
-    console.log(`Moved "${droppedCard.title}" into group "${targetCard.title}"`);
+    // Update the children map after successful save
+    const allChildren = [...existingChildren, droppedCard];
+    tileChildrenMap.value.set(targetCard.id, allChildren);
+
+    console.log(`Moved "${droppedCard.title}" into group "${targetCard.title}" at index ${nextIndex}`);
   } catch (error) {
     console.error('Failed to move card:', error);
     // Rollback on error
@@ -374,7 +505,7 @@ const handleCardDrop = async (droppedCard: CardTile, targetCard: CardTile) => {
 const handleCardReorder = async (card: CardTile, newIndex: number) => {
   // Optimistic update - immediately update UI
   const originalCards = [...cards.value];
-  
+
   // Simply update the card's index to the new position
   const newCards = cards.value.map(c => {
     if (c.id === card.id) {
@@ -382,17 +513,17 @@ const handleCardReorder = async (card: CardTile, newIndex: number) => {
     }
     return c;
   });
-  
+
   // Update the UI immediately
   cards.value = newCards;
-  
+
   try {
     // Save to database with the new index
     const updatedCard = {
       ...card,
       index: newIndex,
     };
-    
+
     await cardsService.saveCard(updatedCard, currentGroupId.value, newIndex);
     console.log(`Moved "${card.title}" to position ${newIndex}`);
   } catch (error) {
@@ -409,6 +540,134 @@ const isDescendantOf = async (tileId: string, potentialAncestorId: string): Prom
   return false;
 };
 
+// Multi-card drop handler
+const handleMultiCardDrop = async (droppedCards: CardTile[], targetCard: CardTile) => {
+  if (targetCard.id.startsWith('empty-')) {
+    console.log('Cannot drop multiple cards on empty placeholder');
+    return;
+  }
+
+  // Move all selected cards into the target group
+  const originalCards = [...cards.value];
+  
+  try {
+    // First, get existing children in the target group to find the next available index
+    const existingChildren = await cardsService.loadCards(targetCard.id);
+    const nextIndex = existingChildren.length;
+    
+    // Remove all dropped cards from current view
+    cards.value = cards.value.filter(c => !droppedCards.some(dc => dc.id === c.id));
+    
+    // Sort dropped cards by their current index to maintain order
+    const sortedDroppedCards = [...droppedCards].sort((a, b) => a.index - b.index);
+    
+    // Update parent_id and index for all dropped cards
+    for (let i = 0; i < sortedDroppedCards.length; i++) {
+      const card = sortedDroppedCards[i];
+      const updatedCard = {
+        ...card,
+        parent_id: targetCard.id,
+        index: nextIndex + i, // Ensure each card gets a unique sequential index
+      };
+      await cardsService.saveCard(updatedCard, targetCard.id, updatedCard.index);
+    }
+    
+    // Mark target as having children and update the preview
+    tilesWithChildren.value.add(targetCard.id);
+    
+    // Update the children preview for the target tile
+    const allChildren = [...existingChildren, ...sortedDroppedCards];
+    tileChildrenMap.value.set(targetCard.id, allChildren);
+    
+    // Clear selection after successful drop
+    clearSelection();
+    
+    console.log(`Moved ${droppedCards.length} cards into "${targetCard.title}" starting at index ${nextIndex}`);
+  } catch (error) {
+    console.error('Failed to move multiple cards:', error);
+    cards.value = originalCards;
+  }
+};
+
+// Multi-card reorder handler
+const handleMultiCardReorder = async (reorderedCards: CardTile[], targetIndex: number) => {
+  const originalCards = [...cards.value];
+  
+  try {
+    // Create a working array with all cards (including empty slots)
+    const maxIndex = Math.max(
+      ...cards.value.map(c => c.index),
+      targetIndex
+    );
+    
+    // Create array with all positions
+    const allCards: (CardTile | null)[] = new Array(maxIndex + 1).fill(null);
+    
+    // Place existing cards in their positions (excluding the ones being moved)
+    cards.value.forEach(card => {
+      if (!reorderedCards.some(rc => rc.id === card.id)) {
+        allCards[card.index] = card;
+      }
+    });
+    
+    // Find the actual target position accounting for gaps
+    let actualTargetIndex = targetIndex;
+    
+    // If we're moving to a position that's beyond current cards,
+    // we need to ensure the cards go to that exact position
+    if (targetIndex > cards.value.length - reorderedCards.length) {
+      actualTargetIndex = targetIndex;
+    }
+    
+    // Place the reordered cards starting at the target index
+    reorderedCards.forEach((card, i) => {
+      allCards[actualTargetIndex + i] = card;
+    });
+    
+    // Compact the array and update indices
+    const updatedCards: CardTile[] = [];
+    allCards.forEach((card, index) => {
+      if (card) {
+        updatedCards.push({
+          ...card,
+          index
+        });
+      }
+    });
+    
+    // Add empty cards if needed
+    const highestIndex = updatedCards.length > 0 
+      ? Math.max(...updatedCards.map(c => c.index))
+      : -1;
+      
+    // Fill any gaps with empty cards
+    for (let i = 0; i <= highestIndex; i++) {
+      if (!updatedCards.some(c => c.index === i)) {
+        updatedCards.push(createEmptyCard(i));
+      }
+    }
+    
+    // Sort by index
+    updatedCards.sort((a, b) => a.index - b.index);
+    cards.value = updatedCards;
+    
+    // Save all updated indices
+    for (const card of updatedCards) {
+      if (!card.id.startsWith('empty-')) {
+        await cardsService.saveCard(card, currentGroupId.value, card.index);
+      }
+    }
+    
+    // Clear selection after successful reorder
+    clearSelection();
+    
+    console.log(`Reordered ${reorderedCards.length} cards to position ${targetIndex}`);
+  } catch (error) {
+    console.error('Failed to reorder multiple cards:', error);
+    cards.value = originalCards;
+  }
+};
+
 // Initialize
 onMounted(async () => {
   console.log('[CardsView] Component mounted, loading cards...');
@@ -417,7 +676,7 @@ onMounted(async () => {
     if (!hasPermission.value) {
       await requestPermission();
     }
-    
+
     await yesNoStore.loadState();
     await loadCards();
     console.log('[CardsView] Cards loaded successfully');
@@ -428,7 +687,50 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
+// Override TAppLayout's problematic styles
+:deep(.app-layout) {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+:deep(.app-layout--is-app) {
+  overflow: hidden; // Override the auto
+}
+
+:deep(.app-layout--is-app .app-layout__header) {
+  position: static; // Override fixed positioning
+  width: 100%;
+  left: 0;
+}
+
+:deep(.app-layout--is-app .app-layout__content) {
+  // Calculate height minus header
+  height: calc(100vh - var(--top-bar-height, 60px));
+  overflow: hidden;
+}
+
+:deep(.app-layout__content) {
+  display: flex;
+  flex-direction: column;
+}
+
 .cards-view {
+  &__container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+    position: relative;
+  }
+
+  &__main {
+    flex: 1;
+    min-height: 0; // Important for flex children
+    position: relative;
+    width: 100%;
+  }
+
   &__breadcrumbs {
     display: flex;
     align-items: center;
@@ -472,7 +774,7 @@ onMounted(async () => {
       border-color: var(--color-primary);
       font-weight: 600;
     }
-    
+
     .icon {
       opacity: 0.5;
     }
@@ -484,8 +786,8 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   position: relative;
-  height: 100vh;
-  width: 100vw;
+  height: 100%;
+  width: 100%;
   overflow: hidden;
 
   &::before {
