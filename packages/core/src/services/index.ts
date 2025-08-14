@@ -16,14 +16,43 @@ export * from './parent-mode.service'
 export * from './user-settings.service'
 export * from './item.service'
 export * from './file.service'
-export * from './media.service'
+// Export everything except MediaStatus from media.service to avoid conflicts with user-media.service
+export { 
+  type MediaItem,
+  type MediaUploadData,
+  type MediaSearchOptions,
+  type MediaService
+} from './media.service'
 export * from './media-analysis.service'
 export * from './user.service'
-export * from './translation.service'
+// Export everything except Language from translation.service to avoid conflicts
+export {
+  type Translation,
+  type TranslationKey,
+  type TranslationStats,
+  type ImportResult
+} from './translation.service'
 export * from './gpt-translation.service'
 export * from './collections.service'
 export * from './user-media.service'
-export * from './content.service'
+// Export everything except ContentField and Language from content.service to avoid conflicts
+export { 
+  type ContentProject,
+  type SectionTemplate,
+  type ItemFieldConfig,
+  type ItemSubField,
+  type PageTemplate,
+  type ContentPage,
+  type PageSection,
+  type FieldValue,
+  type ContentSection,
+  type ContentPageSection,
+  type ContentData,
+  type ItemTemplate,
+  type Item,
+  type ItemData,
+  type LinkedItem
+} from './content.service'
 
 // Export Supabase implementations
 export { SupabaseParentModeService } from './parent-mode-supabase.service'
@@ -69,7 +98,7 @@ export type {
 export { ContentWorkerService } from './content-worker.service'
 export type { ContentWorkerConfig } from './content-worker.service'
 export { UnifiedContentService } from './unified-content.service'
-export type { UnifiedContentConfig, QueryOptions, FullPageContent, FullSectionContent, FullItemContent } from './unified-content.service'
+export type { UnifiedContentConfig, QueryOptions, FullPageContent, FullSectionContent, FullItemContent, ContentField } from './unified-content.service'
 
 // Alternative: Export Supabase implementations
 // import { SupabaseParentModeService } from './parent-mode-supabase.service'

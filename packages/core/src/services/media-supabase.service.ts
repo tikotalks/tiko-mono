@@ -581,7 +581,7 @@ export class SupabaseMediaService implements MediaService {
         },
         (payload) => {
           // Only notify for generated items
-          if (payload.new?.generation_data) {
+          if ((payload.new as any)?.generation_data) {
             callback(payload)
           }
         }

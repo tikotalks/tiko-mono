@@ -4,12 +4,17 @@ import { useUserPreferences } from '../composables/useUserPreferences'
 import { logger } from '../utils/logger'
 
 export const useFavoritesStore = defineStore('favorites', () => {
-  const { preferences, updatePreferences, loadPreferences } = useUserPreferences()
+  const { preferences, loadPreferences } = useUserPreferences()
   
   // State
   const favorites = ref<string[]>([])
   const isLoading = ref(false)
   const isInitialized = ref(false)
+  
+  // Helper function to update preferences
+  const updatePreferences = async (updates: Record<string, any>) => {
+    Object.assign(preferences.value, updates)
+  }
 
   // Computed
   const favoriteCount = computed(() => favorites.value.length)

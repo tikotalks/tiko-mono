@@ -35,7 +35,7 @@ export async function testUnifiedContentService() {
     
     // Log each section's content
     if (page.sections) {
-      page.sections.forEach((section, index) => {
+      page.sections.forEach((section: any, index: number) => {
         console.log(`🔸 Section ${index + 1}: ${section.section?.name}`)
         console.log(`   Template: ${section.section?.template_name}`)
         console.log(`   Content keys: ${Object.keys(section.content || {}).join(', ')}`)

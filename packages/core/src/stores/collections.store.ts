@@ -42,7 +42,7 @@ export const useCollectionsStore = defineStore('collections', () => {
     isLoading.value = true
     error.value = null
     try {
-      collections.value = await collectionsSupabaseService.getUserCollections(authStore.user.id)
+      collections.value = await collectionsSupabaseService.getUserCollections()
       logger.info('collections-store', 'Collections loaded', { count: collections.value.length })
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load collections'

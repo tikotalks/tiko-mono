@@ -48,7 +48,12 @@ export * from './types/user'
 // Utils
 export * from './utils/format'
 export * from './utils/logger'
-export * from './utils/field-processing'
+// Export everything except ContentField from field-processing (ContentField is exported from services)
+export { 
+  processContentFields,
+  processFieldValue,
+  processListFieldValue
+} from './utils/field-processing'
 export { createTikoApp } from './utils/createTikoApp'
 export type { TikoAppOptions } from './utils/createTikoApp'
 export { defineConfig } from './utils/defineConfig'

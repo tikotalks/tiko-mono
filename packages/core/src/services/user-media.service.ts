@@ -339,7 +339,7 @@ class UserMediaService {
         },
         (payload) => {
           // Only notify for generated items
-          if (payload.new?.usage_type === 'generated') {
+          if ((payload.new as any)?.usage_type === 'generated') {
             callback(payload)
           }
         }
