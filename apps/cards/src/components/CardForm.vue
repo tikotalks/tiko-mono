@@ -33,15 +33,24 @@
         <div :class="bemm('image-field')">
           <div v-if="form.image" :class="bemm('image-preview')">
             <img :src="form.image" :alt="form.title || 'Selected image'" />
-            <TButton
-              icon="xmark"
-              size="small"
-              type="ghost"
-              color="error"
-              :class="bemm('image-remove')"
-              @click="() => { form.image = ''; searchForSuggestions(form.title); }"
-              :aria-label="'Remove image'"
-            />
+            <div :class="bemm('image-actions')">
+              <TButton
+                icon="image"
+                size="small"
+                type="outline"
+                color="primary"
+                @click="openImageSelector"
+                :aria-label="'Change image'"
+              />
+              <TButton
+                icon="xmark"
+                size="small"
+                type="ghost"
+                color="error"
+                @click="() => { form.image = ''; searchForSuggestions(form.title); }"
+                :aria-label="'Remove image'"
+              />
+            </div>
           </div>
           <div v-else>
             <TButton
@@ -322,10 +331,12 @@ watch(() => props.card, (newCard) => {
     }
   }
 
-  &__image-remove {
+  &__image-actions {
     position: absolute;
     top: var(--space-xs);
     right: var(--space-xs);
+    display: flex;
+    gap: var(--space-xs);
   }
 
   &__suggestions {

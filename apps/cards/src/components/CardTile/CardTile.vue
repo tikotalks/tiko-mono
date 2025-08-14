@@ -2,7 +2,9 @@
   <div ref="wrapperEl" :class="bemm('wrapper', {
     dragging: isDragging,
     'can-drag': canDrag,
-    'drag-ready': isDragReady
+    'drag-ready': isDragReady,
+    selected: isSelected,
+    'selection-mode': selectionMode
   })" @click.stop="handleClick" @mousedown.stop="handleMouseDown" @mouseup.stop="handleMouseUp" 
     @touchstart.stop="handleTouchStart" @touchend.stop="handleTouchEnd" @touchmove.stop="handleTouchMove" 
     @touchcancel.stop="handleTouchEnd"
@@ -27,7 +29,7 @@
               :class="bemm('mini-tile')"
               :style="child.color ? { backgroundColor: `var(--color-${child.color})` } : undefined"
             >
-              <img v-if="child.image" :src="child.image" :alt="child.title" />
+              <img v-if="child.image" :src="getThumbnailUrl(child.image)" :alt="child.title" />
             </div>
           </div>
         </div>
@@ -40,6 +42,11 @@
         </template>
         
         <h3 v-if="displayTitle && card?.title" :class="bemm('title')">{{ card.title }}</h3>
+      </div>
+      
+      <!-- Selection indicator -->
+      <div v-if="isSelected && selectionMode" :class="bemm('selection-indicator')">
+        <TIcon name="check" size="small" />
       </div>
     </article>
   </div>
@@ -65,6 +72,8 @@ const props = defineProps<{
   isEmpty?: boolean;
   hasChildren?: boolean;
   children?: CardTileType[];
+  isSelected?: boolean;
+  selectionMode?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -94,12 +103,27 @@ const imageUrl = computed(() => {
 
   // Try to get image variants if available
   try {
-    return getImageVariants(props.card.image).medium || props.card.image;
+    const variants = getImageVariants(props.card.image);
+    // Use small variant for regular tiles
+    return variants.small || variants.medium || props.card.image;
   } catch {
     // Fallback to the original URL if getImageVariants fails
     return props.card.image;
   }
 });
+
+// Get thumbnail URL for mini tiles
+const getThumbnailUrl = (imageUrl: string): string => {
+  if (!imageUrl) return '';
+  
+  try {
+    const variants = getImageVariants(imageUrl);
+    // Use thumbnail for mini tiles
+    return variants.thumbnail || variants.small || imageUrl;
+  } catch {
+    return imageUrl;
+  }
+};
 
 // Long press handling
 const startLongPress = () => {
@@ -215,6 +239,20 @@ const handleDrop = (event: DragEvent) => {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    
+    &--selected {
+      article {
+        transform: scale(0.92);
+        box-shadow: 
+          0 0 0 4px var(--color-primary),
+          0 8px 16px rgba(0, 0, 0, 0.2);
+      }
+    }
+    
+    &--selection-mode {
+      cursor: pointer;
+    }
   }
 
   &__container {
@@ -339,6 +377,22 @@ const handleDrop = (event: DragEvent) => {
       opacity: 1;
     }
   }
+  
+  &__selection-indicator {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 2rem;
+    height: 2rem;
+    background: var(--color-primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    animation: pop-in 0.2s ease;
+  }
 
   &--edit-mode {
     cursor: move;
@@ -378,6 +432,17 @@ const handleDrop = (event: DragEvent) => {
         -ms-user-select: none;
       }
     }
+  }
+}
+
+@keyframes pop-in {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 </style>
