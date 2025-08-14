@@ -36,10 +36,9 @@
 
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
-import { TMarkdownRenderer } from '@tiko/ui';
+import { TMarkdownRenderer, TButton } from '@tiko/ui';
 import { onMounted, ref } from 'vue';
 import { useImages, useImageUrl } from '@tiko/core';
-import TButton from '../../../../../packages/ui/src/components/TButton/TButton.vue';
 
 defineProps<{
   items: any[]; // Define the type based on your items structure
