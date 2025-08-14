@@ -102,8 +102,8 @@ const imageUrl = computed(() => {
   // Try to get image variants if available
   try {
     const variants = getImageVariants(props.card.image);
-    // Use small variant for regular tiles
-    return variants.small || variants.medium || props.card.image;
+    // Use large variant for better background images
+    return variants.large || variants.medium || props.card.image;
   } catch {
     // Fallback to the original URL if getImageVariants fails
     return props.card.image;

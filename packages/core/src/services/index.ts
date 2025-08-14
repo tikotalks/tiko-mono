@@ -85,6 +85,8 @@ export type {
   SentenceSelectRequest,
   SentenceSelectResponse
 } from './sentence.service'
+export * from './tts'
+export { ttsService } from './tts'
 export { deploymentService } from './deployment.service'
 export type {
   DeploymentTarget,

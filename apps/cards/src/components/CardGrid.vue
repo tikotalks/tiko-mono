@@ -59,8 +59,8 @@
               >
                 <CardTile
                   :card="card"
-                  :show-image="viewType !== CardGridViewType.S_PORTRAIT"
-                  :show-title="viewType !== CardGridViewType.S_PORTRAIT"
+                  :show-image="true"
+                  :show-title="true"
                   :edit-mode="editMode"
                   :is-empty="card.id.startsWith('empty-')"
                   :has-children="tilesWithChildren?.has(card.id) || false"

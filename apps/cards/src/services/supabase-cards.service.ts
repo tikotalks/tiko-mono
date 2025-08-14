@@ -100,6 +100,15 @@ class CardsSupabaseService {
     const response = await this.apiRequest<CardItem[]>(`items?${params.toString()}`);
     return response[0] || null;
   }
+
+  // TTS Audio methods
+  async getTTSAudio(textHash: string): Promise<any | null> {
+    const params = new URLSearchParams();
+    params.append('text_hash', `eq.${textHash}`);
+    
+    const response = await this.apiRequest<any[]>(`tts_audio?${params.toString()}`);
+    return response[0] || null;
+  }
 }
 
 export const cardsSupabaseService = new CardsSupabaseService();

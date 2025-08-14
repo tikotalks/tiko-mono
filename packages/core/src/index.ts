@@ -13,6 +13,8 @@ export { authAPI } from './lib/auth-api'
 // Composables
 export { useSSO } from './composables/useSSO'
 export type { SSOOptions } from './composables/useSSO'
+export { useSpeak } from './composables/useSpeak'
+export type { SpeakOptions } from './composables/useSpeak'
 export { useItems } from './composables/useItems'
 export type { UseItemsOptions, UseItemsReturn } from './composables/useItems'
 export { useImageUrl } from './composables/useImageUrl'

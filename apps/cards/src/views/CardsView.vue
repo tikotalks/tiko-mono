@@ -186,18 +186,20 @@ import GroupSelector from '../components/GroupSelector.vue';
 import BulkCardCreator from '../components/BulkCardCreator.vue';
 import { CardTile,mockCardTile } from '../components/CardTile/CardTile.model';
 import { useEditMode } from '../composables/useEditMode';
+import { useSpeak } from '@tiko/core';
 import { cardsService } from '../services/cards.service';
 import { Icons } from 'open-icon';
 
 const bemm = useBemm('cards-view');
 const settings = ref();
+const route = useRoute();
+const router = useRouter();
 const yesNoStore = useCardStore();
 const { t, keys } = useI18n();
 const parentMode = useParentMode('cards');
-const { hasPermission, requestPermission, speak } = useTextToSpeech();
+const { hasPermission, requestPermission } = useTextToSpeech();
+const { speak, preloadAudio } = useSpeak();
 const { isEditMode, toggleEditMode } = useEditMode();
-const route = useRoute();
-const router = useRouter();
 
 // Inject the popup service from TFramework
 const popupService = inject<any>('popupService');
@@ -290,6 +292,17 @@ const loadCards = async () => {
 
   if (savedCards.length > 0) {
     cards.value = savedCards;
+
+    // Preload audio for cards with speech
+    const textsToPreload = savedCards
+      .filter(card => !card.id.startsWith('empty-') && card.speech)
+      .map(card => ({
+        text: card.speech || ''
+      }));
+    
+    if (textsToPreload.length > 0) {
+      preloadAudio(textsToPreload);
+    }
 
     // Check which tiles have children and load them for preview
     const newTilesWithChildren = new Set<string>();
@@ -456,12 +469,8 @@ const handleTileAction = async (tile: CardTile) => {
     // Navigate to children
     navigateToTile(tile);
   } else if (tile.speech) {
-    // No children, speak the content with optimized settings
-    speak(tile.speech, {
-      rate: 1.1, // Slightly faster for responsiveness
-      volume: 1.0,
-      pitch: 1.0
-    });
+    // No children, speak the content
+    await speak(tile.speech);
   }
 };
 
