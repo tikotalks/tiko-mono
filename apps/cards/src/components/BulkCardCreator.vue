@@ -31,18 +31,17 @@
         <div
           v-for="(preview, index) in cardPreviews"
           :key="index"
-          :class="bemm('preview-card')"
-          :style="{ '--card-color': `var(--color-${preview.color})` }"
+          :class="bemm('preview-tile')"
         >
-          <div v-if="preview.loading" :class="bemm('preview-loading')">
+          <CardTile
+            :card="getPreviewCard(preview, index)"
+            :edit-mode="false"
+            :show-image="true"
+            :show-title="true"
+          />
+          <div v-if="preview.loading" :class="bemm('preview-overlay')">
             <TSpinner size="small" />
           </div>
-          <img v-else-if="preview.image" :src="preview.image" :alt="preview.title" />
-          <div v-else :class="bemm('preview-placeholder')">
-            <TIcon name="image" />
-          </div>
-          <span :class="bemm('preview-title')">{{ preview.title }}</span>
-          <div :class="bemm('preview-color')" :style="{ backgroundColor: `var(--color-${preview.color})` }" />
         </div>
       </div>
     </div>
@@ -84,7 +83,8 @@ import {
   useI18n,
 } from '@tiko/ui';
 import { useImages, useImageUrl } from '@tiko/core';
-import type { CardTile } from './CardTile/CardTile.model';
+import type { CardTile as CardTileType } from './CardTile/CardTile.model';
+import CardTile from './CardTile/CardTile.vue';
 
 const bemm = useBemm('bulk-card-creator');
 const { t } = useI18n();
@@ -92,7 +92,7 @@ const { searchImages } = useImages();
 const { getImageVariants } = useImageUrl();
 
 const emit = defineEmits<{
-  create: [cards: Partial<CardTile>[]];
+  create: [cards: Partial<CardTileType>[]];
   cancel: [];
 }>();
 
@@ -189,7 +189,7 @@ const handleCreateAll = async () => {
   isProcessing.value = true;
   
   try {
-    const cards: Partial<CardTile>[] = cardPreviews.value.map((preview, index) => ({
+    const cards: Partial<CardTileType>[] = cardPreviews.value.map((preview, index) => ({
       title: preview.title,
       speech: preview.speech,
       color: preview.color as any,
@@ -207,6 +207,20 @@ const handleCreateAll = async () => {
 
 const handleCancel = () => {
   emit('cancel');
+};
+
+// Convert preview to CardTile format for display
+const getPreviewCard = (preview: CardPreview, index: number): CardTileType => {
+  return {
+    id: `preview-${index}`,
+    title: preview.title,
+    speech: preview.speech,
+    color: preview.color as any,
+    image: preview.image,
+    icon: 'square' as any,
+    type: 'card' as any,
+    index: index
+  };
 };
 </script>
 
@@ -250,51 +264,32 @@ const handleCancel = () => {
   
   &__preview-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: var(--space);
-    max-height: 300px;
+    max-height: 400px;
     overflow-y: auto;
     padding: var(--space);
     background: var(--color-background-secondary);
     border-radius: var(--border-radius);
   }
   
-  &__preview-card {
+  &__preview-tile {
+    position: relative;
+    width: 120px;
+    height: 120px;
+  }
+  
+  &__preview-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: var(--space-xs);
-    text-align: center;
-    
-    img, &__preview-placeholder, &__preview-loading {
-      width: 60px;
-      height: 60px;
-      border-radius: var(--border-radius-sm);
-      object-fit: cover;
-      background: color-mix(in srgb, var(--card-color), transparent 80%);
-    }
-    
-    &__preview-loading,
-    &__preview-placeholder {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--color-text-muted);
-    }
-  }
-  
-  &__preview-title {
-    font-size: var(--font-size-xs);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    width: 100%;
-  }
-  
-  &__preview-color {
-    width: 20px;
-    height: 4px;
-    border-radius: 2px;
+    justify-content: center;
+    border-radius: var(--border-radius);
   }
 }
 </style>
