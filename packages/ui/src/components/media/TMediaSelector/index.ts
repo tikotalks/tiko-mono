@@ -1,0 +1,1 @@
+export { default as TMediaSelector } from './TMediaSelector.vue'
