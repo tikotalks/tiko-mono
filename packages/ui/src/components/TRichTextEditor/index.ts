@@ -1,1 +1,0 @@
-export { default as TRichTextEditor } from './TRichTextEditor.vue'

@@ -1,1 +1,0 @@
-export { default as TAuthCallback } from './TAuthCallback.vue'
