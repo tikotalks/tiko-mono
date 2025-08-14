@@ -30,7 +30,11 @@ class AuthSyncService {
       }
       
       // Store in the format Supabase expects
-      const storageKey = `sb-${supabase.supabaseUrl.split('//')[1].split('.')[0]}-auth-token`
+      // Extract project ref from the Supabase client's internal structure
+      const supabaseAny = supabase as any
+      const url = supabaseAny.supabaseUrl || supabaseAny.restUrl || ''
+      const projectRef = url ? url.split('//')[1]?.split('.')[0] : 'ref'
+      const storageKey = `sb-${projectRef}-auth-token`
       localStorage.setItem(storageKey, JSON.stringify({
         currentSession: supabaseSession,
         expiresAt: session.expires_at

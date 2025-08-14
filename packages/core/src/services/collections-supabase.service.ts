@@ -290,6 +290,15 @@ export const collectionsSupabaseService: CollectionsService = {
 
   async getCuratedCollections(): Promise<MediaCollection[]> {
     console.log('getCuratedCollections - Starting query')
+    
+    // First, let's see what collections exist at all
+    const { data: allCollections, error: allError } = await getSupabase()
+      .from('media_collections')
+      .select('id, name, is_public, is_curated')
+      .limit(10)
+    
+    console.log('getCuratedCollections - All collections in DB:', allCollections)
+    
     const { data: collections, error } = await getSupabase()
       .from('media_collections')
       .select(`
@@ -302,6 +311,7 @@ export const collectionsSupabaseService: CollectionsService = {
       .order('created_at', { ascending: false })
 
     console.log('getCuratedCollections - Query result:', { collections, error })
+    console.log('getCuratedCollections - Found curated collections:', collections?.length || 0)
 
     if (error) {
       logger.error('collections-supabase', 'Failed to get curated collections', error)
@@ -380,10 +390,10 @@ export const collectionsSupabaseService: CollectionsService = {
       throw error
     }
 
-    return collections
-      .map(item => item.collection)
+    return (collections || [])
+      .map((item: any) => item.collection)
       .filter(Boolean)
-      .map(col => ({
+      .map((col: any) => ({
         ...col,
         items: undefined,
         item_count: col.items?.[0]?.count || 0

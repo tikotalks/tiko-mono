@@ -266,6 +266,13 @@ export interface AuthService {
    * @returns {Promise<AuthResult>} Current user data if authenticated
    */
   getCurrentUser(): Promise<AuthResult>
+  
+  /**
+   * Clean up data URL avatar from user metadata
+   * 
+   * @returns {Promise<AuthResult>} Result with updated user data
+   */
+  cleanupDataUrlAvatar(): Promise<AuthResult>
 }
 
 /**

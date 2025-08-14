@@ -8,7 +8,6 @@ import type {
   ContentPage,
   ContentPageSection,
   ContentData,
-  ContentField,
   Language,
   SectionTemplate
 } from '../services/content.service'
@@ -237,7 +236,7 @@ export function useContent(options?: UseContentOptions) {
                 })
               }
               
-              content = await processContentFields(rawContent, fields, resolveLinkedItems, language || page.language_code)
+              content = await processContentFields(rawContent, fields, resolveLinkedItems, language || page?.language_code || 'en')
               console.log(`✅ [useContent] Processed content fields result:`, content)
               
               // Double-check list fields after processing
@@ -552,7 +551,7 @@ export function useContent(options?: UseContentOptions) {
         
         // If not found, try base item
         if (!item && language) {
-          item = await service.getItemBySlug(itemIdOrSlug, null)
+          item = await service.getItemBySlug(itemIdOrSlug, undefined)
         }
       }
       
@@ -798,5 +797,5 @@ export function useContent(options?: UseContentOptions) {
 }
 
 // Export types
-export type { ContentProject, ContentSection, ContentPage, ContentData, SectionContent }
+export type { ContentProject, ContentSection, ContentPage, ContentData }
 export { ContentWorkerService } from '../services/content-worker.service'

@@ -23,6 +23,7 @@ export * from './translation.service'
 export * from './gpt-translation.service'
 export * from './collections.service'
 export * from './user-media.service'
+export * from './content.service'
 
 // Export Supabase implementations
 export { SupabaseParentModeService } from './parent-mode-supabase.service'
@@ -48,25 +49,6 @@ export { gptTranslationService } from './gpt-translation.service'
 export { collectionsSupabaseService as collectionsService } from './collections-supabase.service'
 export { userMediaService } from './user-media.service'
 export { contentService } from './content.service'
-export type { 
-  ContentProject, 
-  SectionTemplate, 
-  ContentField,
-  ItemFieldConfig,
-  ItemSubField,
-  PageTemplate, 
-  ContentPage, 
-  PageSection, 
-  FieldValue,
-  ContentSection,
-  ContentPageSection,
-  ContentData,
-  Language,
-  ItemTemplate,
-  Item,
-  ItemData,
-  LinkedItem
-} from './content.service'
 export { sentenceService } from './sentence.service'
 export type {
   SentencePrediction,
@@ -82,8 +64,7 @@ export type {
 } from './deployment.service'
 export { backupService } from './backup.service'
 export type {
-  DatabaseBackup,
-  CreateBackupRequest
+  DatabaseBackup
 } from './backup.service'
 export { ContentWorkerService } from './content-worker.service'
 export type { ContentWorkerConfig } from './content-worker.service'

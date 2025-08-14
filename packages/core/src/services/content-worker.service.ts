@@ -6,20 +6,15 @@
  * The worker itself uses ContentService internally, so behavior is guaranteed to be identical.
  */
 
-import { authService } from './auth.service'
 import type {
   ContentProject,
   SectionTemplate,
   ContentField,
-  PageTemplate,
   ContentPage,
   ContentSection,
   ContentData,
   ItemTemplate,
   Item,
-  ItemData,
-  PageContent,
-  SectionContent,
   Language,
   ContentPageSection,
   FieldValue
@@ -39,8 +34,8 @@ export class ContentWorkerService {
   private customHeaders: Record<string, string>
 
   constructor(config: ContentWorkerConfig = {}) {
-    this.apiUrl = config.apiUrl || import.meta.env.VITE_CONTENT_API_URL || 'https://content.tikoapi.org'
-    this.deployedVersionId = config.deployedVersionId || import.meta.env.VITE_DEPLOYED_VERSION_ID
+    this.apiUrl = config.apiUrl || (import.meta as any).env?.VITE_CONTENT_API_URL || 'https://content.tikoapi.org'
+    this.deployedVersionId = config.deployedVersionId || (import.meta as any).env?.VITE_DEPLOYED_VERSION_ID
     this.useCache = config.useCache !== false
     this.customHeaders = config.customHeaders || {}
   }
