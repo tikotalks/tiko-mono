@@ -877,6 +877,7 @@ export class UnifiedContentService {
     const queryTime = Date.now() - startTime
     processedPage.metadata = {
       ...processedPage.metadata,
+      total_sections: processedPage.sections.length,
       query_time: queryTime
     }
 
