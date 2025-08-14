@@ -1,0 +1,146 @@
+import { useAuthStore } from '@tiko/core';
+import type { CardTile } from '../components/CardTile/CardTile.model';
+import { cardsSupabaseService } from './supabase-cards.service';
+
+const APP_NAME = 'cards';
+
+interface CardMetadata {
+  icon?: string;
+  color?: string;
+  image?: string;
+  speech?: string;
+}
+
+// Cache for hasChildren checks
+const childrenCache = new Map<string, boolean>();
+
+export const cardsService = {
+  async loadCards(parentId?: string): Promise<CardTile[]> {
+    try {
+      const authStore = useAuthStore();
+      const userId = authStore.user?.id;
+      if (!userId) {
+        console.warn('No authenticated user found');
+        return [];
+      }
+      
+      const items = await cardsSupabaseService.getCards(userId, parentId);
+      
+      return items.map(item => ({
+        id: item.id,
+        title: item.name,
+        type: item.type as any,
+        icon: (item.metadata as CardMetadata)?.icon || item.icon || 'square',
+        color: (item.metadata as CardMetadata)?.color || item.color || 'primary',
+        image: (item.metadata as CardMetadata)?.image || '',
+        speech: (item.metadata as CardMetadata)?.speech || '',
+        index: item.order_index ?? 0,
+        parentId: item.parent_id || undefined,
+      }));
+    } catch (error) {
+      console.error('Failed to load cards:', error);
+      return [];
+    }
+  },
+
+  async hasChildren(parentId: string): Promise<boolean> {
+    // Check cache first
+    if (childrenCache.has(parentId)) {
+      return childrenCache.get(parentId)!;
+    }
+    
+    try {
+      const authStore = useAuthStore();
+      const userId = authStore.user?.id;
+      if (!userId) {
+        return false;
+      }
+      
+      const children = await cardsSupabaseService.getCards(userId, parentId);
+      const hasChildren = children.length > 0;
+      
+      // Cache the result
+      childrenCache.set(parentId, hasChildren);
+      
+      return hasChildren;
+    } catch (error) {
+      console.error('Failed to check children:', error);
+      return false;
+    }
+  },
+
+  async saveCard(card: Partial<CardTile>, parentId?: string, index?: number): Promise<string | null> {
+    try {
+      const authStore = useAuthStore();
+      const userId = authStore.user?.id;
+      if (!userId) {
+        console.error('No authenticated user found');
+        return null;
+      }
+
+      const metadata: CardMetadata = {
+        icon: card.icon,
+        color: card.color,
+        image: card.image,
+        speech: card.speech,
+      };
+
+      const itemData = {
+        user_id: userId,
+        app_name: APP_NAME,
+        type: card.type || 'card',
+        name: card.title || 'Untitled',
+        content: card.speech || '',
+        metadata,
+        parent_id: card.parentId !== undefined ? card.parentId : (parentId || null),
+        icon: card.icon,
+        color: card.color,
+        order_index: index ?? card.index ?? 0,
+      };
+
+      if (card.id && !card.id.startsWith('empty-')) {
+        // Update existing card
+        await cardsSupabaseService.updateCard(card.id, itemData);
+        // Clear cache for parent if card moved
+        if (parentId) childrenCache.delete(parentId);
+        return card.id;
+      } else {
+        // Create new card
+        const newItem = await cardsSupabaseService.createCard(itemData);
+        // Clear cache for parent since we added a child
+        if (parentId) childrenCache.delete(parentId);
+        return newItem?.id || null;
+      }
+    } catch (error) {
+      console.error('Failed to save card:', error);
+      return null;
+    }
+  },
+
+  async deleteCard(cardId: string): Promise<boolean> {
+    try {
+      await cardsSupabaseService.deleteCard(cardId);
+      // Clear all cache on delete (we don't know the parent)
+      childrenCache.clear();
+      return true;
+    } catch (error) {
+      console.error('Failed to delete card:', error);
+      return false;
+    }
+  },
+
+  async reorderCards(cardIds: string[]): Promise<boolean> {
+    try {
+      // Update order_index for each card
+      const updatePromises = cardIds.map((id, index) => 
+        cardsSupabaseService.updateCard(id, { order_index: index })
+      );
+      
+      await Promise.all(updatePromises);
+      return true;
+    } catch (error) {
+      console.error('Failed to reorder cards:', error);
+      return false;
+    }
+  },
+};
