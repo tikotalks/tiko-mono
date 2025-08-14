@@ -1,0 +1,1 @@
+export { default as TPageContent } from './TPageContent.vue'
