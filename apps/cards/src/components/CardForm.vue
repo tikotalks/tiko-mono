@@ -61,7 +61,7 @@
             >
               Select Image
             </TButton>
-            
+
             <!-- Image suggestions based on title -->
             <div v-if="imageSuggestions.length > 0 && form.title && !form.image" :class="bemm('suggestions')">
               <p :class="bemm('suggestions-label')">Suggested images based on "{{ form.title }}":</p>
@@ -98,7 +98,8 @@
 
       <!-- Form Actions -->
       <TFormActions>
-        <TButton
+
+        <TButtonGroup :class="bemm('main-actions')"> <TButton
           v-if="isEditing"
           icon="trash"
           type="ghost"
@@ -108,7 +109,6 @@
         >
           Delete
         </TButton>
-        <div :class="bemm('main-actions')">
           <TButton
             type="outline"
             color="secondary"
@@ -124,14 +124,14 @@
           >
             {{ isEditing ? 'Save Changes' : 'Create Card' }}
           </TButton>
-        </div>
+        </TButtonGroup>
       </TFormActions>
     </TForm>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, watch, inject, ref } from 'vue';
+import { computed, reactive, watch, inject, ref, onMounted } from 'vue';
 import { useBemm } from 'bemm';
 import {
   TForm,
@@ -139,6 +139,7 @@ import {
   TFormActions,
   TTextarea,
   TButton,
+  TButtonGroup,
   TColorPicker,
   BaseColors,
   TInputText,
@@ -150,7 +151,7 @@ import { mediaService, useImages, useImageUrl } from '@tiko/core';
 
 const bemm = useBemm('card-form');
 const popupService = inject<any>('popupService');
-const { searchImages } = useImages();
+const { imageList, filteredImages, searchImages, loadImages } = useImages();
 const { getImageVariants } = useImageUrl();
 
 const props = defineProps<{
@@ -200,14 +201,46 @@ const searchForSuggestions = debounce(async (searchTerm: string) => {
 
   isLoadingSuggestions.value = true;
   try {
-    const results = await searchImages(searchTerm);
-    // Take top 4 suggestions
-    imageSuggestions.value = results.slice(0, 4).map(img => ({
-      id: img.id,
-      title: img.title || img.filename || 'Untitled',
-      thumbnail: getImageVariants(img.original_url).thumbnail || img.original_url,
-      url: img.original_url
-    }));
+    // Set the search query
+    searchImages(searchTerm);
+    
+    // Wait a bit for the reactive search to update
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Get the filtered results and find best matches
+    if (filteredImages.value.length > 0) {
+      const searchTermLower = searchTerm.toLowerCase();
+      const results = [...filteredImages.value];
+      
+      // Sort by relevance
+      results.sort((a, b) => {
+        const aTitle = ((a as any).title || (a as any).original_filename || '').toLowerCase();
+        const bTitle = ((b as any).title || (b as any).original_filename || '').toLowerCase();
+        
+        // Exact matches first
+        if (aTitle === searchTermLower && bTitle !== searchTermLower) return -1;
+        if (bTitle === searchTermLower && aTitle !== searchTermLower) return 1;
+        
+        // Then word boundary matches
+        const aWordMatch = new RegExp(`\\b${searchTermLower}\\b`).test(aTitle);
+        const bWordMatch = new RegExp(`\\b${searchTermLower}\\b`).test(bTitle);
+        if (aWordMatch && !bWordMatch) return -1;
+        if (bWordMatch && !aWordMatch) return 1;
+        
+        // Then by title length (shorter is better for partial matches)
+        return aTitle.length - bTitle.length;
+      });
+      
+      // Take top 6 suggestions
+      imageSuggestions.value = results.slice(0, 6).map(img => ({
+        id: img.id,
+        title: (img as any).title || (img as any).original_filename || 'Untitled',
+        thumbnail: getImageVariants(img.original_url || (img as any).url).thumbnail || img.original_url || (img as any).url,
+        url: img.original_url || (img as any).url
+      }));
+    } else {
+      imageSuggestions.value = [];
+    }
   } catch (error) {
     console.error('Failed to load image suggestions:', error);
     imageSuggestions.value = [];
@@ -252,7 +285,7 @@ const handleCancel = () => {
 };
 
 const handleDelete = () => {
-  const message = props.hasChildren 
+  const message = props.hasChildren
     ? 'Are you sure you want to delete this group? This will also delete all cards inside it.'
     : 'Are you sure you want to delete this card?';
 
@@ -260,6 +293,11 @@ const handleDelete = () => {
     emit('delete');
   }
 };
+
+// Load images when component mounts
+onMounted(async () => {
+  await loadImages();
+});
 
 const openImageSelector = async () => {
   popupService.open({
@@ -350,7 +388,49 @@ watch(() => props.card, (newCard) => {
   &__suggestions-label {
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
-    margin-bottom: var(--space-xs);
+    margin: 0 0 var(--space-s) 0;
+  }
+
+  &__suggestions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: var(--space-s);
+  }
+
+  &__suggestion {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs);
+    background: var(--color-background);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--color-border);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: var(--color-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: var(--border-radius-xs);
+    }
+
+    span {
+      font-size: var(--font-size-xs);
+      text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 100%;
+      max-width: 90px;
+    }
   }
 
   &__suggestions-grid {
@@ -363,7 +443,7 @@ watch(() => props.card, (newCard) => {
     cursor: pointer;
     text-align: center;
     transition: transform 0.2s ease;
-    
+
     &:hover {
       transform: scale(1.05);
     }

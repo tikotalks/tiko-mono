@@ -50,9 +50,12 @@
                 :class="[
                   bemm('tile-wrapper'),
                   {
-                    [bemm('tile-wrapper', 'animated')]: animatingPage === pageIndex && visibleTiles.has(`${pageIndex}-${index}`)
+                    [bemm('tile-wrapper', 'animating')]: animatingPages.has(pageIndex)
                   }
                 ]"
+                :style="{
+                  '--tile-index': index
+                }"
               >
                 <CardTile
                   :card="card"
@@ -317,8 +320,7 @@ const isDragging = ref(false);
 const panelWidth = ref(0);
 
 // Animation state for tiles
-const visibleTiles = ref<Set<string>>(new Set());
-const animatingPage = ref<number | null>(null);
+const animatingPages = ref<Set<number>>(new Set());
 
 // Calculate cards per page based on grid
 const cardsPerPage = computed(() => grid.value.cols * grid.value.rows);
@@ -406,39 +408,27 @@ const updateTranslateX = () => {
   }
 };
 
-// Function to animate tiles on page
-const animateTilesOnPage = (pageIndex: number) => {
-  // Clear existing visible tiles for animation
-  visibleTiles.value.clear();
-  animatingPage.value = pageIndex;
+// Function to trigger animation for a page
+const animatePage = (pageIndex: number) => {
+  // Add page to animating set
+  animatingPages.value.add(pageIndex);
   
-  // Get all tiles on this page
-  const pageTiles = paginatedCards.value[pageIndex] || [];
-  
-  // Stagger the appearance of each tile
-  pageTiles.forEach((tile, index) => {
-    if (tile && !tile.id.startsWith('empty-')) {
-      setTimeout(() => {
-        visibleTiles.value.add(`${pageIndex}-${index}`);
-      }, index * 50); // 50ms delay between each tile
-    } else if (tile) {
-      // Show empty tiles immediately
-      visibleTiles.value.add(`${pageIndex}-${index}`);
-    }
-  });
+  // Remove after animation completes
+  setTimeout(() => {
+    animatingPages.value.delete(pageIndex);
+  }, 1000); // Animation duration
 };
 
 // Navigation methods
 const goToPage = (page: number) => {
   if (page >= 0 && page < totalPages.value) {
-    const previousPage = currentPage.value;
     currentPage.value = page;
     isTransitioning.value = true;
     updateTranslateX();
     
-    // Animate tiles after page transition starts
+    // Trigger animation for the new page
     setTimeout(() => {
-      animateTilesOnPage(page);
+      animatePage(page);
     }, SWIPE_CONFIG.TRANSITION_DURATION / 2);
     
     setTimeout(() => {
@@ -713,9 +703,12 @@ onMounted(() => {
   setTimeout(() => {
     updateDimensions();
     updateTranslateX();
-    // Animate tiles on initial load
-    animateTilesOnPage(currentPage.value);
-  }, 100);
+  }, 0);
+  
+  // Animate tiles on initial load with a slight delay
+  setTimeout(() => {
+    animatePage(currentPage.value);
+  }, 200);
 
   const onResize = () => {
     updateDimensions();
@@ -869,12 +862,10 @@ onMounted(() => {
   &__tile-wrapper {
     width: var(--tile-size);
     height: var(--tile-size);
-    opacity: 0;
-    transform: scale(0.8) translateY(20px);
-    transition: none;
-
-    &--animated {
-      animation: tile-pop-in 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+    
+    &--animating {
+      animation: tile-pop-in 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) both;
+      animation-delay: calc(var(--tile-index, 0) * 50ms);
     }
   }
 }
@@ -883,9 +874,6 @@ onMounted(() => {
   0% {
     opacity: 0;
     transform: scale(0.8) translateY(20px);
-  }
-  50% {
-    opacity: 1;
   }
   100% {
     opacity: 1;
