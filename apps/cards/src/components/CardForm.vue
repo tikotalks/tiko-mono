@@ -39,19 +39,36 @@
               type="ghost"
               color="error"
               :class="bemm('image-remove')"
-              @click="form.image = ''"
+              @click="() => { form.image = ''; searchForSuggestions(form.title); }"
               :aria-label="'Remove image'"
             />
           </div>
-          <TButton
-            v-else
-            icon="image"
-            type="outline"
-            color="secondary"
-            @click="openImageSelector"
-          >
-            Select Image
-          </TButton>
+          <div v-else>
+            <TButton
+              icon="image"
+              type="outline"
+              color="secondary"
+              @click="openImageSelector"
+            >
+              Select Image
+            </TButton>
+            
+            <!-- Image suggestions based on title -->
+            <div v-if="imageSuggestions.length > 0 && form.title && !form.image" :class="bemm('suggestions')">
+              <p :class="bemm('suggestions-label')">Suggested images based on "{{ form.title }}":</p>
+              <div :class="bemm('suggestions-grid')">
+                <div
+                  v-for="suggestion in imageSuggestions"
+                  :key="suggestion.id"
+                  :class="bemm('suggestion')"
+                  @click="selectSuggestion(suggestion)"
+                >
+                  <img :src="suggestion.thumbnail" :alt="suggestion.title" />
+                  <span>{{ suggestion.title }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </TFormField>
 
@@ -92,7 +109,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, watch, inject } from 'vue';
+import { computed, reactive, watch, inject, ref } from 'vue';
 import { useBemm } from 'bemm';
 import {
   TForm,
@@ -104,12 +121,15 @@ import {
   BaseColors,
   TInputText,
   TMediaSelector,
+  debounce,
 } from '@tiko/ui';
 import { CardTile } from './CardTile/CardTile.model';
-import { mediaService } from '@tiko/core';
+import { mediaService, useImages, useImageUrl } from '@tiko/core';
 
 const bemm = useBemm('card-form');
 const popupService = inject<any>('popupService');
+const { searchImages } = useImages();
+const { getImageVariants } = useImageUrl();
 
 const props = defineProps<{
   card?: CardTile;
@@ -125,12 +145,62 @@ const isEditing = computed(() => !!props.card && !props.card.id.startsWith('empt
 
 const availableColors = Object.values(BaseColors);
 
+// Image suggestions state
+const imageSuggestions = ref<any[]>([]);
+const isLoadingSuggestions = ref(false);
+
 const form = reactive({
   title: props.card?.title || '',
   color: props.card?.color || 'primary',
   image: props.card?.image || '',
   speech: props.card?.speech || '',
 });
+
+// Auto-populate speech field when title changes (only if speech is empty)
+watch(() => form.title, (newTitle) => {
+  // Only auto-populate if speech is empty and we're creating a new card
+  if (!form.speech && !isEditing.value) {
+    form.speech = newTitle;
+  }
+});
+
+// Search for image suggestions based on title
+const searchForSuggestions = debounce(async (searchTerm: string) => {
+  if (!searchTerm || searchTerm.length < 2) {
+    imageSuggestions.value = [];
+    return;
+  }
+
+  isLoadingSuggestions.value = true;
+  try {
+    const results = await searchImages(searchTerm);
+    // Take top 4 suggestions
+    imageSuggestions.value = results.slice(0, 4).map(img => ({
+      id: img.id,
+      title: img.title || img.filename || 'Untitled',
+      thumbnail: getImageVariants(img.original_url).thumbnail || img.original_url,
+      url: img.original_url
+    }));
+  } catch (error) {
+    console.error('Failed to load image suggestions:', error);
+    imageSuggestions.value = [];
+  } finally {
+    isLoadingSuggestions.value = false;
+  }
+}, 500);
+
+// Watch title changes to trigger image search
+watch(() => form.title, (newTitle) => {
+  if (!form.image) { // Only search if no image is already selected
+    searchForSuggestions(newTitle);
+  }
+});
+
+// Select a suggested image
+const selectSuggestion = (suggestion: any) => {
+  form.image = suggestion.url;
+  imageSuggestions.value = []; // Clear suggestions after selection
+};
 
 const isValid = computed(() => {
   return form.title.trim().length > 0;
@@ -161,11 +231,13 @@ const openImageSelector = async () => {
     props: {
       multiple: false,
       selectedIds: form.image ? [form.image] : [],
+      searchTerm: form.title || '', // Use title as default search term
       onConfirm: (selectedItems: any[]) => {
         if (selectedItems.length > 0) {
           const item = selectedItems[0];
           // Handle both MediaItem (original_url) and UserMedia (url) types
           form.image = item.original_url || item.url || '';
+          imageSuggestions.value = []; // Clear suggestions after selection
         }
         popupService.close();
       },
@@ -222,6 +294,54 @@ watch(() => props.card, (newCard) => {
     position: absolute;
     top: var(--space-xs);
     right: var(--space-xs);
+  }
+
+  &__suggestions {
+    margin-top: var(--space);
+    padding: var(--space);
+    background: var(--color-background-secondary);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--color-border);
+  }
+
+  &__suggestions-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-xs);
+  }
+
+  &__suggestions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: var(--space-xs);
+  }
+
+  &__suggestion {
+    cursor: pointer;
+    text-align: center;
+    transition: transform 0.2s ease;
+    
+    &:hover {
+      transform: scale(1.05);
+    }
+
+    img {
+      width: 100%;
+      height: 60px;
+      object-fit: cover;
+      border-radius: var(--border-radius-sm);
+      border: 1px solid var(--color-border);
+      margin-bottom: var(--space-xs);
+    }
+
+    span {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 }
 </style>
