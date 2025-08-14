@@ -1,0 +1,1 @@
+export { default as TStatusBar } from './TStatusBar.vue'
