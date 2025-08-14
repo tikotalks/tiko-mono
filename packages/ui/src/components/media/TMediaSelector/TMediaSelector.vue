@@ -16,55 +16,27 @@
     <div :class="bemm('toolbar')">
       <div :class="bemm('toolbar-left')">
         <!-- Library switcher -->
-        <TInputSelect
-          v-model="libraryType"
-          :options="libraryOptions"
-          :clearable="false"
-          @update:model-value="loadMedia"
-        />
-        
-        <TInputText
-          v-model="searchQuery"
-          :placeholder="t('common.search')"
-          :icon="Icons.SEARCH_M"
-          @input="handleSearch"
-        />
+        <TInputSelect v-model="libraryType" :options="libraryOptions" :clearable="false"
+          @update:model-value="loadMedia" />
 
-        <TInputSelect
-          v-if="libraryType === ImageLibraryType.PUBLIC"
-          v-model="categoryFilter"
-          :options="categoryOptions"
-          :placeholder="t('admin.media.filterByCategory', 'Filter by category')"
-          :clearable="true"
-          allow-empty
-          @update:model-value="loadMedia"
-        />
+        <TInputText v-model="searchQuery" :placeholder="t('common.search')" :icon="Icons.SEARCH_M"
+          @input="handleSearch" />
 
-        <TInputSelect
-          v-model="tagFilter"
-          :options="tagOptions"
-          :placeholder="t('admin.media.filterByTag', 'Filter by tag')"
-          :clearable="true"
-          allow-empty
-          @update:model-value="loadMedia"
-        />
+        <TInputSelect v-if="libraryType === ImageLibraryType.PUBLIC" v-model="categoryFilter" :options="categoryOptions"
+          :placeholder="t('admin.media.filterByCategory', 'Filter by category')" :clearable="true" allow-empty
+          @update:model-value="loadMedia" />
+
+        <TInputSelect v-model="tagFilter" :options="tagOptions"
+          :placeholder="t('admin.media.filterByTag', 'Filter by tag')" :clearable="true" allow-empty
+          @update:model-value="loadMedia" />
       </div>
 
       <div :class="bemm('toolbar-right')">
-        <TInputSelect
-          v-model="sortBy"
-          :options="sortOptions"
-          :placeholder="t('common.sortByLabel')"
-          @update:model-value="loadMedia"
-        />
+        <TInputSelect v-model="sortBy" :options="sortOptions" :placeholder="t('common.sortByLabel')"
+          @update:model-value="loadMedia" />
 
-        <TViewToggle
-          v-model="viewMode"
-          :tiles-label="t('common.tiles')"
-          :list-label="t('common.list')"
-          :tiles-icon="Icons.GRID_M"
-          :list-icon="Icons.LIST_M"
-        />
+        <TViewToggle v-model="viewMode" :tiles-label="t('common.tiles')" :list-label="t('common.list')"
+          :tiles-icon="Icons.GRID_M" :list-icon="Icons.LIST_M" />
       </div>
     </div>
 
@@ -76,49 +48,27 @@
       </div>
 
       <!-- Empty state -->
-      <TEmptyState
-        v-else-if="filteredMedia.length === 0"
-        :icon="Icons.IMAGE_M"
+      <TEmptyState v-else-if="filteredMedia.length === 0" :icon="Icons.IMAGE_M"
         :title="searchQuery ? t('admin.media.noSearchResults', 'No search results') : t('admin.media.noMedia', 'No media found')"
-        :description="
-          searchQuery
+        :description="searchQuery
             ? t('admin.media.noSearchResultsDescription', 'Try adjusting your search or filters')
             : t('admin.media.noMediaDescription', 'Upload some media files to get started')
-        "
-      >
-        <TButton
-          v-if="searchQuery"
-          type="outline"
-          @click="clearSearch"
-        >
+          ">
+        <TButton v-if="searchQuery" type="outline" @click="clearSearch">
           {{ t('common.clearSearch') }}
         </TButton>
       </TEmptyState>
 
       <!-- Grid view -->
-      <TVirtualGrid
-        v-else-if="viewMode === 'tiles'"
-        :items="filteredMedia"
-        :min-item-width="200"
-        :gap="16"
-        :aspect-ratio="'3:2'"
-      >
+      <TVirtualGrid v-else-if="viewMode === 'tiles'" :items="filteredMedia" :min-item-width="200" :gap="16"
+        :aspect-ratio="'3:2'">
         <template #default="{ item }">
-          <div
-            :class="[
-              bemm('media-item'),
-              { [bemm('media-item', 'selected')]: isSelected(item) }
-            ]"
-            @click="toggleSelection(item)"
-          >
-            <TMediaTile
-              :media="item"
-              :get-image-variants="getImageVariants"
-            />
-            <div
-              v-if="isSelected(item)"
-              :class="bemm('selection-indicator')"
-            >
+          <div :class="[
+            bemm('media-item'),
+            { [bemm('media-item', 'selected')]: isSelected(item) }
+          ]" @click="toggleSelection(item)">
+            <TMediaTile :media="item" :get-image-variants="getImageVariants" />
+            <div v-if="isSelected(item)" :class="bemm('selection-indicator')">
               <TIcon :name="Icons.CHECK_M" />
             </div>
           </div>
@@ -126,57 +76,18 @@
       </TVirtualGrid>
 
       <!-- List view -->
-      <TList
-        v-else
-        :columns="listColumns"
-        :striped="true"
-        :hover="true"
-      >
-        <TListItem
-          v-for="item in filteredMedia"
-          :key="item.id"
-          :clickable="true"
-          :selected="isSelected(item)"
-          @click="toggleSelection(item)"
-        >
-          <TListCell
-            type="image"
-            :src="getImageVariants(item.original_url).thumbnail"
-            :alt="item.title || item.filename"
-          />
-          <TListCell
-            type="text"
-            :content="item.title || item.filename"
-          />
-          <TListCell
-            type="text"
-            :content="item.filename"
-          />
-          <TListCell
-            type="size"
-            :bytes="item.file_size"
-          />
-          <TListCell
-            v-if="item.categories?.length"
-            type="chips"
-            :chips="item.categories"
-            chip-color="secondary"
-          />
-          <TListCell
-            v-else
-            type="text"
-            content="-"
-          />
-          <TListCell
-            v-if="item.tags?.length"
-            type="chips"
-            :chips="item.tags"
-          />
-          <TListCell
-            v-else
-            type="text"
-            content="-"
-          />
+      <TList v-else :columns="listColumns" :striped="true" :hover="true">
+        <TListItem v-for="item in filteredMedia" :key="item.id" :clickable="true" :selected="isSelected(item)"
+          @click="toggleSelection(item)">
+          <TListCell type="image" :src="getImageVariants(item.original_url).thumbnail"
+            :alt="item.title || item.filename" />
+          <TListCell type="text" :content="item.title || item.filename" />
+          <TListCell type="text" :content="item.filename" />
+          <TListCell type="size" :bytes="item.file_size" />
+          <TListCell v-if="item.categories?.length" type="chips" :chips="item.categories" chip-color="secondary" />
+          <TListCell v-else type="text" content="-" />
+          <TListCell v-if="item.tags?.length" type="chips" :chips="item.tags" />
+          <TListCell v-else type="text" content="-" />
         </TListItem>
       </TList>
     </div>
@@ -190,18 +101,12 @@
       </div>
 
       <div :class="bemm('actions')">
-        <TButton
-          type="ghost"
-          @click="handleCancel"
-        >
+        <TButton type="ghost" @click="handleCancel">
           {{ t('common.cancel') }}
         </TButton>
 
-        <TButton
-          color="primary"
-          :disabled="selectedMedia.length === 0 || (!multiple && selectedMedia.length !== 1)"
-          @click="handleConfirm"
-        >
+        <TButton color="primary" :disabled="selectedMedia.length === 0 || (!multiple && selectedMedia.length !== 1)"
+          @click="handleConfirm">
           {{ t('common.select') }}
         </TButton>
       </div>
@@ -217,7 +122,6 @@ import {
   TInputText,
   TInputSelect,
   TViewToggle,
-  TGrid,
   TList,
   TListItem,
   TListCell,
@@ -230,9 +134,8 @@ import {
   debounce,
 } from '@tiko/ui'
 import { Icons } from 'open-icon'
-import { useAuthStore } from '@tiko/core'
-import type { MediaItem, UserMedia } from '@tiko/core'
-import { useImageUrl, ImageLibraryType, useImages } from '@tiko/core'
+import { useAuthStore, useImageUrl, ImageLibraryType, useImages, type MediaItem, type UserMedia } from '@tiko/core'
+
 
 interface Props {
   multiple?: boolean
@@ -370,13 +273,13 @@ const filteredMedia = computed(() => {
     const getFilename = (item: MediaItem | UserMedia): string => {
       return 'filename' in item ? item.filename : item.original_filename
     }
-    
+
     // Helper to get title
     const getTitle = (item: MediaItem | UserMedia): string => {
       if ('title' in item) return item.title || item.filename
       return item.original_filename
     }
-    
+
     switch (sortBy.value) {
       case 'upload_date_desc':
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -406,7 +309,7 @@ const filteredMedia = computed(() => {
 const categoryOptions = computed(() => {
   // Categories only exist for MediaItem (public library)
   if (libraryType.value !== ImageLibraryType.PUBLIC) return []
-  
+
   const categories = new Set<string>()
   media.value.forEach(item => {
     if ('categories' in item) {
@@ -440,7 +343,7 @@ const tagOptions = computed(() => {
 async function loadMedia() {
   // Use the cached loadImages from the composable
   await currentLibrary.value.loadImages()
-  
+
   // Initialize selected items based on props
   if (props.selectedIds.length > 0 && media.value.length > 0) {
     selectedMedia.value = media.value.filter(item =>
@@ -510,7 +413,7 @@ onMounted(() => {
   flex-direction: column;
   height: 80vh;
   max-height: 800px;
-  width: 90vw;
+  width: 100%;
   max-width: 1200px;
   background: var(--color-background);
   border-radius: var(--radius-lg);

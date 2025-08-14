@@ -235,6 +235,18 @@ const navigationItems = computed<NavigationItem[]>(() => [
         icon: Icons.SPARKLE,
         label: t('admin.navigation.generate'),
       },
+      {
+        name: 'personal-library',
+        to: { name: 'PersonalLibrary' },
+        icon: Icons.USER,
+        label: t('admin.navigation.personalLibrary'),
+      },
+      {
+        name: 'collections',
+        to: { name: 'Collections' },
+        icon: Icons.FOLDER,
+        label: t('admin.navigation.collections'),
+      },
     ],
   },
   {

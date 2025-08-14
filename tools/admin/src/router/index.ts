@@ -29,6 +29,8 @@ const ItemDetailView = () => import('../views/content/ItemDetailView.vue')
 const DeploymentDashboard = () => import('../views/deployment/DeploymentDashboard.vue')
 const BackupsView = () => import('../views/deployment/BackupsView.vue')
 const GenerateView = () => import('../views/GenerateView.vue')
+const PersonalLibraryView = () => import('../views/PersonalLibraryView.vue')
+const CollectionsView = () => import('../views/CollectionsView.vue')
 
 const router = createAppRouter({
   routes: [
@@ -60,6 +62,21 @@ const router = createAppRouter({
           path: 'generate',
           name: 'Generate',
           component: GenerateView
+        },
+        {
+          path: 'personal-library',
+          name: 'PersonalLibrary',
+          component: PersonalLibraryView
+        },
+        {
+          path: 'collections',
+          name: 'Collections',
+          component: CollectionsView
+        },
+        {
+          path: 'collections/:id',
+          name: 'CollectionDetail',
+          component: () => import('../views/CollectionDetailView.vue')
         },
         {
           path: 'media/:id',

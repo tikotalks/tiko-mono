@@ -1,4 +1,4 @@
-import type { SplashScreenConfig } from '../components/TSplashScreen'
+import type { SplashScreenConfig } from '../components/feedback/TSplashScreen'
 
 /**
  * Generates native app configuration for splash screens

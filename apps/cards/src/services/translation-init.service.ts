@@ -1,5 +1,5 @@
 /**
- * Translation Initialization Service for Cards App
+ * Translation Initialization Service for Yes-No App
  * Handles loading translations from database on app startup
  */
 

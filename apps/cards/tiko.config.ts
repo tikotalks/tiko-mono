@@ -1,12 +1,16 @@
-import { defineConfig } from '@tiko/ui/types/tiko-config'
+import { defineConfig } from '@tiko/core'
 
 export default defineConfig({
-  id: 'cards',
-  name: 'Cards',
-  icon: 'cards',
-  description: 'Card game app',
+  appId: 'cards',
+  appName: 'Cards',
+  appIcon: 'check-circle',
+  description: 'Cards App',
   theme: {
     primary: 'green',
-    secondary: 'blue'
+    secondary: 'orange',
+    tertiary: 'blue'
+  },
+  auth: {
+    skipAuth: true // Allow using the app without login
   }
 })

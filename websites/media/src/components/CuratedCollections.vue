@@ -32,47 +32,40 @@
         :to="`/collections/${collection.id}`"
         :class="bemm('link')"
       >
-        <article :class="bemm('card')">
-          <div :class="bemm('image')">
-            <img 
-              v-if="collection.cover_image_url" 
-              :src="collection.cover_image_url" 
-              :alt="collection.name"
-              loading="lazy"
-            />
-            <div v-else :class="bemm('placeholder')">
-              <TIcon :name="Icons.FOLDER" size="xl" />
-            </div>
-            
-            <!-- Overlay badge -->
-            <div :class="bemm('badge')">
+        <TMediaTile
+          :media="collection"
+          :get-image-variants="getImageVariants"
+          :show-overlay="true"
+        >
+          <template #content>
+            <div :class="bemm('curated-badge')">
               <TIcon :name="Icons.STAR" size="xs" />
               {{ t('media.collections.curated') }}
             </div>
-          </div>
-          
-          <div :class="bemm('content')">
-            <h3 :class="bemm('name')">{{ collection.name }}</h3>
-            <p v-if="collection.description" :class="bemm('description')">
-              {{ collection.description }}
-            </p>
             
-            <div :class="bemm('stats')">
-              <span :class="bemm('stat')">
-                <TIcon :name="Icons.IMAGE" size="xs" />
-                {{ collection.item_count || 0 }} {{ t('common.items') }}
-              </span>
-              <span :class="bemm('stat')">
-                <TIcon :name="Icons.EYE" size="xs" />
-                {{ formatNumber(collection.view_count || 0) }}
-              </span>
-              <span :class="bemm('stat')">
-                <TIcon :name="Icons.HEART" size="xs" />
-                {{ formatNumber(collection.like_count || 0) }}
-              </span>
+            <div :class="bemm('collection-info')">
+              <h3 :class="bemm('collection-name')">{{ collection.name }}</h3>
+              <p v-if="collection.description" :class="bemm('collection-description')">
+                {{ collection.description }}
+              </p>
+              
+              <div :class="bemm('collection-stats')">
+                <span :class="bemm('stat')">
+                  <TIcon :name="Icons.IMAGE" size="xs" />
+                  {{ collection.item_count || 0 }} {{ t('common.items') }}
+                </span>
+                <span :class="bemm('stat')">
+                  <TIcon :name="Icons.EYE" size="xs" />
+                  {{ formatNumber(collection.view_count || 0) }}
+                </span>
+                <span :class="bemm('stat')">
+                  <TIcon :name="Icons.HEART" size="xs" />
+                  {{ formatNumber(collection.like_count || 0) }}
+                </span>
+              </div>
             </div>
-          </div>
-        </article>
+          </template>
+        </TMediaTile>
       </router-link>
     </TGrid>
     </template>
@@ -83,15 +76,17 @@
 import { computed, onMounted } from 'vue'
 import { useBemm } from 'bemm'
 import { Icons } from 'open-icon'
-import { useCollectionsStore } from '@tiko/core'
+import { useCollectionsStore, useImageUrl } from '@tiko/core'
 import {
   useI18n,
   TGrid,
-  TIcon
+  TIcon,
+  TMediaTile
 } from '@tiko/ui'
 
 const bemm = useBemm('curated-collections')
 const { t } = useI18n()
+const { getImageVariants } = useImageUrl()
 const collectionsStore = useCollectionsStore()
 
 // Props
@@ -172,61 +167,7 @@ onMounted(async () => {
     height: 100%;
   }
 
-  &__card {
-    background: var(--color-surface);
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    transition: all 0.3s ease;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-
-    &:hover {
-      transform: translateY(-4px);
-      box-shadow: 
-        0 12px 24px rgba(0, 0, 0, 0.15),
-        0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-  }
-
-  &__image {
-    aspect-ratio: 16 / 9;
-    overflow: hidden;
-    background: var(--color-background-secondary);
-    position: relative;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.3s ease;
-    }
-
-    .curated-collections__card:hover & img {
-      transform: scale(1.05);
-    }
-  }
-
-  &__placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--color-primary), transparent 85%),
-      color-mix(in srgb, var(--color-primary), transparent 95%)
-    );
-    
-    .t-icon {
-      color: var(--color-primary);
-      opacity: 0.3;
-    }
-  }
-
-  &__badge {
+  &__curated-badge {
     position: absolute;
     top: var(--space-s);
     right: var(--space-s);
@@ -242,40 +183,43 @@ onMounted(async () => {
     backdrop-filter: blur(10px);
     background: color-mix(in srgb, var(--color-background), transparent 10%);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 2;
   }
 
-  &__content {
-    padding: var(--space);
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+  &__collection-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    color: white;
+    padding: var(--space-xl) var(--space) var(--space);
   }
 
-  &__name {
+  &__collection-name {
     margin: 0 0 var(--space-xs) 0;
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);
     line-height: 1.2;
+    color: white;
   }
 
-  &__description {
+  &__collection-description {
     margin: 0 0 var(--space) 0;
-    color: var(--color-text-secondary);
+    color: rgba(255, 255, 255, 0.9);
     font-size: var(--font-size-sm);
-    line-height: 1.5;
-    flex: 1;
+    line-height: 1.4;
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
   }
 
-  &__stats {
+  &__collection-stats {
     display: flex;
     gap: var(--space);
     font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    margin-top: auto;
+    color: rgba(255, 255, 255, 0.8);
   }
 
   &__stat {

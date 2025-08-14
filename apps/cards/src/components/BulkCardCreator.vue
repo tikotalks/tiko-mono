@@ -32,6 +32,7 @@
           v-for="(preview, index) in cardPreviews"
           :key="index"
           :class="bemm('preview-tile')"
+          @click="openEditPreview(preview, index)"
         >
           <CardTile
             :card="getPreviewCard(preview, index)"
@@ -69,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted, inject } from 'vue';
 import { useBemm } from 'bemm';
 import {
   TFormField,
@@ -85,11 +86,13 @@ import {
 import { useImages, useImageUrl } from '@tiko/core';
 import type { CardTile as CardTileType } from './CardTile/CardTile.model';
 import CardTile from './CardTile/CardTile.vue';
+import CardForm from './CardForm.vue';
 
 const bemm = useBemm('bulk-card-creator');
 const { t } = useI18n();
-const { searchImages } = useImages();
+const { imageList, filteredImages, searchImages, loadImages } = useImages();
 const { getImageVariants } = useImageUrl();
+const popupService = inject<any>('popupService');
 
 const emit = defineEmits<{
   create: [cards: Partial<CardTileType>[]];
@@ -102,11 +105,15 @@ interface CardPreview {
   color: string;
   image: string;
   loading: boolean;
+  editing?: boolean;
 }
 
 const titlesInput = ref('');
 const cardPreviews = ref<CardPreview[]>([]);
 const isProcessing = ref(false);
+
+// Cache for images to avoid repeated searches
+const imageCache = new Map<string, string>();
 
 // Color palette that works well with different themes
 const smartColors = [
@@ -143,15 +150,62 @@ const getSmartColor = (title: string): string => {
 
 // Search for the best matching image
 const findBestImage = async (title: string): Promise<string> => {
+  // Check cache first
+  if (imageCache.has(title)) {
+    return imageCache.get(title)!;
+  }
+
   try {
-    const results = await searchImages(title);
-    if (results.length > 0) {
-      // Return the first result's URL
-      return results[0].original_url;
+    // Set the search query
+    searchImages(title);
+    
+    // Wait a bit for the reactive search to update
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Get the filtered results
+    if (filteredImages.value.length > 0) {
+      const searchTerm = title.toLowerCase();
+      
+      // First, try to find exact matches in title/filename
+      let bestMatch = filteredImages.value.find(img => {
+        const imgTitle = ((img as any).title || (img as any).original_filename || '').toLowerCase();
+        return imgTitle === searchTerm;
+      });
+      
+      // If no exact match, look for images where the search term is a complete word
+      if (!bestMatch) {
+        bestMatch = filteredImages.value.find(img => {
+          const imgTitle = ((img as any).title || (img as any).original_filename || '').toLowerCase();
+          // Check if the search term appears as a complete word (not part of another word)
+          const wordBoundaryRegex = new RegExp(`\\b${searchTerm}\\b`);
+          return wordBoundaryRegex.test(imgTitle);
+        });
+      }
+      
+      // If still no match, check tags for exact matches
+      if (!bestMatch) {
+        bestMatch = filteredImages.value.find(img => {
+          const tags = (img as any).tags || [];
+          return tags.some((tag: string) => tag.toLowerCase() === searchTerm);
+        });
+      }
+      
+      // If still no match, use the first result
+      if (!bestMatch) {
+        bestMatch = filteredImages.value[0];
+      }
+      
+      const imageUrl = bestMatch.original_url || (bestMatch as any).url || '';
+      // Cache the result
+      imageCache.set(title, imageUrl);
+      return imageUrl;
     }
   } catch (error) {
     console.error(`Failed to find image for "${title}":`, error);
   }
+  
+  // Cache empty result too
+  imageCache.set(title, '');
   return ''; // No image found
 };
 
@@ -162,21 +216,42 @@ const processCards = debounce(async () => {
     .map(t => t.trim())
     .filter(t => t.length > 0);
   
-  // Create initial previews
-  cardPreviews.value = titles.map(title => ({
-    title,
-    speech: title, // Use title as speech
-    color: getSmartColor(title),
-    image: '',
-    loading: true
-  }));
+  // Create a map of existing previews for preservation
+  const existingPreviews = new Map<string, CardPreview>();
+  cardPreviews.value.forEach(preview => {
+    existingPreviews.set(preview.title, preview);
+  });
   
-  // Load images asynchronously
-  for (let i = 0; i < cardPreviews.value.length; i++) {
-    const preview = cardPreviews.value[i];
-    preview.image = await findBestImage(preview.title);
-    preview.loading = false;
+  // Create or update previews
+  const newPreviews: CardPreview[] = [];
+  
+  for (const title of titles) {
+    // Check if we already have this preview
+    const existing = existingPreviews.get(title);
+    if (existing) {
+      // Keep existing preview (with its image, color, etc.)
+      newPreviews.push(existing);
+    } else {
+      // Create new preview
+      const newPreview: CardPreview = {
+        title,
+        speech: title, // Use title as speech
+        color: getSmartColor(title),
+        image: '',
+        loading: true,
+        editing: false
+      };
+      newPreviews.push(newPreview);
+      
+      // Load image asynchronously for new previews only
+      findBestImage(title).then(imageUrl => {
+        newPreview.image = imageUrl;
+        newPreview.loading = false;
+      });
+    }
   }
+  
+  cardPreviews.value = newPreviews;
 }, 500);
 
 const handleTitlesChange = () => {
@@ -222,6 +297,46 @@ const getPreviewCard = (preview: CardPreview, index: number): CardTileType => {
     index: index
   };
 };
+
+// Open edit dialog for a preview card
+const openEditPreview = (preview: CardPreview, index: number) => {
+  popupService.open({
+    component: CardForm,
+    title: 'Edit Card',
+    props: {
+      card: {
+        title: preview.title,
+        speech: preview.speech,
+        color: preview.color,
+        image: preview.image,
+        icon: 'square',
+        type: 'card',
+      },
+      onSave: (updatedCard: Partial<CardTileType>) => {
+        // Update the preview with the edited values
+        preview.title = updatedCard.title || preview.title;
+        preview.speech = updatedCard.speech || preview.speech;
+        preview.color = updatedCard.color || preview.color;
+        preview.image = updatedCard.image || preview.image;
+        
+        // Update the titles input to reflect the new title
+        const titles = titlesInput.value.split('\n');
+        titles[index] = preview.title;
+        titlesInput.value = titles.join('\n');
+        
+        popupService.close();
+      },
+      onCancel: () => {
+        popupService.close();
+      }
+    }
+  });
+};
+
+// Load images when component mounts
+onMounted(async () => {
+  await loadImages();
+});
 </script>
 
 <style lang="scss">
@@ -277,6 +392,12 @@ const getPreviewCard = (preview: CardPreview, index: number): CardTileType => {
     position: relative;
     width: 120px;
     height: 120px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    
+    &:hover {
+      transform: scale(1.05);
+    }
   }
   
   &__preview-overlay {

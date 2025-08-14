@@ -1,112 +1,80 @@
 <template>
-  <TFramework 
-    :config="frameworkConfig" 
-    :background-image="backgroundImage"
-    :loading="isLoading"
-  >
-    <template #topbar-actions>
-      <TButton
-        v-if="parentMode.canManageContent.value"
-        :color="editMode ? 'success' : 'primary'"
-        :icon="editMode ? 'check' : 'edit'"
-        type="ghost"
-        size="small"
-        @click="handleToggleEditMode"
-      >
-        {{ editMode ? t(keys.cards.done) : t(keys.common.edit) }}
-      </TButton>
+  <div id="app">
+    <!-- Auth callback route doesn't need TFramework wrapper -->
+    <router-view v-if="isAuthCallbackRoute" />
 
-      <TButton
-        v-if="parentMode.canManageContent.value"
-        color="primary"
-        icon="add"
-        type="ghost"
-        size="small"
-        @click="showCreateModal"
-      >
-        {{ t(keys.cards.addCard) }}
-      </TButton>
-    </template>
-
-    <router-view />
-  </TFramework>
+    <!-- All other routes use TFramework -->
+    <TFramework
+      v-else
+      :config="frameworkConfig"
+      :background-image="backgroundImage"
+      :loading="loading"
+    >
+      <router-view />
+    </TFramework>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, onMounted } from 'vue'
-import { TFramework, TButton, type FrameworkConfig, useParentMode, useI18n } from '@tiko/ui'
-import { useCardsStore } from './stores/cards'
-import CreateCardModal from './components/CreateCardModal.vue'
+import { computed, ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { TFramework, type FrameworkConfig, useI18n } from '@tiko/ui'
 import tikoConfig from '../tiko.config'
-import backgroundImage from './assets/app-icon-cards.png'
+import backgroundImage from './assets/app-icon-yes-no.png'
 import { initializeTranslations } from './services/translation-init.service'
 
-const cardsStore = useCardsStore()
-const { editMode, toggleEditMode } = cardsStore
-const parentMode = useParentMode('cards')
+const route = useRoute()
+const loading = ref(true)
 const { t, keys } = useI18n()
 
-// Loading state
-const loading = ref(true)
-const isLoading = computed(() => loading.value || cardsStore.isLoading.value)
-
-// Initialize translations on mount
+// Initialize translations on app startup
 onMounted(async () => {
-  await initializeTranslations()
-  loading.value = false
+  try {
+    await initializeTranslations()
+  } catch (error) {
+    console.error('Failed to initialize translations:', error)
+  } finally {
+    loading.value = false
+  }
 })
 
-// Framework configuration
-const frameworkConfig = computed<FrameworkConfig>(() => ({
-  ...tikoConfig,
-  topBar: {
-    showUser: true,
-    showTitle: true,
-    showSubtitle: true,
-    subtitle: editMode.value ? t(keys.cards.selectCardsToOrganize) : t(keys.cards.tapCardsToSpeak)
-  },
-  settings: {
-    enabled: true,
-    sections: [
-      {
-        id: 'cards-settings',
-        title: t(keys.cards.cardsSettings),
-        icon: 'cards',
-        order: 10
-        // component: CardsSettings // Add custom settings component if needed
-      }
-    ]
-  }
-}))
+// Check if current route is auth callback
+const isAuthCallbackRoute = computed(() => {
+  return route.path === '/auth/callback'
+})
 
-// Handle edit mode toggle
-const handleToggleEditMode = () => {
-  toggleEditMode()
-}
+// Framework configuration - use computed to ensure translations are reactive
+const frameworkConfig = computed<FrameworkConfig>(() => {
+  // Safely access the yesno settings key
+  const cardsSettingsKey = keys.value?.cards?.cardsSettings || 'cards.cardsSettings'
 
-// Show create modal
-const showCreateModal = () => {
-  const popupService = inject<any>('popupService')
-  if (popupService) {
-    popupService.open({
-      component: CreateCardModal,
-      props: {
-        onCreated: () => {
-          popupService.close()
-        },
-        onClose: () => popupService.close()
-      }
-    })
+  return {
+    ...tikoConfig,
+    auth: {
+      ...tikoConfig.auth,
+      skipAuth: true // Ensure skipAuth is explicitly set
+    },
+    topBar: {
+      showUser: true,
+      showTitle: true,
+      showSubtitle: false,
+      showCurrentRoute: false
+    },
+    settings: {
+      enabled: true,
+      sections: [
+        {
+          id: 'cards-settings',
+          title: t(cardsSettingsKey),
+          icon: 'circle-question',
+          order: 10
+        }
+      ]
+    }
   }
-}
+});
 </script>
 
 <style lang="scss">
 @use '@tiko/ui/styles/app.scss';
-
-#app {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
 </style>

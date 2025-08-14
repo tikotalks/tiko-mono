@@ -3,10 +3,13 @@ import { createViteConfig } from '../../vite.config.base'
 const pwaConfig = {
   registerType: 'autoUpdate',
   includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+  workbox: {
+    maximumFileSizeToCacheInBytes: 3 * 1024 * 1024 // 3MB
+  },
   manifest: {
     name: 'Cards - Tiko',
     short_name: 'Cards',
-    description: 'Create and use visual communication cards - part of the Tiko communication suite',
+    description: 'Cards App',
     theme_color: '#667eea',
     background_color: '#ffffff',
     display: 'standalone',
@@ -34,4 +37,8 @@ const pwaConfig = {
   }
 }
 
-export default createViteConfig(__dirname, 3003, pwaConfig)
+const i18nConfig = {
+  excludeSections: ['admin', 'deployment', 'media', 'content']
+}
+
+export default createViteConfig(__dirname, 3003, pwaConfig, 'yes-no', i18nConfig)

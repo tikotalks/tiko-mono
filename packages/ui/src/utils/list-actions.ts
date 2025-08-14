@@ -1,5 +1,5 @@
 import { Icons } from 'open-icon'
-import type { ListAction, ListActionType } from '../components/TListItem/TListItem.model'
+import type { ListAction, ListActionType } from '../components/data-display/TListItem/TListItem.model'
 
 /**
  * Default configurations for common list actions

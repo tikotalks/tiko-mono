@@ -33,17 +33,12 @@
       </div>
 
       <div :class="bemm('stats')">
-        <span v-if="filteredByCategoryImages.length == imageList.length">
-          {{ t('media.library.showingAll', { count: imageList.length }) }}
-        </span>
-        <span v-else>
-          {{
-            t('media.library.showingFiltered', {
+        <TMarkdownRenderer v-if="filteredByCategoryImages.length == imageList.length"
+        :content="t('media.library.showingAll', { count: imageList.length })" />
+        <TMarkdownRenderer v-else :content="t('media.library.showingFiltered', {
               count: filteredByCategoryImages.length,
               total: imageList.length,
-            })
-          }}
-        </span>
+            })" />
       </div>
 
       <div :class="bemm('filters')">
@@ -63,7 +58,7 @@
 
         <TInputSelect
           v-model="sortBy"
-          :label="t('common.sortBy')"
+          :label="t('common.sortByLabel')"
           :options="sortOptions"
         />
 
@@ -161,6 +156,7 @@ import {
   TSpinner,
   TEmptyState,
   TChip,
+  TMarkdownRenderer,
 } from '@tiko/ui';
 
 const bemm = useBemm('library-view');
@@ -217,7 +213,7 @@ function formatDate(dateString: string): string {
   const now = new Date();
   const diffTime = Math.abs(now.getTime() - inputDate.getTime());
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  
+
   if (diffDays === 0) {
     return t('common.today');
   } else if (diffDays === 1) {

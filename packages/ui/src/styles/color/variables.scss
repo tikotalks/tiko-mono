@@ -5,10 +5,21 @@
 $base-colors: (
 	'purple': #9049ce,
 	'blue': #7bcdff,
+	'navy': #2217bc,
+	'royal-blue': #146bee,
+	'dark-blue': #220d5c,
 	'green': #4fcf4f,
 	'lime': #8aff84,
 	'yellow': #ffc94b,
 	'orange': #f6883a,
+	'maroon': #b04f4f,
+	'olive': #b0b04f,
+	'sand': #e2d699,
+	'charcoal': #333333,
+	'peach': #ffb3a7,
+	'teal': #4fb0b0,
+	'blue-gray': #4f4fb0,
+	'blue-green': #4fb04f,
 	'red': #ff4d5e,
 	'pink': #ea7f9a,
 	'brown': #4f332d,
@@ -25,7 +36,6 @@ $base-colors: (
 	'gold': #ffd700,
 	'silver': #c0c0c0,
 	'bronze': #cd7f32,
-	'dark-blue': #220d5c,
 );
 
 $base-color-names: map.keys($base-colors);

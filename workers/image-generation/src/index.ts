@@ -84,6 +84,18 @@ export default {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
         }
+        
+        // Validate userId is a valid UUID
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+        if (!uuidRegex.test(data.userId)) {
+          return new Response(JSON.stringify({ 
+            error: 'Invalid user ID format', 
+            details: 'User ID must be a valid UUID'
+          }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
 
         // Insert all items as queued
         const mediaRecords: any[] = []

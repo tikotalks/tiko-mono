@@ -22,16 +22,25 @@ const routes: RouteRecordRaw[] = [
     name: 'categories',
     component: () => import('../views/CategoriesView.vue')
   },
-  // Collections disabled for now - not implemented yet
-  // {
-  //   path: '/collections',
-  //   name: 'collections',
-  //   component: () => import('../views/CollectionsView.vue')
-  // },
+  {
+    path: '/collections',
+    name: 'collections',
+    component: () => import('../views/CollectionsView.vue')
+  },
+  {
+    path: '/collections/:id',
+    name: 'collection-detail',
+    component: () => import('../views/CollectionDetailView.vue')
+  },
   {
     path: '/about',
     name: 'about',
     component: () => import('../views/AboutView.vue')
+  },
+  {
+    path: '/auth/login',
+    name: 'login',
+    component: () => import('../views/LoginView.vue')
   },
   {
     path: '/404',

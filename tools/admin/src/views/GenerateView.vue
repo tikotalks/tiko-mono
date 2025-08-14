@@ -139,6 +139,17 @@
             <div :class="bemm('panel-header')">
               <h2 :class="bemm('panel-title')">{{ t('admin.generate.results', 'Generated Images') }}</h2>
 
+              <!-- View Personal Library Button -->
+              <TButton
+                v-if="generationScope === 'personal'"
+                type="outline"
+                size="small"
+                icon="arrow-right"
+                @click="router.push('/personal-library')"
+              >
+                {{ t('admin.generate.viewPersonalLibrary', 'View Personal Library') }}
+              </TButton>
+
               <!-- Filter Tabs -->
               <TButtonGroup fluid :class="bemm('tabs')">
                 <TButton
@@ -187,7 +198,7 @@
                         </TChip>
                       </div>
                     </template>
-                    
+
                     <template #details>
                       <div :class="bemm('media-details')">
                         <p v-if="item.generation_data?.prompt" :class="bemm('prompt')">
@@ -199,7 +210,7 @@
                       </div>
                     </template>
                   </TMediaTile>
-                  
+
                   <!-- Action Buttons -->
                   <div :class="bemm('media-actions')">
                     <TButton
@@ -249,6 +260,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, inject } from 'vue'
+import { useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
 import { useI18n, type ToastService } from '@tiko/ui'
 import { useAuthStore, userMediaService, type UserMedia, type MediaStatus } from '@tiko/core'
@@ -271,6 +283,7 @@ const { t } = useI18n()
 const toastService = inject<ToastService>('toastService')
 const authStore = useAuthStore()
 const { getImageVariants } = useImageUrl()
+const router = useRouter()
 
 // State
 const generationScope = ref<'personal' | 'global'>('personal')
@@ -397,7 +410,7 @@ const startGeneration = async () => {
       scope: generationScope.value,
       items: queue.value
     })
-    
+
     // Call the image generation worker directly
     const response = await fetch('https://generate.tikocdn.org/generate', {
       method: 'POST',
@@ -418,7 +431,7 @@ const startGeneration = async () => {
     }
 
     const result = await response.json()
-    
+
     console.log('Generation response:', result)
 
     if (result.success && result.queued > 0) {
@@ -426,7 +439,7 @@ const startGeneration = async () => {
         message: t('admin.generate.generationStarted', `${result.queued} images queued for generation`),
         type: 'success'
       })
-      
+
       clearQueue()
       await loadGeneratedMedia()
     } else {
@@ -656,8 +669,7 @@ onUnmounted(() => {
   }
 
   &__content {
-    display: grid;
-    grid-template-columns: 400px 1fr;
+   display: flex; flex-direction: column;
     gap: var(--space-xl);
     height: calc(100vh - 200px);
   }
@@ -680,9 +692,9 @@ onUnmounted(() => {
 
   &__panel-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
- gap: var(--space);
+    flex-direction: column;
+    gap: var(--space);
+    margin-bottom: var(--space);
   }
 
   &__panel-title {

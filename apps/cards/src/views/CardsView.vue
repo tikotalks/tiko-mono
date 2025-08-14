@@ -165,6 +165,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, watch, inject, ref, computed } from 'vue';
 import { useBemm } from 'bemm';
+import { useRoute, useRouter } from 'vue-router';
 import {
   TButton,
   TAppLayout,
@@ -195,6 +196,8 @@ const { t, keys } = useI18n();
 const parentMode = useParentMode('cards');
 const { hasPermission, requestPermission, speak } = useTextToSpeech();
 const { isEditMode, toggleEditMode } = useEditMode();
+const route = useRoute();
+const router = useRouter();
 
 // Inject the popup service from TFramework
 const popupService = inject<any>('popupService');
@@ -463,47 +466,29 @@ const handleTileAction = async (tile: CardTile) => {
 };
 
 const navigateToTile = async (tile: CardTile) => {
-  // First time navigation - add Home
-  if (breadcrumbs.value.length === 0) {
-    breadcrumbs.value.push({
-      id: undefined,
-      title: 'Home',
-    });
-  }
-
-  // Add current tile to breadcrumbs
-  breadcrumbs.value.push({
-    id: tile.id,
-    title: tile.title,
-  });
-
-  // Navigate to the tile's children
-  currentGroupId.value = tile.id;
-  await loadCards();
+  // Update the route
+  await router.push(`/${tile.id}`);
 };
 
 const navigateToBreadcrumb = async (index: number) => {
   const crumb = breadcrumbs.value[index];
-  currentGroupId.value = crumb.id;
-
-  // Remove breadcrumbs after this one
-  breadcrumbs.value = breadcrumbs.value.slice(0, index);
-
-  await loadCards();
+  
+  if (crumb.id) {
+    await router.push(`/${crumb.id}`);
+  } else {
+    // Navigate to home
+    await router.push('/');
+  }
 };
 
 const handleBack = async () => {
-  if (breadcrumbs.value.length > 0) {
+  if (breadcrumbs.value.length > 1) {
     // Go to the parent level (previous breadcrumb)
     const parentIndex = breadcrumbs.value.length - 2;
-    if (parentIndex >= 0) {
-      await navigateToBreadcrumb(parentIndex);
-    } else {
-      // Go to root
-      currentGroupId.value = undefined;
-      breadcrumbs.value = [];
-      await loadCards();
-    }
+    await navigateToBreadcrumb(parentIndex);
+  } else {
+    // Go to root
+    await router.push('/');
   }
 };
 
@@ -903,6 +888,45 @@ const openBulkAddMode = () => {
   });
 };
 
+// Build breadcrumbs from current card
+const buildBreadcrumbs = async (cardId: string | undefined) => {
+  if (!cardId) {
+    breadcrumbs.value = [];
+    currentGroupId.value = undefined;
+    return;
+  }
+
+  try {
+    // Get the full path from root to current card
+    const cardPath = await cardsService.getCardPath(cardId);
+    
+    // Build breadcrumbs with Home as root
+    const path: Array<{ id?: string; title: string }> = [
+      { id: undefined, title: 'Home' }
+    ];
+    
+    // Add all cards in the path
+    path.push(...cardPath);
+    
+    breadcrumbs.value = path;
+    currentGroupId.value = cardId;
+  } catch (error) {
+    console.error('Failed to build breadcrumbs:', error);
+    // Fallback to just showing current card
+    breadcrumbs.value = [
+      { id: undefined, title: 'Home' },
+      { id: cardId, title: 'Loading...' }
+    ];
+    currentGroupId.value = cardId;
+  }
+};
+
+// Watch for route changes
+watch(() => route.params.cardId as string | undefined, async (cardId) => {
+  await buildBreadcrumbs(cardId);
+  await loadCards();
+}, { immediate: true });
+
 // Initialize
 onMounted(async () => {
   console.log('[CardsView] Component mounted, loading cards...');
@@ -913,10 +937,10 @@ onMounted(async () => {
     }
 
     await yesNoStore.loadState();
-    await loadCards();
-    console.log('[CardsView] Cards loaded successfully');
+    // Don't load cards here - the route watcher with immediate: true will handle it
+    console.log('[CardsView] Initialization complete');
   } catch (error) {
-    console.error('[CardsView] Failed to load cards:', error);
+    console.error('[CardsView] Failed to initialize:', error);
   }
 });
 </script>

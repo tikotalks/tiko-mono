@@ -5,7 +5,7 @@
       <button
         v-for="page in totalPages"
         :key="page"
-        :class="bemm('dot', { active: page === currentPage + 1 })"
+        :class="bemm('dot',['', page === currentPage + 1 ? 'active' : 'inactive'])"
         :aria-label="`Go to page ${page}`"
         @click="goToPage(page - 1)"
       />
@@ -45,26 +45,38 @@
             }"
           >
             <template v-for="(card, index) in pageCards" :key="`slot-${pageIndex}-${index}`">
-              <CardTile
+              <div
                 v-if="card"
-                :card="card"
-                :show-image="viewType !== CardGridViewType.S_PORTRAIT"
-                :show-title="viewType !== CardGridViewType.S_PORTRAIT"
-                :edit-mode="editMode"
-                :is-empty="card.id.startsWith('empty-')"
-                :has-children="tilesWithChildren?.has(card.id) || false"
-                :children="tileChildrenMap?.get(card.id)"
-                :class="{
-                  'is-being-dragged': draggedCard?.id === card.id,
-                  'is-drop-target': dropTarget === card.id
-                }"
-                @click="handleCardClick(card, pageIndex * cardsPerPage + index)"
-                @dragstart="handleDragStart($event, card)"
-                @dragend="handleDragEnd"
-                @dragover="handleDragOver($event, card)"
-                @dragleave="handleDragLeave"
-                @drop="handleDrop($event, card)"
-              />
+                :class="[
+                  bemm('tile-wrapper'),
+                  {
+                    [bemm('tile-wrapper', 'animated')]: animatingPage === pageIndex && visibleTiles.has(`${pageIndex}-${index}`)
+                  }
+                ]"
+              >
+                <CardTile
+                  :card="card"
+                  :show-image="viewType !== CardGridViewType.S_PORTRAIT"
+                  :show-title="viewType !== CardGridViewType.S_PORTRAIT"
+                  :edit-mode="editMode"
+                  :is-empty="card.id.startsWith('empty-')"
+                  :has-children="tilesWithChildren?.has(card.id) || false"
+                  :children="tileChildrenMap?.get(card.id)"
+                  :is-selected="selectedTileIds?.has(card.id) || false"
+                  :selection-mode="selectionMode"
+                  :class="{
+                    'is-being-dragged': draggedCard?.id === card.id,
+                    'is-drop-target': dropTarget === card.id,
+                    'is-selected': selectedTileIds?.has(card.id)
+                  }"
+                  @click="handleCardClick(card, pageIndex * cardsPerPage + index)"
+                  @dragstart="handleDragStart($event, card)"
+                  @dragend="handleDragEnd"
+                  @dragover="handleDragOver($event, card)"
+                  @dragleave="handleDragLeave"
+                  @drop="handleDrop($event, card)"
+                />
+              </div>
               <div v-else :class="bemm('empty-slot')" />
             </template>
           </div>
@@ -94,7 +106,7 @@
 
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
-import { computed, onBeforeMount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { CardTile as CardTileType } from './CardTile/CardTile.model';
 import CardTile from './CardTile/CardTile.vue';
 
@@ -107,12 +119,16 @@ const props = defineProps<{
   tilesWithChildren?: Set<string>;
   tileChildrenMap?: Map<string, CardTileType[]>;
   isTileDragging?: boolean;
+  selectionMode?: boolean;
+  selectedTileIds?: Set<string>;
 }>();
 
 const emit = defineEmits<{
   'card-click': [card: CardTileType, index: number];
   'card-drop': [droppedCard: CardTileType, targetCard: CardTileType];
   'card-reorder': [card: CardTileType, newIndex: number];
+  'cards-drop': [droppedCards: CardTileType[], targetCard: CardTileType];
+  'cards-reorder': [cards: CardTileType[], newIndex: number];
   'update:tileDragging': [isDragging: boolean];
 }>();
 
@@ -141,11 +157,11 @@ const SCREEN_WIDTHS = {
 // Grid column configuration per breakpoint
 const GRID_COLUMNS = {
   XXL: 8,
-  XL: 7,
+  XL: 8,
   L: 6,
-  M: 5,
+  M: 6,
   S: 4,
-  XS: 3,
+  XS: 4,
   XXS: 2,
 } as const;
 
@@ -168,6 +184,7 @@ const TILE_CONFIG = {
   horizontalPadding: LAYOUT_SPACING.HORIZONTAL_PADDING,
   verticalPadding: LAYOUT_SPACING.VERTICAL_PADDING,
   tileGap: LAYOUT_SPACING.TILE_GAP,
+  minTileSize: 80, // Minimum tile size in pixels
   // Target columns based on screen width
   widthBreakpoints: [
     { minWidth: SCREEN_WIDTHS.XXL, columns: GRID_COLUMNS.XXL },
@@ -206,9 +223,21 @@ const grid = computed(() => {
   const targetCols = breakpoint?.columns || 2;
 
   // Calculate tile size (width) including gaps
-  const totalGapsX = (targetCols - 1) * TILE_CONFIG.tileGap;
-  const availableWidthForTiles = effectiveWidth - totalGapsX;
-  const calculatedTileSize = Math.floor(availableWidthForTiles / targetCols);
+  let totalGapsX = (targetCols - 1) * TILE_CONFIG.tileGap;
+  let availableWidthForTiles = effectiveWidth - totalGapsX;
+  let calculatedTileSize = Math.floor(availableWidthForTiles / targetCols);
+
+  // If tiles would be too small, reduce column count
+  let actualCols = targetCols;
+  while (calculatedTileSize < TILE_CONFIG.minTileSize && actualCols > 1) {
+    actualCols--;
+    totalGapsX = (actualCols - 1) * TILE_CONFIG.tileGap;
+    availableWidthForTiles = effectiveWidth - totalGapsX;
+    calculatedTileSize = Math.floor(availableWidthForTiles / actualCols);
+  }
+
+  // Ensure minimum tile size
+  calculatedTileSize = Math.max(calculatedTileSize, TILE_CONFIG.minTileSize);
 
   // Calculate how many rows fit based on height
   const effectiveHeight = screenHeight.value - TILE_CONFIG.verticalPadding;
@@ -221,17 +250,46 @@ const grid = computed(() => {
   // Store tile size for CSS custom property
   tileSize.value = calculatedTileSize;
 
+  // Log for debugging
+  console.log('[CardGrid] Grid calculation:', {
+    screenWidth: screenWidth.value,
+    screenHeight: screenHeight.value,
+    effectiveWidth,
+    effectiveHeight,
+    targetCols,
+    actualCols,
+    finalRows,
+    calculatedTileSize,
+    totalGapsX,
+    availableWidthForTiles
+  });
+
   return {
-    cols: targetCols,
+    cols: actualCols,
     rows: finalRows
   };
 });
 
+// Get container element
+let containerElement: HTMLElement | null = null;
+
 // Update screen dimensions
 function updateDimensions(): void {
   if (typeof window === 'undefined') return;
-  screenWidth.value = window.innerWidth;
-  screenHeight.value = window.innerHeight;
+
+  // Try to get the actual container dimensions
+  if (!containerElement) {
+    containerElement = document.querySelector('.card-grid');
+  }
+
+  if (containerElement && containerElement.parentElement) {
+    const rect = containerElement.parentElement.getBoundingClientRect();
+    screenWidth.value = rect.width || window.innerWidth;
+    screenHeight.value = rect.height || window.innerHeight;
+  } else {
+    screenWidth.value = window.innerWidth;
+    screenHeight.value = window.innerHeight;
+  }
 }
 
 // Keep track of view type for responsive behavior
@@ -258,6 +316,10 @@ const currentX = ref(0);
 const isDragging = ref(false);
 const panelWidth = ref(0);
 
+// Animation state for tiles
+const visibleTiles = ref<Set<string>>(new Set());
+const animatingPage = ref<number | null>(null);
+
 // Calculate cards per page based on grid
 const cardsPerPage = computed(() => grid.value.cols * grid.value.rows);
 
@@ -281,14 +343,14 @@ const paginatedCards = computed(() => {
     const cardIndex = card.index ?? props.cards.indexOf(card);
     return Math.max(max, cardIndex);
   }, -1);
-  
+
   // Calculate pages needed based on highest index
   const pagesForHighestIndex = Math.ceil((maxIndex + 1) / cardsPerPage.value) || 1;
   const pagesForCardCount = Math.ceil(props.cards.length / cardsPerPage.value) || 1;
   const pagesForCards = Math.max(pagesForHighestIndex, pagesForCardCount);
   const totalPagesNeeded = props.editMode ? pagesForCards + 1 : pagesForCards;
   const totalSlots = totalPagesNeeded * cardsPerPage.value;
-  
+
   console.log('[CardGrid] Pagination info:', {
     cardsLength: props.cards.length,
     cardsPerPage: cardsPerPage.value,
@@ -300,10 +362,10 @@ const paginatedCards = computed(() => {
     editMode: props.editMode,
     cards: props.cards.map(c => ({ id: c.id, title: c.title, index: c.index }))
   });
-  
+
   // Create an array of all slots (filled with nulls initially)
   const allSlots: (CardTileType | null)[] = new Array(totalSlots).fill(null);
-  
+
   // Place actual cards at their index positions
   props.cards.forEach(card => {
     const cardIndex = card.index ?? props.cards.indexOf(card);
@@ -311,7 +373,7 @@ const paginatedCards = computed(() => {
       allSlots[cardIndex] = card;
     }
   });
-  
+
   // In edit mode, fill empty slots with placeholder cards
   if (props.editMode) {
     for (let i = 0; i < allSlots.length; i++) {
@@ -320,13 +382,13 @@ const paginatedCards = computed(() => {
       }
     }
   }
-  
+
   // Paginate the slots
   for (let i = 0; i < allSlots.length; i += cardsPerPage.value) {
     const pageCards = allSlots.slice(i, i + cardsPerPage.value);
     pages.push(pageCards);
   }
-  
+
   console.log('[CardGrid] Pages created:', pages.length, 'Total cards distributed:', allSlots.filter(s => s && !s.id.startsWith('empty-')).length);
 
   return pages;
@@ -337,17 +399,48 @@ const totalPages = computed(() => paginatedCards.value.length);
 // Update translateX based on current page
 const updateTranslateX = () => {
   if (typeof window !== 'undefined') {
-    panelWidth.value = window.innerWidth;
+    // Use the actual container width instead of window width
+    const container = document.querySelector('.card-grid__panels');
+    panelWidth.value = container ? container.clientWidth : window.innerWidth;
     translateX.value = -currentPage.value * panelWidth.value;
   }
+};
+
+// Function to animate tiles on page
+const animateTilesOnPage = (pageIndex: number) => {
+  // Clear existing visible tiles for animation
+  visibleTiles.value.clear();
+  animatingPage.value = pageIndex;
+  
+  // Get all tiles on this page
+  const pageTiles = paginatedCards.value[pageIndex] || [];
+  
+  // Stagger the appearance of each tile
+  pageTiles.forEach((tile, index) => {
+    if (tile && !tile.id.startsWith('empty-')) {
+      setTimeout(() => {
+        visibleTiles.value.add(`${pageIndex}-${index}`);
+      }, index * 50); // 50ms delay between each tile
+    } else if (tile) {
+      // Show empty tiles immediately
+      visibleTiles.value.add(`${pageIndex}-${index}`);
+    }
+  });
 };
 
 // Navigation methods
 const goToPage = (page: number) => {
   if (page >= 0 && page < totalPages.value) {
+    const previousPage = currentPage.value;
     currentPage.value = page;
     isTransitioning.value = true;
     updateTranslateX();
+    
+    // Animate tiles after page transition starts
+    setTimeout(() => {
+      animateTilesOnPage(page);
+    }, SWIPE_CONFIG.TRANSITION_DURATION / 2);
+    
     setTimeout(() => {
       isTransitioning.value = false;
     }, SWIPE_CONFIG.TRANSITION_DURATION);
@@ -361,7 +454,7 @@ const previousPage = () => goToPage(currentPage.value - 1);
 const handleStart = (clientX: number) => {
   // Don't start panel dragging if a tile is being dragged
   if (props.isTileDragging) return;
-  
+
   isDragging.value = true;
   startX.value = clientX;
   currentX.value = clientX;
@@ -435,24 +528,53 @@ const handleCardClick = (card: CardTileType, index: number) => {
 };
 
 // Drag and Drop handlers
+const draggedCards = ref<CardTileType[]>([]);
+
 const handleDragStart = (event: DragEvent, card: CardTileType) => {
   if (!props.editMode || card.id.startsWith('empty-')) return;
-  
-  draggedCard.value = card;
+
+  // Check if this is part of a multi-selection
+  const isPartOfSelection = props.selectedTileIds?.has(card.id);
+
+  if (isPartOfSelection && props.selectedTileIds && props.selectedTileIds.size > 1) {
+    // Multi-tile drag
+    draggedCards.value = props.cards.filter(c =>
+      props.selectedTileIds!.has(c.id)
+    ).sort((a, b) => a.index - b.index);
+    draggedCard.value = null; // Clear single drag
+  } else {
+    // Single tile drag
+    draggedCard.value = card;
+    draggedCards.value = [];
+  }
+
   draggedElement.value = event.target as HTMLElement;
-  
+
   // Set drag data
   event.dataTransfer!.effectAllowed = 'move';
-  event.dataTransfer!.setData('application/json', JSON.stringify(card));
-  
+  if (draggedCards.value.length > 0) {
+    // Multi-selection drag
+    event.dataTransfer!.setData('application/json', JSON.stringify({
+      isMultiple: true,
+      cards: draggedCards.value,
+      primaryCard: card
+    }));
+  } else {
+    // Single card drag
+    event.dataTransfer!.setData('application/json', JSON.stringify({
+      isMultiple: false,
+      card: card
+    }));
+  }
+
   // Create a better drag image
   const target = event.currentTarget as HTMLElement;
   const rect = target.getBoundingClientRect();
-  
+
   // Create a canvas for the drag image
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
-  
+
   if (ctx) {
     // Set canvas size with scale for retina displays
     const scale = window.devicePixelRatio || 1;
@@ -461,7 +583,7 @@ const handleDragStart = (event: DragEvent, card: CardTileType) => {
     canvas.style.width = rect.width + 'px';
     canvas.style.height = rect.height + 'px';
     ctx.scale(scale, scale);
-    
+
     // Use html2canvas if available, otherwise create a simple drag preview
     const clone = target.cloneNode(true) as HTMLElement;
     clone.style.position = 'fixed';
@@ -475,7 +597,7 @@ const handleDragStart = (event: DragEvent, card: CardTileType) => {
     clone.style.pointerEvents = 'none';
     clone.style.zIndex = '99999';
     clone.classList.add('is-drag-image');
-    
+
     // Ensure the tile background is visible
     const tileElement = clone.querySelector('.card-tile') as HTMLElement;
     if (tileElement) {
@@ -486,14 +608,35 @@ const handleDragStart = (event: DragEvent, card: CardTileType) => {
         tileElement.style.backgroundColor = computedStyle.backgroundColor;
       }
     }
-    
+
     document.body.appendChild(clone);
-    
+
+    // Add multi-selection indicator if dragging multiple
+    if (draggedCards.value.length > 1) {
+      const badge = document.createElement('div');
+      badge.style.position = 'absolute';
+      badge.style.top = '-10px';
+      badge.style.right = '-10px';
+      badge.style.background = 'var(--color-primary)';
+      badge.style.color = 'white';
+      badge.style.borderRadius = '50%';
+      badge.style.width = '30px';
+      badge.style.height = '30px';
+      badge.style.display = 'flex';
+      badge.style.alignItems = 'center';
+      badge.style.justifyContent = 'center';
+      badge.style.fontWeight = 'bold';
+      badge.style.fontSize = '14px';
+      badge.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+      badge.textContent = String(draggedCards.value.length);
+      clone.appendChild(badge);
+    }
+
     // Use the clone as drag image
     const offsetX = event.clientX - rect.left;
     const offsetY = event.clientY - rect.top;
     event.dataTransfer!.setDragImage(clone, offsetX, offsetY);
-    
+
     // Remove clone after a short delay
     setTimeout(() => {
       if (clone.parentNode) {
@@ -501,22 +644,27 @@ const handleDragStart = (event: DragEvent, card: CardTileType) => {
       }
     }, 0);
   }
-  
+
   // Notify parent
   emit('update:tileDragging', true);
 };
 
 const handleDragEnd = () => {
   draggedCard.value = null;
+  draggedCards.value = [];
   draggedElement.value = null;
   dropTarget.value = null;
   emit('update:tileDragging', false);
 };
 
 const handleDragOver = (event: DragEvent, card: CardTileType) => {
-  if (!props.editMode || !draggedCard.value) return;
-  if (card.id === draggedCard.value.id) return;
-  
+  if (!props.editMode) return;
+  if (!draggedCard.value && draggedCards.value.length === 0) return;
+
+  // Don't allow dropping on self or on any of the selected cards
+  if (draggedCard.value && card.id === draggedCard.value.id) return;
+  if (draggedCards.value.some(c => c.id === card.id)) return;
+
   event.preventDefault();
   event.dataTransfer!.dropEffect = 'move';
   dropTarget.value = card.id;
@@ -527,28 +675,47 @@ const handleDragLeave = () => {
 };
 
 const handleDrop = (event: DragEvent, targetCard: CardTileType) => {
-  if (!props.editMode || !draggedCard.value) return;
-  if (targetCard.id === draggedCard.value.id) return;
-  
+  if (!props.editMode) return;
+  if (!draggedCard.value && draggedCards.value.length === 0) return;
+
   event.preventDefault();
   event.stopPropagation();
-  
+
   dropTarget.value = null;
-  
-  // Handle drop on empty tile (reorder) vs existing tile (move into group)
-  if (targetCard.id.startsWith('empty-')) {
-    // For empty tiles, we need to update the card's index
-    const targetIndex = parseInt(targetCard.id.split('-')[1]);
-    emit('card-reorder', draggedCard.value, targetIndex);
-  } else {
-    emit('card-drop', draggedCard.value, targetCard);
+
+  // Handle multi-card drop
+  if (draggedCards.value.length > 0) {
+    if (targetCard.id.startsWith('empty-')) {
+      // Reorder multiple cards
+      const targetIndex = parseInt(targetCard.id.split('-')[1]);
+      // Emit a special event for multi-card reorder
+      emit('cards-reorder' as any, draggedCards.value, targetIndex);
+    } else {
+      // Move multiple cards into a group
+      emit('cards-drop' as any, draggedCards.value, targetCard);
+    }
+  } else if (draggedCard.value) {
+    // Single card drop (existing logic)
+    if (targetCard.id === draggedCard.value.id) return;
+
+    if (targetCard.id.startsWith('empty-')) {
+      const targetIndex = parseInt(targetCard.id.split('-')[1]);
+      emit('card-reorder', draggedCard.value, targetIndex);
+    } else {
+      emit('card-drop', draggedCard.value, targetCard);
+    }
   }
 };
 
 // Initialize and handle resize
 onMounted(() => {
-  updateDimensions();
-  updateTranslateX();
+  // Small delay to ensure DOM is ready
+  setTimeout(() => {
+    updateDimensions();
+    updateTranslateX();
+    // Animate tiles on initial load
+    animateTilesOnPage(currentPage.value);
+  }, 100);
 
   const onResize = () => {
     updateDimensions();
@@ -560,15 +727,30 @@ onMounted(() => {
   };
 
   window.addEventListener('resize', onResize, { passive: true });
-  onBeforeMount(() => window.removeEventListener('resize', onResize));
+
+  // Use ResizeObserver for container size changes
+  if (containerElement && 'ResizeObserver' in window) {
+    const resizeObserver = new ResizeObserver(() => {
+      updateDimensions();
+      updateTranslateX();
+    });
+    resizeObserver.observe(containerElement);
+
+    onBeforeUnmount(() => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', onResize);
+    });
+  } else {
+    onBeforeUnmount(() => window.removeEventListener('resize', onResize));
+  }
 });
 </script>
 
 <style lang="scss">
 .card-grid {
   position: relative;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
 
   &__pagination {
@@ -590,6 +772,7 @@ onMounted(() => {
     opacity: 0.3;
     transition: opacity 0.3s ease;
     cursor: pointer;
+    flex-shrink:0;
 
     &--active {
       opacity: 1;
@@ -615,8 +798,8 @@ onMounted(() => {
   }
 
   &__panel {
-    flex: 0 0 100vw;
-    width: 100vw;
+    flex: 0 0 100%;
+    width: 100%;
     height: 100%;
     padding: var(--spacing);
     box-sizing: border-box;
@@ -631,7 +814,7 @@ onMounted(() => {
     grid-template-rows: repeat(var(--grid-rows), var(--tile-size));
     justify-content: center;
     align-content: center;
-    
+
     // Smooth transitions for card movements
     > * {
       transition: transform 0.3s ease, opacity 0.3s ease;
@@ -682,6 +865,32 @@ onMounted(() => {
     height: var(--tile-size);
     // Empty slots are invisible placeholders in view mode
   }
+
+  &__tile-wrapper {
+    width: var(--tile-size);
+    height: var(--tile-size);
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+    transition: none;
+
+    &--animated {
+      animation: tile-pop-in 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+    }
+  }
+}
+
+@keyframes tile-pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 // Drag and drop states
@@ -693,7 +902,7 @@ onMounted(() => {
   transform: scale(1.05);
   outline: 3px solid var(--color-primary);
   outline-offset: 2px;
-  
+
   .card-tile--empty {
     background-color: var(--color-primary-light);
     border-color: var(--color-primary);

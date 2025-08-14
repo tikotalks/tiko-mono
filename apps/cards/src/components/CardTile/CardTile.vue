@@ -1,17 +1,18 @@
 <template>
-  <div ref="wrapperEl" :class="bemm('wrapper', {
-    dragging: isDragging,
-    'can-drag': canDrag,
-    'drag-ready': isDragReady,
-    selected: isSelected,
-    'selection-mode': selectionMode
-  })" @click.stop="handleClick" @mousedown.stop="handleMouseDown" @mouseup.stop="handleMouseUp" 
-    @touchstart.stop="handleTouchStart" @touchend.stop="handleTouchEnd" @touchmove.stop="handleTouchMove" 
-    @touchcancel.stop="handleTouchEnd"
-    :draggable="canDrag" @dragstart.stop="handleDragStart" @dragend.stop="handleDragEnd"
-    @dragover.stop="handleDragOver" @dragleave.stop="handleDragLeave" @drop.stop="handleDrop">
+  <div ref="wrapperEl" :class="bemm('wrapper',
+    ['',
+      isDragging ? 'dragging' : '',
+      canDrag ? 'can-drag' : '',
+      isDragReady ? 'drag-ready' : '',
+      isSelected ? 'selected' : '',
+      selectionMode ? 'selection-mode' : ''
+    ])" @click.stop="handleClick" @mousedown.stop="handleMouseDown" @mouseup.stop="handleMouseUp"
+    @touchstart.stop="handleTouchStart" @touchend.stop="handleTouchEnd" @touchmove.stop="handleTouchMove"
+    @touchcancel.stop="handleTouchEnd" :draggable="canDrag" @dragstart.stop="handleDragStart"
+    @dragend.stop="handleDragEnd" @dragover.stop="handleDragOver" @dragleave.stop="handleDragLeave"
+    @drop.stop="handleDrop">
     <article :class="bemm('', ['', isEmpty ? 'empty' : '', editMode ? 'edit-mode' : ''])"
-      :style="!isEmpty && card?.color ? { '--card-color':`var(--color-${card.color})`, '--card-text':`var(--color-${card.color}-text)`,  } : undefined">
+      :style="!isEmpty && card?.color ? { '--card-color': `var(--color-${card.color})`, '--card-text': `var(--color-${card.color}-text)`, } : undefined">
       <div v-if="isEmpty && editMode" :class="bemm('empty-state')">
         <TIcon name="plus" size="large" />
       </div>
@@ -19,31 +20,28 @@
         <!-- Show mini grid for groups with children -->
         <div v-if="hasChildren && children?.length" :class="bemm('mini-grid')">
           <!-- Background image -->
-          <div v-if="displayImage && imageUrl" :class="bemm('mini-grid-bg')" :style="{ backgroundImage: `url(${imageUrl})` }" />
-          
+          <div v-if="displayImage && imageUrl" :class="bemm('mini-grid-bg')"
+            :style="{ backgroundImage: `url(${imageUrl})` }" />
+
           <!-- Mini tiles -->
           <div :class="bemm('mini-tiles')">
-            <div
-              v-for="(child, index) in children.slice(0, 9)"
-              :key="child.id"
-              :class="bemm('mini-tile')"
-              :style="child.color ? { backgroundColor: `var(--color-${child.color})` } : undefined"
-            >
+            <div v-for="(child, index) in children.slice(0, 9)" :key="child.id" :class="bemm('mini-tile')"
+              :style="child.color ? { backgroundColor: `var(--color-${child.color})` } : undefined">
               <img v-if="child.image" :src="getThumbnailUrl(child.image)" :alt="child.title" />
             </div>
           </div>
         </div>
-        
+
         <!-- Regular tile content for non-groups -->
         <template v-else>
           <figure v-if="displayImage && imageUrl" :class="bemm('figure')">
             <img :src="imageUrl" :alt="card.title" :class="bemm('image')" draggable="false" />
           </figure>
         </template>
-        
+
         <h3 v-if="displayTitle && card?.title" :class="bemm('title')">{{ card.title }}</h3>
       </div>
-      
+
       <!-- Selection indicator -->
       <div v-if="isSelected && selectionMode" :class="bemm('selection-indicator')">
         <TIcon name="check" size="small" />
@@ -115,7 +113,7 @@ const imageUrl = computed(() => {
 // Get thumbnail URL for mini tiles
 const getThumbnailUrl = (imageUrl: string): string => {
   if (!imageUrl) return '';
-  
+
   try {
     const variants = getImageVariants(imageUrl);
     // Use thumbnail for mini tiles
@@ -194,7 +192,7 @@ const handleClick = (event: MouseEvent) => {
 // Drag events
 const handleDragStart = (event: DragEvent) => {
   if (!canDrag.value) return;
-  
+
   isDragging.value = true;
   emit('dragstart', event, props.card);
 };
@@ -240,16 +238,16 @@ const handleDrop = (event: DragEvent) => {
     align-items: center;
     justify-content: center;
     position: relative;
-    
+
     &--selected {
       article {
         transform: scale(0.92);
-        box-shadow: 
+        box-shadow:
           0 0 0 4px var(--color-primary),
           0 8px 16px rgba(0, 0, 0, 0.2);
       }
     }
-    
+
     &--selection-mode {
       cursor: pointer;
     }
@@ -260,10 +258,11 @@ const handleDrop = (event: DragEvent) => {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: var(--space-s);
+    padding: clamp(0.25rem, 1vw, var(--space-s));
     width: 100%;
     height: 100%;
     position: relative;
+    overflow: hidden;
   }
 
   &__mini-grid {
@@ -305,7 +304,7 @@ const handleDrop = (event: DragEvent) => {
     align-items: center;
     justify-content: center;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-    
+
     img {
       width: 100%;
       height: 100%;
@@ -320,11 +319,15 @@ const handleDrop = (event: DragEvent) => {
     align-items: center;
     justify-content: center;
     margin-bottom: var(--space-xs);
+    flex: 1;
+    min-height: 0;
   }
 
   &__image {
     width: 100%;
     height: 100%;
+    max-width: 100%;
+    max-height: 100%;
     object-fit: contain;
     user-select: none;
     -webkit-user-drag: none;
@@ -332,18 +335,21 @@ const handleDrop = (event: DragEvent) => {
   }
 
   &__title {
-    font-size: 1em;
+    font-size: clamp(0.75rem, 2vw, 1rem);
     text-align: center;
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
+    width: fit-content;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     position: absolute;
     bottom: var(--space-s);
+    margin: auto;
     padding: .25em .5em;
     background-color: var(--card-color);
     border-radius: var(--border-radius);
+    word-break: break-word;
   }
 
   &--empty {
@@ -377,7 +383,7 @@ const handleDrop = (event: DragEvent) => {
       opacity: 1;
     }
   }
-  
+
   &__selection-indicator {
     position: absolute;
     top: 0.5rem;
@@ -396,7 +402,7 @@ const handleDrop = (event: DragEvent) => {
 
   &--edit-mode {
     cursor: move;
-    
+
     &:hover {
       transform: scale(0.98);
       box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
@@ -440,6 +446,7 @@ const handleDrop = (event: DragEvent) => {
     transform: scale(0);
     opacity: 0;
   }
+
   100% {
     transform: scale(1);
     opacity: 1;

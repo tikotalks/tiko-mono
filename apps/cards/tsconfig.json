@@ -1,24 +1,13 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "allowJs": true,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "jsx": "preserve",
-    "jsxImportSource": "vue",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "verbatimModuleSyntax": true
-  },
-  "files": [],
-  "include": [],
-  "references": [
-    {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.spec.json"
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@tiko/ui": ["../../packages/ui/src"],
+      "@tiko/core": ["../../packages/core/src"]
     }
-  ],
-  "extends": "../../tsconfig.base.json"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

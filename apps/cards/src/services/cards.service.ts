@@ -143,4 +143,48 @@ export const cardsService = {
       return false;
     }
   },
+
+  async getCard(cardId: string): Promise<CardTile | null> {
+    try {
+      const authStore = useAuthStore();
+      const userId = authStore.user?.id;
+      if (!userId) {
+        console.warn('No authenticated user found');
+        return null;
+      }
+      
+      const item = await cardsSupabaseService.getCard(cardId);
+      if (!item) return null;
+      
+      return {
+        id: item.id,
+        title: item.name,
+        type: item.type as any,
+        icon: (item.metadata as CardMetadata)?.icon || item.icon || 'square',
+        color: (item.metadata as CardMetadata)?.color || item.color || 'primary',
+        image: (item.metadata as CardMetadata)?.image || '',
+        speech: (item.metadata as CardMetadata)?.speech || '',
+        index: item.order_index ?? 0,
+        parentId: item.parent_id || undefined,
+      };
+    } catch (error) {
+      console.error('Failed to get card:', error);
+      return null;
+    }
+  },
+
+  async getCardPath(cardId: string): Promise<Array<{ id: string; title: string }>> {
+    const path: Array<{ id: string; title: string }> = [];
+    let currentId: string | null = cardId;
+    
+    while (currentId) {
+      const card = await this.getCard(currentId);
+      if (!card) break;
+      
+      path.unshift({ id: card.id, title: card.title });
+      currentId = card.parentId || null;
+    }
+    
+    return path;
+  },
 };

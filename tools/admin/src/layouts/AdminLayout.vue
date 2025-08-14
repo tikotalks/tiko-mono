@@ -35,6 +35,8 @@ const { hasItems } = useUpload(uploadService, toastService);
 
 <style lang="scss">
 .admin-layout {
+
+
   &__container {
     display: flex;
     position: sticky;
@@ -42,13 +44,19 @@ const { hasItems } = useUpload(uploadService, toastService);
   }
 
   &__sidebar {
+    --topbar-height: calc(4rem + var(--space));
+
     width: clamp(240px, 15vw, 320px);
     border-right: 1px solid var(--color-border);
+    height: fit-content;
+    max-height: calc(100vh - (var(--topbar-height)) - var(--space));
+    position: sticky;
+    top: var(--topbar-height);
 
 
     @media screen and (max-width: 1024px) {
       position: fixed;
-      top: var(--spacing);
+      top: var(--topbar-height);
       border: 1px solid var(--color-secondary);
       z-index: 10;
       background-color: var(--color-background);

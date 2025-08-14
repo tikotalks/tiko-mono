@@ -5,7 +5,12 @@ const router = createAppRouter({
   routes: [
     {
       path: '/',
-      name: 'Cards',
+      name: 'Home',
+      component: CardsView
+    },
+    {
+      path: '/:cardId',
+      name: 'Card',
       component: CardsView
     }
   ]

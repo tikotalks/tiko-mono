@@ -60,7 +60,8 @@ export function createViteConfig(dirname, port = 3000, pwaConfig = null, appName
     plugins.push(VitePWA(pwaConfig))
   }
 
-  return defineConfig({
+  // Only set envDir for local development, not CI
+  const config = {
     plugins,
     resolve: {
       alias: {
@@ -108,5 +109,12 @@ export function createViteConfig(dirname, port = 3000, pwaConfig = null, appName
       __VUE_PROD_DEVTOOLS__: false,
       __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false
     }
-  })
+  }
+  
+  // Only set envDir for local development, not CI
+  if (!process.env.CI && !process.env.GITHUB_ACTIONS) {
+    config.envDir = path.resolve(dirname, '../..')
+  }
+  
+  return defineConfig(config)
 }

@@ -92,6 +92,14 @@ class CardsSupabaseService {
       method: 'DELETE'
     });
   }
+
+  async getCard(id: string): Promise<CardItem | null> {
+    const params = new URLSearchParams();
+    params.append('id', `eq.${id}`);
+    
+    const response = await this.apiRequest<CardItem[]>(`items?${params.toString()}`);
+    return response[0] || null;
+  }
 }
 
 export const cardsSupabaseService = new CardsSupabaseService();

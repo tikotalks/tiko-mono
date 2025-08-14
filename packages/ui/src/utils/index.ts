@@ -1,6 +1,6 @@
 /**
  * Tiko UI Utilities Library
- * 
+ *
  * A collection of pure utility functions for common operations
  * All functions are well-documented with JSDoc and follow functional programming principles
  */
@@ -22,3 +22,9 @@ export * from './translation-keys';
 
 // List actions utilities
 export * from './list-actions';
+
+// Mock data utilities
+export * from './mock';
+
+// Debounce utilities
+export * from './debounce';

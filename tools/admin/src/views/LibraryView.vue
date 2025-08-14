@@ -71,6 +71,51 @@
       </template>
     </AdminPageHeader>
 
+    <!-- Selection Status Bar -->
+    <TStatusBar :show="selectedMediaIds.size > 0">
+      <div :class="bemm('selection-status')">
+        <div :class="bemm('selection-info')">
+          <TIcon :name="Icons.CHECK_M" />
+          <span>
+            {{ t('admin.library.itemsSelected', { count: selectedMediaIds.size }) }}
+          </span>
+        </div>
+
+        <div :class="bemm('selection-actions')">
+          <TButtonGroup>
+            <TButton
+              size="small"
+              type="outline"
+              :icon="Icons.FOLDER_PLUS"
+              @click="addSelectedToCollection"
+              :disabled="selectedMediaIds.size === 0"
+            >
+              {{ t('admin.library.addToCollection') }}
+            </TButton>
+
+            <TButton
+              size="small"
+              type="outline"
+              :icon="Icons.CHECK_M"
+              @click="selectAll"
+              v-if="selectedMediaIds.size < sortedImages.length"
+            >
+              {{ t('common.selectAll') }}
+            </TButton>
+
+            <TButton
+              size="small"
+              type="outline"
+              :icon="Icons.MULTIPLY_M"
+              @click="clearSelection"
+            >
+              {{ t('common.clearSelection') }}
+            </TButton>
+          </TButtonGroup>
+        </div>
+      </div>
+    </TStatusBar>
+
     <div v-if="loading" :class="bemm('loading')">
       <TSpinner />
     </div>
@@ -98,8 +143,20 @@
           :media="item"
           :href="`/media/${item.id}`"
           :get-image-variants="getImageVariants"
-          @click="(e) => selectMedia(e, item)"
-        />
+          :context-menu-items="getContextMenuItems(item)"
+          @click="(e) => handleMediaClick(e, item)"
+          :class="{ 'is-selected': selectedMediaIds.has(item.id) }"
+        >
+          <template #content>
+            <div v-if="isMultiSelectMode" :class="bemm('selection-indicator')">
+              <TIcon 
+                v-if="selectedMediaIds.has(item.id)" 
+                :name="Icons.CHECK" 
+                color="primary" 
+              />
+            </div>
+          </template>
+        </TMediaTile>
       </template>
     </TVirtualGrid>
 
@@ -110,7 +167,8 @@
         :key="media.id"
         :href="`/media/${media.id}`"
         clickable
-        @click="(e) => selectMedia(e, media)"
+        @click="(e) => handleMediaClick(e, media)"
+        :class="{ 'is-selected': selectedMediaIds.has(media.id) }"
       >
         <TListCell
           type="image"
@@ -139,12 +197,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, inject, computed, watch } from 'vue';
+import { ref, onMounted, onUnmounted, inject, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { Icons } from 'open-icon';
 import { useBemm } from 'bemm';
 import { useImageUrl, useImages, useUserSettings } from '@tiko/core';
-import type { MediaItem, ToastService } from '@tiko/ui';
+import type { MediaItem, ToastService, PopupService } from '@tiko/ui';
 import {
   useI18n,
   TCard,
@@ -163,11 +221,14 @@ import {
   TKeyValue,
   TChip,
   TVirtualGrid,
+  TStatusBar,
+  TButtonGroup,
 } from '@tiko/ui';
 import AdminPageHeader from '../components/AdminPageHeader.vue';
 import { useMediaSelector } from '@/composables/useMediaSelector';
 
 const toastService = inject<ToastService>('toastService');
+const popupService = inject<PopupService>('popupService');
 const { getImageVariants } = useImageUrl();
 const { imageList, stats, loading, searchImages, filteredImages, loadImages, refresh } =
   useImages();
@@ -179,6 +240,11 @@ const { t } = useI18n();
 const router = useRouter();
 
 const searchQuery = ref('');
+
+// Multi-select state
+const selectedMediaIds = ref<Set<string>>(new Set());
+const lastSelectedIndex = ref<number | null>(null);
+const isMultiSelectMode = ref(false);
 
 // Sorting options
 type ViewMode = 'tiles' | 'list';
@@ -193,21 +259,21 @@ const sortOrder = ref<SortOrder>('desc');
 const privacyFilter = ref<PrivacyFilter>('all');
 
 const sortOptions = [
-  { value: 'upload_date', label: t('admin.library.sortBy.uploadDate') },
-  { value: 'name', label: t('admin.library.sortBy.fileName') },
-  { value: 'title', label: t('admin.library.sortBy.title') },
-  { value: 'size', label: t('admin.library.sortBy.fileSize') },
+  { value: 'upload_date', label: t('common.sortBy.uploadDate') },
+  { value: 'name', label: t('common.sortBy.fileName') },
+  { value: 'title', label: t('common.sortBy.title') },
+  { value: 'size', label: t('common.sortBy.fileSize') },
 ];
 
 const orderOptions = [
-  { value: 'asc', label: t('admin.library.order.ascending') },
-  { value: 'desc', label: t('admin.library.order.descending') },
+  { value: 'asc', label: t('common.orderBy.ascending') },
+  { value: 'desc', label: t('common.orderBy.descending') },
 ];
 
 const privacyFilterOptions = [
-  { value: 'all', label: t('admin.media.filter.all') },
-  { value: 'public', label: t('admin.media.filter.public') },
-  { value: 'private', label: t('admin.media.filter.private') },
+  { value: 'all', label: t('common.filter.all') },
+  { value: 'public', label: t('common.filter.public') },
+  { value: 'private', label: t('common.filter.private') },
 ];
 
 const listColumns = [
@@ -270,10 +336,136 @@ const sortedImages = computed(() => {
   return images;
 });
 
-const selectMedia = (e: Event, media: MediaItem) => {
+// Handle media click with multi-select support
+const handleMediaClick = (e: MouseEvent, media: MediaItem) => {
   e.preventDefault();
-  // Navigate to media detail page
-  router.push(`/media/${media.id}`);
+  
+  const currentIndex = sortedImages.value.findIndex(item => item.id === media.id);
+  
+  // If in multi-select mode or holding modifier keys
+  if (isMultiSelectMode.value || e.shiftKey || e.metaKey || e.ctrlKey) {
+    // Cmd/Ctrl + Click: Toggle individual selection
+    if (e.metaKey || e.ctrlKey) {
+      toggleSelection(media.id);
+      lastSelectedIndex.value = currentIndex;
+    }
+    // Shift + Click: Range selection
+    else if (e.shiftKey && lastSelectedIndex.value !== null) {
+      const start = Math.min(lastSelectedIndex.value, currentIndex);
+      const end = Math.max(lastSelectedIndex.value, currentIndex);
+      
+      // Select all items in the range
+      for (let i = start; i <= end; i++) {
+        const item = sortedImages.value[i];
+        if (item) {
+          selectedMediaIds.value.add(item.id);
+        }
+      }
+      // Force reactivity
+      selectedMediaIds.value = new Set(selectedMediaIds.value);
+    }
+    // Regular click in multi-select mode: Toggle selection
+    else if (isMultiSelectMode.value) {
+      toggleSelection(media.id);
+      lastSelectedIndex.value = currentIndex;
+    }
+  } else {
+    // Regular click: Navigate to detail
+    router.push(`/media/${media.id}`);
+  }
+};
+
+// Toggle selection of a media item
+const toggleSelection = (mediaId: string) => {
+  if (selectedMediaIds.value.has(mediaId)) {
+    selectedMediaIds.value.delete(mediaId);
+  } else {
+    selectedMediaIds.value.add(mediaId);
+  }
+  // Force reactivity
+  selectedMediaIds.value = new Set(selectedMediaIds.value);
+};
+
+// Select all visible items
+const selectAll = () => {
+  sortedImages.value.forEach(media => {
+    selectedMediaIds.value.add(media.id);
+  });
+  selectedMediaIds.value = new Set(selectedMediaIds.value);
+};
+
+// Clear selection
+const clearSelection = () => {
+  selectedMediaIds.value.clear();
+  selectedMediaIds.value = new Set(selectedMediaIds.value);
+  lastSelectedIndex.value = null;
+};
+
+// Add selected items to collection
+const addSelectedToCollection = async () => {
+  if (!popupService || selectedMediaIds.value.size === 0) return;
+
+  const { default: AddToCollectionDialog } = await import(
+    '../components/dialogs/AddToCollectionDialog.vue'
+  );
+
+  const selectedItems = Array.from(selectedMediaIds.value)
+    .map(id => sortedImages.value.find(m => m.id === id))
+    .filter(Boolean) as MediaItem[];
+
+  const popupId = popupService.open({
+    component: AddToCollectionDialog,
+    title: t('admin.library.addToCollection'),
+    props: {
+      mediaItem: {
+        id: selectedItems[0].id, // Use first item as primary
+        type: 'media' as const,
+        name: selectedMediaIds.value.size > 1 
+          ? t('admin.library.multipleItems', { count: selectedMediaIds.value.size })
+          : selectedItems[0].title || selectedItems[0].original_filename,
+        url: selectedItems[0].original_url
+      },
+      multipleItems: selectedItems,
+      onAdd: async (collectionId: string) => {
+        try {
+          const { collectionsSupabaseService } = await import('@tiko/core');
+          
+          // Add all selected items to the collection
+          const promises = selectedItems.map(media => 
+            collectionsSupabaseService.addItemToCollection(collectionId, {
+              item_id: media.id,
+              item_type: 'media'
+            })
+          );
+          
+          await Promise.all(promises);
+          
+          popupService.close({ id: popupId });
+          toastService?.show({
+            message: t('admin.library.addedToCollection'),
+            type: 'success'
+          });
+          
+          // Clear selection after successful add
+          clearSelection();
+        } catch (error: any) {
+          console.error('Failed to add to collection:', error);
+          
+          if (error.code === '23505') {
+            toastService?.show({
+              message: t('admin.library.someAlreadyInCollection'),
+              type: 'warning'
+            });
+          } else {
+            toastService?.show({
+              message: t('admin.library.addToCollectionFailed'),
+              type: 'error'
+            });
+          }
+        }
+      }
+    }
+  });
 };
 
 // Force refresh all images
@@ -296,7 +488,229 @@ watch(sortOrder, async (newValue) => {
   await setSetting('librarySortOrder', newValue);
 });
 
+// Context menu items for media tiles
+const getContextMenuItems = (media: MediaItem) => {
+  const items = [
+    {
+      id: 'view',
+      label: t('common.view'),
+      icon: Icons.EYE,
+      action: () => viewMedia(media)
+    },
+    {
+      id: 'separator-1',
+      type: 'separator' as const
+    },
+    {
+      id: 'add-to-collection',
+      label: t('admin.library.addToCollection'),
+      icon: Icons.FOLDER_PLUS,
+      action: () => addToCollection(media)
+    },
+    {
+      id: 'separator-2',
+      type: 'separator' as const
+    },
+    {
+      id: 'edit',
+      label: t('common.edit'),
+      icon: Icons.PENCIL,
+      action: () => editMedia(media)
+    },
+    {
+      id: 'toggle-privacy',
+      label: media.is_private ? t('admin.library.makePublic') : t('admin.library.makePrivate'),
+      icon: media.is_private ? Icons.GLOBE : Icons.LOCK,
+      action: () => togglePrivacy(media)
+    },
+    {
+      id: 'separator-3',
+      type: 'separator' as const
+    },
+    {
+      id: 'delete',
+      label: t('common.delete'),
+      icon: Icons.TRASH,
+      action: () => deleteMedia(media)
+    }
+  ];
+
+  return items;
+};
+
+// Context menu actions
+const addToCollection = async (media: MediaItem) => {
+  if (!popupService) return;
+
+  const { default: AddToCollectionDialog } = await import(
+    '../components/dialogs/AddToCollectionDialog.vue'
+  );
+
+  const popupId = popupService.open({
+    component: AddToCollectionDialog,
+    title: t('admin.library.addToCollection'),
+    props: {
+      mediaItem: {
+        id: media.id,
+        type: 'media' as const,
+        name: media.title || media.original_filename,
+        url: media.original_url
+      },
+      onAdd: async (collectionId: string) => {
+        try {
+          const { collectionsSupabaseService } = await import('@tiko/core');
+          await collectionsSupabaseService.addItemToCollection(collectionId, {
+            item_id: media.id,
+            item_type: 'media'
+          });
+
+          popupService.close({ id: popupId });
+          toastService?.show({
+            message: t('admin.library.addedToCollection'),
+            type: 'success'
+          });
+        } catch (error: any) {
+          console.error('Failed to add to collection:', error);
+
+          // Check if it's a duplicate error
+          if (error.code === '23505') {
+            toastService?.show({
+              message: t('admin.library.alreadyInCollection'),
+              type: 'warning'
+            });
+          } else {
+            toastService?.show({
+              message: t('admin.library.addToCollectionFailed'),
+              type: 'error'
+            });
+          }
+        }
+      }
+    }
+  });
+};
+
+const viewMedia = async (media: MediaItem) => {
+  if (!popupService) return;
+
+  const { default: MediaDetailDialog } = await import(
+    '../components/dialogs/MediaDetailDialog.vue'
+  );
+
+  popupService.open({
+    component: MediaDetailDialog,
+    title: media.title || media.original_filename,
+    size: 'large',
+    props: {
+      media
+    }
+  });
+};
+
+const editMedia = (media: MediaItem) => {
+  router.push(`/media/${media.id}`);
+};
+
+const togglePrivacy = async (media: MediaItem) => {
+  try {
+    const { mediaService } = await import('@tiko/core');
+    
+    // Update the media privacy
+    await mediaService.updateMedia(media.id, {
+      is_private: !media.is_private
+    });
+
+    toastService?.show({
+      message: media.is_private 
+        ? t('admin.library.madePublic') 
+        : t('admin.library.madePrivate'),
+      type: 'success'
+    });
+
+    // Refresh the list
+    await forceRefresh();
+  } catch (error) {
+    console.error('Failed to toggle privacy:', error);
+    toastService?.show({
+      message: t('admin.library.privacyToggleFailed'),
+      type: 'error'
+    });
+  }
+};
+
+const deleteMedia = async (media: MediaItem) => {
+  if (!popupService) return;
+
+  const { default: ConfirmDialog } = await import(
+    '../components/dialogs/ConfirmDialog.vue'
+  );
+
+  const popupId = popupService.open({
+    component: ConfirmDialog,
+    title: t('admin.library.deleteMedia'),
+    props: {
+      message: t('admin.library.confirmDelete', { name: media.title || media.original_filename }),
+      confirmText: t('common.delete'),
+      confirmColor: 'error',
+      onConfirm: async () => {
+        try {
+          const { mediaService } = await import('@tiko/core');
+          
+          // Delete the media
+          await mediaService.deleteMedia(media.id);
+          
+          popupService.close({ id: popupId });
+          
+          toastService?.show({
+            message: t('admin.library.deleteSuccess'),
+            type: 'success'
+          });
+
+          // Clear selection if this item was selected
+          if (selectedMediaIds.value.has(media.id)) {
+            selectedMediaIds.value.delete(media.id);
+            selectedMediaIds.value = new Set(selectedMediaIds.value);
+          }
+
+          // Refresh the list
+          await forceRefresh();
+        } catch (error) {
+          console.error('Failed to delete media:', error);
+          toastService?.show({
+            message: t('admin.library.deleteFailed'),
+            type: 'error'
+          });
+        }
+      }
+    }
+  });
+};
+
+// Keyboard event handlers
+const handleKeyDown = (e: KeyboardEvent) => {
+  // Enter multi-select mode when Shift is pressed
+  if (e.key === 'Shift' && !isMultiSelectMode.value) {
+    isMultiSelectMode.value = true;
+  }
+  
+  // Escape key clears selection
+  if (e.key === 'Escape' && selectedMediaIds.value.size > 0) {
+    clearSelection();
+  }
+};
+
+const handleKeyUp = (e: KeyboardEvent) => {
+  // Exit multi-select mode when Shift is released (if no items selected)
+  if (e.key === 'Shift' && selectedMediaIds.value.size === 0) {
+    isMultiSelectMode.value = false;
+  }
+};
+
 onMounted(async () => {
+  // Add keyboard event listeners
+  window.addEventListener('keydown', handleKeyDown);
+  window.addEventListener('keyup', handleKeyUp);
+  
   // Load user settings
   await loadSettings();
 
@@ -312,6 +726,12 @@ onMounted(async () => {
   console.log('Sample image data:', imageList.value[0]);
   console.log('Images with created_at:', imageList.value.filter(img => img.created_at).length);
   console.log('Total images:', imageList.value.length);
+});
+
+onUnmounted(() => {
+  // Remove keyboard event listeners
+  window.removeEventListener('keydown', handleKeyDown);
+  window.removeEventListener('keyup', handleKeyUp);
 });
 </script>
 
@@ -411,6 +831,82 @@ onMounted(async () => {
     opacity: 0.6;
     padding: var(--space-xs);
   }
+}
+
+// Fix z-index for media tiles on hover/interaction
+:global(.t-virtual-grid__item) {
+  position: relative;
+  z-index: 1;
+
+  &:hover {
+    z-index: 100;
+  }
+
+  // When context menu is active
+  &:has(.context-panel--active) {
+    z-index: 200;
+  }
+}
+
+// Ensure TMediaTile can overflow its container on hover
+:global(.t-media-tile) {
+  position: relative;
+  transition: transform 0.2s ease, z-index 0s;
+
+  &:hover {
+    z-index: 50;
+  }
+}
+
+// Selection status bar styles
+.library-view {
+  &__selection-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-s) var(--space);
+    gap: var(--space);
+  }
+
+  &__selection-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    
+    .t-icon {
+      color: var(--color-primary);
+    }
+  }
+
+  &__selection-actions {
+    display: flex;
+    gap: var(--space-s);
+  }
+
+  &__selection-indicator {
+    position: absolute;
+    top: var(--space-s);
+    right: var(--space-s);
+    width: 24px;
+    height: 24px;
+    background: var(--color-background);
+    border-radius: var(--border-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Selected state for media tiles
+.t-media-tile.is-selected {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+// List view selection styles
+.t-list-item.is-selected {
+  background: color-mix(in srgb, var(--color-primary), transparent 95%);
 }
 
 // TMediaTile handles its own styling

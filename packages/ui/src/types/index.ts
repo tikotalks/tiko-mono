@@ -15,13 +15,19 @@ export type FontSize = (typeof FontSize)[keyof typeof FontSize];
 export const BaseColors = {
 	PURPLE: 'purple',
 	BLUE: 'blue',
+	NAVY: 'navy',
+	ROYAL_BLUE: 'royal-blue',
+	DARK_BLUE: 'dark-blue',
 	GREEN: 'green',
 	LIME: 'lime',
 	YELLOW: 'yellow',
 	ORANGE: 'orange',
 	PINK: 'pink',
+	MAROON: 'maroon',
 	RED: 'red',
 	BROWN: 'brown',
+	TEAL: 'teal',
+	OLIVE: 'olive',
 	BLACK: 'black',
 	GRAY: 'gray',
 	WHITE: 'white',
@@ -35,6 +41,10 @@ export const BaseColors = {
 	GOLD: 'gold',
 	SILVER: 'silver',
 	BRONZE: 'bronze',
+	SAND: 'sand',
+	BLUE_GRAY: 'blue-gray',
+	BLUE_GREEN: 'blue-green',
+	CHARCOAL: 'charcoal',
 };
 
 export type BaseColors = (typeof BaseColors)[keyof typeof BaseColors];

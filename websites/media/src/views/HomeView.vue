@@ -41,6 +41,11 @@
       </TGrid>
     </section>
 
+    <!-- Curated Collections -->
+    <section :class="bemm('curated')">
+      <CuratedCollections />
+    </section>
+
     <!-- Recent Uploads -->
     <section :class="bemm('recent')" v-if="recentImages.length > 0">
       <div :class="bemm('section-header')">
@@ -100,6 +105,7 @@ import {
   TMediaTile,
   TIcon
 } from '@tiko/ui'
+import CuratedCollections from '@/components/CuratedCollections.vue'
 
 const bemm = useBemm('home-view')
 const { t } = useI18n()
@@ -179,7 +185,8 @@ onMounted(() => {
   }
 
   &__featured,
-  &__recent {
+  &__recent,
+  &__curated {
     padding: var(--spacing);
     max-width: var(--max-width);
     margin: 0 auto;

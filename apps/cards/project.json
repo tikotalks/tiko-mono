@@ -1,7 +1,35 @@
 {
-  "name": "cards",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "cards",
   "projectType": "application",
   "sourceRoot": "apps/cards/src",
-  "targets": {}
+  "targets": {
+    "build": {
+      "executor": "@nx/vite:build",
+      "options": {
+        "outputPath": "dist/apps/cards",
+        "skipTypeCheck": true
+      }
+    },
+    "serve": {
+      "executor": "@nx/vite:dev-server",
+      "options": {
+        "buildTarget": "cards:build",
+        "port": 4207
+      }
+    },
+    "preview": {
+      "executor": "@nx/vite:preview-server",
+      "options": {
+        "buildTarget": "cards:build"
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "options": {
+        "config": "apps/cards/vitest.config.ts"
+      }
+    }
+  },
+  "tags": []
 }

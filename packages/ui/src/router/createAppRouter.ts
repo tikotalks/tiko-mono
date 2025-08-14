@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory, type RouteRecordRaw, type Router } from 'vue-router'
-import AuthCallback from '../components/TAuthCallback/TAuthCallback.vue'
+import AuthCallback from '../components/auth/TAuthCallback/TAuthCallback.vue'
 
 export interface AppRouterOptions {
   routes?: RouteRecordRaw[]

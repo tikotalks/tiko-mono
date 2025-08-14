@@ -4,34 +4,56 @@
       <h1 :class="bemm('title')">{{ t('media.collections.title') }}</h1>
       <p :class="bemm('description')">{{ t('media.collections.description') }}</p>
     </div>
-    
-    <div :class="bemm('content')">
-      <TEmptyState
-        :icon="Icons.FOLDER"
-        :title="t('media.collections.comingSoon')"
-        :description="t('media.collections.comingSoonDescription')"
-      >
-        <TButton @click="router.push('/library')">
-          {{ t('media.collections.browseLibrary') }}
-        </TButton>
-      </TEmptyState>
-    </div>
+
+    <!-- My Collections Section (when logged in) -->
+    <MyCollections 
+      v-if="authStore.user" 
+      @create="showCreateDialog = true"
+      :class="bemm('section')"
+    />
+
+    <!-- Signup Inspiration Section (when not logged in) -->
+    <SignupInspiration 
+      v-else 
+      :class="bemm('section')"
+    />
+
+    <!-- Curated Collections Section (always visible) -->
+    <CuratedCollections :class="bemm('section')" />
+
+    <!-- Create Collection Dialog -->
+    <CreateCollectionDialog
+      v-if="showCreateDialog"
+      @close="showCreateDialog = false"
+      @success="handleCollectionCreated"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { ref } from 'vue'
 import { useBemm } from 'bemm'
-import { Icons } from 'open-icon'
-import {
-  useI18n,
-  TEmptyState,
-  TButton
-} from '@tiko/ui'
+import { useAuthStore, useCollectionsStore } from '@tiko/core'
+import { useI18n } from '@tiko/ui'
+import MyCollections from '@/components/MyCollections.vue'
+import SignupInspiration from '@/components/SignupInspiration.vue'
+import CuratedCollections from '@/components/CuratedCollections.vue'
+import CreateCollectionDialog from '@/components/CreateCollectionDialog.vue'
 
 const bemm = useBemm('collections-view')
 const { t } = useI18n()
-const router = useRouter()
+const authStore = useAuthStore()
+const collectionsStore = useCollectionsStore()
+
+// State
+const showCreateDialog = ref(false)
+
+// Methods
+const handleCollectionCreated = () => {
+  showCreateDialog.value = false
+  // Refresh collections
+  collectionsStore.loadCollections()
+}
 </script>
 
 <style lang="scss">
@@ -55,8 +77,12 @@ const router = useRouter()
     margin: 0;
   }
   
-  &__content {
-    padding: var(--space-2xl);
+  &__section {
+    margin-bottom: var(--space-2xl);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
   }
 }
 </style>

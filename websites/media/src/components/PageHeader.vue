@@ -10,16 +10,26 @@
       :class="bemm('nav')"
     />
     <TUserMenu v-if="authStore.user" :class="bemm('user-menu')" />
+    <TButton 
+      v-else 
+      @click="router.push('/auth/login')"
+      :class="bemm('login-button')"
+      size="small"
+    >
+      Login
+    </TButton>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
-import { TLogo, TNavigation, TUserMenu, type NavigationItem } from '@tiko/ui'
+import { TLogo, TNavigation, TUserMenu, TButton, type NavigationItem } from '@tiko/ui'
 import { useAuthStore } from '@tiko/core'
 
 const bemm = useBemm('page-header')
+const router = useRouter()
 const authStore = useAuthStore()
 
 // Static navigation for now
@@ -60,7 +70,8 @@ const navigationItems = ref<NavigationItem[]>([
     justify-content: center;
   }
 
-  &__user-menu {
+  &__user-menu,
+  &__login-button {
     margin-right: 0;
 
     @media screen and (max-width: 768px) {

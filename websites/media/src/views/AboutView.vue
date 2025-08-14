@@ -1,74 +1,93 @@
 <template>
   <div :class="bemm()">
-    <div :class="bemm('header')">
-      <h1 :class="bemm('title')">{{ t('media.about.title') }}</h1>
-    </div>
+    <!-- Try to load from CMS first -->
+    <TPageContent
+      page-slug="about"
+      :show-debug="false"
+      @page-not-found="showStaticContent = true"
+    />
     
-    <div :class="bemm('content')">
-      <section :class="bemm('section')">
-        <h2>{{ t('media.about.mission.title') }}</h2>
-        <p>{{ t('media.about.mission.description') }}</p>
-      </section>
+    <!-- Fallback static content when CMS content not available -->
+    <div v-if="showStaticContent" :class="bemm('static')">
+      <div :class="bemm('header')">
+        <h1 :class="bemm('title')">{{ t('media.about.title') }}</h1>
+      </div>
       
-      <section :class="bemm('section')">
-        <h2>{{ t('media.about.features.title') }}</h2>
-        <div :class="bemm('features')">
-          <div :class="bemm('feature')">
-            <TIcon :name="Icons.IMAGE" :class="bemm('feature-icon')" />
-            <h3>{{ t('media.about.features.highQuality.title') }}</h3>
-            <p>{{ t('media.about.features.highQuality.description') }}</p>
+      <div :class="bemm('content')">
+        <section :class="bemm('section')">
+          <h2>{{ t('media.about.mission.title') }}</h2>
+          <p>{{ t('media.about.mission.description') }}</p>
+        </section>
+        
+        <section :class="bemm('section')">
+          <h2>{{ t('media.about.features.title') }}</h2>
+          <div :class="bemm('features')">
+            <div :class="bemm('feature')">
+              <TIcon :name="Icons.IMAGE" :class="bemm('feature-icon')" />
+              <h3>{{ t('media.about.features.highQuality.title') }}</h3>
+              <p>{{ t('media.about.features.highQuality.description') }}</p>
+            </div>
+            <div :class="bemm('feature')">
+              <TIcon :name="Icons.DOWNLOAD" :class="bemm('feature-icon')" />
+              <h3>{{ t('media.about.features.multipleFormats.title') }}</h3>
+              <p>{{ t('media.about.features.multipleFormats.description') }}</p>
+            </div>
+            <div :class="bemm('feature')">
+              <TIcon :name="Icons.SEARCH_L" :class="bemm('feature-icon')" />
+              <h3>{{ t('media.about.features.easySearch.title') }}</h3>
+              <p>{{ t('media.about.features.easySearch.description') }}</p>
+            </div>
+            <div :class="bemm('feature')">
+              <TIcon :name="Icons.SHIELD_CHECK" :class="bemm('feature-icon')" />
+              <h3>{{ t('media.about.features.safeBrowsing.title') }}</h3>
+              <p>{{ t('media.about.features.safeBrowsing.description') }}</p>
+            </div>
           </div>
-          <div :class="bemm('feature')">
-            <TIcon :name="Icons.DOWNLOAD" :class="bemm('feature-icon')" />
-            <h3>{{ t('media.about.features.multipleFormats.title') }}</h3>
-            <p>{{ t('media.about.features.multipleFormats.description') }}</p>
+        </section>
+        
+        <section :class="bemm('section')">
+          <h2>{{ t('media.about.usage.title') }}</h2>
+          <p>{{ t('media.about.usage.description') }}</p>
+          <div :class="bemm('cta')">
+            <TButton @click="router.push('/library')" size="large">
+              {{ t('media.about.startBrowsing') }}
+            </TButton>
           </div>
-          <div :class="bemm('feature')">
-            <TIcon :name="Icons.SEARCH_L" :class="bemm('feature-icon')" />
-            <h3>{{ t('media.about.features.easySearch.title') }}</h3>
-            <p>{{ t('media.about.features.easySearch.description') }}</p>
-          </div>
-          <div :class="bemm('feature')">
-            <TIcon :name="Icons.SHIELD_CHECK" :class="bemm('feature-icon')" />
-            <h3>{{ t('media.about.features.safeBrowsing.title') }}</h3>
-            <p>{{ t('media.about.features.safeBrowsing.description') }}</p>
-          </div>
-        </div>
-      </section>
-      
-      <section :class="bemm('section')">
-        <h2>{{ t('media.about.usage.title') }}</h2>
-        <p>{{ t('media.about.usage.description') }}</p>
-        <div :class="bemm('cta')">
-          <TButton @click="router.push('/library')" size="large">
-            {{ t('media.about.startBrowsing') }}
-          </TButton>
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
 import { Icons } from 'open-icon'
 import {
   useI18n,
   TButton,
-  TIcon
+  TIcon,
+  TPageContent
 } from '@tiko/ui'
 
 const bemm = useBemm('about-view')
 const { t } = useI18n()
 const router = useRouter()
+
+// State
+const showStaticContent = ref(false)
 </script>
 
 <style lang="scss">
 .about-view {
-  padding: var(--space-lg);
-  max-width: 900px;
-  margin: 0 auto;
+  // TPageContent handles its own layout
+  
+  &__static {
+    padding: var(--space-lg);
+    max-width: 900px;
+    margin: 0 auto;
+  }
   
   &__header {
     margin-bottom: var(--space-xl);

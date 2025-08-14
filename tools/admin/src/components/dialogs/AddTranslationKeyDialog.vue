@@ -173,31 +173,32 @@
             <TCard
               v-for="(entry, index) in batchEntries"
               :key="index"
-              :class="bemm('batch-entry', { error: !!entry.error })"
-              :actions="[{
-                label: t('common.remove', []),
-                icon: Icons.MULTIPLY_M,
-                color: 'error',
-                action: () => removeBatchEntry(index),
-              }]"
-
+              :removable="true"
+              :title="`${index}`"
+              @remove="removeBatchEntry(index)"
+              :class="bemm('batch-entry', ['',!!entry.error ? 'error' : '', batchProgress.current === index ? 'processing' : '', batchProgress.current < index ? 'done' : '', batchProgress.current > index ? 'todo' : ''])"
               >
+            <TFormGroup>
 
                 <TInputText
                   v-model="entry.key"
                   :label="t('admin.i18n.addKey.keyName')"
                   :placeholder="t('admin.i18n.addKey.keyNamePlaceholder')"
                   :required="true"
-                  :error="entry.error"
+                  :inline="true"
+                  :error="entry.error ? [entry.error as string] : undefined"
                   @input="handleBatchKeyInput(index)"
                 />
 
                 <TInputText
                   v-model="entry.englishValue"
+                  :inline="true"
                   :label="t('admin.i18n.addKey.englishTranslation')"
                   :placeholder="t('admin.i18n.addKey.englishTranslationPlaceholder')"
                   :required="true"
                 />
+              </TFormGroup>
+
             </TCard>
 
             <TButton
@@ -1139,6 +1140,18 @@ onMounted(async () => {
     padding: var(--space);
     background: var(--color-background-secondary);
     border-radius: var(--radius-md);
+  }
+
+  &__batch-entry{
+    &--error{
+      border-color: var(--color-error);
+    }
+    &--done{
+      opacity: .5;
+    }
+    &--processing {
+      border-color: var(--color-foreground);
+    }
   }
 
   &__footer {
