@@ -83,6 +83,7 @@
           placeholder="Enter text to be spoken"
           rows="3"
           maxlength="500"
+          @input="speechManuallyEdited = true"
         />
       </TFormField>
 
@@ -170,10 +171,13 @@ const form = reactive({
   speech: props.card?.speech || '',
 });
 
-// Auto-populate speech field when title changes (only if speech is empty)
+// Track if user has manually edited speech
+const speechManuallyEdited = ref(false);
+
+// Auto-populate speech field when title changes
 watch(() => form.title, (newTitle) => {
-  // Only auto-populate if speech is empty and we're creating a new card
-  if (!form.speech && !isEditing.value) {
+  // Only auto-populate if we're creating a new card and user hasn't manually edited speech
+  if (!isEditing.value && !speechManuallyEdited.value) {
     form.speech = newTitle;
   }
 });
@@ -255,12 +259,14 @@ const openImageSelector = async () => {
     props: {
       multiple: false,
       selectedIds: form.image ? [form.image] : [],
-      searchTerm: form.title || '', // Use title as default search term
       onConfirm: (selectedItems: any[]) => {
         if (selectedItems.length > 0) {
           const item = selectedItems[0];
+          console.log('Selected item:', item); // Debug log
           // Handle both MediaItem (original_url) and UserMedia (url) types
-          form.image = item.original_url || item.url || '';
+          const imageUrl = item.original_url || item.url || '';
+          console.log('Setting image to:', imageUrl); // Debug log
+          form.image = imageUrl;
           imageSuggestions.value = []; // Clear suggestions after selection
         }
         popupService.close();
@@ -279,6 +285,8 @@ watch(() => props.card, (newCard) => {
     form.color = newCard.color || 'primary';
     form.image = newCard.image || '';
     form.speech = newCard.speech || '';
+    // Reset manual edit flag when loading a new card
+    speechManuallyEdited.value = isEditing.value;
   }
 }, { immediate: true });
 </script>
