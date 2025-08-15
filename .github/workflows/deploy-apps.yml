@@ -179,6 +179,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
         
+      - name: Generate i18n translations
+        run: pnpm generate:i18n:worker:prod
+        
       - name: Build Timer app
         run: |
           pnpm --filter=@tiko/ui build
@@ -215,6 +218,9 @@ jobs:
           
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
+        
+      - name: Generate i18n translations
+        run: pnpm generate:i18n:worker:prod
         
       - name: Build Yes-No app
         run: |
@@ -253,6 +259,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
         
+      - name: Generate i18n translations
+        run: pnpm generate:i18n:worker:prod
+        
       - name: Build Cards app
         run: |
           pnpm --filter=@tiko/ui build
@@ -289,6 +298,9 @@ jobs:
           
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
+        
+      - name: Generate i18n translations
+        run: pnpm generate:i18n:worker:prod
         
       - name: Build Radio app
         run: |
@@ -327,6 +339,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
         
+      - name: Generate i18n translations
+        run: pnpm generate:i18n:worker:prod
+        
       - name: Build Todo app
         run: |
           pnpm --filter=@tiko/ui build
@@ -363,6 +378,9 @@ jobs:
           
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
+        
+      - name: Generate i18n translations
+        run: pnpm generate:i18n:worker:prod
         
       - name: Build Type app
         run: |
