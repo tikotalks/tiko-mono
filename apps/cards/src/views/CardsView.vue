@@ -731,28 +731,27 @@ const handleCardDrop = async (droppedCard: CardTile, targetCard: CardTile) => {
 };
 
 const handleCardReorder = async (card: CardTile, newIndex: number) => {
-  // Optimistic update - immediately update UI
+  // Don't do anything if the card is already at this position
+  if (card.index === newIndex) return;
+
+  // Store original state for rollback
   const originalCards = [...cards.value];
 
-  // Simply update the card's index to the new position
-  const newCards = cards.value.map(c => {
-    if (c.id === card.id) {
-      return { ...c, index: newIndex };
-    }
-    return c;
-  });
-
-  // Update the UI immediately
+  // Create new array and remove the card from its current position
+  const newCards = cards.value.filter(c => c.id !== card.id);
+  
+  // Update the card's index
+  const movedCard = { ...card, index: newIndex };
+  
+  // Insert the card at the new position in the array
+  newCards.splice(newIndex, 0, movedCard);
+  
+  // Update UI instantly - card should appear in new position immediately
   cards.value = newCards;
 
+  // Save to database
   try {
-    // Save to database with the new index
-    const updatedCard = {
-      ...card,
-      index: newIndex,
-    };
-
-    await cardsService.saveCard(updatedCard, currentGroupId.value, newIndex);
+    await cardsService.saveCard(movedCard, currentGroupId.value, newIndex);
     console.log(`Moved "${card.title}" to position ${newIndex}`);
   } catch (error) {
     console.error('Failed to reorder card:', error);
@@ -821,70 +820,29 @@ const handleMultiCardDrop = async (droppedCards: CardTile[], targetCard: CardTil
 const handleMultiCardReorder = async (reorderedCards: CardTile[], targetIndex: number) => {
   const originalCards = [...cards.value];
 
+  // Optimistic update - immediately update UI
+  // Remove the cards being moved
+  const remainingCards = cards.value.filter(c => !reorderedCards.some(rc => rc.id === c.id));
+  
+  // Insert the moved cards at the target position
+  const newCards = [...remainingCards];
+  newCards.splice(targetIndex, 0, ...reorderedCards);
+  
+  // Update all indices to be sequential
+  newCards.forEach((card, index) => {
+    card.index = index;
+  });
+  
+  // Update UI immediately
+  cards.value = newCards;
+
   try {
-    // Create a working array with all cards (including empty slots)
-    const maxIndex = Math.max(
-      ...cards.value.map(c => c.index),
-      targetIndex
-    );
-
-    // Create array with all positions
-    const allCards: (CardTile | null)[] = new Array(maxIndex + 1).fill(null);
-
-    // Place existing cards in their positions (excluding the ones being moved)
-    cards.value.forEach(card => {
-      if (!reorderedCards.some(rc => rc.id === card.id)) {
-        allCards[card.index] = card;
-      }
-    });
-
-    // Find the actual target position accounting for gaps
-    let actualTargetIndex = targetIndex;
-
-    // If we're moving to a position that's beyond current cards,
-    // we need to ensure the cards go to that exact position
-    if (targetIndex > cards.value.length - reorderedCards.length) {
-      actualTargetIndex = targetIndex;
-    }
-
-    // Place the reordered cards starting at the target index
-    reorderedCards.forEach((card, i) => {
-      allCards[actualTargetIndex + i] = card;
-    });
-
-    // Compact the array and update indices
-    const updatedCards: CardTile[] = [];
-    allCards.forEach((card, index) => {
-      if (card) {
-        updatedCards.push({
-          ...card,
-          index
-        });
-      }
-    });
-
-    // Add empty cards if needed
-    const highestIndex = updatedCards.length > 0
-      ? Math.max(...updatedCards.map(c => c.index))
-      : -1;
-
-    // Fill any gaps with empty cards
-    for (let i = 0; i <= highestIndex; i++) {
-      if (!updatedCards.some(c => c.index === i)) {
-        updatedCards.push(createEmptyCard(i));
-      }
-    }
-
-    // Sort by index
-    updatedCards.sort((a, b) => a.index - b.index);
-    cards.value = updatedCards;
-
-    // Save all updated indices
-    for (const card of updatedCards) {
-      if (!card.id.startsWith('empty-')) {
-        await cardsService.saveCard(card, currentGroupId.value, card.index);
-      }
-    }
+    // Save all cards with their new indices
+    const cardIds = newCards
+      .filter(c => !c.id.startsWith('empty-'))
+      .map(c => c.id);
+    
+    await cardsService.reorderCards(cardIds);
 
     // Clear selection after successful reorder
     clearSelection();

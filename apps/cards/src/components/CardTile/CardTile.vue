@@ -56,7 +56,7 @@
     </article>
   </div>
   </TContextMenu>
-  
+
   <!-- Fallback when no context menu -->
   <div v-else ref="wrapperEl" :class="bemm('wrapper',
     ['',
@@ -443,6 +443,7 @@ const handleDrop = (event: DragEvent) => {
     text-overflow: ellipsis;
     display: -webkit-box;
     width: fit-content;
+    line-height: 1;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     position: absolute;

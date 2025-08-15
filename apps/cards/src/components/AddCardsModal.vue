@@ -28,7 +28,7 @@
         :index="index"
         :is-new="true"
         :translations="[]"
-        @save="handleSingleSave"
+        @submit="handleSingleSave"
         @cancel="handleCancel"
       />
       
@@ -77,9 +77,9 @@ const singleCard = computed(() => ({
 }));
 
 // Handle single card save
-const handleSingleSave = async (cardData: Partial<CardTile>, translations: any[]) => {
+const handleSingleSave = async (cardData: Partial<CardTile>, index: number, translations: any[]) => {
   if (props.onSave) {
-    await props.onSave(cardData, props.index ?? 0);
+    await props.onSave(cardData, props.index ?? index);
   }
   popupService.close();
 };

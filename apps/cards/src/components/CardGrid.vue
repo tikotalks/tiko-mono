@@ -23,7 +23,7 @@
             '--tile-gap': `${TILE_CONFIG.tileGap}px`,
           }">
             <template v-for="(card, index) in pageCards" :key="`slot-${pageIndex}-${index}`">
-              <div v-if="card" :class="bemm('tile-wrapper', ['', card.type !== CardTileTypes.GHOST && !card.id.startsWith('empty-') ? 'animating' : ''])
+              <div v-if="card" :class="bemm('tile-wrapper', ['', card.type !== CardTileTypes.GHOST && !card.id.startsWith('empty-') && !animatedTileIds.has(card.id) ? 'animating' : ''])
                 " :style="{
                 '--tile-index': index
               }">
@@ -178,6 +178,7 @@ const tileSize = ref(0);
 const draggedCard = ref<CardTileType | null>(null);
 const draggedElement = ref<HTMLElement | null>(null);
 const dropTarget = ref<string | null>(null);
+const animatedTileIds = ref<Set<string>>(new Set()); // Track which tiles have already animated
 
 // Auto-scrolling during drag
 const dragScrollTimer = ref<number | null>(null);
@@ -733,6 +734,14 @@ const handleDrop = (event: DragEvent, targetCard: CardTileType) => {
   event.preventDefault();
   event.stopPropagation();
 
+  // Mark the dragged card as already animated so it won't re-animate
+  if (draggedCard.value) {
+    animatedTileIds.value.add(draggedCard.value.id);
+  }
+  draggedCards.value.forEach(card => {
+    animatedTileIds.value.add(card.id);
+  });
+
   // Store the dragged card data before clearing
   const currentDraggedCard = draggedCard.value;
   const currentDraggedCards = [...draggedCards.value];
@@ -765,6 +774,7 @@ const handleDrop = (event: DragEvent, targetCard: CardTileType) => {
       emit('card-drop', currentDraggedCard, targetCard);
     }
   }
+
 };
 
 // Initialize and handle resize
@@ -831,6 +841,18 @@ onMounted(() => {
     });
   }
 });
+
+// Track which cards have been animated
+watch(() => props.cards, (newCards) => {
+  // After animation completes, mark all visible cards as animated
+  setTimeout(() => {
+    newCards.forEach(card => {
+      if (card.id && !card.id.startsWith('empty-') && card.type !== CardTileTypes.GHOST) {
+        animatedTileIds.value.add(card.id);
+      }
+    });
+  }, 1000); // Wait for animation to complete
+}, { immediate: true });
 </script>
 
 <style lang="scss">
