@@ -29,10 +29,33 @@ const loading = ref(true)
 const { t, keys } = useI18n()
 const eventBus = useEventBus()
 
+// Track if any popup is open
+const isPopupOpen = ref(false)
+
+// Listen for popup state changes
+eventBus.on('popup:opened', () => {
+  isPopupOpen.value = true
+})
+
+eventBus.on('popup:closed', () => {
+  isPopupOpen.value = false
+})
+
 // Global keyboard event handler
 const handleGlobalKeyboard = (event: KeyboardEvent) => {
-  // Emit the key event for popup components to listen to
+  // Always emit the key event for popup components
   eventBus.emit('app:key', { key: event.key })
+  
+  // If no popup is open, handle app-level shortcuts
+  if (!isPopupOpen.value) {
+    // Handle edit mode shortcuts
+    if (event.key === 'Escape' || event.key === 'e') {
+      // Prevent default behavior
+      event.preventDefault()
+      // Emit edit mode shortcut event
+      eventBus.emit('app:editModeShortcut', { key: event.key })
+    }
+  }
 }
 
 // Initialize translations on app startup

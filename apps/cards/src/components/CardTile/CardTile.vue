@@ -1,12 +1,73 @@
 <template>
-  <div ref="wrapperEl" :class="bemm('wrapper',
+  <TContextMenu
+    v-if="contextMenu && contextMenu.length > 0 && !isEmpty"
+    :config="{ menu: contextMenu, position: 'bottom-right' }"
+    @menu-open="$emit('menu-open')"
+    @menu-close="$emit('menu-close')"
+  >
+    <div ref="wrapperEl" :class="bemm('wrapper',
     ['',
       isDragging ? 'dragging' : '',
       canDrag ? 'can-drag' : '',
       isDragReady ? 'drag-ready' : '',
       isSelected ? 'selected' : '',
       selectionMode ? 'selection-mode' : '',
-      isImageLoaded && displayImage && imageUrl ? 'image-loaded' : ''
+      isImageLoaded && displayImage && imageUrl ? 'image-loaded' : '',
+      hasActiveMenu ? 'active-menu' : ''
+    ])" @click.stop="handleClick" @mousedown.stop="handleMouseDown" @mouseup.stop="handleMouseUp"
+    @touchstart.stop="handleTouchStart" @touchend.stop="handleTouchEnd" @touchmove.stop="handleTouchMove"
+    @touchcancel.stop="handleTouchEnd" :draggable="canDrag" @dragstart.stop="handleDragStart"
+    @dragend.stop="handleDragEnd" @dragover.stop="handleDragOver" @dragleave.stop="handleDragLeave"
+    @drop.stop="handleDrop">
+    <article :class="bemm('', ['', isEmpty ? 'empty' : '', editMode ? 'edit-mode' : '', isImageLoaded && displayImage && imageUrl ? 'pop-in' : ''])"
+      :style="!isEmpty && card?.color ? { '--card-color': `var(--color-${card.color})`, '--card-text': `var(--color-${card.color}-text)`, } : undefined">
+      <div v-if="isEmpty && editMode" :class="bemm('empty-state')">
+        <TIcon name="plus" size="large" />
+      </div>
+      <div v-else :class="bemm('container')">
+        <!-- Show mini grid for groups with children -->
+        <div v-if="hasChildren && children?.length" :class="bemm('mini-grid')">
+          <!-- Background image -->
+          <div v-if="displayImage && imageUrl" :class="bemm('mini-grid-bg')"
+            :style="{ backgroundImage: `url(${imageUrl})` }" />
+
+          <!-- Mini tiles -->
+          <div :class="bemm('mini-tiles')">
+            <div v-for="(child, index) in children.slice(0, 9)" :key="child.id" :class="bemm('mini-tile')"
+              :style="child.color ? { backgroundColor: `var(--color-${child.color})` } : undefined">
+              <img v-if="child.image" :src="getThumbnailUrl(child.image)" :alt="child.title" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Regular tile content for non-groups -->
+        <template v-else>
+          <figure v-if="displayImage && imageUrl && isImageLoaded" :class="bemm('figure')">
+            <img :src="imageUrl" :alt="card.title" :class="bemm('image')" draggable="false" />
+          </figure>
+        </template>
+
+        <h3 v-if="displayTitle && card?.title" :class="bemm('title')">{{ card.title }}</h3>
+      </div>
+
+      <!-- Selection indicator -->
+      <div v-if="isSelected && selectionMode" :class="bemm('selection-indicator')">
+        <TIcon name="check" size="small" />
+      </div>
+    </article>
+  </div>
+  </TContextMenu>
+  
+  <!-- Fallback when no context menu -->
+  <div v-else ref="wrapperEl" :class="bemm('wrapper',
+    ['',
+      isDragging ? 'dragging' : '',
+      canDrag ? 'can-drag' : '',
+      isDragReady ? 'drag-ready' : '',
+      isSelected ? 'selected' : '',
+      selectionMode ? 'selection-mode' : '',
+      isImageLoaded && displayImage && imageUrl ? 'image-loaded' : '',
+      hasActiveMenu ? 'active-menu' : ''
     ])" @click.stop="handleClick" @mousedown.stop="handleMouseDown" @mouseup.stop="handleMouseUp"
     @touchstart.stop="handleTouchStart" @touchend.stop="handleTouchEnd" @touchmove.stop="handleTouchMove"
     @touchcancel.stop="handleTouchEnd" :draggable="canDrag" @dragstart.stop="handleDragStart"
@@ -54,7 +115,7 @@
 import { useBemm } from 'bemm';
 import { ref, computed, watch } from 'vue';
 import { CardTile as CardTileType } from './CardTile.model';
-import { TIcon } from '@tiko/ui';
+import { TIcon, TContextMenu } from '@tiko/ui';
 import { useImageUrl } from '@tiko/core';
 
 const bemm = useBemm('card-tile');
@@ -77,6 +138,8 @@ const props = defineProps<{
   children?: CardTileType[];
   isSelected?: boolean;
   selectionMode?: boolean;
+  contextMenu?: any[];
+  hasActiveMenu?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -86,6 +149,8 @@ const emit = defineEmits<{
   dragover: [event: DragEvent];
   dragleave: [event: DragEvent];
   drop: [event: DragEvent];
+  'menu-open': [];
+  'menu-close': [];
 }>();
 
 const isDragging = ref(false);
@@ -285,6 +350,11 @@ const handleDrop = (event: DragEvent) => {
 
     &--selection-mode {
       cursor: pointer;
+    }
+    
+    &--active-menu {
+      z-index: 100;
+      position: relative;
     }
   }
 

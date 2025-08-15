@@ -35,7 +35,8 @@
                 <CardTile v-else :card="card" :show-image="true" :show-title="true" :edit-mode="editMode"
                   :is-empty="card.id.startsWith('empty-')" :has-children="tilesWithChildren?.has(card.id) || false"
                   :children="tileChildrenMap?.get(card.id)" :is-selected="selectedTileIds?.has(card.id) || false"
-                  :selection-mode="selectionMode" :class="{
+                  :selection-mode="selectionMode" :context-menu="getContextMenu?.(card, pageIndex * cardsPerPage + index)"
+                  :class="{
                     'is-being-dragged': draggedCard?.id === card.id,
                     'is-drop-target': dropTarget === card.id,
                     'is-selected': selectedTileIds?.has(card.id)
@@ -88,6 +89,7 @@ const props = defineProps<{
   selectionMode?: boolean;
   selectedTileIds?: Set<string>;
   isLoading?: boolean;
+  getContextMenu?: (card: CardTileType, index: number) => any[];
 }>();
 
 const emit = defineEmits<{

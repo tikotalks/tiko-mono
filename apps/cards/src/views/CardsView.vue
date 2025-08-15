@@ -99,6 +99,7 @@
           :selection-mode="selectionMode"
           :selected-tile-ids="selectedTileIds"
           :is-loading="isLoading"
+          :get-context-menu="isEditMode ? getCardContextMenu : undefined"
           @card-click="handleCardClick"
           @card-drop="handleCardDrop"
           @card-reorder="handleCardReorder"
@@ -164,7 +165,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, watch, inject, ref, computed } from 'vue';
+import { onMounted, onUnmounted, reactive, watch, inject, ref, computed } from 'vue';
 import { useBemm } from 'bemm';
 import { useRoute, useRouter } from 'vue-router';
 import {
@@ -189,7 +190,7 @@ import BulkCardCreator from '../components/BulkCardCreator.vue';
 import { CardGhostTile } from '../components/CardGhostTile';
 import { CardTile,mockCardTile } from '../components/CardTile/CardTile.model';
 import { useEditMode } from '../composables/useEditMode';
-import { useSpeak } from '@tiko/core';
+import { useSpeak, useEventBus } from '@tiko/core';
 import { cardsService } from '../services/cards.service';
 import { ItemTranslationService } from '../services/item-translation.service';
 import type { ItemTranslation } from '../models/ItemTranslation.model';
@@ -204,10 +205,13 @@ const { t, keys, currentLocale } = useI18n();
 const parentMode = useParentMode('cards');
 const { hasPermission, requestPermission } = useTextToSpeech();
 const { speak, preloadAudio } = useSpeak();
-const { isEditMode, toggleEditMode } = useEditMode();
+const { isEditMode, toggleEditMode, disableEditMode, enableEditMode } = useEditMode();
 
 // Inject the popup service from TFramework
 const popupService = inject<any>('popupService');
+
+// Event bus for keyboard shortcuts
+const eventBus = useEventBus();
 
 // Local settings copy for immediate UI updates
 const localSettings = reactive({
@@ -416,39 +420,39 @@ const handleSpeechPermission = async () => {
   }
 };
 
-// Show context menu for card actions in edit mode
-const showCardContextMenu = (card: CardTile, index: number, event: MouseEvent) => {
+// Context menu configuration for cards
+const getCardContextMenu = (card: CardTile, index: number) => {
   const isNewCard = card.id.startsWith('empty-');
-
+  
   if (isNewCard) {
-    // For empty cards, directly open create form
-    openCardEditForm(card, index);
-    return;
+    return [
+      {
+        id: 'create',
+        label: t('cards.createCard'),
+        icon: Icons.PLUS,
+        action: () => openCardEditForm(card, index)
+      }
+    ];
   }
-
-  // For existing cards, show action popup
-  const contextMenuActions = [
+  
+  return [
     {
+      id: 'view',
       label: t('common.view'),
       icon: Icons.EYE,
-      action: () => {
-        popupService.close();
-        handleTileAction(card);
-      }
+      action: () => handleTileAction(card)
     },
     {
+      id: 'edit', 
       label: t('common.edit'),
       icon: Icons.EDIT,
-      action: () => {
-        popupService.close();
-        openCardEditForm(card, index);
-      }
+      action: () => openCardEditForm(card, index)
     },
     {
+      id: 'select',
       label: t('common.select'),
       icon: Icons.CHECK_M,
       action: () => {
-        popupService.close();
         if (!selectionMode.value) {
           selectionMode.value = true;
         }
@@ -456,45 +460,16 @@ const showCardContextMenu = (card: CardTile, index: number, event: MouseEvent) =
       }
     },
     {
+      id: 'separator',
+      type: 'separator'
+    },
+    {
+      id: 'delete',
       label: t('common.delete'),
       icon: Icons.TRASH,
-      color: 'error',
-      action: () => {
-        popupService.close();
-        confirmDeleteCard(card);
-      }
+      action: () => confirmDeleteCard(card)
     }
   ];
-
-  // Create a simple action menu component inline
-  const ActionMenu = {
-    template: `
-      <div class="card-action-menu">
-        <TButton
-          v-for="action in actions"
-          :key="action.label"
-          :icon="action.icon"
-          :color="action.color || 'secondary'"
-          type="outline"
-          size="large"
-          @click="action.action"
-          class="action-button"
-        >
-          {{ action.label }}
-        </TButton>
-      </div>
-    `,
-    props: ['actions']
-  };
-
-  popupService.open({
-    component: ActionMenu,
-    title: `Actions for "${card.title}"`,
-    size: 'small',
-    props: {
-      actions: contextMenuActions
-    }
-  });
 };
 
 // Open the card edit form
@@ -610,8 +585,8 @@ const handleCardClick = async (card: CardTile, index: number) => {
   }
 
   if (isEditMode.value) {
-    // In edit mode, show context menu
-    showCardContextMenu(card, index, event as MouseEvent);
+    // In edit mode, directly open edit form (context menu is on right-click)
+    openCardEditForm(card, index);
   } else {
     // In view mode, check if tile has children
     if (!card.id.startsWith('empty-')) {
@@ -1277,6 +1252,21 @@ watch(() => isEditMode.value, (newEditMode) => {
   }
 });
 
+// Handle keyboard shortcuts for edit mode
+const handleEditModeShortcut = (data: { key: string }) => {
+  if (data.key === 'Escape' && isEditMode.value) {
+    // Exit edit mode on Escape
+    disableEditMode();
+    // Also clear selection if in selection mode
+    if (selectionMode.value) {
+      clearSelection();
+    }
+  } else if (data.key === 'e' && !isEditMode.value) {
+    // Enter edit mode on 'e'
+    enableEditMode();
+  }
+};
+
 // Initialize
 onMounted(async () => {
   console.log('[CardsView] Component mounted, loading cards...');
@@ -1287,11 +1277,21 @@ onMounted(async () => {
     }
 
     await yesNoStore.loadState();
+    
+    // Listen for edit mode keyboard shortcuts
+    eventBus.on('app:editModeShortcut', handleEditModeShortcut);
+    
     // Don't load cards here - the route watcher with immediate: true will handle it
     console.log('[CardsView] Initialization complete');
   } catch (error) {
     console.error('[CardsView] Failed to initialize:', error);
   }
+});
+
+// Cleanup
+onUnmounted(() => {
+  // Remove keyboard shortcut listener
+  eventBus.off('app:editModeShortcut', handleEditModeShortcut);
 });
 </script>
 
@@ -1428,19 +1428,6 @@ onMounted(async () => {
   &__selection-actions {
     display: flex;
     gap: var(--space);
-  }
-}
-
-// Action menu styles
-.card-action-menu {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-  padding: var(--space);
-  
-  .action-button {
-    width: 100%;
-    justify-content: flex-start;
   }
 }
 
