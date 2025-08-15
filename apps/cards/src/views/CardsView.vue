@@ -1254,16 +1254,23 @@ watch(() => isEditMode.value, (newEditMode) => {
 
 // Handle keyboard shortcuts for edit mode
 const handleEditModeShortcut = (data: { key: string }) => {
-  if (data.key === 'Escape' && isEditMode.value) {
-    // Exit edit mode on Escape
-    disableEditMode();
-    // Also clear selection if in selection mode
+  if (data.key === 'Escape') {
     if (selectionMode.value) {
+      // Exit selection mode first
       clearSelection();
+    } else if (isEditMode.value) {
+      // Then exit edit mode
+      disableEditMode();
     }
   } else if (data.key === 'e' && !isEditMode.value) {
     // Enter edit mode on 'e'
     enableEditMode();
+  } else if (data.key === 's' && isEditMode.value) {
+    // Toggle selection mode on 's' (only works in edit mode)
+    toggleSelectionMode();
+  } else if (data.key === 'a' && isEditMode.value) {
+    // Open bulk add modal on 'a' (only works in edit mode)
+    openBulkAddMode();
   }
 };
 

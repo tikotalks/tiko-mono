@@ -48,8 +48,8 @@ const handleGlobalKeyboard = (event: KeyboardEvent) => {
   
   // If no popup is open, handle app-level shortcuts
   if (!isPopupOpen.value) {
-    // Handle edit mode shortcuts
-    if (event.key === 'Escape' || event.key === 'e') {
+    // Handle edit mode and selection shortcuts
+    if (event.key === 'Escape' || event.key === 'e' || event.key === 's' || event.key === 'a') {
       // Prevent default behavior
       event.preventDefault()
       // Emit edit mode shortcut event
