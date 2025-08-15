@@ -436,11 +436,13 @@ const getCardContextMenu = (card: CardTile, index: number) => {
     ];
   }
   
+  const hasChildren = tilesWithChildren.value.has(card.id);
+  
   return [
     {
       id: 'view',
-      label: t('common.view'),
-      icon: Icons.EYE,
+      label: hasChildren ? t('common.view') : t('common.speak'),
+      icon: hasChildren ? Icons.EYE : Icons.VOLUME_UP,
       action: () => handleTileAction(card)
     },
     {
@@ -586,7 +588,11 @@ const handleCardClick = async (card: CardTile, index: number) => {
   }
 
   if (isEditMode.value) {
-    // In edit mode, do nothing - let the context menu handle all interactions
+    // For empty cards, directly open the edit form
+    if (card.id.startsWith('empty-')) {
+      openCardEditForm(card, index);
+    }
+    // For existing cards, do nothing - let the context menu handle interactions
     return;
   } else {
     // In view mode, check if tile has children
