@@ -27,7 +27,7 @@
         <div
           v-for="group in filteredLanguageGroups"
           :key="group.baseCode"
-          :class="bemm('item', { active: isLanguageActive(group) })"
+          :class="bemm('item', ['', isLanguageActive(group) ? 'active' : 'inactive'])"
         >
         <button
           :class="bemm('item-button')"
@@ -46,9 +46,9 @@
           <TButton
             v-for="variant in group.variants"
             size="small"
-            type="outline"
+            :type="selectedLanguage === variant.code ? 'default' : 'outline'"
             :key="variant.code"
-            :color="selectedLanguage === variant.code ? 'primary' : 'default'"
+            :color="selectedLanguage === variant.code ? 'secondary' : 'default'"
             :class="bemm('region-button')"
             @click.stop="handleRegionClick(variant.code)"
           >
@@ -282,6 +282,7 @@ onMounted(async () => {
 <style lang="scss" scoped>
 .choose-language {
   width: 100%;
+  min-width: 320px;
   display: flex;
   flex-direction: column;
   gap: var(--space);
@@ -323,7 +324,7 @@ onMounted(async () => {
     }
 
     &--active {
-      background: var(--color-primary-subtle);
+      background: var(--color-primary);
 
       &:hover {
         background: var(--color-primary-subtle);

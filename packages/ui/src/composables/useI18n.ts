@@ -47,6 +47,9 @@ let staticAvailableLanguages: string[] = generatedLanguages ? [...generatedLangu
 let staticInitialized = false
 let staticKeys: any = null // Cached keys structure
 
+// IMPORTANT: Global locale state to ensure all components use the same locale
+let globalCurrentLocale: string | null = null
+
 // Storage key for persistence
 const LOCALE_STORAGE_KEY = 'tiko:locale'
 
@@ -54,27 +57,42 @@ const LOCALE_STORAGE_KEY = 'tiko:locale'
 function initializeStaticMode(): void {
   if (staticInitialized) return
 
+  // Merge regional translations with base languages
+  console.log('🌍 Merging regional translations with base languages...')
+  
+  // Get all language codes
+  const allLocales = Object.keys(staticTranslations)
+  
+  // Process each locale
+  for (const locale of allLocales) {
+    // Skip if it's a base language (no hyphen)
+    if (!locale.includes('-')) continue
+    
+    // Get base language (e.g., 'de' from 'de-DE')
+    const baseLocale = locale.split('-')[0]
+    
+    // If base language exists, merge it with regional
+    if (staticTranslations[baseLocale]) {
+      console.log(`📚 Merging ${baseLocale} into ${locale}`)
+      const baseTranslations = staticTranslations[baseLocale]
+      const regionalTranslations = staticTranslations[locale]
+      
+      // Create merged translations (base + regional overrides)
+      staticTranslations[locale] = {
+        ...baseTranslations,
+        ...regionalTranslations
+      }
+      
+      console.log(`  - Base ${baseLocale} has ${Object.keys(baseTranslations).length} keys`)
+      console.log(`  - Regional ${locale} has ${Object.keys(regionalTranslations).length} overrides`)
+      console.log(`  - Merged ${locale} now has ${Object.keys(staticTranslations[locale]).length} keys`)
+    }
+  }
+
   // Translations are already loaded via static import
   console.log('🌍 Static translation mode initialized')
   console.log('📚 Available languages:', staticAvailableLanguages)
   console.log('📚 Loaded translations for locales:', Object.keys(staticTranslations))
-  
-  // Check if we have any translations
-  if (Object.keys(staticTranslations).length === 0) {
-    console.error('❌ No translations loaded! Check import from ../i18n/generated')
-  } else {
-    // Log sample translation to verify structure
-    const enTranslations = staticTranslations['en']
-    if (enTranslations) {
-      // Check if it's flat or nested structure
-      const flatKey = enTranslations['admin.navigation.dashboard']
-      const nestedKey = enTranslations.admin?.navigation?.dashboard
-      console.log('📚 Translation structure check:')
-      console.log('  - Flat key (admin.navigation.dashboard):', flatKey)
-      console.log('  - Nested key:', nestedKey)
-      console.log('  - admin.navigation.data key:', enTranslations['admin.navigation.data'])
-    }
-  }
 
   staticInitialized = true
   
@@ -142,17 +160,57 @@ export function useI18n(options: I18nOptions = {}) {
   const currentLocale = ref<string>(fallbackLocale)
   const isReady = ref(true) // Always ready with static imports
 
+  // Function to find the best regional variant for a base language
+  const findRegionalVariant = (baseLocale: string): string | null => {
+    // First try the doubled format (e.g., nl -> nl-NL, de -> de-DE)
+    const doubledLocale = `${baseLocale}-${baseLocale.toUpperCase()}`
+    if (staticAvailableLanguages.includes(doubledLocale)) {
+      return doubledLocale
+    }
+    
+    // If that doesn't exist, find the first variant that starts with the base locale
+    const variants = staticAvailableLanguages.filter(lang => 
+      lang.startsWith(`${baseLocale}-`)
+    )
+    
+    if (variants.length > 0) {
+      return variants[0]
+    }
+    
+    return null
+  }
+
   // Initialize locale from storage or browser
   if (persistLocale && typeof localStorage !== 'undefined') {
     const stored = localStorage.getItem(storageKey)
-    if (stored && staticAvailableLanguages.includes(stored)) {
-      currentLocale.value = stored
+    console.log('[useI18n] Initializing locale:')
+    console.log('  - Storage key:', storageKey)
+    console.log('  - Stored value:', stored)
+    console.log('  - Available languages:', staticAvailableLanguages)
+    
+    let localeToUse = stored
+    
+    // If stored locale is a base language without region, find best regional variant
+    if (stored && !stored.includes('-')) {
+      const regionalVariant = findRegionalVariant(stored)
+      if (regionalVariant) {
+        localeToUse = regionalVariant
+        console.log(`  - Converting base locale "${stored}" to regional "${localeToUse}"`)
+      }
+    }
+    
+    if (localeToUse && staticAvailableLanguages.includes(localeToUse)) {
+      console.log('  - Setting locale:', localeToUse)
+      currentLocale.value = localeToUse
     } else {
       const browserLocale = getBrowserLocale()
+      console.log('  - Browser locale:', browserLocale)
       if (browserLocale) {
+        console.log('  - Setting locale from browser:', browserLocale)
         currentLocale.value = browserLocale
       }
     }
+    console.log('  - Final locale:', currentLocale.value)
   }
 
   // Watch for locale changes and persist
@@ -165,7 +223,16 @@ export function useI18n(options: I18nOptions = {}) {
     if (typeof window !== 'undefined') {
       const handleStorageChange = (event: StorageEvent) => {
         if (event.key === storageKey && event.newValue) {
-          const newLocale = event.newValue
+          let newLocale = event.newValue
+          
+          // If locale is a base language without region, find best regional variant
+          if (newLocale && !newLocale.includes('-')) {
+            const regionalVariant = findRegionalVariant(newLocale)
+            if (regionalVariant) {
+              newLocale = regionalVariant
+            }
+          }
+          
           if (newLocale && staticAvailableLanguages.includes(newLocale) && newLocale !== currentLocale.value) {
             console.log(`[i18n] External locale change detected: ${currentLocale.value} -> ${newLocale}`)
             currentLocale.value = newLocale
@@ -174,7 +241,16 @@ export function useI18n(options: I18nOptions = {}) {
       }
       
       const handleCustomLocaleChange = (event: CustomEvent) => {
-        const newLocale = event.detail.locale
+        let newLocale = event.detail.locale
+        
+        // If locale is a base language without region, find best regional variant
+        if (newLocale && !newLocale.includes('-')) {
+          const regionalVariant = findRegionalVariant(newLocale)
+          if (regionalVariant) {
+            newLocale = regionalVariant
+          }
+        }
+        
         if (newLocale && staticAvailableLanguages.includes(newLocale) && newLocale !== currentLocale.value) {
           console.log(`[i18n] Custom locale change detected: ${currentLocale.value} -> ${newLocale}`)
           currentLocale.value = newLocale
@@ -205,9 +281,19 @@ export function useI18n(options: I18nOptions = {}) {
   /**
    * Translation function
    */
-  const t = (key: string | any, params?: Record<string, any> | string): string => {
+  const t: any = (key: string | any, params?: Record<string, any> | string): string => {
     // Ensure key is a string
     const keyStr = typeof key === 'string' ? key : String(key);
+
+    // Debug first few translations
+    if (!t._debugged || keyStr.includes('cards') || keyStr.includes('common')) {
+      console.log(`[t] Translating "${keyStr}" for locale "${currentLocale.value}"`)
+      if (!t._debugged) {
+        console.log(`[t] staticTranslations keys:`, Object.keys(staticTranslations))
+        console.log(`[t] Does locale "${currentLocale.value}" exist in translations?`, !!staticTranslations[currentLocale.value])
+        t._debugged = true
+      }
+    }
 
     // Get translation
     const translation = getStaticTranslation(keyStr, currentLocale.value)
@@ -234,11 +320,27 @@ export function useI18n(options: I18nOptions = {}) {
    * Set current locale
    */
   const setLocale = (locale: string): void => {
-    if (!staticAvailableLanguages.includes(locale)) {
-      console.warn(`Invalid locale "${locale}". Available locales:`, staticAvailableLanguages)
+    console.log(`[setLocale] Attempting to set locale to "${locale}"`)
+    
+    let localeToUse = locale
+    
+    // If locale is a base language without region, find best regional variant
+    if (!locale.includes('-')) {
+      const regionalVariant = findRegionalVariant(locale)
+      if (regionalVariant) {
+        localeToUse = regionalVariant
+        console.log(`[setLocale] Converting base locale "${locale}" to regional "${localeToUse}"`)
+      }
+    }
+    
+    // Check if locale exists
+    if (!staticAvailableLanguages.includes(localeToUse)) {
+      console.warn(`Invalid locale "${localeToUse}". Available locales:`, staticAvailableLanguages)
       return
     }
-    currentLocale.value = locale
+    
+    console.log(`[setLocale] Setting currentLocale to "${localeToUse}"`)
+    currentLocale.value = localeToUse
   }
 
   /**
@@ -325,26 +427,42 @@ export function useI18n(options: I18nOptions = {}) {
  * Get static translation from nested object using dot notation
  */
 function getStaticTranslation(key: string, locale: string): string | null {
-  const localeTranslations = staticTranslations[locale]
-  if (!localeTranslations) {
-    // Try fallback locale
-    const fallbackTranslations = staticTranslations['en']
-    if (!fallbackTranslations) return null
-    return getTranslationValue(fallbackTranslations, key)
+  // Log only the first translation attempt to see what's happening
+  if (!getStaticTranslation._logged) {
+    console.log(`[getStaticTranslation] First translation attempt:`)
+    console.log(`  - Key: "${key}"`)
+    console.log(`  - Locale: "${locale}"`)
+    console.log(`  - Available locales:`, Object.keys(staticTranslations))
+    console.log(`  - Locale exists?`, !!staticTranslations[locale])
+    getStaticTranslation._logged = true
   }
-
-  const value = getTranslationValue(localeTranslations, key)
   
-  // If not found and current locale is not fallback, try fallback
-  if (!value && locale !== 'en') {
-    const fallbackTranslations = staticTranslations['en']
-    if (fallbackTranslations) {
-      return getTranslationValue(fallbackTranslations, key)
+  // Try exact locale match first
+  const localeTranslations = staticTranslations[locale]
+  if (localeTranslations) {
+    const value = getTranslationValue(localeTranslations, key)
+    if (value) return value
+  }
+  
+  // If not found and locale has a region (e.g., de-DE), try base language (e.g., de)
+  if (locale.includes('-')) {
+    const baseLocale = locale.split('-')[0]
+    const baseTranslations = staticTranslations[baseLocale]
+    if (baseTranslations) {
+      const value = getTranslationValue(baseTranslations, key)
+      if (value) return value
     }
   }
   
-  return value
+  // Finally, fall back to English
+  const fallbackTranslations = staticTranslations['en']
+  if (fallbackTranslations) {
+    return getTranslationValue(fallbackTranslations, key)
+  }
+  
+  return null
 }
+getStaticTranslation._logged = false
 
 /**
  * Get translation value from either flat or nested object structure

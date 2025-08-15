@@ -258,8 +258,8 @@ onMounted(async () => {
   // Skip splash screen if returning from auth with a valid session or if splash screen is disabled
   const shouldSkipSplash = (isReturningFromAuth && hasExistingSession) || !props.showSplashScreen;
 
-  const minDisplayTime = shouldSkipSplash ? 0 : 2000; // Show splash for at least 2 seconds unless skipping
-  const maxDisplayTime = 5000; // Maximum time to show splash screen
+  const minDisplayTime = shouldSkipSplash ? 0 : 3000;
+  const maxDisplayTime = 5000;
   const startTime = Date.now();
 
   // If we should skip splash, hide it immediately

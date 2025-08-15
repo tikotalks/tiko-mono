@@ -165,8 +165,8 @@ defineExpose({
   }
 
   &__logo-wrapper {
-    width: 8em;
-    height: 8em;
+    width: 15em;
+    height: 6em;
     position: relative;
   }
 
