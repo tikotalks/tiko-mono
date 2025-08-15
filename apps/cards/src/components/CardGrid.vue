@@ -2,83 +2,47 @@
   <div :class="bemm()">
     <!-- Pagination dots -->
     <div v-if="totalPages > 1" :class="bemm('pagination')">
-      <button
-        v-for="page in totalPages"
-        :key="page"
-        :class="bemm('dot',['', page === currentPage + 1 ? 'active' : 'inactive'])"
-        :aria-label="`Go to page ${page}`"
-        @click="goToPage(page - 1)"
-      />
+      <button v-for="page in totalPages" :key="page"
+        :class="bemm('dot', ['', page === currentPage + 1 ? 'active' : 'inactive'])" :aria-label="`Go to page ${page}`"
+        @click="goToPage(page - 1)" />
     </div>
 
     <!-- Swipeable panels container -->
-    <div
-      :class="bemm('panels')"
-      @touchstart="handleTouchStart"
-      @touchmove="handleTouchMove"
-      @touchend="handleTouchEnd"
-      @mousedown="handleMouseDown"
-      @mousemove="handleMouseMove"
-      @mouseup="handleMouseUp"
-      @mouseleave="handleMouseUp"
-    >
-      <div
-        :class="bemm('panels-track')"
-        :style="{
-          transform: `translateX(${translateX}px)`,
-          transition: isTransitioning ? 'transform 0.3s ease-out' : 'none',
-        }"
-      >
+    <div :class="bemm('panels')" @touchstart="handleTouchStart" @touchmove="handleTouchMove" @touchend="handleTouchEnd"
+      @mousedown="handleMouseDown" @mousemove="handleMouseMove" @mouseup="handleMouseUp" @mouseleave="handleMouseUp">
+      <div :class="bemm('panels-track')" :style="{
+        transform: `translateX(${translateX}px)`,
+        transition: isTransitioning ? 'transform 0.3s ease-out' : 'none',
+      }">
         <!-- Each page panel -->
-        <div
-          v-for="(pageCards, pageIndex) in paginatedCards"
-          :key="`page-${pageIndex}`"
-          :class="bemm('panel')"
-        >
-          <div
-            :class="bemm('cards', ['', viewType])"
-            :style="{
-              '--grid-cols': String(grid.cols),
-              '--grid-rows': String(grid.rows),
-              '--tile-size': `${tileSize}px`,
-              '--tile-gap': `${TILE_CONFIG.tileGap}px`,
-            }"
-          >
+        <div v-for="(pageCards, pageIndex) in paginatedCards" :key="`page-${pageIndex}`" :class="bemm('panel')">
+          <div :class="bemm('cards', ['', viewType])" :style="{
+            '--grid-cols': String(grid.cols),
+            '--grid-rows': String(grid.rows),
+            '--tile-size': `${tileSize}px`,
+            '--tile-gap': `${TILE_CONFIG.tileGap}px`,
+          }">
             <template v-for="(card, index) in pageCards" :key="`slot-${pageIndex}-${index}`">
-              <div
-                v-if="card"
-                :class="[
-                  bemm('tile-wrapper'),
-                  {
-                    [bemm('tile-wrapper', 'animating')]: animatingPages.has(pageIndex)
-                  }
-                ]"
-                :style="{
+              <div v-if="card" :class="[
+                bemm('tile-wrapper'),
+                {
+                  [bemm('tile-wrapper', 'animating')]: card.type !== 'ghost' && !card.id.startsWith('empty-')
+                }
+              ]" :style="{
                   '--tile-index': index
-                }"
-              >
-                <CardTile
-                  :card="card"
-                  :show-image="true"
-                  :show-title="true"
-                  :edit-mode="editMode"
-                  :is-empty="card.id.startsWith('empty-')"
-                  :has-children="tilesWithChildren?.has(card.id) || false"
-                  :children="tileChildrenMap?.get(card.id)"
-                  :is-selected="selectedTileIds?.has(card.id) || false"
-                  :selection-mode="selectionMode"
-                  :class="{
+                }">
+                <CardGhostTile v-if="card.type === 'ghost'" />
+                <CardTile v-else :card="card" :show-image="true" :show-title="true" :edit-mode="editMode"
+                  :is-empty="card.id.startsWith('empty-')" :has-children="tilesWithChildren?.has(card.id) || false"
+                  :children="tileChildrenMap?.get(card.id)" :is-selected="selectedTileIds?.has(card.id) || false"
+                  :selection-mode="selectionMode" :class="{
                     'is-being-dragged': draggedCard?.id === card.id,
                     'is-drop-target': dropTarget === card.id,
                     'is-selected': selectedTileIds?.has(card.id)
-                  }"
-                  @click="handleCardClick(card, pageIndex * cardsPerPage + index)"
-                  @dragstart="handleDragStart($event, card)"
-                  @dragend="handleDragEnd"
-                  @dragover="handleDragOver($event, card)"
-                  @dragleave="handleDragLeave"
-                  @drop="handleDrop($event, card)"
-                />
+                  }" @click="handleCardClick(card, pageIndex * cardsPerPage + index)"
+                  @dragstart="handleDragStart($event, card)" @dragend="handleDragEnd"
+                  @dragover="handleDragOver($event, card)" @dragleave="handleDragLeave"
+                  @drop="handleDrop($event, card)" />
               </div>
               <div v-else :class="bemm('empty-slot')" />
             </template>
@@ -88,22 +52,20 @@
     </div>
 
     <!-- Navigation arrows (optional, for desktop) -->
-    <button
-      v-if="showArrows && currentPage > 0"
-      :class="bemm('arrow', 'prev')"
-      @click="previousPage"
-      aria-label="Previous page"
-    >
+    <button v-if="showArrows && currentPage > 0" :class="bemm('arrow', 'prev')" @click="previousPage"
+      aria-label="Previous page">
       ‹
     </button>
-    <button
-      v-if="showArrows && currentPage < totalPages - 1"
-      :class="bemm('arrow', 'next')"
-      @click="nextPage"
-      aria-label="Next page"
-    >
+    <button v-if="showArrows && currentPage < totalPages - 1" :class="bemm('arrow', 'next')" @click="nextPage"
+      aria-label="Next page">
       ›
     </button>
+    
+    <!-- Drag edge indicators -->
+    <div v-if="(draggedCard || draggedCards.length > 0) && currentPage > 0" 
+      :class="bemm('drag-edge', 'left')" />
+    <div v-if="(draggedCard || draggedCards.length > 0) && currentPage < totalPages - 1" 
+      :class="bemm('drag-edge', 'right')" />
   </div>
 </template>
 
@@ -112,6 +74,7 @@ import { useBemm } from 'bemm';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { CardTile as CardTileType } from './CardTile/CardTile.model';
 import CardTile from './CardTile/CardTile.vue';
+import { CardGhostTile } from './CardGhostTile';
 
 const bemm = useBemm('card-grid');
 
@@ -124,6 +87,7 @@ const props = defineProps<{
   isTileDragging?: boolean;
   selectionMode?: boolean;
   selectedTileIds?: Set<string>;
+  isLoading?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -209,6 +173,11 @@ const tileSize = ref(0);
 const draggedCard = ref<CardTileType | null>(null);
 const draggedElement = ref<HTMLElement | null>(null);
 const dropTarget = ref<string | null>(null);
+
+// Auto-scrolling during drag
+const dragScrollTimer = ref<number | null>(null);
+const DRAG_EDGE_THRESHOLD = 100; // pixels from edge to trigger scroll
+const DRAG_SCROLL_INTERVAL = 1000; // ms between auto-scrolls
 
 // Calculate grid dimensions dynamically
 const grid = computed(() => {
@@ -350,6 +319,7 @@ const paginatedCards = computed(() => {
   const pagesForHighestIndex = Math.ceil((maxIndex + 1) / cardsPerPage.value) || 1;
   const pagesForCardCount = Math.ceil(props.cards.length / cardsPerPage.value) || 1;
   const pagesForCards = Math.max(pagesForHighestIndex, pagesForCardCount);
+  // In edit mode, always have one extra page for dragging tiles to
   const totalPagesNeeded = props.editMode ? pagesForCards + 1 : pagesForCards;
   const totalSlots = totalPagesNeeded * cardsPerPage.value;
 
@@ -412,7 +382,7 @@ const updateTranslateX = () => {
 const animatePage = (pageIndex: number) => {
   // Add page to animating set
   animatingPages.value.add(pageIndex);
-  
+
   // Remove after animation completes
   setTimeout(() => {
     animatingPages.value.delete(pageIndex);
@@ -425,12 +395,12 @@ const goToPage = (page: number) => {
     currentPage.value = page;
     isTransitioning.value = true;
     updateTranslateX();
-    
+
     // Trigger animation for the new page
     setTimeout(() => {
       animatePage(page);
     }, SWIPE_CONFIG.TRANSITION_DURATION / 2);
-    
+
     setTimeout(() => {
       isTransitioning.value = false;
     }, SWIPE_CONFIG.TRANSITION_DURATION);
@@ -594,8 +564,17 @@ const handleDragStart = (event: DragEvent, card: CardTileType) => {
       const originalTile = target.querySelector('.card-tile') as HTMLElement;
       if (originalTile) {
         const computedStyle = window.getComputedStyle(originalTile);
+        // Copy all relevant styles
         tileElement.style.backgroundImage = computedStyle.backgroundImage;
         tileElement.style.backgroundColor = computedStyle.backgroundColor;
+        tileElement.style.background = computedStyle.background;
+
+        // Ensure the color variables are properly set
+        const cardColor = card.color;
+        if (cardColor) {
+          tileElement.style.setProperty('--card-color', `var(--color-${cardColor})`);
+          tileElement.style.setProperty('--card-text', `var(--color-${cardColor}-text)`);
+        }
       }
     }
 
@@ -637,6 +616,9 @@ const handleDragStart = (event: DragEvent, card: CardTileType) => {
 
   // Notify parent
   emit('update:tileDragging', true);
+  
+  // Start monitoring drag position for edge scrolling
+  startDragMonitoring();
 };
 
 const handleDragEnd = () => {
@@ -645,6 +627,9 @@ const handleDragEnd = () => {
   draggedElement.value = null;
   dropTarget.value = null;
   emit('update:tileDragging', false);
+  
+  // Stop drag monitoring
+  stopDragMonitoring();
 };
 
 const handleDragOver = (event: DragEvent, card: CardTileType) => {
@@ -664,6 +649,57 @@ const handleDragLeave = () => {
   dropTarget.value = null;
 };
 
+// Drag edge scrolling functions
+const startDragMonitoring = () => {
+  // Add global drag over listener to track mouse position during drag
+  document.addEventListener('dragover', handleGlobalDragOver);
+};
+
+const stopDragMonitoring = () => {
+  // Remove global listener
+  document.removeEventListener('dragover', handleGlobalDragOver);
+  
+  // Clear any pending scroll timer
+  if (dragScrollTimer.value) {
+    clearTimeout(dragScrollTimer.value);
+    dragScrollTimer.value = null;
+  }
+};
+
+const handleGlobalDragOver = (event: DragEvent) => {
+  // Only process if we're actually dragging something
+  if (!draggedCard.value && draggedCards.value.length === 0) return;
+  
+  const mouseX = event.clientX;
+  const screenWidth = window.innerWidth;
+  
+  // Check if near left edge
+  if (mouseX < DRAG_EDGE_THRESHOLD && currentPage.value > 0) {
+    // Start auto-scroll to previous page if not already scrolling
+    if (!dragScrollTimer.value) {
+      dragScrollTimer.value = window.setTimeout(() => {
+        previousPage();
+        dragScrollTimer.value = null;
+      }, DRAG_SCROLL_INTERVAL);
+    }
+  }
+  // Check if near right edge
+  else if (mouseX > screenWidth - DRAG_EDGE_THRESHOLD && currentPage.value < totalPages.value - 1) {
+    // Start auto-scroll to next page if not already scrolling
+    if (!dragScrollTimer.value) {
+      dragScrollTimer.value = window.setTimeout(() => {
+        nextPage();
+        dragScrollTimer.value = null;
+      }, DRAG_SCROLL_INTERVAL);
+    }
+  }
+  // If not near edges, cancel any pending scroll
+  else if (dragScrollTimer.value) {
+    clearTimeout(dragScrollTimer.value);
+    dragScrollTimer.value = null;
+  }
+};
+
 const handleDrop = (event: DragEvent, targetCard: CardTileType) => {
   if (!props.editMode) return;
   if (!draggedCard.value && draggedCards.value.length === 0) return;
@@ -671,28 +707,36 @@ const handleDrop = (event: DragEvent, targetCard: CardTileType) => {
   event.preventDefault();
   event.stopPropagation();
 
+  // Store the dragged card data before clearing
+  const currentDraggedCard = draggedCard.value;
+  const currentDraggedCards = [...draggedCards.value];
+
+  // Clear drag state immediately
+  draggedCard.value = null;
+  draggedCards.value = [];
+  draggedElement.value = null;
   dropTarget.value = null;
 
   // Handle multi-card drop
-  if (draggedCards.value.length > 0) {
+  if (currentDraggedCards.length > 0) {
     if (targetCard.id.startsWith('empty-')) {
       // Reorder multiple cards
       const targetIndex = parseInt(targetCard.id.split('-')[1]);
       // Emit a special event for multi-card reorder
-      emit('cards-reorder' as any, draggedCards.value, targetIndex);
+      emit('cards-reorder' as any, currentDraggedCards, targetIndex);
     } else {
       // Move multiple cards into a group
-      emit('cards-drop' as any, draggedCards.value, targetCard);
+      emit('cards-drop' as any, currentDraggedCards, targetCard);
     }
-  } else if (draggedCard.value) {
+  } else if (currentDraggedCard) {
     // Single card drop (existing logic)
-    if (targetCard.id === draggedCard.value.id) return;
+    if (targetCard.id === currentDraggedCard.id) return;
 
     if (targetCard.id.startsWith('empty-')) {
       const targetIndex = parseInt(targetCard.id.split('-')[1]);
-      emit('card-reorder', draggedCard.value, targetIndex);
+      emit('card-reorder', currentDraggedCard, targetIndex);
     } else {
-      emit('card-drop', draggedCard.value, targetCard);
+      emit('card-drop', currentDraggedCard, targetCard);
     }
   }
 };
@@ -704,7 +748,7 @@ onMounted(() => {
     updateDimensions();
     updateTranslateX();
   }, 0);
-  
+
   // Animate tiles on initial load with a slight delay
   setTimeout(() => {
     animatePage(currentPage.value);
@@ -732,9 +776,15 @@ onMounted(() => {
     onBeforeUnmount(() => {
       resizeObserver.disconnect();
       window.removeEventListener('resize', onResize);
+      // Clean up drag monitoring
+      stopDragMonitoring();
     });
   } else {
-    onBeforeUnmount(() => window.removeEventListener('resize', onResize));
+    onBeforeUnmount(() => {
+      window.removeEventListener('resize', onResize);
+      // Clean up drag monitoring
+      stopDragMonitoring();
+    });
   }
 });
 </script>
@@ -765,7 +815,7 @@ onMounted(() => {
     opacity: 0.3;
     transition: opacity 0.3s ease;
     cursor: pointer;
-    flex-shrink:0;
+    flex-shrink: 0;
 
     &--active {
       opacity: 1;
@@ -809,7 +859,7 @@ onMounted(() => {
     align-content: center;
 
     // Smooth transitions for card movements
-    > * {
+    >* {
       transition: transform 0.3s ease, opacity 0.3s ease;
     }
   }
@@ -862,7 +912,7 @@ onMounted(() => {
   &__tile-wrapper {
     width: var(--tile-size);
     height: var(--tile-size);
-    
+
     &--animating {
       animation: tile-pop-in 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) both;
       animation-delay: calc(var(--tile-index, 0) * 50ms);
@@ -875,6 +925,7 @@ onMounted(() => {
     opacity: 0;
     transform: scale(0.8) translateY(20px);
   }
+
   100% {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -883,22 +934,63 @@ onMounted(() => {
 
 // Drag and drop states
 .is-being-dragged {
-  opacity: 0;
+  opacity: 0.4;
+  transform: scale(0.95);
 }
 
 .is-drop-target {
   transform: scale(1.05);
-  outline: 3px solid var(--color-primary);
-  outline-offset: 2px;
+  transition: .3s ease-in-out;
 
   .card-tile--empty {
-    background-color: var(--color-primary-light);
-    border-color: var(--color-primary);
+    border-color: var(--color-foreground);
   }
 }
 
 .is-drag-image {
   // Styles for the drag image clone
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+
+  .card-tile {
+    // Ensure the card tile inside the drag image has proper styling
+    opacity: 0.9 !important;
+    transform: scale(1) !important;
+
+    &__figure img {
+      opacity: 1 !important;
+    }
+  }
+}
+
+.card-grid__drag-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100px;
+  pointer-events: none;
+  z-index: 20;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  
+  &--left {
+    left: 0;
+    background: linear-gradient(to right, 
+      color-mix(in srgb, var(--color-primary) 20%, transparent) 0%, 
+      transparent 100%);
+  }
+  
+  &--right {
+    right: 0;
+    background: linear-gradient(to left, 
+      color-mix(in srgb, var(--color-primary) 20%, transparent) 0%, 
+      transparent 100%);
+  }
+  
+  // Show when dragging near edges
+  @media (hover: hover) {
+    &:hover {
+      opacity: 1;
+    }
+  }
 }
 </style>

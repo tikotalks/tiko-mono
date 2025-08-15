@@ -160,6 +160,46 @@ export function useI18n(options: I18nOptions = {}) {
     watch(currentLocale, (newLocale) => {
       localStorage.setItem(storageKey, newLocale)
     })
+    
+    // Listen for external storage changes and custom events
+    if (typeof window !== 'undefined') {
+      const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === storageKey && event.newValue) {
+          const newLocale = event.newValue
+          if (newLocale && staticAvailableLanguages.includes(newLocale) && newLocale !== currentLocale.value) {
+            console.log(`[i18n] External locale change detected: ${currentLocale.value} -> ${newLocale}`)
+            currentLocale.value = newLocale
+          }
+        }
+      }
+      
+      const handleCustomLocaleChange = (event: CustomEvent) => {
+        const newLocale = event.detail.locale
+        if (newLocale && staticAvailableLanguages.includes(newLocale) && newLocale !== currentLocale.value) {
+          console.log(`[i18n] Custom locale change detected: ${currentLocale.value} -> ${newLocale}`)
+          currentLocale.value = newLocale
+        }
+      }
+      
+      // Check for changes periodically as fallback
+      let pollInterval: NodeJS.Timeout | null = null
+      const pollForChanges = () => {
+        const stored = localStorage.getItem(storageKey)
+        if (stored && staticAvailableLanguages.includes(stored) && stored !== currentLocale.value) {
+          console.log(`[i18n] Polling detected locale change: ${currentLocale.value} -> ${stored}`)
+          currentLocale.value = stored
+        }
+      }
+      
+      window.addEventListener('storage', handleStorageChange)
+      window.addEventListener('tiko-locale-change', handleCustomLocaleChange as EventListener)
+      
+      // Poll every 1 second as fallback
+      pollInterval = setInterval(pollForChanges, 1000)
+      
+      // Cleanup function would go here if we were in a component with onUnmounted
+      // But this is a composable that can be called multiple times
+    }
   }
 
   /**

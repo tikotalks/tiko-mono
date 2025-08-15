@@ -1,6 +1,6 @@
 <template>
-  <TFramework 
-    :config="frameworkConfig" 
+  <TFramework
+    :config="frameworkConfig"
     :background-image="backgroundImage"
   >
     <template #topbar-actions>
@@ -12,7 +12,7 @@
         @click="$router.go(-1)"
         v-if="$route.name !== 'home'"
       >
-        {{ t(keys.common.back) }}
+        {{ t('common.back') }}
       </TButton>
     </template>
 
@@ -46,7 +46,7 @@ const frameworkConfig = computed(() => ({
     sections: [
       {
         id: 'ui-docs-settings',
-        title: t(keys.uiDocs.documentationSettings),
+        title: t('uiDocs.documentationSettings'),
         icon: 'code-brackets',
         order: 10
       }

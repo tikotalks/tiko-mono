@@ -13,21 +13,36 @@ const DEFAULT_LOCALE = 'en-GB';
  * Priority: localStorage > browser language > default
  */
 function getUserLocale(): string {
-  // Check localStorage for saved preference
-  const savedLocale = localStorage.getItem('tiko-language');
-  if (savedLocale) {
-    try {
-      // Parse the JSON value to handle proper encoding
-      const parsedLocale = JSON.parse(savedLocale);
-      // Handle double-encoded strings
-      if (typeof parsedLocale === 'string' && parsedLocale.startsWith('"') && parsedLocale.endsWith('"')) {
-        return parsedLocale.slice(1, -1);
+  // Check localStorage for saved preference - try multiple keys
+  const localeKeys = ['tiko:locale', 'tiko-language', 'tiko:settings'];
+  
+  for (const key of localeKeys) {
+    const savedValue = localStorage.getItem(key);
+    if (savedValue) {
+      try {
+        // For tiko:settings, parse the JSON and extract language
+        if (key === 'tiko:settings') {
+          const settings = JSON.parse(savedValue);
+          if (settings.language) {
+            return settings.language;
+          }
+        } else {
+          // For direct locale values
+          if (savedValue.startsWith('{') || savedValue.startsWith('"')) {
+            // Parse JSON value
+            const parsedLocale = JSON.parse(savedValue);
+            if (typeof parsedLocale === 'string') {
+              return parsedLocale.replace(/"/g, '');
+            }
+            return parsedLocale;
+          } else {
+            // Plain string value
+            return savedValue;
+          }
+        }
+      } catch (error) {
+        console.warn(`Failed to parse saved locale from ${key}:`, error);
       }
-      return parsedLocale;
-    } catch (error) {
-      console.warn('Failed to parse saved locale, using raw value:', savedLocale);
-      // If JSON parsing fails, use raw value (fallback for non-JSON stored values)
-      return savedLocale;
     }
   }
 
@@ -62,6 +77,15 @@ export async function initializeTranslations(): Promise<void> {
     // Load translations for the user's locale
     await setLocale(userLocale);
     console.log(`Translations loaded for locale: ${userLocale}`);
+    
+    // Listen for locale change events
+    window.addEventListener('tiko-locale-change', async (event: CustomEvent) => {
+      const newLocale = event.detail?.locale;
+      if (newLocale) {
+        console.log(`Locale changed to: ${newLocale}`);
+        await setLocale(newLocale);
+      }
+    });
     
   } catch (error) {
     console.error('Failed to initialize translations:', error);

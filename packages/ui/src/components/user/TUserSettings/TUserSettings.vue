@@ -3,7 +3,7 @@
     <form :class="bemm('form')" @submit.prevent="handleSave">
       <!-- Language Selection -->
       <div :class="bemm('section')">
-        <h3 :class="bemm('section-title')">{{ t(keys.settings.language) }}</h3>
+        <h3 :class="bemm('section-title')">{{ t(keys.value?.settings?.language || 'Language') }}</h3>
         <div :class="bemm('language-selector')" @click.stop="openLanguageSelector">
           <div :class="bemm('language-display')">
             <TIcon name="globe" :class="bemm('language-icon')" />
@@ -15,15 +15,11 @@
 
       <!-- Theme Selection -->
       <div :class="bemm('section')">
-        <h3 :class="bemm('section-title')">{{ t(keys.settings.theme) }}</h3>
+        <h3 :class="bemm('section-title')">{{ t(keys.value?.settings?.theme || 'Theme') }}</h3>
         <TButtonGroup fluid>
-          <TButton
-            v-for="theme in themeOptions"
-            :key="theme.value"
-            :type="formData.theme === theme.value ? 'default' : 'outline'"
-            :color="'primary'"
-            @click="formData.theme = theme.value"
-          >
+          <TButton v-for="theme in themeOptions" :key="theme.value"
+            :type="formData.theme === theme.value ? 'default' : 'outline'" :color="'primary'"
+            @click="formData.theme = theme.value">
             <TIcon :name="theme.icon" />
             {{ t(theme.label) }}
           </TButton>
@@ -32,20 +28,15 @@
 
       <!-- Actions -->
       <div :class="[bemm('actions'), 'popup-footer']">
-        <TButton
-          type="outline"
-          color="primary"
-          @click="handleCancel"
-        >
-          {{ t(keys.common.cancel) }}
-        </TButton>
-        <TButton
-          html-button-type="submit"
-          color="primary"
-          :loading="isSaving"
-        >
-          {{ t(keys.common.save) }}
-        </TButton>
+        <TButtonGroup>
+
+          <TButton type="outline" color="primary" @click="handleCancel">
+            {{ t(keys.value?.common?.cancel || 'Cancel') }}
+          </TButton>
+          <TButton html-button-type="submit" color="primary" :loading="isSaving">
+            {{ t(keys.value?.common?.save || 'Save') }}
+          </TButton>
+        </TButtonGroup>
       </div>
     </form>
   </div>
@@ -150,11 +141,35 @@ const handleSave = async () => {
       theme: formData.value.theme
     })
 
+    // Update the i18n locale if language changed
+    if (formData.value.language !== locale.value) {
+      locale.value = formData.value.language
+    }
+
+    // Apply theme to document
+    if (formData.value.theme) {
+      const html = document.documentElement
+      html.classList.remove('theme-light', 'theme-dark', 'theme-auto')
+      html.classList.add(`theme-${formData.value.theme}`)
+      
+      // Also handle auto theme
+      if (formData.value.theme === 'auto') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        html.setAttribute('data-theme', prefersDark ? 'dark' : 'light')
+      } else {
+        html.setAttribute('data-theme', formData.value.theme)
+      }
+    }
+
     // Show success message
-    toastService?.show({
-      message: t(keys.settings.settingsSaved),
-      type: 'success'
-    })
+    if (toastService) {
+      toastService.show({
+        message: t(keys.value?.settings?.settingsSaved || 'Settings saved successfully'),
+        type: 'success'
+      })
+    } else {
+      console.log('Settings saved successfully')
+    }
 
     // Emit update event
     emit('update:settings', formData.value)
@@ -164,12 +179,22 @@ const handleSave = async () => {
       props.onSave(formData.value)
     }
 
+    // Check if language changed
+    const languageChanged = formData.value.language !== userSettings.value?.language
+
     // Close the modal
     handleCancel()
+    
+    // Reload the page after a short delay to apply language changes
+    if (languageChanged) {
+      setTimeout(() => {
+        window.location.reload()
+      }, 500)
+    }
   } catch (error) {
     console.error('Failed to save settings:', error)
     toastService?.show({
-      message: t(keys.settings.failedToSave),
+      message: t(keys.value?.settings?.failedToSave || keys.value?.error?.failedToUpdate || 'Failed to save settings'),
       type: 'error'
     })
   } finally {
@@ -185,14 +210,15 @@ const handleCancel = () => {
 <style lang="scss" scoped>
 .user-settings {
 
-  &__form{
+  &__form {
 
     display: flex;
     flex-direction: column;
-    gap: var(--space);}
+    gap: var(--space);
+  }
 
   &__section {
-// border: 1px solid red;
+    // border: 1px solid red;
   }
 
   &__section-title {

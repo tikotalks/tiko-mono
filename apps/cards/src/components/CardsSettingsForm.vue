@@ -3,15 +3,15 @@
     <div :class="bemm('group')">
       <TInputSelect v-model="localSettings.buttonSize" :options="[
         {
-          label: t(keys.yesno.small),
+          label: t('yesno.small'),
           value: 'small'
         },
         {
-          label: t(keys.yesno.medium),
+          label: t('yesno.medium'),
           value: 'medium'
         },
         {
-          label: t(keys.yesno.large),
+          label: t('yesno.large'),
           value: 'large'
         }
       ]">
@@ -28,7 +28,7 @@
 
       <TInputCheckbox
         v-model="localSettings.autoSpeak"
-        :label="t(keys.yesno.autoSpeakAnswers)"
+        :label="t('yesno.autoSpeakAnswers')"
         :class="bemm('checkbox')"
       />
     </div>
@@ -36,7 +36,7 @@
     <div :class="bemm('group')">
       <TInputCheckbox
         v-model="localSettings.hapticFeedback"
-        :label="t(keys.yesno.hapticFeedback)"
+        :label="t('yesno.hapticFeedback')"
         :class="bemm('checkbox')"
       />
     </div>
@@ -77,7 +77,7 @@ const handleApply = () => {
 }
 
 // Add title and actions
-const title = t(keys.common.settings)
+const title = t('common.settings')
 
 // Watch for changes and call onApply
 watch(localSettings, () => {

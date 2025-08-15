@@ -29,15 +29,15 @@
       <!-- Bulk Add button (only in edit mode) -->
       <TButton
         v-if="isEditMode"
-        :icon="Icons.STACK_M"
+        :icon="Icons.BOARD_MULTI_DASHBOARD"
         type="outline"
-        color="accent"
+        color="secondary"
         @click="openBulkAddMode"
         :aria-label="t('cards.bulkAdd')"
       >
-        {{ t('cards.bulkAdd', 'Bulk Add') }}
+        {{ t('cards.bulkAdd') }}
       </TButton>
-      
+
       <!-- Selection mode toggle (only in edit mode) -->
       <TButton
         v-if="isEditMode && cards.length > 0"
@@ -47,7 +47,7 @@
         @click="toggleSelectionMode"
         :aria-label="selectionMode ? t('cards.exitSelectionMode') : t('cards.enterSelectionMode')"
       >
-        {{ selectionMode ? t('cards.selectTiles') : t('cards.select') }}
+        {{ selectionMode ? t('cards.selectTiles') : t('common.select') }}
         <span v-if="selectedTileIds.size > 0">({{ selectedTileIds.size }})</span>
       </TButton>
 
@@ -98,6 +98,7 @@
           :is-tile-dragging="isTileDragging"
           :selection-mode="selectionMode"
           :selected-tile-ids="selectedTileIds"
+          :is-loading="isLoading"
           @card-click="handleCardClick"
           @card-drop="handleCardDrop"
           @card-reorder="handleCardReorder"
@@ -184,6 +185,7 @@ import CardGrid from '../components/CardGrid.vue';
 import CardForm from '../components/CardForm.vue';
 import GroupSelector from '../components/GroupSelector.vue';
 import BulkCardCreator from '../components/BulkCardCreator.vue';
+import { CardGhostTile } from '../components/CardGhostTile';
 import { CardTile,mockCardTile } from '../components/CardTile/CardTile.model';
 import { useEditMode } from '../composables/useEditMode';
 import { useSpeak } from '@tiko/core';
@@ -219,6 +221,9 @@ const breadcrumbs = ref<Array<{ id?: string; title: string }>>([]);
 // Multi-select state
 const selectionMode = ref(false);
 const selectedTileIds = ref<Set<string>>(new Set());
+
+// Loading state
+const isLoading = ref(false);
 
 // Check if all non-empty tiles are selected
 const isAllSelected = computed(() => {
@@ -286,45 +291,73 @@ const createEmptyCard = (index: number): CardTile => ({
   index: index,
 });
 
+// Generate ghost cards for loading state
+const generateGhostCards = (): CardTile[] => {
+  // Generate a random number of ghost cards (between 8 and 16)
+  const count = Math.floor(Math.random() * 9) + 8;
+  const ghostCards: CardTile[] = [];
+
+  for (let i = 0; i < count; i++) {
+    ghostCards.push({
+      id: `ghost-${i}`,
+      title: '',
+      icon: 'ghost' as any,
+      color: 'gray' as any,
+      type: 'ghost' as any,
+      image: '',
+      speech: '',
+      index: i,
+    });
+  }
+
+  return ghostCards;
+};
+
 const loadCards = async () => {
-  // First try to load from Supabase
-  const savedCards = await cardsService.loadCards(currentGroupId.value);
+  try {
+    isLoading.value = true;
 
-  if (savedCards.length > 0) {
-    cards.value = savedCards;
+    // First try to load from Supabase
+    const savedCards = await cardsService.loadCards(currentGroupId.value);
 
-    // Preload audio for cards with speech
-    const textsToPreload = savedCards
-      .filter(card => !card.id.startsWith('empty-') && card.speech)
-      .map(card => ({
-        text: card.speech || ''
-      }));
-    
-    if (textsToPreload.length > 0) {
-      preloadAudio(textsToPreload);
-    }
+    if (savedCards.length > 0) {
+      cards.value = savedCards;
 
-    // Check which tiles have children and load them for preview
-    const newTilesWithChildren = new Set<string>();
-    const newTileChildrenMap = new Map<string, CardTile[]>();
+      // Preload audio for cards with speech
+      const textsToPreload = savedCards
+        .filter(card => !card.id.startsWith('empty-') && card.speech)
+        .map(card => ({
+          text: card.speech || ''
+        }));
 
-    for (const card of savedCards) {
-      if (!card.id.startsWith('empty-')) {
-        const children = await cardsService.loadCards(card.id);
-        if (children.length > 0) {
-          newTilesWithChildren.add(card.id);
-          newTileChildrenMap.set(card.id, children);
+      if (textsToPreload.length > 0) {
+        preloadAudio(textsToPreload);
+      }
+
+      // Check which tiles have children and load them for preview
+      const newTilesWithChildren = new Set<string>();
+      const newTileChildrenMap = new Map<string, CardTile[]>();
+
+      for (const card of savedCards) {
+        if (!card.id.startsWith('empty-')) {
+          const children = await cardsService.loadCards(card.id);
+          if (children.length > 0) {
+            newTilesWithChildren.add(card.id);
+            newTileChildrenMap.set(card.id, children);
+          }
         }
       }
-    }
 
-    tilesWithChildren.value = newTilesWithChildren;
-    tileChildrenMap.value = newTileChildrenMap;
-  } else {
-    // Start with empty board - no mock data
-    cards.value = [];
-    tilesWithChildren.value.clear();
-    tileChildrenMap.value.clear();
+      tilesWithChildren.value = newTilesWithChildren;
+      tileChildrenMap.value = newTileChildrenMap;
+    } else {
+      // Start with empty board - no mock data
+      cards.value = [];
+      tilesWithChildren.value.clear();
+      tileChildrenMap.value.clear();
+    }
+  } finally {
+    isLoading.value = false;
   }
 };
 // Computed
@@ -475,13 +508,23 @@ const handleTileAction = async (tile: CardTile) => {
 };
 
 const navigateToTile = async (tile: CardTile) => {
-  // Update the route
+  // Show ghost cards immediately
+  cards.value = generateGhostCards();
+  isLoading.value = true;
+
+  // Navigate immediately
   await router.push(`/${tile.id}`);
+
+  // The watch on route params will trigger loadCards automatically
 };
 
 const navigateToBreadcrumb = async (index: number) => {
   const crumb = breadcrumbs.value[index];
-  
+
+  // Show ghost cards immediately
+  cards.value = generateGhostCards();
+  isLoading.value = true;
+
   if (crumb.id) {
     await router.push(`/${crumb.id}`);
   } else {
@@ -491,6 +534,10 @@ const navigateToBreadcrumb = async (index: number) => {
 };
 
 const handleBack = async () => {
+  // Show ghost cards immediately
+  cards.value = generateGhostCards();
+  isLoading.value = true;
+
   if (breadcrumbs.value.length > 1) {
     // Go to the parent level (previous breadcrumb)
     const parentIndex = breadcrumbs.value.length - 2;
@@ -861,7 +908,7 @@ const openBulkAddMode = () => {
           // Find the next available index
           const maxIndex = cards.value.reduce((max, card) => Math.max(max, card.index), -1);
           let nextIndex = maxIndex + 1;
-          
+
           // Create all cards
           for (const cardData of newCards) {
             const savedId = await cardsService.saveCard(
@@ -869,7 +916,7 @@ const openBulkAddMode = () => {
               currentGroupId.value,
               nextIndex
             );
-            
+
             if (savedId) {
               const newCard: CardTile = {
                 ...cardData,
@@ -880,10 +927,10 @@ const openBulkAddMode = () => {
               nextIndex++;
             }
           }
-          
+
           // Sort cards by index
           cards.value.sort((a, b) => a.index - b.index);
-          
+
           popupService.close();
         } catch (error) {
           console.error('Failed to create cards:', error);
@@ -908,15 +955,15 @@ const buildBreadcrumbs = async (cardId: string | undefined) => {
   try {
     // Get the full path from root to current card
     const cardPath = await cardsService.getCardPath(cardId);
-    
+
     // Build breadcrumbs with Home as root
     const path: Array<{ id?: string; title: string }> = [
       { id: undefined, title: 'Home' }
     ];
-    
+
     // Add all cards in the path
     path.push(...cardPath);
-    
+
     breadcrumbs.value = path;
     currentGroupId.value = cardId;
   } catch (error) {
@@ -932,6 +979,12 @@ const buildBreadcrumbs = async (cardId: string | undefined) => {
 
 // Watch for route changes
 watch(() => route.params.cardId as string | undefined, async (cardId) => {
+  // If we're not already loading (ghost cards not shown), show them now
+  if (!isLoading.value) {
+    cards.value = generateGhostCards();
+    isLoading.value = true;
+  }
+
   await buildBreadcrumbs(cardId);
   await loadCards();
 }, { immediate: true });

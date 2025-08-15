@@ -1,12 +1,12 @@
 <template>
   <div :class="bemm()">
     <AdminPageHeader
-      :title="t(keys.admin.languages.title)"
-      :description="t(keys.admin.languages.description)"
+      :title="t('admin.languages.title')"
+      :description="t('admin.languages.description')"
     >
       <template #actions>
         <TButton :icon="Icons.ADD_M" @click="showAddLanguage">
-          {{ t(keys.admin.languages.addLanguage) }}
+          {{ t('admin.languages.addLanguage') }}
         </TButton>
       </template>
     </AdminPageHeader>
@@ -55,7 +55,7 @@
         <TInputSelect
           v-model="filterLanguage"
           :options="languageFilterOptions"
-          :label="t(keys.admin.languages.filterByLanguage)"
+          :label="t('admin.languages.filterByLanguage')"
         />
       </div>
 
@@ -152,31 +152,31 @@ const statistics = ref<any>({});
 
 // Tabs
 const tabs = [
-  { value: 'languages', label: t(keys.admin.languages.languagesTab) },
-  { value: 'locales', label: t(keys.admin.languages.localesTab) },
+  { value: 'languages', label: t('admin.languages.languagesTab) },
+  { value: 'locales', label: t('admin.languages.localesTab) },
 ];
 
 // Columns
 const languageColumns = [
-  { key: 'code', label: t(keys.admin.languages.code), width: '100px' },
-  { key: 'name', label: t(keys.admin.languages.name), width: '1fr' },
-  { key: 'native', label: t(keys.admin.languages.nativeName), width: '1fr' },
-  { key: 'enabled', label: t(keys.admin.languages.enabled), width: '100px' },
+  { key: 'code', label: t('admin.languages.code'), width: '100px' },
+  { key: 'name', label: t('admin.languages.name'), width: '1fr' },
+  { key: 'native', label: t('admin.languages.nativeName'), width: '1fr' },
+  { key: 'enabled', label: t('admin.languages.enabled'), width: '100px' },
   { key: 'rtl', label: 'RTL', width: '60px' },
 ];
 
 const localeColumns = [
-  { key: 'code', label: t(keys.admin.languages.code), width: '120px' },
-  { key: 'name', label: t(keys.admin.languages.name), width: '1fr' },
-  { key: 'native', label: t(keys.admin.languages.nativeName), width: '1fr' },
-  { key: 'currency', label: t(keys.admin.languages.currency), width: '80px' },
-  { key: 'enabled', label: t(keys.admin.languages.enabled), width: '100px' },
-  { key: 'completion', label: t(keys.admin.languages.completion), width: '150px' },
+  { key: 'code', label: t('admin.languages.code'), width: '120px' },
+  { key: 'name', label: t('admin.languages.name'), width: '1fr' },
+  { key: 'native', label: t('admin.languages.nativeName'), width: '1fr' },
+  { key: 'currency', label: t('admin.languages.currency'), width: '80px' },
+  { key: 'enabled', label: t('admin.languages.enabled'), width: '100px' },
+  { key: 'completion', label: t('admin.languages.completion'), width: '150px' },
 ];
 
 // Computed
 const languageFilterOptions = computed(() => [
-  { value: 'all', label: t(keys.common.all) },
+  { value: 'all', label: t('common.all') },
   ...languages.value.map(lang => ({
     value: lang.code,
     label: lang.name,
@@ -223,7 +223,7 @@ async function loadData() {
   } catch (error) {
     console.error('Error loading data:', error);
     toastService?.show({
-      message: t(keys.errors.loadingData),
+      message: t('errors.loadingData'),
       type: 'error',
     });
   } finally {
@@ -235,7 +235,7 @@ async function loadData() {
 async function toggleLanguage(language: Language) {
   // TODO: Update in database
   toastService?.show({
-    message: t(keys.admin.languages.languageUpdated, { name: language.name }),
+    message: t('admin.languages.languageUpdated', { name: language.name }),
     type: 'success',
   });
 }
@@ -243,7 +243,7 @@ async function toggleLanguage(language: Language) {
 async function toggleLocale(locale: Locale) {
   // TODO: Update in database
   toastService?.show({
-    message: t(keys.admin.languages.localeUpdated, { name: locale.name }),
+    message: t('admin.languages.localeUpdated', { name: locale.name }),
     type: 'success',
   });
 }
@@ -251,7 +251,7 @@ async function toggleLocale(locale: Locale) {
 function editLanguage(language: Language) {
   // TODO: Open edit modal
   toastService?.show({
-    message: t(keys.admin.languages.editNotImplemented),
+    message: t('admin.languages.editNotImplemented'),
     type: 'info',
   });
 }
@@ -259,7 +259,7 @@ function editLanguage(language: Language) {
 function editLocale(locale: Locale) {
   // TODO: Open edit modal
   toastService?.show({
-    message: t(keys.admin.languages.editNotImplemented),
+    message: t('admin.languages.editNotImplemented'),
     type: 'info',
   });
 }
@@ -267,7 +267,7 @@ function editLocale(locale: Locale) {
 function showAddLanguage() {
   // TODO: Open add modal
   toastService?.show({
-    message: t(keys.admin.languages.addNotImplemented),
+    message: t('admin.languages.addNotImplemente'),
     type: 'info',
   });
 }

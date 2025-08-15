@@ -309,11 +309,9 @@ export const useAuthStore = defineStore('auth', () => {
       try {
         localStorage.setItem('tiko:locale', settings.language)
         
-        // Trigger a storage event to notify i18n system
-        window.dispatchEvent(new StorageEvent('storage', {
-          key: 'tiko:locale',
-          newValue: settings.language,
-          storageArea: localStorage
+        // Trigger custom event to notify i18n system
+        window.dispatchEvent(new CustomEvent('tiko-locale-change', {
+          detail: { locale: settings.language }
         }))
       } catch (err) {
         console.error('[Auth Store] Failed to update i18n locale:', err)
@@ -451,11 +449,9 @@ export const useAuthStore = defineStore('auth', () => {
       console.log('[Auth Store] Setting tiko:locale to:', language)
       localStorage.setItem('tiko:locale', language)
       
-      // Trigger a storage event to notify i18n system
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'tiko:locale',
-        newValue: language,
-        storageArea: localStorage
+      // Trigger custom event to notify i18n system
+      window.dispatchEvent(new CustomEvent('tiko-locale-change', {
+        detail: { locale: language }
       }))
       
       // Verify what was actually stored

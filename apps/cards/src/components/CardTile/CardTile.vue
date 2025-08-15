@@ -5,13 +5,14 @@
       canDrag ? 'can-drag' : '',
       isDragReady ? 'drag-ready' : '',
       isSelected ? 'selected' : '',
-      selectionMode ? 'selection-mode' : ''
+      selectionMode ? 'selection-mode' : '',
+      isImageLoaded && displayImage && imageUrl ? 'image-loaded' : ''
     ])" @click.stop="handleClick" @mousedown.stop="handleMouseDown" @mouseup.stop="handleMouseUp"
     @touchstart.stop="handleTouchStart" @touchend.stop="handleTouchEnd" @touchmove.stop="handleTouchMove"
     @touchcancel.stop="handleTouchEnd" :draggable="canDrag" @dragstart.stop="handleDragStart"
     @dragend.stop="handleDragEnd" @dragover.stop="handleDragOver" @dragleave.stop="handleDragLeave"
     @drop.stop="handleDrop">
-    <article :class="bemm('', ['', isEmpty ? 'empty' : '', editMode ? 'edit-mode' : ''])"
+    <article :class="bemm('', ['', isEmpty ? 'empty' : '', editMode ? 'edit-mode' : '', isImageLoaded && displayImage && imageUrl ? 'pop-in' : ''])"
       :style="!isEmpty && card?.color ? { '--card-color': `var(--color-${card.color})`, '--card-text': `var(--color-${card.color}-text)`, } : undefined">
       <div v-if="isEmpty && editMode" :class="bemm('empty-state')">
         <TIcon name="plus" size="large" />
@@ -34,7 +35,7 @@
 
         <!-- Regular tile content for non-groups -->
         <template v-else>
-          <figure v-if="displayImage && imageUrl" :class="bemm('figure')">
+          <figure v-if="displayImage && imageUrl && isImageLoaded" :class="bemm('figure')">
             <img :src="imageUrl" :alt="card.title" :class="bemm('image')" draggable="false" />
           </figure>
         </template>
@@ -51,7 +52,7 @@
 </template>
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { CardTile as CardTileType } from './CardTile.model';
 import { TIcon } from '@tiko/ui';
 import { useImageUrl } from '@tiko/core';
@@ -61,6 +62,10 @@ const { getImageVariants } = useImageUrl();
 
 // Template refs
 const wrapperEl = ref<HTMLElement>();
+
+// Image loading state
+const isImageLoaded = ref(false);
+const isImageLoading = ref(false);
 
 const props = defineProps<{
   card: CardTileType;
@@ -122,6 +127,36 @@ const getThumbnailUrl = (imageUrl: string): string => {
     return imageUrl;
   }
 };
+
+// Image loading logic
+const loadImage = (url: string) => {
+  if (!url) {
+    isImageLoaded.value = false;
+    isImageLoading.value = false;
+    return;
+  }
+
+  isImageLoading.value = true;
+  isImageLoaded.value = false;
+
+  const img = new Image();
+  img.onload = () => {
+    isImageLoaded.value = true;
+    isImageLoading.value = false;
+  };
+  img.onerror = () => {
+    isImageLoaded.value = false;
+    isImageLoading.value = false;
+  };
+  img.src = url;
+};
+
+// Watch for image URL changes
+watch(imageUrl, (newUrl) => {
+  if (newUrl && displayImage.value) {
+    loadImage(newUrl);
+  }
+}, { immediate: true });
 
 // Long press handling
 const startLongPress = () => {
@@ -253,6 +288,11 @@ const handleDrop = (event: DragEvent) => {
     }
   }
 
+  // Pop-in animation when image loads
+  &--pop-in {
+    animation: tile-image-pop-in 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) both;
+  }
+
   &__container {
     display: flex;
     flex-direction: column;
@@ -376,7 +416,7 @@ const handleDrop = (event: DragEvent) => {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-gray-dark);
+    color: var(--color-gray);
     opacity: 0;
 
     .card-tile--edit-mode & {
@@ -390,7 +430,7 @@ const handleDrop = (event: DragEvent) => {
     right: 0.5rem;
     width: 2rem;
     height: 2rem;
-    background: var(--color-primary);
+    background:var(--color-primary);
     color: white;
     border-radius: 50%;
     display: flex;
@@ -401,7 +441,7 @@ const handleDrop = (event: DragEvent) => {
   }
 
   &--edit-mode {
-    cursor: move;
+    cursor: grab;
 
     &:hover {
       transform: scale(0.98);
@@ -431,11 +471,15 @@ const handleDrop = (event: DragEvent) => {
 
     &--can-drag {
       .card-tile--edit-mode {
-        cursor: pointer;
+        cursor: grab;
         user-select: none;
         -webkit-user-select: none;
         -moz-user-select: none;
         -ms-user-select: none;
+        
+        &:active {
+          cursor: grabbing;
+        }
       }
     }
   }
@@ -450,6 +494,17 @@ const handleDrop = (event: DragEvent) => {
   100% {
     transform: scale(1);
     opacity: 1;
+  }
+}
+
+@keyframes tile-image-pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 </style>

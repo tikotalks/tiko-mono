@@ -1,0 +1,1 @@
+export { default as CardGhostTile } from './CardGhostTile.vue';
