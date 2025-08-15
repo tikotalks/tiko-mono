@@ -46,15 +46,30 @@ const handleGlobalKeyboard = (event: KeyboardEvent) => {
   // Always emit the key event for popup components
   eventBus.emit('app:key', { key: event.key })
   
-  // If no popup is open, handle app-level shortcuts
-  if (!isPopupOpen.value) {
-    // Handle edit mode and selection shortcuts
-    if (event.key === 'Escape' || event.key === 'e' || event.key === 's' || event.key === 'a') {
-      // Prevent default behavior
-      event.preventDefault()
-      // Emit edit mode shortcut event
-      eventBus.emit('app:editModeShortcut', { key: event.key })
+  // Check if the user is typing in an input, textarea, or contenteditable element
+  const target = event.target as HTMLElement
+  const isTyping = target.tagName === 'INPUT' || 
+                   target.tagName === 'TEXTAREA' || 
+                   target.tagName === 'SELECT' ||
+                   target.contentEditable === 'true' ||
+                   target.closest('[contenteditable="true"]')
+  
+  // Handle shortcuts based on context
+  if (event.key === 'Escape' || event.key === 'e' || event.key === 's' || event.key === 'a') {
+    // If user is typing in a form field, only allow Escape
+    if (isTyping && event.key !== 'Escape') {
+      return
     }
+    
+    // If a popup is open, only allow Escape
+    if (isPopupOpen.value && event.key !== 'Escape') {
+      return
+    }
+    
+    // Prevent default behavior
+    event.preventDefault()
+    // Emit edit mode shortcut event
+    eventBus.emit('app:editModeShortcut', { key: event.key })
   }
 }
 

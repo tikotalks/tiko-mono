@@ -23,24 +23,30 @@
             '--tile-gap': `${TILE_CONFIG.tileGap}px`,
           }">
             <template v-for="(card, index) in pageCards" :key="`slot-${pageIndex}-${index}`">
-              <div v-if="card" :class="bemm('tile-wrapper', ['', card.type !== 'ghost' && !card.id.startsWith('empty-') ? 'animating' : ''])
+              <div v-if="card" :class="bemm('tile-wrapper', ['', card.type !== CardTileTypes.GHOST && !card.id.startsWith('empty-') ? 'animating' : ''])
                 " :style="{
                 '--tile-index': index
               }">
-                <CardGhostTile v-if="card.type === CardTileType.GHOST" />
-                <CardTile v-else :card="card" :show-image="true" :show-title="true" :edit-mode="editMode"
-                  :is-empty="card.id.startsWith('empty-')" :has-children="tilesWithChildren?.has(card.id) || false"
-                  :children="tileChildrenMap?.get(card.id)" :is-selected="selectedTileIds?.has(card.id) || false"
+                <CardGhostTile v-if="card.type === CardTileTypes.GHOST" />
+                <CardTile v-else
+                  :card="card"
+                  :show-image="true"
+                  :show-title="true"
+                  :edit-mode="editMode"
                   :selection-mode="selectionMode"
-                  :context-menu="getContextMenu?.(card, pageIndex * cardsPerPage + index)"
-                  :has-active-menu="activeMenuCardId === card.id" :class="{
+                  :is-empty="card.id.startsWith('empty-')"
+                  :has-children="tilesWithChildren?.has(card.id) || false"
+                  :children="tileChildrenMap?.get(card.id)"
+                  :is-selected="selectedTileIds?.has(card.id) || false"
+                  :context-menu="!selectionMode && getContextMenu ? getContextMenu(card, pageIndex * cardsPerPage + index) : undefined"
+                  :class="{
                     'is-being-dragged': draggedCard?.id === card.id,
                     'is-drop-target': dropTarget === card.id,
                     'is-selected': selectedTileIds?.has(card.id)
-                  }" @click="handleCardClick(card, pageIndex * cardsPerPage + index)"
+                  }"
+                  @click="handleCardClick(card, pageIndex * cardsPerPage + index)"
                   @dragstart="handleDragStart($event, card)" @dragend="handleDragEnd"
-                  @dragover="handleDragOver($event, card)" @dragleave="handleDragLeave" @drop="handleDrop($event, card)"
-                  @menu-open="activeMenuCardId = card.id" @menu-close="activeMenuCardId = null" />
+                  @dragover="handleDragOver($event, card)" @dragleave="handleDragLeave" @drop="handleDrop($event, card)" />
               </div>
               <div v-else :class="bemm('empty-slot')" />
             </template>
@@ -69,14 +75,12 @@
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { CardTileType, CardTile as CardTileType } from './CardTile/CardTile.model';
+import { CardTileType as CardTileTypes, type CardTile as CardTileType } from './CardTile/CardTile.model';
 import CardTile from './CardTile/CardTile.vue';
 import { CardGhostTile } from './CardGhostTile';
 
 const bemm = useBemm('card-grid');
 
-// Track which card has an active context menu
-const activeMenuCardId = ref<string | null>(null);
 
 const props = defineProps<{
   cards: Array<CardTileType>;
@@ -955,7 +959,12 @@ onMounted(() => {
 
     &:hover {
       z-index: 2;
-      transform: scale(1.5);
+    }
+
+    // Higher z-index for tiles with open context menu
+    &:has(.context-panel--active) {
+      z-index: 100;
+      position: relative;
     }
 
     &--animating {

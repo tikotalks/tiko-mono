@@ -30,23 +30,62 @@ export const cardsService = {
       // Get current locale from i18n
       const { currentLocale } = useI18n();
       const locale = currentLocale.value;
+      console.log('[loadCards] Current locale from useI18n:', locale, typeof locale);
+      console.log('[loadCards] Raw currentLocale object:', currentLocale);
       
       // Load cards with translations for current locale
       const items = await cardsSupabaseService.getCardsWithTranslations(userId, parentId, locale);
+      console.log('[loadCards] Items returned from getCardsWithTranslations:', items.length, items.map(i => ({ 
+        id: i.id, 
+        name: i.name, 
+        content: i.content,
+        base_locale: i.base_locale,
+        effective_locale: i.effective_locale 
+      })));
       
-      return items.map(item => ({
-        id: item.id,
-        title: item.name,
-        type: item.type as any,
-        icon: (item.metadata as CardMetadata)?.icon || item.icon || 'square',
-        color: (item.metadata as CardMetadata)?.color || item.color || 'primary',
-        image: (item.metadata as CardMetadata)?.image || '',
-        speech: (item.metadata as CardMetadata)?.speech || item.content || '',
-        index: item.order_index ?? 0,
-        parentId: item.parent_id || undefined,
-        base_locale: item.base_locale || 'en',
-        effective_locale: item.effective_locale || item.base_locale || 'en',
-      }));
+      return items.map(item => {
+        const metadata = item.metadata as CardMetadata;
+        
+        // If we have a translation (effective_locale is set), use the translated content for speech
+        const speech = item.effective_locale && item.effective_locale !== item.base_locale
+          ? item.content || metadata?.speech || ''  // Use translated content if available
+          : metadata?.speech || item.content || ''; // Otherwise use metadata speech or base content
+        
+        console.log('[loadCards] Speech determination for card:', {
+          id: item.id,
+          name: item.name,
+          effective_locale: item.effective_locale,
+          base_locale: item.base_locale,
+          item_content: item.content,
+          metadata_speech: metadata?.speech,
+          final_speech: speech,
+          is_translated: item.effective_locale && item.effective_locale !== item.base_locale
+        });
+        
+        const result = {
+          id: item.id,
+          title: item.name, // This will already be the translated name from getCardsWithTranslations
+          type: item.type as any,
+          icon: metadata?.icon || item.icon || 'square',
+          color: metadata?.color || item.color || 'primary',
+          image: metadata?.image || '',
+          speech: speech,
+          index: item.order_index ?? 0,
+          parentId: item.parent_id || undefined,
+          base_locale: item.base_locale || 'en',
+          effective_locale: item.effective_locale || item.base_locale || 'en',
+        };
+        
+        console.log('[loadCards] Card tile created:', {
+          id: result.id,
+          title: result.title,
+          speech: result.speech,
+          base_locale: result.base_locale,
+          effective_locale: result.effective_locale
+        });
+        
+        return result;
+      });
     } catch (error) {
       console.error('Failed to load cards:', error);
       return [];

@@ -12,8 +12,7 @@
       isDragReady ? 'drag-ready' : '',
       isSelected ? 'selected' : '',
       selectionMode ? 'selection-mode' : '',
-      isImageLoaded && displayImage && imageUrl ? 'image-loaded' : '',
-      hasActiveMenu ? 'active-menu' : ''
+      isImageLoaded && displayImage && imageUrl ? 'image-loaded' : ''
     ])" @click.stop="handleClick" @mousedown.stop="handleMouseDown" @mouseup.stop="handleMouseUp"
     @touchstart.stop="handleTouchStart" @touchend.stop="handleTouchEnd" @touchmove.stop="handleTouchMove"
     @touchcancel.stop="handleTouchEnd" :draggable="canDrag" @dragstart.stop="handleDragStart"
@@ -66,8 +65,7 @@
       isDragReady ? 'drag-ready' : '',
       isSelected ? 'selected' : '',
       selectionMode ? 'selection-mode' : '',
-      isImageLoaded && displayImage && imageUrl ? 'image-loaded' : '',
-      hasActiveMenu ? 'active-menu' : ''
+      isImageLoaded && displayImage && imageUrl ? 'image-loaded' : ''
     ])" @click.stop="handleClick" @mousedown.stop="handleMouseDown" @mouseup.stop="handleMouseUp"
     @touchstart.stop="handleTouchStart" @touchend.stop="handleTouchEnd" @touchmove.stop="handleTouchMove"
     @touchcancel.stop="handleTouchEnd" :draggable="canDrag" @dragstart.stop="handleDragStart"
@@ -139,7 +137,6 @@ const props = defineProps<{
   isSelected?: boolean;
   selectionMode?: boolean;
   contextMenu?: any[];
-  hasActiveMenu?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -350,11 +347,6 @@ const handleDrop = (event: DragEvent) => {
 
     &--selection-mode {
       cursor: pointer;
-    }
-    
-    &--active-menu {
-      z-index: 100;
-      position: relative;
     }
   }
 
