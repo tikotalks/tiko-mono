@@ -365,12 +365,12 @@ watch(() => props.translations, (newTranslations) => {
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--space-l);
-    width: 320px;
+    width: fit-content;
 
     @media (min-width: 960px) {
 
       &:has(.card-form__column:nth-child(2)){
-        width: 480px;
+        width: fit-content;
 
         grid-template-columns: 1fr 1fr;
       }
