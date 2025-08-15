@@ -1,131 +1,100 @@
 <template>
   <div :class="bemm()">
-    <TForm @submit.prevent="handleSubmit">
-      <!-- Title -->
-      <TFormField
-        label="Title"
-        name="title"
-        required
-      >
-        <TInputText
-          v-model="form.title"
-          placeholder="Enter card title"
-          maxlength="50"
-        />
-      </TFormField>
+    <TForm @submit.prevent="handleSubmit" :class="bemm('form')">
+      <div :class="bemm('columns')">
+        <!-- Left Column: Main Form Fields -->
+        <div :class="bemm('column', ['', 'main'])">
+          <TFormGroup>
 
-      <!-- Color Selection -->
-      <TFormField
-        label="Color"
-        name="color"
-      >
-        <TColorPicker
-          v-model="form.color"
-          :colors="availableColors"
-        />
-      </TFormField>
+          <!-- Title -->
+          <TFormField :label="t('common.title')" name="title" required>
+            <TInputText v-model="form.title" :placeholder="t('cards.enterCardTitle')" max="50" />
+          </TFormField>
 
-      <!-- Image Selection -->
-      <TFormField
-        label="Image"
-        name="image"
-      >
-        <div :class="bemm('image-field')">
-          <div v-if="form.image" :class="bemm('image-preview')">
-            <img :src="form.image" :alt="form.title || 'Selected image'" />
-            <div :class="bemm('image-actions')">
-              <TButton
-                icon="image"
-                size="small"
-                type="outline"
-                color="primary"
-                @click="openImageSelector"
-                :aria-label="'Change image'"
-              />
-              <TButton
-                icon="xmark"
-                size="small"
-                type="ghost"
-                color="error"
-                @click="() => { form.image = ''; searchForSuggestions(form.title); }"
-                :aria-label="'Remove image'"
-              />
-            </div>
-          </div>
-          <div v-else>
-            <TButton
-              icon="image"
-              type="outline"
-              color="secondary"
-              @click="openImageSelector"
-            >
-              Select Image
-            </TButton>
+          <!-- Color Selection -->
+          <TFormField :label="t('common.color')" name="color">
+            <TColorPicker v-model="form.color" :colors="availableColors" />
+          </TFormField>
 
-            <!-- Image suggestions based on title -->
-            <div v-if="imageSuggestions.length > 0 && form.title && !form.image" :class="bemm('suggestions')">
-              <p :class="bemm('suggestions-label')">Suggested images based on "{{ form.title }}":</p>
-              <div :class="bemm('suggestions-grid')">
-                <div
-                  v-for="suggestion in imageSuggestions"
-                  :key="suggestion.id"
-                  :class="bemm('suggestion')"
-                  @click="selectSuggestion(suggestion)"
-                >
-                  <img :src="suggestion.thumbnail" :alt="suggestion.title" />
-                  <span>{{ suggestion.title }}</span>
+          <!-- Image Selection -->
+          <TFormField :label="t('common.image')" name="image">
+            <div :class="bemm('image-field')">
+              <div v-if="form.image" :class="bemm('image-preview')">
+                <img :src="form.image" :alt="form.title || 'Selected image'" />
+                <div :class="bemm('image-actions')">
+                  <TButton :icon="Icons.IMAGE" size="small" type="outline" color="primary" @click="openImageSelector"
+                    :aria-label="'Change image'" />
+                  <TButton :icon="Icons.MULTIPLY_M" size="small" type="ghost" color="error"
+                    @click="() => { form.image = ''; searchForSuggestions(form.title); }"
+                    :aria-label="'Remove image'" />
+                </div>
+              </div>
+              <div v-else>
+                <TButton icon="image" type="outline" color="secondary" @click="openImageSelector">
+                  {{ t('common.selectImage') }}
+                </TButton>
+
+                <!-- Image suggestions based on title -->
+                <div v-if="imageSuggestions.length > 0 && form.title && !form.image" :class="bemm('suggestions')">
+                  <p :class="bemm('suggestions-label')">Suggested images based on "{{ form.title }}":</p>
+                  <div :class="bemm('suggestions-grid')">
+                    <div v-for="suggestion in imageSuggestions" :key="suggestion.id" :class="bemm('suggestion')"
+                      @click="selectSuggestion(suggestion)">
+                      <img :src="suggestion.thumbnail" :alt="suggestion.title" />
+                      <span>{{ suggestion.title }}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
+          </TFormField>
+
+          <!-- Speech Text -->
+          <TFormField label="Speech Text" name="speech" help="Text to be spoken when the tile is clicked">
+            <TTextarea v-model="form.speech" placeholder="Enter text to be spoken" rows="3" max="500"
+              @input="speechManuallyEdited = true" />
+          </TFormField>
+
+        </TFormGroup>
+
+        </div>
+
+        <!-- Right Column: Translations -->
+        <div v-if="showTranslations" :class="bemm('column', ['', 'translations'])">
+          <div :class="bemm('translations-header')">
+            <h3 :class="bemm('section-title')">{{ t('cards.translations') }}</h3>
+          </div>
+
+          <div :class="bemm('translations-content')">
+            <CardTranslations v-model="form.translations" :item-id="props.card?.id" :base-title="form.title"
+              :base-speech="form.speech" :base-locale="currentLocale.value" />
           </div>
         </div>
-      </TFormField>
-
-      <!-- Speech Text -->
-      <TFormField
-        label="Speech Text"
-        name="speech"
-        help="Text to be spoken when the tile is clicked"
-      >
-        <TTextarea
-          v-model="form.speech"
-          placeholder="Enter text to be spoken"
-          rows="3"
-          maxlength="500"
-          @input="speechManuallyEdited = true"
-        />
-      </TFormField>
+      </div>
 
       <!-- Form Actions -->
-      <TFormActions>
+        <TFormActions :class="bemm('actions')">
+          <!-- Left side: Translations toggle -->
+          <TButton type="outline" color="secondary" :icon="Icons.SPEECH_BALLOON" @click="toggleTranslations">
+            {{ showTranslations ? t('common.hide') : t('common.show') }} {{ t('cards.translations') }}
+            <span v-if="form.translations.length > 0" :class="bemm('translations-count')">
+              ({{ form.translations.length }})
+            </span>
+          </TButton>
 
-        <TButtonGroup :class="bemm('main-actions')"> <TButton
-          v-if="isEditing"
-          icon="trash"
-          type="ghost"
-          color="error"
-          @click="handleDelete"
-          :class="bemm('delete-button')"
-        >
-          Delete
-        </TButton>
-          <TButton
-            type="outline"
-            color="secondary"
-            @click="handleCancel"
-          >
-            Cancel
-          </TButton>
-          <TButton
-            type="default"
-            color="primary"
-            htmlButtonType="submit"
-            :disabled="!isValid"
-          >
-            {{ isEditing ? 'Save Changes' : 'Create Card' }}
-          </TButton>
-        </TButtonGroup>
-      </TFormActions>
+          <TButtonGroup :class="bemm('main-actions')">
+            <TButton v-if="isEditing" icon="trash" :type="ButtonType.ICON_ONLY" :tooltip="t('common.delete')"
+              color="error" @click="handleDelete" :class="bemm('delete-button')">
+              {{ t('common.delete') }}
+            </TButton>
+            <TButton type="outline" color="secondary" @click="handleCancel">
+              {{ t('common.cancel') }}
+            </TButton>
+            <TButton type="default" color="primary" htmlButtonType="submit" :disabled="!isValid">
+              {{ isEditing ? t('common.saveChanges') : t('common.createCard') }}
+            </TButton>
+          </TButtonGroup>
+        </TFormActions>
     </TForm>
   </div>
 </template>
@@ -145,23 +114,32 @@ import {
   TInputText,
   TMediaSelector,
   debounce,
+  useI18n,
+  ButtonType,
+  TFormGroup,
 } from '@tiko/ui';
 import { CardTile } from './CardTile/CardTile.model';
-import { mediaService, useImages, useImageUrl } from '@tiko/core';
+import { mediaService, useImages, useImageUrl, useAuthStore } from '@tiko/core';
+import CardTranslations from './CardTranslations/CardTranslations.vue';
+import type { ItemTranslation } from '../models/ItemTranslation.model';
+import { Icons } from 'open-icon';
 
 const bemm = useBemm('card-form');
 const popupService = inject<any>('popupService');
 const { imageList, filteredImages, searchImages, loadImages } = useImages();
 const { getImageVariants } = useImageUrl();
+const { t, currentLocale } = useI18n();
+const authStore = useAuthStore();
 
 const props = defineProps<{
   card?: CardTile;
   index?: number;
   hasChildren?: boolean;
+  translations?: ItemTranslation[];
 }>();
 
 const emit = defineEmits<{
-  submit: [card: Partial<CardTile>, index: number];
+  submit: [card: Partial<CardTile>, index: number, translations: ItemTranslation[]];
   cancel: [];
   delete: [];
 }>();
@@ -179,10 +157,20 @@ const form = reactive({
   color: props.card?.color || 'primary',
   image: props.card?.image || '',
   speech: props.card?.speech || '',
+  translations: props.translations || [] as ItemTranslation[],
 });
 
 // Track if user has manually edited speech
 const speechManuallyEdited = ref(false);
+
+// Translations visibility toggle
+const showTranslations = ref(false);
+
+// Toggle translations visibility
+const toggleTranslations = () => {
+  showTranslations.value = !showTranslations.value;
+};
+
 
 // Auto-populate speech field when title changes
 watch(() => form.title, (newTitle) => {
@@ -203,34 +191,34 @@ const searchForSuggestions = debounce(async (searchTerm: string) => {
   try {
     // Set the search query
     searchImages(searchTerm);
-    
+
     // Wait a bit for the reactive search to update
     await new Promise(resolve => setTimeout(resolve, 100));
-    
+
     // Get the filtered results and find best matches
     if (filteredImages.value.length > 0) {
       const searchTermLower = searchTerm.toLowerCase();
       const results = [...filteredImages.value];
-      
+
       // Sort by relevance
       results.sort((a, b) => {
         const aTitle = ((a as any).title || (a as any).original_filename || '').toLowerCase();
         const bTitle = ((b as any).title || (b as any).original_filename || '').toLowerCase();
-        
+
         // Exact matches first
         if (aTitle === searchTermLower && bTitle !== searchTermLower) return -1;
         if (bTitle === searchTermLower && aTitle !== searchTermLower) return 1;
-        
+
         // Then word boundary matches
         const aWordMatch = new RegExp(`\\b${searchTermLower}\\b`).test(aTitle);
         const bWordMatch = new RegExp(`\\b${searchTermLower}\\b`).test(bTitle);
         if (aWordMatch && !bWordMatch) return -1;
         if (bWordMatch && !aWordMatch) return 1;
-        
+
         // Then by title length (shorter is better for partial matches)
         return aTitle.length - bTitle.length;
       });
-      
+
       // Take top 6 suggestions
       imageSuggestions.value = results.slice(0, 6).map(img => ({
         id: img.id,
@@ -275,9 +263,10 @@ const handleSubmit = () => {
     image: form.image?.trim() || '',
     speech: form.speech?.trim() || '',
     icon: 'square',
+    base_locale: currentLocale.value, // Store the base locale
   };
 
-  emit('submit', cardData, props.index || 0);
+  emit('submit', cardData, props.index || 0, form.translations);
 };
 
 const handleCancel = () => {
@@ -325,6 +314,25 @@ const openImageSelector = async () => {
   });
 };
 
+const openTranslationsPanel = () => {
+  popupService.open({
+    component: CardTranslations,
+    title: t('cards.manageTranslations'),
+    size: 'large',
+    position: 'right', // Show as sidepanel
+    props: {
+      modelValue: form.translations,
+      itemId: props.card?.id,
+      baseTitle: form.title,
+      baseSpeech: form.speech,
+      baseLocale: currentLocale.value,
+      'onUpdate:modelValue': (translations: ItemTranslation[]) => {
+        form.translations = translations;
+      },
+    },
+  });
+};
+
 // Watch for prop changes
 watch(() => props.card, (newCard) => {
   if (newCard) {
@@ -336,16 +344,83 @@ watch(() => props.card, (newCard) => {
     speechManuallyEdited.value = isEditing.value;
   }
 }, { immediate: true });
+
+// Watch for translation prop changes
+watch(() => props.translations, (newTranslations) => {
+  if (newTranslations) {
+    form.translations = [...newTranslations];
+  }
+}, { immediate: true });
 </script>
 
 <style lang="scss">
 .card-form {
-  padding: var(--space);
-  min-width: 400px;
+  width: 100%;
 
-  @media (max-width: 480px) {
-    min-width: auto;
+  &__form {
     width: 100%;
+  }
+
+  &__columns {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-l);
+    width: 320px;
+
+    @media (min-width: 960px) {
+
+      &:has(.card-form__column:nth-child(2)){
+        width: 480px;
+
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  }
+
+  &__column {
+    &--main {
+      // Main form column styles
+    }
+
+    &--translations {
+      background: var(--color-background-secondary);
+      padding: var(--space);
+      border-radius: var(--radius);
+      border: 1px solid var(--color-border);
+    }
+  }
+
+  &__section-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+  }
+
+  &__translations-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space);
+  }
+
+  &__translations-content {
+    // Content styles
+  }
+
+  &__translations-count {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    margin-left: var(--space-xs);
+  }
+
+  &__actions {
+    margin-top: var(--space-lg);
+    padding-top: var(--space);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   &__image-field {
@@ -467,18 +542,9 @@ watch(() => props.card, (newCard) => {
     }
   }
 
-  // Form actions with delete button
-  :deep(.form-actions) {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-  }
-
   &__main-actions {
     display: flex;
     gap: var(--space);
-    margin-left: auto;
   }
 
   &__delete-button {
