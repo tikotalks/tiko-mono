@@ -174,6 +174,7 @@ import {
   TStatusBar,
   TButtonGroup,
   TColorPicker,
+  TContextMenu,
   BaseColors,
   useI18n,
   useParentMode,
@@ -415,30 +416,104 @@ const handleSpeechPermission = async () => {
   }
 };
 
-const handleCardClick = async (card: CardTile, index: number) => {
-  // In selection mode, toggle selection instead of normal behavior
-  if (selectionMode.value && !card.id.startsWith('empty-')) {
-    toggleTileSelection(card.id);
+// Show context menu for card actions in edit mode
+const showCardContextMenu = (card: CardTile, index: number, event: MouseEvent) => {
+  const isNewCard = card.id.startsWith('empty-');
+
+  if (isNewCard) {
+    // For empty cards, directly open create form
+    openCardEditForm(card, index);
     return;
   }
 
-  if (isEditMode.value) {
-    // In edit mode, open form to create/edit card
-    const isNewCard = card.id.startsWith('empty-');
-
-    // Load translations if editing existing card
-    let translations: ItemTranslation[] = [];
-    if (!isNewCard) {
-      try {
-        translations = await ItemTranslationService.getTranslations(card.id);
-      } catch (error) {
-        console.error('Failed to load translations:', error);
+  // For existing cards, show action popup
+  const contextMenuActions = [
+    {
+      label: t('common.view'),
+      icon: Icons.EYE,
+      action: () => {
+        popupService.close();
+        handleTileAction(card);
+      }
+    },
+    {
+      label: t('common.edit'),
+      icon: Icons.EDIT,
+      action: () => {
+        popupService.close();
+        openCardEditForm(card, index);
+      }
+    },
+    {
+      label: t('common.select'),
+      icon: Icons.CHECK_M,
+      action: () => {
+        popupService.close();
+        if (!selectionMode.value) {
+          selectionMode.value = true;
+        }
+        toggleTileSelection(card.id);
+      }
+    },
+    {
+      label: t('common.delete'),
+      icon: Icons.TRASH,
+      color: 'error',
+      action: () => {
+        popupService.close();
+        confirmDeleteCard(card);
       }
     }
+  ];
 
-    popupService.open({
-      component: CardForm,
-      title: isNewCard ? 'Create New Tile' : 'Edit Tile',
+  // Create a simple action menu component inline
+  const ActionMenu = {
+    template: `
+      <div class="card-action-menu">
+        <TButton
+          v-for="action in actions"
+          :key="action.label"
+          :icon="action.icon"
+          :color="action.color || 'secondary'"
+          type="outline"
+          size="large"
+          @click="action.action"
+          class="action-button"
+        >
+          {{ action.label }}
+        </TButton>
+      </div>
+    `,
+    props: ['actions']
+  };
+
+  popupService.open({
+    component: ActionMenu,
+    title: `Actions for "${card.title}"`,
+    size: 'small',
+    props: {
+      actions: contextMenuActions
+    }
+  });
+};
+
+// Open the card edit form
+const openCardEditForm = async (card: CardTile, index: number) => {
+  const isNewCard = card.id.startsWith('empty-');
+
+  // Load translations if editing existing card
+  let translations: ItemTranslation[] = [];
+  if (!isNewCard) {
+    try {
+      translations = await ItemTranslationService.getTranslations(card.id);
+    } catch (error) {
+      console.error('Failed to load translations:', error);
+    }
+  }
+
+  popupService.open({
+    component: CardForm,
+    title: isNewCard ? 'Create New Tile' : 'Edit Tile',
       props: {
         card: card,
         index: index,
@@ -499,6 +574,44 @@ const handleCardClick = async (card: CardTile, index: number) => {
         },
       },
     });
+};
+
+// Confirm delete card action
+const confirmDeleteCard = async (card: CardTile) => {
+  const hasChildren = tilesWithChildren.value.has(card.id);
+  const message = hasChildren
+    ? t('cards.deleteThisCard') + ' ' + 'This will also delete all contents in this group.'
+    : t('cards.deleteThisCard');
+    
+  if (confirm(message)) {
+    try {
+      const success = await cardsService.deleteCard(card.id);
+      if (success) {
+        // Remove from UI
+        cards.value = cards.value.filter(c => c.id !== card.id);
+        // Clear from cache
+        tilesWithChildren.value.delete(card.id);
+        tileChildrenMap.value.delete(card.id);
+      } else {
+        alert('Failed to delete card. Please try again.');
+      }
+    } catch (error) {
+      console.error('Failed to delete card:', error);
+      alert('Failed to delete card. Please try again.');
+    }
+  }
+};
+
+const handleCardClick = async (card: CardTile, index: number) => {
+  // In selection mode, toggle selection instead of normal behavior
+  if (selectionMode.value && !card.id.startsWith('empty-')) {
+    toggleTileSelection(card.id);
+    return;
+  }
+
+  if (isEditMode.value) {
+    // In edit mode, show context menu
+    showCardContextMenu(card, index, event as MouseEvent);
   } else {
     // In view mode, check if tile has children
     if (!card.id.startsWith('empty-')) {
@@ -1315,6 +1428,19 @@ onMounted(async () => {
   &__selection-actions {
     display: flex;
     gap: var(--space);
+  }
+}
+
+// Action menu styles
+.card-action-menu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space);
+  
+  .action-button {
+    width: 100%;
+    justify-content: flex-start;
   }
 }
 

@@ -16,9 +16,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { TFramework, type FrameworkConfig, useI18n } from '@tiko/ui'
+import { useEventBus } from '@tiko/core'
 import tikoConfig from '../tiko.config'
 import backgroundImage from './assets/app-icon-yes-no.png'
 import { initializeTranslations } from './services/translation-init.service'
@@ -26,6 +27,13 @@ import { initializeTranslations } from './services/translation-init.service'
 const route = useRoute()
 const loading = ref(true)
 const { t, keys } = useI18n()
+const eventBus = useEventBus()
+
+// Global keyboard event handler
+const handleGlobalKeyboard = (event: KeyboardEvent) => {
+  // Emit the key event for popup components to listen to
+  eventBus.emit('app:key', { key: event.key })
+}
 
 // Initialize translations on app startup
 onMounted(async () => {
@@ -36,6 +44,14 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+  
+  // Set up global keyboard listener for popup shortcuts
+  document.addEventListener('keydown', handleGlobalKeyboard)
+})
+
+// Cleanup keyboard listener
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleGlobalKeyboard)
 })
 
 // Check if current route is auth callback
