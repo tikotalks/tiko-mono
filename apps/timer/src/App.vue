@@ -38,7 +38,7 @@
         type="icon-only"
         size="medium"
         @click="showEditSettings"
-        :aria-label="t(keys.settings.title)"
+        :aria-label="t(keys?.settings?.title || 'timer.settings')"
       />
 
       <!-- Mode Toggle -->
@@ -111,7 +111,7 @@ const frameworkConfig = computed<FrameworkConfig>(() => ({
     sections: [
       {
         id: 'timer-settings',
-        title: t(keys.settings.title),
+        title: t(keys?.settings?.title || 'timer.settings'),
         icon: 'clock',
         order: 10,
         component: TimerSettingsForm,
