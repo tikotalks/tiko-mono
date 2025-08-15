@@ -187,6 +187,9 @@ jobs:
           pnpm --filter=@tiko/ui build
           pnpm --filter=@tiko/core build
           pnpm --filter=timer build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           
       - name: Install Wrangler
         run: npm install -g wrangler
@@ -227,6 +230,9 @@ jobs:
           pnpm --filter=@tiko/ui build
           pnpm --filter=@tiko/core build
           pnpm --filter=yes-no build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           
       - name: Install Wrangler
         run: npm install -g wrangler
@@ -267,6 +273,9 @@ jobs:
           pnpm --filter=@tiko/ui build
           pnpm --filter=@tiko/core build
           pnpm --filter=cards build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           
       - name: Install Wrangler
         run: npm install -g wrangler
@@ -307,6 +316,9 @@ jobs:
           pnpm --filter=@tiko/ui build
           pnpm --filter=@tiko/core build
           pnpm --filter=radio build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           
       - name: Install Wrangler
         run: npm install -g wrangler
@@ -347,6 +359,9 @@ jobs:
           pnpm --filter=@tiko/ui build
           pnpm --filter=@tiko/core build
           pnpm --filter=todo build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           
       - name: Install Wrangler
         run: npm install -g wrangler
@@ -387,6 +402,9 @@ jobs:
           pnpm --filter=@tiko/ui build
           pnpm --filter=@tiko/core build
           pnpm --filter=type build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           
       - name: Install Wrangler
         run: npm install -g wrangler
