@@ -257,11 +257,32 @@ function updateDimensions(): void {
   if (containerElement && containerElement.parentElement) {
     const rect = containerElement.parentElement.getBoundingClientRect();
     screenWidth.value = rect.width || window.innerWidth;
-    screenHeight.value = rect.height || window.innerHeight;
+    screenHeight.value = rect.height || getAvailableHeight();
   } else {
     screenWidth.value = window.innerWidth;
-    screenHeight.value = window.innerHeight;
+    screenHeight.value = getAvailableHeight();
   }
+}
+
+// Get available height accounting for mobile browser UI
+function getAvailableHeight(): number {
+  // For mobile devices, use visual viewport if available (better for mobile Safari)
+  if ('visualViewport' in window && window.visualViewport) {
+    return window.visualViewport.height;
+  }
+  
+  // Check if we're on mobile Safari
+  const isIOSSafari = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  
+  if (isIOSSafari) {
+    // On iOS Safari, use document height which excludes dynamic UI
+    const documentHeight = document.documentElement.clientHeight;
+    // Fallback to a reasonable estimate if document height seems wrong
+    return documentHeight > 200 ? documentHeight : window.innerHeight * 0.85;
+  }
+  
+  // For other browsers, use innerHeight
+  return window.innerHeight;
 }
 
 // Keep track of view type for responsive behavior
@@ -765,6 +786,16 @@ onMounted(() => {
 
   window.addEventListener('resize', onResize, { passive: true });
 
+  // Listen for visual viewport changes (mobile browser UI changes)
+  if ('visualViewport' in window && window.visualViewport) {
+    const handleViewportChange = () => {
+      updateDimensions();
+      updateTranslateX();
+    };
+    window.visualViewport.addEventListener('resize', handleViewportChange, { passive: true });
+    window.visualViewport.addEventListener('scroll', handleViewportChange, { passive: true });
+  }
+
   // Use ResizeObserver for container size changes
   if (containerElement && 'ResizeObserver' in window) {
     const resizeObserver = new ResizeObserver(() => {
@@ -776,12 +807,20 @@ onMounted(() => {
     onBeforeUnmount(() => {
       resizeObserver.disconnect();
       window.removeEventListener('resize', onResize);
+      if ('visualViewport' in window && window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', onResize);
+        window.visualViewport.removeEventListener('scroll', onResize);
+      }
       // Clean up drag monitoring
       stopDragMonitoring();
     });
   } else {
     onBeforeUnmount(() => {
       window.removeEventListener('resize', onResize);
+      if ('visualViewport' in window && window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', onResize);
+        window.visualViewport.removeEventListener('scroll', onResize);
+      }
       // Clean up drag monitoring
       stopDragMonitoring();
     });

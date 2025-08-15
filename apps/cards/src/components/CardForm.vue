@@ -6,56 +6,56 @@
         <div :class="bemm('column', ['', 'main'])">
           <TFormGroup>
 
-          <!-- Title -->
-          <TFormField :label="t('common.title')" name="title" required>
-            <TInputText v-model="form.title" :placeholder="t('cards.enterCardTitle')" max="50" />
-          </TFormField>
+            <!-- Title -->
+            <TFormField :label="t('common.title')" name="title" required>
+              <TInputText v-model="form.title" :placeholder="t('cards.enterCardTitle')" max="50" />
+            </TFormField>
 
-          <!-- Color Selection -->
-          <TFormField :label="t('common.color')" name="color">
-            <TColorPicker v-model="form.color" :colors="availableColors" />
-          </TFormField>
+            <!-- Color Selection -->
+            <TFormField :label="t('common.color')" name="color">
+              <TColorPicker v-model="form.color" :colors="availableColors" />
+            </TFormField>
 
-          <!-- Image Selection -->
-          <TFormField :label="t('common.image')" name="image">
-            <div :class="bemm('image-field')">
-              <div v-if="form.image" :class="bemm('image-preview')">
-                <img :src="form.image" :alt="form.title || 'Selected image'" />
-                <div :class="bemm('image-actions')">
-                  <TButton :icon="Icons.IMAGE" size="small" type="outline" color="primary" @click="openImageSelector"
-                    :aria-label="'Change image'" />
-                  <TButton :icon="Icons.MULTIPLY_M" size="small" type="ghost" color="error"
-                    @click="() => { form.image = ''; searchForSuggestions(form.title); }"
-                    :aria-label="'Remove image'" />
+            <!-- Image Selection -->
+            <TFormField :label="t('common.image')" name="image">
+              <div :class="bemm('image-field')">
+                <div v-if="form.image" :class="bemm('image-preview')">
+                  <img :src="form.image" :alt="form.title || 'Selected image'" />
+                  <div :class="bemm('image-actions')">
+                    <TButton :icon="Icons.IMAGE" size="small" type="outline" color="primary" @click="openImageSelector"
+                      :aria-label="'Change image'" />
+                    <TButton :icon="Icons.MULTIPLY_M" size="small" type="ghost" color="error"
+                      @click="() => { form.image = ''; searchForSuggestions(form.title); }"
+                      :aria-label="'Remove image'" />
+                  </div>
                 </div>
-              </div>
-              <div v-else>
-                <TButton icon="image" type="outline" color="secondary" @click="openImageSelector">
-                  {{ t('common.selectImage') }}
-                </TButton>
+                <div v-else>
+                  <TButton icon="image" type="outline" color="secondary" @click="openImageSelector">
+                    {{ t('common.selectImage') }}
+                  </TButton>
 
-                <!-- Image suggestions based on title -->
-                <div v-if="imageSuggestions.length > 0 && form.title && !form.image" :class="bemm('suggestions')">
-                  <p :class="bemm('suggestions-label')">Suggested images based on "{{ form.title }}":</p>
-                  <div :class="bemm('suggestions-grid')">
-                    <div v-for="suggestion in imageSuggestions" :key="suggestion.id" :class="bemm('suggestion')"
-                      @click="selectSuggestion(suggestion)">
-                      <img :src="suggestion.thumbnail" :alt="suggestion.title" />
-                      <span>{{ suggestion.title }}</span>
+                  <!-- Image suggestions based on title -->
+                  <div v-if="imageSuggestions.length > 0 && form.title && !form.image" :class="bemm('suggestions')">
+                    <p :class="bemm('suggestions-label')">Suggested images based on "{{ form.title }}":</p>
+                    <div :class="bemm('suggestions-grid')">
+                      <div v-for="suggestion in imageSuggestions" :key="suggestion.id" :class="bemm('suggestion')"
+                        @click="selectSuggestion(suggestion)">
+                        <img :src="suggestion.thumbnail" :alt="suggestion.title" />
+                        <span>{{ suggestion.title }}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </TFormField>
+            </TFormField>
 
-          <!-- Speech Text -->
-          <TFormField label="Speech Text" name="speech" help="Text to be spoken when the tile is clicked">
-            <TTextarea v-model="form.speech" placeholder="Enter text to be spoken" rows="3" max="500"
-              @input="speechManuallyEdited = true" />
-          </TFormField>
+            <!-- Speech Text -->
+            <TFormField label="Speech Text" name="speech" help="Text to be spoken when the tile is clicked">
+              <TTextarea v-model="form.speech" placeholder="Enter text to be spoken" rows="3" max="500"
+                @input="speechManuallyEdited = true" />
+            </TFormField>
 
-        </TFormGroup>
+          </TFormGroup>
 
         </div>
 
@@ -73,28 +73,30 @@
       </div>
 
       <!-- Form Actions -->
-        <TFormActions :class="bemm('actions')">
+      <TFormActions :class="bemm('actions')">
+
+
+        <TButtonGroup :class="bemm('main-actions')">
           <!-- Left side: Translations toggle -->
-          <TButton type="outline" color="secondary" :icon="Icons.SPEECH_BALLOON" @click="toggleTranslations">
+          <TButton type="outline" color="primary" :icon="Icons.SPEECH_BALLOON" @click="toggleTranslations">
             {{ showTranslations ? t('common.hide') : t('common.show') }} {{ t('cards.translations') }}
             <span v-if="form.translations.length > 0" :class="bemm('translations-count')">
               ({{ form.translations.length }})
             </span>
           </TButton>
 
-          <TButtonGroup :class="bemm('main-actions')">
-            <TButton v-if="isEditing" icon="trash" :type="ButtonType.ICON_ONLY" :tooltip="t('common.delete')"
-              color="error" @click="handleDelete" :class="bemm('delete-button')">
-              {{ t('common.delete') }}
-            </TButton>
-            <TButton type="outline" color="secondary" @click="handleCancel">
-              {{ t('common.cancel') }}
-            </TButton>
-            <TButton type="default" color="primary" htmlButtonType="submit" :disabled="!isValid">
-              {{ isEditing ? t('common.saveChanges') : t('common.createCard') }}
-            </TButton>
-          </TButtonGroup>
-        </TFormActions>
+          <TButton v-if="isEditing" icon="trash" :type="ButtonType.ICON_ONLY" :tooltip="t('common.delete')"
+            color="error" @click="handleDelete" :class="bemm('delete-button')">
+            {{ t('common.delete') }}
+          </TButton>
+          <TButton type="outline" color="secondary" @click="handleCancel">
+            {{ t('common.cancel') }}
+          </TButton>
+          <TButton type="default" color="primary" htmlButtonType="submit" :disabled="!isValid">
+            {{ isEditing ? t('common.saveChanges') : t('common.createCard') }}
+          </TButton>
+        </TButtonGroup>
+      </TFormActions>
     </TForm>
   </div>
 </template>
@@ -369,7 +371,7 @@ watch(() => props.translations, (newTranslations) => {
 
     @media (min-width: 960px) {
 
-      &:has(.card-form__column:nth-child(2)){
+      &:has(.card-form__column:nth-child(2)) {
         width: fit-content;
 
         grid-template-columns: 1fr 1fr;

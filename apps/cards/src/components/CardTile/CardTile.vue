@@ -444,6 +444,11 @@ const handleDrop = (event: DragEvent) => {
   &--edit-mode {
     cursor: grab;
 
+    // Disable pointer events on all child elements in edit mode
+    * {
+      pointer-events: none;
+    }
+
     &:hover {
       transform: scale(0.98);
       box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);

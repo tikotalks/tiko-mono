@@ -515,6 +515,11 @@ const handleTileAction = async (tile: CardTile) => {
     // Navigate to children
     navigateToTile(tile);
   } else if (tile.speech) {
+    // Request TTS permission on first interaction (especially important on iOS)
+    if (!hasPermission.value) {
+      await requestPermission();
+    }
+    
     // No children, speak the content
     // Use the effective locale (the locale of the content being displayed)
     // This ensures that if we're showing a translated card, we speak in that language
@@ -1183,6 +1188,12 @@ onMounted(async () => {
   width: 100%;
   height: 100vh;
   overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  -webkit-overflow-scrolling: touch;
 }
 
 :deep(.app-layout--is-app) {
@@ -1206,6 +1217,19 @@ onMounted(async () => {
   flex-direction: column;
 }
 
+// Prevent body/html scrolling on mobile devices
+:global(html, body) {
+  overflow: hidden;
+  height: 100vh;
+  -webkit-overflow-scrolling: touch;
+  -webkit-user-select: none;
+  user-select: none;
+  
+  // Prevent pull-to-refresh and overscroll effects on iOS
+  overscroll-behavior: none;
+  -webkit-overscroll-behavior: none;
+}
+
 .cards-view {
   &__container {
     display: flex;
@@ -1213,6 +1237,7 @@ onMounted(async () => {
     height: 100vh;
     width: 100%;
     position: relative;
+    overflow: hidden;
   }
 
   &__main {
@@ -1220,6 +1245,8 @@ onMounted(async () => {
     min-height: 0; // Important for flex children
     position: relative;
     width: 100%;
+    height: 100%;
+    overflow: hidden;
   }
 
   &__breadcrumbs {
