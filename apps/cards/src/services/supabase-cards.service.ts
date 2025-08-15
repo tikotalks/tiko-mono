@@ -1,4 +1,6 @@
 import { useAuthStore } from '@tiko/core';
+import { useI18n } from '@tiko/ui';
+import type { ItemTranslation } from '../models/ItemTranslation.model';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -15,6 +17,8 @@ interface CardItem {
   order_index: number;
   icon?: string;
   color?: string;
+  base_locale?: string;
+  effective_locale?: string;
   created_at: string;
   updated_at: string;
 }
@@ -99,6 +103,101 @@ class CardsSupabaseService {
     
     const response = await this.apiRequest<CardItem[]>(`items?${params.toString()}`);
     return response[0] || null;
+  }
+
+  // Get cards with translations for the current locale
+  async getCardsWithTranslations(userId: string, parentId?: string, locale?: string): Promise<CardItem[]> {
+    // First get the cards
+    const cards = await this.getCards(userId, parentId);
+    
+    if (cards.length === 0) return cards;
+    
+    // Get translations for all cards
+    const cardIds = cards.map(c => c.id);
+    const params = new URLSearchParams();
+    params.append('item_id', `in.(${cardIds.join(',')})`);
+    
+    if (locale) {
+      // Try to get translations for the specific locale
+      params.append('locale', `eq.${locale}`);
+    }
+    
+    const translations = await this.apiRequest<ItemTranslation[]>(`item_translations?${params.toString()}`);
+    
+    // Map translations to cards
+    const translationMap = new Map<string, ItemTranslation>();
+    translations.forEach(t => {
+      translationMap.set(t.item_id, t);
+    });
+    
+    // Apply translations to cards
+    return cards.map(card => {
+      const translation = translationMap.get(card.id);
+      if (translation) {
+        return {
+          ...card,
+          name: translation.name || card.name,
+          content: translation.content || card.content,
+          // When using a translation, the effective locale is the translation's locale
+          effective_locale: translation.locale
+        };
+      }
+      return card;
+    });
+  }
+
+  // Translation methods
+  async getItemTranslations(itemId: string): Promise<ItemTranslation[]> {
+    const params = new URLSearchParams();
+    params.append('item_id', `eq.${itemId}`);
+    params.append('order', 'locale.asc');
+    
+    return this.apiRequest<ItemTranslation[]>(`item_translations?${params.toString()}`);
+  }
+
+  async getItemTranslation(itemId: string, locale: string): Promise<ItemTranslation | null> {
+    const params = new URLSearchParams();
+    params.append('item_id', `eq.${itemId}`);
+    params.append('locale', `eq.${locale}`);
+    
+    const response = await this.apiRequest<ItemTranslation[]>(`item_translations?${params.toString()}`);
+    return response[0] || null;
+  }
+
+  async saveItemTranslation(translation: ItemTranslation): Promise<ItemTranslation> {
+    const { id, ...data } = translation;
+    
+    if (id) {
+      // Update existing
+      const response = await this.apiRequest<ItemTranslation[]>(`item_translations?id=eq.${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data)
+      });
+      return response[0];
+    } else {
+      // Insert new
+      const response = await this.apiRequest<ItemTranslation[]>('item_translations', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      return response[0];
+    }
+  }
+
+  async deleteItemTranslation(id: string): Promise<void> {
+    await this.apiRequest(`item_translations?id=eq.${id}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async upsertItemTranslations(translations: Omit<ItemTranslation, 'id'>[]): Promise<ItemTranslation[]> {
+    return this.apiRequest<ItemTranslation[]>('item_translations', {
+      method: 'POST',
+      headers: {
+        'Prefer': 'resolution=merge-duplicates,return=representation'
+      },
+      body: JSON.stringify(translations)
+    });
   }
 
   // TTS Audio methods

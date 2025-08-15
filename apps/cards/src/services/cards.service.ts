@@ -1,6 +1,9 @@
 import { useAuthStore } from '@tiko/core';
+import { useI18n } from '@tiko/ui';
 import type { CardTile } from '../components/CardTile/CardTile.model';
 import { cardsSupabaseService } from './supabase-cards.service';
+import { ItemTranslationService } from './item-translation.service';
+import type { ItemTranslation } from '../models/ItemTranslation.model';
 
 const APP_NAME = 'cards';
 
@@ -24,7 +27,12 @@ export const cardsService = {
         return [];
       }
       
-      const items = await cardsSupabaseService.getCards(userId, parentId);
+      // Get current locale from i18n
+      const { currentLocale } = useI18n();
+      const locale = currentLocale.value;
+      
+      // Load cards with translations for current locale
+      const items = await cardsSupabaseService.getCardsWithTranslations(userId, parentId, locale);
       
       return items.map(item => ({
         id: item.id,
@@ -33,9 +41,11 @@ export const cardsService = {
         icon: (item.metadata as CardMetadata)?.icon || item.icon || 'square',
         color: (item.metadata as CardMetadata)?.color || item.color || 'primary',
         image: (item.metadata as CardMetadata)?.image || '',
-        speech: (item.metadata as CardMetadata)?.speech || '',
+        speech: (item.metadata as CardMetadata)?.speech || item.content || '',
         index: item.order_index ?? 0,
         parentId: item.parent_id || undefined,
+        base_locale: item.base_locale || 'en',
+        effective_locale: item.effective_locale || item.base_locale || 'en',
       }));
     } catch (error) {
       console.error('Failed to load cards:', error);
@@ -69,7 +79,7 @@ export const cardsService = {
     }
   },
 
-  async saveCard(card: Partial<CardTile>, parentId?: string, index?: number): Promise<string | null> {
+  async saveCard(card: Partial<CardTile>, parentId?: string, index?: number, translations?: ItemTranslation[]): Promise<string | null> {
     try {
       const authStore = useAuthStore();
       const userId = authStore.user?.id;
@@ -96,21 +106,40 @@ export const cardsService = {
         icon: card.icon,
         color: card.color,
         order_index: index ?? card.index ?? 0,
+        base_locale: card.base_locale,
       };
 
+      let cardId: string;
+      
       if (card.id && !card.id.startsWith('empty-')) {
         // Update existing card
         await cardsSupabaseService.updateCard(card.id, itemData);
+        cardId = card.id;
         // Clear cache for parent if card moved
         if (parentId) childrenCache.delete(parentId);
-        return card.id;
       } else {
         // Create new card
         const newItem = await cardsSupabaseService.createCard(itemData);
+        cardId = newItem?.id || '';
         // Clear cache for parent since we added a child
         if (parentId) childrenCache.delete(parentId);
-        return newItem?.id || null;
       }
+      
+      // Save translations if provided
+      if (cardId && translations && translations.length > 0) {
+        const translationsToSave: Record<string, { name?: string; content?: string }> = {};
+        
+        translations.forEach(t => {
+          translationsToSave[t.locale] = {
+            name: t.name,
+            content: t.content
+          };
+        });
+        
+        await ItemTranslationService.saveMultipleTranslations(cardId, translationsToSave);
+      }
+      
+      return cardId
     } catch (error) {
       console.error('Failed to save card:', error);
       return null;
