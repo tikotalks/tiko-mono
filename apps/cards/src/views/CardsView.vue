@@ -10,7 +10,7 @@
       <!-- Back button when in sub-level -->
       <TButton
         v-if="currentGroupId"
-        :icon="Icons.ARROW_THICK_LEFT"
+        :icon="Icons.ARROW_LEFT"
         type="outline"
         color="primary"
         @click="handleBack"
@@ -23,20 +23,20 @@
         :type="isEditMode ? 'default' : 'outline'"
         :color="isEditMode ? 'primary' : 'secondary'"
         @click="toggleEditMode"
+        :tooltip="isEditMode ? t('common.exitEditMode') : t('common.enterEditMode')"
         :aria-label="isEditMode ? t('common.exitEditMode') : t('common.enterEditMode')"
-      >{{ isEditMode ? t('common.exitEditMode') : t('common.enterEditMode') }}</TButton>
+      />
 
       <!-- Bulk Add button (only in edit mode) -->
       <TButton
         v-if="isEditMode"
-        :icon="Icons.BOARD_MULTI_DASHBOARD"
-        type="outline"
+        :icon="Icons.ADD_FAT"
+        type="icon-only"
         color="secondary"
         @click="openBulkAddMode"
         :aria-label="t('cards.bulkAdd')"
-      >
-        {{ t('cards.bulkAdd') }}
-      </TButton>
+        :tooltip="t('cards.bulkAdd')"
+      />
 
       <!-- Selection mode toggle (only in edit mode) -->
       <TButton
@@ -190,6 +190,8 @@ import { CardTile,mockCardTile } from '../components/CardTile/CardTile.model';
 import { useEditMode } from '../composables/useEditMode';
 import { useSpeak } from '@tiko/core';
 import { cardsService } from '../services/cards.service';
+import { ItemTranslationService } from '../services/item-translation.service';
+import type { ItemTranslation } from '../models/ItemTranslation.model';
 import { Icons } from 'open-icon';
 
 const bemm = useBemm('cards-view');
@@ -197,7 +199,7 @@ const settings = ref();
 const route = useRoute();
 const router = useRouter();
 const yesNoStore = useCardStore();
-const { t, keys } = useI18n();
+const { t, keys, currentLocale } = useI18n();
 const parentMode = useParentMode('cards');
 const { hasPermission, requestPermission } = useTextToSpeech();
 const { speak, preloadAudio } = useSpeak();
@@ -413,7 +415,7 @@ const handleSpeechPermission = async () => {
   }
 };
 
-const handleCardClick = (card: CardTile, index: number) => {
+const handleCardClick = async (card: CardTile, index: number) => {
   // In selection mode, toggle selection instead of normal behavior
   if (selectionMode.value && !card.id.startsWith('empty-')) {
     toggleTileSelection(card.id);
@@ -424,6 +426,16 @@ const handleCardClick = (card: CardTile, index: number) => {
     // In edit mode, open form to create/edit card
     const isNewCard = card.id.startsWith('empty-');
 
+    // Load translations if editing existing card
+    let translations: ItemTranslation[] = [];
+    if (!isNewCard) {
+      try {
+        translations = await ItemTranslationService.getTranslations(card.id);
+      } catch (error) {
+        console.error('Failed to load translations:', error);
+      }
+    }
+
     popupService.open({
       component: CardForm,
       title: isNewCard ? 'Create New Tile' : 'Edit Tile',
@@ -431,11 +443,12 @@ const handleCardClick = (card: CardTile, index: number) => {
         card: card,
         index: index,
         hasChildren: tilesWithChildren.value.has(card.id),
-        onSubmit: async (cardData: Partial<CardTile>, cardIndex: number) => {
+        translations: translations,
+        onSubmit: async (cardData: Partial<CardTile>, cardIndex: number, newTranslations: ItemTranslation[]) => {
           try {
             if (isNewCard) {
               // Create new card in Supabase
-              const savedId = await cardsService.saveCard(cardData, currentGroupId.value, index);
+              const savedId = await cardsService.saveCard(cardData, currentGroupId.value, index, newTranslations);
               if (savedId) {
                 const newCard: CardTile = {
                   ...cardData,
@@ -447,7 +460,7 @@ const handleCardClick = (card: CardTile, index: number) => {
             } else {
               // Update existing card in Supabase
               const updatedCard = { ...card, ...cardData };
-              const savedId = await cardsService.saveCard(updatedCard, currentGroupId.value);
+              const savedId = await cardsService.saveCard(updatedCard, currentGroupId.value, undefined, newTranslations);
               if (savedId) {
                 const updatedCards = [...cards.value];
                 const existingIndex = updatedCards.findIndex(c => c.id === card.id);
@@ -503,7 +516,11 @@ const handleTileAction = async (tile: CardTile) => {
     navigateToTile(tile);
   } else if (tile.speech) {
     // No children, speak the content
-    await speak(tile.speech);
+    // Use the effective locale (the locale of the content being displayed)
+    // This ensures that if we're showing a translated card, we speak in that language
+    // If we're showing the base card because no translation exists, we use the base locale
+    const speakLocale = tile.effective_locale || tile.base_locale || currentLocale.value;
+    await speak(tile.speech, { locale: speakLocale });
   }
 };
 
@@ -779,26 +796,163 @@ const handleMultiCardReorder = async (reorderedCards: CardTile[], targetIndex: n
   }
 };
 
-// Bulk action handlers
-const moveSelectedToGroup = () => {
-  const selectedCards = cards.value.filter(c => selectedTileIds.value.has(c.id));
-  const availableGroups = cards.value.filter(c => !c.id.startsWith('empty-') && !selectedTileIds.value.has(c.id));
+// Load all groups hierarchically from root level
+const loadAllGroupsHierarchically = async (): Promise<CardTile[]> => {
+  console.log('[CardsView] loadAllGroupsHierarchically called');
+  const allGroups: CardTile[] = [];
+  
+  const loadGroupsRecursively = async (parentId: string | null, depth = 0) => {
+    try {
+      console.log(`[CardsView] Loading cards for parent: ${parentId}, depth: ${depth}`);
+      const cards = await cardsService.loadCards(parentId);
+      console.log(`[CardsView] Found ${cards.length} cards for parent ${parentId}`);
+      
+      for (const card of cards) {
+        if (!card.id.startsWith('empty-')) {
+          console.log(`[CardsView] Processing card: ${card.title} (depth ${depth})`);
+          
+          // Check if this card has children (is actually a group)
+          try {
+            const children = await cardsService.loadCards(card.id);
+            const hasChildren = children.some(child => !child.id.startsWith('empty-'));
+            
+            if (hasChildren) {
+              console.log(`[CardsView] Card ${card.title} is a group with children`);
+              
+              // Add only cards that are actual groups
+              const groupWithPath = {
+                ...card,
+                displayTitle: '  '.repeat(depth) + card.title, // Indent based on depth
+                depth
+              };
+              allGroups.push(groupWithPath);
+              console.log(`[CardsView] Added group: ${card.title} (depth ${depth})`);
+              
+              // Recursively load children groups
+              await loadGroupsRecursively(card.id, depth + 1);
+            } else {
+              console.log(`[CardsView] Card ${card.title} has no children, skipping`);
+            }
+          } catch (childError) {
+            console.log(`[CardsView] Could not load children for ${card.title}:`, childError);
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`[CardsView] Error loading groups for parent ${parentId}:`, error);
+    }
+  };
+  
+  // Start from root level (null parent)
+  console.log('[CardsView] Starting recursive load from root');
+  await loadGroupsRecursively(null);
+  console.log(`[CardsView] Finished loading all groups. Total: ${allGroups.length}`);
+  return allGroups;
+};
 
-  popupService.open({
-    component: GroupSelector,
-    title: 'Move to Group',
-    props: {
-      groups: availableGroups,
-      selectedCount: selectedCards.length,
+// Bulk action handlers  
+const moveSelectedToGroup = async () => {
+  console.log('[CardsView] moveSelectedToGroup called - START');
+  
+  try {
+    const selectedCards = cards.value.filter(c => selectedTileIds.value.has(c.id));
+    console.log('[CardsView] Selected cards:', selectedCards.length);
+    
+    if (selectedCards.length === 0) {
+      alert('No cards selected');
+      return;
+    }
+    
+    // Try to load all groups hierarchically, with a timeout and fallback
+    console.log('[CardsView] Starting hierarchical load...');
+    let availableGroups;
+    
+    try {
+      // Set a shorter timeout for the hierarchical loading
+      const hierarchicalPromise = loadAllGroupsHierarchically();
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Hierarchical loading timeout after 3 seconds')), 3000)
+      );
+      
+      const allGroups = await Promise.race([hierarchicalPromise, timeoutPromise]);
+      console.log('[CardsView] Hierarchical load completed:', allGroups.length, 'groups');
+      
+      // Filter out selected cards from available groups
+      availableGroups = allGroups.filter(g => !selectedTileIds.value.has(g.id));
+      console.log('[CardsView] Available groups after filtering:', availableGroups.length);
+      
+    } catch (hierarchicalError) {
+      console.error('[CardsView] Hierarchical loading failed, using fallback:', hierarchicalError);
+      
+      // More comprehensive fallback: try to find groups from different sources
+      console.log('[CardsView] Trying comprehensive fallback...');
+      
+      // Check if we have cached information about which cards have children
+      const potentialGroups = [];
+      
+      // 1. Use cards from tilesWithChildren cache
+      for (const cardId of tilesWithChildren.value) {
+        const card = cards.value.find(c => c.id === cardId);
+        if (card && !selectedTileIds.value.has(card.id)) {
+          potentialGroups.push(card);
+        }
+      }
+      
+      // 2. Add current level cards that might be groups (any card can become a group)
+      const currentLevelCards = cards.value.filter(c => 
+        !c.id.startsWith('empty-') && !selectedTileIds.value.has(c.id)
+      );
+      
+      // 3. Try to load some cards from parent levels if we're in a nested view
+      let parentLevelCards = [];
+      if (currentGroupId.value) {
+        try {
+          // Load cards from root level as additional options
+          const rootCards = await cardsService.loadCards(null);
+          parentLevelCards = rootCards.filter(c => 
+            !c.id.startsWith('empty-') && 
+            !selectedTileIds.value.has(c.id) && 
+            c.id !== currentGroupId.value
+          );
+        } catch (e) {
+          console.log('[CardsView] Could not load root cards for fallback');
+        }
+      }
+      
+      // Combine and deduplicate all potential destinations
+      const allPotentialGroups = [...potentialGroups];
+      [...currentLevelCards, ...parentLevelCards].forEach(card => {
+        if (!allPotentialGroups.some(g => g.id === card.id)) {
+          allPotentialGroups.push(card);
+        }
+      });
+      
+      availableGroups = allPotentialGroups;
+      console.log('[CardsView] Using comprehensive fallback groups:', availableGroups.length);
+    }
+
+    console.log('[CardsView] Opening popup with groups:', availableGroups.length);
+    popupService.open({
+      component: GroupSelector,
+      title: 'Move to Group',
+      props: {
+        groups: availableGroups,
+        selectedCount: selectedCards.length,
       onSelect: async (group: CardTile) => {
         try {
-          // Move all selected cards to the target group
+          // Get existing children to find the next available index
+          const existingChildren = await cardsService.loadCards(group.id);
+          let nextIndex = existingChildren.length;
+          
+          // Move all selected cards to the target group with sequential indices
           for (const card of selectedCards) {
             await cardsService.saveCard({
               ...card,
-              parentId: group.id,
-              parent_id: group.id
-            }, group.id);
+              parentId: group.id,  // Set the new parent
+              index: nextIndex     // Set the sequential index
+            }, group.id, nextIndex);  // Pass both parentId and index parameters
+            
+            nextIndex++; // Increment for next card
           }
 
           // Remove moved cards from current view
@@ -811,6 +965,10 @@ const moveSelectedToGroup = () => {
           tilesWithChildren.value.add(group.id);
 
           popupService.close();
+          
+          // Navigate to the target group to show the moved cards
+          console.log(`[CardsView] Navigating to target group: ${group.id}`);
+          await navigateToTile(group);
         } catch (error) {
           console.error('Failed to move cards:', error);
           alert('Failed to move cards. Please try again.');
@@ -821,6 +979,10 @@ const moveSelectedToGroup = () => {
       }
     }
   });
+  } catch (error) {
+    console.error('[CardsView] Error in moveSelectedToGroup:', error);
+    alert('Failed to load groups. Please try again.');
+  }
 };
 
 const changeSelectedColor = () => {
@@ -988,6 +1150,14 @@ watch(() => route.params.cardId as string | undefined, async (cardId) => {
   await buildBreadcrumbs(cardId);
   await loadCards();
 }, { immediate: true });
+
+// Watch edit mode changes - clear selection when edit mode is disabled
+watch(() => isEditMode.value, (newEditMode) => {
+  if (!newEditMode && selectionMode.value) {
+    // When edit mode is turned off, automatically turn off selection mode
+    clearSelection();
+  }
+});
 
 // Initialize
 onMounted(async () => {
