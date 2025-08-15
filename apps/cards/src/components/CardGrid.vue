@@ -74,7 +74,7 @@
 
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { CardTileType as CardTileTypes, type CardTile as CardTileType } from './CardTile/CardTile.model';
 import CardTile from './CardTile/CardTile.vue';
 import { CardGhostTile } from './CardGhostTile';
