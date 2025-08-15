@@ -187,6 +187,7 @@ import CardGrid from '../components/CardGrid.vue';
 import CardForm from '../components/CardForm.vue';
 import GroupSelector from '../components/GroupSelector.vue';
 import BulkCardCreator from '../components/BulkCardCreator.vue';
+import AddCardsModal from '../components/AddCardsModal.vue';
 import { CardGhostTile } from '../components/CardGhostTile';
 import { CardTile,mockCardTile } from '../components/CardTile/CardTile.model';
 import { useEditMode } from '../composables/useEditMode';
@@ -585,8 +586,8 @@ const handleCardClick = async (card: CardTile, index: number) => {
   }
 
   if (isEditMode.value) {
-    // In edit mode, directly open edit form (context menu is on right-click)
-    openCardEditForm(card, index);
+    // In edit mode, do nothing - let the context menu handle all interactions
+    return;
   } else {
     // In view mode, check if tile has children
     if (!card.id.startsWith('empty-')) {
@@ -1151,49 +1152,119 @@ const deleteSelectedCards = async () => {
   }
 };
 
-// Bulk add mode
+// Find first empty position in the grid
+const findFirstEmptyPosition = (): number => {
+  // Get all occupied positions
+  const occupiedPositions = new Set(
+    cards.value
+      .filter(c => !c.id.startsWith('empty-'))
+      .map(c => c.index)
+  );
+  
+  // Find first missing index
+  for (let i = 0; i < cards.value.length; i++) {
+    if (!occupiedPositions.has(i)) {
+      return i;
+    }
+  }
+  
+  // If all positions are filled, return next position
+  return cards.value.length;
+};
+
+// We'll just ensure the card is visible by reloading if needed
+// The CardGrid component will handle pagination internally
+
+// Add cards modal (unified single/bulk)
 const openBulkAddMode = () => {
   popupService.open({
-    component: BulkCardCreator,
-    title: 'Bulk Add Cards',
+    component: AddCardsModal,
+    title: t('cards.addCards'),
     size: 'large',
     props: {
+      // For single card save
+      onSave: async (cardData: Partial<CardTile>, _index: number) => {
+        try {
+          // Find first empty position
+          const targetIndex = findFirstEmptyPosition();
+          
+          const savedId = await cardsService.saveCard(
+            { ...cardData, index: targetIndex },
+            currentGroupId.value,
+            targetIndex
+          );
+
+          if (savedId) {
+            const newCard: CardTile = {
+              ...cardData,
+              id: savedId,
+              index: targetIndex,
+            } as CardTile;
+            
+            // Replace empty card or add to list
+            const emptyIndex = cards.value.findIndex(c => c.index === targetIndex && c.id.startsWith('empty-'));
+            if (emptyIndex !== -1) {
+              cards.value[emptyIndex] = newCard;
+            } else {
+              cards.value.push(newCard);
+            }
+            
+            // Sort cards by index
+            cards.value.sort((a, b) => a.index - b.index);
+            
+            // The CardGrid will automatically handle showing the new card
+          }
+        } catch (error) {
+          console.error('Failed to create card:', error);
+          alert('Failed to create card. Please try again.');
+        }
+      },
+      // For bulk create
       onCreate: async (newCards: Partial<CardTile>[]) => {
         try {
-          // Find the next available index
-          const maxIndex = cards.value.reduce((max, card) => Math.max(max, card.index), -1);
-          let nextIndex = maxIndex + 1;
-
+          let firstNewCardIndex = -1;
+          
           // Create all cards
           for (const cardData of newCards) {
+            const targetIndex = findFirstEmptyPosition();
+            
+            if (firstNewCardIndex === -1) {
+              firstNewCardIndex = targetIndex;
+            }
+            
             const savedId = await cardsService.saveCard(
-              { ...cardData, index: nextIndex },
+              { ...cardData, index: targetIndex },
               currentGroupId.value,
-              nextIndex
+              targetIndex
             );
 
             if (savedId) {
               const newCard: CardTile = {
                 ...cardData,
                 id: savedId,
-                index: nextIndex,
+                index: targetIndex,
               } as CardTile;
-              cards.value.push(newCard);
-              nextIndex++;
+              
+              // Replace empty card or add to list
+              const emptyIndex = cards.value.findIndex(c => c.index === targetIndex && c.id.startsWith('empty-'));
+              if (emptyIndex !== -1) {
+                cards.value[emptyIndex] = newCard;
+              } else {
+                cards.value.push(newCard);
+              }
             }
           }
 
           // Sort cards by index
           cards.value.sort((a, b) => a.index - b.index);
+          
+          // The CardGrid will automatically handle showing the new cards
 
           popupService.close();
         } catch (error) {
           console.error('Failed to create cards:', error);
           alert('Failed to create some cards. Please try again.');
         }
-      },
-      onCancel: () => {
-        popupService.close();
       }
     }
   });

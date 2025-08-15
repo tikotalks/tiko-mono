@@ -4,7 +4,8 @@ import { mockId, mockTitle, mockImage, mockSpeech } from "@tiko/ui";
 
 export const CardTileType = {
   RESPONSE: 'response',
-  QUESTION: 'question'
+  QUESTION: 'question',
+  GHOST: 'ghost'
 } as const;
 export type CardTileType = (typeof CardTileType)[keyof typeof CardTileType];
 

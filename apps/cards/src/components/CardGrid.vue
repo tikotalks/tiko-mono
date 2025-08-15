@@ -23,27 +23,24 @@
             '--tile-gap': `${TILE_CONFIG.tileGap}px`,
           }">
             <template v-for="(card, index) in pageCards" :key="`slot-${pageIndex}-${index}`">
-              <div v-if="card" :class="[
-                bemm('tile-wrapper'),
-                {
-                  [bemm('tile-wrapper', 'animating')]: card.type !== 'ghost' && !card.id.startsWith('empty-')
-                }
-              ]" :style="{
-                  '--tile-index': index
-                }">
-                <CardGhostTile v-if="card.type === 'ghost'" />
+              <div v-if="card" :class="bemm('tile-wrapper', ['', card.type !== 'ghost' && !card.id.startsWith('empty-') ? 'animating' : ''])
+                " :style="{
+                '--tile-index': index
+              }">
+                <CardGhostTile v-if="card.type === CardTileType.GHOST" />
                 <CardTile v-else :card="card" :show-image="true" :show-title="true" :edit-mode="editMode"
                   :is-empty="card.id.startsWith('empty-')" :has-children="tilesWithChildren?.has(card.id) || false"
                   :children="tileChildrenMap?.get(card.id)" :is-selected="selectedTileIds?.has(card.id) || false"
-                  :selection-mode="selectionMode" :context-menu="getContextMenu?.(card, pageIndex * cardsPerPage + index)"
-                  :class="{
+                  :selection-mode="selectionMode"
+                  :context-menu="getContextMenu?.(card, pageIndex * cardsPerPage + index)"
+                  :has-active-menu="activeMenuCardId === card.id" :class="{
                     'is-being-dragged': draggedCard?.id === card.id,
                     'is-drop-target': dropTarget === card.id,
                     'is-selected': selectedTileIds?.has(card.id)
                   }" @click="handleCardClick(card, pageIndex * cardsPerPage + index)"
                   @dragstart="handleDragStart($event, card)" @dragend="handleDragEnd"
-                  @dragover="handleDragOver($event, card)" @dragleave="handleDragLeave"
-                  @drop="handleDrop($event, card)" />
+                  @dragover="handleDragOver($event, card)" @dragleave="handleDragLeave" @drop="handleDrop($event, card)"
+                  @menu-open="activeMenuCardId = card.id" @menu-close="activeMenuCardId = null" />
               </div>
               <div v-else :class="bemm('empty-slot')" />
             </template>
@@ -61,11 +58,10 @@
       aria-label="Next page">
       ›
     </button>
-    
+
     <!-- Drag edge indicators -->
-    <div v-if="(draggedCard || draggedCards.length > 0) && currentPage > 0" 
-      :class="bemm('drag-edge', 'left')" />
-    <div v-if="(draggedCard || draggedCards.length > 0) && currentPage < totalPages - 1" 
+    <div v-if="(draggedCard || draggedCards.length > 0) && currentPage > 0" :class="bemm('drag-edge', 'left')" />
+    <div v-if="(draggedCard || draggedCards.length > 0) && currentPage < totalPages - 1"
       :class="bemm('drag-edge', 'right')" />
   </div>
 </template>
@@ -73,11 +69,14 @@
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { CardTile as CardTileType } from './CardTile/CardTile.model';
+import { CardTileType, CardTile as CardTileType } from './CardTile/CardTile.model';
 import CardTile from './CardTile/CardTile.vue';
 import { CardGhostTile } from './CardGhostTile';
 
 const bemm = useBemm('card-grid');
+
+// Track which card has an active context menu
+const activeMenuCardId = ref<string | null>(null);
 
 const props = defineProps<{
   cards: Array<CardTileType>;
@@ -272,17 +271,17 @@ function getAvailableHeight(): number {
   if ('visualViewport' in window && window.visualViewport) {
     return window.visualViewport.height;
   }
-  
+
   // Check if we're on mobile Safari
   const isIOSSafari = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  
+
   if (isIOSSafari) {
     // On iOS Safari, use document height which excludes dynamic UI
     const documentHeight = document.documentElement.clientHeight;
     // Fallback to a reasonable estimate if document height seems wrong
     return documentHeight > 200 ? documentHeight : window.innerHeight * 0.85;
   }
-  
+
   // For other browsers, use innerHeight
   return window.innerHeight;
 }
@@ -639,7 +638,7 @@ const handleDragStart = (event: DragEvent, card: CardTileType) => {
 
   // Notify parent
   emit('update:tileDragging', true);
-  
+
   // Start monitoring drag position for edge scrolling
   startDragMonitoring();
 };
@@ -650,7 +649,7 @@ const handleDragEnd = () => {
   draggedElement.value = null;
   dropTarget.value = null;
   emit('update:tileDragging', false);
-  
+
   // Stop drag monitoring
   stopDragMonitoring();
 };
@@ -681,7 +680,7 @@ const startDragMonitoring = () => {
 const stopDragMonitoring = () => {
   // Remove global listener
   document.removeEventListener('dragover', handleGlobalDragOver);
-  
+
   // Clear any pending scroll timer
   if (dragScrollTimer.value) {
     clearTimeout(dragScrollTimer.value);
@@ -692,10 +691,10 @@ const stopDragMonitoring = () => {
 const handleGlobalDragOver = (event: DragEvent) => {
   // Only process if we're actually dragging something
   if (!draggedCard.value && draggedCards.value.length === 0) return;
-  
+
   const mouseX = event.clientX;
   const screenWidth = window.innerWidth;
-  
+
   // Check if near left edge
   if (mouseX < DRAG_EDGE_THRESHOLD && currentPage.value > 0) {
     // Start auto-scroll to previous page if not already scrolling
@@ -954,6 +953,11 @@ onMounted(() => {
     width: var(--tile-size);
     height: var(--tile-size);
 
+    &:hover {
+      z-index: 2;
+      transform: scale(1.5);
+    }
+
     &--animating {
       animation: tile-pop-in 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) both;
       animation-delay: calc(var(--tile-index, 0) * 50ms);
@@ -1012,21 +1016,21 @@ onMounted(() => {
   z-index: 20;
   opacity: 0;
   transition: opacity 0.3s ease;
-  
+
   &--left {
     left: 0;
-    background: linear-gradient(to right, 
-      color-mix(in srgb, var(--color-primary) 20%, transparent) 0%, 
-      transparent 100%);
+    background: linear-gradient(to right,
+        color-mix(in srgb, var(--color-primary) 20%, transparent) 0%,
+        transparent 100%);
   }
-  
+
   &--right {
     right: 0;
-    background: linear-gradient(to left, 
-      color-mix(in srgb, var(--color-primary) 20%, transparent) 0%, 
-      transparent 100%);
+    background: linear-gradient(to left,
+        color-mix(in srgb, var(--color-primary) 20%, transparent) 0%,
+        transparent 100%);
   }
-  
+
   // Show when dragging near edges
   @media (hover: hover) {
     &:hover {
