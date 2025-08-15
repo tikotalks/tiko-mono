@@ -19,6 +19,8 @@ export interface CardTile {
   speech?: string;
   index?: number;
   parentId?: string;
+  base_locale?: string;
+  effective_locale?: string; // The locale of the content being displayed (from translation)
 }
 
 export const mockCardTile = (index: number = 0): CardTile => {

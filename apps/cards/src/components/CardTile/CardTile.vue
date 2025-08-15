@@ -390,6 +390,7 @@ const handleDrop = (event: DragEvent) => {
     background-color: var(--card-color);
     border-radius: var(--border-radius);
     word-break: break-word;
+    max-width: calc(100% - var(--space));
   }
 
   &--empty {
@@ -476,7 +477,7 @@ const handleDrop = (event: DragEvent) => {
         -webkit-user-select: none;
         -moz-user-select: none;
         -ms-user-select: none;
-        
+
         &:active {
           cursor: grabbing;
         }
