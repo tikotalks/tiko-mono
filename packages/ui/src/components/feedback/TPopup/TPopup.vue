@@ -225,6 +225,7 @@ const hasSlot = (name: string) => {
 
 	&__content {
 		padding: var(--popup-padding, var(--space));
+		margin: auto;
 
 		@include g.desktop-up() {
 			width: var(--popup-width, fit-content);
@@ -268,7 +269,9 @@ const hasSlot = (name: string) => {
 
 		display: flex;
 		gap: var(--space);
-		align-items: center;
+		align-items: flex-start;
+		flex-direction: column;
+		justify-content: space-between;
 
 		&:has(.popup__close) {
 			padding-right: var(--space-xl);

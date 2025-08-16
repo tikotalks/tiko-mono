@@ -128,13 +128,17 @@ const { setLocale, t, keys, locale } = useI18n()
 // Set config and get theme styles
 const { themeStyles, config: tikoConfig } = useTikoConfig(props.config)
 
-// Initialize PWA update checking
-if (props.isApp) {
+// Initialize PWA update checking if registerSW is provided
+if (props.isApp && props.pwaRegisterSW) {
   usePWAUpdate({
     autoUpdate: false,
-    showPrompt: true
+    showPrompt: true,
+    registerSW: props.pwaRegisterSW
   })
 }
+
+// Flag to prevent locale sync loops
+let isSettingLocale = false
 
 // Compute whether auth is required based on config
 const computedRequireAuth = computed(() => {
@@ -320,11 +324,23 @@ watch(() => route?.fullPath, (newPath) => {
 }, { immediate: true })
 
 // Watch for language changes in user settings
-watch(currentLanguage, (newLanguage) => {
-  if (newLanguage && newLanguage !== locale.value) {
-    setLocale(newLanguage as Locale)
+watch(currentLanguage, (newLanguage, oldLanguage) => {
+  if (isSettingLocale) {
+    console.log('[TFramework] Ignoring language change during locale setting')
+    return
   }
-}, { immediate: true })
+  
+  if (newLanguage && newLanguage !== locale.value && newLanguage !== oldLanguage) {
+    console.log('[TFramework] Language changed in settings:', newLanguage, 'current locale:', locale.value)
+    isSettingLocale = true
+    setLocale(newLanguage as Locale)
+    
+    // Reset flag after a short delay
+    setTimeout(() => {
+      isSettingLocale = false
+    }, 100)
+  }
+})
 
 // Apply theme to DOM
 const applyTheme = (theme: string) => {

@@ -359,8 +359,6 @@ function createI18nInstance(options: I18nOptions = {}) {
     
     console.log(`[setLocale] Setting currentLocale to "${localeToUse}"`)
     currentLocale.value = localeToUse
-    // Update global locale
-    globalCurrentLocale = localeToUse
   }
 
   /**

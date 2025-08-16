@@ -12,6 +12,7 @@
       :config="frameworkConfig"
       :background-image="backgroundImage"
       :loading="loading"
+      :pwa-register-sw="pwaRegisterSW"
     >
       <router-view />
     </TFramework>
@@ -32,6 +33,9 @@ const route = useRoute()
 const loading = ref(true)
 const { t, keys } = useI18n()
 const eventBus = useEventBus()
+
+// PWA registration function - will be loaded lazily
+const pwaRegisterSW = ref<any>(null)
 
 // Track if any popup is open
 const isPopupOpen = ref(false)
@@ -95,6 +99,14 @@ onMounted(async () => {
     if (preloadCards) {
       console.log('[App] Pre-loading all cards...')
       await cardStore.loadAllCards(currentLocale.value)
+    }
+    
+    // Load PWA registration function if available
+    try {
+      const { registerSW } = await import('virtual:pwa-register')
+      pwaRegisterSW.value = registerSW
+    } catch (error) {
+      console.log('PWA not configured for this environment')
     }
   } catch (error) {
     console.error('Failed to initialize app:', error)

@@ -1,4 +1,5 @@
 import type { TikoConfig } from '../../../types'
+import type { RegisterSWFunc } from '../../../composables/usePWAUpdate'
 
 export interface SettingsSection {
   id: string
@@ -37,6 +38,7 @@ export interface TFrameworkProps {
   isApp?: boolean
   requireAuth?: boolean
   showSplashScreen?: boolean
+  pwaRegisterSW?: RegisterSWFunc
 }
 
 export interface TFrameworkEmits {
