@@ -1,4 +1,5 @@
 import { OpenAI } from 'openai';
+import { getOpenAILanguage } from './language-mapping';
 
 export interface Env {
   AUDIO_BUCKET: R2Bucket;
@@ -133,11 +134,19 @@ async function handleGenerateTTS(request: Request, env: Env): Promise<Response> 
   });
 
   try {
+    // Add language hint to text for better pronunciation of ambiguous words
+    // OpenAI TTS infers language from text content
+    let textWithHint = body.text;
+    if (body.language && body.language !== 'en') {
+      const languageName = getOpenAILanguage(body.language);
+      textWithHint = `[${languageName}] ${body.text}`;
+    }
+    
     // Generate audio with OpenAI
     const mp3Response = await openai.audio.speech.create({
       model: body.model,
       voice: body.voice as any,
-      input: body.text,
+      input: textWithHint,
       response_format: 'mp3',
     });
 
