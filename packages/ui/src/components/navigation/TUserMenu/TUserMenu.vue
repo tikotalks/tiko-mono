@@ -1,6 +1,43 @@
 <template>
   <div :class="bemm()">
+    <!-- Direct click handler when parent mode is enabled but locked -->
+    <div
+      v-if="shouldShowParentMode()"
+      :class="bemm('trigger')"
+      ref="triggerRef"
+      @click="handleAvatarClick"
+      @keydown="handleKeyDown"
+      role="button"
+      tabindex="0"
+      :aria-expanded="false"
+      :aria-haspopup="true"
+      :aria-label="ariaLabel"
+    >
+      <TAvatar
+        :src="user?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture"
+        :name="displayName"
+        :email="user?.email"
+        :size="avatarSize"
+        :show-online-status="showOnlineStatus"
+        :is-online="isOnline"
+      />
+      
+      <!-- User info (desktop only) -->
+      <div v-if="showUserInfo && !isMobile" :class="bemm('info')">
+        <span :class="bemm('name')">{{ displayName }}</span>
+        <span v-if="userRole" :class="bemm('role')">{{ userRole }}</span>
+      </div>
+      
+      <TIcon
+        v-if="showChevron"
+        name="chevron-down"
+        :class="bemm('chevron')"
+      />
+    </div>
+    
+    <!-- Context menu when parent mode is disabled or unlocked -->
     <TContextMenu
+      v-else
       ref="contextMenuRef"
       :config="menuConfig"
     >
@@ -50,7 +87,10 @@ import type { ContextMenuItem, ContextMenuConfig } from '../TContextMenu/Context
 import { ContextMenuConfigDefault } from '../TContextMenu/ContextMenu.model'
 import TProfile from '../../user/TProfile/TProfile.vue'
 import TUserSettings from '../../user/TUserSettings/TUserSettings.vue'
+import TParentModePinInput from '../../auth/TParentMode/TParentModePinInput.vue'
 import { useI18n } from '../../../composables/useI18n'
+import { useParentMode } from '../../../composables/useParentMode'
+import { toastService } from '../../feedback/TToast/TToast.service'
 import type { TUserMenuProps, TUserMenuEmits } from './TUserMenu.model'
 
 const props = withDefaults(defineProps<TUserMenuProps>(), {
@@ -59,13 +99,15 @@ const props = withDefaults(defineProps<TUserMenuProps>(), {
   isOnline: true,
   showChevron: true,
   avatarSize: 'medium',
+  enableParentMode: true,
 })
 
 const emit = defineEmits<TUserMenuEmits>()
 
 const bemm = useBemm('user-menu')
-const { t } = useI18n()
+const { t, keys } = useI18n()
 const authStore = useAuthStore()
+const parentMode = useParentMode()
 
 // Inject services
 const popupService = inject<any>('popupService')
@@ -96,33 +138,69 @@ const ariaLabel = computed(() =>
   `${t('common.menu')} - ${displayName.value}`
 )
 
-const defaultMenuItems = computed<Partial<ContextMenuItem>[]>(() => [
-  {
-    id: 'profile',
-    label: t('profile.title'),
-    icon: 'user',
-    action: handleProfile,
-    type: 'default'
-  },
-  {
-    id: 'settings',
-    label: t('settings.title'),
-    icon: 'settings',
-    action: handleSettings,
-    type: 'default'
-  },
-  {
-    id: 'separator1',
-    type: 'separator'
-  },
-  {
-    id: 'logout',
-    label: t('auth.logout'),
-    icon: 'arrow-right',
-    action: handleLogout,
-    type: 'default'
+const defaultMenuItems = computed<Partial<ContextMenuItem>[]>(() => {
+  const items: Partial<ContextMenuItem>[] = []
+  
+  // Always add parent mode option if enabled (provides fallback)
+  if (props.enableParentMode) {
+    const isUnlocked = parentMode.isUnlocked?.value ?? false
+    items.push({
+      id: 'parent-mode',
+      label: isUnlocked ? t('parentMode.lockParentMode') : t('parentMode.parentMode'),
+      icon: isUnlocked ? 'lock' : 'shield',
+      action: () => {
+        if (isUnlocked) {
+          // Lock parent mode
+          if (parentMode.lock) {
+            parentMode.lock()
+            toastService.show({
+              message: t('parentMode.parentModeLocked') || 'Parent mode locked',
+              type: 'info'
+            })
+          }
+        } else {
+          // Show unlock/setup dialog
+          handleParentMode()
+        }
+      },
+      type: 'default'
+    })
+    items.push({
+      id: 'separator-parent',
+      type: 'separator'
+    })
   }
-])
+  
+  items.push(
+    {
+      id: 'profile',
+      label: t('profile.title'),
+      icon: 'user',
+      action: handleProfile,
+      type: 'default'
+    },
+    {
+      id: 'settings',
+      label: t('settings.title'),
+      icon: 'settings',
+      action: handleSettings,
+      type: 'default'
+    },
+    {
+      id: 'separator1',
+      type: 'separator'
+    },
+    {
+      id: 'logout',
+      label: t('auth.logout'),
+      icon: 'arrow-right',
+      action: handleLogout,
+      type: 'default'
+    }
+  )
+  
+  return items
+})
 
 const menuItems = computed(() => {
   const customItems = props.customMenuItems || []
@@ -142,10 +220,109 @@ const toggleMenu = () => {
   contextMenuRef.value?.toggle()
 }
 
+const handleAvatarClick = () => {
+  if (shouldShowParentMode()) {
+    handleParentMode()
+  } else {
+    toggleMenu()
+  }
+}
+
+const shouldShowParentMode = () => {
+  const isUnlocked = parentMode.isUnlocked?.value ?? false
+  const result = props.enableParentMode && !isUnlocked
+  console.log('[TUserMenu] shouldShowParentMode calculation:', {
+    enableParentMode: props.enableParentMode,
+    isUnlocked: isUnlocked,
+    parentMode: parentMode,
+    result
+  })
+  return result
+}
+
+const handleParentMode = () => {
+  if (!popupService) {
+    console.error('[TUserMenu] PopupService not available for parent mode')
+    toastService.show({
+      message: 'Unable to open parent mode dialog. Please refresh the page.',
+      type: 'error'
+    })
+    return
+  }
+  
+  // Check if parentMode is properly initialized
+  const isParentModeEnabled = parentMode.isEnabled?.value ?? false
+  console.log('[TUserMenu] Opening parent mode dialog. Enabled:', isParentModeEnabled)
+  
+  if (!isParentModeEnabled) {
+    showParentModeSetup()
+  } else {
+    showParentModeUnlock()
+  }
+}
+
+const showParentModeSetup = () => {
+  popupService.open({
+    component: TParentModePinInput,
+    title: t('parentMode.setUpParentMode') || 'Set Up Parent Mode',
+    description: t('parentMode.createPinDescription') || 'Create a 4-digit PIN to protect settings',
+    props: {
+      mode: 'setup',
+      onPinEntered: handlePinSetup,
+      onCancel: () => popupService.close()
+    }
+  })
+}
+
+const showParentModeUnlock = () => {
+  popupService.open({
+    component: TParentModePinInput,
+    title: t('parentMode.enterParentPin') || 'Enter Parent PIN',
+    description: t('parentMode.enterPinDescription') || 'Enter your PIN to unlock parent mode',
+    props: {
+      mode: 'unlock',
+      onPinEntered: handlePinUnlock,
+      onCancel: () => popupService.close()
+    }
+  })
+}
+
+const handlePinSetup = async (pin: string) => {
+  const result = await parentMode.enable(pin)
+  if (result.success) {
+    popupService.close()
+    toastService.show({
+      message: t('parentMode.parentModeEnabled') || 'Parent mode enabled successfully',
+      type: 'success'
+    })
+  } else {
+    toastService.show({
+      message: result.error || t('parentMode.pinSetupFailed') || 'Failed to set up PIN',
+      type: 'error'
+    })
+  }
+}
+
+const handlePinUnlock = async (pin: string) => {
+  const result = await parentMode.unlock(pin)
+  if (result.success) {
+    popupService.close()
+    toastService.show({
+      message: t('parentMode.parentModeUnlocked') || 'Parent mode unlocked successfully',
+      type: 'success'
+    })
+  } else {
+    toastService.show({
+      message: t('parentMode.incorrectPin') || 'Incorrect PIN',
+      type: 'error'
+    })
+  }
+}
+
 const handleKeyDown = (event: KeyboardEvent) => {
   if (event.key === 'Enter' || event.key === ' ') {
     event.preventDefault()
-    toggleMenu()
+    handleAvatarClick()
   } else if (event.key === 'Escape') {
     contextMenuRef.value?.close()
   }
@@ -205,9 +382,14 @@ const updateIsMobile = () => {
 }
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
   updateIsMobile()
   window.addEventListener('resize', updateIsMobile)
+  
+  // Initialize parent mode if available
+  if (parentMode.initialize) {
+    await parentMode.initialize()
+  }
 })
 
 onUnmounted(() => {

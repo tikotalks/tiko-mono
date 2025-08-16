@@ -46,16 +46,39 @@ let staticTranslations: Record<string, any> = generatedTranslations || {}
 let staticAvailableLanguages: string[] = generatedLanguages ? [...generatedLanguages] : []
 let staticInitialized = false
 let staticKeys: any = null // Cached keys structure
-
-// IMPORTANT: Global locale state to ensure all components use the same locale
-let globalCurrentLocale: string | null = null
+let mergeInProgress = false // Prevent concurrent merging
 
 // Storage key for persistence
 const LOCALE_STORAGE_KEY = 'tiko:locale'
 
+// Shared state - this is the actual reactive state shared by all instances
+const sharedCurrentLocale = ref<string>('en')
+const sharedIsReady = ref(false)
+
+// Global state for initialization tracking
+let globalEventListenersSetup = false
+let globalPollInterval: NodeJS.Timeout | null = null
+
 // Initialize static translations
 function initializeStaticMode(): void {
   if (staticInitialized) return
+  
+  // Prevent concurrent initialization
+  if (mergeInProgress) {
+    // Wait for the other initialization to complete
+    let waitCount = 0;
+    while (mergeInProgress && waitCount < 50) {
+      waitCount++;
+      // Small sync delay - not ideal but prevents race conditions
+      const start = Date.now();
+      while (Date.now() - start < 10) {
+        // Busy wait for 10ms
+      }
+    }
+    return;
+  }
+  
+  mergeInProgress = true;
 
   // Merge regional translations with base languages
   console.log('🌍 Merging regional translations with base languages...')
@@ -95,6 +118,7 @@ function initializeStaticMode(): void {
   console.log('📚 Loaded translations for locales:', Object.keys(staticTranslations))
 
   staticInitialized = true
+  mergeInProgress = false
   
   // Build keys structure if not already built
   if (!staticKeys) {
@@ -144,21 +168,24 @@ function buildKeysStructure(): any {
 }
 
 /**
- * Static i18n composable
+ * Create i18n instance (internal function)
  */
-export function useI18n(options: I18nOptions = {}) {
+function createI18nInstance(options: I18nOptions = {}) {
   const {
     fallbackLocale = 'en',
     persistLocale = true,
     storageKey = LOCALE_STORAGE_KEY
   } = options
 
-  // Initialize synchronously
-  initializeStaticMode()
+  // Initialize only once globally, not per instance
+  if (!staticInitialized) {
+    initializeStaticMode()
+    sharedIsReady.value = true // Set ready after initialization
+  }
 
-  // Current locale state
-  const currentLocale = ref<string>(fallbackLocale)
-  const isReady = ref(true) // Always ready with static imports
+  // Use shared state instead of creating new refs
+  const currentLocale = sharedCurrentLocale
+  const isReady = sharedIsReady
 
   // Function to find the best regional variant for a base language
   const findRegionalVariant = (baseLocale: string): string | null => {
@@ -180,13 +207,9 @@ export function useI18n(options: I18nOptions = {}) {
     return null
   }
 
-  // Initialize locale from storage or browser
-  if (persistLocale && typeof localStorage !== 'undefined') {
+  // Initialize locale from storage or browser only on first call
+  if (currentLocale.value === 'en' && persistLocale && typeof localStorage !== 'undefined') {
     const stored = localStorage.getItem(storageKey)
-    console.log('[useI18n] Initializing locale:')
-    console.log('  - Storage key:', storageKey)
-    console.log('  - Stored value:', stored)
-    console.log('  - Available languages:', staticAvailableLanguages)
     
     let localeToUse = stored
     
@@ -195,22 +218,17 @@ export function useI18n(options: I18nOptions = {}) {
       const regionalVariant = findRegionalVariant(stored)
       if (regionalVariant) {
         localeToUse = regionalVariant
-        console.log(`  - Converting base locale "${stored}" to regional "${localeToUse}"`)
       }
     }
     
     if (localeToUse && staticAvailableLanguages.includes(localeToUse)) {
-      console.log('  - Setting locale:', localeToUse)
       currentLocale.value = localeToUse
     } else {
       const browserLocale = getBrowserLocale()
-      console.log('  - Browser locale:', browserLocale)
       if (browserLocale) {
-        console.log('  - Setting locale from browser:', browserLocale)
         currentLocale.value = browserLocale
       }
     }
-    console.log('  - Final locale:', currentLocale.value)
   }
 
   // Watch for locale changes and persist
@@ -341,6 +359,8 @@ export function useI18n(options: I18nOptions = {}) {
     
     console.log(`[setLocale] Setting currentLocale to "${localeToUse}"`)
     currentLocale.value = localeToUse
+    // Update global locale
+    globalCurrentLocale = localeToUse
   }
 
   /**
@@ -560,6 +580,29 @@ function getBrowserLocale(): string | null {
   }
 
   return null
+}
+
+/**
+ * Static i18n composable
+ */
+export function useI18n(options: I18nOptions = {}) {
+  // Just create the instance - Vue's reactivity will handle sharing state
+  return createI18nInstance(options)
+}
+
+/**
+ * Cleanup global event listeners (useful for testing)
+ */
+export function cleanupI18n() {
+  if (globalPollInterval) {
+    clearInterval(globalPollInterval)
+    globalPollInterval = null
+  }
+  globalEventListenersSetup = false
+  // Reset shared state
+  sharedCurrentLocale.value = 'en'
+  sharedIsReady.value = false
+  staticInitialized = false
 }
 
 /**

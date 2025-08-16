@@ -1,6 +1,6 @@
 <template>
   <div :class="bemm()">
-    <form @submit.prevent="handleSubmit">
+    <form :class="bemm('container')" @submit.prevent="handleSubmit">
       <!-- PIN Input -->
       <div :class="bemm('pin-container')">
         <TPinInput
@@ -32,7 +32,7 @@
         :class="bemm('confirm-section')"
       >
         <p :class="bemm('confirm-label')">
-          {{ t(keys.parentMode.confirmYourPin) }}
+          {{ t('parentMode.confirmYourPin') || 'Confirm your PIN' }}
         </p>
         <div :class="bemm('pin-container')">
           <TPinInput
@@ -68,8 +68,8 @@
         >
           {{
             showNumbers
-              ? t(keys.parentMode.hideNumbers)
-              : t(keys.parentMode.showNumbers)
+              ? t('parentMode.hideNumbers') || 'Hide numbers'
+              : t('parentMode.showNumbers') || 'Show numbers'
           }}
         </TButton>
       </div>
@@ -179,8 +179,8 @@ const canSubmit = computed(() => {
 
 const submitLabel = computed(() => {
   return props.mode === 'setup'
-    ? t(keys.parentMode.setPin)
-    : t(keys.parentMode.unlock);
+    ? t('parentMode.setPin') || 'Set PIN'
+    : t('parentMode.unlock') || 'Unlock';
 });
 
 /**
@@ -219,14 +219,14 @@ const handleSubmit = async () => {
   try {
     // Validate PIN format
     if (!/^\d{4}$/.test(pinValue.value)) {
-      error.value = t(keys.parentMode.pinMustBe4Digits);
+      error.value = t('parentMode.pinMustBe4Digits') || 'PIN must be 4 digits';
       isProcessing.value = false;
       return;
     }
 
     // For setup mode, ensure PINs match
     if (props.mode === 'setup' && pinValue.value !== confirmValue.value) {
-      error.value = t(keys.parentMode.pinMismatch);
+      error.value = t('parentMode.pinMismatch') || 'PINs do not match';
       isProcessing.value = false;
       return;
     }
@@ -360,6 +360,12 @@ watch(
     color: color-mix(in srgb, var(--color-foreground), transparent 20%);
     line-height: 1.5;
     margin: 0;
+  }
+
+  &__container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space);
   }
 
   &__pin-container {
