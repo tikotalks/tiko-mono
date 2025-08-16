@@ -190,7 +190,8 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_TTS_WORKER_URL: https://tts-generation.silvandiepen.workers.dev
+          VITE_TTS_WORKER_URL: https://tts.tikoapi.org
+          VITE_TTS_CDN_URL: https://tts.tikocdn.org
           
       - name: Install Wrangler
         run: npm install -g wrangler
@@ -234,7 +235,8 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_TTS_WORKER_URL: https://tts-generation.silvandiepen.workers.dev
+          VITE_TTS_WORKER_URL: https://tts.tikoapi.org
+          VITE_TTS_CDN_URL: https://tts.tikocdn.org
           
       - name: Install Wrangler
         run: npm install -g wrangler
@@ -278,7 +280,8 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_TTS_WORKER_URL: https://tts-generation.silvandiepen.workers.dev
+          VITE_TTS_WORKER_URL: https://tts.tikoapi.org
+          VITE_TTS_CDN_URL: https://tts.tikocdn.org
           
       - name: Install Wrangler
         run: npm install -g wrangler
@@ -322,7 +325,8 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_TTS_WORKER_URL: https://tts-generation.silvandiepen.workers.dev
+          VITE_TTS_WORKER_URL: https://tts.tikoapi.org
+          VITE_TTS_CDN_URL: https://tts.tikocdn.org
           
       - name: Install Wrangler
         run: npm install -g wrangler
@@ -366,7 +370,8 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_TTS_WORKER_URL: https://tts-generation.silvandiepen.workers.dev
+          VITE_TTS_WORKER_URL: https://tts.tikoapi.org
+          VITE_TTS_CDN_URL: https://tts.tikocdn.org
           
       - name: Install Wrangler
         run: npm install -g wrangler
@@ -410,7 +415,8 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_TTS_WORKER_URL: https://tts-generation.silvandiepen.workers.dev
+          VITE_TTS_WORKER_URL: https://tts.tikoapi.org
+          VITE_TTS_CDN_URL: https://tts.tikocdn.org
           
       - name: Install Wrangler
         run: npm install -g wrangler

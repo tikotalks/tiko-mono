@@ -13,13 +13,15 @@ import {
 
 class TTSService {
   private workerUrl: string;
+  private cdnUrl: string;
   private browserVoicesCache: SpeechSynthesisVoice[] = [];
   private supabaseUrl: string;
   private supabaseKey: string;
 
   constructor() {
     // Use the deployed worker URL as fallback
-    this.workerUrl = import.meta.env.VITE_TTS_WORKER_URL || 'https://tts-generation.silvandiepen.workers.dev';
+    this.workerUrl = import.meta.env.VITE_TTS_WORKER_URL || 'https://tts.tikoapi.org';
+    this.cdnUrl = import.meta.env.VITE_TTS_CDN_URL || 'https://tts.tikocdn.org';
     this.supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
     this.supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
     this.loadBrowserVoices();
@@ -130,6 +132,24 @@ class TTSService {
   }
 
   /**
+   * Convert a relative URL to CDN URL
+   */
+  private convertToCdnUrl(relativeUrl: string): string {
+    // Extract the key from URLs like "/audio?key=audio%2F6asym0.mp3"
+    const match = relativeUrl.match(/key=([^&]+)/);
+    if (match) {
+      const key = decodeURIComponent(match[1]);
+      return `${this.cdnUrl}/${key}`;
+    }
+    // If it's already a full URL, return as is
+    if (relativeUrl.startsWith('http')) {
+      return relativeUrl;
+    }
+    // Otherwise, append to CDN URL
+    return `${this.cdnUrl}${relativeUrl}`;
+  }
+
+  /**
    * Check if audio already exists in the database
    */
   async checkExistingAudio(textHash: string): Promise<AudioMetadata | null> {
@@ -190,6 +210,12 @@ class TTSService {
       }
 
       const data = await response.json();
+      
+      // Convert the worker URL to CDN URL if successful
+      if (data.success && data.audioUrl) {
+        data.audioUrl = this.convertToCdnUrl(data.audioUrl);
+      }
+      
       return data;
     } catch (error) {
       console.error('Error generating OpenAI audio:', error);
@@ -214,9 +240,11 @@ class TTSService {
       // Check if audio already exists
       const existingAudio = await this.checkExistingAudio(textHash);
       if (existingAudio) {
+        // Convert the relative URL to CDN URL
+        const audioUrl = this.convertToCdnUrl(existingAudio.url);
         return {
           success: true,
-          audioUrl: existingAudio.url,
+          audioUrl,
           metadata: existingAudio,
           cached: true
         };

@@ -104,18 +104,8 @@ export function useSpeak() {
         audio = new Audio();
         audio.preload = 'auto';
         
-        // Build full URL
-        const workerUrl = import.meta.env.VITE_TTS_WORKER_URL || '';
-        
-        // If audioUrl is already a full URL, use it as is
-        if (response.audioUrl.startsWith('http://') || response.audioUrl.startsWith('https://')) {
-          audio.src = response.audioUrl;
-        } else {
-          // Ensure proper URL joining
-          const baseUrl = workerUrl.endsWith('/') ? workerUrl.slice(0, -1) : workerUrl;
-          const path = response.audioUrl.startsWith('/') ? response.audioUrl : '/' + response.audioUrl;
-          audio.src = baseUrl + path;
-        }
+        // The TTS service now returns the full CDN URL
+        audio.src = response.audioUrl;
         
         console.log('[useSpeak] Audio URL:', audio.src);
         
