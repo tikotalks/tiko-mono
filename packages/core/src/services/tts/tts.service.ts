@@ -18,10 +18,15 @@ class TTSService {
   private supabaseKey: string;
 
   constructor() {
-    this.workerUrl = import.meta.env.VITE_TTS_WORKER_URL || '';
+    // Use the deployed worker URL as fallback
+    this.workerUrl = import.meta.env.VITE_TTS_WORKER_URL || 'https://tts-generation.silvandiepen.workers.dev';
     this.supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
     this.supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
     this.loadBrowserVoices();
+    
+    if (!import.meta.env.VITE_TTS_WORKER_URL) {
+      console.warn('[TTSService] VITE_TTS_WORKER_URL not set, using default worker URL');
+    }
   }
 
   private loadBrowserVoices() {

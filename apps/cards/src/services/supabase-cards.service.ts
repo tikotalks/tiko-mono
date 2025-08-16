@@ -61,6 +61,8 @@ class CardsSupabaseService {
   async getCards(userId: string, parentId?: string): Promise<CardItem[]> {
     const params = new URLSearchParams();
     params.append('user_id', `eq.${userId}`);
+    
+    // Try with app_name filter first
     params.append('app_name', 'eq.cards');
     
     if (parentId === undefined || parentId === null) {
@@ -72,7 +74,34 @@ class CardsSupabaseService {
     // Use correct PostgREST syntax for ordering
     params.append('order', 'order_index.asc');
     
-    return this.apiRequest<CardItem[]>(`items?${params.toString()}`);
+    const url = `items?${params.toString()}`;
+    console.log('[getCards] Fetching from:', url);
+    
+    try {
+      let result = await this.apiRequest<CardItem[]>(url);
+      console.log('[getCards] Result with app_name filter:', result.length, 'cards found');
+      
+      // If no results with app_name filter, try without it (backwards compatibility)
+      if (result.length === 0 && parentId) {
+        console.log('[getCards] No cards found with app_name filter, trying without...');
+        
+        const fallbackParams = new URLSearchParams();
+        fallbackParams.append('user_id', `eq.${userId}`);
+        fallbackParams.append('parent_id', `eq.${parentId}`);
+        fallbackParams.append('order', 'order_index.asc');
+        
+        const fallbackUrl = `items?${fallbackParams.toString()}`;
+        console.log('[getCards] Fallback fetch from:', fallbackUrl);
+        
+        result = await this.apiRequest<CardItem[]>(fallbackUrl);
+        console.log('[getCards] Fallback result:', result.length, 'cards found');
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('[getCards] Error fetching cards:', error);
+      throw error;
+    }
   }
 
   async createCard(data: Partial<CardItem>): Promise<CardItem> {
