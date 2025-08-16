@@ -7,6 +7,7 @@ import fs from 'fs'
 import { viteBuildInfo } from './scripts/vite-plugin-build-info.js'
 import { createAppI18nPlugin } from './scripts/vite-plugin-i18n-simple.js'
 import { i18nWorkerPlugin } from './scripts/vite-plugin-i18n-worker.js'
+import { copyFontsPlugin } from './scripts/vite-plugin-copy-fonts.js'
 import CircularDependencyPlugin from 'vite-plugin-circular-dependency'
 
 export function createViteConfig(dirname, port = 3000, pwaConfig = null, appName = null, i18nConfig = null) {
@@ -35,7 +36,8 @@ export function createViteConfig(dirname, port = 3000, pwaConfig = null, appName
       circleImportThrowErr: false,
       circleImportReplace: true,
       exclude: /node_modules/
-    })
+    }),
+    copyFontsPlugin()
   ]
   
   // Add i18n generation plugin ONLY for production/CI builds

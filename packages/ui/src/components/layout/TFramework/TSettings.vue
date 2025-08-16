@@ -126,6 +126,32 @@
         </div>
       </div>
 
+      <!-- System Settings -->
+      <div :class="bemm('section')">
+        <h3 :class="bemm('section-title')">
+          <TIcon name="settings" />
+          {{ t('settings.system') }}
+        </h3>
+        <div :class="bemm('section-content')">
+          <div :class="bemm('setting-row')">
+            <div :class="bemm('setting-info')">
+              <label :class="bemm('setting-label')">{{ t('settings.appVersion') }}</label>
+              <p :class="bemm('setting-description')">{{ t('settings.refreshDescription') }}</p>
+            </div>
+            <TButton
+              type="outline"
+              size="small"
+              color="primary"
+              :icon="isRefreshing ? 'spinner' : 'refresh'"
+              :disabled="isRefreshing"
+              @click="handleHardRefresh"
+            >
+              {{ isRefreshing ? t('settings.refreshing') : t('settings.refreshApp') }}
+            </TButton>
+          </div>
+        </div>
+      </div>
+
       <!-- Custom Settings Sections -->
       <div
         v-for="section in sortedSections"
@@ -207,6 +233,9 @@ const themes = computed(() => [
 const voiceEnabled = ref(userSettings.value.voiceEnabled ?? true)
 const selectedVoice = ref(userSettings.value.voice ?? '')
 const availableVoices = ref<SpeechSynthesisVoice[]>([])
+
+// Refresh state
+const isRefreshing = ref(false)
 
 // Language data
 const databaseLanguages = ref<Array<{ code: string; name: string; native_name?: string }>>([])
@@ -347,6 +376,62 @@ const handleChangePassword = () => {
   })
 }
 
+const handleHardRefresh = async () => {
+  isRefreshing.value = true
+  
+  try {
+    // Clear all caches
+    if ('caches' in window) {
+      const cacheNames = await caches.keys()
+      await Promise.all(
+        cacheNames.map(cacheName => caches.delete(cacheName))
+      )
+      console.log('All caches cleared')
+    }
+    
+    // Clear local storage (except auth data)
+    const authSession = localStorage.getItem('tiko_auth_session')
+    const authUser = localStorage.getItem('tiko_auth_user')
+    const parentMode = localStorage.getItem('tiko:parent-mode')
+    const locale = localStorage.getItem('tiko:locale')
+    
+    // Clear all localStorage
+    localStorage.clear()
+    
+    // Restore critical data
+    if (authSession) localStorage.setItem('tiko_auth_session', authSession)
+    if (authUser) localStorage.setItem('tiko_auth_user', authUser)
+    if (parentMode) localStorage.setItem('tiko:parent-mode', parentMode)
+    if (locale) localStorage.setItem('tiko:locale', locale)
+    
+    // Clear session storage
+    sessionStorage.clear()
+    
+    // Unregister service workers
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations()
+      await Promise.all(
+        registrations.map(registration => registration.unregister())
+      )
+      console.log('Service workers unregistered')
+    }
+    
+    // Show success message
+    toastService.success(t('settings.refreshSuccess'))
+    
+    // Wait a moment for the toast to show
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    // Force reload the page
+    window.location.reload()
+    
+  } catch (error) {
+    console.error('Failed to refresh app:', error)
+    toastService.error(t('settings.refreshError'))
+    isRefreshing.value = false
+  }
+}
+
 const handleCustomSettingChange = (sectionId: string, value: any) => {
   pendingChanges.value[sectionId] = value
 }
@@ -463,6 +548,20 @@ onMounted(async () => {
   &__setting-label {
     flex: 1;
     color: var(--color-foreground-secondary);
+  }
+  
+  &__setting-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+  
+  &__setting-description {
+    margin: 0;
+    font-size: 0.9em;
+    color: var(--color-foreground-tertiary);
+    line-height: 1.4;
   }
 
   &__theme-selector {
