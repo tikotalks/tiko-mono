@@ -3,9 +3,6 @@ import { createViteConfig } from '../../vite.config.base'
 const pwaConfig = {
   registerType: 'autoUpdate',
   includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
-  workbox: {
-    maximumFileSizeToCacheInBytes: 3 * 1024 * 1024 // 3MB
-  },
   manifest: {
     name: 'Cards - Tiko',
     short_name: 'Cards',

@@ -59,7 +59,54 @@ export function createViteConfig(dirname, port = 3000, pwaConfig = null, appName
   }
   
   if (pwaConfig) {
-    plugins.push(VitePWA(pwaConfig))
+    // Enhance PWA config with better caching and update strategies
+    const enhancedPwaConfig = {
+      ...pwaConfig,
+      workbox: {
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3MB
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+        ...pwaConfig.workbox,
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'supabase-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 // 1 day
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/tts-generation\..*\.workers\.dev\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'tts-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-cache',
+              expiration: {
+                maxEntries: 30,
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+              }
+            }
+          },
+          ...(pwaConfig.workbox?.runtimeCaching || [])
+        ]
+      }
+    }
+    plugins.push(VitePWA(enhancedPwaConfig))
   }
 
   // Only set envDir for local development, not CI

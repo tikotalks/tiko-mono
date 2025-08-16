@@ -135,6 +135,8 @@ export type { DraggableItem, UseDraggableOptions } from './composables/useDragga
 export { useLocalStorage, storage } from './composables/useLocalStorage'
 export { useBuildInfo } from './composables/useBuildInfo'
 export type { BuildInfo } from './composables/useBuildInfo'
+export { usePWAUpdate } from './composables/usePWAUpdate'
+export type { PWAUpdateOptions } from './composables/usePWAUpdate'
 
 // Sections
 export * from './sections'

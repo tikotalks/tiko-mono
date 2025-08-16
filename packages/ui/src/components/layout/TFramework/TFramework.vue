@@ -79,6 +79,7 @@ import { toastService } from '../../feedback/TToast/TToast.service'
 import { useTikoConfig } from '../../../composables/useTikoConfig'
 import { createIconRegistry, iconRegistryKey } from '../../../icons/registry'
 import { useI18n } from '../../../composables/useI18n'
+import { usePWAUpdate } from '../../../composables/usePWAUpdate'
 import type { TFrameworkProps, TFrameworkEmits } from './TFramework.model'
 import type { Locale } from '../../i18n/types'
 
@@ -126,6 +127,14 @@ const { setLocale, t, keys, locale } = useI18n()
 
 // Set config and get theme styles
 const { themeStyles, config: tikoConfig } = useTikoConfig(props.config)
+
+// Initialize PWA update checking
+if (props.isApp) {
+  usePWAUpdate({
+    autoUpdate: false,
+    showPrompt: true
+  })
+}
 
 // Compute whether auth is required based on config
 const computedRequireAuth = computed(() => {
