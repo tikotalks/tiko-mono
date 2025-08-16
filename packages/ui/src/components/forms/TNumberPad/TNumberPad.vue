@@ -59,7 +59,7 @@ const props = withDefaults(defineProps<TNumberPadProps>(), {
   disabled: false,
   disableClear: false,
   disableSubmit: false,
-  clearIcon: Icons.ARROW_LEFT,
+  clearIcon: Icons.CHEVRON_LEFT,
   submitIcon: Icons.ARROW_RIGHT,
   size: 'medium',
   variant: 'default'
@@ -104,13 +104,13 @@ const shuffleArray = (array: number[]): number[] => {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-s);
-  width: 100%;
+  width: 15em;
   max-width: 20em;
 
   &__button {
     aspect-ratio: 1;
     min-height: var(--space-xl);
-    border: 1px solid var(--color-accent);
+    border: 2px solid var(--color-primary);
     border-radius: var(--border-radius);
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -143,13 +143,13 @@ const shuffleArray = (array: number[]): number[] => {
 
     &:hover:not(:disabled) {
       background-color: color-mix(in srgb, var(--color-primary), transparent 90%);
-      border-color: var(--color-primary);
-      transform: translateY(-1px);
+      border-color: var(--color-foreground);
+      transform: scale(1.05);
       box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary), transparent 80%);
     }
 
     &:active:not(:disabled) {
-      transform: translateY(0);
+      transform:scale(.95);
       box-shadow: 0 1px 4px color-mix(in srgb, var(--color-primary), transparent 80%);
     }
 

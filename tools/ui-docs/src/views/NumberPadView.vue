@@ -9,9 +9,9 @@
     <section :class="bemm('section')">
       <h2>Basic Number Pad</h2>
       <p>Simple number pad with default configuration</p>
-      
+
       <div :class="bemm('demo')">
-        <TNumberPad 
+        <TNumberPad
           @number="handleBasicNumber"
           @clear="handleBasicClear"
           @submit="handleBasicSubmit"
@@ -24,7 +24,7 @@
 
       <div :class="bemm('code')">
         <h4>Usage</h4>
-        <pre><code>&lt;TNumberPad 
+        <pre><code>&lt;TNumberPad
   @number="handleNumber"
   @clear="handleClear"
   @submit="handleSubmit"
@@ -36,11 +36,11 @@
     <section :class="bemm('section')">
       <h2>Sizes</h2>
       <p>Different sizes for various contexts</p>
-      
+
       <div :class="bemm('demo', 'sizes')">
         <div :class="bemm('demo-item')">
           <label>Small</label>
-          <TNumberPad 
+          <TNumberPad
             size="small"
             @number="val => sizes.small += val"
             @clear="() => sizes.small = sizes.small.slice(0, -1)"
@@ -49,7 +49,7 @@
         </div>
         <div :class="bemm('demo-item')">
           <label>Medium (default)</label>
-          <TNumberPad 
+          <TNumberPad
             size="medium"
             @number="val => sizes.medium += val"
             @clear="() => sizes.medium = sizes.medium.slice(0, -1)"
@@ -58,7 +58,7 @@
         </div>
         <div :class="bemm('demo-item')">
           <label>Large</label>
-          <TNumberPad 
+          <TNumberPad
             size="large"
             @number="val => sizes.large += val"
             @clear="() => sizes.large = sizes.large.slice(0, -1)"
@@ -79,11 +79,11 @@
     <section :class="bemm('section')">
       <h2>Variants</h2>
       <p>Different visual styles</p>
-      
+
       <div :class="bemm('demo', 'variants')">
         <div :class="bemm('demo-item')">
           <label>Default</label>
-          <TNumberPad 
+          <TNumberPad
             variant="default"
             @number="val => variants.default += val"
             @clear="() => variants.default = variants.default.slice(0, -1)"
@@ -92,7 +92,7 @@
         </div>
         <div :class="bemm('demo-item')">
           <label>Flat</label>
-          <TNumberPad 
+          <TNumberPad
             variant="flat"
             @number="val => variants.flat += val"
             @clear="() => variants.flat = variants.flat.slice(0, -1)"
@@ -112,11 +112,11 @@
     <section :class="bemm('section')">
       <h2>Number Shuffling</h2>
       <p>Randomize number positions for security</p>
-      
+
       <div :class="bemm('demo')">
         <div :class="bemm('demo-item')">
           <label>Shuffled Numbers</label>
-          <TNumberPad 
+          <TNumberPad
             :shuffle="true"
             @number="val => shuffledValue += val"
             @clear="() => shuffledValue = shuffledValue.slice(0, -1)"
@@ -136,9 +136,9 @@
     <section :class="bemm('section')">
       <h2>Custom Icons</h2>
       <p>Customize action button icons</p>
-      
+
       <div :class="bemm('demo')">
-        <TNumberPad 
+        <TNumberPad
           :clear-icon="Icons.TRASH"
           :submit-icon="Icons.ARROW_RIGHT"
           @number="val => customIconValue += val"
@@ -155,7 +155,7 @@
         <h4>Usage</h4>
         <pre><code>import type { Icons } from '@tiko/ui'
 
-&lt;TNumberPad 
+&lt;TNumberPad
   :clear-icon="Icons.TRASH"
   :submit-icon="Icons.ARROW_RIGHT"
 /&gt;</code></pre>
@@ -166,9 +166,9 @@
     <section :class="bemm('section')">
       <h2>Conditional Button States</h2>
       <p>Disable clear/submit buttons based on conditions</p>
-      
+
       <div :class="bemm('demo')">
-        <TNumberPad 
+        <TNumberPad
           :disable-clear="conditionalValue.length === 0"
           :disable-submit="conditionalValue.length < 4"
           @number="val => conditionalValue += val"
@@ -187,7 +187,7 @@
 
       <div :class="bemm('code')">
         <h4>Usage</h4>
-        <pre><code>&lt;TNumberPad 
+        <pre><code>&lt;TNumberPad
   :disable-clear="value.length === 0"
   :disable-submit="value.length < 4"
 /&gt;</code></pre>
@@ -198,11 +198,11 @@
     <section :class="bemm('section')">
       <h2>Hide Action Buttons</h2>
       <p>Hide clear or submit buttons when not needed</p>
-      
+
       <div :class="bemm('demo', 'hide-actions')">
         <div :class="bemm('demo-item')">
           <label>Numbers Only</label>
-          <TNumberPad 
+          <TNumberPad
             :show-clear="false"
             :show-submit="false"
             @number="val => numbersOnlyValue += val"
@@ -211,7 +211,7 @@
         </div>
         <div :class="bemm('demo-item')">
           <label>No Submit Button</label>
-          <TNumberPad 
+          <TNumberPad
             :show-submit="false"
             @number="val => noSubmitValue += val"
             @clear="() => noSubmitValue = noSubmitValue.slice(0, -1)"
@@ -234,7 +234,7 @@
     <section :class="bemm('section')">
       <h2>Interactive Example</h2>
       <p>Try different configurations</p>
-      
+
       <div :class="bemm('demo', 'interactive')">
         <div :class="bemm('controls')">
           <label>
@@ -265,7 +265,7 @@
             Show submit button
           </label>
         </div>
-        
+
         <div :class="bemm('result')">
           <TNumberPad
             :size="interactive.size"
@@ -462,7 +462,7 @@ const interactive = reactive({
 
   &__header {
     margin-bottom: var(--space-xl);
-    
+
     h1 {
       font-size: 2.5rem;
       font-weight: 700;
@@ -479,7 +479,7 @@ const interactive = reactive({
 
   &__section {
     margin-bottom: var(--space-xl);
-    
+
     h2 {
       font-size: 1.5rem;
       font-weight: 600;
@@ -521,7 +521,7 @@ const interactive = reactive({
     flex-direction: column;
     gap: var(--space);
     align-items: center;
-    
+
     label {
       font-size: 0.875rem;
       font-weight: 600;
@@ -567,7 +567,7 @@ const interactive = reactive({
     flex-wrap: wrap;
     gap: var(--space);
     justify-content: center;
-    
+
     label {
       display: flex;
       align-items: center;
@@ -575,11 +575,11 @@ const interactive = reactive({
       font-size: 0.875rem;
       color: var(--color-foreground);
       cursor: pointer;
-      
+
       select, input[type="checkbox"] {
         cursor: pointer;
       }
-      
+
       select {
         padding: var(--space-xs) var(--space-s);
         border: 1px solid var(--color-border);
@@ -614,7 +614,7 @@ const interactive = reactive({
       margin: 0;
       padding: 0;
       overflow-x: auto;
-      
+
       code {
         font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
         font-size: 0.875rem;
@@ -627,31 +627,31 @@ const interactive = reactive({
 
   &__props-table {
     overflow-x: auto;
-    
+
     table {
       width: 100%;
       border-collapse: collapse;
       background: var(--color-background);
       border: 1px solid var(--color-border);
       border-radius: var(--radius);
-      
+
       th, td {
         padding: var(--space-s) var(--space);
         text-align: left;
         border-bottom: 1px solid var(--color-border);
       }
-      
+
       th {
         background: var(--color-background-secondary);
         font-weight: 600;
         color: var(--color-foreground);
         font-size: 0.875rem;
       }
-      
+
       td {
         color: var(--color-foreground-secondary);
         font-size: 0.875rem;
-        
+
         code {
           background: var(--color-background-secondary);
           padding: 0.125rem 0.25rem;
@@ -661,7 +661,7 @@ const interactive = reactive({
           color: var(--color-foreground);
         }
       }
-      
+
       tbody tr:last-child {
         th, td {
           border-bottom: none;
@@ -674,11 +674,11 @@ const interactive = reactive({
 @media (max-width: 768px) {
   .number-pad-view {
     padding: var(--space);
-    
+
     &__header h1 {
       font-size: 2rem;
     }
-    
+
     &__demo {
       &--sizes, &--variants, &--hide-actions {
         flex-direction: column;

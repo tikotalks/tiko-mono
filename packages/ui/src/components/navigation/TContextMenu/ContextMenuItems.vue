@@ -218,7 +218,10 @@ const handleClick = (event: Event, item: ContextMenuItem) => {
         --button-color-text: red;
 
         &:hover {
-            --icon-fill: var(--color-accent, #fff);
+            .icon{
+                color: var(--color-primary);
+            }
+            --icon-fill: color-mix(in srgb, var(--color-primary), transparent 50%);
         }
 
         &--icon-tile {
