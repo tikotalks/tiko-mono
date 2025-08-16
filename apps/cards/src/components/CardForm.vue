@@ -19,7 +19,7 @@
           </TButton>
         </TButtonGroup>
 
-        <TButtonGroup :class="bemm('secondary-actions')">
+        <TButtonGroup v-if="isEditing" :class="bemm('secondary-actions')">
              <!-- Left side: Translations toggle -->
              <TButton type="outline" color="primary" :icon="Icons.SPEECH_BALLOON" @click="toggleTranslations">
             {{ showTranslations ? t('common.hide') : t('common.show') }} {{ t('cards.translations') }}
@@ -94,7 +94,7 @@
         </section>
 
         <!-- Right Column: Translations -->
-        <div v-if="showTranslations" :class="bemm('section', ['', 'translations'])">
+        <div v-if="isEditing && showTranslations" :class="bemm('section', ['', 'translations'])">
           <div :class="bemm('translations-header')">
             <h3 :class="bemm('section-title')">{{ t('cards.translations') }}</h3>
           </div>

@@ -217,6 +217,7 @@ const { isEditMode, toggleEditMode, disableEditMode, enableEditMode } = useEditM
 
 // Inject the popup service from TFramework
 const popupService = inject<any>('popupService');
+const toastService = inject<any>('toastService');
 
 // Event bus for keyboard shortcuts
 const eventBus = useEventBus();
@@ -525,9 +526,9 @@ const openCardEditForm = async (card: CardTile, index: number) => {
           await loadCards();
         },
         onSubmit: async (cardData: Partial<CardTile>, cardIndex: number, newTranslations: ItemTranslation[]) => {
-          try {
-            if (isNewCard) {
-              // Create new card in Supabase
+          if (isNewCard) {
+            // For new cards, we need to save first to get the ID
+            try {
               const savedId = await cardsService.saveCard(cardData, currentGroupId.value, index, newTranslations);
               if (savedId) {
                 const newCard: CardTile = {
@@ -535,52 +536,109 @@ const openCardEditForm = async (card: CardTile, index: number) => {
                   id: savedId,
                   index: index,
                 } as CardTile;
+                
+                // Update local state
                 cards.value = [...cards.value.filter(c => !c.id.startsWith('empty-')), newCard];
+                
+                // Update store cache
+                await yesNoStore.addCardToCache(newCard, currentGroupId.value, currentLocale.value);
               }
-            } else {
-              // Update existing card in Supabase
-              const updatedCard = { ...card, ...cardData };
-              const savedId = await cardsService.saveCard(updatedCard, currentGroupId.value, undefined, newTranslations);
-              if (savedId) {
-                // Reload the card to get updated translations
-                const reloadedCards = await cardsService.loadCards(currentGroupId.value);
-                const reloadedCard = reloadedCards.find(c => c.id === card.id);
-
-                if (reloadedCard) {
-                  const updatedCards = [...cards.value];
-                  const existingIndex = updatedCards.findIndex(c => c.id === card.id);
-                  if (existingIndex >= 0) {
-                    updatedCards[existingIndex] = reloadedCard;
-                    cards.value = updatedCards;
-                  }
-                }
-              }
+              popupService.close();
+            } catch (error) {
+              console.error('Failed to create card:', error);
+              toastService.error(t('cards.failedToCreateCard'));
             }
-            popupService.close();
-          } catch (error) {
-            console.error('Failed to save card:', error);
-            // TODO: Show error toast
+          } else {
+            // For existing cards, use optimistic update
+            const originalCard = { ...card };
+            const originalCardsArray = [...cards.value];
+            
+            try {
+              // Optimistic update - update UI immediately
+              const updatedCard = { ...card, ...cardData };
+              const updatedCards = [...cards.value];
+              const existingIndex = updatedCards.findIndex(c => c.id === card.id);
+              if (existingIndex >= 0) {
+                updatedCards[existingIndex] = updatedCard;
+                cards.value = updatedCards;
+              }
+              
+              // Update store cache optimistically
+              await yesNoStore.updateCardInCache(updatedCard, currentGroupId.value, currentLocale.value);
+              
+              // Close popup immediately for better UX
+              popupService.close();
+              
+              // Save to database in background
+              const savedId = await cardsService.saveCard(updatedCard, currentGroupId.value, undefined, newTranslations);
+              
+              if (!savedId) {
+                throw new Error('Failed to save card');
+              }
+              
+              // Success - no need to do anything, UI is already updated
+              console.log('Card saved successfully:', savedId);
+              
+            } catch (error) {
+              console.error('Failed to save card:', error);
+              
+              // Rollback on failure
+              cards.value = originalCardsArray;
+              await yesNoStore.updateCardInCache(originalCard, currentGroupId.value, currentLocale.value);
+              
+              // Show error toast
+              toastService.error(t('cards.failedToSaveCard'));
+            }
           }
         },
         onCancel: () => {
           popupService.close();
         },
         onDelete: async () => {
+          // Store original state for rollback
+          const originalCards = [...cards.value];
+          const originalHasChildren = tilesWithChildren.value.has(card.id);
+          const originalChildren = tileChildrenMap.value.get(card.id);
+          
           try {
+            // Optimistic update - remove from UI immediately
+            cards.value = cards.value.filter(c => c.id !== card.id);
+            tilesWithChildren.value.delete(card.id);
+            tileChildrenMap.value.delete(card.id);
+            
+            // Remove from store cache
+            await yesNoStore.removeCardFromCache(card.id, currentGroupId.value, currentLocale.value);
+            
+            // Close popup immediately for better UX
+            popupService.close();
+            
+            // Delete from database in background
             const success = await cardsService.deleteCard(card.id);
-            if (success) {
-              // Remove from UI
-              cards.value = cards.value.filter(c => c.id !== card.id);
-              // Clear from cache
-              tilesWithChildren.value.delete(card.id);
-              tileChildrenMap.value.delete(card.id);
-              popupService.close();
-            } else {
-              alert('Failed to delete card. Please try again.');
+            
+            if (!success) {
+              throw new Error('Failed to delete card');
             }
+            
+            // Success - no need to do anything, UI is already updated
+            console.log('Card deleted successfully:', card.id);
+            
           } catch (error) {
             console.error('Failed to delete card:', error);
-            alert('Failed to delete card. Please try again.');
+            
+            // Rollback on failure
+            cards.value = originalCards;
+            if (originalHasChildren) {
+              tilesWithChildren.value.add(card.id);
+            }
+            if (originalChildren) {
+              tileChildrenMap.value.set(card.id, originalChildren);
+            }
+            
+            // Re-add to cache
+            await yesNoStore.updateCardInCache(card, currentGroupId.value, currentLocale.value);
+            
+            // Show error toast
+            toastService.error(t('cards.failedToDeleteCard'));
           }
         },
       },
@@ -595,20 +653,47 @@ const confirmDeleteCard = async (card: CardTile) => {
     : t('cards.deleteThisCard');
 
   if (confirm(message)) {
+    // Store original state for rollback
+    const originalCards = [...cards.value];
+    const originalHasChildren = tilesWithChildren.value.has(card.id);
+    const originalChildren = tileChildrenMap.value.get(card.id);
+    
     try {
+      // Optimistic update - remove from UI immediately
+      cards.value = cards.value.filter(c => c.id !== card.id);
+      tilesWithChildren.value.delete(card.id);
+      tileChildrenMap.value.delete(card.id);
+      
+      // Remove from store cache
+      await yesNoStore.removeCardFromCache(card.id, currentGroupId.value, currentLocale.value);
+      
+      // Delete from database in background
       const success = await cardsService.deleteCard(card.id);
-      if (success) {
-        // Remove from UI
-        cards.value = cards.value.filter(c => c.id !== card.id);
-        // Clear from cache
-        tilesWithChildren.value.delete(card.id);
-        tileChildrenMap.value.delete(card.id);
-      } else {
-        alert('Failed to delete card. Please try again.');
+      
+      if (!success) {
+        throw new Error('Failed to delete card');
       }
+      
+      // Success - no need to do anything, UI is already updated
+      console.log('Card deleted successfully:', card.id);
+      
     } catch (error) {
       console.error('Failed to delete card:', error);
-      alert('Failed to delete card. Please try again.');
+      
+      // Rollback on failure
+      cards.value = originalCards;
+      if (originalHasChildren) {
+        tilesWithChildren.value.add(card.id);
+      }
+      if (originalChildren) {
+        tileChildrenMap.value.set(card.id, originalChildren);
+      }
+      
+      // Re-add to cache
+      await yesNoStore.updateCardInCache(card, currentGroupId.value, currentLocale.value);
+      
+      // Show error toast
+      toastService.error(t('cards.failedToDeleteCard'));
     }
   }
 };
@@ -1211,6 +1296,9 @@ const openBulkAddMode = () => {
             // Sort cards by index
             cards.value.sort((a, b) => a.index - b.index);
 
+            // Update store cache
+            await yesNoStore.addCardToCache(newCard, currentGroupId.value, currentLocale.value);
+
             // The CardGrid will automatically handle showing the new card
           }
         } catch (error) {
@@ -1251,6 +1339,9 @@ const openBulkAddMode = () => {
               } else {
                 cards.value.push(newCard);
               }
+              
+              // Update store cache
+              await yesNoStore.addCardToCache(newCard, currentGroupId.value, currentLocale.value);
             }
           }
 
