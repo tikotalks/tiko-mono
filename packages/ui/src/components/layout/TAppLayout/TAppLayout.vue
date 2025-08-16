@@ -21,6 +21,8 @@
         :user-avatar-color="userAvatarColor"
         :user-role="userRole"
         :show-parent-mode-indicator="showParentModeIndicator"
+        :enable-parent-mode="computedEnableParentMode"
+        :is-app="config?.isApp"
         @back="$emit('back')"
         @profile="$emit('profile')"
         @settings="$emit('settings')"
@@ -54,11 +56,12 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useBemm } from 'bemm';
 import TTopBar from '../TTopBar/TTopBar.vue';
 import type { TAppLayoutProps, TAppLayoutEmits } from './TAppLayout.model';
 
-withDefaults(defineProps<TAppLayoutProps>(), {
+const props = withDefaults(defineProps<TAppLayoutProps>(), {
   showBackButton: false,
   backButtonLabel: 'Back',
   showUserInfo: true,
@@ -67,12 +70,22 @@ withDefaults(defineProps<TAppLayoutProps>(), {
   isUserOnline: true,
   isLoading: false,
   showUserMenu: true,
-  showParentModeIndicator: false
+  showParentModeIndicator: false,
+  enableParentMode: undefined
 });
 
 defineEmits<TAppLayoutEmits>();
 
 const bemm = useBemm('app-layout');
+
+// Compute enableParentMode with proper default based on isApp
+const computedEnableParentMode = computed(() => {
+  if (props.enableParentMode !== undefined) {
+    return props.enableParentMode;
+  }
+  // Default to true for apps, false for websites
+  return props.config?.isApp ?? true;
+});
 </script>
 
 <style lang="scss" scoped>

@@ -105,6 +105,12 @@ export interface TAppLayoutProps {
    * @default false
    */
   showParentModeIndicator?: boolean
+
+  /**
+   * Whether to enable parent mode functionality on user avatar click
+   * @default true for apps, false for websites
+   */
+  enableParentMode?: boolean
 }
 
 export interface TAppLayoutEmits {

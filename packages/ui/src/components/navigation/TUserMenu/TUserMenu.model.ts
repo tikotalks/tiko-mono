@@ -9,6 +9,7 @@ export interface TUserMenuProps {
   avatarSize?: 'small' | 'medium' | 'large'
   customMenuItems?: Partial<ContextMenuItem>[]
   menuPosition?: 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right'
+  enableParentMode?: boolean // Whether to show parent mode setup/unlock on avatar click
 }
 
 export interface TUserMenuEmits {

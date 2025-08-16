@@ -55,6 +55,7 @@
           :show-online-status="showOnlineStatus"
           :is-online="isUserOnline"
           :custom-menu-items="customMenuItems"
+          :enable-parent-mode="shouldEnableParentMode"
           @logout="handleLogout"
         />
     </div>
@@ -87,6 +88,7 @@ const props = withDefaults(defineProps<TTopBarProps>(), {
   isUserOnline: true,
   isLoading: false,
   isApp: true,
+  enableParentMode: undefined, // Will be computed based on isApp
 })
 
 const emit = defineEmits<TTopBarEmits>()
@@ -140,6 +142,11 @@ const isMobile = ref(false)
 
 // Computed
 const user = computed(() => authStore.value?.user)
+
+// Use parent mode for apps by default, but allow override
+const shouldEnableParentMode = computed(() => {
+  return props.enableParentMode !== undefined ? props.enableParentMode : props.isApp
+})
 
 
 // Methods

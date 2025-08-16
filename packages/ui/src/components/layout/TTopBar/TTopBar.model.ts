@@ -61,6 +61,12 @@ export interface TTopBarProps {
    * Is the top bar part of an app or a website?
    */
   isApp?: boolean
+
+  /**
+   * Whether to enable parent mode functionality on user avatar click
+   * @default true for apps, false for websites
+   */
+  enableParentMode?: boolean
 }
 
 export interface TTopBarEmits {
