@@ -17,6 +17,7 @@ export const useAuthStore = defineStore('auth', () => {
   const session = ref<AuthSession | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
+  const userRole = ref<string | null>(null)
   
   // User settings state - this is the single source of truth
   const userSettings = ref<UserProfileSettings>({})
@@ -28,6 +29,38 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => !!user.value && !!session.value)
   const currentLanguage = computed(() => userSettings.value.language || 'en-GB')
   const currentTheme = computed(() => userSettings.value.theme || 'auto')
+  const isAdmin = computed(() => {
+    // First check the fetched role from user_profiles table
+    if (userRole.value === 'admin') {
+      return true;
+    }
+    
+    // Fallback checks for other places where admin role might be stored
+    // 1. Check user_metadata (Supabase user metadata)
+    if (user.value?.user_metadata?.role === 'admin' || 
+        user.value?.user_metadata?.is_admin === true) {
+      return true;
+    }
+    
+    // 2. Check app_metadata (Supabase app metadata - set by backend)
+    if (user.value?.app_metadata?.role === 'admin' || 
+        user.value?.app_metadata?.is_admin === true) {
+      return true;
+    }
+    
+    // 3. Check user object directly (some systems add role directly)
+    if ((user.value as any)?.role === 'admin') {
+      return true;
+    }
+    
+    // 4. For testing/development - check email domain
+    if (user.value?.email?.endsWith('@admin.com') || 
+        user.value?.email?.endsWith('@tiko.com')) {
+      return true;
+    }
+    
+    return false;
+  })
 
   // Actions
   const signInWithEmail = async (email: string, password: string) => {
@@ -62,6 +95,8 @@ export const useAuthStore = defineStore('auth', () => {
         session.value = result.session
         // Sync with Supabase for RLS
         await authSyncService.syncWithSupabase(result.session)
+        // Fetch user role after successful login
+        await fetchUserRole()
       }
       
     } catch (err) {
@@ -164,6 +199,8 @@ export const useAuthStore = defineStore('auth', () => {
         session.value = result.session
         // Sync with Supabase for RLS
         await authSyncService.syncWithSupabase(result.session)
+        // Fetch user role after successful login
+        await fetchUserRole()
       }
 
       return result
@@ -324,6 +361,30 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
   
+  const fetchUserRole = async () => {
+    if (!user.value?.id) return
+    
+    try {
+      const response = await fetch('https://kejvhvszhevfwgsztedf.supabase.co/rest/v1/rpc/get_my_role', {
+        method: 'POST',
+        headers: {
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlanZodnN6aGV2Zndnc3p0ZWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4ODg2MTIsImV4cCI6MjA2NzQ2NDYxMn0.xUYXxNodJTpTwChlKbuBSojVJqX9CDW87aVISEUc2rE',
+          'Authorization': `Bearer ${session.value?.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: '{}'
+      })
+      
+      if (response.ok) {
+        const role = await response.json()
+        userRole.value = role
+        console.log('[Auth Store] User role:', role)
+      }
+    } catch (err) {
+      console.error('[Auth Store] Failed to fetch user role:', err)
+    }
+  }
+
   const initializeFromStorage = async () => {
     try {
       // Clean up old locale storage keys first
@@ -352,6 +413,9 @@ export const useAuthStore = defineStore('auth', () => {
         
         // Sync with Supabase for RLS
         await authSyncService.syncWithSupabase(currentSession)
+        
+        // Fetch user role
+        await fetchUserRole()
         
         // If user has settings in metadata, merge them with localStorage
         // localStorage takes precedence as it may have more recent changes
@@ -564,6 +628,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     currentLanguage,
     currentTheme,
+    isAdmin,
     
     // Actions
     signInWithEmail,

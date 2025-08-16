@@ -40,7 +40,9 @@ export class ItemTranslationService {
    */
   static async saveTranslation(translation: ItemTranslation): Promise<ItemTranslation> {
     try {
-      return await cardsSupabaseService.saveItemTranslation(translation);
+      // Use upsert to handle duplicate key errors
+      const { id, ...translationData } = translation;
+      return await cardsSupabaseService.upsertSingleTranslation(translationData);
     } catch (error) {
       console.error('Error saving translation:', error);
       throw error;
@@ -68,48 +70,55 @@ export class ItemTranslationService {
     targetLanguages?: string[],
     baseLocale: string = 'en'
   ): Promise<{ title: Record<string, string>; speech: Record<string, string> }> {
-    const translationWorkerUrl = import.meta.env.VITE_TRANSLATION_WORKER_URL || 'https://i18n-translator.silvandiepen.workers.dev';
+    const translationWorkerUrl = import.meta.env.VITE_TRANSLATION_WORKER_URL || 'https://tiko-i18n-translator-production.silvandiepen.workers.dev';
+
+    console.log('[Translation Service] Using worker URL:', translationWorkerUrl);
+    console.log('[Translation Service] Target languages:', targetLanguages);
 
     // If no target languages specified, use common languages (not locales)
     const languages = targetLanguages || ['es', 'fr', 'de', 'it', 'pt', 'nl', 'ja', 'ko', 'zh'];
 
     try {
       // Translate title
-      const titleResponse = await fetch(`${translationWorkerUrl}/translate`, {
+      console.log('[Translation Service] Translating title:', title);
+      const titleResponse = await fetch(`${translationWorkerUrl}/translate-direct`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          key: `card.title.${Date.now()}`,
           englishTranslation: title,
           languages,
           context: 'Short title for a communication card, max 50 characters'
-        } as TranslationRequest),
+        }),
       });
 
       if (!titleResponse.ok) {
-        throw new Error(`Translation API error: ${titleResponse.statusText}`);
+        const errorText = await titleResponse.text();
+        console.error('[Translation Service] Title translation failed:', titleResponse.status, errorText);
+        throw new Error(`Translation API error: ${titleResponse.statusText} - ${errorText}`);
       }
 
       const titleData: TranslationResponse = await titleResponse.json();
 
       // Translate speech
-      const speechResponse = await fetch(`${translationWorkerUrl}/translate`, {
+      console.log('[Translation Service] Translating speech:', speech);
+      const speechResponse = await fetch(`${translationWorkerUrl}/translate-direct`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          key: `card.speech.${Date.now()}`,
           englishTranslation: speech,
           languages,
           context: 'Text to be spoken aloud for a communication card'
-        } as TranslationRequest),
+        }),
       });
 
       if (!speechResponse.ok) {
-        throw new Error(`Translation API error: ${speechResponse.statusText}`);
+        const errorText = await speechResponse.text();
+        console.error('[Translation Service] Speech translation failed:', speechResponse.status, errorText);
+        throw new Error(`Translation API error: ${speechResponse.statusText} - ${errorText}`);
       }
 
       const speechData: TranslationResponse = await speechResponse.json();
@@ -123,7 +132,19 @@ export class ItemTranslationService {
         speech: speechData.translations,
       };
     } catch (error) {
-      console.error('Error generating translations:', error);
+      console.error('[Translation Service] Error generating translations:', error);
+      
+      // Check if it's a network error
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        console.error('[Translation Service] Network error - possible causes:');
+        console.error('- Translation worker is not deployed or accessible');
+        console.error('- CORS is blocking the request');
+        console.error('- Worker URL:', translationWorkerUrl);
+        
+        // Provide a more helpful error message
+        throw new Error('Translation service is currently unavailable. Please check if the translation worker is deployed and accessible.');
+      }
+      
       throw error;
     }
   }

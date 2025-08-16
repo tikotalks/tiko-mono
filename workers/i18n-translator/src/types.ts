@@ -4,6 +4,7 @@ export interface Env {
   OPENAI_API_KEY: string
   SUPABASE_URL: string
   SUPABASE_SERVICE_KEY: string
+  TRANSLATION_CACHE: KVNamespace
 }
 
 export interface TranslationRequest {

@@ -1,9 +1,37 @@
 <template>
   <div :class="bemm()">
     <TForm @submit.prevent="handleSubmit" :class="bemm('form')">
-      <div :class="bemm('columns')">
+
+      <!-- Form Actions -->
+      <TFormActions :class="bemm('actions')">
+        <TButtonGroup :class="bemm('main-actions')">
+
+
+          <TButton v-if="isEditing" icon="trash" :type="ButtonType.ICON_ONLY" :tooltip="t('common.delete')"
+            color="error" @click="handleDelete" :class="bemm('delete-button')">
+            {{ t('common.delete') }}
+          </TButton>
+          <TButton type="outline" color="secondary" @click="handleCancel">
+            {{ t('common.cancel') }}
+          </TButton>
+          <TButton type="default" color="primary" htmlButtonType="submit" :disabled="!isValid">
+            {{ isEditing ? t('common.saveChanges') : t('common.createCard') }}
+          </TButton>
+        </TButtonGroup>
+
+        <TButtonGroup :class="bemm('secondary-actions')">
+             <!-- Left side: Translations toggle -->
+             <TButton type="outline" color="primary" :icon="Icons.SPEECH_BALLOON" @click="toggleTranslations">
+            {{ showTranslations ? t('common.hide') : t('common.show') }} {{ t('cards.translations') }}
+            <span v-if="form.translations.length > 0" :class="bemm('translations-count')">
+              ({{ form.translations.length }})
+            </span>
+          </TButton>
+      </TButtonGroup>
+      </TFormActions>
+
         <!-- Left Column: Main Form Fields -->
-        <div :class="bemm('column', ['', 'main'])">
+        <section :class="bemm('section', ['', 'main'])">
           <TFormGroup>
 
             <!-- Title -->
@@ -11,15 +39,19 @@
               <TInputText v-model="form.title" :placeholder="t('cards.enterCardTitle')" max="50" />
             </TFormField>
 
-            <!-- Color Selection -->
-            <TFormField :label="t('common.color')" name="color">
-              <TColorPicker v-model="form.color" :colors="availableColors" />
+
+            <!-- Speech Text -->
+            <TFormField label="Speech Text" name="speech" help="Text to be spoken when the tile is clicked">
+              <TTextarea v-model="form.speech" placeholder="Enter text to be spoken" rows="3" max="500"
+                @input="speechManuallyEdited = true" />
             </TFormField>
 
             <!-- Image Selection -->
             <TFormField :label="t('common.image')" name="image">
               <div :class="bemm('image-field')">
-                <div v-if="form.image" :class="bemm('image-preview')">
+                <div v-if="form.image" :class="bemm('image-preview')"
+                  :style="`--current-color: var(--color-${form.color})`" @click="openImageSelector" :aria-label="'Click to change image'"
+                >
                   <img :src="form.image" :alt="form.title || 'Selected image'" />
                   <div :class="bemm('image-actions')">
                     <TButton :icon="Icons.IMAGE" size="small" type="outline" color="primary" @click="openImageSelector"
@@ -49,54 +81,33 @@
               </div>
             </TFormField>
 
-            <!-- Speech Text -->
-            <TFormField label="Speech Text" name="speech" help="Text to be spoken when the tile is clicked">
-              <TTextarea v-model="form.speech" placeholder="Enter text to be spoken" rows="3" max="500"
-                @input="speechManuallyEdited = true" />
+
+
+            <!-- Color Selection -->
+            <TFormField :label="t('common.color')" name="color">
+              <TColorPicker v-model="form.color" :colors="availableColors" />
             </TFormField>
+
 
           </TFormGroup>
 
-        </div>
+        </section>
 
         <!-- Right Column: Translations -->
-        <div v-if="showTranslations" :class="bemm('column', ['', 'translations'])">
+        <div v-if="showTranslations" :class="bemm('section', ['', 'translations'])">
           <div :class="bemm('translations-header')">
             <h3 :class="bemm('section-title')">{{ t('cards.translations') }}</h3>
           </div>
 
           <div :class="bemm('translations-content')">
             <CardTranslations v-model="form.translations" :item-id="props.card?.id" :base-title="form.title"
-              :base-speech="form.speech" :base-locale="currentLocale.value" />
+              :base-speech="form.speech" :base-locale="form.base_locale || currentLocale.value.split('-')[0]"
+              @update:base-title="form.title = $event"
+              @update:base-speech="form.speech = $event; speechManuallyEdited = true"
+              @translations-generated="$emit('translationsGenerated')" />
           </div>
         </div>
-      </div>
 
-      <!-- Form Actions -->
-      <TFormActions :class="bemm('actions')">
-
-
-        <TButtonGroup :class="bemm('main-actions')">
-          <!-- Left side: Translations toggle -->
-          <TButton type="outline" color="primary" :icon="Icons.SPEECH_BALLOON" @click="toggleTranslations">
-            {{ showTranslations ? t('common.hide') : t('common.show') }} {{ t('cards.translations') }}
-            <span v-if="form.translations.length > 0" :class="bemm('translations-count')">
-              ({{ form.translations.length }})
-            </span>
-          </TButton>
-
-          <TButton v-if="isEditing" icon="trash" :type="ButtonType.ICON_ONLY" :tooltip="t('common.delete')"
-            color="error" @click="handleDelete" :class="bemm('delete-button')">
-            {{ t('common.delete') }}
-          </TButton>
-          <TButton type="outline" color="secondary" @click="handleCancel">
-            {{ t('common.cancel') }}
-          </TButton>
-          <TButton type="default" color="primary" htmlButtonType="submit" :disabled="!isValid">
-            {{ isEditing ? t('common.saveChanges') : t('common.createCard') }}
-          </TButton>
-        </TButtonGroup>
-      </TFormActions>
     </TForm>
   </div>
 </template>
@@ -144,6 +155,7 @@ const emit = defineEmits<{
   submit: [card: Partial<CardTile>, index: number, translations: ItemTranslation[]];
   cancel: [];
   delete: [];
+  translationsGenerated: [];
 }>();
 
 const isEditing = computed(() => !!props.card && !props.card.id.startsWith('empty-'));
@@ -159,6 +171,7 @@ const form = reactive({
   color: props.card?.color || 'primary',
   image: props.card?.image || '',
   speech: props.card?.speech || '',
+  base_locale: props.card?.base_locale || currentLocale.value.split('-')[0], // Use language code, not locale
   translations: props.translations || [] as ItemTranslation[],
 });
 
@@ -265,7 +278,7 @@ const handleSubmit = () => {
     image: form.image?.trim() || '',
     speech: form.speech?.trim() || '',
     icon: 'square',
-    base_locale: currentLocale.value, // Store the base locale
+    base_locale: form.base_locale, // Store the base locale
   };
 
   emit('submit', cardData, props.index || 0, form.translations);
@@ -363,32 +376,18 @@ watch(() => props.translations, (newTranslations) => {
     width: 100%;
   }
 
-  &__columns {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-l);
-    width: fit-content;
-
-    @media (min-width: 960px) {
-
-      &:has(.card-form__column:nth-child(2)) {
-        width: fit-content;
-
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-  }
-
-  &__column {
+  &__section {
     &--main {
       // Main form column styles
     }
 
     &--translations {
-      background: var(--color-background-secondary);
+      background: var(--color-background);
       padding: var(--space);
-      border-radius: var(--radius);
-      border: 1px solid var(--color-border);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--color-primary);
+      position: absolute;
+      left: 100%;
     }
   }
 
@@ -438,7 +437,7 @@ watch(() => props.translations, (newTranslations) => {
     border-radius: var(--border-radius);
     overflow: hidden;
     border: 1px solid var(--color-border);
-
+background-color: var(--current-color);
     img {
       width: 100%;
       height: 100%;

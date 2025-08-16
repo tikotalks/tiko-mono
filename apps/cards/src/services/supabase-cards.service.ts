@@ -253,6 +253,17 @@ class CardsSupabaseService {
       body: JSON.stringify(translations)
     });
   }
+  
+  async upsertSingleTranslation(translation: Omit<ItemTranslation, 'id'>): Promise<ItemTranslation> {
+    const response = await this.apiRequest<ItemTranslation[]>('item_translations', {
+      method: 'POST',
+      headers: {
+        'Prefer': 'resolution=merge-duplicates,return=representation'
+      },
+      body: JSON.stringify(translation)
+    });
+    return response[0];
+  }
 
   // TTS Audio methods
   async getTTSAudio(textHash: string): Promise<any | null> {

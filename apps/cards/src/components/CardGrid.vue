@@ -993,6 +993,11 @@ watch(() => props.cards, (newCards) => {
       animation: tile-pop-in 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) both;
       animation-delay: calc(var(--tile-index, 0) * 50ms);
     }
+
+    .context-panel,
+    .context-panel__trigger{
+      height: 100%;
+    }
   }
 }
 

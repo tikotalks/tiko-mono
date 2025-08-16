@@ -459,7 +459,7 @@ const handleDrop = (event: DragEvent) => {
   &--empty {
     background-color: transparent;
     border: 2px dashed transparent;
-    pointer-events: none;
+    // pointer-events: none;
 
     &.card-tile--edit-mode {
       background-color: var(--color-gray-light);

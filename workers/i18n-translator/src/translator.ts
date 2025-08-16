@@ -10,28 +10,29 @@ export async function translateWithOpenAI(
     ? `\n\nContext: ${context}` 
     : ''
 
-  const prompt = `Translate the following English text into the specified languages.
+  const prompt = `You must translate the text into multiple languages and return ONLY valid JSON.
+
+English text to translate: "${text}"
 ${contextPrompt}
 
-Guidelines:
-- Provide natural, culturally appropriate translations
-- Maintain the same tone and formality level
-- For UI text, keep translations concise
-- Preserve any placeholders like {name}, {count}, etc.
-- Use appropriate punctuation for each language
+Target languages: ${targetLanguages.join(', ')}
 
-English text: "${text}"
+CRITICAL: Return ONLY a valid JSON object with NO additional text before or after.
+The response must start with { and end with }
 
-Provide translations for these languages: ${targetLanguages.join(', ')}
-
-Return ONLY a JSON object in this exact format:
+Example format:
 {
-  "${targetLanguages[0]}": "translation here",
-  "${targetLanguages[1]}": "translation here"
-  // ... continue for all languages
+  "fr": "Bonjour",
+  "es": "Hola",
+  "de": "Hallo"
 }
 
-Do not include any explanation or additional text.`
+Guidelines:
+- Natural, culturally appropriate translations
+- Keep UI text concise
+- Preserve placeholders like {name}, {count}
+- Use proper punctuation for each language
+- ONLY return the JSON object, nothing else`
 
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -41,11 +42,11 @@ Do not include any explanation or additional text.`
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'gpt-4-turbo-preview',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
-            content: 'You are a professional translator specializing in UI/UX translations. You provide accurate, natural translations while maintaining consistency with technical terminology.'
+            content: 'You are a JSON translation API. You ONLY return valid JSON objects containing translations. Never include explanations, comments, or any text outside the JSON structure. You are a professional translator specializing in UI/UX translations.'
           },
           {
             role: 'user',
@@ -62,11 +63,49 @@ Do not include any explanation or additional text.`
       throw new Error(`OpenAI API error: ${response.status} - ${errorText}`)
     }
 
-    const data: OpenAITranslationResponse = await response.json()
+    let data: OpenAITranslationResponse
+    try {
+      data = await response.json()
+    } catch (jsonError) {
+      const text = await response.text()
+      throw new Error(`Failed to parse OpenAI response as JSON. Raw response: ${text}`)
+    }
+    
+    console.log('Full OpenAI response:', JSON.stringify(data, null, 2))
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error(`Invalid OpenAI response structure. Data: ${JSON.stringify(data)}`)
+    }
+    
     const content = data.choices[0].message.content
+    
+    if (!content) {
+      throw new Error(`OpenAI returned empty content. Full response: ${JSON.stringify(data)}`)
+    }
+    
+    console.log('OpenAI response content:', content)
+    console.log('Requested languages:', targetLanguages)
 
-    // Parse the JSON response
-    const translations = JSON.parse(content)
+    // Extract JSON from the response (AI might include extra text)
+    let translations: Record<string, string>
+    try {
+      // First try direct parsing
+      translations = JSON.parse(content)
+    } catch (e) {
+      // If that fails, try to extract JSON from the content
+      const jsonMatch = content.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        try {
+          translations = JSON.parse(jsonMatch[0])
+        } catch (parseError) {
+          console.error('Failed to parse extracted JSON:', jsonMatch[0])
+          throw new Error(`Invalid JSON in response. Raw content: ${content}`)
+        }
+      } else {
+        console.error('Could not extract JSON from response:', content)
+        throw new Error(`No JSON found in response. Raw content: ${content}`)
+      }
+    }
     
     return targetLanguages.map(lang => ({
       language: lang,
@@ -75,11 +114,8 @@ Do not include any explanation or additional text.`
     }))
   } catch (error) {
     console.error('Translation error:', error)
-    // Return original text for all languages on error
-    return targetLanguages.map(lang => ({
-      language: lang,
-      translation: text,
-      confidence: 0
-    }))
+    console.error('Error details:', error instanceof Error ? error.message : 'Unknown error')
+    // Throw the error instead of silently returning original text
+    throw error
   }
 }

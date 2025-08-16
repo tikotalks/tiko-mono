@@ -497,6 +497,10 @@ const openCardEditForm = async (card: CardTile, index: number) => {
         index: index,
         hasChildren: tilesWithChildren.value.has(card.id),
         translations: translations,
+        onTranslationsGenerated: async () => {
+          // Reload cards when translations are generated
+          await loadCards();
+        },
         onSubmit: async (cardData: Partial<CardTile>, cardIndex: number, newTranslations: ItemTranslation[]) => {
           try {
             if (isNewCard) {

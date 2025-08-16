@@ -1,5 +1,5 @@
 <template>
-  <div :class="bemm('', { align })">
+  <div :class="bemm('', ['',align])">
     <slot />
   </div>
 </template>
@@ -9,7 +9,7 @@ import { useBemm } from 'bemm';
 
 const bemm = useBemm('form-actions');
 
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
   align?: 'left' | 'center' | 'right' | 'space-between';
 }>(), {
   align: 'right'

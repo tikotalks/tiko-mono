@@ -4,9 +4,11 @@ compatibility_date = "2024-01-17"
 account_id = "dc2b7d14a69351375cab6de9a13ddee9"
 
 [env.production]
-routes = [
-  { pattern = "tikoapi.org/translate", zone_name = "tikoapi.org" }
-]
+# No custom routes - will use workers.dev URL
+
+[[env.production.kv_namespaces]]
+binding = "TRANSLATION_CACHE"
+id = "b0220795e8734645b74887aa04f1e7e7"
 
 # Secrets should be set via wrangler secret or GitHub secrets:
 # OPENAI_API_KEY - Set via: wrangler secret put OPENAI_API_KEY

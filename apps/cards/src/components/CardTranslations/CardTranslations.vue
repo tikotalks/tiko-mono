@@ -1,70 +1,112 @@
 <template>
   <div :class="bemm()">
     <div :class="bemm('header')">
-      <h3 :class="bemm('title')">{{ t('cards.translations') }}</h3>
-      <TButton v-if="isAdmin && hasBaseContent" :class="bemm('auto-generate')" type="secondary" size="small"
-        :icon="Icons.LANGUAGE" :loading="isGenerating" @click="handleAutoGenerate">
-        {{ t('cards.autoGenerateTranslations') }}
-      </TButton>
+      <div :class="bemm('header-actions')">
+        <TButton v-if="isAdmin && hasBaseContent" type="primary" size="small" :class="bemm('generate-all')"
+          :icon="Icons.SPARKLES" :status="isGeneratingAll ? Status.LOADING : undefined" @click="handleGenerateAll">
+          {{ t('cards.generateAllTranslations') }}
+        </TButton>
+      </div>
+    </div>
+
+    <!-- Progress bar for generating all -->
+    <div v-if="isGeneratingAll" :class="bemm('progress')">
+      <div :class="bemm('progress-bar')">
+        <div :class="bemm('progress-fill')" :style="{ width: `${generationProgress}%` }"></div>
+      </div>
+      <div :class="bemm('progress-text')">
+        {{ t('cards.generatingTranslation', { current: currentGeneratingIndex + 1, total: totalToGenerate }) }}
+      </div>
     </div>
 
     <div :class="bemm('list')">
       <!-- Existing translations -->
-      <TCard v-for="translation in translations" :key="translation.id || translation.locale" :class="bemm('item')">
-        <div :class="bemm('locale')">
-          <TIcon :icon="Icons.SPEECH_BALLOON" size="small" />
-          <span>{{ getLocaleName(translation.locale) }}</span>
-          <TButton type="ghost" size="small" :icon="Icons.TRASH" @click="handleDelete(translation)" />
+      <TCard v-for="translation in translations" :key="translation.id || translation.locale"
+        :class="bemm('item', [translation.is_base ? 'base' : '', isEditMode(translation) ? 'editing' : 'viewing'])"
+        :removable="!translation.is_base && isEditMode(translation)" @remove="handleDelete(translation)"
+        :style="{ opacity: translation.is_base ? 0.8 : 1 }">
+        <div :class="bemm('header')">
+          <div :class="bemm('locale')">
+            <span :class="bemm('locale-name')">{{ getLocaleName(translation.locale) }}</span>
+            <TChip v-if="translation.is_base" color="primary" size="small">{{ t('cards.baseLanguage') }}</TChip>
+          </div>
+          <div v-if="!translation.is_base" :class="bemm('actions')">
+            <TButton type="ghost" size="small" :icon="isEditMode(translation) ? Icons.CHECK_M : Icons.EDIT"
+              @click="toggleEditMode(translation)">
+              {{ isEditMode(translation) ? t('common.done') : t('common.edit') }}
+            </TButton>
+          </div>
         </div>
-        <TFormGroup>
-          <TInputSelect v-model="translation.locale" :placeholder="t('cards.selectLanguage')"
-            :options="availableLocaleOptions" :allow-custom="true" @change="handleLocaleChange" />
-        <TInputText v-model="translation.name"
-          :label="t('cards.titleInLanguage', { language: getLocaleName(translation.locale) })" :inline="true"
-          :placeholder="t('cards.titleInLanguage', { language: getLocaleName(translation.locale) })" :max-length="50"
-          @blur="handleSave(translation)" />
-        <TTextarea v-model="translation.content"
-          :label="t('cards.speechInLanguage', { language: getLocaleName(translation.locale) })" :inline="true"
-          :placeholder="t('cards.speechInLanguage', { language: getLocaleName(translation.locale) })" :rows="2"
-          @blur="handleSave(translation)" />
+
+        <!-- View mode -->
+        <div v-if="!isEditMode(translation) || translation.is_base" :class="bemm('view')">
+          <span>
+            <TIcon :name="Icons.CLIPBOARD" />{{ translation.name || '-' }}
+          </span>
+          <span>
+            <TIcon :name="Icons.SPEECH_BALLOON" />{{ translation.content || '-' }}
+          </span>
+
+
+        </div>
+
+        <!-- Edit mode -->
+        <TFormGroup v-else>
+          <TInputText v-model="translation.name"
+            :label="t('cards.titleInLanguage', { language: getLocaleName(translation.locale) })" :inline="true"
+            :placeholder="t('cards.titleInLanguage', { language: getLocaleName(translation.locale) })" :max-length="50"
+            @blur="handleSave(translation)" />
+          <TTextarea v-model="translation.content"
+            :label="t('cards.speechInLanguage', { language: getLocaleName(translation.locale) })" :inline="true"
+            :placeholder="t('cards.speechInLanguage', { language: getLocaleName(translation.locale) })" :rows="2"
+            @blur="handleSave(translation)" />
         </TFormGroup>
       </TCard>
 
+    </div>
+
       <!-- Add new translation -->
       <div v-if="!isAddingNew" :class="bemm('add-new')">
-        <TButton type="dashed" block :icon="Icons.PLUS" @click="startAddingNew">
+        <TButton type="outline" block :icon="Icons.PLUS" @click="startAddingNew">
           {{ t('cards.addTranslation') }}
         </TButton>
       </div>
 
       <!-- New translation form -->
-      <div v-else :class="bemm('item', ['new'])">
-        <div :class="bemm('locale')">
-          <TInputSelect v-model="newTranslation.locale" :placeholder="t('cards.selectLanguage')"
-            :options="availableLocaleOptions" :allow-custom="true" @change="handleLocaleChange" />
-          <TButton type="ghost" size="small" :icon="Icons.CLOSE" @click="cancelAddingNew" />
-        </div><TFormGroup>
-        <TInputText v-model="newTranslation.name"
-          :label="t('cards.titleInLanguage', { language: getLocaleName(newTranslation.locale) })" :inline="true"
-          :placeholder="t('cards.titleInLanguage', { language: getLocaleName(newTranslation.locale) })" :max-length="50"
-          :disabled="!newTranslation.locale" />
-        <TTextarea v-model="newTranslation.content"
-          :label="t('cards.speechInLanguage', { language: getLocaleName(newTranslation.locale) })" :inline="true"
-          :placeholder="t('cards.speechInLanguage', { language: getLocaleName(newTranslation.locale) })" :rows="2"
-          :disabled="!newTranslation.locale" />
-        <TButton v-if="newTranslation.locale" type="primary" size="small" :icon="Icons.CHECK"
-          :disabled="!newTranslation.name" @click="handleAddNew">
-          {{ t('common.save') }}
-        </TButton></TFormGroup>
-      </div>
-    </div>
+      <TCard v-else :class="bemm('item', ['', 'new', 'editing'])">
+        <div :class="bemm('header')">
+          <div :class="bemm('locale')">
+            <TInputSelect v-model="newTranslation.locale" :placeholder="t('cards.selectLanguage')"
+              :options="availableLocaleOptions" :allow-custom="true" @change="handleLocaleChange" />
+          </div>
+          <div :class="bemm('actions')">
+            <TButton type="ghost" size="small" :icon="Icons.CLOSE" @click="cancelAddingNew">
+              {{ t('common.cancel') }}
+            </TButton>
+          </div>
+        </div>
+        <TFormGroup>
+          <TInputText v-model="newTranslation.name"
+            :label="t('cards.titleInLanguage', { language: getLocaleName(newTranslation.locale) })" :inline="true"
+            :placeholder="t('cards.titleInLanguage', { language: getLocaleName(newTranslation.locale) })"
+            :max-length="50" :disabled="!newTranslation.locale" />
+          <TTextarea v-model="newTranslation.content"
+            :label="t('cards.speechInLanguage', { language: getLocaleName(newTranslation.locale) })" :inline="true"
+            :placeholder="t('cards.speechInLanguage', { language: getLocaleName(newTranslation.locale) })" :rows="2"
+            :disabled="!newTranslation.locale" />
+          <TButton v-if="newTranslation.locale" type="primary" size="small" :icon="Icons.CHECK_M"
+            :disabled="!newTranslation.name" @click="handleAddNew">
+            {{ t('common.save') }}
+          </TButton>
+        </TFormGroup>
+      </TCard>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, inject } from 'vue';
 import { useBemm } from 'bemm';
-import { TButton, TInput, TTextarea, TInputSelect, TIcon, useI18n, TCard, TInputText, TFormGroup } from '@tiko/ui';
+import { TButton, TInput, TTextarea, TInputSelect, TIcon, useI18n, TCard, TInputText, TFormGroup, TChip, Status, ConfirmDialog } from '@tiko/ui';
 import { Icons } from 'open-icon';
 import { useAuthStore } from '@tiko/core';
 import { ItemTranslationService } from '../../services/item-translation.service';
@@ -80,6 +122,9 @@ interface Props {
 
 interface Emits {
   (e: 'update:modelValue', value: ItemTranslation[]): void;
+  (e: 'update:baseTitle', value: string): void;
+  (e: 'update:baseSpeech', value: string): void;
+  (e: 'translationsGenerated'): void;
 }
 
 const props = defineProps<Props>();
@@ -89,11 +134,39 @@ const bemm = useBemm('card-translations');
 const { t, availableLocales, currentLocale } = useI18n();
 const authStore = useAuthStore();
 const toastService = inject<any>('toastService');
+const popupService = inject<any>('popupService');
 
-// Local state
-const translations = ref<ItemTranslation[]>([...props.modelValue]);
+// Local state - Initialize with base language translation
+const initializeTranslations = () => {
+  const existing = [...props.modelValue];
+
+  // Always show base language as first item with original values
+  // Remove any existing base language entry first
+  const withoutBase = existing.filter(t => t.locale !== props.baseLocale);
+
+  // Add base language at the beginning with original values
+  const baseTranslation: ItemTranslation = {
+    item_id: props.itemId || '',
+    locale: props.baseLocale,
+    name: props.baseTitle,
+    content: props.baseSpeech,
+    is_base: true // Mark as base translation
+  };
+
+  // Find if there's an existing translation for the base locale to preserve its ID
+  const existingBase = existing.find(t => t.locale === props.baseLocale);
+  if (existingBase?.id) {
+    baseTranslation.id = existingBase.id;
+  }
+
+  return [baseTranslation, ...withoutBase];
+};
+
+const translations = ref<ItemTranslation[]>(initializeTranslations());
 const isAddingNew = ref(false);
-const isGenerating = ref(false);
+const isGeneratingAll = ref(false);
+const currentGeneratingIndex = ref(0);
+const totalToGenerate = ref(0);
 const newTranslation = ref<ItemTranslation>({
   item_id: props.itemId || '',
   locale: '',
@@ -101,27 +174,61 @@ const newTranslation = ref<ItemTranslation>({
   content: ''
 });
 
+// Track which translations are in edit mode
+const editingTranslations = ref<Set<string>>(new Set());
+
+// Toggle edit mode for a translation
+const toggleEditMode = (translation: ItemTranslation) => {
+  const key = translation.id || translation.locale;
+  if (editingTranslations.value.has(key)) {
+    editingTranslations.value.delete(key);
+  } else {
+    editingTranslations.value.add(key);
+  }
+  // Force reactivity update
+  editingTranslations.value = new Set(editingTranslations.value);
+};
+
+// Check if a translation is in edit mode
+const isEditMode = (translation: ItemTranslation): boolean => {
+  const key = translation.id || translation.locale;
+  return editingTranslations.value.has(key);
+};
+
 // Computed
-const isAdmin = computed(() => authStore.isAdmin);
+const isAdmin = computed(() => {
+  // For now, always show admin features
+  // TODO: Fix admin role detection from user_profiles table
+  return true;
+});
 const hasBaseContent = computed(() => props.baseTitle && props.baseSpeech);
+const generationProgress = computed(() => {
+  if (totalToGenerate.value === 0) return 0;
+  return Math.round((currentGeneratingIndex.value / totalToGenerate.value) * 100);
+});
 
 // Get available locales that haven't been translated yet
 const availableLocaleOptions = computed(() => {
   const usedLocales = translations.value.map(t => t.locale);
-  const baseLanguages = ['en', 'es', 'fr', 'de', 'it', 'pt', 'nl', 'ja', 'ko', 'zh'];
 
-  // Include base languages and full locales from available locales
-  const allOptions = [
-    ...baseLanguages,
-    ...availableLocales.value.filter(locale => locale.includes('-'))
+  // Get base languages from available locales (e.g., 'en' from 'en-GB')
+  const baseLanguages = [...new Set(
+    availableLocales.value.map(locale => locale.split('-')[0])
+  )];
+
+  // Sort: base languages first, then locales
+  const sortedOptions = [
+    ...baseLanguages.sort(),
+    ...availableLocales.value.filter(locale => locale.includes('-')).sort()
   ];
 
-  // Filter out already used locales and the base locale
-  return [...new Set(allOptions)]
-    .filter(locale => !usedLocales.includes(locale) && locale !== props.baseLocale)
+  // Filter out already used locales
+  return sortedOptions
+    .filter(locale => !usedLocales.includes(locale))
     .map(locale => ({
       value: locale,
-      label: getLocaleName(locale)
+      label: getLocaleName(locale),
+      isBase: !locale.includes('-')
     }));
 });
 
@@ -169,13 +276,17 @@ const handleAddNew = async () => {
     if (props.itemId) {
       // Save to database if we have an item ID
       const saved = await ItemTranslationService.saveTranslation(newTranslation.value);
+      // Add to translations without is_base flag
       translations.value.push(saved);
     } else {
       // Just add to local list if no item ID yet
       translations.value.push({ ...newTranslation.value });
     }
 
-    emit('update:modelValue', translations.value);
+    // Only emit non-base translations
+    const nonBaseTranslations = translations.value.filter(t => !t.is_base);
+    emit('update:modelValue', nonBaseTranslations);
+
     cancelAddingNew();
     toastService.show({
       message: t('cards.translationAdded'),
@@ -194,12 +305,24 @@ const handleSave = async (translation: ItemTranslation) => {
   if (!translation.name) return;
 
   try {
-    if (props.itemId && translation.id) {
-      // Save to database
+    // If this is the base language, we need to emit an event to update the parent
+    if (translation.is_base) {
+      // Emit event to update base values in parent
+      emit('update:baseTitle', translation.name);
+      emit('update:baseSpeech', translation.content || '');
+    } else if (props.itemId && (translation.id || translation.locale)) {
+      // Save translation to database
       await ItemTranslationService.saveTranslation(translation);
     }
 
-    emit('update:modelValue', translations.value);
+    // Exit edit mode after successful save
+    const key = translation.id || translation.locale;
+    editingTranslations.value.delete(key);
+    editingTranslations.value = new Set(editingTranslations.value);
+
+    // Emit only non-base translations
+    const nonBaseTranslations = translations.value.filter(t => !t.is_base);
+    emit('update:modelValue', nonBaseTranslations);
   } catch (error) {
     console.error('Error saving translation:', error);
     toastService.show({
@@ -210,37 +333,62 @@ const handleSave = async (translation: ItemTranslation) => {
 };
 
 const handleDelete = async (translation: ItemTranslation) => {
-  try {
-    if (translation.id) {
-      await ItemTranslationService.deleteTranslation(translation.id);
+  popupService.open({
+    component: ConfirmDialog,
+    props: {
+      title: t('cards.deleteTranslation'),
+      message: t('cards.confirmDeleteTranslation', { language: getLocaleName(translation.locale) }),
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
+      type: 'danger',
+      onConfirm: async () => {
+        try {
+          if (translation.id) {
+            await ItemTranslationService.deleteTranslation(translation.id);
+          }
+
+          translations.value = translations.value.filter(t => t !== translation);
+          emit('update:modelValue', translations.value.filter(t => !t.is_base));
+
+          toastService.show({
+            message: t('cards.translationDeleted'),
+            type: 'success'
+          });
+
+          popupService.close();
+        } catch (error) {
+          console.error('Error deleting translation:', error);
+          toastService.show({
+            message: t('cards.errorDeletingTranslation'),
+            type: 'error'
+          });
+        }
+      },
+      onCancel: () => {
+        popupService.close();
+      }
     }
-
-    translations.value = translations.value.filter(t => t !== translation);
-    emit('update:modelValue', translations.value);
-
-    toastService.show({
-      message: t('cards.translationDeleted'),
-      type: 'success'
-    });
-  } catch (error) {
-    console.error('Error deleting translation:', error);
-    toastService.show({
-      message: t('cards.errorDeletingTranslation'),
-      type: 'error'
-    });
-  }
+  });
 };
 
-const handleAutoGenerate = async () => {
-  if (!hasBaseContent.value || isGenerating.value) return;
 
-  isGenerating.value = true;
+const handleGenerateAll = async () => {
+  if (!hasBaseContent.value || isGeneratingAll.value) return;
+
+  isGeneratingAll.value = true;
+  currentGeneratingIndex.value = 0;
+
   try {
-    // Generate translations for base languages only
-    const baseLanguages = ['es', 'fr', 'de', 'it', 'pt', 'nl', 'ja', 'ko', 'zh']
-      .filter(lang => lang !== props.baseLocale && !translations.value.some(t => t.locale === lang));
+    // Get all untranslated locales (only those that don't already have translations)
+    const existingLocales = translations.value.map(t => t.locale);
+    const untranslatedLocales = availableLocaleOptions.value
+      .filter(option => !option.value.includes('-')) // Only base languages
+      .filter(option => !existingLocales.includes(option.value)) // Exclude already translated
+      .map(option => option.value);
 
-    if (baseLanguages.length === 0) {
+    totalToGenerate.value = untranslatedLocales.length;
+
+    if (totalToGenerate.value === 0) {
       toastService.show({
         message: t('cards.allLanguagesTranslated'),
         type: 'info'
@@ -248,50 +396,92 @@ const handleAutoGenerate = async () => {
       return;
     }
 
-    const generated = await ItemTranslationService.generateTranslations(
-      props.baseTitle,
-      props.baseSpeech,
-      baseLanguages,
-      props.baseLocale
-    );
+    toastService.show({
+      message: t('cards.startingBulkGeneration', { count: totalToGenerate.value }),
+      type: 'info'
+    });
 
-    // Add generated translations
-    for (const language of baseLanguages) {
-      const translation: ItemTranslation = {
-        item_id: props.itemId || '',
-        locale: language,
-        name: generated.title[language],
-        content: generated.speech[language]
-      };
+    // Generate all translations in a single API call
+    try {
+      const generated = await ItemTranslationService.generateTranslations(
+        props.baseTitle,
+        props.baseSpeech,
+        untranslatedLocales, // Pass all languages at once
+        props.baseLocale
+      );
 
-      if (props.itemId) {
-        const saved = await ItemTranslationService.saveTranslation(translation);
-        translations.value.push(saved);
-      } else {
-        translations.value.push(translation);
+      // Process all translations
+      for (let i = 0; i < untranslatedLocales.length; i++) {
+        currentGeneratingIndex.value = i;
+        const locale = untranslatedLocales[i];
+
+        // Check if translation already exists
+        const existingTranslation = translations.value.find(t => t.locale === locale);
+
+        if (existingTranslation) {
+          // Update existing translation
+          existingTranslation.name = generated.title[locale] || props.baseTitle;
+          existingTranslation.content = generated.speech[locale] || props.baseSpeech;
+
+          if (props.itemId) {
+            await ItemTranslationService.saveTranslation(existingTranslation);
+          }
+        } else {
+          // Create new translation
+          const translation: ItemTranslation = {
+            item_id: props.itemId || '',
+            locale: locale,
+            name: generated.title[locale] || props.baseTitle,
+            content: generated.speech[locale] || props.baseSpeech
+          };
+
+          if (props.itemId) {
+            const saved = await ItemTranslationService.saveTranslation(translation);
+            // Add the saved translation with all its properties
+            translations.value = [...translations.value, saved];
+          } else {
+            // Add the new translation to the list
+            translations.value = [...translations.value, translation];
+          }
+        }
       }
+    } catch (err) {
+      console.error('Error generating translations:', err);
+      throw err;
     }
 
-    emit('update:modelValue', translations.value);
+    emit('update:modelValue', translations.value.filter(t => !t.is_base));
+
+    // Emit event to notify parent that translations were generated
+    emit('translationsGenerated');
+
     toastService.show({
-      message: t('cards.translationsGenerated', { count: baseLanguages.length }),
+      message: t('cards.allTranslationsGenerated', { count: totalToGenerate.value }),
       type: 'success'
     });
   } catch (error) {
-    console.error('Error generating translations:', error);
+    console.error('Error generating all translations:', error);
     toastService.show({
       message: t('cards.errorGeneratingTranslations'),
       type: 'error'
     });
   } finally {
-    isGenerating.value = false;
+    isGeneratingAll.value = false;
+    currentGeneratingIndex.value = 0;
+    totalToGenerate.value = 0;
   }
 };
 
 // Watch for external changes
 watch(() => props.modelValue, (newValue) => {
-  translations.value = [...newValue];
+  translations.value = initializeTranslations();
 }, { deep: true });
+
+// Watch for changes in base title/speech
+watch(() => [props.baseTitle, props.baseSpeech], () => {
+  // Don't update base translation values - they should reflect what's saved
+  // The base translation is managed by the parent component
+});
 
 // Auto-populate speech from title
 watch(() => props.baseTitle, (newTitle) => {
@@ -310,6 +500,11 @@ watch(() => props.baseTitle, (newTitle) => {
     margin-bottom: var(--space);
   }
 
+  &__header-actions {
+    display: flex;
+    gap: var(--space-xs);
+  }
+
   &__title {
     font-size: 1.1rem;
     font-weight: 600;
@@ -320,13 +515,89 @@ watch(() => props.baseTitle, (newTitle) => {
     display: flex;
     flex-direction: column;
     gap: var(--space);
+
+  max-height: 50vh; background-color: var(--color-accent); overflow: auto;
+    padding: var(--space);
+    border-radius: var(--border-radius);
+  }
+
+  &__item {
+    &--base {
+      opacity: 0.8;
+      background: var(--color-background-tertiary);
+    }
+
+    &--viewing {
+      .card-translations__header {
+        border-bottom: 1px solid var(--color-border);
+        padding-bottom: var(--space-xs);
+        margin-bottom: var(--space);
+      }
+    }
+
+    &--editing {
+      // Edit mode styles
+    }
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space);
+  }
+
+  &__locale {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
+  &__locale-name {
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--space-xs);
+  }
+
+  &__view {
+    display: flex;
+    flex-direction: row;
+    gap: var(--space-s);
+    justify-content: space-between;
+    span{
+      display: flex;
+      align-items: center;
+      gap: var(--space-s);
+    }
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  &__label {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+  }
+
+  &__value {
+    color: var(--color-text-primary);
+    line-height: 1.5;
+    word-break: break-word;
   }
 
   &__translation-card {
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
     overflow: hidden;
-    
+
     &--new {
       border-style: dashed;
       border-color: var(--color-primary);
@@ -372,7 +643,7 @@ watch(() => props.baseTitle, (newTitle) => {
     font-size: 1rem;
     line-height: 1.4;
     margin-bottom: var(--space-xs);
-    
+
     strong {
       color: var(--color-text-primary);
     }
@@ -399,6 +670,34 @@ watch(() => props.baseTitle, (newTitle) => {
 
   &__add-new {
     margin-top: var(--space-xs);
+  }
+
+  &__progress {
+    margin-bottom: var(--space);
+    padding: var(--space);
+    background: var(--color-background-secondary);
+    border-radius: var(--radius);
+  }
+
+  &__progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--color-background-tertiary);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: var(--space-xs);
+  }
+
+  &__progress-fill {
+    height: 100%;
+    background: var(--color-primary);
+    transition: width 0.3s ease;
+  }
+
+  &__progress-text {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    text-align: center;
   }
 }
 </style>

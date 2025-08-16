@@ -1,13 +1,14 @@
 import type { Env, TranslationRequest, TranslationResponse } from './types'
 import { translateWithOpenAI } from './translator'
 import { fetchActiveLanguages, fetchOrCreateKey, insertTranslation } from './database'
+import { TranslationCache } from './cache'
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     // Handle CORS
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization'
     }
 
@@ -16,9 +17,130 @@ export default {
       return new Response(null, { headers: corsHeaders })
     }
 
-    // Only accept POST requests
+    // Handle GET requests for health check
+    if (request.method === 'GET') {
+      return new Response(JSON.stringify({ status: 'ok', service: 'i18n-translator' }), {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      })
+    }
+
+    // Only accept POST requests for translation
     if (request.method !== 'POST') {
-      return new Response('Method not allowed', { status: 405 })
+      return new Response('Method not allowed', { status: 405, headers: corsHeaders })
+    }
+
+    const url = new URL(request.url)
+    
+    // Handle direct translation endpoint (no database storage)
+    if (url.pathname === '/translate-direct') {
+      try {
+        const body = await request.json()
+        
+        if (!body.englishTranslation || !body.languages) {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: 'Missing required fields: englishTranslation and languages'
+            }),
+            {
+              status: 400,
+              headers: {
+                ...corsHeaders,
+                'Content-Type': 'application/json'
+              }
+            }
+          )
+        }
+        
+        // Initialize cache
+        const cache = new TranslationCache(env.TRANSLATION_CACHE)
+        
+        // Check cache first
+        const cachedTranslations = await cache.get(
+          body.englishTranslation,
+          body.languages,
+          body.context
+        )
+        
+        if (cachedTranslations) {
+          console.log('Returning cached translations')
+          return new Response(
+            JSON.stringify({
+              success: true,
+              translations: cachedTranslations,
+              cached: true
+            }),
+            {
+              headers: {
+                ...corsHeaders,
+                'Content-Type': 'application/json'
+              }
+            }
+          )
+        }
+        
+        // Not in cache, translate using OpenAI
+        console.log('Cache miss, calling OpenAI')
+        const translations = await translateWithOpenAI(
+          body.englishTranslation,
+          body.languages,
+          body.context,
+          env.OPENAI_API_KEY
+        )
+        
+        // Convert to simple object format
+        const translationMap: Record<string, string> = {}
+        translations.forEach(t => {
+          translationMap[t.language] = t.translation
+        })
+        
+        // Store in cache
+        await cache.set(
+          body.englishTranslation,
+          body.languages,
+          translationMap,
+          body.context
+        )
+        
+        return new Response(
+          JSON.stringify({
+            success: true,
+            translations: translationMap,
+            cached: false
+          }),
+          {
+            headers: {
+              ...corsHeaders,
+              'Content-Type': 'application/json'
+            }
+          }
+        )
+      } catch (error) {
+        console.error('Translation error:', error)
+        const errorMessage = error instanceof Error ? error.message : String(error)
+        
+        // Include more details in the error response
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: `Translation error: ${errorMessage}`,
+            details: {
+              message: errorMessage,
+              type: error instanceof Error ? error.constructor.name : typeof error
+            }
+          }),
+          {
+            status: 500,
+            headers: {
+              ...corsHeaders,
+              'Content-Type': 'application/json'
+            }
+          }
+        )
+      }
     }
 
     try {
