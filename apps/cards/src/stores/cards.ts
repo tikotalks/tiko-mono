@@ -304,6 +304,117 @@ export const useCardStore = defineStore('yesno', () => {
     }
   }
   
+  // Update a single card in all caches
+  const updateCardInCache = async (updatedCard: CardTile, parentId?: string, locale?: string) => {
+    const userId = authStore.user?.id
+    if (!userId) return
+    
+    const cacheKey = getCacheKey(parentId, locale)
+    const cache = cardCache.value
+    
+    // Update memory cache
+    if (cache.has(cacheKey)) {
+      const entry = cache.get(cacheKey)!
+      const cardIndex = entry.cards.findIndex(c => c.id === updatedCard.id)
+      
+      if (cardIndex >= 0) {
+        // Update the card in the array
+        const newCards = [...entry.cards]
+        newCards[cardIndex] = updatedCard
+        
+        // Update cache entry
+        const newCache = new Map(cache)
+        newCache.set(cacheKey, {
+          ...entry,
+          cards: newCards,
+          timestamp: Date.now()
+        })
+        cardCache.value = newCache
+        
+        console.log(`[CardsStore] Updated card ${updatedCard.id} in memory cache`)
+      }
+    }
+    
+    // Update offline storage
+    const offlineCards = await offlineStorageService.getCards(userId, parentId, locale)
+    if (offlineCards) {
+      const cardIndex = offlineCards.findIndex(c => c.id === updatedCard.id)
+      if (cardIndex >= 0) {
+        offlineCards[cardIndex] = updatedCard
+        await offlineStorageService.storeCards(userId, offlineCards, parentId, locale)
+        console.log(`[CardsStore] Updated card ${updatedCard.id} in offline storage`)
+      }
+    }
+  }
+  
+  // Add a new card to caches
+  const addCardToCache = async (newCard: CardTile, parentId?: string, locale?: string) => {
+    const userId = authStore.user?.id
+    if (!userId) return
+    
+    const cacheKey = getCacheKey(parentId, locale)
+    const cache = cardCache.value
+    
+    // Update memory cache
+    if (cache.has(cacheKey)) {
+      const entry = cache.get(cacheKey)!
+      const newCards = [...entry.cards, newCard]
+      
+      // Update cache entry
+      const newCache = new Map(cache)
+      newCache.set(cacheKey, {
+        ...entry,
+        cards: newCards,
+        timestamp: Date.now()
+      })
+      cardCache.value = newCache
+      
+      console.log(`[CardsStore] Added card ${newCard.id} to memory cache`)
+    }
+    
+    // Update offline storage
+    const offlineCards = await offlineStorageService.getCards(userId, parentId, locale)
+    if (offlineCards) {
+      offlineCards.push(newCard)
+      await offlineStorageService.storeCards(userId, offlineCards, parentId, locale)
+      console.log(`[CardsStore] Added card ${newCard.id} to offline storage`)
+    }
+  }
+  
+  // Remove a card from caches
+  const removeCardFromCache = async (cardId: string, parentId?: string, locale?: string) => {
+    const userId = authStore.user?.id
+    if (!userId) return
+    
+    const cacheKey = getCacheKey(parentId, locale)
+    const cache = cardCache.value
+    
+    // Update memory cache
+    if (cache.has(cacheKey)) {
+      const entry = cache.get(cacheKey)!
+      const newCards = entry.cards.filter(c => c.id !== cardId)
+      
+      // Update cache entry
+      const newCache = new Map(cache)
+      newCache.set(cacheKey, {
+        ...entry,
+        cards: newCards,
+        timestamp: Date.now()
+      })
+      cardCache.value = newCache
+      
+      console.log(`[CardsStore] Removed card ${cardId} from memory cache`)
+    }
+    
+    // Update offline storage
+    const offlineCards = await offlineStorageService.getCards(userId, parentId, locale)
+    if (offlineCards) {
+      const filteredCards = offlineCards.filter(c => c.id !== cardId)
+      await offlineStorageService.storeCards(userId, filteredCards, parentId, locale)
+      console.log(`[CardsStore] Removed card ${cardId} from offline storage`)
+    }
+  }
+  
   return {
     // Getters
     settings,
@@ -325,5 +436,8 @@ export const useCardStore = defineStore('yesno', () => {
     checkOfflineStatus,
     syncOfflineData,
     initializeOfflineSupport,
+    updateCardInCache,
+    addCardToCache,
+    removeCardFromCache,
    }
 })
