@@ -1,5 +1,8 @@
 <template>
   <div id="app">
+    <!-- Offline indicator -->
+    <OfflineIndicator />
+    
     <!-- Auth callback route doesn't need TFramework wrapper -->
     <router-view v-if="isAuthCallbackRoute" />
 
@@ -23,6 +26,7 @@ import { useEventBus } from '@tiko/core'
 import tikoConfig from '../tiko.config'
 import backgroundImage from './assets/app-icon-yes-no.png'
 import { initializeTranslations } from './services/translation-init.service'
+import OfflineIndicator from './components/OfflineIndicator.vue'
 
 const route = useRoute()
 const loading = ref(true)
@@ -77,8 +81,23 @@ const handleGlobalKeyboard = (event: KeyboardEvent) => {
 onMounted(async () => {
   try {
     await initializeTranslations()
+    
+    // Pre-load all cards if enabled in settings
+    const { useCardStore } = await import('./stores/cards')
+    const cardStore = useCardStore()
+    const { currentLocale } = useI18n()
+    
+    // Initialize offline support
+    await cardStore.initializeOfflineSupport()
+    
+    // Optionally pre-load all cards to improve performance
+    const preloadCards = localStorage.getItem('tiko:cards:preload') === 'true'
+    if (preloadCards) {
+      console.log('[App] Pre-loading all cards...')
+      await cardStore.loadAllCards(currentLocale.value)
+    }
   } catch (error) {
-    console.error('Failed to initialize translations:', error)
+    console.error('Failed to initialize app:', error)
   } finally {
     loading.value = false
   }
