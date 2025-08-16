@@ -10,15 +10,16 @@
       <!-- Back button when in sub-level -->
       <TButton
         v-if="currentGroupId"
-        :icon="Icons.ARROW_LEFT"
+        :icon="Icons.CHEVRON_LEFT"
         type="outline"
         color="primary"
         @click="handleBack"
         :aria-label="t('common.back')"
       >{{ t('common.back') }}</TButton>
 
-      <!-- Edit mode toggle -->
+      <!-- Edit mode toggle (only visible in parent mode) -->
       <TButton
+        v-if="isParentModeUnlocked"
         :icon="isEditMode ? Icons.EDIT_M : Icons.EDIT_LINE"
         :type="isEditMode ? 'default' : 'outline'"
         :color="isEditMode ? 'primary' : 'secondary'"
@@ -64,7 +65,7 @@
       </TButton>
       <!-- App settings button (only visible in parent mode) -->
       <TButton
-        v-if="parentMode.isUnlocked.value"
+        v-if="isParentModeUnlocked"
         :icon="Icons.SETTINGS"
         type="outline"
         color="secondary"
@@ -202,8 +203,14 @@ const settings = ref();
 const route = useRoute();
 const router = useRouter();
 const yesNoStore = useCardStore();
-const { t, keys, currentLocale } = useI18n();
-const parentMode = useParentMode('cards');
+const { t, currentLocale } = useI18n();
+const parentMode = useParentMode();
+
+// Parent mode computed state
+const isParentModeUnlocked = computed(() => {
+  return parentMode.isUnlocked?.value || false;
+});
+
 const { hasPermission, requestPermission } = useTextToSpeech();
 const { speak, preloadAudio } = useSpeak();
 const { isEditMode, toggleEditMode, disableEditMode, enableEditMode } = useEditMode();
@@ -325,8 +332,8 @@ const loadCards = async () => {
   try {
     isLoading.value = true;
 
-    // First try to load from Supabase
-    const savedCards = await cardsService.loadCards(currentGroupId.value);
+    // Load from store (which handles caching)
+    const savedCards = await yesNoStore.loadCards(currentGroupId.value, currentLocale.value);
 
     if (savedCards.length > 0) {
       cards.value = savedCards;
@@ -342,13 +349,17 @@ const loadCards = async () => {
         preloadAudio(textsToPreload);
       }
 
-      // Check which tiles have children and load them for preview
+      // Check which tiles have children - use cached data if available
       const newTilesWithChildren = new Set<string>();
       const newTileChildrenMap = new Map<string, CardTile[]>();
 
       for (const card of savedCards) {
         if (!card.id.startsWith('empty-')) {
-          const children = await cardsService.loadCards(card.id);
+          // Try to get from cache first, otherwise load
+          let children = yesNoStore.getCardsForParent(card.id, currentLocale.value);
+          if (!children) {
+            children = await yesNoStore.loadCards(card.id, currentLocale.value);
+          }
           if (children.length > 0) {
             newTilesWithChildren.add(card.id);
             newTileChildrenMap.set(card.id, children);
@@ -400,7 +411,7 @@ const updateSettings = async () => {
 
 const handleProfile = () => {
   console.log('Profile clicked');
-  // TODO: Navigate to profile page or open profile modal
+  // This is now handled by TUserMenu - it will show parent mode setup/unlock if needed
 };
 
 const handleSettings = () => {
@@ -426,6 +437,10 @@ const getCardContextMenu = (card: CardTile, index: number) => {
   const isNewCard = card.id.startsWith('empty-');
 
   if (isNewCard) {
+    // Only show create option if parent mode is unlocked
+    if (!parentMode.isUnlocked.value) {
+      return [];
+    }
     return [
       {
         id: 'create',
@@ -438,41 +453,49 @@ const getCardContextMenu = (card: CardTile, index: number) => {
 
   const hasChildren = tilesWithChildren.value.has(card.id);
 
-  return [
+  const items: any[] = [
     {
       id: 'view',
       label: hasChildren ? t('common.view') : t('common.speak'),
       icon: hasChildren ? Icons.EYE : Icons.VOLUME_III,
       action: () => handleTileAction(card)
-    },
-    {
-      id: 'edit',
-      label: t('common.edit'),
-      icon: Icons.EDIT_M,
-      action: () => openCardEditForm(card, index)
-    },
-    {
-      id: 'select',
-      label: t('common.select'),
-      icon: Icons.CHECK_M,
-      action: () => {
-        if (!selectionMode.value) {
-          selectionMode.value = true;
-        }
-        toggleTileSelection(card.id);
-      }
-    },
-    {
-      id: 'separator',
-      type: 'separator'
-    },
-    {
-      id: 'delete',
-      label: t('common.delete'),
-      icon: Icons.TRASH,
-      action: () => confirmDeleteCard(card)
     }
   ];
+
+  // Only show edit actions if parent mode is unlocked
+  if (parentMode.isUnlocked.value) {
+    items.push(
+      {
+        id: 'edit',
+        label: t('common.edit'),
+        icon: Icons.EDIT_M,
+        action: () => openCardEditForm(card, index)
+      },
+      {
+        id: 'select',
+        label: t('common.select'),
+        icon: Icons.CHECK_M,
+        action: () => {
+          if (!selectionMode.value) {
+            selectionMode.value = true;
+          }
+          toggleTileSelection(card.id);
+        }
+      },
+      {
+        id: 'separator',
+        type: 'separator'
+      },
+      {
+        id: 'delete',
+        label: t('common.delete'),
+        icon: Icons.TRASH,
+        action: () => confirmDeleteCard(card)
+      }
+    );
+  }
+
+  return items;
 };
 
 // Open the card edit form
@@ -522,7 +545,7 @@ const openCardEditForm = async (card: CardTile, index: number) => {
                 // Reload the card to get updated translations
                 const reloadedCards = await cardsService.loadCards(currentGroupId.value);
                 const reloadedCard = reloadedCards.find(c => c.id === card.id);
-                
+
                 if (reloadedCard) {
                   const updatedCards = [...cards.value];
                   const existingIndex = updatedCards.findIndex(c => c.id === card.id);
@@ -751,13 +774,13 @@ const handleCardReorder = async (card: CardTile, newIndex: number) => {
 
   // Create new array and remove the card from its current position
   const newCards = cards.value.filter(c => c.id !== card.id);
-  
+
   // Update the card's index
   const movedCard = { ...card, index: newIndex };
-  
+
   // Insert the card at the new position in the array
   newCards.splice(newIndex, 0, movedCard);
-  
+
   // Update UI instantly - card should appear in new position immediately
   cards.value = newCards;
 
@@ -835,16 +858,16 @@ const handleMultiCardReorder = async (reorderedCards: CardTile[], targetIndex: n
   // Optimistic update - immediately update UI
   // Remove the cards being moved
   const remainingCards = cards.value.filter(c => !reorderedCards.some(rc => rc.id === c.id));
-  
+
   // Insert the moved cards at the target position
   const newCards = [...remainingCards];
   newCards.splice(targetIndex, 0, ...reorderedCards);
-  
+
   // Update all indices to be sequential
   newCards.forEach((card, index) => {
     card.index = index;
   });
-  
+
   // Update UI immediately
   cards.value = newCards;
 
@@ -853,7 +876,7 @@ const handleMultiCardReorder = async (reorderedCards: CardTile[], targetIndex: n
     const cardIds = newCards
       .filter(c => !c.id.startsWith('empty-'))
       .map(c => c.id);
-    
+
     await cardsService.reorderCards(cardIds);
 
     // Clear selection after successful reorder
@@ -1309,8 +1332,8 @@ const handleEditModeShortcut = (data: { key: string }) => {
       // Then exit edit mode
       disableEditMode();
     }
-  } else if (data.key === 'e' && !isEditMode.value) {
-    // Enter edit mode on 'e'
+  } else if (data.key === 'e' && !isEditMode.value && parentMode.isUnlocked?.value) {
+    // Enter edit mode on 'e' (only if parent mode is unlocked)
     enableEditMode();
   } else if (data.key === 's' && isEditMode.value) {
     // Toggle selection mode on 's' (only works in edit mode)
@@ -1321,10 +1344,24 @@ const handleEditModeShortcut = (data: { key: string }) => {
   }
 };
 
+// Watch parent mode status and disable edit mode if locked
+watch(() => parentMode.isUnlocked?.value, (isUnlocked) => {
+  if (!isUnlocked && isEditMode.value) {
+    disableEditMode();
+    clearSelection();
+  }
+});
+
 // Initialize
 onMounted(async () => {
   console.log('[CardsView] Component mounted, loading cards...');
   try {
+    // Initialize parent mode
+    if (parentMode.initialize) {
+      console.log('[CardsView] Initializing parent mode...');
+      await parentMode.initialize();
+    }
+
     // Pre-request speech permission to avoid delay on first click
     if (!hasPermission.value) {
       await requestPermission();
