@@ -515,11 +515,17 @@ const openCardEditForm = async (card: CardTile, index: number) => {
               const updatedCard = { ...card, ...cardData };
               const savedId = await cardsService.saveCard(updatedCard, currentGroupId.value, undefined, newTranslations);
               if (savedId) {
-                const updatedCards = [...cards.value];
-                const existingIndex = updatedCards.findIndex(c => c.id === card.id);
-                if (existingIndex >= 0) {
-                  updatedCards[existingIndex] = updatedCard;
-                  cards.value = updatedCards;
+                // Reload the card to get updated translations
+                const reloadedCards = await cardsService.loadCards(currentGroupId.value);
+                const reloadedCard = reloadedCards.find(c => c.id === card.id);
+                
+                if (reloadedCard) {
+                  const updatedCards = [...cards.value];
+                  const existingIndex = updatedCards.findIndex(c => c.id === card.id);
+                  if (existingIndex >= 0) {
+                    updatedCards[existingIndex] = reloadedCard;
+                    cards.value = updatedCards;
+                  }
                 }
               }
             }
@@ -620,7 +626,9 @@ const handleTileAction = async (tile: CardTile) => {
     // This ensures that if we're showing a translated card, we speak in that language
     // If we're showing the base card because no translation exists, we use the base locale
     const speakLocale = tile.effective_locale || tile.base_locale || currentLocale.value;
-    await speak(tile.speech, { locale: speakLocale });
+    // Convert locale to language code (e.g., 'en-GB' -> 'en')
+    const speakLanguage = speakLocale.split('-')[0];
+    await speak(tile.speech, { language: speakLanguage });
   }
 };
 
