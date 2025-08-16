@@ -110,6 +110,7 @@ export type { TranslationKey } from './i18n/types'
 // Stores
 export { useI18nStore } from './stores/i18n.store'
 export type { I18nState } from './stores/i18n.store'
+export { useParentModeStore } from './stores/parentMode'
 export { useEventBus, createEventBus } from '@tiko/core'
 export { useTextToSpeech } from './composables/useTextToSpeech'
 export type {
