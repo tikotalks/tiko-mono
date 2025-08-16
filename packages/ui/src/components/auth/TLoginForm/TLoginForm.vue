@@ -126,6 +126,8 @@
             <TInputText
               v-model="verificationCode"
               type="text"
+              inputmode="numeric"
+              pattern="[0-9]*"
               :label="t(keys.auth.verificationCode)"
               :placeholder="t(keys.auth.enterDigitCode, { codeLength })"
               :error="verificationError ? [verificationError] : undefined"
@@ -134,6 +136,7 @@
               required
               :class="bemm('code-input')"
               data-cy="verification-code-input"
+              autocomplete="one-time-code"
             />
 
             <TButton
