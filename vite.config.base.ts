@@ -9,6 +9,10 @@ import { createAppI18nPlugin } from './scripts/vite-plugin-i18n-simple.js'
 import { i18nWorkerPlugin } from './scripts/vite-plugin-i18n-worker.js'
 import { copyFontsPlugin } from './scripts/vite-plugin-copy-fonts.js'
 import CircularDependencyPlugin from 'vite-plugin-circular-dependency'
+import { fileURLToPath } from 'url'
+import { dirname as pathDirname } from 'path'
+
+const __dirname = pathDirname(fileURLToPath(import.meta.url))
 
 export const createViteConfig = (args: {
   dirname: string,

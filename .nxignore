@@ -1,0 +1,8 @@
+# Ignore vite config files from Nx caching
+**/vite.config.ts
+**/vite.config.js
+vite.config.base.ts
+vite.config.base.js
+
+# Ignore timestamp files
+**/*.timestamp-*

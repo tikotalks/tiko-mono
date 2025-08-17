@@ -15,7 +15,7 @@
       "executor": "@nx/vite:dev-server",
       "options": {
         "buildTarget": "cards:build",
-        "port": 4207
+        "port": 3003
       }
     },
     "preview": {

@@ -14,7 +14,7 @@
       "executor": "@nx/vite:dev-server",
       "options": {
         "buildTarget": "type:build",
-        "port": 4208
+        "port": 3002
       }
     },
     "preview": {

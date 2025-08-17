@@ -130,6 +130,12 @@ function runApp(app) {
   
   // Run the selected app
   try {
+    // Clear any cached vite config files before running
+    execSync(`find . -name "*.timestamp-*.mjs" -type f -delete 2>/dev/null || true`, { 
+      stdio: 'ignore',
+      cwd: process.cwd()
+    });
+    
     // Use nx serve for all projects
     execSync(`npx nx serve ${appName}`, { 
       stdio: 'inherit',
