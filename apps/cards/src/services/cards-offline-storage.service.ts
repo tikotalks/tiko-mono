@@ -9,15 +9,6 @@ import type { TCardTile as CardTile } from '@tiko/ui'
 const CARDS_STORE = 'cards'
 const METADATA_STORE = 'metadata'
 
-interface StoredCards {
-  key: string
-  parentId?: string
-  cards: CardTile[]
-  locale: string
-  timestamp: number
-  userId: string
-}
-
 interface CardSyncMetadata {
   lastSync: number
   userId: string
@@ -34,16 +25,11 @@ class CardsOfflineStorageService {
       stores: [
         {
           name: CARDS_STORE,
-          keyPath: 'key',
-          indexes: [
-            { name: 'userId', keyPath: 'userId' },
-            { name: 'parentId', keyPath: 'parentId' },
-            { name: 'locale', keyPath: 'locale' }
-          ]
+          keyPath: 'key'
         },
         {
           name: METADATA_STORE,
-          keyPath: 'userId'
+          keyPath: 'key'
         }
       ]
     })
@@ -68,16 +54,13 @@ class CardsOfflineStorageService {
     locale: string = 'en'
   ): Promise<void> {
     const key = this.getCardsKey(userId, parentId, locale)
-    const storedCards: StoredCards = {
-      key,
-      parentId,
-      cards,
-      locale,
-      timestamp: Date.now(),
-      userId
-    }
     
-    await this.storage.store(CARDS_STORE, key, storedCards)
+    // Store the cards with metadata
+    await this.storage.store(CARDS_STORE, key, cards, {
+      parentId,
+      locale,
+      userId
+    })
   }
 
   /**
@@ -89,8 +72,9 @@ class CardsOfflineStorageService {
     locale: string = 'en'
   ): Promise<CardTile[] | null> {
     const key = this.getCardsKey(userId, parentId, locale)
-    const result = await this.storage.retrieve<StoredCards>(CARDS_STORE, key)
-    return result?.data?.cards || null
+    const result = await this.storage.retrieve<CardTile[]>(CARDS_STORE, key)
+    // The cards are stored directly as data
+    return result?.data || null
   }
 
   /**
@@ -126,11 +110,11 @@ class CardsOfflineStorageService {
    */
   async clearUserData(userId: string): Promise<void> {
     // Get all cards for this user
-    const allData = await this.storage.getAll<StoredCards>(CARDS_STORE)
+    const allData = await this.storage.getAll<CardTile[]>(CARDS_STORE)
     
     // Delete each card entry for this user
     for (const item of allData) {
-      if (item.data.userId === userId) {
+      if (item.metadata?.userId === userId) {
         await this.storage.delete(CARDS_STORE, item.key)
       }
     }
