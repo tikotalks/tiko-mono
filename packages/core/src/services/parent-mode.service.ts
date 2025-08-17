@@ -177,6 +177,14 @@ export interface ParentModeService {
   verifyPinHash(pin: string, hash: string): Promise<boolean>
 }
 
+import { userSettingsService } from './user-settings.service'
+
+interface ParentModeUserSettings {
+  parentPin?: string
+  parentModeEnabled?: boolean
+  parentModeSettings?: ParentModeSettings
+}
+
 /**
  * Current implementation using localStorage
  * This bypasses the broken Supabase SDK and stores data locally
@@ -200,6 +208,15 @@ class LocalStorageParentModeService implements ParentModeService {
       }
 
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data))
+      
+      // Also persist to user settings
+      const parentModeSettings: ParentModeUserSettings = {
+        parentPin: pin, // Store plain PIN since it's just 4 numbers
+        parentModeEnabled: true,
+        parentModeSettings: settings
+      }
+      await userSettingsService.updateSettings(userId, 'parent-mode', parentModeSettings)
+      
       console.log('[Parent Mode Service] Enabled parent mode for user:', userId)
 
       return { success: true, data }
@@ -217,6 +234,13 @@ class LocalStorageParentModeService implements ParentModeService {
       }
 
       localStorage.removeItem(this.STORAGE_KEY)
+      
+      // Also remove from user settings
+      await userSettingsService.updateSettings(userId, 'parent-mode', {
+        parentPin: undefined,
+        parentModeEnabled: false
+      })
+      
       console.log('[Parent Mode Service] Disabled parent mode for user:', userId)
 
       return { success: true }
@@ -228,22 +252,48 @@ class LocalStorageParentModeService implements ParentModeService {
 
   async getData(userId: string): Promise<ParentModeData | null> {
     try {
+      // First check localStorage for immediate access
       const dataStr = localStorage.getItem(this.STORAGE_KEY)
-      if (!dataStr) return null
-
-      const data = JSON.parse(dataStr) as ParentModeData
-      
-      // Verify the data belongs to the current user
-      if (data.user_id !== userId) {
-        console.log('[Parent Mode Service] Data belongs to different user, clearing...')
-        localStorage.removeItem(this.STORAGE_KEY)
-        return null
+      if (dataStr) {
+        const data = JSON.parse(dataStr) as ParentModeData
+        
+        // Verify the data belongs to the current user
+        if (data.user_id === userId) {
+          return data
+        } else {
+          console.log('[Parent Mode Service] Data belongs to different user, clearing...')
+          localStorage.removeItem(this.STORAGE_KEY)
+        }
       }
-
-      return data
+      
+      // Try to load from user settings if not in localStorage
+      const userSettings = await userSettingsService.getSettings(userId, 'parent-mode')
+      if (userSettings?.settings) {
+        const settings = userSettings.settings as ParentModeUserSettings
+        if (settings.parentPin && settings.parentModeEnabled) {
+          const pinHash = await this.hashPin(settings.parentPin)
+          const data: ParentModeData = {
+            user_id: userId,
+            parent_pin_hash: pinHash,
+            parent_mode_enabled: settings.parentModeEnabled,
+            parent_mode_settings: settings.parentModeSettings || {
+              sessionTimeoutMinutes: 30,
+              showVisualIndicator: true,
+              autoLockOnAppSwitch: true,
+              requirePinForSettings: true
+            }
+          }
+          
+          // Cache in localStorage for faster access
+          localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data))
+          
+          return data
+        }
+      }
+      
+      return null
     } catch (error) {
       console.error('[Parent Mode Service] Error getting parent mode data:', error)
-      localStorage.removeItem(this.STORAGE_KEY)
       return null
     }
   }
@@ -264,6 +314,12 @@ class LocalStorageParentModeService implements ParentModeService {
       }
 
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedData))
+      
+      // Also update in user settings
+      await userSettingsService.updateSettings(userId, 'parent-mode', {
+        parentModeSettings: updatedData.parent_mode_settings
+      })
+      
       console.log('[Parent Mode Service] Updated settings for user:', userId)
 
       return { success: true, data: updatedData }
@@ -316,6 +372,12 @@ class LocalStorageParentModeService implements ParentModeService {
       }
 
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedData))
+      
+      // Also update in user settings
+      await userSettingsService.updateSettings(userId, 'parent-mode', {
+        parentPin: newPin
+      })
+      
       console.log('[Parent Mode Service] Changed PIN for user:', userId)
 
       return { success: true, data: updatedData }
