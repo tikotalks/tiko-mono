@@ -12,11 +12,11 @@
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
 
-const bemm = useBemm('card-ghost-tile');
+const bemm = useBemm('t-card-ghost-tile');
 </script>
 
 <style lang="scss">
-.card-ghost-tile {
+.t-card-ghost-tile {
   width: 100%;
   height: 100%;
   border-radius: var(--border-radius);
