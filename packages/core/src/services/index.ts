@@ -102,6 +102,20 @@ export type { ContentWorkerConfig } from './content-worker.service'
 export { UnifiedContentService } from './unified-content.service'
 export type { UnifiedContentConfig, QueryOptions, FullPageContent, FullSectionContent, FullItemContent, ContentField } from './unified-content.service'
 
+// Offline Storage Service
+export { 
+  OfflineStorageService, 
+  createOfflineStorage 
+} from './offline-storage.service'
+export type { 
+  StoredData, 
+  SyncMetadata, 
+  OfflineStorageConfig 
+} from './offline-storage.service'
+
+// Translation Initialization Service
+export { initializeTranslations } from './translation-init.service'
+
 // Alternative: Export Supabase implementations
 // import { SupabaseParentModeService } from './parent-mode-supabase.service'
 // import { SupabaseUserSettingsService } from './user-settings-supabase.service'

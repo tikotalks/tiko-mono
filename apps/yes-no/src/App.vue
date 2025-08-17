@@ -21,7 +21,7 @@ import { useRoute } from 'vue-router'
 import { TFramework, type FrameworkConfig, useI18n } from '@tiko/ui'
 import tikoConfig from '../tiko.config'
 import backgroundImage from './assets/app-icon-yes-no.png'
-import { initializeTranslations } from './services/translation-init.service'
+import { initializeTranslations } from '@tiko/core'
 
 const route = useRoute()
 const loading = ref(true)

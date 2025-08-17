@@ -1,6 +1,7 @@
 /**
- * Translation Initialization Service for Yes-No App
+ * Translation Initialization Service
  * Handles loading translations from database on app startup
+ * This service should be used by all Tiko apps
  */
 
 import { useI18n } from '@tiko/ui';

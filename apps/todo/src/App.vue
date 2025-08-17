@@ -53,7 +53,7 @@ import backgroundImage from './assets/app-icon-todo.png'
 import AddGroupModal from './components/AddGroupModal.vue'
 import AddTodoModal from './components/AddTodoModal.vue'
 import type { TodoGroup } from './types/todo.types'
-import { initializeTranslations } from './services/translation-init.service'
+import { initializeTranslations } from '@tiko/core'
 
 const todoStore = useTodoStore()
 const route = useRoute()

@@ -11,7 +11,7 @@
 import { computed, ref, onMounted } from 'vue'
 import { TFramework, type FrameworkConfig, useI18n } from '@tiko/ui'
 import tikoConfig from '../tiko.config'
-import { initializeTranslations } from './services/translation-init.service'
+import { initializeTranslations } from '@tiko/core'
 
 const loading = ref(true)
 const { t, keys } = useI18n()
