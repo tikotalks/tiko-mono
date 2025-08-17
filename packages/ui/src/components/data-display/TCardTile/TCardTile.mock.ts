@@ -1,6 +1,5 @@
 import type { TCardTile } from './TCardTile.model';
-import { mockId, mockTitle, mockImage, mockSpeech } from '../../../mocks';
-import { randomColor, randomIcon } from '../../../utils/random';
+import { mockId, mockTitle, mockImage, mockSpeech, randomColor, randomIcon } from '../../../utils/mock';
 import { CardTileType } from './TCardTile.model';
 
 export const mockCardTile = (index: number = 0): TCardTile => {

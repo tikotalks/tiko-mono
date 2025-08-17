@@ -28,7 +28,7 @@
                 '--tile-index': index
               }">
                 <div v-if="card.type === CardTileTypes.GHOST" :class="bemm('ghost-tile')" />
-                <TCardTile v-else
+                <TCardTileComponent v-else
                   :card="card"
                   :show-image="true"
                   :show-title="true"
@@ -75,8 +75,8 @@
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { CardTileType as CardTileTypes, type TCardTile, type TCardTileProps } from '../TCardTile/TCardTile.model';
-import TCardTile from '../TCardTile/TCardTile.vue';
+import { CardTileType as CardTileTypes, type TCardTile } from '../TCardTile/TCardTile.model';
+import TCardTileComponent from '../TCardTile/TCardTile.vue';
 import type { TCardGridProps } from './TCardGrid.model';
 
 const bemm = useBemm('t-card-grid');
