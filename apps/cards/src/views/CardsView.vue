@@ -90,7 +90,7 @@
 
       <!-- Main question display -->
       <div :class="bemm('main')">
-        <CardGrid
+        <TCardGrid
           :cards="cards"
           :show-arrows="true"
           :edit-mode="isEditMode"
@@ -184,13 +184,13 @@ import {
 import { useI18n } from '@tiko/ui';
 import { useCardStore } from '../stores/cards';
 import CardsSettingsForm from '../components/CardsSettingsForm.vue';
-import CardGrid from '../components/CardGrid.vue';
+import { TCardGrid } from '@tiko/ui';
 import CardForm from '../components/CardForm.vue';
 import GroupSelector from '../components/GroupSelector.vue';
 import BulkCardCreator from '../components/BulkCardCreator.vue';
 import AddCardsModal from '../components/AddCardsModal.vue';
 import { CardGhostTile } from '../components/CardGhostTile';
-import { CardTile,mockCardTile } from '../components/CardTile/CardTile.model';
+import type { TCardTile as CardTile } from '@tiko/ui';
 import { useEditMode } from '../composables/useEditMode';
 import { useSpeak, useEventBus } from '@tiko/core';
 import { cardsService } from '../services/cards.service';

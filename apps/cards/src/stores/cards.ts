@@ -3,7 +3,7 @@ import { computed, ref, shallowRef } from 'vue'
 import { useAppStore, useAuthStore, itemService } from '@tiko/core'
 import { cardsService } from '../services/cards.service'
 import { offlineStorageService } from '../services/offline-storage.service'
-import type { CardTile } from '../models/Card.model'
+import type { TCardTile as CardTile } from '@tiko/ui'
 import { useI18n } from '@tiko/ui'
 
 export interface YesNoSettings {

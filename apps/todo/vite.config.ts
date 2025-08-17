@@ -9,7 +9,7 @@ const pwaConfig = {
     description: 'Visual todo list app with groups and items',
     theme_color: '#3b82f6',
     background_color: '#ffffff',
-    display: 'standalone',
+    display: 'standalone' as 'standalone',
     orientation: 'portrait',
     scope: '/',
     start_url: '/',
@@ -34,4 +34,10 @@ const pwaConfig = {
   }
 }
 
-export default createViteConfig(__dirname, 3007, pwaConfig)
+export default createViteConfig({
+  dirname: __dirname,
+  port: 3007,
+  pwaConfig,
+  appName: 'todo',
+  i18nConfig: {}
+})

@@ -12,28 +12,34 @@ import CircularDependencyPlugin from 'vite-plugin-circular-dependency'
 
 export const createViteConfig = (args: {
   dirname: string,
-  port:number,
+  port: number,
   pwaConfig: {
-    name: string,
-    short_name: string,
-    description: string,
-    theme_color: string,
-    background_color: string,
-    display: string,
-    orientation: string,
-    icons?: {
-      src: string,
-      sizes: string,
-      type: string
-    }[]
+    registerType: string,
+    includeAssets: string[],
+    manifest: {
+      name: string,
+      short_name: string,
+      description: string,
+      theme_color: string,
+      background_color: string,
+      display: 'standalone' | 'fullscreen' | 'minimal-ui' | 'browser',
+      orientation?: string,
+      scope?: string,
+      start_url: string,
+      icons?: {
+        src: string,
+        sizes: string,
+        type: string
+      }[]
+    },
   },
   appName: string,
-  i18nConfig:{
+  i18nConfig: {
     excludeSections?: string[],
   }
-  }) => {
+}) => {
 
-   const { dirname, port, pwaConfig, appName, i18nConfig } = args
+  const { dirname, port, pwaConfig, appName, i18nConfig } = args
 
 
   let buildInfo = null;

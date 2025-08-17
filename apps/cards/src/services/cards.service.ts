@@ -1,6 +1,6 @@
 import { useAuthStore } from '@tiko/core';
 import { useI18n } from '@tiko/ui';
-import type { CardTile } from '../components/CardTile/CardTile.model';
+import type { TCardTile as CardTile } from '@tiko/ui';
 import { cardsSupabaseService } from './supabase-cards.service';
 import { ItemTranslationService } from './item-translation.service';
 import type { ItemTranslation } from '../models/ItemTranslation.model';

@@ -3,7 +3,7 @@
  * Handles persistent storage of cards data using IndexedDB
  */
 
-import type { CardTile } from '../models/Card.model'
+import type { TCardTile as CardTile } from '@tiko/ui'
 
 const DB_NAME = 'tiko-cards-offline'
 const DB_VERSION = 1

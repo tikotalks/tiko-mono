@@ -112,11 +112,12 @@
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
 import { ref, computed, watch } from 'vue';
-import { CardTile as CardTileType } from './CardTile.model';
-import { TIcon, TContextMenu } from '@tiko/ui';
+import type { TCardTile, TCardTileProps } from './TCardTile.model';
+import { TIcon } from '../../ui-elements/TIcon';
+import { TContextMenu } from '../../navigation/TContextMenu';
 import { useImageUrl } from '@tiko/core';
 
-const bemm = useBemm('card-tile');
+const bemm = useBemm('t-card-tile');
 const { getImageVariants } = useImageUrl();
 
 // Template refs
@@ -126,22 +127,11 @@ const wrapperEl = ref<HTMLElement>();
 const isImageLoaded = ref(false);
 const isImageLoading = ref(false);
 
-const props = defineProps<{
-  card: CardTileType;
-  showImage?: boolean;
-  showTitle?: boolean;
-  editMode?: boolean;
-  isEmpty?: boolean;
-  hasChildren?: boolean;
-  children?: CardTileType[];
-  isSelected?: boolean;
-  selectionMode?: boolean;
-  contextMenu?: any[];
-}>();
+const props = defineProps<TCardTileProps>();
 
 const emit = defineEmits<{
   click: [];
-  dragstart: [event: DragEvent, card: CardTileType];
+  dragstart: [event: DragEvent, card: TCardTile];
   dragend: [];
   dragover: [event: DragEvent];
   dragleave: [event: DragEvent];
@@ -314,7 +304,7 @@ const handleDrop = (event: DragEvent) => {
 </script>
 
 <style lang="scss">
-.card-tile {
+.t-card-tile {
   width: 100%;
   height: 100%;
   background-image: radial-gradient(circle at center, var(--card-color) 0%, color-mix(in srgb, var(--card-color), var(--color-background) 25%) 100%);
@@ -461,7 +451,7 @@ const handleDrop = (event: DragEvent) => {
     border: 2px dashed transparent;
     // pointer-events: none;
 
-    &.card-tile--edit-mode {
+    &.t-card-tile--edit-mode {
       background-color: var(--color-gray-light);
       border-color: color-mix(in srgb, var(--color-foreground), transparent 75%);
       pointer-events: auto;
@@ -483,7 +473,7 @@ const handleDrop = (event: DragEvent) => {
     color: var(--color-gray);
     opacity: 0;
 
-    .card-tile--edit-mode & {
+    .t-card-tile--edit-mode & {
       opacity: 1;
     }
   }
@@ -523,7 +513,7 @@ const handleDrop = (event: DragEvent) => {
       opacity: 0.5;
       cursor: grabbing !important;
 
-      .card-tile {
+      .t-card-tile {
         transform: scale(0.95);
       }
     }
@@ -531,7 +521,7 @@ const handleDrop = (event: DragEvent) => {
     &--drag-ready {
       cursor: grab;
 
-      .card-tile {
+      .t-card-tile {
         transform: scale(0.98);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       }
@@ -539,7 +529,7 @@ const handleDrop = (event: DragEvent) => {
 
 
     &--can-drag {
-      .card-tile--edit-mode {
+      .t-card-tile--edit-mode {
         cursor: grab;
         user-select: none;
         -webkit-user-select: none;

@@ -37,7 +37,7 @@
 <script setup lang="ts">
 import { useBemm } from 'bemm';
 import { TButton, TFormActions, TIcon } from '@tiko/ui';
-import type { CardTile } from './CardTile/CardTile.model';
+import type { TCardTile as CardTile } from '@tiko/ui';
 
 const bemm = useBemm('group-selector');
 

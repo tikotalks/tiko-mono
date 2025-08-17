@@ -34,7 +34,7 @@
           :class="bemm('preview-tile')"
           @click="openEditPreview(preview, index)"
         >
-          <CardTile
+          <TCardTile
             :card="getPreviewCard(preview, index)"
             :edit-mode="false"
             :show-image="true"
@@ -84,8 +84,8 @@ import {
   useI18n,
 } from '@tiko/ui';
 import { useImages, useImageUrl } from '@tiko/core';
-import type { CardTile as CardTileType } from './CardTile/CardTile.model';
-import CardTile from './CardTile/CardTile.vue';
+import type { TCardTile as CardTileType } from '@tiko/ui';
+import { TCardTile } from '@tiko/ui';
 import CardForm from './CardForm.vue';
 
 const bemm = useBemm('bulk-card-creator');

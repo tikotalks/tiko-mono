@@ -131,7 +131,7 @@ import {
   TFormGroup,
 } from '@tiko/ui';
 import { useI18n } from '@tiko/ui';
-import { CardTile } from './CardTile/CardTile.model';
+import type { TCardTile as CardTile } from '@tiko/ui';
 import { mediaService, useImages, useImageUrl, useAuthStore } from '@tiko/core';
 import CardTranslations from './CardTranslations/CardTranslations.vue';
 import type { ItemTranslation } from '../models/ItemTranslation.model';

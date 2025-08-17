@@ -27,8 +27,8 @@
                 " :style="{
                 '--tile-index': index
               }">
-                <CardGhostTile v-if="card.type === CardTileTypes.GHOST" />
-                <CardTile v-else
+                <div v-if="card.type === CardTileTypes.GHOST" :class="bemm('ghost-tile')" />
+                <TCardTile v-else
                   :card="card"
                   :show-image="true"
                   :show-title="true"
@@ -75,32 +75,21 @@
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { CardTileType as CardTileTypes, type CardTile as CardTileType } from './CardTile/CardTile.model';
-import CardTile from './CardTile/CardTile.vue';
-import { CardGhostTile } from './CardGhostTile';
+import { CardTileType as CardTileTypes, type TCardTile, type TCardTileProps } from '../TCardTile/TCardTile.model';
+import TCardTile from '../TCardTile/TCardTile.vue';
+import type { TCardGridProps } from './TCardGrid.model';
 
-const bemm = useBemm('card-grid');
+const bemm = useBemm('t-card-grid');
 
 
-const props = defineProps<{
-  cards: Array<CardTileType>;
-  showArrows?: boolean;
-  editMode?: boolean;
-  tilesWithChildren?: Set<string>;
-  tileChildrenMap?: Map<string, CardTileType[]>;
-  isTileDragging?: boolean;
-  selectionMode?: boolean;
-  selectedTileIds?: Set<string>;
-  isLoading?: boolean;
-  getContextMenu?: (card: CardTileType, index: number) => any[];
-}>();
+const props = defineProps<TCardGridProps>();
 
 const emit = defineEmits<{
-  'card-click': [card: CardTileType, index: number];
-  'card-drop': [droppedCard: CardTileType, targetCard: CardTileType];
-  'card-reorder': [card: CardTileType, newIndex: number];
-  'cards-drop': [droppedCards: CardTileType[], targetCard: CardTileType];
-  'cards-reorder': [cards: CardTileType[], newIndex: number];
+  'card-click': [card: TCardTile, index: number];
+  'card-drop': [droppedCard: TCardTile, targetCard: TCardTile];
+  'card-reorder': [card: TCardTile, newIndex: number];
+  'cards-drop': [droppedCards: TCardTile[], targetCard: TCardTile];
+  'cards-reorder': [cards: TCardTile[], newIndex: number];
   'update:tileDragging': [isDragging: boolean];
 }>();
 
@@ -175,7 +164,7 @@ const screenHeight = ref(0);
 const tileSize = ref(0);
 
 // Drag state
-const draggedCard = ref<CardTileType | null>(null);
+const draggedCard = ref<TCardTile | null>(null);
 const draggedElement = ref<HTMLElement | null>(null);
 const dropTarget = ref<string | null>(null);
 const animatedTileIds = ref<Set<string>>(new Set()); // Track which tiles have already animated
@@ -257,7 +246,7 @@ function updateDimensions(): void {
 
   // Try to get the actual container dimensions
   if (!containerElement) {
-    containerElement = document.querySelector('.card-grid');
+    containerElement = document.querySelector('.t-card-grid');
   }
 
   if (containerElement && containerElement.parentElement) {
@@ -322,7 +311,7 @@ const animatingPages = ref<Set<number>>(new Set());
 const cardsPerPage = computed(() => grid.value.cols * grid.value.rows);
 
 // Create empty card placeholder
-const createEmptyCard = (index: number): CardTileType => ({
+const createEmptyCard = (index: number): TCardTile => ({
   id: `empty-${index}`,
   title: '',
   icon: 'plus' as any,
@@ -335,7 +324,7 @@ const createEmptyCard = (index: number): CardTileType => ({
 
 // Paginate cards with proper positioning
 const paginatedCards = computed(() => {
-  const pages: Array<Array<CardTileType | null>> = [];
+  const pages: Array<Array<TCardTile | null>> = [];
   // Find the highest index among all cards to determine pages needed
   const maxIndex = props.cards.reduce((max, card) => {
     const cardIndex = card.index ?? props.cards.indexOf(card);
@@ -363,7 +352,7 @@ const paginatedCards = computed(() => {
   });
 
   // Create an array of all slots (filled with nulls initially)
-  const allSlots: (CardTileType | null)[] = new Array(totalSlots).fill(null);
+  const allSlots: (TCardTile | null)[] = new Array(totalSlots).fill(null);
 
   // Place actual cards at their index positions
   props.cards.forEach(card => {
@@ -399,7 +388,7 @@ const totalPages = computed(() => paginatedCards.value.length);
 const updateTranslateX = () => {
   if (typeof window !== 'undefined') {
     // Use the actual container width instead of window width
-    const container = document.querySelector('.card-grid__panels');
+    const container = document.querySelector('.t-card-grid__panels');
     panelWidth.value = container ? container.clientWidth : window.innerWidth;
     translateX.value = -currentPage.value * panelWidth.value;
   }
@@ -510,14 +499,14 @@ const handleMouseUp = () => {
 };
 
 // Handle card clicks
-const handleCardClick = (card: CardTileType, index: number) => {
+const handleCardClick = (card: TCardTile, index: number) => {
   emit('card-click', card, index);
 };
 
 // Drag and Drop handlers
-const draggedCards = ref<CardTileType[]>([]);
+const draggedCards = ref<TCardTile[]>([]);
 
-const handleDragStart = (event: DragEvent, card: CardTileType) => {
+const handleDragStart = (event: DragEvent, card: TCardTile) => {
   if (!props.editMode || card.id.startsWith('empty-')) return;
 
   // Check if this is part of a multi-selection
@@ -659,7 +648,7 @@ const handleDragEnd = () => {
   stopDragMonitoring();
 };
 
-const handleDragOver = (event: DragEvent, card: CardTileType) => {
+const handleDragOver = (event: DragEvent, card: TCardTile) => {
   if (!props.editMode) return;
   if (!draggedCard.value && draggedCards.value.length === 0) return;
 
@@ -727,7 +716,7 @@ const handleGlobalDragOver = (event: DragEvent) => {
   }
 };
 
-const handleDrop = (event: DragEvent, targetCard: CardTileType) => {
+const handleDrop = (event: DragEvent, targetCard: TCardTile) => {
   if (!props.editMode) return;
   if (!draggedCard.value && draggedCards.value.length === 0) return;
 
@@ -856,7 +845,7 @@ watch(() => props.cards, (newCards) => {
 </script>
 
 <style lang="scss">
-.card-grid {
+.t-card-grid {
   position: relative;
   width: 100%;
   height: 100%;
@@ -1043,7 +1032,7 @@ watch(() => props.cards, (newCards) => {
   }
 }
 
-.card-grid__drag-edge {
+.t-card-grid__drag-edge {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -1072,6 +1061,15 @@ watch(() => props.cards, (newCards) => {
     &:hover {
       opacity: 1;
     }
+  }
+
+  &__ghost-tile {
+    width: var(--tile-size);
+    height: var(--tile-size);
+    background-color: var(--color-gray-light);
+    border: 2px dashed var(--color-gray);
+    border-radius: var(--border-radius);
+    opacity: 0.5;
   }
 }
 </style>

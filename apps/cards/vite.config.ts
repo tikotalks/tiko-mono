@@ -9,7 +9,7 @@ const pwaConfig = {
     description: 'Cards App',
     theme_color: '#000000',
     background_color: '#ffffff',
-    display: 'standalone',
+    display: "standalone" as "standalone",
     orientation: 'portrait',
     scope: '/',
     start_url: '/',
@@ -38,4 +38,9 @@ const i18nConfig = {
   excludeSections: ['admin', 'deployment', 'media', 'content']
 }
 
-export default createViteConfig(__dirname, 3003, pwaConfig, 'cards', i18nConfig)
+export default createViteConfig({
+  dirname: __dirname,
+  port: 3003,
+  pwaConfig,
+  appName: 'cards', i18nConfig
+})

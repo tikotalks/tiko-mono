@@ -46,7 +46,7 @@ import { useBemm } from 'bemm';
 import { TButton, TButtonGroup, useI18n } from '@tiko/ui';
 import CardForm from './CardForm.vue';
 import BulkCardCreator from './BulkCardCreator.vue';
-import { CardTile } from './CardTile/CardTile.model';
+import type { TCardTile as CardTile } from '@tiko/ui';
 
 const bemm = useBemm('add-cards-modal');
 const { t } = useI18n();

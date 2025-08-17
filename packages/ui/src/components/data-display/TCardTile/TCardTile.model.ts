@@ -1,6 +1,5 @@
 import { Icons } from "open-icon";
-import { Colors, randomColor, randomIcon } from "../../../../../packages/ui/src";
-import { mockId, mockTitle, mockImage, mockSpeech } from "@tiko/ui";
+import { Colors } from "../../../types/colors";
 
 export const CardTileType = {
   RESPONSE: 'response',
@@ -9,8 +8,7 @@ export const CardTileType = {
 } as const;
 export type CardTileType = (typeof CardTileType)[keyof typeof CardTileType];
 
-
-export interface CardTile {
+export interface TCardTile {
   id: string;
   title: string;
   icon?: Icons;
@@ -24,16 +22,15 @@ export interface CardTile {
   effective_locale?: string; // The locale of the content being displayed (from translation)
 }
 
-export const mockCardTile = (index: number = 0): CardTile => {
-  return {
-    id: mockId(index),
-    title: mockTitle(index),
-    icon: randomIcon(),
-    color: randomColor(),
-    type: CardTileType.QUESTION,
-    image: mockImage(index),
-    speech: mockSpeech(index),
-    index: index,
-  };
+export interface TCardTileProps {
+  card: TCardTile;
+  showImage?: boolean;
+  showTitle?: boolean;
+  editMode?: boolean;
+  isEmpty?: boolean;
+  hasChildren?: boolean;
+  children?: TCardTile[];
+  isSelected?: boolean;
+  selectionMode?: boolean;
+  contextMenu?: any[];
 }
-
