@@ -4,9 +4,9 @@ const pwaConfig = {
   registerType: 'autoUpdate',
   includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
   manifest: {
-    name: 'Cards - Tiko',
-    short_name: 'Cards',
-    description: 'Cards App',
+    name: 'Sequence - Tiko',
+    short_name: 'Sequence',
+    description: 'Learn ordering and sequences',
     theme_color: '#000000',
     background_color: '#ffffff',
     display: 'standalone',
@@ -38,4 +38,10 @@ const i18nConfig = {
   excludeSections: ['admin', 'deployment', 'media', 'content']
 }
 
-export default createViteConfig(__dirname, 3003, pwaConfig, 'cards', i18nConfig)
+export default createViteConfig({
+  dirname: __dirname,
+  port: 3005,
+  pwaConfig,
+  appName: 'sequence',
+  i18nConfig
+})

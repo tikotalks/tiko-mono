@@ -140,7 +140,7 @@ const GRID_COLUMNS = {
 // Layout spacing constants
 const LAYOUT_SPACING = {
   HORIZONTAL_PADDING: 40, // 20px on each side
-  VERTICAL_PADDING: 100, // Space for header, pagination, etc.
+  VERTICAL_PADDING: 80, // 4rem (64px) + var(--space) (16px) = 80px
   TILE_GAP: 16, // Gap between tiles in pixels
   MIN_ROWS: 2, // Minimum number of rows
 } as const;

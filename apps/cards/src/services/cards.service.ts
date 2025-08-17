@@ -92,6 +92,52 @@ export const cardsService = {
     }
   },
 
+  async loadAllCards(): Promise<CardTile[]> {
+    try {
+      const authStore = useAuthStore();
+      const userId = authStore.user?.id;
+      if (!userId) {
+        console.warn('No authenticated user found');
+        return [];
+      }
+      
+      // Get current locale from i18n
+      const { currentLocale } = useI18n();
+      const locale = currentLocale.value;
+      console.log('[loadAllCards] Loading ALL cards with locale:', locale);
+      
+      // Load ALL cards with translations for current locale
+      const items = await cardsSupabaseService.getAllCardsWithTranslations(userId, locale);
+      console.log('[loadAllCards] Total items loaded:', items.length);
+      
+      return items.map(item => {
+        const metadata = item.metadata as CardMetadata;
+        
+        // If we have a translation (effective_locale is set), use the translated content for speech
+        const speech = item.effective_locale && item.effective_locale !== item.base_locale
+          ? item.content || metadata?.speech || ''  // Use translated content if available
+          : metadata?.speech || item.content || ''; // Otherwise use metadata speech or base content
+        
+        return {
+          id: item.id,
+          title: item.name, // This will already be the translated name from getCardsWithTranslations
+          type: item.type as any,
+          icon: metadata?.icon || item.icon || 'square',
+          color: metadata?.color || item.color || 'primary',
+          image: metadata?.image || '',
+          speech: speech,
+          index: item.order_index ?? 0,
+          parentId: item.parent_id || undefined,
+          base_locale: item.base_locale || 'en',
+          effective_locale: item.effective_locale || item.base_locale || 'en',
+        };
+      });
+    } catch (error) {
+      console.error('Failed to load all cards:', error);
+      return [];
+    }
+  },
+
   async hasChildren(parentId: string): Promise<boolean> {
     // Check cache first
     if (childrenCache.has(parentId)) {

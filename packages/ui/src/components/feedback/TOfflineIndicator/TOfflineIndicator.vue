@@ -1,10 +1,10 @@
 <template>
   <Transition name="slide-down">
     <div v-if="isOffline" :class="bemm()">
-      <TIcon :name="Icons.WIFI_NO" />
-      <span>{{ t('common.offline') }}</span>
-      <span v-if="hasOfflineData" :class="bemm('status')">
-        {{ t('common.offlineDataAvailable') }}
+      <TIcon :name="Icons.WIFI" />
+      <span>{{ props.message || t('common.offline') }}</span>
+      <span v-if="hasPendingSync" :class="bemm('status')">
+        {{ t('common.pendingSync') }}
       </span>
     </div>
   </Transition>
@@ -13,20 +13,28 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useBemm } from 'bemm'
-import { TIcon, useI18n } from '@tiko/ui'
+import { TIcon } from '../../ui-elements/TIcon'
+import { useI18n } from '../../../composables/useI18n'
 import { Icons } from 'open-icon'
-import { useCardStore } from '../stores/cards'
+import { useAppStore } from '@tiko/core'
+import type { TOfflineIndicatorProps } from './TOfflineIndicator.model'
 
-const bemm = useBemm('offline-indicator')
+const props = withDefaults(defineProps<TOfflineIndicatorProps>(), {
+  offline: undefined,
+  pendingSync: undefined,
+  message: undefined
+})
+
+const bemm = useBemm('t-offline-indicator')
 const { t } = useI18n()
-const cardStore = useCardStore()
+const appStore = useAppStore()
 
-const isOffline = computed(() => cardStore.isOffline)
-const hasOfflineData = computed(() => cardStore.hasOfflineData)
+const isOffline = computed(() => props.offline !== undefined ? props.offline : appStore.isOffline)
+const hasPendingSync = computed(() => props.pendingSync !== undefined ? props.pendingSync : appStore.hasPendingSync)
 </script>
 
 <style lang="scss" scoped>
-.offline-indicator {
+.t-offline-indicator {
   position: fixed;
   top: 0;
   left: 0;

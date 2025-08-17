@@ -106,7 +106,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, inject } from 'vue';
 import { useBemm } from 'bemm';
-import { TButton, TInput, TTextarea, TInputSelect, TIcon, useI18n, TCard, TInputText, TFormGroup, TChip, Status, ConfirmDialog } from '@tiko/ui';
+import { TButton, TInput, TTextarea, TInputSelect, TIcon, TCard, TInputText, TFormGroup, TChip, Status, ConfirmDialog } from '@tiko/ui';
+import { useI18n } from '@tiko/ui';
 import { Icons } from 'open-icon';
 import { useAuthStore } from '@tiko/core';
 import { ItemTranslationService } from '../../services/item-translation.service';

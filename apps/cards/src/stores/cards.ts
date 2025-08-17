@@ -4,6 +4,7 @@ import { useAppStore, useAuthStore, itemService } from '@tiko/core'
 import { cardsService } from '../services/cards.service'
 import { offlineStorageService } from '../services/offline-storage.service'
 import type { CardTile } from '../models/Card.model'
+import { useI18n } from '@tiko/ui'
 
 export interface YesNoSettings {
   buttonSize: 'small' | 'medium' | 'large'
@@ -26,7 +27,6 @@ export const useCardStore = defineStore('yesno', () => {
   const cardCache = shallowRef(new Map<string, CardCacheEntry>())
   const allCardsLoaded = ref(false)
   const isLoadingCards = ref(false)
-  const isOffline = ref(false)
   const hasOfflineData = ref(false)
   const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
@@ -122,6 +122,21 @@ export const useCardStore = defineStore('yesno', () => {
       }
     }
     
+    // If all cards are loaded, we should have the data in cache
+    if (allCardsLoaded.value && !forceRefresh) {
+      console.log(`[CardsStore] All cards loaded, but cache miss for ${cacheKey}. Returning empty array.`)
+      // Cache the empty result to prevent future API calls
+      const newCache = new Map(cache)
+      newCache.set(cacheKey, {
+        parentId,
+        cards: [],
+        timestamp: Date.now(),
+        locale: locale || 'default'
+      })
+      cardCache.value = newCache
+      return []
+    }
+    
     // Prevent concurrent loads of the same data
     if (isLoadingCards.value) {
       console.log('[CardsStore] Already loading cards, waiting...')
@@ -150,14 +165,12 @@ export const useCardStore = defineStore('yesno', () => {
       try {
         console.log(`[CardsStore] Loading cards from API for ${cacheKey}`)
         cards = await cardsService.loadCards(parentId, locale)
-        isOffline.value = false
         
         // Store in offline storage for future use
         await offlineStorageService.storeCards(userId, cards, parentId, locale)
         
       } catch (error) {
         console.warn('[CardsStore] Failed to load from API, trying offline storage:', error)
-        isOffline.value = true
         
         // Try to load from offline storage
         const offlineCards = await offlineStorageService.getCards(userId, parentId, locale)
@@ -198,34 +211,57 @@ export const useCardStore = defineStore('yesno', () => {
       return
     }
     
-    console.log('[CardsStore] Loading all cards recursively...')
-    const loadedIds = new Set<string>()
-    let totalCards = 0
+    console.log('[CardsStore] Loading all cards in single API call...')
+    isLoadingCards.value = true
     
-    const loadRecursive = async (parentId?: string) => {
-      const cards = await loadCards(parentId, locale)
-      totalCards += cards.length
+    try {
+      // Load ALL cards in a single API call
+      const allCards = await cardsService.loadAllCards()
+      console.log(`[CardsStore] Loaded ${allCards.length} cards in single call`)
       
-      // Load children for each card that could be a group
-      for (const card of cards) {
-        if (!card.id.startsWith('empty-') && !loadedIds.has(card.id)) {
-          loadedIds.add(card.id)
-          // Check if this card has children
-          const children = await loadCards(card.id, locale)
-          if (children.length > 0) {
-            await loadRecursive(card.id)
-          }
+      // Build cache structure from all cards
+      const cardsByParent = new Map<string, CardTile[]>()
+      
+      // Group cards by parent
+      for (const card of allCards) {
+        const parentKey = card.parentId || 'root'
+        if (!cardsByParent.has(parentKey)) {
+          cardsByParent.set(parentKey, [])
         }
+        cardsByParent.get(parentKey)!.push(card)
       }
+      
+      // Sort cards by index within each parent group
+      for (const [parentKey, cards] of cardsByParent) {
+        cards.sort((a, b) => (a.index || 0) - (b.index || 0))
+      }
+      
+      // Update cache with all data
+      const newCache = new Map(cardCache.value)
+      for (const [parentKey, cards] of cardsByParent) {
+        const parentId = parentKey === 'root' ? undefined : parentKey
+        const cacheKey = getCacheKey(parentId, locale)
+        newCache.set(cacheKey, {
+          parentId,
+          cards,
+          timestamp: Date.now(),
+          locale: locale || 'default'
+        })
+      }
+      
+      cardCache.value = newCache
+      allCardsLoaded.value = true
+      
+      // Store in offline storage for future use
+      await offlineStorageService.storeCards(userId, allCards, undefined, locale)
+      
+      // Update sync metadata
+      await offlineStorageService.updateSyncMetadata(userId, allCards.length)
+      
+      console.log(`[CardsStore] Cached all cards. Total cards: ${allCards.length}, Total cache entries: ${cardCache.value.size}`)
+    } finally {
+      isLoadingCards.value = false
     }
-    
-    await loadRecursive(undefined)
-    allCardsLoaded.value = true
-    
-    // Update sync metadata
-    await offlineStorageService.updateSyncMetadata(userId, totalCards)
-    
-    console.log(`[CardsStore] Loaded all cards. Total cards: ${totalCards}, Total groups cached: ${cardCache.value.size}`)
   }
   
   const clearCache = async () => {
@@ -239,6 +275,21 @@ export const useCardStore = defineStore('yesno', () => {
     }
     
     console.log('[CardsStore] Card cache and offline storage cleared')
+  }
+  
+  const clearCacheForLocale = async (locale: string) => {
+    const cache = cardCache.value
+    const newCache = new Map(cache)
+    
+    // Remove all entries for the specified locale
+    for (const [key, entry] of cache) {
+      if (entry.locale === locale) {
+        newCache.delete(key)
+      }
+    }
+    
+    cardCache.value = newCache
+    console.log(`[CardsStore] Cleared cache for locale: ${locale}`)
   }
   
   const getCardsForParent = (parentId?: string, locale?: string): CardTile[] | undefined => {
@@ -258,32 +309,21 @@ export const useCardStore = defineStore('yesno', () => {
     if (!userId) return
     
     hasOfflineData.value = await offlineStorageService.hasOfflineData(userId)
-    
-    // Also check network status
-    isOffline.value = !navigator.onLine
-    
-    // Listen for online/offline events
-    window.addEventListener('online', () => {
-      isOffline.value = false
-      console.log('[CardsStore] Network connection restored')
-    })
-    
-    window.addEventListener('offline', () => {
-      isOffline.value = true
-      console.log('[CardsStore] Network connection lost')
-    })
   }
   
   // Sync offline data with server
   const syncOfflineData = async () => {
     const userId = authStore.user?.id
-    if (!userId || isOffline.value) return
+    if (!userId || !appStore.isOnline) return
     
     console.log('[CardsStore] Starting offline data sync...')
     
     try {
+      // Get current locale from i18n
+      const { currentLocale } = useI18n()
+      
       // Force refresh all data from server
-      await loadAllCards(currentLanguage.value)
+      await loadAllCards(currentLocale.value)
       
       const metadata = await offlineStorageService.getSyncMetadata(userId)
       if (metadata) {
@@ -299,7 +339,7 @@ export const useCardStore = defineStore('yesno', () => {
     await checkOfflineStatus()
     
     // Sync data if online and has offline data
-    if (!isOffline.value && hasOfflineData.value) {
+    if (appStore.isOnline && hasOfflineData.value) {
       await syncOfflineData()
     }
   }
@@ -421,7 +461,6 @@ export const useCardStore = defineStore('yesno', () => {
     cardCache: computed(() => cardCache.value),
     allCardsLoaded: computed(() => allCardsLoaded.value),
     isLoadingCards: computed(() => isLoadingCards.value),
-    isOffline: computed(() => isOffline.value),
     hasOfflineData: computed(() => hasOfflineData.value),
     
     // Actions
@@ -432,6 +471,7 @@ export const useCardStore = defineStore('yesno', () => {
     loadCards,
     loadAllCards,
     clearCache,
+    clearCacheForLocale,
     getCardsForParent,
     checkOfflineStatus,
     syncOfflineData,

@@ -4,6 +4,11 @@ export interface TikoConfig {
   appIcon: string
   description?: string
   primaryColor?: string
+  theme: {
+    primary: string
+    secondary: string
+    tertiary: string
+  },
   auth?: {
     required?: boolean
     providers?: ('email' | 'apple')[]

@@ -1,8 +1,8 @@
 <template>
   <div id="app">
     <!-- Offline indicator -->
-    <OfflineIndicator />
-    
+    <TOfflineIndicator />
+
     <!-- Auth callback route doesn't need TFramework wrapper -->
     <router-view v-if="isAuthCallbackRoute" />
 
@@ -10,7 +10,6 @@
     <TFramework
       v-else
       :config="frameworkConfig"
-      :background-image="backgroundImage"
       :loading="loading"
       :pwa-register-sw="pwaRegisterSW"
     >
@@ -22,16 +21,16 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { TFramework, type FrameworkConfig, useI18n } from '@tiko/ui'
-import { useEventBus } from '@tiko/core'
+import { TFramework, type FrameworkConfig, useI18n, TOfflineIndicator } from '@tiko/ui'
+import { useEventBus, useAppStore } from '@tiko/core'
 import tikoConfig from '../tiko.config'
-import backgroundImage from './assets/app-icon-yes-no.png'
 import { initializeTranslations } from './services/translation-init.service'
-import OfflineIndicator from './components/OfflineIndicator.vue'
 
 const route = useRoute()
 const loading = ref(true)
-const { t, keys } = useI18n()
+const { t, keys } = useI18n({
+  fallbackLocale: 'en-GB'
+})
 const eventBus = useEventBus()
 
 // PWA registration function - will be loaded lazily
@@ -53,27 +52,27 @@ eventBus.on('popup:closed', () => {
 const handleGlobalKeyboard = (event: KeyboardEvent) => {
   // Always emit the key event for popup components
   eventBus.emit('app:key', { key: event.key })
-  
+
   // Check if the user is typing in an input, textarea, or contenteditable element
   const target = event.target as HTMLElement
-  const isTyping = target.tagName === 'INPUT' || 
-                   target.tagName === 'TEXTAREA' || 
+  const isTyping = target.tagName === 'INPUT' ||
+                   target.tagName === 'TEXTAREA' ||
                    target.tagName === 'SELECT' ||
                    target.contentEditable === 'true' ||
                    target.closest('[contenteditable="true"]')
-  
+
   // Handle shortcuts based on context
   if (event.key === 'Escape' || event.key === 'e' || event.key === 's' || event.key === 'a') {
     // If user is typing in a form field, only allow Escape
     if (isTyping && event.key !== 'Escape') {
       return
     }
-    
+
     // If a popup is open, only allow Escape
     if (isPopupOpen.value && event.key !== 'Escape') {
       return
     }
-    
+
     // Prevent default behavior
     event.preventDefault()
     // Emit edit mode shortcut event
@@ -85,22 +84,26 @@ const handleGlobalKeyboard = (event: KeyboardEvent) => {
 onMounted(async () => {
   try {
     await initializeTranslations()
-    
+
+    // Initialize network monitoring in the global app store
+    const appStore = useAppStore()
+    appStore.initializeNetworkMonitoring()
+
     // Pre-load all cards if enabled in settings
     const { useCardStore } = await import('./stores/cards')
     const cardStore = useCardStore()
     const { currentLocale } = useI18n()
-    
+
     // Initialize offline support
     await cardStore.initializeOfflineSupport()
-    
+
     // Optionally pre-load all cards to improve performance
     const preloadCards = localStorage.getItem('tiko:cards:preload') === 'true'
     if (preloadCards) {
       console.log('[App] Pre-loading all cards...')
       await cardStore.loadAllCards(currentLocale.value)
     }
-    
+
     // Load PWA registration function if available
     try {
       const { registerSW } = await import('virtual:pwa-register')
@@ -113,7 +116,7 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
-  
+
   // Set up global keyboard listener for popup shortcuts
   document.addEventListener('keydown', handleGlobalKeyboard)
 })
@@ -130,7 +133,7 @@ const isAuthCallbackRoute = computed(() => {
 
 // Framework configuration - use computed to ensure translations are reactive
 const frameworkConfig = computed<FrameworkConfig>(() => {
-  // Safely access the yesno settings key
+  // Safely access the cards settings key
   const cardsSettingsKey = keys.value?.cards?.cardsSettings || 'cards.cardsSettings'
 
   return {

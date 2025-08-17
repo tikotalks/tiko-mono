@@ -1,42 +1,31 @@
 /**
- * Translation Initialization Service for Yes-No App
- * Handles loading translations from database on app startup
+ * Translation Initialization Service for Sequence App
  */
 
 import { useI18n } from '@tiko/ui';
 
-// Default locale - can be overridden by user preferences
 const DEFAULT_LOCALE = 'en-GB';
 
-/**
- * Get the user's preferred locale
- * Priority: localStorage > browser language > default
- */
 function getUserLocale(): string {
-  // Check localStorage for saved preference - try multiple keys
   const localeKeys = ['tiko:locale', 'tiko-language', 'tiko:settings'];
   
   for (const key of localeKeys) {
     const savedValue = localStorage.getItem(key);
     if (savedValue) {
       try {
-        // For tiko:settings, parse the JSON and extract language
         if (key === 'tiko:settings') {
           const settings = JSON.parse(savedValue);
           if (settings.language) {
             return settings.language;
           }
         } else {
-          // For direct locale values
           if (savedValue.startsWith('{') || savedValue.startsWith('"')) {
-            // Parse JSON value
             const parsedLocale = JSON.parse(savedValue);
             if (typeof parsedLocale === 'string') {
               return parsedLocale.replace(/"/g, '');
             }
             return parsedLocale;
           } else {
-            // Plain string value
             return savedValue;
           }
         }
@@ -46,7 +35,6 @@ function getUserLocale(): string {
     }
   }
 
-  // Check browser language
   const browserLang = navigator.language;
   if (browserLang) {
     return browserLang;
@@ -55,29 +43,18 @@ function getUserLocale(): string {
   return DEFAULT_LOCALE;
 }
 
-/**
- * Initialize the translation system
- * This should be called once on app startup
- */
 export async function initializeTranslations(): Promise<void> {
   try {
     console.log('Initializing translation system...');
     
-    // REMOVED: Database keys initialization - not needed for production apps
-    // This was loading ALL translation keys metadata which is only useful for admin tools
-    
-    // Get the i18n composable
     const { setLocale } = useI18n();
     
-    // Determine user locale
     const userLocale = getUserLocale();
     console.log(`Setting locale to: ${userLocale}`);
     
-    // Load translations for the user's locale
     await setLocale(userLocale);
     console.log(`Translations loaded for locale: ${userLocale}`);
     
-    // Listen for locale change events
     window.addEventListener('tiko-locale-change', async (event: CustomEvent) => {
       const newLocale = event.detail?.locale;
       if (newLocale) {
@@ -88,7 +65,6 @@ export async function initializeTranslations(): Promise<void> {
     
   } catch (error) {
     console.error('Failed to initialize translations:', error);
-    // Fallback to default locale on error
     try {
       const { setLocale } = useI18n();
       await setLocale(DEFAULT_LOCALE);

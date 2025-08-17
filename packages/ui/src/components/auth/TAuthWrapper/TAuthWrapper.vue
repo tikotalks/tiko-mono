@@ -4,7 +4,7 @@
       <img
         v-if="props.backgroundImage"
         :src="props.backgroundImage"
-        :alt="t(keys.common.backgroundImage)"
+        :alt="keys?.common?.backgroundImage ? t(keys.common.backgroundImage) : 'Background Image'"
         :class="bemm('image')"
       />
     </div>
@@ -163,7 +163,7 @@ const handleAppleSignIn = async () => {
     await authStore.signInWithApple();
   } catch (error) {
     authError.value =
-      error instanceof Error ? error.message : t(keys.auth.appleSignInFailed);
+      error instanceof Error ? error.message : t(keys?.auth?.appleSignInFailed || 'auth.appleSignInFailed');
   } finally {
     authLoading.value = false;
   }

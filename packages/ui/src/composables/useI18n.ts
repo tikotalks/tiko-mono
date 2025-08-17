@@ -1,12 +1,12 @@
 /**
- * Static i18n composable
+ * Lazy-loading i18n composable
  * 
- * This composable uses statically generated translation files for optimal
- * performance and eliminates runtime database dependencies.
+ * This composable uses lazy-loaded translation files for optimal
+ * performance and bundle size. Languages are loaded on demand.
  * 
  * Features:
- * - Static TypeScript files generated at build time
- * - No database queries at runtime
+ * - Lazy loading of language files
+ * - Automatic base/regional language merging
  * - TypeScript support with auto-completion
  * - Parameter interpolation
  * - Locale persistence and management
@@ -28,7 +28,8 @@
  */
 
 import { computed, ref, watch } from 'vue';
-import { translations as generatedTranslations, AVAILABLE_LANGUAGES as generatedLanguages } from '../i18n/generated/index';
+import { loadLanguageWithBase, getAvailableLanguages, preloadLanguage } from '../i18n/lazy-loader';
+import type { Translations } from '../i18n/generated/types';
 
 // Types
 interface TranslationParams {
@@ -41,12 +42,11 @@ interface I18nOptions {
   storageKey?: string
 }
 
-// Global state - initialize with imported translations
-let staticTranslations: Record<string, any> = generatedTranslations || {}
-let staticAvailableLanguages: string[] = generatedLanguages ? [...generatedLanguages] : []
-let staticInitialized = false
-let staticKeys: any = null // Cached keys structure
-let mergeInProgress = false // Prevent concurrent merging
+// Global state for loaded translations
+const loadedTranslations = ref<Record<string, Translations>>({})
+const isLoading = ref(false)
+const loadError = ref<string | null>(null)
+const keysCache = ref<Record<string, any>>({})
 
 // Storage key for persistence
 const LOCALE_STORAGE_KEY = 'tiko:locale'
@@ -55,91 +55,15 @@ const LOCALE_STORAGE_KEY = 'tiko:locale'
 const sharedCurrentLocale = ref<string>('en')
 const sharedIsReady = ref(false)
 
-// Global state for initialization tracking
-let globalEventListenersSetup = false
-let globalPollInterval: NodeJS.Timeout | null = null
-
-// Initialize static translations
-function initializeStaticMode(): void {
-  if (staticInitialized) return
-  
-  // Prevent concurrent initialization
-  if (mergeInProgress) {
-    // Wait for the other initialization to complete
-    let waitCount = 0;
-    while (mergeInProgress && waitCount < 50) {
-      waitCount++;
-      // Small sync delay - not ideal but prevents race conditions
-      const start = Date.now();
-      while (Date.now() - start < 10) {
-        // Busy wait for 10ms
-      }
-    }
-    return;
-  }
-  
-  mergeInProgress = true;
-
-  // Merge regional translations with base languages
-  console.log('🌍 Merging regional translations with base languages...')
-  
-  // Get all language codes
-  const allLocales = Object.keys(staticTranslations)
-  
-  // Process each locale
-  for (const locale of allLocales) {
-    // Skip if it's a base language (no hyphen)
-    if (!locale.includes('-')) continue
-    
-    // Get base language (e.g., 'de' from 'de-DE')
-    const baseLocale = locale.split('-')[0]
-    
-    // If base language exists, merge it with regional
-    if (staticTranslations[baseLocale]) {
-      console.log(`📚 Merging ${baseLocale} into ${locale}`)
-      const baseTranslations = staticTranslations[baseLocale]
-      const regionalTranslations = staticTranslations[locale]
-      
-      // Create merged translations (base + regional overrides)
-      staticTranslations[locale] = {
-        ...baseTranslations,
-        ...regionalTranslations
-      }
-      
-      console.log(`  - Base ${baseLocale} has ${Object.keys(baseTranslations).length} keys`)
-      console.log(`  - Regional ${locale} has ${Object.keys(regionalTranslations).length} overrides`)
-      console.log(`  - Merged ${locale} now has ${Object.keys(staticTranslations[locale]).length} keys`)
-    }
-  }
-
-  // Translations are already loaded via static import
-  console.log('🌍 Static translation mode initialized')
-  console.log('📚 Available languages:', staticAvailableLanguages)
-  console.log('📚 Loaded translations for locales:', Object.keys(staticTranslations))
-
-  staticInitialized = true
-  mergeInProgress = false
-  
-  // Build keys structure if not already built
-  if (!staticKeys) {
-    staticKeys = buildKeysStructure()
-  }
-}
+// Track initialization
+let isInitialized = false
 
 /**
- * Build keys structure from available translation keys
+ * Build keys structure from loaded translations
  * Creates a nested object where each leaf contains the full key path as a string
  */
-function buildKeysStructure(): any {
+function buildKeysStructure(translations: Translations): any {
   const keys: any = {}
-  
-  // Get all keys from the first available locale (they should all have the same keys)
-  const firstLocale = Object.keys(staticTranslations)[0]
-  if (!firstLocale || !staticTranslations[firstLocale]) {
-    return keys
-  }
-  
-  const translations = staticTranslations[firstLocale]
   
   // If translations are in flat format (e.g., "auth.welcomeToTiko": "...")
   if (typeof translations === 'object') {
@@ -168,6 +92,114 @@ function buildKeysStructure(): any {
 }
 
 /**
+ * Initialize locale on first use
+ */
+async function initializeLocale(options: I18nOptions): Promise<void> {
+  if (isInitialized) return
+  
+  isInitialized = true
+  const { persistLocale = true, storageKey = LOCALE_STORAGE_KEY, fallbackLocale = 'en' } = options
+  
+  // Get available languages
+  const availableLanguages = getAvailableLanguages()
+  
+  // Initialize locale from storage or browser
+  let initialLocale = 'en'
+  
+  if (persistLocale && typeof localStorage !== 'undefined') {
+    const stored = localStorage.getItem(storageKey)
+    
+    if (stored && availableLanguages.includes(stored)) {
+      initialLocale = stored
+    } else {
+      const browserLocale = getBrowserLocale()
+      if (browserLocale) {
+        initialLocale = browserLocale
+      }
+    }
+  }
+  
+  // Load initial locale
+  console.log(`[i18n] Initializing with locale: ${initialLocale}`)
+  await loadLocale(initialLocale)
+  
+  // Also load fallback locale if different
+  if (initialLocale !== fallbackLocale) {
+    console.log(`[i18n] Loading fallback locale: ${fallbackLocale}`)
+    await loadLocale(fallbackLocale)
+  }
+  
+  sharedCurrentLocale.value = initialLocale
+  sharedIsReady.value = true
+}
+
+/**
+ * Load a locale and update the cache
+ */
+async function loadLocale(locale: string): Promise<boolean> {
+  // Check if already loaded
+  if (loadedTranslations.value[locale]) {
+    console.log(`[i18n] Locale already loaded: ${locale}`)
+    return true
+  }
+  
+  // Check if locale is available
+  const availableLanguages = getAvailableLanguages()
+  if (!availableLanguages.includes(locale)) {
+    console.warn(`[i18n] Locale not available: ${locale}`)
+    return false
+  }
+  
+  isLoading.value = true
+  loadError.value = null
+  
+  try {
+    // Load language with base merging
+    const translations = await loadLanguageWithBase(locale)
+    
+    if (translations) {
+      loadedTranslations.value[locale] = translations
+      keysCache.value[locale] = buildKeysStructure(translations)
+      console.log(`[i18n] Successfully loaded locale: ${locale}`)
+      return true
+    } else {
+      loadError.value = `Failed to load locale: ${locale}`
+      return false
+    }
+  } catch (error) {
+    console.error(`[i18n] Error loading locale ${locale}:`, error)
+    loadError.value = error instanceof Error ? error.message : String(error)
+    return false
+  } finally {
+    isLoading.value = false
+  }
+}
+
+/**
+ * Find the best regional variant for a base language
+ */
+function findRegionalVariant(baseLocale: string): string | null {
+  const availableLanguages = getAvailableLanguages()
+  
+  // First try the doubled format (e.g., nl -> nl-NL, de -> de-DE)
+  const doubledLocale = `${baseLocale}-${baseLocale.toUpperCase()}`
+  if (availableLanguages.includes(doubledLocale)) {
+    return doubledLocale
+  }
+  
+  // If that doesn't exist, find the first variant that starts with the base locale
+  const variants = availableLanguages.filter(lang => 
+    lang.startsWith(`${baseLocale}-`)
+  )
+  
+  if (variants.length > 0) {
+    return variants[0]
+  }
+  
+  return null
+}
+
+/**
  * Create i18n instance (internal function)
  */
 function createI18nInstance(options: I18nOptions = {}) {
@@ -177,59 +209,14 @@ function createI18nInstance(options: I18nOptions = {}) {
     storageKey = LOCALE_STORAGE_KEY
   } = options
 
-  // Initialize only once globally, not per instance
-  if (!staticInitialized) {
-    initializeStaticMode()
-    sharedIsReady.value = true // Set ready after initialization
+  // Initialize on first use
+  if (!isInitialized) {
+    initializeLocale(options)
   }
 
-  // Use shared state instead of creating new refs
+  // Use shared state
   const currentLocale = sharedCurrentLocale
   const isReady = sharedIsReady
-
-  // Function to find the best regional variant for a base language
-  const findRegionalVariant = (baseLocale: string): string | null => {
-    // First try the doubled format (e.g., nl -> nl-NL, de -> de-DE)
-    const doubledLocale = `${baseLocale}-${baseLocale.toUpperCase()}`
-    if (staticAvailableLanguages.includes(doubledLocale)) {
-      return doubledLocale
-    }
-    
-    // If that doesn't exist, find the first variant that starts with the base locale
-    const variants = staticAvailableLanguages.filter(lang => 
-      lang.startsWith(`${baseLocale}-`)
-    )
-    
-    if (variants.length > 0) {
-      return variants[0]
-    }
-    
-    return null
-  }
-
-  // Initialize locale from storage or browser only on first call
-  if (currentLocale.value === 'en' && persistLocale && typeof localStorage !== 'undefined') {
-    const stored = localStorage.getItem(storageKey)
-    
-    let localeToUse = stored
-    
-    // If stored locale is a base language without region, find best regional variant
-    if (stored && !stored.includes('-')) {
-      const regionalVariant = findRegionalVariant(stored)
-      if (regionalVariant) {
-        localeToUse = regionalVariant
-      }
-    }
-    
-    if (localeToUse && staticAvailableLanguages.includes(localeToUse)) {
-      currentLocale.value = localeToUse
-    } else {
-      const browserLocale = getBrowserLocale()
-      if (browserLocale) {
-        currentLocale.value = browserLocale
-      }
-    }
-  }
 
   // Watch for locale changes and persist
   if (persistLocale) {
@@ -251,9 +238,14 @@ function createI18nInstance(options: I18nOptions = {}) {
             }
           }
           
-          if (newLocale && staticAvailableLanguages.includes(newLocale) && newLocale !== currentLocale.value) {
+          const availableLanguages = getAvailableLanguages()
+          if (newLocale && availableLanguages.includes(newLocale) && newLocale !== currentLocale.value) {
             console.log(`[i18n] External locale change detected: ${currentLocale.value} -> ${newLocale}`)
-            currentLocale.value = newLocale
+            loadLocale(newLocale).then(success => {
+              if (success) {
+                currentLocale.value = newLocale
+              }
+            })
           }
         }
       }
@@ -269,30 +261,19 @@ function createI18nInstance(options: I18nOptions = {}) {
           }
         }
         
-        if (newLocale && staticAvailableLanguages.includes(newLocale) && newLocale !== currentLocale.value) {
+        const availableLanguages = getAvailableLanguages()
+        if (newLocale && availableLanguages.includes(newLocale) && newLocale !== currentLocale.value) {
           console.log(`[i18n] Custom locale change detected: ${currentLocale.value} -> ${newLocale}`)
-          currentLocale.value = newLocale
-        }
-      }
-      
-      // Check for changes periodically as fallback
-      let pollInterval: NodeJS.Timeout | null = null
-      const pollForChanges = () => {
-        const stored = localStorage.getItem(storageKey)
-        if (stored && staticAvailableLanguages.includes(stored) && stored !== currentLocale.value) {
-          console.log(`[i18n] Polling detected locale change: ${currentLocale.value} -> ${stored}`)
-          currentLocale.value = stored
+          loadLocale(newLocale).then(success => {
+            if (success) {
+              currentLocale.value = newLocale
+            }
+          })
         }
       }
       
       window.addEventListener('storage', handleStorageChange)
       window.addEventListener('tiko-locale-change', handleCustomLocaleChange as EventListener)
-      
-      // Poll every 1 second as fallback
-      pollInterval = setInterval(pollForChanges, 1000)
-      
-      // Cleanup function would go here if we were in a component with onUnmounted
-      // But this is a composable that can be called multiple times
     }
   }
 
@@ -303,18 +284,8 @@ function createI18nInstance(options: I18nOptions = {}) {
     // Ensure key is a string
     const keyStr = typeof key === 'string' ? key : String(key);
 
-    // Debug first few translations
-    if (!t._debugged || keyStr.includes('cards') || keyStr.includes('common')) {
-      console.log(`[t] Translating "${keyStr}" for locale "${currentLocale.value}"`)
-      if (!t._debugged) {
-        console.log(`[t] staticTranslations keys:`, Object.keys(staticTranslations))
-        console.log(`[t] Does locale "${currentLocale.value}" exist in translations?`, !!staticTranslations[currentLocale.value])
-        t._debugged = true
-      }
-    }
-
     // Get translation
-    const translation = getStaticTranslation(keyStr, currentLocale.value)
+    const translation = getTranslation(keyStr, currentLocale.value, fallbackLocale)
     if (!translation) {
       console.warn(`Translation missing for key "${keyStr}" in locale "${currentLocale.value}"`)
       
@@ -337,7 +308,7 @@ function createI18nInstance(options: I18nOptions = {}) {
   /**
    * Set current locale
    */
-  const setLocale = (locale: string): void => {
+  const setLocale = async (locale: string): Promise<void> => {
     console.log(`[setLocale] Attempting to set locale to "${locale}"`)
     
     let localeToUse = locale
@@ -352,64 +323,87 @@ function createI18nInstance(options: I18nOptions = {}) {
     }
     
     // Check if locale exists
-    if (!staticAvailableLanguages.includes(localeToUse)) {
-      console.warn(`Invalid locale "${localeToUse}". Available locales:`, staticAvailableLanguages)
+    const availableLanguages = getAvailableLanguages()
+    if (!availableLanguages.includes(localeToUse)) {
+      console.warn(`Invalid locale "${localeToUse}". Available locales:`, availableLanguages)
       return
     }
     
-    console.log(`[setLocale] Setting currentLocale to "${localeToUse}"`)
-    currentLocale.value = localeToUse
+    // Load the locale if not already loaded
+    const success = await loadLocale(localeToUse)
+    if (success) {
+      console.log(`[setLocale] Setting currentLocale to "${localeToUse}"`)
+      currentLocale.value = localeToUse
+    } else {
+      console.error(`[setLocale] Failed to load locale "${localeToUse}"`)
+    }
   }
 
   /**
    * Get available locales
    */
   const availableLocales = computed(() => {
-    return [...staticAvailableLanguages]
+    return getAvailableLanguages()
   })
 
   /**
    * Check if a key exists
    */
   const hasKey = (key: string): boolean => {
-    return !!getStaticTranslation(key, currentLocale.value)
+    return !!getTranslation(key, currentLocale.value, fallbackLocale)
   }
 
   /**
    * Get translation keys structure
-   * Returns the static keys object that provides autocomplete support
+   * Returns the keys object that provides autocomplete support
    */
   const keys = computed(() => {
-    if (!staticKeys) {
-      // Initialize if not done yet
-      initializeStaticMode()
+    const locale = currentLocale.value
+    // Return a proxy that provides safe navigation for undefined keys
+    const actualKeys = keysCache.value[locale] || {}
+    
+    // If we have actual keys, return them
+    if (Object.keys(actualKeys).length > 0) {
+      return actualKeys
     }
-    return staticKeys
+    
+    // Otherwise return a proxy that safely handles undefined access
+    return new Proxy({}, {
+      get(target, prop) {
+        // Return another proxy for nested access
+        return new Proxy({}, {
+          get(target2, prop2) {
+            // Return the key string for leaf nodes
+            return `${String(prop)}.${String(prop2)}`
+          }
+        })
+      }
+    })
   })
 
   // Debug information for Vue DevTools
   const debugInfo = computed(() => ({
-    mode: 'static',
+    mode: 'lazy',
     currentLocale: currentLocale.value,
-    availableLocales: staticAvailableLanguages,
-    loadedTranslations: Object.keys(staticTranslations),
-    totalKeys: Object.keys(staticTranslations[currentLocale.value] || {}).length,
+    availableLocales: getAvailableLanguages(),
+    loadedTranslations: Object.keys(loadedTranslations.value),
+    totalKeys: Object.keys(loadedTranslations.value[currentLocale.value] || {}).length,
     fallbackLocale,
     isReady: isReady.value,
-    sampleKeys: Object.keys(staticTranslations[currentLocale.value] || {}).slice(0, 10),
-    initialized: staticInitialized
+    isLoading: isLoading.value,
+    loadError: loadError.value
   }))
 
   // Get all translations for current locale (for devtools inspection)
   const currentTranslations = computed(() => {
-    return staticTranslations[currentLocale.value] || {}
+    return loadedTranslations.value[currentLocale.value] || {}
   })
 
   // Get translation statistics
   const translationStats = computed(() => {
     const stats: Record<string, number> = {}
-    for (const locale of staticAvailableLanguages) {
-      stats[locale] = Object.keys(staticTranslations[locale] || {}).length
+    for (const locale of Object.keys(loadedTranslations.value)) {
+      stats[locale] = Object.keys(loadedTranslations.value[locale] || {}).length
     }
     return stats
   })
@@ -420,8 +414,8 @@ function createI18nInstance(options: I18nOptions = {}) {
     currentLocale: computed(() => currentLocale.value),
     setLocale,
     availableLocales,
-    loading: computed(() => !isReady.value),
-    error: ref(null),
+    loading: computed(() => isLoading.value),
+    error: loadError,
     isReady,
     hasKey,
     keys,
@@ -435,28 +429,18 @@ function createI18nInstance(options: I18nOptions = {}) {
       debugInfo,
       currentTranslations,
       translationStats,
-      staticTranslations: computed(() => staticTranslations),
-      staticKeys: computed(() => staticKeys)
+      loadedTranslations: computed(() => loadedTranslations.value),
+      keysCache: computed(() => keysCache.value)
     }
   };
 }
 
 /**
- * Get static translation from nested object using dot notation
+ * Get translation from loaded translations
  */
-function getStaticTranslation(key: string, locale: string): string | null {
-  // Log only the first translation attempt to see what's happening
-  if (!getStaticTranslation._logged) {
-    console.log(`[getStaticTranslation] First translation attempt:`)
-    console.log(`  - Key: "${key}"`)
-    console.log(`  - Locale: "${locale}"`)
-    console.log(`  - Available locales:`, Object.keys(staticTranslations))
-    console.log(`  - Locale exists?`, !!staticTranslations[locale])
-    getStaticTranslation._logged = true
-  }
-  
+function getTranslation(key: string, locale: string, fallbackLocale: string): string | null {
   // Try exact locale match first
-  const localeTranslations = staticTranslations[locale]
+  const localeTranslations = loadedTranslations.value[locale]
   if (localeTranslations) {
     const value = getTranslationValue(localeTranslations, key)
     if (value) return value
@@ -465,22 +449,23 @@ function getStaticTranslation(key: string, locale: string): string | null {
   // If not found and locale has a region (e.g., de-DE), try base language (e.g., de)
   if (locale.includes('-')) {
     const baseLocale = locale.split('-')[0]
-    const baseTranslations = staticTranslations[baseLocale]
+    const baseTranslations = loadedTranslations.value[baseLocale]
     if (baseTranslations) {
       const value = getTranslationValue(baseTranslations, key)
       if (value) return value
     }
   }
   
-  // Finally, fall back to English
-  const fallbackTranslations = staticTranslations['en']
-  if (fallbackTranslations) {
-    return getTranslationValue(fallbackTranslations, key)
+  // Finally, fall back to fallback locale (usually English)
+  if (locale !== fallbackLocale) {
+    const fallbackTranslations = loadedTranslations.value[fallbackLocale]
+    if (fallbackTranslations) {
+      return getTranslationValue(fallbackTranslations, key)
+    }
   }
   
   return null
 }
-getStaticTranslation._logged = false
 
 /**
  * Get translation value from either flat or nested object structure
@@ -525,37 +510,6 @@ function interpolateParams(text: string, params?: TranslationParams): string {
 }
 
 /**
- * Deep merge two translation objects
- * Regional translations override base translations
- */
-function mergeTranslations(base: any, regional: any): any {
-  // Start with a deep copy of base
-  const result = JSON.parse(JSON.stringify(base))
-  
-  // Apply regional overrides
-  const applyOverrides = (target: any, source: any, path: string[] = []) => {
-    for (const key in source) {
-      const currentPath = [...path, key]
-      
-      if (typeof source[key] === 'object' && source[key] !== null) {
-        // Ensure target has the nested structure
-        if (!target[key] || typeof target[key] !== 'object') {
-          target[key] = {}
-        }
-        // Recursively apply overrides
-        applyOverrides(target[key], source[key], currentPath)
-      } else {
-        // Apply the override (regional files now only contain actual overrides)
-        target[key] = source[key]
-      }
-    }
-  }
-  
-  applyOverrides(result, regional)
-  return result
-}
-
-/**
  * Get browser locale with fallback
  */
 function getBrowserLocale(): string | null {
@@ -565,7 +519,7 @@ function getBrowserLocale(): string | null {
   if (!browserLocale) return null
 
   // Try exact match first in available languages
-  const availableLanguages = staticAvailableLanguages.length > 0 ? staticAvailableLanguages : ['en', 'nl', 'fr']
+  const availableLanguages = getAvailableLanguages()
   
   if (availableLanguages.includes(browserLocale)) {
     return browserLocale
@@ -577,30 +531,34 @@ function getBrowserLocale(): string | null {
     return languageCode
   }
 
+  // Try to find a regional variant
+  const regionalVariant = findRegionalVariant(languageCode)
+  if (regionalVariant) {
+    return regionalVariant
+  }
+
   return null
 }
 
 /**
- * Static i18n composable
+ * Lazy-loading i18n composable
  */
 export function useI18n(options: I18nOptions = {}) {
-  // Just create the instance - Vue's reactivity will handle sharing state
   return createI18nInstance(options)
 }
 
 /**
- * Cleanup global event listeners (useful for testing)
+ * Cleanup global state (useful for testing)
  */
 export function cleanupI18n() {
-  if (globalPollInterval) {
-    clearInterval(globalPollInterval)
-    globalPollInterval = null
-  }
-  globalEventListenersSetup = false
   // Reset shared state
   sharedCurrentLocale.value = 'en'
   sharedIsReady.value = false
-  staticInitialized = false
+  isInitialized = false
+  loadedTranslations.value = {}
+  keysCache.value = {}
+  isLoading.value = false
+  loadError.value = null
 }
 
 /**

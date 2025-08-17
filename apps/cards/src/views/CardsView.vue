@@ -178,10 +178,10 @@ import {
   TColorPicker,
   TContextMenu,
   BaseColors,
-  useI18n,
   useParentMode,
   useTextToSpeech,
 } from '@tiko/ui';
+import { useI18n } from '@tiko/ui';
 import { useCardStore } from '../stores/cards';
 import CardsSettingsForm from '../components/CardsSettingsForm.vue';
 import CardGrid from '../components/CardGrid.vue';
@@ -738,8 +738,12 @@ const handleTileAction = async (tile: CardTile) => {
     // This ensures that if we're showing a translated card, we speak in that language
     // If we're showing the base card because no translation exists, we use the base locale
     const speakLocale = tile.effective_locale || tile.base_locale || currentLocale.value;
-    // Convert locale to language code (e.g., 'en-GB' -> 'en')
+    // Extract language code for metadata (e.g., 'nl-NL' -> 'nl')
     const speakLanguage = speakLocale.split('-')[0];
+    console.log(`[TTS] Speaking text in locale: ${speakLocale}, language code: ${speakLanguage}`);
+    
+    // Pass both the language code and the speech text
+    // The TTS service will handle adding language hints if needed
     await speak(tile.speech, { language: speakLanguage });
   }
 };
@@ -1443,6 +1447,22 @@ watch(() => parentMode.isUnlocked?.value, (isUnlocked) => {
   }
 });
 
+// Watch for locale changes and reload cards with new translations
+watch(() => currentLocale.value, async (newLocale, oldLocale) => {
+  if (newLocale !== oldLocale && newLocale) {
+    console.log('[CardsView] Locale changed from', oldLocale, 'to', newLocale, '- reloading cards...');
+    
+    // Clear the cache for the old locale to force fresh load
+    await yesNoStore.clearCacheForLocale(oldLocale);
+    
+    // Load all cards with new locale
+    await yesNoStore.loadAllCards(newLocale);
+    
+    // Reload current view with new translations
+    await loadCards();
+  }
+});
+
 // Initialize
 onMounted(async () => {
   console.log('[CardsView] Component mounted, loading cards...');
@@ -1459,6 +1479,11 @@ onMounted(async () => {
     }
 
     await yesNoStore.loadState();
+    
+    // Load ALL cards initially in single API call
+    console.log('[CardsView] Loading all cards on app initialization...');
+    await yesNoStore.loadAllCards(currentLocale.value);
+    console.log('[CardsView] All cards loaded into cache');
 
     // Listen for edit mode keyboard shortcuts
     eventBus.on('app:editModeShortcut', handleEditModeShortcut);

@@ -6,6 +6,7 @@ export * from './stores/auth'
 export * from './stores/app'
 export { useFavoritesStore } from './stores/favorites.store'
 export { useCollectionsStore, type Collection } from './stores/collections.store'
+export { useEditModeStore } from './stores/editMode'
 
 // Auth API (excluding types that are already exported from services)
 export { authAPI } from './lib/auth-api'
@@ -13,6 +14,7 @@ export { authAPI } from './lib/auth-api'
 // Composables
 export { useSSO } from './composables/useSSO'
 export type { SSOOptions } from './composables/useSSO'
+export { useEditMode } from './composables/useEditMode'
 export { useSpeak } from './composables/useSpeak'
 export type { SpeakOptions } from './composables/useSpeak'
 export { useItems } from './composables/useItems'

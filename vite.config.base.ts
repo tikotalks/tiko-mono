@@ -10,16 +10,41 @@ import { i18nWorkerPlugin } from './scripts/vite-plugin-i18n-worker.js'
 import { copyFontsPlugin } from './scripts/vite-plugin-copy-fonts.js'
 import CircularDependencyPlugin from 'vite-plugin-circular-dependency'
 
-export function createViteConfig(dirname, port = 3000, pwaConfig = null, appName = null, i18nConfig = null) {
+export const createViteConfig = (args: {
+  dirname: string,
+  port:number,
+  pwaConfig: {
+    name: string,
+    short_name: string,
+    description: string,
+    theme_color: string,
+    background_color: string,
+    display: string,
+    orientation: string,
+    icons?: {
+      src: string,
+      sizes: string,
+      type: string
+    }[]
+  },
+  appName: string,
+  i18nConfig:{
+    excludeSections?: string[],
+  }
+  }) => {
+
+   const { dirname, port, pwaConfig, appName, i18nConfig } = args
+
+
   let buildInfo = null;
-  
+
   // Inject build info before build
   if (process.env.NODE_ENV === 'production') {
     try {
       execSync(`node ${path.resolve(__dirname, 'scripts/inject-build-info.js')} ${dirname}`, {
         stdio: 'inherit'
       })
-      
+
       // Read the generated build info for the plugin
       const buildInfoPath = path.join(dirname, 'public', 'build-info.json');
       if (fs.existsSync(buildInfoPath)) {
@@ -29,7 +54,7 @@ export function createViteConfig(dirname, port = 3000, pwaConfig = null, appName
       console.warn('Failed to inject build info:', error.message)
     }
   }
-  
+
   const plugins = [
     vue(),
     CircularDependencyPlugin({
@@ -39,7 +64,7 @@ export function createViteConfig(dirname, port = 3000, pwaConfig = null, appName
     }),
     copyFontsPlugin()
   ]
-  
+
   // Add i18n generation plugin ONLY for production/CI builds
   // In development, use manually generated translations via pnpm i18n
   if (appName && (process.env.NODE_ENV === 'production' || process.env.CI === 'true')) {
@@ -48,16 +73,16 @@ export function createViteConfig(dirname, port = 3000, pwaConfig = null, appName
       environment: 'production',
       ...(i18nConfig || {})
     }
-    
+
     // Always use worker-based plugin for production/CI
     plugins.push(i18nWorkerPlugin(i18nOptions))
   }
-  
+
   // Add build info plugin if we have build information
   if (buildInfo) {
     plugins.push(viteBuildInfo(buildInfo))
   }
-  
+
   if (pwaConfig) {
     // Enhance PWA config with better caching and update strategies
     const enhancedPwaConfig = {
@@ -159,11 +184,11 @@ export function createViteConfig(dirname, port = 3000, pwaConfig = null, appName
       __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false
     }
   }
-  
+
   // Only set envDir for local development, not CI
   if (!process.env.CI && !process.env.GITHUB_ACTIONS) {
     config.envDir = path.resolve(dirname, '../..')
   }
-  
+
   return defineConfig(config)
 }

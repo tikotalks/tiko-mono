@@ -43,8 +43,7 @@
 <script setup lang="ts">
 import { ref, computed, inject } from 'vue';
 import { useBemm } from 'bemm';
-import { useI18n } from '@tiko/ui';
-import { TButton, TButtonGroup } from '@tiko/ui';
+import { TButton, TButtonGroup, useI18n } from '@tiko/ui';
 import CardForm from './CardForm.vue';
 import BulkCardCreator from './BulkCardCreator.vue';
 import { CardTile } from './CardTile/CardTile.model';
