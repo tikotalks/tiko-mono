@@ -35,7 +35,7 @@
     <button
       v-if="showSubmit"
       type="button"
-      :class="bemm('button', { submit: true })"
+      :class="bemm('button',['', 'submit'])"
       :disabled="disabled || disableSubmit"
       @click="handleSubmitClick"
     >

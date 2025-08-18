@@ -48,7 +48,7 @@
         @click="handleAppSettings"
         :aria-label="t('sequence.sequenceSettings')"
       />
-      
+
       <!-- Admin button (only visible to admins) -->
       <TButton
         v-if="isAdmin"
@@ -174,12 +174,14 @@ import {
   BaseColors,
   useParentMode,
   useTextToSpeech,
+  type PopupAction,
+  popupRefs,
 } from '@tiko/ui';
 import { useI18n } from '@tiko/ui';
 import { useSequenceStore } from '../stores/sequence';
 import SequenceSettingsForm from '../components/SequenceSettingsForm.vue';
 import { TCardGrid } from '@tiko/ui';
-import SequenceEditDialog from '../components/SequenceEditDialog.vue';
+import SequenceForm from '../components/SequenceForm.vue';
 import GroupSelector from '../components/GroupSelector.vue';
 import AddSequenceModal from '../components/AddSequenceModal.vue';
 import SequencePlay from '../components/SequencePlay.vue';
@@ -187,7 +189,6 @@ import type { TCardTile } from '@tiko/ui';
 import { useEditMode } from '../composables/useEditMode';
 import { useSpeak, useEventBus, useAuthStore } from '@tiko/core';
 import { sequenceService } from '../services/sequence.service';
-import { adminItemsService } from '../services/admin-items.service';
 import { ItemTranslationService } from '../services/item-translation.service';
 import type { ItemTranslation } from '../models/ItemTranslation.model';
 import { Icons } from 'open-icon';
@@ -210,9 +211,9 @@ const isParentModeUnlocked = computed(() => {
 const isAdmin = computed(() => {
   const user = authStore.user;
   if (!user) return false;
-  
+
   // Check for admin role - adjust based on your auth system
-  return user.email?.endsWith('@admin.tiko.app') || 
+  return user.email?.endsWith('@admin.tiko.app') ||
          user.user_metadata?.role === 'admin' ||
          false;
 });
@@ -246,8 +247,8 @@ const breadcrumbs = ref<Array<{ id?: string; title: string }>>([]);
 const selectionMode = ref(false);
 const selectedTileIds = ref<Set<string>>(new Set());
 
-// Loading state
-const isLoading = ref(false);
+// Loading state - use store's loading state instead of local state
+const isLoading = computed(() => sequenceStore.isLoadingSequence);
 
 // Play mode state
 const isPlayMode = ref(false);
@@ -332,11 +333,11 @@ const loadSequence = async () => {
       // The store already handles caching, so we just need to trigger loading for children
       // This ensures the data is in the cache for the computed properties to use
       const sequenceTiles = savedSequence.filter(card => card.type === 'sequence' && !card.id.startsWith('empty-'));
-      
+
       if (sequenceTiles.length > 0) {
         // Load children data in parallel - the store will cache it
         await Promise.all(
-          sequenceTiles.map(card => 
+          sequenceTiles.map(card =>
             sequenceStore.loadSequence(card.id, currentLocale.value).catch(err => {
               console.error(`[SequenceView] Failed to load children for ${card.id}:`, err);
               return [];
@@ -487,134 +488,183 @@ const getCardContextMenu = (card: SequenceTile, index: number) => {
   return items;
 };
 
+// Handle save sequence logic
+const handleSaveSequence = async (formData: any, card: SequenceTile, isNewCard: boolean, index: number) => {
+  console.log('[SequenceView] Saving sequence with formData:', formData);
+  try {
+    if (isNewCard) {
+      // Create new sequence at the specified position
+      const sequenceId = await sequenceService.createSequence(formData, currentGroupId.value, index);
+      if (sequenceId) {
+        // Optimistically add to cache
+        const newSequence: SequenceTile = {
+          id: sequenceId,
+          title: formData.title,
+          color: formData.color,
+          image: formData.image?.url || null,
+          type: 'sequence' as any,
+          index: index,
+          speech: '',
+          icon: 'square',
+          parentId: currentGroupId.value
+        };
+
+        await sequenceStore.addCardToCache(newSequence, currentGroupId.value, currentLocale.value);
+
+        // Update local sequence array immediately
+        const updatedSequence = [...sequence.value];
+        const emptyCardIndex = updatedSequence.findIndex(c => c.id.startsWith('empty-') && c.index === index);
+        if (emptyCardIndex >= 0) {
+          updatedSequence[emptyCardIndex] = newSequence;
+        } else {
+          updatedSequence.push(newSequence);
+        }
+        sequence.value = updatedSequence;
+
+        // If the new sequence has items, update the children map
+        if (formData.items && formData.items.length > 0) {
+          const childrenTiles: SequenceTile[] = formData.items.map((item: any, idx: number) => ({
+            id: `temp-${Date.now()}-${idx}`, // These will get real IDs after save
+            title: item.title,
+            color: item.color,
+            image: item.image?.url || '',
+            speech: item.speak || '',
+            type: 'sequence-item' as any,
+            icon: 'square',
+            index: item.orderIndex,
+            parentId: sequenceId
+          }));
+
+          tileChildrenMap.value.set(sequenceId, childrenTiles);
+          tilesWithChildren.value.add(sequenceId);
+        }
+
+        popupService.close();
+      }
+    } else {
+      // Update existing sequence
+      await sequenceService.updateSequence(card.id, formData);
+
+      // Optimistically update cache and UI
+      const updatedSequence: SequenceTile = {
+        ...card,
+        title: formData.title,
+        color: formData.color,
+        image: formData.image?.url || null
+      };
+
+      await sequenceStore.updateCardInCache(updatedSequence, currentGroupId.value, currentLocale.value);
+
+      // Update local sequence array immediately
+      const updatedSequenceArray = [...sequence.value];
+      const existingIndex = updatedSequenceArray.findIndex(c => c.id === card.id);
+      if (existingIndex >= 0) {
+        updatedSequenceArray[existingIndex] = updatedSequence;
+        sequence.value = updatedSequenceArray;
+      }
+
+      // Update the children map with the new items
+      if (formData.items && formData.items.length > 0) {
+        const childrenTiles: SequenceTile[] = formData.items.map((item: any, idx: number) => ({
+          id: item.id || `temp-${Date.now()}-${idx}`,
+          title: item.title,
+          color: item.color,
+          image: item.image?.url || '',
+          speech: item.speak || '',
+          type: 'sequence-item' as any,
+          icon: 'square',
+          index: item.orderIndex,
+          parentId: card.id
+        }));
+
+        // Replace the entire cache for this sequence's children
+        await sequenceStore.replaceCacheForParent(childrenTiles, card.id, currentLocale.value);
+      } else if (formData.items && formData.items.length === 0) {
+        // Clear the cache for this sequence's children
+        await sequenceStore.replaceCacheForParent([], card.id, currentLocale.value);
+      }
+
+      popupService.close();
+
+      // Force reload to ensure images are displayed correctly
+      await loadSequence();
+    }
+  } catch (error) {
+    console.error('Failed to save sequence:', error);
+    // TODO: Show error notification
+  }
+};
+
 // Open the card edit form
 const openCardEditForm = async (card: SequenceTile, index: number) => {
   const isNewCard = card.id.startsWith('empty-');
 
-  // Load translations if editing existing card
-  let translations: ItemTranslation[] = [];
+  // Load translations if editing existing card (for potential future use)
   if (!isNewCard) {
     try {
-      translations = await ItemTranslationService.getTranslations(card.id);
+      await ItemTranslationService.getTranslations(card.id);
     } catch (error) {
       console.error('Failed to load translations:', error);
     }
   }
 
+  const actions: PopupAction[] = [
+    {
+      id: 'cancel',
+      label: t('common.cancel'),
+      type: 'outline',
+      color: 'secondary',
+      action: () => popupService.close()
+    },
+    {
+      id: 'save',
+      label: isNewCard ? t('common.create') : t('common.save'),
+      type: 'default',
+      color: 'primary',
+      action: async () => {
+        // Get the current popup instance
+        const currentPopups = popupService.popups.value;
+        if (currentPopups.length > 0) {
+          const popupInstance = currentPopups[currentPopups.length - 1];
+          const formComponent = popupRefs[popupInstance.id];
+
+          // Add small delay to ensure component is fully mounted
+          await new Promise(resolve => setTimeout(resolve, 100));
+
+          if (formComponent) {
+            // Access the exposed properties directly
+            const isValid = formComponent.isValid;
+            const formData = formComponent.formData;
+            
+            if (isValid && formData) {
+              await handleSaveSequence(formData, card, isNewCard, index);
+            } else {
+              console.warn('Form is not valid or formData is missing', {
+                formComponent,
+                isValid,
+                formData,
+                hasIsValid: 'isValid' in formComponent,
+                hasFormData: 'formData' in formComponent
+              });
+            }
+          } else {
+            console.warn('Form component not found in popupRefs');
+          }
+        }
+      }
+    }
+  ];
+
   popupService.open({
-    component: SequenceEditDialog,
+    component: SequenceForm,
     title: isNewCard ? t('sequence.createSequence') : t('sequence.editSequence'),
+    actions,
     props: {
       sequence: card,
       isNew: isNewCard,
       isOwner: isNewCard || card.ownerId === authStore.user?.id || card.user_id === authStore.user?.id,
-      onClose: () => popupService.close(),
-      onSave: async (formData: any) => {
-        console.log('[SequenceView] Saving sequence with formData:', formData);
-        try {
-          if (isNewCard) {
-            // Create new sequence at the specified position
-            const sequenceId = await sequenceService.createSequence(formData, currentGroupId.value, index);
-            if (sequenceId) {
-              // Optimistically add to cache
-              const newSequence: SequenceTile = {
-                id: sequenceId,
-                title: formData.title,
-                color: formData.color,
-                image: formData.image?.url || null,
-                type: 'sequence' as any,
-                index: index,
-                speech: '',
-                icon: 'square',
-                parentId: currentGroupId.value
-              };
-
-              await sequenceStore.addCardToCache(newSequence, currentGroupId.value, currentLocale.value);
-
-              // Update local sequence array immediately
-              const updatedSequence = [...sequence.value];
-              const emptyCardIndex = updatedSequence.findIndex(c => c.id.startsWith('empty-') && c.index === index);
-              if (emptyCardIndex >= 0) {
-                updatedSequence[emptyCardIndex] = newSequence;
-              } else {
-                updatedSequence.push(newSequence);
-              }
-              sequence.value = updatedSequence;
-
-              // If the new sequence has items, update the children map
-              if (formData.items && formData.items.length > 0) {
-                const childrenTiles: SequenceTile[] = formData.items.map((item: any, idx: number) => ({
-                  id: `temp-${Date.now()}-${idx}`, // These will get real IDs after save
-                  title: item.title,
-                  color: item.color,
-                  image: item.image?.url || '',
-                  speech: item.speak || '',
-                  type: 'sequence-item' as any,
-                  icon: 'square',
-                  index: item.orderIndex,
-                  parentId: sequenceId
-                }));
-                
-                tileChildrenMap.value.set(sequenceId, childrenTiles);
-                tilesWithChildren.value.add(sequenceId);
-              }
-
-              popupService.close();
-            }
-          } else {
-            // Update existing sequence
-            await sequenceService.updateSequence(card.id, formData);
-
-            // Optimistically update cache and UI
-            const updatedSequence: SequenceTile = {
-              ...card,
-              title: formData.title,
-              color: formData.color,
-              image: formData.image?.url || null
-            };
-
-            await sequenceStore.updateCardInCache(updatedSequence, currentGroupId.value, currentLocale.value);
-
-            // Update local sequence array immediately
-            const updatedSequenceArray = [...sequence.value];
-            const existingIndex = updatedSequenceArray.findIndex(c => c.id === card.id);
-            if (existingIndex >= 0) {
-              updatedSequenceArray[existingIndex] = updatedSequence;
-              sequence.value = updatedSequenceArray;
-            }
-
-            // Update the children map with the new items
-            if (formData.items && formData.items.length > 0) {
-              const childrenTiles: SequenceTile[] = formData.items.map((item: any, idx: number) => ({
-                id: item.id || `temp-${Date.now()}-${idx}`,
-                title: item.title,
-                color: item.color,
-                image: item.image?.url || '',
-                speech: item.speak || '',
-                type: 'sequence-item' as any,
-                icon: 'square',
-                index: item.orderIndex,
-                parentId: card.id
-              }));
-              
-              // Replace the entire cache for this sequence's children
-              await sequenceStore.replaceCacheForParent(childrenTiles, card.id, currentLocale.value);
-            } else if (formData.items && formData.items.length === 0) {
-              // Clear the cache for this sequence's children
-              await sequenceStore.replaceCacheForParent([], card.id, currentLocale.value);
-            }
-
-            popupService.close();
-
-            // Force reload to ensure images are displayed correctly
-            await loadSequence();
-          }
-        } catch (error) {
-          console.error('Failed to save sequence:', error);
-          // TODO: Show error notification
-        }
-      },
-    },
+      showVisibilityToggle: true
+    }
   });
 };
 
@@ -1402,27 +1452,27 @@ watch(() => route.params.cardId as string | undefined, async (cardId) => {
 
   await buildBreadcrumbs(cardId);
   await loadSequence();
-  
+
   // If we're at the home screen (no cardId), ensure children are loaded for sequences
   if (!cardId) {
     // Give a small delay then check if all sequences have their children loaded
     setTimeout(async () => {
       const sequences = sequence.value.filter(card => card.type === 'sequence' && !card.id.startsWith('empty-'));
       const unloadedSequences = sequences.filter(seq => !tilesWithChildren.value.has(seq.id));
-      
+
       if (unloadedSequences.length > 0) {
         console.log(`[SequenceView] Retrying to load children for ${unloadedSequences.length} sequences`);
-        
+
         // Retry loading children for sequences that don't have them
-        const retryPromises = unloadedSequences.map(seq => 
+        const retryPromises = unloadedSequences.map(seq =>
           sequenceStore.loadSequence(seq.id, currentLocale.value).catch(err => {
             console.error(`[SequenceView] Failed to load children for ${seq.id} on retry:`, err);
             return [];
           })
         );
-        
+
         await Promise.all(retryPromises);
-        
+
         // Force a re-render by updating the sequence array
         sequence.value = [...sequence.value];
       }

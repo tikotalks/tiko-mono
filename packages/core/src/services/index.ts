@@ -35,6 +35,7 @@ export {
 export * from './gpt-translation.service'
 export * from './collections.service'
 export * from './user-media.service'
+export * from './assets.service'
 // Export everything except ContentField and Language from content.service to avoid conflicts
 export { 
   type ContentProject,

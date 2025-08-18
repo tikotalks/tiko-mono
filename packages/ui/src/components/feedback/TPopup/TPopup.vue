@@ -1,83 +1,60 @@
 <!-- Popup.vue -->
 <template>
 	<Teleport to="body">
-		<div
-			v-for="popup in popups"
-			:id="popup.id"
-			:key="popup.id"
-			:class="[
-				bemm(''),
-				bemm('', popup.config.position),
-				bemm('', popup.config.hasBackground ? 'has-background' : ''),
-				bemm('', `stack-${popup.id}`),
-				bemm('', popup.state.closing ? 'closing' : ''),
-			]"
-		>
-			<div
-				v-if="popup.config.hasBackground"
-				:class="bemm('background')"
-				@click="popupService.closePopup({ id: popup.id })"
-			></div>
+		<div v-for="popup in popups" :id="popup.id" :key="popup.id" :class="[
+			bemm(''),
+			bemm('', popup.config.position),
+			bemm('', popup.config.hasBackground ? 'has-background' : ''),
+			bemm('', `stack-${popup.id}`),
+			bemm('', popup.state.closing ? 'closing' : ''),
+		]">
+			<div v-if="popup.config.hasBackground" :class="bemm('background')"
+				@click="popupService.closePopup({ id: popup.id })"></div>
 			<div :class="bemm('wrapper')">
 				<div :class="bemm('container')">
-					<header
-						v-if="hasSlot('header') || popup.title"
-						:class="bemm('header')"
-					>
-						<h4
-							v-if="popup.title"
-							:class="bemm('header-title')"
-						>
+					<header v-if="hasSlot('header') || popup.title" :class="bemm('header')">
+						<h4 v-if="popup.title" :class="bemm('header-title')">
 							{{ popup.title }}
 						</h4>
-						<p
-							v-if="popup.description"
-							:class="bemm('header-description')"
-						>
+						<p v-if="popup.description" :class="bemm('header-description')">
 							{{ popup.description }}
 						</p>
 						<slot name="header"></slot>
-						<TButton
-							v-if="popup.config.canClose"
-							:class="bemm('close')"
-							:icon="Icons.MULTIPLY_M"
-							size="small"
-							@click="popupService.close({ id: popup.id })"
-						/>
-						<component
-							:is="popup.header"
-							v-if="popup.header"
-						/>
+						<TButton v-if="popup.config.canClose" :class="bemm('close')" :icon="Icons.MULTIPLY_M" size="small"
+							@click="popupService.close({ id: popup.id })" />
+						<component :is="popup.header" v-if="popup.header" />
 					</header>
 
 					<div :class="bemm('content')">
-						<component
-							v-bind="popup.props"
-							:is="popup.component"
-							:key="popup.id"
+						<component v-bind="popup.props" :is="popup.component" :key="popup.id"
 							:ref="(el: ComponentPublicInstance | null) => (popupRefs[popup.id] = el)"
-							@close="popupService.close({ id: popup.id })"
-						>
-							<template
-								v-for="(slot, name) in popup.slots"
-								:key="name"
-								#[name]
-							>
+							@close="popupService.close({ id: popup.id })">
+							<template v-for="(slot, name) in popup.slots" :key="name" #[name]>
 								<component :is="slot" />
 							</template>
 						</component>
 					</div>
-					<footer
-						v-if="hasSlot('footer') || popup.footer"
-						:class="bemm('footer')"
-					>
+					<footer v-if="hasSlot('footer') || popup.footer || popup.actions?.length" :class="bemm('footer')">
 						<slot name="footer"></slot>
-						<component
-							:is="popup.footer"
-							v-if="popup.footer"
-							v-bind="popup.props"
-							@close="popupService.closePopup({ id: popup.id })"
-						/>
+						<component :is="popup.footer" v-if="popup.footer" v-bind="popup.props"
+							@close="popupService.closePopup({ id: popup.id })" />
+
+						<!-- Render actions if provided -->
+						<div v-if="popup.actions?.length && !popup.footer" :class="bemm('actions')">
+							<TButton
+								v-for="action in popup.actions"
+								:key="action.id"
+								:type="action.type || 'default'"
+								:color="action.color || 'primary'"
+								:icon="action.icon"
+								:disabled="action.disabled"
+								:loading="action.loading"
+								@click="action.action"
+								:class="bemm('action')"
+							>
+								{{ action.label }}
+							</TButton>
+						</div>
 					</footer>
 				</div>
 			</div>
@@ -89,10 +66,8 @@
 import { useBemm } from 'bemm';
 import { popupService, popupRefs } from './TPopup.service';
 import { Icons } from 'open-icon';
-import { useEventBus } from '@tiko/core';
-import type { TikoEvents } from '@tiko/core';
+import { useEventBus, type TikoEvents } from '@tiko/core';
 import TButton from '../../ui-elements/TButton/TButton.vue';
-import { ButtonSize } from '../TButton/TButton.model';
 import { ComponentPublicInstance, computed, useSlots, onMounted, onUnmounted } from 'vue';
 
 const bemm = useBemm('popup');
@@ -109,7 +84,7 @@ const handleKeyPress = (data: { key: string }) => {
 	}
 };
 
-const handlePopupOpen = (data: { component: any; id?: string; [key: string]: any }) => {
+const handlePopupOpen = (data: { component: any; id?: string;[key: string]: any }) => {
 	if (data.id) {
 		popupService.showPopup({ component: data.component, ...data });
 	}
@@ -153,6 +128,7 @@ const hasSlot = (name: string) => {
 
 <style lang="scss" scoped>
 @use "../../../styles/global.scss" as g;
+
 .popup {
 	$b: &;
 	position: fixed;
@@ -212,7 +188,7 @@ const hasSlot = (name: string) => {
 		border-radius: var(--popup-border-radius, var(--border-radius));
 		height: fit-content;
 		color: var(--popup-container-color, var(--color-foreground));
-		max-width: min(960px,calc(100vw - var(--spacing)));
+		max-width: min(960px, calc(100vw - var(--spacing)));
 		width: fit-content;
 		animation: containerComeIn 0.3s var(--bezier) forwards;
 		transform: scale(0.75) translateY(var(--spacing));
@@ -238,7 +214,7 @@ const hasSlot = (name: string) => {
 		position: absolute;
 		z-index: 5;
 		margin: 0;
-		top: calc(var(--popup-padding,var(--space)));
+		top: calc(var(--popup-padding, var(--space)));
 		right: calc(var(--popup-padding, var(--space)));
 	}
 
@@ -283,6 +259,7 @@ const hasSlot = (name: string) => {
 		font-weight: 600;
 		color: var(--color-tertiary);
 	}
+
 	&__footer {
 		padding: var(--popup-padding, var(--space));
 
@@ -294,7 +271,7 @@ const hasSlot = (name: string) => {
 		background-color: color-mix(in srgb, var(--color-tertiary), var(--color-background) 90%);
 		z-index: 10;
 		position: sticky;
-		bottom: 0;
+		bottom: 1em;
 
 		display: flex;
 		gap: var(--space);
@@ -306,10 +283,32 @@ const hasSlot = (name: string) => {
 		}
 	}
 
+	&__actions {
+		display: flex;
+		gap: var(--space-s);
+		align-items: center;
+		justify-content: flex-end;
+		width: 100%;
+
+		@media (max-width: 480px) {
+			flex-direction: column-reverse;
+			gap: var(--space-xs);
+
+			.popup__action {
+				width: 100%;
+			}
+		}
+	}
+
+	&__action {
+		// Individual action button styles if needed
+	}
+
 	&--closing {
 		.popup__container {
 			animation: containerGoAway 1s ease-in-out forwards;
 		}
+
 		.popup__background {
 			pointer-events: none;
 			animation: backgroundFadeOut 0.5s ease-in-out forwards;
@@ -328,12 +327,14 @@ const hasSlot = (name: string) => {
 		opacity: 0;
 	}
 }
+
 @keyframes containerComeIn {
 	to {
 		transform: scale(1) translateY(0);
 		opacity: 1;
 	}
 }
+
 @keyframes containerGoAway {
 	to {
 		transform: scale(0.75) translateY(100%);

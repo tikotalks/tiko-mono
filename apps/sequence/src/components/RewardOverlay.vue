@@ -1,43 +1,47 @@
 <template>
   <div :class="bemm()">
-    <div :class="bemm('backdrop')" @click="$emit('close')" />
+    <!-- Animation Layer -->
+    <div :class="bemm('animation')" v-if="!animationCompleted">
+      <RocketAnimation @completed="onAnimationCompleted" />
+    </div>
 
-    <div :class="bemm('content')">
+    <!-- Content overlay (shows after animation) -->
+    <div :class="bemm('content')" :style="{ opacity: showContent ? 1 : 0 }">
+      <div>
+        <h2 :class="bemm('title')">{{ t('sequence.greatJob') }}</h2>
+        <p :class="bemm('message')">{{ t('sequence.completedSequence') }}</p>
 
-      <div :class="bemm('animation')">
-        ROCKET
+        <div :class="bemm('actions')">
+          <TButton
+            color="primary"
+            size="large"
+            :icon="Icons.ARROW_RELOAD_DOWN_UP"
+            @click="$emit('restart')"
+          >
+            {{ t('sequence.playAgain') }}
+          </TButton>
+
+          <TButton
+            color="secondary"
+            type="outline"
+            size="large"
+            :icon="Icons.ARROW_THICK_LEFT"
+            @click="$emit('close')"
+          >
+            {{ t('common.done') }}
+          </TButton>
         </div>
-
-
-      <h2 :class="bemm('title')">{{ t('sequence.greatJob') }}</h2>
-      <p :class="bemm('message')">{{ t('sequence.completedSequence') }}</p>
-
-      <div :class="bemm('actions')">
-        <TButton
-          color="primary"
-          size="large"
-          @click="$emit('restart')"
-        >
-          {{ t('sequence.playAgain') }}
-        </TButton>
-
-        <TButton
-          color="secondary"
-          type="outline"
-          size="large"
-          @click="$emit('close')"
-        >
-          {{ t('common.done') }}
-        </TButton>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { useBemm } from 'bemm';
+import { onMounted, ref } from 'vue'
+import { useBemm } from 'bemm'
 import { TButton, useI18n } from '@tiko/ui'
+import RocketAnimation from './animations/RocketAnimation.vue'
+import { Icons } from 'open-icon';
 
 const emit = defineEmits<{
   restart: []
@@ -47,10 +51,23 @@ const emit = defineEmits<{
 const bemm = useBemm('reward-overlay')
 const { t } = useI18n()
 
-onMounted(() => {
-  // TODO: Play reward sound when audio service is available
+// State
+const animationCompleted = ref(false)
+const showContent = ref(false)
 
-  // Trigger confetti or celebration animation
+// Animation type (for future extensibility)
+const animationType = ref<'rocket'>('rocket')
+
+const onAnimationCompleted = () => {
+  animationCompleted.value = true
+  // Show content after a brief delay
+  setTimeout(() => {
+    showContent.value = true
+  }, 500)
+}
+
+onMounted(() => {
+  // Trigger haptic feedback when overlay appears
   if ('vibrate' in navigator) {
     navigator.vibrate([100, 50, 100, 50, 200])
   }
@@ -62,76 +79,33 @@ onMounted(() => {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: fadeIn 0.3s ease-out;
 
-  &__backdrop {
-    position: absolute;
+  &__animation {
+    position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.7);
+    z-index: 1001;
   }
 
   &__content {
-    position: relative;
-    background: var(--color-surface);
-    border-radius: 2rem;
-    padding: 3rem 2rem;
-    text-align: center;
-    max-width: 90%;
-    width: 400px;
-    animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
+    position: fixed;
+    inset: 0;
+    z-index: 1002;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    transition: opacity 0.5s ease-in-out;
 
-  &__animation {
-    position: relative;
-    height: 120px;
-    margin-bottom: 2rem;
-  }
-
-  &__star {
-    position: absolute;
-    animation: twinkle 2s infinite;
-
-    &--large {
-      font-size: 4rem;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      animation-delay: 0s;
-    }
-
-    &--medium {
-      font-size: 2rem;
-
-      &.reward-overlay__star--top-left {
-        top: 0;
-        left: 20%;
-        animation-delay: 0.2s;
-      }
-
-      &.reward-overlay__star--top-right {
-        top: 0;
-        right: 20%;
-        animation-delay: 0.4s;
-      }
-    }
-
-    &--small {
-      font-size: 1.5rem;
-
-      &.reward-overlay__star--bottom-left {
-        bottom: 0;
-        left: 10%;
-        animation-delay: 0.6s;
-      }
-
-      &.reward-overlay__star--bottom-right {
-        bottom: 0;
-        right: 10%;
-        animation-delay: 0.8s;
-      }
+    > div {
+      background: var(--color-surface);
+      border-radius: 2rem;
+      padding: 3rem 2rem;
+      text-align: center;
+      max-width: 90%;
+      width: 400px;
+      animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
   }
 
@@ -155,15 +129,6 @@ onMounted(() => {
   }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 @keyframes scaleIn {
   from {
     opacity: 0;
@@ -172,17 +137,6 @@ onMounted(() => {
   to {
     opacity: 1;
     transform: scale(1);
-  }
-}
-
-@keyframes twinkle {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(1.2) rotate(180deg);
   }
 }
 </style>

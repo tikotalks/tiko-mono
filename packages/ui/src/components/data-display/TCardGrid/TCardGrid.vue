@@ -125,7 +125,7 @@ const GRID_COLUMNS = {
   M: 6,
   S: 4,
   XS: 4,
-  XXS: 2,
+  XXS: 3,
 } as const;
 
 // Layout spacing constants

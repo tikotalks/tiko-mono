@@ -1,50 +1,81 @@
 <template>
-  <div :class="bemm('', ['', size])">
-    <div :class="bemm('grid')">
-      <button v-for="color in colors" :key="color" :class="bemm('color', ['', modelValue === color ? 'selected' : ''])"
-        :style="{ backgroundColor: `var(--color-${color})`, color: `var(--color-${color}-text)` }"
-        :aria-label="`Select ${color} color`" :aria-pressed="modelValue === color" type="button"
-        @click="selectColor(color)">
-        <TIcon v-if="modelValue === color" :class="bemm('icon')" :name="Icons.CHECK_FAT" size="small" />
-      </button>
-    </div>
-  </div>
+  <InputBase
+    v-model="modelValue"
+    :block="block"
+    :label="label"
+    :disabled="disabled"
+    :inline="inline"
+    :size="size"
+    :description="description"
+    @change="$emit('change', $event)"
+    @touched="$emit('touched', $event)"
+  >
+    <template #control>
+      <div :class="bemm('grid')">
+        <button
+          v-for="color in colors"
+          :key="color"
+          :class="bemm('color', ['', modelValue === color ? 'selected' : ''])"
+          :style="{ backgroundColor: `var(--color-${color})`, color: `var(--color-${color}-text)` }"
+          :aria-label="`Select ${color} color`"
+          :aria-pressed="modelValue === color"
+          type="button"
+          :disabled="disabled"
+          @click="selectColor(color)"
+        >
+          <TIcon v-if="modelValue === color" :class="bemm('icon')" :name="Icons.CHECK_FAT" size="small" />
+        </button>
+      </div>
+    </template>
+  </InputBase>
 </template>
 
 <script setup lang="ts">
 import { useBemm } from 'bemm';
+import InputBase from '../TForm/InputBase.vue';
 import TIcon from '../../ui-elements/TIcon/TIcon.vue';
 import { AllColors, BaseColors, Size } from '../../../types';
 import { Icons } from 'open-icon';
+import type { TColorPickerProps } from './TColorPicker.model';
 
-const bemm = useBemm('color-picker');
+const modelValue = defineModel<string>()
 
-const props = withDefaults(defineProps<{
-  modelValue?: string;
-  colors?: string[];
-  size?: Size
-}>(), {
-  modelValue: '',
+const props = withDefaults(defineProps<TColorPickerProps>(), {
+  block: 'color-picker',
   colors: () => Object.values(AllColors) as string[],
-  size: Size.MEDIUM
+  size: Size.MEDIUM,
+  label: '',
+  inline: false,
+  disabled: false,
+  description: ''
 });
 
-
 const emit = defineEmits<{
-  'update:modelValue': [value: string];
-}>();
+  change: [value: string]
+  touched: [event: Event]
+}>()
+
+const bemm = useBemm(props.block);
 
 // Use provided colors or default to BaseColors
 const colors = props.colors || Object.values(BaseColors);
 
 const selectColor = (color: string) => {
-  emit('update:modelValue', color);
+  if (!props.disabled) {
+    modelValue.value = color;
+    emit('change', color);
+  }
 };
 </script>
 
 <style lang="scss">
+@use '../TForm/Form.scss' as form;
+
 .color-picker {
-  --color-size: calc(2em * var(--color-scale, 1));
+  --color-size: calc(2em * var(--sizing, 1));
+
+  @include form.inputBase();
+  @include form.inputColorPicker();
 
   &--x-small {
     --color-scale: 0.66;

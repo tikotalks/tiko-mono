@@ -1,38 +1,42 @@
 <template>
-  <div class="sequence-settings-form">
-    <div class="settings-group">
-      <h3 class="settings-title">{{ t('sequence.gameSettings') }}</h3>
-      
-      <div class="setting-item">
-        <TInputSwitch
+  <div :class="bemm()">
+    <div :class="bemm('group')">
+      <h3 :class="bemm('title')">{{ t('sequence.gameSettings') }}</h3>
+
+      <div :class="bemm('item')">
+        <TInputCheckbox
           v-model="form.autoSpeak"
           :label="t('sequence.autoSpeak')"
+          :class="bemm('checkbox')"
         />
-        <p class="setting-description">{{ t('sequence.autoSpeakDescription') }}</p>
+        <p :class="bemm('description')">{{ t('sequence.autoSpeakDescription') }}</p>
       </div>
-      
-      <div class="setting-item">
-        <TInputSwitch
+
+      <div :class="bemm('item')">
+        <TInputCheckbox
           v-model="form.showHints"
           :label="t('sequence.showHints')"
+          :class="bemm('checkbox')"
         />
-        <p class="setting-description">{{ t('sequence.showHintsDescription') }}</p>
+        <p :class="bemm('description')">{{ t('sequence.showHintsDescription') }}</p>
       </div>
-      
-      <div class="setting-item">
-        <TInputSwitch
+
+      <div :class="bemm('item')">
+        <TInputCheckbox
           v-model="form.hapticFeedback"
           :label="t('sequence.hapticFeedback')"
+          :class="bemm('checkbox')"
         />
-        <p class="setting-description">{{ t('sequence.hapticFeedbackDescription') }}</p>
+        <p :class="bemm('description')">{{ t('sequence.hapticFeedbackDescription') }}</p>
       </div>
-      
-      <div class="setting-item">
-        <TInputSwitch
+
+      <div :class="bemm('item')">
+        <TInputCheckbox
           v-model="form.showCuratedItems"
           :label="t('sequence.showCuratedItems')"
+          :class="bemm('checkbox')"
         />
-        <p class="setting-description">{{ t('sequence.showCuratedItemsDescription') }}</p>
+        <p :class="bemm('description')">{{ t('sequence.showCuratedItemsDescription') }}</p>
       </div>
     </div>
   </div>
@@ -40,7 +44,8 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { TInputSwitch, useI18n } from '@tiko/ui'
+import { TInputCheckbox, TInputSwitch, useI18n } from '@tiko/ui'
+import { useBemm } from 'bemm'
 
 interface SequenceSettings {
   autoSpeak: boolean
@@ -55,6 +60,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const bemm = useBemm('sequence-settings-form')
 
 const form = ref<SequenceSettings>({
   autoSpeak: props.settings?.autoSpeak ?? true,
@@ -75,36 +81,93 @@ watch(form, () => {
 }, { deep: true })
 </script>
 
-<style scoped>
+<style lang="scss">
 .sequence-settings-form {
-  padding: 1rem;
-}
+  padding: var(--space-l);
+  max-width: 600px;
+  margin: 0 auto;
 
-.settings-group {
-  background: var(--color-surface);
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-}
+  &__group {
+    background: var(--color-surface);
+    border-radius: var(--border-radius-l);
+    padding: var(--space-xl);
+    box-shadow: var(--shadow-subtle);
+    border: 1px solid var(--color-border-subtle);
+  }
 
-.settings-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin: 0 0 1.5rem;
-  color: var(--color-text);
-}
+  &__title {
+    font-size: var(--font-size-l);
+    font-weight: var(--font-weight-semibold);
+    margin: 0 0 var(--space-l) 0;
+    color: var(--color-text-primary);
+    letter-spacing: var(--letter-spacing-tight);
+  }
 
-.setting-item {
-  margin-bottom: 1.5rem;
-}
+  &__item {
+    margin-bottom: var(--space-l);
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
 
-.setting-item:last-child {
-  margin-bottom: 0;
-}
+  &__checkbox {
+    // The checkbox component already has proper styling
+    // This is here for any additional customization if needed
+  }
 
-.setting-description {
-  margin: 0.5rem 0 0;
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
-  padding-left: 3rem;
+  &__description {
+    font-size: var(--font-size-s);
+    line-height: var(--line-height-relaxed);
+    color: var(--color-text-secondary);
+    margin: var(--space-xs) 0 0 calc(var(--space-m) + var(--space-l));
+    opacity: 0.8;
+    transition: opacity var(--transition-fast);
+
+    // Add hover effect on parent item to highlight description
+    .sequence-settings-form__item:hover & {
+      opacity: 1;
+    }
+  }
+
+  // Add responsive adjustments
+  @media (max-width: 600px) {
+    padding: var(--space-m);
+
+    &__group {
+      padding: var(--space-l);
+      border-radius: var(--border-radius-m);
+    }
+
+    &__title {
+      font-size: var(--font-size-m);
+      margin-bottom: var(--space-m);
+    }
+
+    &__item {
+      margin-bottom: var(--space-m);
+    }
+
+    &__description {
+      margin-left: calc(var(--space-m) + var(--space-s));
+      font-size: var(--font-size-xs);
+    }
+  }
+
+  // Dark mode adjustments
+  @media (prefers-color-scheme: dark) {
+    &__group {
+      background: var(--color-surface-dark);
+      border-color: var(--color-border-dark);
+    }
+
+    &__description {
+      opacity: 0.7;
+      
+      .sequence-settings-form__item:hover & {
+        opacity: 0.9;
+      }
+    }
+  }
 }
 </style>

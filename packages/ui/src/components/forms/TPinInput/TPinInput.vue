@@ -152,7 +152,7 @@ defineExpose({
   &__dot {
     width: var(--space-xl);
     height: var(--space-xl);
-    border: 2px solid var(--color-accent);
+    border: 2px solid color-mix(in srgb, var(--color-foreground), transparent 75%);
     border-radius: var(--border-radius);
     display: flex;
     align-items: center;
@@ -174,13 +174,13 @@ defineExpose({
     }
 
     &--filled {
-      border-color: var(--color-primary);
+      border-color: var(--color-foreground);
 
       &:not(:has(.pin-input__value)) {
         &::before {
           content: '•';
           font-size: 1.5em;
-          color: var(--color-primary);
+          color: var(--color-foreground);
           position: relative;
           z-index: 1;
         }
@@ -204,7 +204,7 @@ defineExpose({
   &__value {
     position: relative;
     z-index: 1;
-    color: var(--color-primary);
+    color: var(--color-foreground);
   }
 
   &__input {

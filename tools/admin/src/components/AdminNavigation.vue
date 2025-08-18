@@ -250,6 +250,14 @@ const navigationItems = computed<NavigationItem[]>(() => [
     ],
   },
   {
+    name: 'assets',
+    to: { name: 'Assets' },
+    icon: Icons.FILE,
+    label: t('admin.navigation.assets'),
+    active: isOpen('assets'),
+    action: () => toggleOpen('assets'),
+  },
+  {
     name: 'users',
     to: { name: 'Users' },
     icon: Icons.USER_GROUP,
@@ -340,6 +348,21 @@ const navigationItems = computed<NavigationItem[]>(() => [
         to: { name: 'admin-content-items' },
         icon: Icons.FOLDER,
         label: t('admin.navigation.content.items'),
+      },
+    ],
+  },
+  {
+    name: 'items',
+    icon: Icons.GRID_SQUARES,
+    label: t('admin.navigation.items.title'),
+    active: isOpen('items'),
+    action: () => toggleOpen('items'),
+    items: [
+      {
+        name: 'public-items',
+        to: { name: 'PublicItems' },
+        icon: Icons.SPARKLE,
+        label: t('admin.navigation.items.publicItems'),
       },
     ],
   },

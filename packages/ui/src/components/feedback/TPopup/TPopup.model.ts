@@ -8,10 +8,22 @@ export const PopupPosition = {
 
 export type PopupPosition = (typeof PopupPosition)[keyof typeof PopupPosition];
 
+export interface PopupAction {
+	id: string;
+	label: string;
+	icon?: string;
+	type?: 'default' | 'outline' | 'ghost';
+	color?: 'primary' | 'secondary' | 'success' | 'error' | 'warning';
+	disabled?: boolean;
+	loading?: boolean;
+	action: () => void;
+}
+
 export interface PopupOptions {
 	component: Component | Slot<any> | undefined;
 	footer?: Component;
 	header?: Component;
+	actions?: PopupAction[];
 	props?: Record<string, any>;
 	onClose?: () => void;
 	onCallback?: (data: Object) => void;
@@ -35,6 +47,7 @@ export interface PopupInstance {
 	component: Component;
 	footer?: Component;
 	header?: Component;
+	actions?: PopupAction[];
 	title: string;
 	description: string;
 	props: Record<string, any>;

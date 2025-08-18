@@ -27,9 +27,24 @@
     <!-- Image Container -->
     <div :class="bemm('image-container')">
       <!-- Empty State -->
-      <div v-if="!hasImages" :class="bemm('placeholder')">
+      <div v-if="!hasMedia" :class="bemm('placeholder')">
         <TIcon :name="emptyIcon || Icons.IMAGE" size="large" />
       </div>
+
+      <!-- Audio Player for Audio Files -->
+      <template v-else-if="isAudioFile">
+        <div :class="bemm('audio-player')">
+          <TIcon :name="Icons.MUSIC" size="large" :class="bemm('audio-icon')" />
+          <audio
+            v-if="isVisible"
+            :src="media?.original_url"
+            :class="bemm('audio')"
+            controls
+            preload="metadata"
+            @click.stop
+          />
+        </div>
+      </template>
 
       <!-- Single Image -->
       <template v-else-if="displayImages.length === 1">
@@ -117,17 +132,32 @@ const isVisible = ref(false);
 const gridLazy = inject<any>('gridLazy', null);
 
 // Computed
+const media = computed(() => props.media);
+
 const displayImages = computed(() => {
   if (props.images && props.images.length > 0) {
     return props.images;
   }
-  if (props.media) {
+  if (props.media && !isAudioFile.value) {
     return [props.media];
   }
   return [];
 });
 
 const hasImages = computed(() => displayImages.value.length > 0);
+
+const hasMedia = computed(() => hasImages.value || isAudioFile.value);
+
+const isAudioFile = computed(() => {
+  if (!props.media) return false;
+  const mimeType = props.media.type || '';
+  const filename = props.media.original_filename || '';
+  return mimeType.startsWith('audio/') || 
+         filename.toLowerCase().endsWith('.mp3') ||
+         filename.toLowerCase().endsWith('.wav') ||
+         filename.toLowerCase().endsWith('.ogg') ||
+         filename.toLowerCase().endsWith('.m4a');
+});
 
 const displayTitle = computed(() => {
   if (props.title) return props.title;
@@ -313,6 +343,59 @@ onUnmounted(() => {
           transform: rotate(-10deg) scale(1);
         }
       }
+    }
+  }
+
+  &__audio-player {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-s);
+    background: linear-gradient(135deg, var(--color-primary-50) 0%, var(--color-primary-100) 100%);
+    padding: var(--space-s);
+  }
+
+  &__audio-icon {
+    color: var(--color-primary);
+    opacity: 0.7;
+  }
+
+  &__audio {
+    width: 100%;
+    max-width: 280px;
+    height: 40px;
+    
+    &:focus {
+      outline: none;
+    }
+    
+    // Style the audio controls
+    &::-webkit-media-controls-panel {
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: var(--border-radius);
+    }
+    
+    &::-webkit-media-controls-play-button,
+    &::-webkit-media-controls-pause-button {
+      background-color: var(--color-primary);
+      border-radius: 50%;
+    }
+    
+    &::-webkit-media-controls-timeline {
+      background-color: var(--color-primary-100);
+      border-radius: var(--border-radius);
+    }
+    
+    &::-webkit-media-controls-current-time-display,
+    &::-webkit-media-controls-time-remaining-display {
+      color: var(--color-foreground);
+      font-size: 0.75rem;
     }
   }
 

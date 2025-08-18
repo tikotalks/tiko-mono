@@ -47,6 +47,8 @@
           <dl>
             <dt>{{ t('admin.media.filename') }}</dt>
             <dd>{{ fileName(media.filename) }}</dd>
+            <dt>{{ t('admin.media.id') }}</dt>
+            <dd>{{ fileName(media.id) }}</dd>
             <dt>{{ t('admin.media.size') }}</dt>
             <dd>{{ formatBytes(media.file_size) }}</dd>
 

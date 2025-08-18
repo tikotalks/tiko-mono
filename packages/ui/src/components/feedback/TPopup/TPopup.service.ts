@@ -84,6 +84,7 @@ const usePopupService = () => {
 			component: options.component ? markRaw(options.component) : markRaw(PopupSlot),
 			footer: options.footer ? markRaw(options.footer) : undefined,
 			header: options.header ? markRaw(options.header) : undefined,
+			actions: options.actions,
 			props: wrappedProps,
 			title: options.title || '',
 			description: options.description || '',

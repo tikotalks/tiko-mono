@@ -1,0 +1,29 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "assets-upload"
+main = "src/index.ts"
+compatibility_date = "2024-01-15"
+compatibility_flags = ["nodejs_compat"]
+
+# Production routes - will be deployed to assets.tikoapi.org
+# Commented out until domain is configured
+# routes = [
+#   { pattern = "assets.tikoapi.org/*", zone_name = "tikoapi.org" }
+# ]
+
+# R2 bucket binding for assets
+[[r2_buckets]]
+binding = "ASSETS_R2_BUCKET"
+bucket_name = "tiko-assets"
+
+# Environment variables (secrets)
+[vars]
+# These should be set via wrangler secret put
+# SUPABASE_URL = ""
+# SUPABASE_SERVICE_KEY = ""
+
+# Workers.dev subdomain (for testing before custom domain is ready)
+workers_dev = true
+
+# For local development
+[env.development]
+routes = []

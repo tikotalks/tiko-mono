@@ -1,0 +1,19 @@
+{
+  "name": "assets-upload-worker",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker for asset uploads to R2 bucket",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.7"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240129.0",
+    "wrangler": "^3.28.2",
+    "typescript": "^5.3.3"
+  }
+}

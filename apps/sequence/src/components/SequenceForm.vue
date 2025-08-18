@@ -2,77 +2,22 @@
   <div :class="bemm()">
     <!-- Sequence metadata -->
     <div :class="bemm('section')">
-      <h3 :class="bemm('section-title')">{{ t('sequence.sequenceInfo') }}</h3>
-      
-      <!-- Title input -->
-      <div :class="bemm('field')">
-        <label :class="bemm('label')">{{ t('common.title') }}</label>
-        <TInput
-          v-model="form.title"
-          :placeholder="t('sequence.enterSequenceTitle')"
-          :class="bemm('input')"
-        />
-      </div>
 
-      <!-- Color picker -->
-      <div :class="bemm('field')">
-        <label :class="bemm('label')">{{ t('common.color') }}</label>
-        <TColorPicker
-          v-model="form.color"
-          :colors="availableColors"
-        />
-      </div>
-
-      <!-- Image selector -->
-      <div :class="bemm('field')">
-        <label :class="bemm('label')">{{ t('common.image') }}</label>
-        <div 
-          v-if="form.image?.url" 
-          :class="bemm('image-preview')" 
-          :style="`--current-color: var(--color-${form.color})`"
-          @click="openSequenceImageSelector"
-        >
-          <img :src="form.image.url" :alt="form.image.alt || form.title" />
-          <div :class="bemm('image-actions')">
-            <TButton
-              :icon="Icons.IMAGE"
-              size="small"
-              type="outline"
-              color="primary"
-              @click.stop="openSequenceImageSelector"
-            />
-            <TButton
-              :icon="Icons.TRASH"
-              size="small"
-              type="ghost"
-              color="danger"
-              @click.stop="form.image = null"
-            />
-          </div>
-        </div>
-        <div v-else :class="bemm('image-placeholder')" @click="openSequenceImageSelector">
-          <TIcon :name="Icons.IMAGE" size="large" />
-          <span>{{ t('sequence.uploadSequenceImage') }}</span>
-        </div>
-      </div>
+      <TFormGroup>
+        <TInputText :inline="true" :label="t('common.title')" v-model="form.title"
+          :placeholder="t('sequence.enterSequenceTitle')" :class="bemm('input')" />
+        <TColorPicker :inline="true"  :label="t('common.color')" v-model="form.color" :colors="availableColors" />
+        <TImageInput :inline="true"  :label="t('common.image')" v-model="form.image" :color="form.color"
+          :placeholder="t('sequence.uploadSequenceImage')" :title="t('sequence.selectSequenceImage')" />
+      </TFormGroup>
 
       <!-- Visibility toggle -->
       <div :class="bemm('field')" v-if="showVisibilityToggle && (props.isOwner !== false)">
         <label :class="bemm('label')">{{ t('sequence.visibility') }}</label>
         <div :class="bemm('visibility-options')">
           <label :class="bemm('checkbox-label')">
-            <input
-              type="checkbox"
-              v-model="form.isPublic"
-              :class="bemm('checkbox')"
-            />
-            <span>{{ t('sequence.makePublic') }}</span>
-            <TIcon 
-              name="info" 
-              size="small" 
-              :title="t('sequence.publicDescription')"
-              :class="bemm('info-icon')"
-            />
+            <TInputCheckbox v-model="form.isPublic" :label="t('sequence.makePublic')" :class="bemm('checkbox')" />
+            <TIcon :name="Icons.INFO_M" :title="t('sequence.publicDescription')" :class="bemm('info-icon')" />
           </label>
           <p v-if="form.isPublic" :class="bemm('visibility-note')">
             {{ t('sequence.publicNote') }}
@@ -89,34 +34,19 @@
     <div :class="bemm('section')">
       <div :class="bemm('section-header')">
         <h3 :class="bemm('section-title')">{{ t('sequence.sequenceItems') }}</h3>
-        <TButton
-          :icon="Icons.ADD"
-          size="small"
-          @click="addItem"
-        >
+        <TButton :icon="Icons.ADD" size="small" @click="addItem">
           {{ t('sequence.addItem') }}
         </TButton>
       </div>
 
       <!-- Draggable items list -->
-      <div 
-        :class="bemm('items')"
-        @dragover.prevent
-        @drop="handleDrop"
-      >
+      <div :class="bemm('items')" @dragover.prevent @drop="handleDrop">
         <TransitionGroup name="sequence-item">
-          <div
-            v-for="(item, index) in form.items"
-            :key="item.id"
-            :class="[
-              bemm('item'),
-              { [bemm('item', 'dragging')]: draggedIndex === index }
-            ]"
-            :draggable="true"
-            @dragstart="handleDragStart(index, $event)"
-            @dragend="handleDragEnd"
-            @dragenter="handleDragEnter(index)"
-          >
+          <div v-for="(item, index) in form.items" :key="item.id" :class="bemm('item', ['',
+            draggedIndex === index ? 'dragging' : '',
+            dragOverIndex === index ? 'drag-over' : ''
+          ])" :draggable="true" @dragstart="handleDragStart(index, $event)" @dragend="handleDragEnd"
+            @dragenter="handleDragEnter(index)">
             <!-- Drag handle -->
             <div :class="bemm('item-handle')">
               <TIcon :name="Icons.DRAG" size="small" />
@@ -126,91 +56,59 @@
             <!-- Item content -->
             <div :class="bemm('item-content')">
               <!-- Title -->
-              <TInput
-                v-model="item.title"
-                :placeholder="t('sequence.itemTitle')"
-                :class="bemm('item-input')"
-              />
+              <TInputText v-model="item.title" :placeholder="t('sequence.itemTitle')" :class="bemm('item-input')" />
 
               <!-- Color -->
-              <TColorPickerPopup
-                v-model="item.color"
-                :colors="availableColors"
-                size="small"
-              />
+              <TColorPickerPopup v-model="item.color" :colors="availableColors" size="small" />
 
               <!-- Image selector -->
-              <div 
-                v-if="item.image?.url" 
-                :class="bemm('item-image')" 
-                :style="`--current-color: var(--color-${item.color})`"
-                @click="openItemImageSelector(index)"
-              >
-                <img :src="item.image.url" :alt="item.image.alt || item.title" />
-              </div>
-              <div v-else :class="bemm('item-image-placeholder')" @click="openItemImageSelector(index)">
-                <TIcon :name="Icons.IMAGE" size="small" />
-              </div>
+              <TImageInput v-model="item.image" :color="item.color" :title="t('sequence.selectItemImage')" small />
 
               <!-- Speak text -->
-              <TInput
-                v-model="item.speak"
-                :placeholder="t('sequence.speakText')"
-                :class="bemm('item-input', ['speak'])"
-              />
+              <TInputText v-model="item.speak" :placeholder="t('sequence.speakText')"
+                :class="bemm('item-input', ['speak'])" />
             </div>
 
             <!-- Delete button -->
-            <TButton
-              :icon="Icons.TRASH"
-              type="ghost"
-              size="small"
-              color="danger"
-              @click="removeItem(index)"
-              :aria-label="t('common.delete')"
-            />
+            <TButton :icon="Icons.TRASH" :color="Colors.ERROR" type="ghost" size="small" @click="removeItem(index)"
+              :aria-label="t('common.delete')" />
           </div>
         </TransitionGroup>
 
         <!-- Empty state -->
         <div v-if="form.items.length === 0" :class="bemm('empty')">
           <p>{{ t('sequence.noItemsYet') }}</p>
-          <TButton
-            :icon="Icons.ADD"
-            @click="addItem"
-          >
+          <TButton :icon="Icons.ADD" @click="addItem">
             {{ t('sequence.addFirstItem') }}
           </TButton>
         </div>
       </div>
     </div>
 
-    <!-- Preview button -->
-    <div :class="bemm('actions')">
-      <TButton
-        type="outline"
-        @click="$emit('preview')"
-      >
-        {{ t('common.preview') }}
-      </TButton>
-    </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, inject } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useBemm } from 'bemm'
-import { 
-  TInput, 
-  TButton, 
-  TIcon, 
+import {
+  TButton,
+  TIcon,
   TColorPicker,
   TColorPickerPopup,
-  TMediaSelector,
+  TImageInput,
   useI18n,
-  BaseColors
+  BaseColors,
+  TInputText,
+  TInputCheckbox,
+  type TCardTile,
+  TFormGroup,
+  Colors
 } from '@tiko/ui'
 import { Icons } from 'open-icon'
+import { useSequenceStore } from '../stores/sequence'
+import { useAuthStore } from '@tiko/core'
 
 interface SequenceItem {
   id: string
@@ -231,9 +129,12 @@ interface SequenceForm {
 }
 
 const props = defineProps<{
-  initialData?: Partial<SequenceForm>
+  sequence?: TCardTile | null
+  isNew?: boolean
+  isOwner?: boolean
   showVisibilityToggle?: boolean
-  isOwner?: boolean // Whether current user owns this item
+  onClose?: () => void
+  onSave?: (data: SequenceForm) => void
 }>()
 
 const emit = defineEmits<{
@@ -242,8 +143,11 @@ const emit = defineEmits<{
 }>()
 
 const bemm = useBemm('sequence-form')
-const { t } = useI18n()
-const popupService = inject<any>('popupService')
+const { t, currentLocale } = useI18n()
+
+// Get store and auth
+const sequenceStore = useSequenceStore()
+const authStore = useAuthStore()
 
 // Available colors
 const availableColors = Object.values(BaseColors)
@@ -258,23 +162,68 @@ const form = ref<SequenceForm>({
   isCurated: false
 })
 
-// Watch for initialData changes and update form
-watch(() => props.initialData, (newData) => {
-  if (newData) {
-    console.log('[SequenceForm] Received initial data:', newData)
-    console.log('[SequenceForm] Initial data items:', newData.items)
+// Load sequence data when editing
+watch(() => props.sequence, async (newSequence) => {
+  if (!newSequence) {
     form.value = {
-      title: newData.title || '',
-      color: newData.color || BaseColors.BLUE,
-      image: newData.image || null,
-      items: newData.items || [],
-      isPublic: newData.isPublic || false,
-      isCurated: newData.isCurated || false
+      title: '',
+      color: BaseColors.BLUE,
+      image: null,
+      items: [],
+      isPublic: false,
+      isCurated: false
     }
-    console.log('[SequenceForm] Updated form:', form.value)
-    console.log('[SequenceForm] Form items array:', form.value.items)
+    return
   }
-}, { immediate: true, deep: true })
+
+  if (props.isNew) {
+    form.value = {
+      title: newSequence.title || '',
+      color: newSequence.color || BaseColors.BLUE,
+      image: newSequence.image ? { url: newSequence.image, alt: newSequence.title } : null,
+      items: [],
+      isPublic: false,
+      isCurated: false
+    }
+  } else {
+    // Load existing sequence items
+    try {
+      console.log(`[SequenceForm] Loading items for sequence: ${newSequence.id}`)
+      const items = await sequenceStore.loadSequence(newSequence.id, currentLocale.value)
+      console.log(`[SequenceForm] Loaded ${items.length} items:`, items)
+
+      const formattedItems = items.map((item, index) => ({
+        id: item.id,
+        title: item.title,
+        color: item.color || BaseColors.BLUE,
+        image: item.image ? { url: item.image, alt: item.title } : null,
+        speak: item.speech || '',
+        orderIndex: item.index || index
+      }))
+
+      form.value = {
+        title: newSequence.title,
+        color: newSequence.color || BaseColors.BLUE,
+        image: newSequence.image ? { url: newSequence.image, alt: newSequence.title } : null,
+        items: formattedItems,
+        isPublic: newSequence.isPublic || false,
+        isCurated: newSequence.isCurated || false
+      }
+
+      console.log(`[SequenceForm] Set form data:`, form.value)
+    } catch (error) {
+      console.error('Failed to load sequence items:', error)
+      form.value = {
+        title: newSequence.title,
+        color: newSequence.color || BaseColors.BLUE,
+        image: null,
+        items: [],
+        isPublic: newSequence.isPublic || false,
+        isCurated: newSequence.isCurated || false
+      }
+    }
+  }
+}, { immediate: true })
 
 // Drag state
 const draggedIndex = ref<number | null>(null)
@@ -324,82 +273,55 @@ const handleDragEnter = (index: number) => {
 
 const handleDrop = (event: DragEvent) => {
   event.preventDefault()
-  
+
   if (draggedIndex.value !== null && dragOverIndex.value !== null) {
     const draggedItem = form.value.items[draggedIndex.value]
     const items = [...form.value.items]
-    
+
     // Remove dragged item
     items.splice(draggedIndex.value, 1)
-    
+
     // Insert at new position
-    const insertIndex = dragOverIndex.value > draggedIndex.value 
-      ? dragOverIndex.value - 1 
+    const insertIndex = dragOverIndex.value > draggedIndex.value
+      ? dragOverIndex.value - 1
       : dragOverIndex.value
     items.splice(insertIndex, 0, draggedItem)
-    
+
     // Update order indices
     items.forEach((item, i) => {
       item.orderIndex = i
     })
-    
+
     form.value.items = items
   }
-  
+
   handleDragEnd()
 }
 
-// Open image selector for sequence
-const openSequenceImageSelector = () => {
-  popupService.open({
-    component: TMediaSelector,
-    title: t('sequence.selectSequenceImage'),
-    props: {
-      multiple: false,
-      selectedIds: form.value.image?.url ? [form.value.image.url] : [],
-      onConfirm: (selectedItems: any[]) => {
-        if (selectedItems.length > 0) {
-          const item = selectedItems[0]
-          console.log('[SequenceForm] Selected image:', item)
-          form.value.image = {
-            url: item.original_url || item.url || '',
-            alt: item.title || item.original_filename || ''
-          }
-          console.log('[SequenceForm] Updated form image:', form.value.image)
-        }
-        popupService.close()
-      },
-      onCancel: () => {
-        popupService.close()
-      }
-    }
-  })
-}
+// Note: Image selection is now handled by TImageInput components
 
-// Open image selector for item
-const openItemImageSelector = (index: number) => {
-  popupService.open({
-    component: TMediaSelector,
-    title: t('sequence.selectItemImage'),
-    props: {
-      multiple: false,
-      selectedIds: form.value.items[index].image?.url ? [form.value.items[index].image.url] : [],
-      onConfirm: (selectedItems: any[]) => {
-        if (selectedItems.length > 0) {
-          const item = selectedItems[0]
-          form.value.items[index].image = {
-            url: item.original_url || item.url || '',
-            alt: item.title || item.original_filename || ''
-          }
-        }
-        popupService.close()
-      },
-      onCancel: () => {
-        popupService.close()
-      }
+// Form validation
+const isValid = computed(() => {
+  // Must have title
+  if (!form.value.title.trim()) return false
+
+  // Must have at least 2 items for a sequence
+  if (form.value.items.length < 2) return false
+
+  // All items must have titles
+  return form.value.items.every(item => item.title.trim())
+})
+
+// Expose validation and form data for parent components
+defineExpose({
+  isValid,
+  formData: form,
+  save: () => {
+    if (isValid.value && props.onSave) {
+      props.onSave(form.value)
     }
-  })
-}
+  }
+})
 
 // Watch for changes and emit
 watch(form, (newForm) => {
@@ -452,56 +374,7 @@ watch(form, (newForm) => {
     width: 100%;
   }
 
-  &__image-placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 2rem;
-    background: var(--color-background);
-    border: 2px dashed var(--color-border);
-    border-radius: 0.5rem;
-    color: var(--color-text-secondary);
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover {
-      border-color: var(--color-primary);
-      color: var(--color-primary);
-    }
-  }
-
-  &__image-preview {
-    position: relative;
-    width: 150px;
-    height: 150px;
-    border-radius: 0.5rem;
-    overflow: hidden;
-    border: 1px solid var(--color-border);
-    background-color: var(--current-color);
-    cursor: pointer;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    &:hover .sequence-form__image-actions {
-      opacity: 1;
-    }
-  }
-
-  &__image-actions {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    display: flex;
-    gap: 0.25rem;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-  }
+  // Image styles are now handled by TImageInput component
 
   &__items {
     display: flex;
@@ -514,14 +387,14 @@ watch(form, (newForm) => {
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 1rem;
-    background: var(--color-background);
+    padding: var(--space);
+    background: color-mix(in srgb, var(--color-primary), transparent 75%);
     border-radius: 0.5rem;
     transition: all 0.3s ease;
     cursor: move;
 
     &:hover {
-      background: var(--color-surface-hover);
+      background: color-mix(in srgb, var(--color-primary), transparent 50%);
     }
 
     &--dragging {
@@ -556,46 +429,7 @@ watch(form, (newForm) => {
     }
   }
 
-  &__item-image-placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 3rem;
-    height: 3rem;
-    background: var(--color-background);
-    border: 1px dashed var(--color-border);
-    border-radius: 0.25rem;
-    color: var(--color-text-secondary);
-    cursor: pointer;
-
-    &:hover {
-      border-color: var(--color-primary);
-      color: var(--color-primary);
-    }
-  }
-
-  &__item-image {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 3rem;
-    height: 3rem;
-    background-color: var(--current-color);
-    border: 1px solid var(--color-border);
-    border-radius: 0.25rem;
-    cursor: pointer;
-    overflow: hidden;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    &:hover {
-      border-color: var(--color-primary);
-    }
-  }
+  // Item image styles are now handled by TImageInput component
 
   &__empty {
     text-align: center;
@@ -607,11 +441,6 @@ watch(form, (newForm) => {
     }
   }
 
-  &__actions {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-  }
 }
 
 .sequence-item-enter-active,
@@ -646,7 +475,7 @@ watch(form, (newForm) => {
     align-items: center;
     gap: 0.5rem;
     cursor: pointer;
-    
+
     &:hover {
       color: var(--color-primary);
     }
@@ -662,7 +491,7 @@ watch(form, (newForm) => {
     margin-left: 0.25rem;
     color: var(--color-text-secondary);
     cursor: help;
-    
+
     &:hover {
       color: var(--color-primary);
     }
@@ -673,7 +502,7 @@ watch(form, (newForm) => {
     font-size: 0.875rem;
     color: var(--color-text-secondary);
     line-height: 1.4;
-    
+
     &--curated {
       color: goldenrod;
       display: flex;

@@ -5,6 +5,7 @@ import ContentSectionsView from '../views/content/SectionsView.vue'
 
 // Lazy load all route components
 const AdminDashboard = () => import('../views/Dashboard.vue')
+const AssetsView = () => import('../views/AssetsView.vue')
 const LibraryView = () => import('../views/LibraryView.vue')
 const MediaDashboardView = () => import('../views/MediaDashboardView.vue')
 const MediaDetailView = () => import('../views/MediaDetailView.vue')
@@ -82,6 +83,11 @@ const router = createAppRouter({
           path: 'media/:id',
           name: 'MediaDetail',
           component: MediaDetailView
+        },
+        {
+          path: 'assets',
+          name: 'Assets',
+          component: AssetsView
         },
         {
           path: 'users',
@@ -187,6 +193,11 @@ const router = createAppRouter({
           path: 'deployment/backups',
           name: 'DeploymentBackups',
           component: BackupsView
+        },
+        {
+          path: 'items/public',
+          name: 'PublicItems',
+          component: () => import('../views/PublicItemsView.vue')
         }
       ]
     }

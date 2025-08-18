@@ -93,7 +93,8 @@
 			}
 		}
 	}
-	&__error-text{
+
+	&__error-text {
 		font-size: 0.66em;
 		display: block;
 		line-height: 1;
@@ -120,17 +121,18 @@
 		--sizing: 1.25;
 	}
 
-	&--inline{
+	&--inline {
 		display: flex;
 		align-items: center;
 		gap: var(--space);
 
 		#{$b}__label {
 			width: var(--input-label-width, 30%);
-			&+ #{$b}__control-container,
-			&+ #{$b}__controls {
-			margin: 0;
-		}
+
+			&+#{$b}__control-container,
+			&+#{$b}__controls {
+				margin: 0;
+			}
 		}
 	}
 
@@ -387,7 +389,17 @@
 	}
 }
 
-@mixin inputColor() {}
+@mixin inputColor() {
+
+	border: 2px solid red;
+
+}
+
+@mixin inputColorPicker() {
+	&__control-container {
+		padding: var(--space);
+	}
+}
 
 @mixin inputSelect() {
 	&__control {
@@ -397,15 +409,21 @@
 		background-position: right 0.7rem top 50%;
 		background-size: 1em auto;
 	}
-	&__control-container{
-		&::after{
-			width: .5em; height: .5em; border: 1px solid var(--color-primary);
+
+	&__control-container {
+		&::after {
+			width: .5em;
+			height: .5em;
+			border: 1px solid var(--color-primary);
 			border-top-color: transparent;
 			border-left-color: transparent;
-			bottom:1.125em;
+			bottom: 1.125em;
 			transform: rotate(45deg);
 			z-index: 10;
-			position: absolute; right: var(--space); display: block;content: "";
+			position: absolute;
+			right: var(--space);
+			display: block;
+			content: "";
 		}
 	}
 }
@@ -718,6 +736,11 @@
 			cursor: not-allowed;
 			opacity: 0.7;
 		}
+	}
+
+	&__control-container{
+		padding: var(--space-s);
+		width: fit-content;
 	}
 }
 

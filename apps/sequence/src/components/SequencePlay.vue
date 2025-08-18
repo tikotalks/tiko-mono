@@ -36,6 +36,7 @@ import { useBemm } from 'bemm'
 import { TCardTile, TButton, TCardGrid, useI18n } from '@tiko/ui'
 import type { TCardTile as CardTileType } from '@tiko/ui'
 import { useSequenceStore } from '../stores/sequence'
+import { usePlaySound, SOUNDS } from '@tiko/core'
 import BottomOrderBoard from './BottomOrderBoard.vue'
 import RewardOverlay from './RewardOverlay.vue'
 import { Icons } from 'open-icon'
@@ -53,6 +54,7 @@ const emit = defineEmits<{
 const bemm = useBemm('sequence-play')
 const sequenceStore = useSequenceStore()
 const { t } = useI18n()
+const { playSound } = usePlaySound()
 
 // State for error animation
 const wrongItemId = ref<string | null>(null)
@@ -110,22 +112,12 @@ const handleCardClick = async (card: CardTileType, index: number) => {
 
   if (isCorrect) {
     // Play success sound
-    if (sequenceStore.settings.soundEffects) {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-      const oscillator = audioContext.createOscillator()
-      const gainNode = audioContext.createGain()
-
-      oscillator.connect(gainNode)
-      gainNode.connect(audioContext.destination)
-
-      oscillator.frequency.value = 440 // Higher frequency for success (A4 note)
-      oscillator.type = 'sine'
-      gainNode.gain.value = 0.3
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3)
-
-      oscillator.start(audioContext.currentTime)
-      oscillator.stop(audioContext.currentTime + 0.3)
-    }
+    // if (sequenceStore.settings.soundEffects) {
+      playSound({
+        id: SOUNDS.WIN,
+        volume: 0.5
+      })
+    // }
 
     if (sequenceStore.settings.hapticFeedback) {
       // Trigger haptic feedback if available
@@ -135,22 +127,13 @@ const handleCardClick = async (card: CardTileType, index: number) => {
     }
   } else {
     // Play error sound
-    if (sequenceStore.settings.soundEffects) {
-      // Play a simple error beep using Web Audio API
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-      const oscillator = audioContext.createOscillator()
-      const gainNode = audioContext.createGain()
-
-      oscillator.connect(gainNode)
-      gainNode.connect(audioContext.destination)
-
-      oscillator.frequency.value = 200 // Low frequency for error
-      oscillator.type = 'sine'
-      gainNode.gain.value = 0.3
-
-      oscillator.start(audioContext.currentTime)
-      oscillator.stop(audioContext.currentTime + 0.2) // Short beep
-    }
+    // if (sequenceStore.settings.soundEffects) {
+      // Play the wrong item sound from assets
+      playSound({
+        id: SOUNDS.WRONG_ITEM,
+        volume: 0.5
+      })
+    // }
 
     // Add haptic feedback for errors
     if (sequenceStore.settings.hapticFeedback && 'vibrate' in navigator) {

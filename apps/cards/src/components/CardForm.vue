@@ -88,6 +88,32 @@
               <TColorPicker v-model="form.color" :colors="availableColors" />
             </TFormField>
 
+            <!-- Visibility toggle -->
+            <TFormField v-if="showVisibilityToggle && isOwner" :label="t('cards.visibility')" name="visibility">
+              <div :class="bemm('visibility-options')">
+                <label :class="bemm('checkbox-label')">
+                  <input
+                    type="checkbox"
+                    v-model="form.isPublic"
+                    :class="bemm('checkbox')"
+                  />
+                  <span>{{ t('cards.makePublic') }}</span>
+                  <TIcon 
+                    name="info" 
+                    size="small" 
+                    :title="t('cards.publicDescription')"
+                    :class="bemm('info-icon')"
+                  />
+                </label>
+                <p v-if="form.isPublic" :class="bemm('visibility-note')">
+                  {{ t('cards.publicNote') }}
+                </p>
+                <p v-if="form.isCurated" :class="bemm('visibility-note', 'curated')">
+                  <TIcon name="star" size="small" />
+                  {{ t('cards.curatedNote') }}
+                </p>
+              </div>
+            </TFormField>
 
           </TFormGroup>
 
@@ -126,6 +152,7 @@ import {
   BaseColors,
   TInputText,
   TMediaSelector,
+  TIcon,
   debounce,
   ButtonType,
   TFormGroup,
@@ -149,6 +176,8 @@ const props = defineProps<{
   index?: number;
   hasChildren?: boolean;
   translations?: ItemTranslation[];
+  showVisibilityToggle?: boolean;
+  isOwner?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -173,6 +202,8 @@ const form = reactive({
   speech: props.card?.speech || '',
   base_locale: props.card?.base_locale || currentLocale.value.split('-')[0], // Use language code, not locale
   translations: props.translations || [] as ItemTranslation[],
+  isPublic: props.card?.isPublic || false,
+  isCurated: props.card?.isCurated || false,
 });
 
 // Track if user has manually edited speech
@@ -550,6 +581,54 @@ background-color: var(--current-color);
 
   &__delete-button {
     margin-right: auto;
+  }
+
+  // Visibility options styles
+  &__visibility-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--color-primary);
+    }
+  }
+
+  &__checkbox {
+    width: 1.25rem;
+    height: 1.25rem;
+    cursor: pointer;
+  }
+
+  &__info-icon {
+    margin-left: 0.25rem;
+    color: var(--color-text-secondary);
+    cursor: help;
+
+    &:hover {
+      color: var(--color-primary);
+    }
+  }
+
+  &__visibility-note {
+    margin: 0.5rem 0 0 0;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+
+    &--curated {
+      color: goldenrod;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
   }
 }
 </style>

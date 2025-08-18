@@ -7,6 +7,8 @@ export * from './stores/app'
 export { useFavoritesStore } from './stores/favorites.store'
 export { useCollectionsStore, type Collection } from './stores/collections.store'
 export { useEditModeStore } from './stores/editMode'
+export { useAssetsStore, type AssetRecord } from './stores/assets.store'
+export { useMediaStore } from './stores/media.store'
 
 // Auth API (excluding types that are already exported from services)
 export { authAPI } from './lib/auth-api'
@@ -42,6 +44,8 @@ export { useContent } from './composables/useContent'
 export type { PageContent, UseContentOptions } from './composables/useContent'
 export { useSentenceBuilder, useSentenceBuilders } from './composables/useSentenceBuilder'
 export type { UseSentenceBuilderOptions, UseSentenceBuilderReturn } from './composables/useSentenceBuilder'
+export { usePlaySound, SOUNDS } from './composables/usePlaySound'
+export type { PlaySoundOptions, UsePlaySoundReturn, SoundId } from './composables/usePlaySound'
 
 // Constants
 export * from './constants'

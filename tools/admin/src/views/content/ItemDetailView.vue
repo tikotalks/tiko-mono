@@ -138,7 +138,7 @@ import {
   listActions,
   type ToastService,
   type PopupService,
-  TSelect
+  TInputSelect
 } from '@tiko/ui'
 import { Icons } from 'open-icon'
 import {

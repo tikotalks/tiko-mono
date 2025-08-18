@@ -15,7 +15,7 @@ import { sequenceService } from '../services/sequence.service'
 import type { TCardTile } from '@tiko/ui'
 
 const props = defineProps<{
-  sequence?: TCardTile | null
+  sequence?: typeof TCardTile | null
   isNew?: boolean
   onSubmit?: (data: any) => void
 }>()

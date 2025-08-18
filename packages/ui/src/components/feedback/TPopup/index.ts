@@ -4,4 +4,5 @@ export { default as TPopupWrapper } from './TPopupWrapper.vue'
 
 export * from './TPopup.util'
 export * from './TPopup.service'
+export * from './TPopup.model'
 export * from './components'
