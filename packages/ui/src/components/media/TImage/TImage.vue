@@ -10,7 +10,7 @@
     />
 
     <!-- Responsive picture element -->
-    <picture v-if="responsive && optimizedSrc" :style="{ display: isLoading ? 'none' : 'block' }">
+    <picture v-if="responsive && optimizedSrc">
       <source
         v-for="(source, index) in responsiveSources"
         :key="index"
@@ -41,7 +41,6 @@
       :height="computedHeight"
       :loading="loading"
       :class="imageClasses"
-      :style="{ display: isLoading ? 'none' : 'block' }"
       @load="handleLoad"
       @error="handleError"
     />
@@ -138,7 +137,7 @@ const resolveSrc = async () => {
           const media = await mediaStore.getMediaItem(src)
           if (media) {
             // Get the original, unoptimized URL
-            resolvedSrc.value = media.filename 
+            resolvedSrc.value = media.filename
               ? `https://media.tikocdn.org/${media.filename}`
               : `https://media.tikocdn.org/${src}`
           } else {
@@ -232,7 +231,7 @@ const handleError = async (event: Event) => {
     console.log(`[TImage] Media type "${props.media}" specified, not trying other sources`)
   } else if (isUUID(props.src)) {
     // Only try fallback sources if no media prop is specified
-    
+
     // If this was an assets URL and it failed, try user media
     if (currentSrc.value === props.src && resolvedSrc.value.includes('assets.tikocdn.org')) {
       console.log('[TImage] Trying user media library...')
@@ -285,7 +284,7 @@ watch(() => props.media, async () => {
 onMounted(async () => {
   try {
     await resolveSrc()
-    
+
     // If we have a resolved URL, we can start loading the image
     if (resolvedSrc.value) {
       isLoading.value = true // Keep loading state until image actually loads

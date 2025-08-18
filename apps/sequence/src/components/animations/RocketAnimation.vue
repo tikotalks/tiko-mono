@@ -90,25 +90,18 @@ const handleClick = () => {
 }
 
 // Animation state
-const animationPhase = ref<'bouncing' | 'flying' | 'exiting' | 'finished'>('bouncing')
-const rocketY = ref(50) // Start at center (percentage)
-const rocketX = ref(50) // Center horizontally (percentage)
+const animationPhase = ref<'entering' | 'bouncing' | 'flying' | 'exiting' | 'finished'>('entering')
+const rocketY = ref(120) // Start below screen (percentage)
 const rocketRotation = ref(0)
 const backgroundY = ref(0) // Background scroll position
 
 // Computed styles
 const rocketStyle = computed(() => {
-  // During animation, adjust the transform to include position changes
-  if (animationPhase.value === 'flying' || animationPhase.value === 'bouncing') {
-    return {
-      transform: `translate(-50%, calc(-50% + ${rocketY.value - 50}vh)) rotate(${rocketRotation.value}deg)`,
-      transition: animationPhase.value === 'bouncing' ? 'transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55)' : 'none'
-    }
-  }
-  // Default centered position
   return {
-    transform: `translate(-50%, -50%) rotate(${rocketRotation.value}deg)`,
-    transition: 'none'
+    transform: `translate(-50%, ${-rocketY.value}%) rotate(${rocketRotation.value}deg)`,
+    transition: animationPhase.value === 'entering' ? 'transform 1.5s ease-out' : 
+                animationPhase.value === 'bouncing' ? 'transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)' : 
+                'none'
   }
 })
 
@@ -127,17 +120,23 @@ const startAnimation = async () => {
     volume: 0.7
   })
 
-  // Phase 1: Bouncing animation (rocket bounces in place)
+  // Phase 1: Rocket enters from bottom
+  animationPhase.value = 'entering'
+  rocketY.value = 50 // Move to center of screen
+  
+  // Wait for entrance animation
+  await new Promise(resolve => setTimeout(resolve, 1500))
+
+  // Phase 2: Bouncing animation (rocket bounces in place)
   animationPhase.value = 'bouncing'
 
-  const scale = 4; // Slower animation
-  // Create bouncing effect with multiple bounces (centered)
+  // Create bouncing effect with multiple bounces
   const bounces = [
-    { y: 45, rotation: -5, duration: 400 * scale },
-    { y: 52, rotation: 2, duration: 300 * scale },
-    { y: 48, rotation: -2, duration: 300 * scale },
-    { y: 51, rotation: 1, duration: 250 * scale },
-    { y: 50, rotation: 0, duration: 200 * scale }
+    { y: 45, rotation: -5, duration: 600 },
+    { y: 52, rotation: 2, duration: 500 },
+    { y: 48, rotation: -2, duration: 400 },
+    { y: 51, rotation: 1, duration: 300 },
+    { y: 50, rotation: 0, duration: 200 }
   ]
 
   for (const bounce of bounces) {
@@ -146,11 +145,11 @@ const startAnimation = async () => {
     await new Promise(resolve => setTimeout(resolve, bounce.duration))
   }
 
-  // Phase 2: Flying animation immediately
+  // Phase 3: Flying animation
   animationPhase.value = 'flying'
 
   // Start flying up with background scrolling
-  const flyDuration = 10000 // 10 seconds (much slower)
+  const flyDuration = 4000 // 4 seconds
   const startTime = Date.now()
 
   const animate = () => {
@@ -158,23 +157,44 @@ const startAnimation = async () => {
     const progress = Math.min(elapsed / flyDuration, 1)
 
     // Easing function for smooth acceleration
-    const easeOut = 1 - Math.pow(1 - progress, 3)
+    const easeIn = progress * progress
 
-    // Rocket flies up from center and slightly wobbles
-    rocketY.value = 50 - (easeOut * 100) // From 50% (center) to -50% (off screen)
-    rocketRotation.value = Math.sin(elapsed * 0.01) * 3 // Gentle wobble
+    // Rocket flies up from center to above screen
+    rocketY.value = 50 + (easeIn * 120) // From 50% (center) to 170% (off screen)
+    rocketRotation.value = Math.sin(elapsed * 0.002) * 3 // Gentle wobble
 
-    // Background scrolls down (opposite direction)
-    backgroundY.value = easeOut * 2000 // Scroll background down
+    // Background scrolls down as rocket goes up
+    backgroundY.value = easeIn * 1500 // Scroll background down
 
     if (progress < 1) {
       requestAnimationFrame(animate)
     } else {
-      // Phase 3: Animation completed
-      animationPhase.value = 'finished'
-      setTimeout(() => {
-        emit('completed')
-      }, 500)
+      // Phase 4: Exit animation
+      animationPhase.value = 'exiting'
+      
+      // Continue moving rocket further off screen
+      const exitDuration = 1000
+      const exitStartTime = Date.now()
+      
+      const exitAnimate = () => {
+        const exitElapsed = Date.now() - exitStartTime
+        const exitProgress = Math.min(exitElapsed / exitDuration, 1)
+        
+        // Continue moving up
+        rocketY.value = 170 + (exitProgress * 50) // Move further off screen
+        
+        if (exitProgress < 1) {
+          requestAnimationFrame(exitAnimate)
+        } else {
+          // Animation completed
+          animationPhase.value = 'finished'
+          setTimeout(() => {
+            emit('completed')
+          }, 300)
+        }
+      }
+      
+      requestAnimationFrame(exitAnimate)
     }
   }
 
@@ -201,10 +221,10 @@ onMounted(() => {
 
   &__background {
     position: absolute;
-    top: 0;
+    bottom: 0;
     left: 0;
     width: 100vw;
-    height: 100vh;
+    height: 300vh;
     z-index: 999;
     display: flex;
     align-items: center;
@@ -212,8 +232,8 @@ onMounted(() => {
   }
 
   &__bg-image {
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     position: relative;
 
     // Force the wrapper div to have dimensions
@@ -223,8 +243,8 @@ onMounted(() => {
     }
 
     img {
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 100%;
       object-fit: cover;
       display: block;
       position: absolute;
@@ -239,8 +259,7 @@ onMounted(() => {
     width: auto;
     height: 50vh;
     left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
+    bottom: 0;
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
   }
 
