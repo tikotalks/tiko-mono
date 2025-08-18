@@ -5,12 +5,11 @@
     <!-- Fullscreen space background -->
     <div :class="bemm('background')" :style="backgroundStyle">
       <TImage
-        class="rocket-animation__bg-image"
+        :class="bemm('bg-image')"
         :src="IMAGE.background"
         media="assets"
         alt="Space background"
         size="full"
-        fit="cover"
         @error="handleBackgroundError"
         @load="handleBackgroundLoad" />
     </div>
@@ -18,10 +17,11 @@
     <!-- Rocket -->
     <div :class="bemm('rocket')" :style="rocketStyle">
       <TImage
-        class="rocket-animation__rocket-image"
+        :class="bemm('rocket-image')"
         :src="IMAGE.rocket"
         media="public"
         alt="Rocket"
+        size="full"
         @error="handleRocketError"
         @load="handleRocketLoad" />
     </div>
@@ -91,18 +91,26 @@ const handleClick = () => {
 
 // Animation state
 const animationPhase = ref<'bouncing' | 'flying' | 'exiting' | 'finished'>('bouncing')
-const rocketY = ref(80) // Start near bottom (percentage)
+const rocketY = ref(50) // Start at center (percentage)
 const rocketX = ref(50) // Center horizontally (percentage)
 const rocketRotation = ref(0)
 const backgroundY = ref(0) // Background scroll position
 
 // Computed styles
-const rocketStyle = computed(() => ({
-  left: `${rocketX.value}%`,
-  top: `${rocketY.value}%`,
-  transform: `translate(-50%, -50%) rotate(${rocketRotation.value}deg)`,
-  transition: animationPhase.value === 'bouncing' ? 'transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55)' : 'none'
-}))
+const rocketStyle = computed(() => {
+  // During animation, adjust the transform to include position changes
+  if (animationPhase.value === 'flying' || animationPhase.value === 'bouncing') {
+    return {
+      transform: `translate(-50%, calc(-50% + ${rocketY.value - 50}vh)) rotate(${rocketRotation.value}deg)`,
+      transition: animationPhase.value === 'bouncing' ? 'transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55)' : 'none'
+    }
+  }
+  // Default centered position
+  return {
+    transform: `translate(-50%, -50%) rotate(${rocketRotation.value}deg)`,
+    transition: 'none'
+  }
+})
 
 const backgroundStyle = computed(() => ({
   transform: `translateY(${backgroundY.value}px)`,
@@ -123,13 +131,13 @@ const startAnimation = async () => {
   animationPhase.value = 'bouncing'
 
   const scale = 4; // Slower animation
-  // Create bouncing effect with multiple bounces
+  // Create bouncing effect with multiple bounces (centered)
   const bounces = [
-    { y: 70, rotation: -5, duration: 400 * scale },
-    { y: 75, rotation: 2, duration: 300 * scale },
-    { y: 72, rotation: -2, duration: 300 * scale },
-    { y: 74, rotation: 1, duration: 250 * scale },
-    { y: 73, rotation: 0, duration: 200 * scale }
+    { y: 45, rotation: -5, duration: 400 * scale },
+    { y: 52, rotation: 2, duration: 300 * scale },
+    { y: 48, rotation: -2, duration: 300 * scale },
+    { y: 51, rotation: 1, duration: 250 * scale },
+    { y: 50, rotation: 0, duration: 200 * scale }
   ]
 
   for (const bounce of bounces) {
@@ -152,8 +160,8 @@ const startAnimation = async () => {
     // Easing function for smooth acceleration
     const easeOut = 1 - Math.pow(1 - progress, 3)
 
-    // Rocket flies up and slightly wobbles
-    rocketY.value = 73 - (easeOut * 120) // From 73% to -47% (off screen)
+    // Rocket flies up from center and slightly wobbles
+    rocketY.value = 50 - (easeOut * 100) // From 50% (center) to -50% (off screen)
     rocketRotation.value = Math.sin(elapsed * 0.01) * 3 // Gentle wobble
 
     // Background scrolls down (opposite direction)
@@ -187,43 +195,71 @@ onMounted(() => {
   z-index: 2000;
   overflow: hidden;
   background-color: var(--color-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &__background {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 200%; // Make background taller for scrolling effect
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   &__bg-image {
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
+    position: relative;
 
-    img {
+    // Force the wrapper div to have dimensions
+    & > div {
       width: 100%;
       height: 100%;
+    }
+
+    img {
+      width: 100vw;
+      height: 100vh;
       object-fit: cover;
       display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
     }
   }
 
   &__rocket {
     position: fixed;
     z-index: 1005;
-    width: 120px;
-    height: auto;
+    width: auto;
+    height: 50vh;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
   }
 
   &__rocket-image {
-    width: 100%;
-    height: auto;
+    width: auto;
+    height: 50vh;
+    position: relative;
+
+    // Force the wrapper div to have dimensions
+    & > div {
+      width: 100%;
+      height: 100%;
+    }
 
     img {
-      width: 100%;
-      height: auto;
+      width: auto;
+      height: 50vh;
       display: block;
+      object-fit: contain;
     }
   }
 
