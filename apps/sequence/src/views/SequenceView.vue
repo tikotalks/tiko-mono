@@ -48,6 +48,17 @@
         @click="handleAppSettings"
         :aria-label="t('sequence.sequenceSettings')"
       />
+      
+      <!-- Admin button (only visible to admins) -->
+      <TButton
+        v-if="isAdmin"
+        :icon="Icons.SHIELD"
+        type="outline"
+        color="warning"
+        @click="goToAdminPanel"
+        :tooltip="t('admin.managePublicItems')"
+        :aria-label="t('admin.managePublicItems')"
+      />
     </template>
 
     <div :class="bemm('container')">
@@ -174,8 +185,9 @@ import AddSequenceModal from '../components/AddSequenceModal.vue';
 import SequencePlay from '../components/SequencePlay.vue';
 import type { TCardTile } from '@tiko/ui';
 import { useEditMode } from '../composables/useEditMode';
-import { useSpeak, useEventBus } from '@tiko/core';
+import { useSpeak, useEventBus, useAuthStore } from '@tiko/core';
 import { sequenceService } from '../services/sequence.service';
+import { adminItemsService } from '../services/admin-items.service';
 import { ItemTranslationService } from '../services/item-translation.service';
 import type { ItemTranslation } from '../models/ItemTranslation.model';
 import { Icons } from 'open-icon';
@@ -185,12 +197,24 @@ const settings = computed(() => sequenceStore.settings);
 const route = useRoute();
 const router = useRouter();
 const sequenceStore = useSequenceStore();
+const authStore = useAuthStore();
 const { t, currentLocale } = useI18n();
 const parentMode = useParentMode();
 
 // Parent mode computed state
 const isParentModeUnlocked = computed(() => {
   return parentMode.isUnlocked || false;
+});
+
+// Admin check
+const isAdmin = computed(() => {
+  const user = authStore.user;
+  if (!user) return false;
+  
+  // Check for admin role - adjust based on your auth system
+  return user.email?.endsWith('@admin.tiko.app') || 
+         user.user_metadata?.role === 'admin' ||
+         false;
 });
 
 const { hasPermission, requestPermission } = useTextToSpeech();
@@ -354,6 +378,10 @@ const handleAppSettings = () => {
   });
 };
 
+const goToAdminPanel = async () => {
+  await router.push('/admin/public-items');
+};
+
 
 const handleProfile = () => {
   console.log('Profile clicked');
@@ -479,6 +507,7 @@ const openCardEditForm = async (card: SequenceTile, index: number) => {
     props: {
       sequence: card,
       isNew: isNewCard,
+      isOwner: isNewCard || card.ownerId === authStore.user?.id || card.user_id === authStore.user?.id,
       onClose: () => popupService.close(),
       onSave: async (formData: any) => {
         console.log('[SequenceView] Saving sequence with formData:', formData);

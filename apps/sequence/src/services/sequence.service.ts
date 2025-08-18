@@ -4,6 +4,7 @@ import type { TCardTile as CardTile } from '@tiko/ui';
 import { sequenceSupabaseService } from './supabase-sequence.service';
 import { ItemTranslationService } from './item-translation.service';
 import type { ItemTranslation } from '../models/ItemTranslation.model';
+import type { PublicItem, UserItemOrder } from '../models/PublicItem.model';
 
 const APP_NAME = 'sequence';
 
@@ -451,6 +452,123 @@ export const sequenceService = {
     } catch (error) {
       console.error('Error updating sequence:', error);
       throw error;
+    }
+  },
+
+  // Public Item Methods
+  async loadPublicItems(type?: 'card' | 'sequence' | 'all', includeCurated: boolean = true): Promise<CardTile[]> {
+    try {
+      const authStore = useAuthStore();
+      const userId = authStore.user?.id;
+      if (!userId) {
+        console.warn('No authenticated user found');
+        return [];
+      }
+
+      const { currentLocale } = useI18n();
+      const locale = currentLocale.value;
+
+      // Load public items with custom ordering
+      const publicItems = await sequenceSupabaseService.getPublicItems(userId, locale, type, includeCurated);
+      
+      return publicItems.map(item => {
+        const metadata = item.metadata as CardMetadata;
+        // Use custom_index if available, otherwise use original order_index
+        const orderIndex = item.custom_index ?? item.order_index;
+        
+        return {
+          id: item.id,
+          title: item.name,
+          icon: metadata?.icon || item.icon || '',
+          color: metadata?.color || item.color || 'primary',
+          type: item.type as any,
+          image: metadata?.image || '',
+          speech: metadata?.speech || item.content || '',
+          speak: metadata?.speech || item.content || '',
+          index: orderIndex,
+          parentId: item.parent_id || undefined,
+          parent_id: item.parent_id || undefined,
+          // Add ownership info
+          ownerId: item.owner_id,
+          isOwner: item.owner_id === userId,
+          isPublic: item.is_public,
+          isCurated: item.is_curated,
+        };
+      });
+    } catch (error) {
+      console.error('Error loading public sequences:', error);
+      return [];
+    }
+  },
+
+  async saveCustomOrder(itemId: string, customIndex: number): Promise<void> {
+    try {
+      const authStore = useAuthStore();
+      const userId = authStore.user?.id;
+      if (!userId) {
+        throw new Error('No authenticated user');
+      }
+
+      await sequenceSupabaseService.saveUserItemOrder(userId, itemId, customIndex);
+    } catch (error) {
+      console.error('Error saving custom order:', error);
+      throw error;
+    }
+  },
+
+  async toggleItemVisibility(itemId: string, isPublic: boolean): Promise<void> {
+    try {
+      const authStore = useAuthStore();
+      const userId = authStore.user?.id;
+      if (!userId) {
+        throw new Error('No authenticated user');
+      }
+
+      await sequenceSupabaseService.updateItemVisibility(itemId, userId, isPublic);
+    } catch (error) {
+      console.error('Error toggling item visibility:', error);
+      throw error;
+    }
+  },
+
+  async searchPublicItems(query: string, type?: 'card' | 'sequence' | 'all', locale?: string, includeCurated: boolean = true): Promise<CardTile[]> {
+    try {
+      const authStore = useAuthStore();
+      const userId = authStore.user?.id;
+      if (!userId) {
+        return [];
+      }
+
+      const { currentLocale } = useI18n();
+      const searchLocale = locale || currentLocale.value;
+
+      const results = await sequenceSupabaseService.searchPublicItems(query, searchLocale, userId, type, includeCurated);
+      
+      return results.map(item => {
+        const metadata = item.metadata as CardMetadata;
+        const orderIndex = item.custom_index ?? item.order_index;
+        
+        return {
+          id: item.id,
+          title: item.name,
+          icon: metadata?.icon || item.icon || '',
+          color: metadata?.color || item.color || 'primary',
+          type: item.type as any,
+          image: metadata?.image || '',
+          speech: metadata?.speech || item.content || '',
+          speak: metadata?.speech || item.content || '',
+          index: orderIndex,
+          parentId: item.parent_id || undefined,
+          parent_id: item.parent_id || undefined,
+          ownerId: item.owner_id,
+          isOwner: item.owner_id === userId,
+          isPublic: item.is_public,
+          isCurated: item.is_curated,
+        };
+      });
+    } catch (error) {
+      console.error('Error searching public items:', error);
+      return [];
     }
   }
 };

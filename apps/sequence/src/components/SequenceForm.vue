@@ -57,7 +57,7 @@
       </div>
 
       <!-- Visibility toggle -->
-      <div :class="bemm('field')" v-if="showVisibilityToggle">
+      <div :class="bemm('field')" v-if="showVisibilityToggle && (props.isOwner !== false)">
         <label :class="bemm('label')">{{ t('sequence.visibility') }}</label>
         <div :class="bemm('visibility-options')">
           <label :class="bemm('checkbox-label')">
@@ -74,6 +74,13 @@
               :class="bemm('info-icon')"
             />
           </label>
+          <p v-if="form.isPublic" :class="bemm('visibility-note')">
+            {{ t('sequence.publicNote') }}
+          </p>
+          <p v-if="form.isCurated" :class="bemm('visibility-note', 'curated')">
+            <TIcon name="star" size="small" />
+            {{ t('sequence.curatedNote') }}
+          </p>
         </div>
       </div>
     </div>
@@ -220,11 +227,13 @@ interface SequenceForm {
   image?: { url: string; alt: string } | null
   items: SequenceItem[]
   isPublic?: boolean
+  isCurated?: boolean // Read-only, shown for info
 }
 
 const props = defineProps<{
   initialData?: Partial<SequenceForm>
   showVisibilityToggle?: boolean
+  isOwner?: boolean // Whether current user owns this item
 }>()
 
 const emit = defineEmits<{
@@ -245,7 +254,8 @@ const form = ref<SequenceForm>({
   color: BaseColors.BLUE,
   image: null,
   items: [],
-  isPublic: false
+  isPublic: false,
+  isCurated: false
 })
 
 // Watch for initialData changes and update form
@@ -258,7 +268,8 @@ watch(() => props.initialData, (newData) => {
       color: newData.color || BaseColors.BLUE,
       image: newData.image || null,
       items: newData.items || [],
-      isPublic: newData.isPublic || false
+      isPublic: newData.isPublic || false,
+      isCurated: newData.isCurated || false
     }
     console.log('[SequenceForm] Updated form:', form.value)
     console.log('[SequenceForm] Form items array:', form.value.items)
@@ -654,6 +665,20 @@ watch(form, (newForm) => {
     
     &:hover {
       color: var(--color-primary);
+    }
+  }
+
+  &__visibility-note {
+    margin: 0.5rem 0 0 0;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+    
+    &--curated {
+      color: goldenrod;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
     }
   }
 }

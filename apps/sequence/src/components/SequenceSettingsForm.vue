@@ -26,6 +26,14 @@
         />
         <p class="setting-description">{{ t('sequence.hapticFeedbackDescription') }}</p>
       </div>
+      
+      <div class="setting-item">
+        <TInputSwitch
+          v-model="form.showCuratedItems"
+          :label="t('sequence.showCuratedItems')"
+        />
+        <p class="setting-description">{{ t('sequence.showCuratedItemsDescription') }}</p>
+      </div>
     </div>
   </div>
 </template>
@@ -38,6 +46,7 @@ interface SequenceSettings {
   autoSpeak: boolean
   showHints: boolean
   hapticFeedback: boolean
+  showCuratedItems: boolean
 }
 
 const props = defineProps<{
@@ -50,7 +59,8 @@ const { t } = useI18n()
 const form = ref<SequenceSettings>({
   autoSpeak: props.settings?.autoSpeak ?? true,
   showHints: props.settings?.showHints ?? false,
-  hapticFeedback: props.settings?.hapticFeedback ?? true
+  hapticFeedback: props.settings?.hapticFeedback ?? true,
+  showCuratedItems: props.settings?.showCuratedItems ?? true
 })
 
 const handleSubmit = () => {

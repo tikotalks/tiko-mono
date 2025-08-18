@@ -10,6 +10,7 @@ export interface SequenceSettings {
   autoSpeak: boolean
   showHints: boolean
   hapticFeedback: boolean
+  showCuratedItems: boolean
 }
 
 interface CardCacheEntry {
@@ -54,7 +55,8 @@ export const useSequenceStore = defineStore('sequence', () => {
   const defaultSettings: SequenceSettings = {
     autoSpeak: true,
     showHints: false,
-    hapticFeedback: true
+    hapticFeedback: true,
+    showCuratedItems: true
   }
 
   // Getters

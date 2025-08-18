@@ -10,6 +10,7 @@ export interface YesNoSettings {
   buttonSize: 'small' | 'medium' | 'large'
   autoSpeak: boolean
   hapticFeedback: boolean
+  showCuratedItems: boolean
 }
 
 interface CardCacheEntry {
@@ -35,7 +36,8 @@ export const useCardStore = defineStore('yesno', () => {
   const defaultSettings: YesNoSettings = {
     buttonSize: 'large',
     autoSpeak: true,
-    hapticFeedback: true
+    hapticFeedback: true,
+    showCuratedItems: true
   }
 
   // Getters

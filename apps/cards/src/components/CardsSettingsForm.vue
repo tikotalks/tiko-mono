@@ -40,6 +40,14 @@
         :class="bemm('checkbox')"
       />
     </div>
+
+    <div :class="bemm('group')">
+      <TInputCheckbox
+        v-model="localSettings.showCuratedItems"
+        :label="t('yesno.showCuratedItems')"
+        :class="bemm('checkbox')"
+      />
+    </div>
   </div>
 </template>
 
@@ -52,6 +60,7 @@ interface YesNoSettings {
   buttonSize: 'small' | 'medium' | 'large'
   autoSpeak: boolean
   hapticFeedback: boolean
+  showCuratedItems: boolean
 }
 
 interface Props {
