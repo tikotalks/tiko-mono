@@ -165,7 +165,7 @@ const startAnimation = async () => {
     rocketRotation.value = Math.sin(elapsed * 0.002) * 3 // Gentle wobble
 
     // Background scrolls up as rocket goes up (from bottom to top)
-    backgroundY.value = -window.innerHeight + (easeIn * window.innerHeight * 1.8) // Scroll from bottom up
+    backgroundY.value = -window.innerHeight + (easeIn * window.innerHeight) // Scroll exactly one viewport height
 
     if (progress < 1) {
       requestAnimationFrame(animate)
@@ -185,8 +185,7 @@ const startAnimation = async () => {
         rocketY.value = 170 + (exitProgress * 50) // Move further off screen
         
         // Continue scrolling background smoothly
-        const currentBgY = -window.innerHeight + (window.innerHeight * 1.8)
-        backgroundY.value = currentBgY + (exitProgress * 200) // Continue scrolling up
+        backgroundY.value = 0 + (exitProgress * 200) // Continue scrolling up from center
 
         if (exitProgress < 1) {
           requestAnimationFrame(exitAnimate)
