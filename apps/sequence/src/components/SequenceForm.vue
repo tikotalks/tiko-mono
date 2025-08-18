@@ -55,6 +55,27 @@
           <span>{{ t('sequence.uploadSequenceImage') }}</span>
         </div>
       </div>
+
+      <!-- Visibility toggle -->
+      <div :class="bemm('field')" v-if="showVisibilityToggle">
+        <label :class="bemm('label')">{{ t('sequence.visibility') }}</label>
+        <div :class="bemm('visibility-options')">
+          <label :class="bemm('checkbox-label')">
+            <input
+              type="checkbox"
+              v-model="form.isPublic"
+              :class="bemm('checkbox')"
+            />
+            <span>{{ t('sequence.makePublic') }}</span>
+            <TIcon 
+              name="info" 
+              size="small" 
+              :title="t('sequence.publicDescription')"
+              :class="bemm('info-icon')"
+            />
+          </label>
+        </div>
+      </div>
     </div>
 
     <!-- Sequence items -->
@@ -198,10 +219,12 @@ interface SequenceForm {
   color: string
   image?: { url: string; alt: string } | null
   items: SequenceItem[]
+  isPublic?: boolean
 }
 
 const props = defineProps<{
   initialData?: Partial<SequenceForm>
+  showVisibilityToggle?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -221,7 +244,8 @@ const form = ref<SequenceForm>({
   title: '',
   color: BaseColors.BLUE,
   image: null,
-  items: []
+  items: [],
+  isPublic: false
 })
 
 // Watch for initialData changes and update form
@@ -233,7 +257,8 @@ watch(() => props.initialData, (newData) => {
       title: newData.title || '',
       color: newData.color || BaseColors.BLUE,
       image: newData.image || null,
-      items: newData.items || []
+      items: newData.items || [],
+      isPublic: newData.isPublic || false
     }
     console.log('[SequenceForm] Updated form:', form.value)
     console.log('[SequenceForm] Form items array:', form.value.items)
@@ -595,5 +620,41 @@ watch(form, (newForm) => {
 
 .sequence-item-move {
   transition: transform 0.3s ease;
+}
+
+// Visibility options styles
+.sequence-form {
+  &__visibility-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    
+    &:hover {
+      color: var(--color-primary);
+    }
+  }
+
+  &__checkbox {
+    width: 1.25rem;
+    height: 1.25rem;
+    cursor: pointer;
+  }
+
+  &__info-icon {
+    margin-left: 0.25rem;
+    color: var(--color-text-secondary);
+    cursor: help;
+    
+    &:hover {
+      color: var(--color-primary);
+    }
+  }
 }
 </style>
