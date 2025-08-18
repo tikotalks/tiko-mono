@@ -93,7 +93,7 @@ const handleClick = () => {
 const animationPhase = ref<'entering' | 'bouncing' | 'flying' | 'exiting' | 'finished'>('entering')
 const rocketY = ref(120) // Start below screen (percentage)
 const rocketRotation = ref(0)
-const backgroundY = ref(-window.innerHeight) // Background starts at bottom (negative to show bottom part)
+const backgroundY = ref(0) // Background starts at 0
 
 // Computed styles
 const rocketStyle = computed(() => {
@@ -164,8 +164,8 @@ const startAnimation = async () => {
     rocketY.value = 50 + (easeIn * 120) // From 50% (center) to 170% (off screen)
     rocketRotation.value = Math.sin(elapsed * 0.002) * 3 // Gentle wobble
 
-    // Background scrolls up as rocket goes up (from bottom to top)
-    backgroundY.value = -window.innerHeight + (easeIn * window.innerHeight) // Scroll exactly one viewport height
+    // Background scrolls up as rocket goes up
+    backgroundY.value = -(easeIn * window.innerHeight * 2) // Translate up by 200vh max
 
     if (progress < 1) {
       requestAnimationFrame(animate)
@@ -185,7 +185,7 @@ const startAnimation = async () => {
         rocketY.value = 170 + (exitProgress * 50) // Move further off screen
         
         // Continue scrolling background smoothly
-        backgroundY.value = 0 + (exitProgress * 200) // Continue scrolling up from center
+        backgroundY.value = -(window.innerHeight * 2) - (exitProgress * 200) // Continue from -200vh
 
         if (exitProgress < 1) {
           requestAnimationFrame(exitAnimate)
@@ -225,12 +225,11 @@ onMounted(() => {
 
   &__background {
     position: absolute;
-    top: 0;
+    bottom: 0; // Position at bottom
     left: 0;
     width: 100vw;
-    height: 200vh; // Double height for scrolling
+    height: 300vh; // Triple height as requested
     z-index: 999;
-    transform-origin: top center;
   }
 
   &__bg-image {
