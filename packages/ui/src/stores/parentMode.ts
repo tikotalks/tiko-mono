@@ -59,7 +59,8 @@ export const useParentModeStore = defineStore('parentMode', {
           // Only update if we're not already in an active session
           const currentlyUnlocked = this.isUnlocked
           
-          this.isEnabled = data.parent_mode_enabled
+          // Only consider parent mode enabled if there's actually a PIN hash
+          this.isEnabled = data.parent_mode_enabled && !!data.parent_pin_hash
           this.pinHash = data.parent_pin_hash
           this.settings = {
             ...this.settings,
