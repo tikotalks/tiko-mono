@@ -1,16 +1,10 @@
 <template>
-  <div :class="bemm()">
+  <div :class="bemm('', ['', size])">
     <div :class="bemm('grid')">
-      <button
-        v-for="color in colors"
-        :key="color"
-        :class="bemm('color', ['', modelValue === color ? 'selected' : ''])"
+      <button v-for="color in colors" :key="color" :class="bemm('color', ['', modelValue === color ? 'selected' : ''])"
         :style="{ backgroundColor: `var(--color-${color})`, color: `var(--color-${color}-text)` }"
-        :aria-label="`Select ${color} color`"
-        :aria-pressed="modelValue === color"
-        type="button"
-        @click="selectColor(color)"
-      >
+        :aria-label="`Select ${color} color`" :aria-pressed="modelValue === color" type="button"
+        @click="selectColor(color)">
         <TIcon v-if="modelValue === color" :class="bemm('icon')" :name="Icons.CHECK_FAT" size="small" />
       </button>
     </div>
@@ -20,15 +14,21 @@
 <script setup lang="ts">
 import { useBemm } from 'bemm';
 import TIcon from '../../ui-elements/TIcon/TIcon.vue';
-import { BaseColors } from '../../../types';
+import { AllColors, BaseColors, Size } from '../../../types';
 import { Icons } from 'open-icon';
 
 const bemm = useBemm('color-picker');
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   modelValue?: string;
   colors?: string[];
-}>();
+  size?: Size
+}>(), {
+  modelValue: '',
+  colors: () => Object.values(AllColors) as string[],
+  size: Size.MEDIUM
+});
+
 
 const emit = defineEmits<{
   'update:modelValue': [value: string];
@@ -44,17 +44,36 @@ const selectColor = (color: string) => {
 
 <style lang="scss">
 .color-picker {
+  --color-size: calc(2em * var(--color-scale, 1));
+
+  &--x-small {
+    --color-scale: 0.66;
+  }
+
+  &--small {
+    --color-scale: 0.75;
+  }
+
+  &--medium {
+    --color-scale: 1;
+  }
+
+  &--large {
+    --color-scale: 1.2;
+  }
+
+
   &__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(var(--color-size), 1fr));
     gap: var(--space-xs);
-    max-width: 400px;
+    max-width: 100%;
   }
 
   &__color {
     position: relative;
-    width: 40px;
-    height: 40px;
+    width: var(--color-size);
+    height: var(--color-size);
     border: 2px solid transparent;
     border-radius: var(--border-radius);
     cursor: pointer;
@@ -84,9 +103,10 @@ const selectColor = (color: string) => {
         transform: scale(1.1);
       }
     }
-&__icon{
-  font-size: 1.5em;
-}
+
+    &__icon {
+      font-size: 1.5em;
+    }
   }
 
   // Responsive adjustments

@@ -1,60 +1,61 @@
 <template>
-  <TContextMenu
-    v-if="contextMenu && contextMenu.length > 0 && !isEmpty"
-    :config="{ menu: contextMenu, position: 'bottom-right' }"
-    @menu-open="$emit('menu-open')"
-    @menu-close="$emit('menu-close')"
-  >
-    <div ref="wrapperEl" :class="bemm('wrapper',
-    ['',
+  <TContextMenu v-if="contextMenu && contextMenu.length > 0 && !isEmpty"
+    :config="{ menu: contextMenu, position: 'bottom-right' }" @menu-open="$emit('menu-open')"
+    @menu-close="$emit('menu-close')">
+    <div ref="wrapperEl" :class="bemm('wrapper', ['',
       isDragging ? 'dragging' : '',
       canDrag ? 'can-drag' : '',
       isDragReady ? 'drag-ready' : '',
       isSelected ? 'selected' : '',
       selectionMode ? 'selection-mode' : '',
-      isImageLoaded && displayImage && imageUrl ? 'image-loaded' : ''
+      isImageLoaded && displayImage && imageUrl ? 'image-loaded' : '',
+      props.customState || ''
     ])" @click.stop="handleClick" @mousedown.stop="handleMouseDown" @mouseup.stop="handleMouseUp"
-    @touchstart.stop="handleTouchStart" @touchend.stop="handleTouchEnd" @touchmove.stop="handleTouchMove"
-    @touchcancel.stop="handleTouchEnd" :draggable="canDrag" @dragstart.stop="handleDragStart"
-    @dragend.stop="handleDragEnd" @dragover.stop="handleDragOver" @dragleave.stop="handleDragLeave"
-    @drop.stop="handleDrop">
-    <article :class="bemm('', ['', isEmpty ? 'empty' : '', editMode ? 'edit-mode' : '', isImageLoaded && displayImage && imageUrl ? 'pop-in' : ''])"
-      :style="!isEmpty && card?.color ? { '--card-color': `var(--color-${card.color})`, '--card-text': `var(--color-${card.color}-text)`, } : undefined">
-      <div v-if="isEmpty && editMode" :class="bemm('empty-state')">
-        <TIcon name="plus" size="large" />
-      </div>
-      <div v-else :class="bemm('container')">
-        <!-- Show mini grid for groups with children -->
-        <div v-if="hasChildren && children?.length" :class="bemm('mini-grid')">
-          <!-- Background image -->
-          <div v-if="displayImage && imageUrl" :class="bemm('mini-grid-bg')"
-            :style="{ backgroundImage: `url(${imageUrl})` }" />
+      @touchstart.stop="handleTouchStart" @touchend.stop="handleTouchEnd" @touchmove.stop="handleTouchMove"
+      @touchcancel.stop="handleTouchEnd" :draggable="canDrag" @dragstart.stop="handleDragStart"
+      @dragend.stop="handleDragEnd" @dragover.stop="handleDragOver" @dragleave.stop="handleDragLeave"
+      @drop.stop="handleDrop">
 
-          <!-- Mini tiles -->
-          <div :class="bemm('mini-tiles')">
-            <div v-for="(child, index) in children.slice(0, 9)" :key="child.id" :class="bemm('mini-tile')"
-              :style="child.color ? { backgroundColor: `var(--color-${child.color})` } : undefined">
-              <img v-if="child.image" :src="getThumbnailUrl(child.image)" :alt="child.title" />
+      <article :class="tileClasses" :style="!isEmpty && card?.color ? {
+        '--card-color': `var(--color-${card.color})`,
+        '--card-text': `var(--color-${card.color}-text)`,
+      } : undefined">
+        <div v-if="isEmpty && editMode" :class="bemm('empty-state')">
+          <TIcon name="plus" size="large" />
+        </div>
+        <div v-else :class="bemm('container')">
+
+          <!-- Show mini grid for groups with children -->
+          <div v-if="hasChildren && children?.length" :class="bemm('mini-grid')">
+            <!-- Background image -->
+            <div v-if="displayImage && imageUrl" :class="bemm('mini-grid-bg')"
+              :style="{ backgroundImage: `url(${imageUrl})` }" />
+
+            <!-- Mini tiles -->
+            <div :class="bemm('mini-tiles')">
+              <div v-for="(child, idx) in children.slice(0, 9)" :key="child.id + idx" :class="bemm('mini-tile')"
+                :style="child.color ? { backgroundColor: `var(--color-${child.color})` } : undefined">
+                <img v-if="child.image" :src="getThumbnailUrl(child.image)" :alt="child.title" />
+              </div>
             </div>
           </div>
+
+          <!-- Regular tile content for non-groups -->
+          <template v-else>
+            <figure v-if="displayImage && imageUrl && isImageLoaded" :class="bemm('figure')">
+              <img :src="imageUrl" :alt="card.title" :class="bemm('image')" draggable="false" />
+            </figure>
+          </template>
+
+          <h3 v-if="displayTitle && card?.title" :class="bemm('title')">{{ card.title }}</h3>
         </div>
 
-        <!-- Regular tile content for non-groups -->
-        <template v-else>
-          <figure v-if="displayImage && imageUrl && isImageLoaded" :class="bemm('figure')">
-            <img :src="imageUrl" :alt="card.title" :class="bemm('image')" draggable="false" />
-          </figure>
-        </template>
-
-        <h3 v-if="displayTitle && card?.title" :class="bemm('title')">{{ card.title }}</h3>
-      </div>
-
-      <!-- Selection indicator -->
-      <div v-if="isSelected && selectionMode" :class="bemm('selection-indicator')">
-        <TIcon name="check" size="small" />
-      </div>
-    </article>
-  </div>
+        <!-- Selection indicator -->
+        <div v-if="isSelected && selectionMode" :class="bemm('selection-indicator')">
+          <TIcon name="check" size="small" />
+        </div>
+      </article>
+    </div>
   </TContextMenu>
 
   <!-- Fallback when no context menu -->
@@ -65,13 +66,14 @@
       isDragReady ? 'drag-ready' : '',
       isSelected ? 'selected' : '',
       selectionMode ? 'selection-mode' : '',
-      isImageLoaded && displayImage && imageUrl ? 'image-loaded' : ''
+      isImageLoaded && displayImage && imageUrl ? 'image-loaded' : '',
+      props.customState || ''
     ])" @click.stop="handleClick" @mousedown.stop="handleMouseDown" @mouseup.stop="handleMouseUp"
     @touchstart.stop="handleTouchStart" @touchend.stop="handleTouchEnd" @touchmove.stop="handleTouchMove"
     @touchcancel.stop="handleTouchEnd" :draggable="canDrag" @dragstart.stop="handleDragStart"
     @dragend.stop="handleDragEnd" @dragover.stop="handleDragOver" @dragleave.stop="handleDragLeave"
     @drop.stop="handleDrop">
-    <article :class="bemm('', ['', isEmpty ? 'empty' : '', editMode ? 'edit-mode' : '', isImageLoaded && displayImage && imageUrl ? 'pop-in' : ''])"
+    <article :class="tileClasses"
       :style="!isEmpty && card?.color ? { '--card-color': `var(--color-${card.color})`, '--card-text': `var(--color-${card.color}-text)`, } : undefined">
       <div v-if="isEmpty && editMode" :class="bemm('empty-state')">
         <TIcon name="plus" size="large" />
@@ -85,7 +87,7 @@
 
           <!-- Mini tiles -->
           <div :class="bemm('mini-tiles')">
-            <div v-for="(child, index) in children.slice(0, 9)" :key="child.id" :class="bemm('mini-tile')"
+            <div v-for="(child, index) in children.slice(0, 9)" :key="child.id + index" :class="bemm('mini-tile')"
               :style="child.color ? { backgroundColor: `var(--color-${child.color})` } : undefined">
               <img v-if="child.image" :src="getThumbnailUrl(child.image)" :alt="child.title" />
             </div>
@@ -264,12 +266,12 @@ const handleTouchMove = (event: TouchEvent) => {
   }
 };
 
-const handleTouchEnd = (event: TouchEvent) => {
+const handleTouchEnd = (_event: TouchEvent) => {
   cancelLongPress();
 };
 
 // Click handling
-const handleClick = (event: MouseEvent) => {
+const handleClick = (_event: MouseEvent) => {
   // Only emit click if not drag ready
   if (!isDragReady.value) {
     emit('click');
@@ -301,6 +303,16 @@ const handleDragLeave = (event: DragEvent) => {
 const handleDrop = (event: DragEvent) => {
   emit('drop', event);
 };
+
+const tileClasses = computed(() => {
+  return bemm('', [
+    '',
+    props.isEmpty ? 'empty' : 'filled',
+    props.editMode ? 'edit-mode' : 'non-edit-mode',
+    displayImage.value && imageUrl.value ? 'has-image' : 'no-image',
+    isImageLoaded.value && displayImage.value && imageUrl.value ? 'pop-in' : ''
+  ])
+});
 </script>
 
 <style lang="scss">
@@ -342,7 +354,22 @@ const handleDrop = (event: DragEvent) => {
 
   // Pop-in animation when image loads
   &--pop-in {
-    animation: tile-image-pop-in 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) both;
+    animation: tile-image-pop-in 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+  }
+
+  // Remove debug borders
+  &--no-image {
+    --card-title-bottom: 50%;
+    --card-title-font-size: clamp(.75em, 3vw, 1.125em);
+    --card-title-transform: translateY(50%);
+  }
+
+  // Ensure hover works for cards with images
+  &--has-image {
+    &:hover {
+      transform: scale(.95);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
   }
 
   &__container {
@@ -373,13 +400,15 @@ const handleDrop = (event: DragEvent) => {
     height: 100%;
     background-size: cover;
     background-position: center;
-    opacity: 0.2;
-    filter: blur(2px);
+    opacity: 0.5;
+    filter: blur(1px);
+    z-index: 0;
   }
 
   &__mini-tiles {
     position: relative;
     width: 100%;
+    z-index: 1;
     height: 100%;
     padding: var(--space-s);
     display: grid;
@@ -427,17 +456,20 @@ const handleDrop = (event: DragEvent) => {
   }
 
   &__title {
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     font-size: clamp(0.75rem, 2vw, 1rem);
     text-align: center;
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
     width: fit-content;
+    font-size: var(--card-title-font-size, clamp(0.75rem, 2vw, 1rem));
     line-height: 1;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+    z-index: 2;
     position: absolute;
-    bottom: var(--space-s);
+    bottom: var(--card-title-bottom, var(--space-s));
+    transform: var(--card-title-transform, translateY(0%));
     margin: auto;
     padding: .25em .5em;
     background-color: var(--card-color);
@@ -484,7 +516,7 @@ const handleDrop = (event: DragEvent) => {
     right: 0.5rem;
     width: 2rem;
     height: 2rem;
-    background:var(--color-primary);
+    background: var(--color-primary);
     color: white;
     border-radius: 50%;
     display: flex;
@@ -561,6 +593,7 @@ const handleDrop = (event: DragEvent) => {
     opacity: 0;
     transform: scale(0.8);
   }
+
   100% {
     opacity: 1;
     transform: scale(1);

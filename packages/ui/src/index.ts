@@ -76,6 +76,7 @@ export { default as TTextArea } from './components/forms/TForm/inputs/TInputText
 export { default as TFormGroup } from './components/forms/TForm/TFormGroup.vue';
 export { default as TFormField } from './components/forms/TForm/TFormField.vue';
 export { default as TColorPicker } from './components/forms/TColorPicker/TColorPicker.vue';
+export * from './components/forms/TColorPickerPopup';
 export { default as TForm } from './components/forms/TForm/TForm.vue';
 export { default as TFormActions } from './components/forms/TFormActions/TFormActions.vue';
 export { default as TTextarea } from './components/forms/TForm/inputs/TInputTextArea/TInputTextArea.vue';

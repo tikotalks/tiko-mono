@@ -11,4 +11,5 @@ export interface TCardGridProps {
   selectedTileIds?: Set<string>;
   isLoading?: boolean;
   getContextMenu?: (card: TCardTile, index: number) => any[];
+  autoArrange?: boolean;
 }

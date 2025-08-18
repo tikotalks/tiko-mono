@@ -33,4 +33,5 @@ export interface TCardTileProps {
   isSelected?: boolean;
   selectionMode?: boolean;
   contextMenu?: any[];
+  customState?: string;
 }

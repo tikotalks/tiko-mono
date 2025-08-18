@@ -1,0 +1,173 @@
+<template>
+  <div :class="bemm('', ['', items.length ? 'has-items' : 'no-items'])">
+    <div :class="bemm('header')">
+      <div :class="bemm('counter')">
+        {{ items.length }} / {{ totalItems }}
+      </div>
+    </div>
+
+    <div :class="bemm('items')">
+      <TransitionGroup name="order-item">
+        <div v-for="(item, index) in items" :key="item.id" :class="bemm('item')" :style="{ '--index': index }">
+          <div :class="bemm('item-number')">{{ index + 1 }}</div>
+          <TCardTile :class="bemm('tile')" :card="item" :show-image="true" :show-title="true" :edit-mode="false" />
+        </div>
+      </TransitionGroup>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useBemm } from 'bemm'
+import { TCardTile, useI18n } from '@tiko/ui'
+import type { TCardTile as CardTileType } from '@tiko/ui'
+
+const props = defineProps<{
+  items: CardTileType[]
+  totalItems?: number
+}>()
+
+const bemm = useBemm('bottom-order-board')
+const { t } = useI18n()
+
+const totalItems = computed(() => props.totalItems || props.items.length)
+</script>
+
+<style lang="scss">
+.bottom-order-board {
+  background: var(--color-background);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--border-radius);
+  padding: var(--space);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+  transition: .3s cubic-bezier(0, .5, .5, 1.5);
+
+  position: fixed;
+bottom: 0; left: 0; right: 0;
+margin: var(--space);
+
+  &--no-items {
+    transform: scale(.75);
+    opacity: 0;
+  }
+
+  &--has-items {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  &__title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  &__counter {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+  }
+
+  &__items {
+    display: flex;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+
+    &::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: var(--color-background);
+      border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--color-primary);
+      border-radius: 3px;
+    }
+  }
+
+  &__tile {
+    width: 80px;
+    height: 80px;
+
+    :deep(.t-card-tile) {
+      width: 100%;
+      height: 100%;
+
+      .t-card-tile__title {
+        font-size: 0.75rem;
+        padding: 0.25rem;
+      }
+
+      .t-card-tile__figure {
+        margin-bottom: 0.25rem;
+      }
+    }
+  }
+
+  &__item {
+    position: relative;
+    flex-shrink: 0;
+    animation: slideIn 0.3s ease-out;
+    animation-delay: calc(var(--index) * 0.05s);
+    animation-fill-mode: both;
+  }
+
+  &__item-number {
+    position: absolute;
+    top: -0.5rem;
+    left: -0.5rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    background: var(--color-primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    z-index: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.order-item-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.order-item-leave-active {
+  transition: all 0.3s ease-in;
+}
+
+.order-item-enter-from {
+  opacity: 0;
+  transform: translateY(1rem);
+}
+
+.order-item-leave-to {
+  opacity: 0;
+  transform: translateY(-1rem);
+}
+</style>

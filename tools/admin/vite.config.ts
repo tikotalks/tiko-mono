@@ -42,7 +42,13 @@ const pwaConfig = {
 }
 
 // Disable PWA for development to avoid caching issues
-export default createViteConfig(__dirname, 5000, process.env.NODE_ENV === 'production' ? pwaConfig : null, 'admin', {
-  // Admin uses shared @tiko/ui translations, no app-specific translations
-  appSpecific: false
+export default createViteConfig({
+  dirname: __dirname,
+  port: 5000,
+  pwaConfig: process.env.NODE_ENV === 'production' ? pwaConfig : null,
+  appName: 'admin',
+  i18nConfig: {
+    // Admin uses shared @tiko/ui translations, no app-specific translations
+    appSpecific: false
+  }
 })

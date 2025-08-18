@@ -89,9 +89,11 @@ export type Status = (typeof Status)[keyof typeof Status];
 
 export const Size = {
 	DEFAULT: 'default',
+	X_SMALL: 'x-small',
 	SMALL: 'small',
 	MEDIUM: 'medium',
 	LARGE: 'large',
+	X_LARGE: 'x-large',
 };
 export type Size = (typeof Size)[keyof typeof Size];
 
