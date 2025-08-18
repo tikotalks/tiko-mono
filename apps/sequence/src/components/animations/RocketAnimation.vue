@@ -26,14 +26,7 @@
         @load="handleRocketLoad" />
     </div>
 
-    <!-- Debug info -->
-    <div :class="bemm('debug')">
-      <div>Animation Phase: {{ animationPhase }}</div>
-      <div>Animation Started: {{ animationStarted }}</div>
-      <div>Rocket Y: {{ rocketY.toFixed(2) }}%</div>
-      <div>Background loaded: {{ backgroundLoaded }}</div>
-      <div>Rocket loaded: {{ rocketLoaded }}</div>
-    </div>
+    <!-- Debug info hidden -->
   </div>
 </template>
 
@@ -165,7 +158,7 @@ const startAnimation = async () => {
     rocketRotation.value = Math.sin(elapsed * 0.002) * 3 // Gentle wobble
 
     // Background scrolls up as rocket goes up
-    backgroundY.value = -(easeIn * window.innerHeight * 2) // Translate up by 200vh max
+    backgroundY.value = easeIn * window.innerHeight * 2 // Translate down by 200vh (moves image up)
 
     if (progress < 1) {
       requestAnimationFrame(animate)
@@ -183,9 +176,9 @@ const startAnimation = async () => {
 
         // Continue moving up
         rocketY.value = 170 + (exitProgress * 50) // Move further off screen
-        
-        // Continue scrolling background smoothly
-        backgroundY.value = -(window.innerHeight * 2) - (exitProgress * 200) // Continue from -200vh
+
+        // Keep background at final position
+        backgroundY.value = window.innerHeight * 2 // Stay at 200vh
 
         if (exitProgress < 1) {
           requestAnimationFrame(exitAnimate)
