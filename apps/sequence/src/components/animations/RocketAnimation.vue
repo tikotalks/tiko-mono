@@ -99,31 +99,27 @@ const backgroundY = ref(0) // Background scroll position
 const rocketStyle = computed(() => {
   return {
     transform: `translate(-50%, ${-rocketY.value}%) rotate(${rocketRotation.value}deg)`,
-    transition: animationPhase.value === 'entering' ? 'transform 1.5s ease-out' : 
-                animationPhase.value === 'bouncing' ? 'transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)' : 
+    transition: animationPhase.value === 'entering' ? 'transform 1.5s ease-out' :
+                animationPhase.value === 'bouncing' ? 'transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)' :
                 'none'
   }
 })
 
 const backgroundStyle = computed(() => ({
-  transform: `translateY(${backgroundY.value}px)`,
-  transition: animationPhase.value === 'flying' ? 'transform 2s linear' : 'none'
+  transform: `translateY(${backgroundY.value}px)`
+  // No transition - handle animation in JavaScript for smooth control
 }))
 
 // Animation sequence
 const startAnimation = async () => {
   console.log('Starting rocket animation...')
 
-  // Play rocket sound
-  playSound({
-    id: SOUNDS.ROCKET,
-    volume: 0.7
-  })
+
 
   // Phase 1: Rocket enters from bottom
   animationPhase.value = 'entering'
   rocketY.value = 50 // Move to center of screen
-  
+
   // Wait for entrance animation
   await new Promise(resolve => setTimeout(resolve, 1500))
 
@@ -145,6 +141,11 @@ const startAnimation = async () => {
     await new Promise(resolve => setTimeout(resolve, bounce.duration))
   }
 
+    // Play rocket sound
+    playSound({
+    id: SOUNDS.ROCKET,
+    volume: 0.7
+  })
   // Phase 3: Flying animation
   animationPhase.value = 'flying'
 
@@ -163,26 +164,30 @@ const startAnimation = async () => {
     rocketY.value = 50 + (easeIn * 120) // From 50% (center) to 170% (off screen)
     rocketRotation.value = Math.sin(elapsed * 0.002) * 3 // Gentle wobble
 
-    // Background scrolls down as rocket goes up
-    backgroundY.value = easeIn * 1500 // Scroll background down
+    // Background scrolls down as rocket goes up (negative value to move up)
+    backgroundY.value = -easeIn * (window.innerHeight * 0.8) // Scroll background up
 
     if (progress < 1) {
       requestAnimationFrame(animate)
     } else {
       // Phase 4: Exit animation
       animationPhase.value = 'exiting'
-      
+
       // Continue moving rocket further off screen
       const exitDuration = 1000
       const exitStartTime = Date.now()
-      
+
       const exitAnimate = () => {
         const exitElapsed = Date.now() - exitStartTime
         const exitProgress = Math.min(exitElapsed / exitDuration, 1)
-        
+
         // Continue moving up
         rocketY.value = 170 + (exitProgress * 50) // Move further off screen
         
+        // Continue scrolling background smoothly
+        const currentBgY = -(window.innerHeight * 0.8)
+        backgroundY.value = currentBgY - (exitProgress * 200) // Continue scrolling up
+
         if (exitProgress < 1) {
           requestAnimationFrame(exitAnimate)
         } else {
@@ -193,7 +198,7 @@ const startAnimation = async () => {
           }, 300)
         }
       }
-      
+
       requestAnimationFrame(exitAnimate)
     }
   }
@@ -221,14 +226,11 @@ onMounted(() => {
 
   &__background {
     position: absolute;
-    bottom: 0;
+    top: 0;
     left: 0;
     width: 100vw;
-    height: 300vh;
+    height: 200vh; // Double height for scrolling
     z-index: 999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
   &__bg-image {
