@@ -50,7 +50,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useBemm } from 'bemm'
-import { useImageUrl, useAssetsStore, useMediaStore } from '@tiko/core'
+import { useImageUrl, useImageResolver } from '@tiko/core'
 import type { TImageProps, TImageEmits } from './TImage.model'
 
 const props = withDefaults(defineProps<TImageProps>(), {
@@ -65,9 +65,8 @@ const props = withDefaults(defineProps<TImageProps>(), {
 const emit = defineEmits<TImageEmits>()
 
 const bemm = useBemm('t-image')
-const { getOptimizedUrl, getResponsiveSources, getImageVariants } = useImageUrl()
-const assetsStore = useAssetsStore()
-const mediaStore = useMediaStore()
+const { getOptimizedUrl, getResponsiveSources } = useImageUrl()
+const { resolveImageUrl, isUUID } = useImageResolver()
 
 // Refs
 const imgRef = ref<HTMLImageElement>()
@@ -99,61 +98,14 @@ const resolvedSrc = ref<string>('')
 
 // Resolve src based on media type and UUID
 const resolveSrc = async () => {
-  const src = currentSrc.value
-
-  // If it's already a full URL, use as is
-  if (src.startsWith('http://') || src.startsWith('https://')) {
-    resolvedSrc.value = src
-    return
+  try {
+    resolvedSrc.value = await resolveImageUrl(currentSrc.value, {
+      media: props.media
+    })
+  } catch (error) {
+    console.error('[TImage] Failed to resolve image:', error)
+    resolvedSrc.value = ''
   }
-
-  // If it looks like a UUID, resolve based on media type
-  if (isUUID(src)) {
-    const mediaType = props.media || 'assets' // Default to assets
-
-    switch (mediaType) {
-      case 'assets':
-        try {
-          const asset = await assetsStore.getAsset(src)
-          if (asset) {
-            // Get the original, unoptimized URL
-            resolvedSrc.value = assetsStore.getAssetUrl(asset)
-            return
-          }
-        } catch (error) {
-          console.warn(`[TImage] Failed to load from assets: ${error}`)
-        }
-        break
-
-      case 'user':
-        // TODO: Create a method to fetch single user media by ID
-        // For now, just construct the URL directly
-        resolvedSrc.value = `https://user-media.tikocdn.org/${src}`
-        return
-
-      case 'public':
-        // Fetch just this ONE image from the media store (with caching)
-        try {
-          const media = await mediaStore.getMediaItem(src)
-          if (media) {
-            // Get the original, unoptimized URL
-            resolvedSrc.value = media.filename
-              ? `https://media.tikocdn.org/${media.filename}`
-              : `https://media.tikocdn.org/${src}`
-          } else {
-            // Fallback to constructed URL
-            resolvedSrc.value = `https://media.tikocdn.org/${src}`
-          }
-        } catch (error) {
-          console.warn(`[TImage] Failed to fetch public media ${src}:`, error)
-          resolvedSrc.value = `https://media.tikocdn.org/${src}`
-        }
-        return
-    }
-  }
-
-  // Otherwise treat as a path
-  resolvedSrc.value = src.startsWith('/') ? src : `/${src}`
 }
 
 const optimizedSrc = computed(() => {
@@ -212,11 +164,6 @@ const imageClasses = computed(() => {
 })
 
 // Methods
-const isUUID = (str: string): boolean => {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-  return uuidRegex.test(str)
-}
-
 const handleLoad = () => {
   isLoading.value = false
   hasError.value = false
@@ -229,22 +176,6 @@ const handleError = async (event: Event) => {
   // If media prop is specified, don't try other sources
   if (props.media) {
     console.log(`[TImage] Media type "${props.media}" specified, not trying other sources`)
-  } else if (isUUID(props.src)) {
-    // Only try fallback sources if no media prop is specified
-
-    // If this was an assets URL and it failed, try user media
-    if (currentSrc.value === props.src && resolvedSrc.value.includes('assets.tikocdn.org')) {
-      console.log('[TImage] Trying user media library...')
-      currentSrc.value = `https://user-media.tikocdn.org/${props.src}`
-      return
-    }
-
-    // If this was a user media URL and it failed, try public media
-    if (currentSrc.value === props.src && resolvedSrc.value.includes('user-media')) {
-      console.log('[TImage] Trying public media library...')
-      currentSrc.value = `https://media.tikocdn.org/${props.src}`
-      return
-    }
   }
 
   // If we have a fallback, use it

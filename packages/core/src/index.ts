@@ -46,6 +46,8 @@ export { useSentenceBuilder, useSentenceBuilders } from './composables/useSenten
 export type { UseSentenceBuilderOptions, UseSentenceBuilderReturn } from './composables/useSentenceBuilder'
 export { usePlaySound, SOUNDS } from './composables/usePlaySound'
 export type { PlaySoundOptions, UsePlaySoundReturn, SoundId } from './composables/usePlaySound'
+export { useImageResolver } from './composables/useImageResolver'
+export type { MediaType, ResolveImageOptions, ResolvedImage } from './composables/useImageResolver'
 
 // Constants
 export * from './constants'

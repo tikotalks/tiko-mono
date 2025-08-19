@@ -221,6 +221,7 @@ const navigationItems = computed<NavigationItem[]>(() => [
         name: 'library',
         to: { name: 'Library' },
         icon: Icons.IMAGE,
+        active: isOpen('library'),
         label: t('admin.navigation.library'),
       },
       {
@@ -232,7 +233,8 @@ const navigationItems = computed<NavigationItem[]>(() => [
       {
         name: 'generate',
         to: { name: 'Generate' },
-        icon: Icons.SPARKLE,
+        icon: Icons.AI_FACE,
+        active: isOpen('library'),
         label: t('admin.navigation.generate'),
       },
       {
@@ -247,15 +249,15 @@ const navigationItems = computed<NavigationItem[]>(() => [
         icon: Icons.FOLDER,
         label: t('admin.navigation.collections'),
       },
+      {
+        name: 'assets',
+        to: { name: 'Assets' },
+        icon: Icons.FILE,
+        label: t('admin.navigation.assets'),
+        action: () => toggleOpen('assets'),
+        active: isOpen('assets'),
+      },
     ],
-  },
-  {
-    name: 'assets',
-    to: { name: 'Assets' },
-    icon: Icons.FILE,
-    label: t('admin.navigation.assets'),
-    active: isOpen('assets'),
-    action: () => toggleOpen('assets'),
   },
   {
     name: 'users',

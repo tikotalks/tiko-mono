@@ -1,7 +1,7 @@
 <template>
   <div :class="bemm()">
     <!-- Pagination dots -->
-    <div v-if="totalPages > 1 && !props.autoArrange" :class="bemm('pagination')">
+    <div v-if="totalPages > 1" :class="bemm('pagination')">
       <button v-for="page in totalPages" :key="page"
         :class="bemm('dot', ['', page === currentPage + 1 ? 'active' : 'inactive'])" :aria-label="`Go to page ${page}`"
         @click="goToPage(page - 1)" />
@@ -16,12 +16,11 @@
       }">
         <!-- Each page panel -->
         <div v-for="(pageCards, pageIndex) in paginatedCards" :key="`page-${pageIndex}`" :class="bemm('panel')">
-          <div :class="bemm('cards', ['', viewType, props.autoArrange ? 'auto-arrange' : ''])" :style="{
-            '--grid-cols': String(autoArrangeGrid?.cols || grid.cols),
-            '--grid-rows': String(autoArrangeGrid?.rows || grid.rows),
-            '--tile-size': `${props.autoArrange ? autoArrangeTileSize : tileSize}px`,
+          <div :class="bemm('cards', ['', viewType])" :style="{
+            '--grid-cols': String(grid.cols),
+            '--grid-rows': String(grid.rows),
+            '--tile-size': `${tileSize}px`,
             '--tile-gap': `${TILE_CONFIG.tileGap}px`,
-            '--is-centered': autoArrangeGrid?.centered ? '1' : '0',
           }">
             <template v-for="(card, index) in pageCards" :key="`slot-${pageIndex}-${index}`">
               <div v-if="card" :class="bemm('tile-wrapper', ['', card.type !== CardTileTypes.GHOST && !card.id.startsWith('empty-') && !animatedTileIds.has(card.id) ? 'animating' : ''])
@@ -311,91 +310,9 @@ const animatingPages = ref<Set<number>>(new Set());
 
 // Calculate cards per page based on grid
 const cardsPerPage = computed(() => {
-  if (props.autoArrange) {
-    // In auto-arrange mode, fit all cards on one page
-    return Math.max(props.cards.length, grid.value.cols * grid.value.rows);
-  }
   return grid.value.cols * grid.value.rows;
 });
 
-// Calculate optimal grid for auto-arrange
-const autoArrangeGrid = computed(() => {
-  if (!props.autoArrange) return null;
-
-  const cardCount = props.cards.filter(c => !c.id.startsWith('empty-')).length;
-
-  // For small numbers, try to center
-  if (cardCount === 1) {
-    return { cols: 1, rows: 1, centered: true };
-  } else if (cardCount === 2) {
-    return { cols: 2, rows: 1, centered: true };
-  } else if (cardCount === 3) {
-    return { cols: 3, rows: 1, centered: true };
-  } else if (cardCount === 4) {
-    return { cols: 2, rows: 2, centered: true };
-  } else if (cardCount <= 6) {
-    return { cols: 3, rows: 2, centered: true };
-  } else if (cardCount <= 9) {
-    return { cols: 3, rows: 3, centered: true };
-  } else if (cardCount <= 12) {
-    return { cols: 4, rows: 3, centered: true };
-  }
-
-  // For larger numbers, use the regular grid
-  return { cols: grid.value.cols, rows: grid.value.rows, centered: false };
-});
-
-// Calculate tile size for auto-arrange mode
-const autoArrangeTileSize = computed(() => {
-  if (!props.autoArrange) {
-    return tileSize.value || 100;
-  }
-
-  // Always return a minimum size while dimensions are being calculated
-  if (screenWidth.value === 0 || screenHeight.value === 0) {
-    return TILE_CONFIG.minTileSize || 80;
-  }
-
-  const cardCount = props.cards.filter(c => !c.id.startsWith('empty-')).length;
-  const effectiveWidth = screenWidth.value - TILE_CONFIG.horizontalPadding;
-  const effectiveHeight = screenHeight.value - TILE_CONFIG.verticalPadding - 100; // Account for header/footer
-
-  // Get grid dimensions for auto-arrange
-  const gridInfo = autoArrangeGrid.value;
-  if (!gridInfo) return TILE_CONFIG.minTileSize;
-
-  // Calculate based on what fits better
-  const cols = gridInfo.cols;
-  const rows = Math.ceil(cardCount / cols);
-
-  const totalGapsX = (cols - 1) * TILE_CONFIG.tileGap;
-  const totalGapsY = (rows - 1) * TILE_CONFIG.tileGap;
-
-  const maxWidthTileSize = Math.floor((effectiveWidth - totalGapsX) / cols);
-  const maxHeightTileSize = Math.floor((effectiveHeight - totalGapsY) / rows);
-
-  // Use the smaller of the two to ensure everything fits
-  const calculatedSize = Math.min(maxWidthTileSize, maxHeightTileSize, 200); // Cap at 200px
-
-  // Ensure minimum size and never return 0
-  const finalSize = Math.max(calculatedSize, TILE_CONFIG.minTileSize, 80);
-
-  console.log('[CardGrid] Auto-arrange tile size:', {
-    cardCount,
-    screenWidth: screenWidth.value,
-    screenHeight: screenHeight.value,
-    effectiveWidth,
-    effectiveHeight,
-    cols,
-    rows,
-    maxWidthTileSize,
-    maxHeightTileSize,
-    calculatedSize,
-    finalSize
-  });
-
-  return finalSize;
-});
 
 // Create empty card placeholder
 const createEmptyCard = (index: number): TCardTile => ({
@@ -412,16 +329,6 @@ const createEmptyCard = (index: number): TCardTile => ({
 // Paginate cards with proper positioning
 const paginatedCards = computed(() => {
   const pages: Array<Array<TCardTile | null>> = [];
-
-  if (props.autoArrange) {
-    // In auto-arrange mode, put all cards on one page
-    // Don't sort - use the order provided by the parent component
-    const nonEmptyCards = props.cards.filter(c => !c.id.startsWith('empty-'));
-
-    // Create a single page with all cards
-    pages.push(nonEmptyCards);
-    return pages;
-  }
 
   // Regular pagination logic
   // Find the highest index among all cards to determine pages needed
@@ -865,15 +772,6 @@ const handleDrop = (event: DragEvent, targetCard: TCardTile) => {
 
 };
 
-// Watch for autoArrange prop changes
-watch(() => props.autoArrange, (newValue) => {
-  if (newValue) {
-    // Trigger dimension update when switching to auto-arrange mode
-    nextTick(() => {
-      updateDimensions();
-    });
-  }
-});
 
 // Initialize and handle resize
 onMounted(() => {
@@ -883,17 +781,6 @@ onMounted(() => {
     updateTranslateX();
   }, 0);
 
-  // Force another update after a short delay for auto-arrange mode
-  if (props.autoArrange) {
-    setTimeout(() => {
-      updateDimensions();
-    }, 100);
-
-    // Additional update to ensure dimensions are correct
-    setTimeout(() => {
-      updateDimensions();
-    }, 300);
-  }
 
   // Animate tiles on initial load with a slight delay
   setTimeout(() => {
@@ -1039,25 +926,6 @@ watch(() => props.cards, (newCards) => {
       transition: transform 0.3s ease, opacity 0.3s ease;
     }
 
-    &--auto-arrange {
-      // Auto-arrange mode: center the grid when there are few items
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-content: center;
-      grid-template-columns: none;
-      grid-template-rows: none;
-
-      .t-card-grid__tile-wrapper {
-        width: var(--tile-size);
-        height: var(--tile-size);
-        margin: calc(var(--tile-gap) / 2);
-        flex: 0 0 var(--tile-size);
-        max-width: var(--tile-size);
-        min-width: var(--tile-size);
-        min-height: var(--tile-size);
-      }
-    }
   }
 
   &__arrow {

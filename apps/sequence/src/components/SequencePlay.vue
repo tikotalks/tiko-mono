@@ -2,17 +2,17 @@
   <div :class="bemm()">
     <!-- Play area with shuffled items -->
     <div :class="bemm('play-area')">
-      <TCardGrid
+      <TCardFlowGrid
         :cards="visibleItems"
-        :show-arrows="false"
         :edit-mode="props.editMode"
-        :tiles-with-children="new Set()"
-        :tile-children-map="new Map()"
-        :is-tile-dragging="false"
         :selection-mode="false"
         :selected-tile-ids="new Set()"
         :is-loading="false"
-        :auto-arrange="true"
+        :scroll-direction="'vertical'"
+        :min-tile-size="120"
+        :max-tile-size="200"
+        :gap="16"
+        :center-items="true"
         :get-context-menu="props.editMode ? getItemContextMenu : undefined"
         @card-click="handleCardClick"
       />
@@ -33,7 +33,7 @@
 <script setup lang="ts">
 import { computed, watch, nextTick, ref } from 'vue'
 import { useBemm } from 'bemm'
-import { TCardTile, TButton, TCardGrid, useI18n } from '@tiko/ui'
+import { TCardTile, TButton, TCardFlowGrid, useI18n } from '@tiko/ui'
 import type { TCardTile as CardTileType } from '@tiko/ui'
 import { useSequenceStore } from '../stores/sequence'
 import { usePlaySound, SOUNDS } from '@tiko/core'
@@ -189,8 +189,7 @@ watch(() => props.sequenceId, async (newId) => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  gap: 1rem;
-  padding: 1rem;
+  position: relative;
 
   // Style for selected items in the sequence game
   .t-card-tile__wrapper--sequence-selected {
@@ -216,11 +215,23 @@ watch(() => props.sequenceId, async (newId) => {
 
   &__play-area {
     flex: 1;
-    overflow-y: auto;
+    min-height: 0; // Important for proper flex sizing
+    position: relative;
+    overflow: hidden; // Prevent double scrollbars
+    
+    // The flow grid will handle its own scrolling and sizing
+    .t-card-flow-grid {
+      height: 100%;
+      min-height: 100%;
+    }
   }
 
   &__order-board {
     flex-shrink: 0;
+    z-index: 10; // Ensure it stays above the grid
+    background: var(--color-background);
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--space-m);
   }
 }
 
