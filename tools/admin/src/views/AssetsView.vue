@@ -6,7 +6,7 @@
 
       <div class="assets-actions">
         <TButton
-          :icon="Icons.UPLOAD"
+          :icon="Icons.ARROW_UPLOAD"
           @click="openUploadDialog"
           color="primary"
         >
@@ -14,7 +14,7 @@
         </TButton>
 
         <TButton
-          :icon="Icons.REFRESH"
+          :icon="Icons.ARROW_RELOAD_DOWN_UP"
           @click="loadAssets"
           type="outline"
         >
@@ -27,7 +27,7 @@
     <div class="assets-filters">
       <TInputText
         v-model="searchQuery"
-        :icon="Icons.SEARCH"
+        :icon="Icons.SEARCH_M"
         placeholder="Search assets..."
         @update:model-value="debouncedSearch"
       />
@@ -80,7 +80,7 @@
       <p v-else>Upload your first asset to get started</p>
       <TButton
         v-if="!hasFilters"
-        :icon="Icons.UPLOAD"
+        :icon="Icons.ARROW_UPLOAD"
         @click="openUploadDialog"
         color="primary"
       >
@@ -216,7 +216,7 @@ const goToPage = (page: number) => {
 
 const openUploadDialog = () => {
   if (!popupService) return
-  
+
   popupService.open({
     component: AssetUploadDialog,
     title: 'Upload Asset',
@@ -228,7 +228,7 @@ const openUploadDialog = () => {
 
 const openAssetDetail = (asset: Asset) => {
   if (!popupService) return
-  
+
   popupService.open({
     component: AssetDetailDialog,
     title: 'Asset Details',
@@ -286,14 +286,22 @@ const getContextMenuItems = (asset: Asset) => {
   return [
     {
       label: 'View Details',
-      icon: Icons.INFO,
+      icon: Icons.INFO_M,
       action: () => openAssetDetail(asset)
     },
     {
       label: 'Copy URL',
-      icon: Icons.COPY,
+      icon: Icons.FILE_MULTIPLY,
       action: () => {
         navigator.clipboard.writeText(assetsService.getAssetUrl(asset))
+        // TODO: Show toast notification
+      }
+    },
+    {
+      label: 'Copy ID',
+      icon: Icons.FILE_CODE,
+      action: () => {
+        navigator.clipboard.writeText(asset.id)
         // TODO: Show toast notification
       }
     },

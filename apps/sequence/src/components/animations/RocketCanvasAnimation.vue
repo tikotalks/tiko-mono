@@ -35,6 +35,16 @@ const { playSound } = usePlaySound()
 const backgroundId = '651585d8-2210-4b8c-8fe0-c1404ee19796'
 const rocketId = 'ec501b1c-4a9a-465c-b32b-609369e7a87a'
 
+// Fire animation IDs
+const fireImages = {
+  FIRE_1: '36ea493d-59db-4c9f-abc9-1760e5b052fb',
+  FIRE_2: 'd47830b1-a695-4318-a6c7-f2d48e64b723',
+  FIRE_3: '74efda0b-a68f-43bd-bf91-334e16a26d59',
+  FIRE_4: '00eaaa9e-5ba2-40e1-8baa-645085b4f9d6',
+  FIRE_5: '2b7ef62a-c8a0-4f77-be4c-a761feee1971',
+  FIRE_6: '98a3827b-63f5-4d93-9d8a-27096d76b475'
+}
+
 // Component state
 const containerRef = ref<HTMLElement>()
 const phase = ref<'entering' | 'bouncing' | 'flying' | 'exiting' | 'complete'>('entering')
@@ -42,10 +52,13 @@ const animationState = ref<'idle' | 'playing' | 'complete'>('idle')
 const hideAnimation = ref(false)
 const showDebug = ref(false)
 const imagesLoaded = ref(0)
-const totalImages = ref(2)
+const totalImages = ref(8) // Rocket + Background + 6 fire frames
 
 // Canvas animation instance
 let canvasAnimation: CanvasAnimation | null = null
+// Fire animation state
+let fireAnimationFrame = 0
+let fireAnimationInterval: number | null = null
 
 // Debug info
 const canvasSize = computed(() => {
@@ -59,7 +72,7 @@ const rocketDebugInfo = ref('')
 const startAnimation = async () => {
   if (animationState.value !== 'idle' || !canvasAnimation) return
   
-  console.log('[RocketCanvas] Starting rocket animation sequence')
+  console.log('[RocketCanvas] Starting simple rocket display')
   animationState.value = 'playing'
   phase.value = 'entering'
 
@@ -68,47 +81,58 @@ const startAnimation = async () => {
   const logicalHeight = parseInt(canvas.style.height) || window.innerHeight
   
   // Calculate rocket size (50vh equivalent)
-  const rocketHeight = logicalHeight * 0.5 // 50vh
-  const rocketWidth = rocketHeight * 0.4 // Maintain aspect ratio
+  const rocketHeight = logicalHeight * 0.3 // Smaller rocket
+  const rocketWidth = rocketHeight * 0.6 // Better aspect ratio for rocket
   
-  // Calculate positions
-  const centerX = (logicalWidth / 2) - (rocketWidth / 2)
-  const startY = logicalHeight + 100 // Start below screen
-  const centerY = (logicalHeight / 2) - (rocketHeight / 2)
+  // Position rocket in center of screen
+  const rocketX = (logicalWidth / 2) - (rocketWidth / 2)
+  const rocketY = (logicalHeight / 2) - (rocketHeight / 2)
   
   console.log('[RocketCanvas] Rocket dimensions:', rocketWidth, 'x', rocketHeight)
-  console.log('[RocketCanvas] Positions - centerX:', centerX, 'startY:', startY, 'centerY:', centerY)
+  console.log('[RocketCanvas] Rocket position:', rocketX, rocketY)
   
-  // Create rocket object starting from bottom
+  // Create rocket object in center
   canvasAnimation.createObject(
     'rocket', 
     'rocket', 
-    centerX,
-    startY,
+    rocketX,
+    rocketY,
     rocketWidth, 
     rocketHeight
   )
   
-  // Set initial opacity to 0 for fade-in
+  // Create fire object under the rocket
+  const fireHeight = rocketHeight * 0.4 // Fire size relative to rocket
+  const fireWidth = rocketWidth * 0.7 // Slightly narrower than rocket
+  const fireX = rocketX + (rocketWidth - fireWidth) / 2 // Center under rocket
+  const fireY = rocketY + rocketHeight // Just under rocket
+  
+  canvasAnimation.createObject(
+    'fire',
+    'fire_1', // Use first fire frame (loaded as fire_1)
+    fireX,
+    fireY,
+    fireWidth,
+    fireHeight
+  )
+  
+  // Get objects and add debug borders
   const rocket = canvasAnimation.getObject('rocket')
+  const fire = canvasAnimation.getObject('fire')
+  
   if (rocket) {
-    rocket.opacity = 0
+    rocket.debug = true // This will show borders if canvas animation supports it
+    console.log('[RocketCanvas] Rocket object created:', rocket)
   }
-
-  // Phase 1: Enter from bottom with fade-in (1.5s)
-  canvasAnimation.animate('rocket', [
-    {
-      duration: 1500,
-      easing: CanvasAnimation.easings.easeOutCubic,
-      properties: {
-        y: centerY,
-        opacity: 1
-      }
-    }
-  ], () => {
-    phase.value = 'bouncing'
-    startBouncing()
-  })
+  
+  if (fire) {
+    fire.debug = true // This will show borders if canvas animation supports it
+    console.log('[RocketCanvas] Fire object created:', fire)
+  }
+  
+  // Just keep them steady for now - no animation
+  phase.value = 'complete'
+  animationState.value = 'complete'
 }
 
 const startBouncing = () => {
@@ -118,59 +142,171 @@ const startBouncing = () => {
   const canvas = canvasAnimation.getCanvas()
   const logicalHeight = parseInt(canvas.style.height) || window.innerHeight
   const rocket = canvasAnimation.getObject('rocket')
+  const fire = canvasAnimation.getObject('fire')
   if (!rocket) return
   
   const centerY = (logicalHeight / 2) - (rocket.height / 2)
   
-  // 5 sequential bounces with decreasing amplitude
+  // 5 sequential bounces with decreasing amplitude - UP/DOWN movement only
+  const bouncePositions = [
+    centerY - logicalHeight * 0.05, // 45% equivalent
+    centerY + logicalHeight * 0.02, // 52% equivalent  
+    centerY - logicalHeight * 0.02, // 48% equivalent
+    centerY + logicalHeight * 0.01, // 51% equivalent
+    centerY // Back to center
+  ]
+  
   canvasAnimation.animate('rocket', [
     {
       duration: 600,
       easing: CanvasAnimation.easings.easeInOutQuad,
       properties: {
-        y: centerY - logicalHeight * 0.05, // 45% equivalent
-        rotation: -5
+        y: bouncePositions[0]
       }
     },
     {
       duration: 500,
       easing: CanvasAnimation.easings.easeInOutQuad,
       properties: {
-        y: centerY + logicalHeight * 0.02, // 52% equivalent
-        rotation: 2
+        y: bouncePositions[1]
       }
     },
     {
       duration: 400,
       easing: CanvasAnimation.easings.easeInOutQuad,
       properties: {
-        y: centerY - logicalHeight * 0.02, // 48% equivalent
-        rotation: -2
+        y: bouncePositions[2]
       }
     },
     {
       duration: 300,
       easing: CanvasAnimation.easings.easeInOutQuad,
       properties: {
-        y: centerY + logicalHeight * 0.01, // 51% equivalent
-        rotation: 1
+        y: bouncePositions[3]
       }
     },
     {
       duration: 200,
       easing: CanvasAnimation.easings.easeInOutQuad,
       properties: {
-        y: centerY, // Back to center
-        rotation: 0
+        y: bouncePositions[4]
       }
     }
   ], () => {
     phase.value = 'flying'
     startFlying()
   })
+  
+  // Fire follows rocket bounces
+  if (fire) {
+    canvasAnimation.animate('fire', [
+      {
+        duration: 600,
+        easing: CanvasAnimation.easings.easeInOutQuad,
+        properties: {
+          y: bouncePositions[0] + rocket.height
+        }
+      },
+      {
+        duration: 500,
+        easing: CanvasAnimation.easings.easeInOutQuad,
+        properties: {
+          y: bouncePositions[1] + rocket.height
+        }
+      },
+      {
+        duration: 400,
+        easing: CanvasAnimation.easings.easeInOutQuad,
+        properties: {
+          y: bouncePositions[2] + rocket.height
+        }
+      },
+      {
+        duration: 300,
+        easing: CanvasAnimation.easings.easeInOutQuad,
+        properties: {
+          y: bouncePositions[3] + rocket.height
+        }
+      },
+      {
+        duration: 200,
+        easing: CanvasAnimation.easings.easeInOutQuad,
+        properties: {
+          y: bouncePositions[4] + rocket.height
+        }
+      }
+    ])
+  }
+  
+  // Start gentle up/down idle movement after bounces
+  setTimeout(() => {
+    startIdleMovement()
+  }, 2000) // After all bounces
 }
 
 let wobbleStartTime = 0
+let idleMovementActive = false
+
+const startIdleMovement = () => {
+  if (!canvasAnimation || phase.value !== 'bouncing') return
+  
+  idleMovementActive = true
+  const rocket = canvasAnimation.getObject('rocket')
+  const fire = canvasAnimation.getObject('fire')
+  if (!rocket) return
+  
+  const canvas = canvasAnimation.getCanvas()
+  const logicalHeight = parseInt(canvas.style.height) || window.innerHeight
+  const centerY = (logicalHeight / 2) - (rocket.height / 2)
+  
+  const idleLoop = () => {
+    if (!idleMovementActive || phase.value !== 'bouncing') return
+    
+    // Gentle up/down movement
+    canvasAnimation.animate('rocket', [
+      {
+        duration: 2000,
+        easing: CanvasAnimation.easings.easeInOutQuad,
+        properties: {
+          y: centerY - 10 // Slight up movement
+        }
+      },
+      {
+        duration: 2000,
+        easing: CanvasAnimation.easings.easeInOutQuad,
+        properties: {
+          y: centerY + 10 // Slight down movement
+        }
+      }
+    ], () => {
+      if (idleMovementActive) {
+        setTimeout(idleLoop, 100) // Small delay before next cycle
+      }
+    })
+    
+    // Fire follows
+    if (fire) {
+      canvasAnimation.animate('fire', [
+        {
+          duration: 2000,
+          easing: CanvasAnimation.easings.easeInOutQuad,
+          properties: {
+            y: centerY - 10 + rocket.height
+          }
+        },
+        {
+          duration: 2000,
+          easing: CanvasAnimation.easings.easeInOutQuad,
+          properties: {
+            y: centerY + 10 + rocket.height
+          }
+        }
+      ])
+    }
+  }
+  
+  idleLoop()
+}
 
 const startFlying = () => {
   if (!canvasAnimation) return
@@ -179,25 +315,51 @@ const startFlying = () => {
   const canvas = canvasAnimation.getCanvas()
   const logicalHeight = parseInt(canvas.style.height) || window.innerHeight
   const rocket = canvasAnimation.getObject('rocket')
+  const fire = canvasAnimation.getObject('fire')
   const bg = canvasAnimation.getObject('background')
   if (!rocket) return
+  
+  // Stop idle movement
+  idleMovementActive = false
   
   // Play rocket sound
   playSound({ id: SOUNDS.ROCKET, volume: 0.7 })
   
+  // Make fire bigger for takeoff
+  if (fire) {
+    canvasAnimation.animate('fire', [
+      {
+        duration: 1000,
+        easing: CanvasAnimation.easings.easeOutCubic,
+        properties: {
+          scaleX: 1.5, // Bigger fire
+          scaleY: 1.8,
+          opacity: 1
+        }
+      }
+    ])
+  }
+  
   wobbleStartTime = performance.now()
   const exitY = -rocket.height - 100 // Off-screen top
   
-  // Start wobble animation
+  // Start up/down wobble animation (not rotation)
   const wobble = () => {
     if (phase.value !== 'flying' && phase.value !== 'exiting') return
     
     const currentTime = performance.now()
     const elapsedTime = currentTime - wobbleStartTime
-    const wobbleRotation = Math.sin(elapsedTime * 0.002) * 3 // Gentle wobble
+    const wobbleY = Math.sin(elapsedTime * 0.003) * 8 // Gentle up/down wobble
     
     if (rocket) {
-      rocket.rotation = wobbleRotation
+      // Apply wobble relative to current position
+      const baseY = rocket.y
+      rocket.y = baseY + wobbleY
+    }
+    
+    if (fire) {
+      // Fire follows rocket wobble
+      fire.y = rocket.y + rocket.height
     }
     
     requestAnimationFrame(wobble)
@@ -218,14 +380,27 @@ const startFlying = () => {
     startExiting()
   })
   
-  // Background scrolls up (simulate rocket flying up through space)
+  // Fire follows rocket
+  if (fire) {
+    canvasAnimation.animate('fire', [
+      {
+        duration: 4000,
+        easing: CanvasAnimation.easings.easeInQuad,
+        properties: {
+          y: exitY + rocket.height
+        }
+      }
+    ])
+  }
+  
+  // Background scrolls DOWN (rocket moving up makes background appear to move down)
   if (bg) {
     canvasAnimation.animate('background', [
       {
         duration: 4000,
         easing: CanvasAnimation.easings.easeInQuad,
         properties: {
-          y: bg.y - logicalHeight * 2 // Scroll up 200vh equivalent
+          y: bg.y + logicalHeight * 2 // Scroll DOWN 200vh equivalent
         }
       }
     ])
@@ -270,14 +445,14 @@ const startExiting = () => {
     }, 100)
   })
   
-  // Final background movement
+  // Final background movement (continue downward)
   if (bg) {
     canvasAnimation.animate('background', [
       {
         duration: 3000,
         easing: CanvasAnimation.easings.easeOutCubic,
         properties: {
-          y: bg.y - logicalHeight * 0.2 // Additional 20vh movement
+          y: bg.y + logicalHeight * 0.2 // Additional 20vh downward movement
         }
       }
     ])
@@ -314,32 +489,42 @@ onMounted(async () => {
     const backgroundUrl = await resolveImageUrl(backgroundId, { media: 'assets' })
     const rocketUrl = await resolveImageUrl(rocketId, { media: 'public' })
     
+    // Resolve fire image URLs
+    const fireUrls = await Promise.all(
+      Object.entries(fireImages).map(async ([key, id]) => ({
+        id: key.toLowerCase(), // fire_1, fire_2, etc
+        src: await resolveImageUrl(id, { media: 'public' })
+      }))
+    )
+    
     console.log('[RocketCanvas] Background URL:', backgroundUrl)
     console.log('[RocketCanvas] Rocket URL:', rocketUrl)
+    console.log('[RocketCanvas] Fire URLs:', fireUrls)
 
     // Load images into canvas animation
     await canvasAnimation.loadImages([
       { id: 'background', src: backgroundUrl },
-      { id: 'rocket', src: rocketUrl }
+      { id: 'rocket', src: rocketUrl },
+      ...fireUrls
     ])
 
-    imagesLoaded.value = 2
-    console.log('[RocketCanvas] All images loaded')
+    imagesLoaded.value = 2 + fireUrls.length
+    console.log('[RocketCanvas] All images loaded:', imagesLoaded.value)
 
-    // Create background object (positioned at bottom initially)
+    // Create background object (100% width, positioned at bottom)
     const canvas = canvasAnimation.getCanvas()
     const logicalWidth = parseInt(canvas.style.width) || window.innerWidth
     const logicalHeight = parseInt(canvas.style.height) || window.innerHeight
     
-    // Background should be 3x screen height (300vh equivalent)
-    const bgHeight = logicalHeight * 3
-    const bgWidth = logicalWidth
+    // Background should be full width and positioned at bottom
+    const bgWidth = logicalWidth // 100% width
+    const bgHeight = logicalHeight // Same height as screen for now
     
-    // Position background at bottom initially
-    const bgX = 0
-    const bgY = logicalHeight - bgHeight // Bottom of background at bottom of screen
+    // Position background at bottom
+    const bgX = 0 // Left edge
+    const bgY = logicalHeight - bgHeight // Bottom aligned
     
-    console.log('[RocketCanvas] Background positioned:', bgX, bgY, 'size:', bgWidth, 'x', bgHeight)
+    console.log('[RocketCanvas] Background positioned at bottom:', bgX, bgY, 'size:', bgWidth, 'x', bgHeight)
     
     canvasAnimation.createObject(
       'background',
@@ -374,8 +559,15 @@ import type { AnimationImage } from './types'
 
 // Export required images for preloading
 export const animationImages: AnimationImage[] = [
-  { id: '651585d8-2210-4b8c-8fe0-c1404ee19796', options: { media: 'assets' } },
-  { id: 'ec501b1c-4a9a-465c-b32b-609369e7a87a', options: { media: 'public' } }
+  { id: '651585d8-2210-4b8c-8fe0-c1404ee19796', options: { media: 'assets' } }, // Background
+  { id: 'ec501b1c-4a9a-465c-b32b-609369e7a87a', options: { media: 'public' } }, // Rocket
+  // Fire frames
+  { id: '36ea493d-59db-4c9f-abc9-1760e5b052fb', options: { media: 'public' } },
+  { id: 'd47830b1-a695-4318-a6c7-f2d48e64b723', options: { media: 'public' } },
+  { id: '74efda0b-a68f-43bd-bf91-334e16a26d59', options: { media: 'public' } },
+  { id: '00eaaa9e-5ba2-40e1-8baa-645085b4f9d6', options: { media: 'public' } },
+  { id: '2b7ef62a-c8a0-4f77-be4c-a761feee1971', options: { media: 'public' } },
+  { id: '98a3827b-63f5-4d93-9d8a-27096d76b475', options: { media: 'public' } }
 ]
 </script>
 

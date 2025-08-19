@@ -161,7 +161,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, reactive, watch, inject, ref, computed } from 'vue';
+import { onMounted, onUnmounted, reactive, watch, inject, ref, computed, nextTick } from 'vue';
 import { useBemm } from 'bemm';
 import { useRoute, useRouter } from 'vue-router';
 import {
@@ -608,71 +608,54 @@ const openCardEditForm = async (card: SequenceTile, index: number) => {
     }
   }
 
-  const actions: PopupAction[] = [
-    {
-      id: 'cancel',
-      label: t('common.cancel'),
-      type: 'outline',
-      color: 'secondary',
-      action: () => popupService.close()
-    },
-    {
-      id: 'save',
-      label: isNewCard ? t('common.create') : t('common.save'),
-      type: 'default',
-      color: 'primary',
-      action: async () => {
-        // Get the current popup instance
-        const currentPopups = popupService.popups.value;
-        if (currentPopups.length > 0) {
-          const popupInstance = currentPopups[currentPopups.length - 1];
+  const popupId = popupService.open({
+    component: SequenceForm,
+    title: isNewCard ? t('sequence.createSequence') : t('sequence.editSequence'),
+    actions: [
+      {
+        id: 'cancel',
+        label: t('common.cancel'),
+        type: 'outline',
+        color: 'secondary',
+        action: () => popupService.close()
+      },
+      {
+        id: 'save',
+        label: isNewCard ? t('common.create') : t('common.save'),
+        type: 'default',
+        color: 'primary',
+        action: async () => {
+          // Wait for next tick to ensure component is mounted
+          await nextTick();
           
-          // Wait for the component to be properly registered with retries
-          let formComponent = null;
-          let retries = 0;
-          const maxRetries = 50; // 5 seconds max (50 * 100ms)
-          
-          while (!formComponent && retries < maxRetries) {
-            formComponent = popupRefs[popupInstance.id];
-            if (!formComponent) {
-              await new Promise(resolve => setTimeout(resolve, 100));
-              retries++;
-            }
-          }
-
-          if (formComponent) {
-            // Access the exposed properties directly
-            const isValid = formComponent.isValid;
-            const formData = formComponent.formData;
-            
-            if (isValid && formData) {
-              await handleSaveSequence(formData, card, isNewCard, index);
-            } else {
-              console.warn('Form is not valid or formData is missing', {
-                formComponent,
-                isValid,
-                formData,
-                hasIsValid: 'isValid' in formComponent,
-                hasFormData: 'formData' in formComponent
-              });
-            }
+          const formComponent = popupRefs[popupId];
+          if (formComponent && typeof formComponent.save === 'function') {
+            formComponent.save();
           } else {
-            console.error(`Form component not found in popupRefs after ${maxRetries} retries. Available refs:`, Object.keys(popupRefs));
+            console.error('Save method not found on form component', {
+              popupId,
+              formComponent,
+              hasFormComponent: !!formComponent,
+              availableRefs: Object.keys(popupRefs)
+            });
           }
         }
       }
-    }
-  ];
-
-  popupService.open({
-    component: SequenceForm,
-    title: isNewCard ? t('sequence.createSequence') : t('sequence.editSequence'),
-    actions,
+    ],
     props: {
       sequence: card,
       isNew: isNewCard,
       isOwner: isNewCard || card.ownerId === authStore.user?.id || card.user_id === authStore.user?.id,
-      showVisibilityToggle: true
+      showVisibilityToggle: true,
+      onSave: async (formData: any) => {
+        try {
+          await handleSaveSequence(formData, card, isNewCard, index);
+          popupService.close();
+        } catch (error) {
+          console.error('Failed to save sequence:', error);
+          // Don't close popup on error so user can retry
+        }
+      }
     }
   });
 };
