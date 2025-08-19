@@ -11,6 +11,10 @@
           :placeholder="t('sequence.uploadSequenceImage')" :title="t('sequence.selectSequenceImage')" />
       </TFormGroup>
 
+
+      {{ showVisibilityToggle }}
+      {{ props.isOwner }}
+
       <!-- Visibility toggle -->
       <div :class="bemm('field')" v-if="showVisibilityToggle && (props.isOwner !== false)">
         <label :class="bemm('label')">{{ t('sequence.visibility') }}</label>
@@ -62,7 +66,7 @@
               <TColorPickerPopup v-model="item.color" :colors="availableColors" size="small" />
 
               <!-- Image selector -->
-              <TImageInput v-model="item.image" :color="item.color" :title="t('sequence.selectItemImage')" small 
+              <TImageInput v-model="item.image" :color="item.color" :title="t('sequence.selectItemImage')" small
                 @mousedown.stop @click.stop />
 
               <!-- Speak text -->
@@ -138,6 +142,14 @@ const props = defineProps<{
   onSave?: (data: SequenceForm) => void
   onMounted?: (instance: any) => void
 }>()
+
+// Debug props
+console.log('[SequenceForm] Props received:', {
+  isNew: props.isNew,
+  isOwner: props.isOwner,
+  showVisibilityToggle: props.showVisibilityToggle,
+  sequence: props.sequence
+})
 
 const emit = defineEmits<{
   update: [form: SequenceForm]
@@ -320,10 +332,10 @@ const triggerSave = () => {
   if (isValid.value && props.onSave) {
     props.onSave(form.value)
   } else {
-    console.warn('Form is not valid or onSave not provided:', { 
-      isValid: isValid.value, 
+    console.warn('Form is not valid or onSave not provided:', {
+      isValid: isValid.value,
       hasOnSave: !!props.onSave,
-      formData: form.value 
+      formData: form.value
     });
   }
 }

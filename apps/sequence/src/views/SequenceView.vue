@@ -628,6 +628,8 @@ const handleSaveSequence = async (formData: any, card: SequenceTile, isNewCard: 
 // Open the card edit form
 const openCardEditForm = async (card: SequenceTile, index: number) => {
   const isNewCard = card.id.startsWith('empty-');
+  
+  console.log('[SequenceView] openCardEditForm - isNewCard:', isNewCard, 'card:', card);
 
   // Load translations if editing existing card (for potential future use)
   if (!isNewCard) {
@@ -671,7 +673,7 @@ const openCardEditForm = async (card: SequenceTile, index: number) => {
     props: {
       sequence: card,
       isNew: isNewCard,
-      isOwner: isNewCard || card.ownerId === authStore.user?.id || card.user_id === authStore.user?.id,
+      isOwner: isNewCard ? true : (card.ownerId === authStore.user?.id || card.user_id === authStore.user?.id),
       showVisibilityToggle: true,
       // Pass a ref callback to get the component instance
       onMounted: (componentInstance: any) => {
