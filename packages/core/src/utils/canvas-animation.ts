@@ -54,6 +54,9 @@ export class CanvasAnimation {
   // Viewport-relative units (0-100)
   public vw: number
   public vh: number
+  // Logical dimensions (CSS pixels, not physical pixels)
+  public logicalWidth: number = 0
+  public logicalHeight: number = 0
 
   constructor(options: CanvasAnimationOptions = {}) {
     this.canvas = document.createElement('canvas')
@@ -77,16 +80,22 @@ export class CanvasAnimation {
       this.canvas.style.width = '100vw'
       this.canvas.style.height = '100vh'
       this.canvas.style.zIndex = '1000'
+      // Initialize logical dimensions BEFORE resizing
+      this.logicalWidth = window.innerWidth
+      this.logicalHeight = window.innerHeight
       this.resizeToViewport()
     } else {
-      this.canvas.width = options.width || 800
-      this.canvas.height = options.height || 600
+      this.logicalWidth = options.width || 800
+      this.logicalHeight = options.height || 600
+      this.canvas.width = this.logicalWidth
+      this.canvas.height = this.logicalHeight
     }
   }
 
   private updateViewportUnits() {
-    this.vw = this.canvas.width / 100
-    this.vh = this.canvas.height / 100
+    // Use logical dimensions for viewport units, not physical pixels!
+    this.vw = this.logicalWidth / 100
+    this.vh = this.logicalHeight / 100
   }
 
   private bindEvents() {
@@ -100,6 +109,10 @@ export class CanvasAnimation {
 
   private resizeToViewport() {
     const dpr = window.devicePixelRatio || 1
+    // Store logical dimensions
+    this.logicalWidth = window.innerWidth
+    this.logicalHeight = window.innerHeight
+    // Set physical dimensions
     this.canvas.width = window.innerWidth * dpr
     this.canvas.height = window.innerHeight * dpr
     this.ctx.scale(dpr, dpr)
@@ -191,25 +204,37 @@ export class CanvasAnimation {
     easeInOutQuad: (t: number) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t,
     easeInCubic: (t: number) => t * t * t,
     easeOutCubic: (t: number) => (--t) * t * t + 1,
-    easeInOutCubic: (t: number) => t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1
+    easeInOutCubic: (t: number) => t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1,
+    // Custom bouncy easing similar to cubic-bezier(0,.5,.5,1.5)
+    bouncy: (t: number) => {
+      const c1 = 1.70158
+      const c3 = c1 + 1
+      return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2)
+    },
+    // Extra bouncy for wiggle effects
+    extraBouncy: (t: number) => {
+      const c1 = 2.5
+      const c3 = c1 + 1
+      return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2)
+    }
   }
 
-  // Utility methods for common positioning
+  // Utility methods for common positioning - USE LOGICAL DIMENSIONS
   centerX(width: number): number {
-    return (this.canvas.width - width) / 2
+    return (this.logicalWidth - width) / 2
   }
 
   centerY(height: number): number {
-    return (this.canvas.height - height) / 2
+    return (this.logicalHeight - height) / 2
   }
 
-  // Convert viewport percentages to pixels
+  // Convert viewport percentages to pixels - USE LOGICAL DIMENSIONS
   vwToPx(vw: number): number {
-    return (vw / 100) * this.canvas.width
+    return (vw / 100) * this.logicalWidth
   }
 
   vhToPx(vh: number): number {
-    return (vh / 100) * this.canvas.height
+    return (vh / 100) * this.logicalHeight
   }
 
   // Render methods
@@ -240,9 +265,9 @@ export class CanvasAnimation {
           if (sequence.object.id === 'spaceship' && (key === 'x' || key === 'y')) {
             const margin = 150 // Large margin to keep spaceship visible
             if (key === 'x') {
-              newValue = Math.max(margin, Math.min(this.canvas.width - sequence.object.width - margin, newValue))
+              newValue = Math.max(margin, Math.min(this.logicalWidth - sequence.object.width - margin, newValue))
             } else if (key === 'y') {
-              newValue = Math.max(margin, Math.min(this.canvas.height - sequence.object.height - margin, newValue))
+              newValue = Math.max(margin, Math.min(this.logicalHeight - sequence.object.height - margin, newValue))
             }
           }
           
@@ -310,12 +335,12 @@ export class CanvasAnimation {
 
   private render(currentTime: number): void {
     // Clear canvas
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+    this.ctx.clearRect(0, 0, this.logicalWidth, this.logicalHeight)
     
     // Draw background if specified
     if (this.backgroundColor !== 'transparent') {
       this.ctx.fillStyle = this.backgroundColor
-      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+      this.ctx.fillRect(0, 0, this.logicalWidth, this.logicalHeight)
     }
 
     // Update animations
@@ -323,6 +348,9 @@ export class CanvasAnimation {
 
     // Draw all objects
     for (const obj of this.objects.values()) {
+      if (obj.id === 'spaceship' && this.lastTime % 1000 < 16) { // Log once per second
+        console.log('[CanvasAnimation] Drawing spaceship at', obj.x, obj.y, 'visible:', obj.visible, 'opacity:', obj.opacity)
+      }
       this.drawObject(obj)
     }
 
@@ -363,5 +391,9 @@ export class CanvasAnimation {
 
   getContext(): CanvasRenderingContext2D {
     return this.ctx
+  }
+  
+  getImage(id: string): ImageAsset | undefined {
+    return this.images.get(id)
   }
 }

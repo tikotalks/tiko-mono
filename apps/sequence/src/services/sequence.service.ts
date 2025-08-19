@@ -87,7 +87,7 @@ export const sequenceService = {
           icon: metadata?.icon || item.icon || 'square',
           color: metadata?.color || item.color || 'primary',
           image: image,
-          speech: speech,
+          speak: speech, // Changed from 'speech' to 'speak' to match what the store expects
           index: item.order_index ?? 0,
           parentId: item.parent_id || undefined,
           base_locale: item.base_locale || 'en',
@@ -143,7 +143,7 @@ export const sequenceService = {
           icon: metadata?.icon || item.icon || 'square',
           color: metadata?.color || item.color || 'primary',
           image: metadata?.image || '',
-          speech: speech,
+          speak: speech, // Changed from 'speech' to 'speak' to match what the store expects
           index: item.order_index ?? 0,
           parentId: item.parent_id || undefined,
           base_locale: item.base_locale || 'en',
@@ -301,7 +301,7 @@ export const sequenceService = {
         icon: (item.metadata as CardMetadata)?.icon || item.icon || 'square',
         color: (item.metadata as CardMetadata)?.color || item.color || 'primary',
         image: (item.metadata as CardMetadata)?.image || '',
-        speech: (item.metadata as CardMetadata)?.speech || '',
+        speak: (item.metadata as CardMetadata)?.speech || '', // Changed from 'speech' to 'speak'
         index: item.order_index ?? 0,
         parentId: item.parent_id || undefined,
       };

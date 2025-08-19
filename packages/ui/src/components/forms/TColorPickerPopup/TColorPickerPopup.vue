@@ -77,7 +77,7 @@ const openColorPicker = () => {
   border-radius: 0.375rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 120px;
+  min-width: 75px;
 
   &:hover {
     border-color: var(--color-primary);

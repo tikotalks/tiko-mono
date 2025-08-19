@@ -626,10 +626,19 @@ const openCardEditForm = async (card: SequenceTile, index: number) => {
         const currentPopups = popupService.popups.value;
         if (currentPopups.length > 0) {
           const popupInstance = currentPopups[currentPopups.length - 1];
-          const formComponent = popupRefs[popupInstance.id];
-
-          // Add small delay to ensure component is fully mounted
-          await new Promise(resolve => setTimeout(resolve, 100));
+          
+          // Wait for the component to be properly registered with retries
+          let formComponent = null;
+          let retries = 0;
+          const maxRetries = 50; // 5 seconds max (50 * 100ms)
+          
+          while (!formComponent && retries < maxRetries) {
+            formComponent = popupRefs[popupInstance.id];
+            if (!formComponent) {
+              await new Promise(resolve => setTimeout(resolve, 100));
+              retries++;
+            }
+          }
 
           if (formComponent) {
             // Access the exposed properties directly
@@ -648,7 +657,7 @@ const openCardEditForm = async (card: SequenceTile, index: number) => {
               });
             }
           } else {
-            console.warn('Form component not found in popupRefs');
+            console.error(`Form component not found in popupRefs after ${maxRetries} retries. Available refs:`, Object.keys(popupRefs));
           }
         }
       }
