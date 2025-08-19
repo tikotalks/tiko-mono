@@ -1,13 +1,7 @@
 <template>
   <div :class="bemm()" v-if="!hideAnimation">
     <!-- Background -->
-    <div :class="bemm('background')" :style="backgroundStyle">
-      <TImage 
-        :src="backgroundId" 
-        :media="'assets'"
-        :alt="'Alien space background'"
-      />
-    </div>
+    <div :class="bemm('background')" :style="backgroundStyle"></div>
 
     <!-- Spaceship -->
     <div 
@@ -27,8 +21,12 @@
       <h3>Aliens Animation Debug</h3>
       <p>Phase: {{ phase }}</p>
       <p>Animation State: {{ animationState }}</p>
+      <p>Background URL: {{ backgroundUrl ? 'Loaded' : 'Not loaded' }}</p>
+      <p>Spaceship visible: {{ spaceshipId }}</p>
       <button @click="startAnimation">Start</button>
       <button @click="skipAnimation">Skip</button>
+      <button @click="phase = 'hovering'">Hover</button>
+      <button @click="phase = 'zigzag'">Zigzag</button>
     </div>
   </div>
 </template>
@@ -37,6 +35,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useBemm } from 'bemm'
 import { TImage } from '@tiko/ui'
+import { useImageResolver } from '@tiko/core'
 import type { AnimationImage } from './types'
 
 const emit = defineEmits<{
@@ -44,6 +43,7 @@ const emit = defineEmits<{
 }>()
 
 const bemm = useBemm('aliens-animation')
+const { resolveImageUrl } = useImageResolver()
 
 // Asset IDs
 const backgroundId = 'fd203d8b-c163-46d5-b7fe-b7901609ec76'
@@ -53,13 +53,20 @@ const spaceshipId = 'a3c1a0fe-b85d-4ec6-ace2-c6acf3bca3cc'
 const phase = ref<'entering' | 'hovering' | 'zigzag' | 'flying' | 'exiting' | 'complete'>('entering')
 const animationState = ref<'idle' | 'playing' | 'complete'>('idle')
 const hideAnimation = ref(false)
-const showDebug = ref(false)
+const showDebug = ref(true)
+
+// Resolved URLs
+const backgroundUrl = ref<string>('')
 
 // Styles
 const backgroundStyle = computed(() => ({
   width: '400vh',
   height: '400vh',
-  transform: `translateX(-150vh) translateY(-150vh)` // Center the large background
+  transform: `translate(-50%, -50%)`,
+  backgroundImage: backgroundUrl.value ? `url(${backgroundUrl.value})` : 'none',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat'
 }))
 
 const spaceshipStyle = computed(() => {
@@ -95,9 +102,10 @@ const handleAnimationEnd = () => {
     case 'exiting':
       phase.value = 'complete'
       animationState.value = 'complete'
-      setTimeout(() => {
-        emit('completed')
-      }, 100)
+      // Don't emit completed for now so we can inspect
+      // setTimeout(() => {
+      //   emit('completed')
+      // }, 100)
       break
   }
 }
@@ -110,7 +118,20 @@ const skipAnimation = () => {
 }
 
 // Auto-start on mount
-onMounted(() => {
+onMounted(async () => {
+  console.log('[AliensAnimation] Component mounted')
+  console.log('[AliensAnimation] Background ID:', backgroundId)
+  console.log('[AliensAnimation] Spaceship ID:', spaceshipId)
+  
+  // Resolve background URL
+  try {
+    const resolvedBgUrl = await resolveImageUrl(backgroundId, { media: 'assets' })
+    backgroundUrl.value = resolvedBgUrl
+    console.log('[AliensAnimation] Background URL resolved:', resolvedBgUrl)
+  } catch (error) {
+    console.error('[AliensAnimation] Failed to resolve background URL:', error)
+  }
+  
   setTimeout(() => {
     startAnimation()
   }, 100)
@@ -146,49 +167,58 @@ export const animationImages: AnimationImage[] = [
     top: 50%;
     left: 50%;
     pointer-events: none;
-    
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+    z-index: 999;
   }
 
   &__spaceship {
-    position: absolute;
+    position: fixed;
     will-change: transform;
+    z-index: 2005;
     
     img {
       width: 100%;
       height: 100%;
       object-fit: contain;
+      display: block;
     }
 
     // Entering phase - come from left with wobble
     &--entering {
+      left: -20vw;
+      top: 70vh;
+      transform: translateY(-50%) rotate(-5deg) scale(0.8);
       animation: spaceshipEnter 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
     }
 
     // Hovering phase - gentle floating
     &--hovering {
-      left: 30%;
-      top: 50%;
+      left: 30vw;
+      top: 50vh;
       transform: translateY(-50%);
       animation: spaceshipHover 2s ease-in-out infinite;
     }
 
     // Zigzag phase - alien-like movements across screen
     &--zigzag {
+      left: 30vw;
+      top: 50vh;
+      transform: translateY(-50%) rotate(0deg) scale(1);
       animation: spaceshipZigzag 4s cubic-bezier(0.45, 0.05, 0.55, 0.95) forwards;
     }
 
     // Flying phase - speed up
     &--flying {
+      left: 80vw;
+      top: 50vh;
+      transform: translateY(-50%) rotate(0deg) scale(1.2);
       animation: spaceshipFly 1.5s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
     }
 
     // Exiting phase - fly away
     &--exiting {
+      left: 95vw;
+      top: 30vh;
+      transform: translateY(-50%) rotate(10deg) scale(1.5);
       animation: spaceshipExit 1s cubic-bezier(0.755, 0.05, 0.855, 0.06) forwards;
     }
   }

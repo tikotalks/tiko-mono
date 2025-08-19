@@ -58,6 +58,7 @@ export * from './types/user'
 // Utils
 export * from './utils/format'
 export * from './utils/logger'
+export * from './utils/canvas-animation'
 // Export everything except ContentField from field-processing (ContentField is exported from services)
 export { 
   processContentFields,

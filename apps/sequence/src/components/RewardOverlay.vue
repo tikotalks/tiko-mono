@@ -12,6 +12,11 @@
         ref="animationRef" 
         @completed="onAnimationCompleted" 
       />
+      <AliensCanvasAnimation 
+        v-else-if="animationType === 'aliens-canvas'"
+        ref="animationRef" 
+        @completed="onAnimationCompleted" 
+      />
     </div>
 
     <!-- Content overlay (shows after animation) -->
@@ -52,6 +57,7 @@ import { TButton, useI18n } from '@tiko/ui'
 import { useImageResolver } from '@tiko/core'
 import RocketAnimation from './animations/RocketAnimation.vue'
 import AliensAnimation from './animations/AliensAnimation.vue'
+import AliensCanvasAnimation from './animations/AliensCanvasAnimation.vue'
 import type { AnimationImage } from './animations/types'
 import { Icons } from 'open-icon';
 
@@ -67,14 +73,12 @@ const { preloadImages } = useImageResolver()
 // State
 const animationCompleted = ref(false)
 const showContent = ref(false)
-const animationRef = ref<InstanceType<typeof RocketAnimation> | InstanceType<typeof AliensAnimation> | null>(null)
+const animationRef = ref<InstanceType<typeof RocketAnimation> | InstanceType<typeof AliensAnimation> | InstanceType<typeof AliensCanvasAnimation> | null>(null)
 
-// Animation type - randomly select between available animations
-const animations = ['rocket', 'aliens'] as const
+// Animation type - force canvas aliens for now
+const animations = ['rocket', 'aliens', 'aliens-canvas'] as const
 type AnimationType = typeof animations[number]
-const animationType = ref<AnimationType>(
-  animations[Math.floor(Math.random() * animations.length)]
-)
+const animationType = ref<AnimationType>('aliens-canvas')
 
 const onAnimationCompleted = () => {
   animationCompleted.value = true
@@ -95,6 +99,9 @@ onBeforeMount(async () => {
     } else if (animationType.value === 'aliens') {
       const { animationImages: aliensImages } = await import('./animations/AliensAnimation.vue')
       animationImages = aliensImages || []
+    } else if (animationType.value === 'aliens-canvas') {
+      const { animationImages: aliensCanvasImages } = await import('./animations/AliensCanvasAnimation.vue')
+      animationImages = aliensCanvasImages || []
     }
     
     if (animationImages && animationImages.length > 0) {

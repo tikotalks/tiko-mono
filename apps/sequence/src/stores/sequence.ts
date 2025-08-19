@@ -165,20 +165,26 @@ export const useSequenceStore = defineStore('sequence', () => {
       return []
     }
 
-    // Prevent concurrent loads of the same data
+    // Prevent concurrent loads of the same data - use a simpler approach
     if (isLoadingSequence.value) {
       console.log('[SequenceStore] Already loading sequence, waiting...')
-      // Wait for the current load to complete
+      // Wait for the current load to complete with a reasonable timeout
       let waitCount = 0
-      while (isLoadingSequence.value && waitCount < 100) {
+      while (isLoadingSequence.value && waitCount < 60) { // Reduced from 100 to 60 (3 seconds max)
         await new Promise(resolve => setTimeout(resolve, 50))
         waitCount++
+      }
+      
+      // If still loading after timeout, proceed anyway to avoid deadlock
+      if (isLoadingSequence.value) {
+        console.warn('[SequenceStore] Loading timeout exceeded, proceeding anyway')
       }
 
       // Check cache again after waiting
       if (cache.has(cacheKey)) {
         const entry = cache.get(cacheKey)!
         if (isCacheValid(entry, locale || 'default')) {
+          console.log(`[SequenceStore] Found cached data after waiting for ${cacheKey}`)
           return entry.sequence
         }
       }

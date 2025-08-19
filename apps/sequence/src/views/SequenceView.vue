@@ -1457,7 +1457,13 @@ watch(() => route.params.cardId as string | undefined, async (cardId) => {
   if (!cardId) {
     // Give a small delay then check if all sequences have their children loaded
     setTimeout(async () => {
-      const sequences = sequence.value.filter(card => card.type === 'sequence' && !card.id.startsWith('empty-'));
+      // Only retry if we still don't have children loaded and the sequence still exists
+      if (sequence.value.length === 0) {
+        console.log('[SequenceView] Sequence was cleared, skipping retry');
+        return;
+      }
+
+      const sequences = sequence.value.filter(card => card.type === 'sequence' && !card.id.startsWith('empty-') && !card.id.startsWith('ghost-'));
       const unloadedSequences = sequences.filter(seq => !tilesWithChildren.value.has(seq.id));
 
       if (unloadedSequences.length > 0) {
@@ -1473,8 +1479,11 @@ watch(() => route.params.cardId as string | undefined, async (cardId) => {
 
         await Promise.all(retryPromises);
 
-        // Force a re-render by updating the sequence array
-        sequence.value = [...sequence.value];
+        // Only force re-render if we still have the same sequence data
+        if (sequence.value.length > 0 && !sequence.value[0]?.id.startsWith('ghost-')) {
+          console.log('[SequenceView] Triggering re-render after children retry');
+          sequence.value = [...sequence.value];
+        }
       }
     }, 1000);
   }
