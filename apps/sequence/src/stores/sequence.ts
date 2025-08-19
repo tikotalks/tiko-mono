@@ -624,8 +624,10 @@ export const useSequenceStore = defineStore('sequence', () => {
       
       // Check if sequence is complete
       if (playState.value.selectedItems.length === playState.value.correctOrder.length) {
+        console.log('[SequenceStore] Sequence complete! Setting isComplete to true')
         playState.value.isComplete = true
         playState.value.isPlaying = false
+        console.log('[SequenceStore] Play state after completion:', playState.value)
       }
       
       return true

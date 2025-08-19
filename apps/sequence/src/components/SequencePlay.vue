@@ -10,7 +10,7 @@
         :is-loading="false"
         :scroll-direction="'vertical'"
         :min-tile-size="120"
-        :max-tile-size="200"
+        :max-tile-size="400"
         :gap="16"
         :center-items="true"
         :get-context-menu="props.editMode ? getItemContextMenu : undefined"
@@ -60,7 +60,11 @@ const { playSound } = usePlaySound()
 const wrongItemId = ref<string | null>(null)
 
 // Computed properties
-const playState = computed(() => sequenceStore.currentPlayState)
+const playState = computed(() => {
+  const state = sequenceStore.currentPlayState
+  console.log('[SequencePlay] Current play state:', state)
+  return state
+})
 const visibleItems = computed(() => {
   // Return all shuffled items with their custom state
   const items = playState.value.shuffledItems.map(item => {
@@ -88,7 +92,11 @@ const visibleItems = computed(() => {
   return items
 })
 const selectedItems = computed(() => playState.value.selectedItems)
-const isComplete = computed(() => playState.value.isComplete)
+const isComplete = computed(() => {
+  const complete = playState.value.isComplete
+  console.log('[SequencePlay] isComplete computed:', complete)
+  return complete
+})
 const showHints = computed(() => sequenceStore.settings.showHints)
 
 // Check if item is selected

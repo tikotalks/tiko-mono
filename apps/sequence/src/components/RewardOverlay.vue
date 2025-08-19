@@ -91,6 +91,7 @@ onBeforeMount(async () => {
 })
 
 onMounted(() => {
+  console.log('[RewardOverlay] Component mounted!')
   // Trigger haptic feedback when overlay appears
   if ('vibrate' in navigator) {
     navigator.vibrate([100, 50, 100, 50, 200])
