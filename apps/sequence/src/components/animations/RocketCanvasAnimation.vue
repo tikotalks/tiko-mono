@@ -57,7 +57,7 @@ const manualCanvas = ref<HTMLCanvasElement>()
 const phase = ref<'entering' | 'bouncing' | 'flying' | 'exiting' | 'complete'>('entering')
 const animationState = ref<'idle' | 'playing' | 'complete'>('idle')
 const hideAnimation = ref(false)
-const showDebug = ref(true)
+const showDebug = ref(false)
 const imagesLoaded = ref(0)
 const totalImages = ref(8) // Rocket + Background + 6 fire frames
 
@@ -149,7 +149,7 @@ const startAnimation = async () => {
   const fire = canvasAnimation.getObject('fire')
   
   if (rocket) {
-    rocket.debug = true
+    rocket.debug = false
     rocket.visible = true
     rocket.opacity = 1
     console.log('[RocketCanvas] Rocket object created:', rocket)
@@ -160,7 +160,7 @@ const startAnimation = async () => {
   }
   
   if (fire) {
-    fire.debug = true
+    fire.debug = false
     fire.visible = true
     fire.opacity = 1
     console.log('[RocketCanvas] Fire object created:', fire)
@@ -173,7 +173,7 @@ const startAnimation = async () => {
   // Add background debug info
   const bg = canvasAnimation.getObject('background')
   if (bg) {
-    bg.debug = true
+    bg.debug = false
     console.log('[RocketCanvas] Background object created:', bg)
     console.log('[RocketCanvas] Background image loaded:', bg.image.loaded)
     console.log('[RocketCanvas] Background position:', bg.x, bg.y, 'size:', bg.width, bg.height)
@@ -817,6 +817,8 @@ const updateRocketAnimation = (elapsed: number, width: number, height: number, c
       } else {
         currentPhase.value = 'liftoff'
         console.log('[RocketCanvas] Starting liftoff!')
+        // Play rocket sound when liftoff begins
+        playSound({ id: SOUNDS.ROCKET, volume: 0.7 })
       }
       break
       
