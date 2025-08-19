@@ -40,7 +40,7 @@ const containerRef = ref<HTMLElement>()
 const phase = ref<'entering' | 'hovering' | 'zigzag' | 'flying' | 'exiting' | 'complete'>('entering')
 const animationState = ref<'idle' | 'playing' | 'complete'>('idle')
 const hideAnimation = ref(false)
-const showDebug = ref(true)
+const showDebug = ref(false)
 const imagesLoaded = ref(0)
 const totalImages = ref(2)
 
