@@ -204,7 +204,7 @@ const parentMode = useParentMode();
 
 // Parent mode computed state
 const isParentModeUnlocked = computed(() => {
-  return parentMode.isUnlocked || false;
+  return parentMode.isUnlocked?.value || false;
 });
 
 // Admin check

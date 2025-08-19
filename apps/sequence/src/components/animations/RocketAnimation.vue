@@ -35,6 +35,7 @@ import { onMounted, ref, computed } from 'vue'
 import { useBemm } from 'bemm'
 import { TImage } from '@tiko/ui'
 import { usePlaySound, SOUNDS, useImageResolver } from '@tiko/core'
+import type { AnimationImage } from './types'
 
 const emit = defineEmits<{
   completed: []
@@ -45,6 +46,18 @@ const IMAGE = {
   background: '651585d8-2210-4b8c-8fe0-c1404ee19796',
   rocket: 'ec501b1c-4a9a-465c-b32b-609369e7a87a'
 }
+
+// Define images needed by this animation
+const ANIMATION_IMAGES: AnimationImage[] = [
+  { id: IMAGE.background, options: { media: 'assets' } },
+  { id: IMAGE.rocket, options: { media: 'public' } }
+]
+
+// Expose the images for parent components
+defineExpose({
+  images: ANIMATION_IMAGES
+})
+
 const bemm = useBemm('rocket-animation')
 const { playSound } = usePlaySound()
 const { preloadImages } = useImageResolver()
@@ -229,23 +242,22 @@ const startAnimation = async () => {
   requestAnimationFrame(animate)
 }
 
-onMounted(async () => {
-  // Preload images before starting animation
-  try {
-    await preloadImages([
-      { src: IMAGE.background, options: { media: 'assets' } },
-      { src: IMAGE.rocket, options: { media: 'public' } }
-    ])
-  } catch (error) {
-    console.warn('Failed to preload some images:', error)
-  }
-  
+onMounted(() => {
   // Auto-start the animation after a small delay
+  // Images should be preloaded by parent component
   setTimeout(() => {
     animationStarted.value = true
     startAnimation()
   }, 100)
 })
+</script>
+
+<script lang="ts">
+// Static export for parent components to access before instantiation
+export const animationImages: AnimationImage[] = [
+  { id: '651585d8-2210-4b8c-8fe0-c1404ee19796', options: { media: 'assets' } },
+  { id: 'ec501b1c-4a9a-465c-b32b-609369e7a87a', options: { media: 'public' } }
+]
 </script>
 
 <style lang="scss">

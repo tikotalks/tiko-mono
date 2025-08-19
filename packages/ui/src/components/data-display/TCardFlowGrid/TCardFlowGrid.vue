@@ -57,7 +57,7 @@ const props = withDefaults(defineProps<TCardFlowGridProps>(), {
   selectionMode: false,
   isLoading: false,
   minTileSize: 120,
-  maxTileSize: 200,
+  maxTileSize: 300,
   gap: 16,
   centerItems: true
 })
@@ -91,93 +91,56 @@ const calculateOptimalLayout = () => {
 
   if (cardCount === 0) return
 
-  // Special handling for small numbers of items to make them bigger and centered
-  if (cardCount <= 6 && props.centerItems) {
-    let optimalCols: number
-    let optimalRows: number
+  // Calculate optimal layout to maximize tile size
+  const availableWidth = containerWidth - (props.gap * 2)
+  const availableHeight = containerHeight - (VERTICAL_PADDING * 2) - (props.gap * 2)
+  
+  // Try different layouts to find the one that maximizes tile size
+  let bestTileSize = 0
+  let bestCols = 1
+  let bestRows = 1
+  
+  // Try different column counts from 1 to a reasonable maximum
+  const maxCols = Math.min(cardCount, Math.ceil(availableWidth / props.minTileSize))
+  
+  for (let cols = 1; cols <= maxCols; cols++) {
+    const rows = Math.ceil(cardCount / cols)
     
-    // Determine layout based on card count
-    if (cardCount === 1) {
-      optimalCols = 1
-      optimalRows = 1
-    } else if (cardCount === 2) {
-      optimalCols = 2
-      optimalRows = 1
-    } else if (cardCount === 3) {
-      optimalCols = 3
-      optimalRows = 1
-    } else if (cardCount === 4) {
-      optimalCols = 2
-      optimalRows = 2
-    } else if (cardCount <= 6) {
-      optimalCols = 3
-      optimalRows = 2
+    // Calculate tile size for this layout
+    const tileSizeByWidth = (availableWidth - ((cols - 1) * props.gap)) / cols
+    const tileSizeByHeight = (availableHeight - ((rows - 1) * props.gap)) / rows
+    const tileSize = Math.min(tileSizeByWidth, tileSizeByHeight)
+    
+    // Check if this layout is valid (tiles not too small or too large)
+    if (tileSize >= props.minTileSize && tileSize <= props.maxTileSize) {
+      // Check if this gives us larger tiles than the current best
+      if (tileSize > bestTileSize) {
+        bestTileSize = tileSize
+        bestCols = cols
+        bestRows = rows
+      }
     }
-
-    // Calculate tile size to fit nicely in viewport
-    const availableWidth = containerWidth - (props.gap * 2)
-    // Account for top and bottom padding in height calculation
-    const availableHeight = containerHeight - (VERTICAL_PADDING * 2) - (props.gap * 2)
-    
-    const maxTileWidth = (availableWidth - ((optimalCols - 1) * props.gap)) / optimalCols
-    const maxTileHeight = (availableHeight - ((optimalRows - 1) * props.gap)) / optimalRows
-    
-    // Use the smaller dimension to ensure everything fits
-    let calculatedSize = Math.min(maxTileWidth, maxTileHeight)
-    
-    // For very few items, allow larger tiles
-    const maxAllowedSize = cardCount <= 3 ? 300 : 250
-    calculatedSize = Math.min(calculatedSize, maxAllowedSize)
-    
-    // Ensure minimum size
-    tileSize.value = Math.floor(Math.max(props.minTileSize, calculatedSize))
-    gridColumns.value = optimalCols
-    gridRows.value = optimalRows
+  }
+  
+  // If we found a valid layout, use it
+  if (bestTileSize > 0) {
+    tileSize.value = Math.floor(bestTileSize)
+    gridColumns.value = bestCols
+    gridRows.value = bestRows
   } else {
-    // Regular calculation for many items
+    // Fallback: If no valid layout found, use minimum tile size
     if (props.scrollDirection === 'horizontal') {
-      // Calculate based on height
-      const availableHeight = containerHeight - (VERTICAL_PADDING * 2) - (props.gap * 2)
-      
-      // Try different row counts to find optimal tile size
-      let bestSize = props.minTileSize
-      let bestRows = 1
-      
-      for (let rows = 1; rows <= Math.min(cardCount, 10); rows++) {
-        const tileHeight = (availableHeight - (props.gap * (rows - 1))) / rows
-        
-        if (tileHeight >= props.minTileSize && tileHeight <= props.maxTileSize) {
-          bestSize = tileHeight
-          bestRows = rows
-        }
-      }
-      
-      tileSize.value = Math.floor(bestSize)
-      gridRows.value = bestRows
-      gridColumns.value = Math.ceil(cardCount / bestRows)
+      // For horizontal scroll, maximize rows
+      const rows = Math.floor((availableHeight + props.gap) / (props.minTileSize + props.gap))
+      gridRows.value = Math.max(1, rows)
+      gridColumns.value = Math.ceil(cardCount / gridRows.value)
+      tileSize.value = props.minTileSize
     } else {
-      // Calculate based on width (vertical scroll)
-      const availableWidth = containerWidth - (props.gap * 2)
-      
-      // Calculate how many columns can fit
-      let cols = Math.floor((availableWidth + props.gap) / (props.minTileSize + props.gap))
-      cols = Math.max(1, cols)
-      
-      // Calculate tile size to fit exactly
-      const calculatedSize = (availableWidth - (props.gap * (cols - 1))) / cols
-      
-      // Ensure it's within bounds
-      if (calculatedSize > props.maxTileSize) {
-        // Recalculate with max size
-        cols = Math.floor((availableWidth + props.gap) / (props.maxTileSize + props.gap))
-        cols = Math.max(1, cols)
-        tileSize.value = props.maxTileSize
-      } else {
-        tileSize.value = Math.floor(calculatedSize)
-      }
-      
-      gridColumns.value = cols
-      gridRows.value = Math.ceil(cardCount / cols)
+      // For vertical scroll, maximize columns
+      const cols = Math.floor((availableWidth + props.gap) / (props.minTileSize + props.gap))
+      gridColumns.value = Math.max(1, cols)
+      gridRows.value = Math.ceil(cardCount / gridColumns.value)
+      tileSize.value = props.minTileSize
     }
   }
 }

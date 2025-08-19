@@ -2,7 +2,7 @@
   <div :class="bemm()">
     <!-- Animation Layer -->
     <div :class="bemm('animation')" v-if="!animationCompleted">
-      <RocketAnimation @completed="onAnimationCompleted" />
+      <RocketAnimation ref="animationRef" @completed="onAnimationCompleted" />
     </div>
 
     <!-- Content overlay (shows after animation) -->
@@ -37,10 +37,12 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, onBeforeMount } from 'vue'
 import { useBemm } from 'bemm'
 import { TButton, useI18n } from '@tiko/ui'
+import { useImageResolver } from '@tiko/core'
 import RocketAnimation from './animations/RocketAnimation.vue'
+import type { AnimationImage } from './animations/types'
 import { Icons } from 'open-icon';
 
 const emit = defineEmits<{
@@ -50,10 +52,12 @@ const emit = defineEmits<{
 
 const bemm = useBemm('reward-overlay')
 const { t } = useI18n()
+const { preloadImages } = useImageResolver()
 
 // State
 const animationCompleted = ref(false)
 const showContent = ref(false)
+const animationRef = ref<InstanceType<typeof RocketAnimation> | null>(null)
 
 // Animation type (for future extensibility)
 const animationType = ref<'rocket'>('rocket')
@@ -65,6 +69,26 @@ const onAnimationCompleted = () => {
     showContent.value = true
   }, 500)
 }
+
+// Preload animation images before component mounts
+onBeforeMount(async () => {
+  // Import the static images from the animation component
+  const { animationImages } = await import('./animations/RocketAnimation.vue')
+  
+  if (animationImages && animationImages.length > 0) {
+    try {
+      await preloadImages(
+        animationImages.map((img: AnimationImage) => ({
+          src: img.id,
+          options: img.options
+        }))
+      )
+      console.log('Animation images preloaded successfully')
+    } catch (error) {
+      console.warn('Failed to preload some animation images:', error)
+    }
+  }
+})
 
 onMounted(() => {
   // Trigger haptic feedback when overlay appears
