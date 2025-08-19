@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       target:
-        description: 'Target app to deploy (timer, yes-no, cards, radio, todo, type, or all)'
+        description: 'Target app to deploy (timer, yes-no, cards, sequence, radio, todo, type, or all)'
         required: true
         default: 'all'
         type: choice
@@ -16,6 +16,7 @@ on:
           - timer
           - yes-no
           - cards
+          - sequence
           - radio
           - todo
           - type
@@ -32,6 +33,7 @@ jobs:
       build-timer: ${{ steps.check.outputs.build-timer }}
       build-yes-no: ${{ steps.check.outputs.build-yes-no }}
       build-cards: ${{ steps.check.outputs.build-cards }}
+      build-sequence: ${{ steps.check.outputs.build-sequence }}
       build-radio: ${{ steps.check.outputs.build-radio }}
       build-todo: ${{ steps.check.outputs.build-todo }}
       build-type: ${{ steps.check.outputs.build-type }}
@@ -47,6 +49,7 @@ jobs:
           echo "build-timer=false" >> $GITHUB_OUTPUT
           echo "build-yes-no=false" >> $GITHUB_OUTPUT
           echo "build-cards=false" >> $GITHUB_OUTPUT
+          echo "build-sequence=false" >> $GITHUB_OUTPUT
           echo "build-radio=false" >> $GITHUB_OUTPUT
           echo "build-todo=false" >> $GITHUB_OUTPUT
           echo "build-type=false" >> $GITHUB_OUTPUT
@@ -60,6 +63,7 @@ jobs:
               echo "build-timer=true" >> $GITHUB_OUTPUT
               echo "build-yes-no=true" >> $GITHUB_OUTPUT
               echo "build-cards=true" >> $GITHUB_OUTPUT
+              echo "build-sequence=true" >> $GITHUB_OUTPUT
               echo "build-radio=true" >> $GITHUB_OUTPUT
               echo "build-todo=true" >> $GITHUB_OUTPUT
               echo "build-type=true" >> $GITHUB_OUTPUT
@@ -69,6 +73,8 @@ jobs:
               echo "build-yes-no=true" >> $GITHUB_OUTPUT
             elif [[ "$TARGET" == "cards" ]]; then
               echo "build-cards=true" >> $GITHUB_OUTPUT
+            elif [[ "$TARGET" == "sequence" ]]; then
+              echo "build-sequence=true" >> $GITHUB_OUTPUT
             elif [[ "$TARGET" == "radio" ]]; then
               echo "build-radio=true" >> $GITHUB_OUTPUT
             elif [[ "$TARGET" == "todo" ]]; then
@@ -88,6 +94,7 @@ jobs:
             echo "build-timer=true" >> $GITHUB_OUTPUT
             echo "build-yes-no=true" >> $GITHUB_OUTPUT
             echo "build-cards=true" >> $GITHUB_OUTPUT
+            echo "build-sequence=true" >> $GITHUB_OUTPUT
             echo "build-radio=true" >> $GITHUB_OUTPUT
             echo "build-todo=true" >> $GITHUB_OUTPUT
             echo "build-type=true" >> $GITHUB_OUTPUT
@@ -100,6 +107,9 @@ jobs:
           fi
           if [[ "$COMMIT_MSG" == *"[build:cards]"* ]]; then
             echo "build-cards=true" >> $GITHUB_OUTPUT
+          fi
+          if [[ "$COMMIT_MSG" == *"[build:sequence]"* ]]; then
+            echo "build-sequence=true" >> $GITHUB_OUTPUT
           fi
           if [[ "$COMMIT_MSG" == *"[build:radio]"* ]]; then
             echo "build-radio=true" >> $GITHUB_OUTPUT
@@ -116,7 +126,7 @@ jobs:
 
   check-environment:
     needs: check-triggers
-    if: needs.check-triggers.outputs.build-timer == 'true' || needs.check-triggers.outputs.build-yes-no == 'true' || needs.check-triggers.outputs.build-cards == 'true' || needs.check-triggers.outputs.build-radio == 'true' || needs.check-triggers.outputs.build-todo == 'true' || needs.check-triggers.outputs.build-type == 'true'
+    if: needs.check-triggers.outputs.build-timer == 'true' || needs.check-triggers.outputs.build-yes-no == 'true' || needs.check-triggers.outputs.build-cards == 'true' || needs.check-triggers.outputs.build-sequence == 'true' || needs.check-triggers.outputs.build-radio == 'true' || needs.check-triggers.outputs.build-todo == 'true' || needs.check-triggers.outputs.build-type == 'true'
     runs-on: ubuntu-latest
     name: Check Required Environment Variables
     steps:
@@ -425,6 +435,51 @@ jobs:
         run: |
           wrangler pages project create tiko-type --production-branch=master || echo "Project already exists"
           wrangler pages deploy ./apps/type/dist --project-name=tiko-type
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: dc2b7d14a69351375cab6de9a13ddee9
+
+  deploy-sequence:
+    needs: [check-triggers, check-environment]
+    if: needs.check-triggers.outputs.build-sequence == 'true'
+    runs-on: ubuntu-latest
+    name: Deploy Sequence App
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+        
+      - name: Generate i18n translations
+        run: pnpm generate:i18n:worker:prod
+        
+      - name: Build Sequence app
+        run: |
+          pnpm --filter=@tiko/ui build
+          pnpm --filter=@tiko/core build
+          pnpm --filter=sequence build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_TTS_WORKER_URL: https://tts.tikoapi.org
+          VITE_TTS_CDN_URL: https://tts.tikocdn.org
+          
+      - name: Install Wrangler
+        run: npm install -g wrangler
+        
+      - name: Deploy to Cloudflare Pages
+        run: |
+          wrangler pages project create tiko-sequence --production-branch=master || echo "Project already exists"
+          wrangler pages deploy ./apps/sequence/dist --project-name=tiko-sequence
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: dc2b7d14a69351375cab6de9a13ddee9

@@ -167,6 +167,12 @@ export const defaultTikoSplashConfigs = {
     themeColor: '#007bff',
     iconPath: '/assets/image/app-icon-cards.png'
   },
+  sequence: {
+    appName: 'Sequence',
+    backgroundColor: '#f8f9fa',
+    themeColor: '#40c8c6',
+    iconPath: '/assets/image/app-icon-sequence.png'
+  },
   radio: {
     appName: 'Radio',
     backgroundColor: '#1a1a1a',
