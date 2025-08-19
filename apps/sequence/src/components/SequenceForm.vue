@@ -11,13 +11,9 @@
           :placeholder="t('sequence.uploadSequenceImage')" :title="t('sequence.selectSequenceImage')" />
       </TFormGroup>
 
-
-      {{ showVisibilityToggle }}
-      {{ props.isOwner }}
-
       <!-- Visibility toggle -->
-      <div :class="bemm('field')" v-if="showVisibilityToggle && (props.isOwner !== false)">
-        <label :class="bemm('label')">{{ t('sequence.visibility') }}</label>
+      <div :class="bemm('field')" v-if="props.showVisibilityToggle">
+        <label :class="bemm('label')">{{ t('common.visibility') }}</label>
         <div :class="bemm('visibility-options')">
           <label :class="bemm('checkbox-label')">
             <TInputCheckbox v-model="form.isPublic" :label="t('sequence.makePublic')" :class="bemm('checkbox')" />

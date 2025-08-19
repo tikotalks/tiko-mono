@@ -130,9 +130,9 @@ const clearImage = () => {
 
   &__preview {
     position: relative;
-    width: 150px;
-    height: 150px;
-    border-radius: 0.5rem;
+    width: 8em;
+    height: 8em;
+    border-radius: calc(var(--border-radius) / 2);
     overflow: hidden;
     border: 1px solid var(--color-border);
     background-color: var(--current-color);
@@ -154,18 +154,18 @@ const clearImage = () => {
     }
 
     &--small {
-      width: 3rem;
-      height: 3rem;
-      border-radius: 0.25rem;
+      width: 3em;
+      height: 3em;
+      border-radius: .5em;
 
       .image-input__actions {
-        top: 0.25rem;
-        right: 0.25rem;
-        gap: 0.125rem;
+        top: 0.25em;
+        right: 0.25em;
+        gap: 0.125em;
 
         .t-button {
-          --button-size-small: 1.25rem;
-          --button-font-size-small: 0.625rem;
+          --button-size-small: 1.25em;
+          --button-font-size-small: 0.625em;
         }
       }
     }

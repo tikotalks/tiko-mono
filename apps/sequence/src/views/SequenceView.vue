@@ -630,6 +630,7 @@ const openCardEditForm = async (card: SequenceTile, index: number) => {
   const isNewCard = card.id.startsWith('empty-');
   
   console.log('[SequenceView] openCardEditForm - isNewCard:', isNewCard, 'card:', card);
+  console.log('[SequenceView] authStore.user?.id:', authStore.user?.id);
 
   // Load translations if editing existing card (for potential future use)
   if (!isNewCard) {
@@ -642,6 +643,10 @@ const openCardEditForm = async (card: SequenceTile, index: number) => {
 
   // Create a ref to store the component instance
   let formComponentRef = null;
+  
+  // Calculate isOwner explicitly
+  const isOwner = isNewCard ? true : (card.ownerId === authStore.user?.id || card.user_id === authStore.user?.id);
+  console.log('[SequenceView] Calculated isOwner:', isOwner, 'isNewCard:', isNewCard);
   
   popupService.open({
     component: SequenceForm,
@@ -673,7 +678,7 @@ const openCardEditForm = async (card: SequenceTile, index: number) => {
     props: {
       sequence: card,
       isNew: isNewCard,
-      isOwner: isNewCard ? true : (card.ownerId === authStore.user?.id || card.user_id === authStore.user?.id),
+      isOwner: isOwner,
       showVisibilityToggle: true,
       // Pass a ref callback to get the component instance
       onMounted: (componentInstance: any) => {

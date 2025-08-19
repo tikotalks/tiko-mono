@@ -72,18 +72,14 @@ export const useSequenceStore = defineStore('sequence', () => {
     return playState.value.correctOrder[nextIndex] === itemId
   })
 
-  const speakText = async (text: string) => {
+  const speakText = async (text: string, language?: string) => {
     try {
-      // Import useTextToSpeech dynamically
-      const { useTextToSpeech } = await import('@tiko/ui')
-      const tts = useTextToSpeech()
+      // Import useSpeak dynamically for enhanced TTS with OpenAI support
+      const { useSpeak } = await import('@tiko/core')
+      const { speak } = useSpeak()
 
-      // Speak with language-aware voice
-      await tts.speak(text, {
-        rate: 0.8,
-        pitch: 1.0,
-        volume: 1.0
-      })
+      // Speak with language-aware voice using enhanced TTS
+      await speak(text, { language })
     } catch (error) {
       console.error('Failed to speak text:', error)
     }
@@ -634,7 +630,10 @@ export const useSequenceStore = defineStore('sequence', () => {
       
       // Play TTS if enabled
       if (settings.value.autoSpeak && item.speak) {
-        await speakText(item.speak)
+        // Get current language for TTS
+        const { currentLocale } = useI18n()
+        const language = currentLocale.value.split('-')[0] // Convert 'en-GB' to 'en'
+        await speakText(item.speak, language)
       }
       
       // Check if sequence is complete
