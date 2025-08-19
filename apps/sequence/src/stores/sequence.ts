@@ -38,7 +38,7 @@ export const useSequenceStore = defineStore('sequence', () => {
   const allSequenceLoaded = ref(false)
   const isLoadingSequence = ref(false)
   const hasOfflineData = ref(false)
-  const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+  const CACHE_DURATION = 30 * 60 * 1000 // 30 minutes - increased from 5 minutes to prevent data loss
 
 
   // Play state
@@ -146,6 +146,14 @@ export const useSequenceStore = defineStore('sequence', () => {
       const entry = cache.get(cacheKey)!
       if (isCacheValid(entry, locale || 'default')) {
         console.log(`[SequenceStore] Returning cached sequence for ${cacheKey}`)
+        return entry.sequence
+      } else {
+        // Cache is expired but still return the data while we refresh in background
+        console.log(`[SequenceStore] Cache expired for ${cacheKey}, returning stale data while refreshing`)
+        // Don't await - let it refresh in background
+        loadSequence(parentId, locale, true).catch(err => 
+          console.error(`[SequenceStore] Background refresh failed for ${cacheKey}:`, err)
+        )
         return entry.sequence
       }
     }
