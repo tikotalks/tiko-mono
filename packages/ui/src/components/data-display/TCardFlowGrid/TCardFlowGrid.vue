@@ -18,6 +18,7 @@
         :is-empty="false"
         :selection-mode="selectionMode"
         :is-selected="selectedTileIds?.has(card.id)"
+        :custom-state="(card as any).customState"
         :context-menu="getContextMenu?.(card, index)"
         @click="handleCardClick(card, index)"
         @dragstart="handleDragStart($event, card)"

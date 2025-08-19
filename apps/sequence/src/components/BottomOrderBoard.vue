@@ -1,7 +1,7 @@
 <template>
   <div :class="bemm('', ['', items.length ? 'has-items' : 'no-items'])">
 
-    <div :class="bemm('items')">
+    <div :class="bemm('items')" ref="itemsContainer">
       <TransitionGroup name="order-item">
         <div v-for="(item, index) in items" :key="item.id" :class="bemm('item')" :style="{ '--index': index }">
           <div :class="bemm('item-number')">{{ index + 1 }}</div>
@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 import { useBemm } from 'bemm'
 import { TCardTile, TProgressBar, useI18n } from '@tiko/ui'
 import type { TCardTile as CardTileType } from '@tiko/ui'
@@ -36,6 +36,19 @@ const bemm = useBemm('bottom-order-board')
 const { t } = useI18n()
 
 const totalItems = computed(() => props.totalItems || props.items.length)
+const itemsContainer = ref<HTMLElement>()
+
+// Auto-scroll to end when new items are added
+watch(() => props.items.length, async (newLength, oldLength) => {
+  if (newLength > oldLength && itemsContainer.value) {
+    await nextTick()
+    // Scroll to the end with smooth behavior
+    itemsContainer.value.scrollTo({
+      left: itemsContainer.value.scrollWidth,
+      behavior: 'smooth'
+    })
+  }
+})
 </script>
 
 <style lang="scss">
@@ -44,7 +57,7 @@ const totalItems = computed(() => props.totalItems || props.items.length)
 .bottom-order-board {
 
   border-radius: var(--border-radius);
-  padding: var(--space);
+
   transition: .3s cubic-bezier(0, .5, .5, 1.5);
 
   position: fixed;
@@ -65,11 +78,13 @@ const totalItems = computed(() => props.totalItems || props.items.length)
     opacity: 1;
   }
 
-  &__header {
+  &__footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    padding: var(--space-s);
+
+    --progress-color: var(--color-secondary);
   }
 
   &__title {
@@ -85,10 +100,12 @@ const totalItems = computed(() => props.totalItems || props.items.length)
   }
 
   &__items {
+
+    @include mixins.scrollbar(red, blue);
     display: flex;
-    gap: 0.5rem;
-    padding-bottom: 0.5rem;
-    overflow: auto;
+    gap:var(--space-s);
+    overflow-x: auto;
+    padding: var(--space);
 
     &::-webkit-scrollbar {
       height: 6px;

@@ -116,16 +116,16 @@ const status = computed(() => {
   align-items: center;
 
   &--complete {
-    --progress-color: var(--color-success);
+    --progress-color-local: var(--color-success);
   }
   &--in-progress {
-    --progress-color: var(--color-primary);
+    --progress-color-local: var(--color-primary);
   }
   &--error {
-    --progress-color: var(--color-error);
+    --progress-color-local: var(--color-error);
   }
   &--warning {
-    --progress-color: var(--color-warning);
+    --progress-color-local: var(--color-warning);
   }
 
   &--animated {
@@ -144,7 +144,7 @@ const status = computed(() => {
     position: relative;
     height: 100%;
     width: 100%;
-    background-color: var(--color-background-secondary);
+    background-color: var(--progress-track-color, var(--color-background));
     border-radius: var(--border-radius);
     overflow: hidden;
     border: 1px solid color-mix(in srgb, var(--color-primary), transparent 75%);
@@ -160,7 +160,7 @@ const status = computed(() => {
     justify-content: center;
     position: relative;
     min-width: 0;
-    background-color: var(--progress-color, var(--color-primary));
+    background-color: var(--progress-color,var(--progress-color-local, var(--color-primary)));
   }
 
   &__percentage {
