@@ -1,15 +1,16 @@
-@mixin checkerBoard(){
+@mixin checkerBoard() {
   background-image:
-  linear-gradient(45deg, var(--dot-color, var(--color-accent)) 25%, transparent 25%),
-  linear-gradient(135deg, var(--dot-color, var(--color-accent)) 25%, transparent 25%),
-  linear-gradient(45deg, transparent 75%, var(--dot-color, var(--color-accent)) 75%),
-  linear-gradient(135deg, transparent 75%, var(--dot-color, var(--color-accent)) 75%);
-background-size: 20px 20px; /* Must be a square */
-background-position:
-  0 0,
-  10px 0,
-  10px -10px,
-  0px 10px;
+    linear-gradient(45deg, var(--dot-color, var(--color-accent)) 25%, transparent 25%),
+    linear-gradient(135deg, var(--dot-color, var(--color-accent)) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--dot-color, var(--color-accent)) 75%),
+    linear-gradient(135deg, transparent 75%, var(--dot-color, var(--color-accent)) 75%);
+  background-size: 20px 20px;
+  /* Must be a square */
+  background-position:
+    0 0,
+    10px 0,
+    10px -10px,
+    0px 10px;
 }
 
 
@@ -17,4 +18,43 @@ background-position:
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+@mixin glass() {
+  background: var(--glass-background, rgba(255, 255, 255, 0.1));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--color-dark), transparent 70%);
+  box-shadow:
+    0 8px 32px color-mix(in srgb, var(--color-dark), transparent 80%),
+    inset 0 1px 0 color-mix(in srgb, var(--color-light), transparent 50%),
+    inset 0 -1px 0 color-mix(in srgb, var(--color-light), transparent 90%),
+    inset 0 0 42px 21px color-mix(in srgb, var(--color-light), transparent 80%);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent,
+        color-mix(in srgb, var(--color-light), transparent 50%),
+        transparent);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: var(--border-radius);
+    left: 0;
+    width: 1px;
+    height: calc(100% - (var(--border-radius) * 2));
+    background: linear-gradient(180deg,
+    transparent,
+    color-mix(in srgb, var(--color-light), transparent 20%),
+    transparent
+    );
+  }
 }

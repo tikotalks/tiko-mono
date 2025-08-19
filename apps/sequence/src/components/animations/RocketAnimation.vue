@@ -1,5 +1,5 @@
 <template>
-  <div :class="bemm()" @click="handleClick">
+  <div :class="bemm()" :style="containerStyle" @click="handleClick">
     <!-- No click message needed - auto-starts -->
 
     <!-- Fullscreen space background -->
@@ -88,6 +88,7 @@ const animationPhase = ref<'entering' | 'bouncing' | 'flying' | 'exiting' | 'fin
 const rocketY = ref(120) // Start below screen (percentage)
 const rocketRotation = ref(0)
 const backgroundY = ref(0) // Background starts at 0
+const opacity = ref(0) // For fade in/out
 
 // Computed styles
 const rocketStyle = computed(() => {
@@ -104,11 +105,29 @@ const backgroundStyle = computed(() => ({
   // No transition - handle animation in JavaScript for smooth control
 }))
 
+const containerStyle = computed(() => ({
+  opacity: opacity.value
+}))
+
 // Animation sequence
 const startAnimation = async () => {
   console.log('Starting rocket animation...')
 
-
+  // Fade in animation
+  const fadeInDuration = 1000 // 1 second fade in
+  const fadeInStartTime = Date.now()
+  
+  const fadeIn = () => {
+    const elapsed = Date.now() - fadeInStartTime
+    const progress = Math.min(elapsed / fadeInDuration, 1)
+    opacity.value = progress
+    
+    if (progress < 1) {
+      requestAnimationFrame(fadeIn)
+    }
+  }
+  
+  requestAnimationFrame(fadeIn)
 
   // Phase 1: Rocket enters from bottom
   animationPhase.value = 'entering'
@@ -164,31 +183,42 @@ const startAnimation = async () => {
     if (progress < 1) {
       requestAnimationFrame(animate)
     } else {
-      // Phase 4: Exit animation
+      // Phase 4: Exit animation with slow background and fade out
       animationPhase.value = 'exiting'
 
-      // Continue moving rocket further off screen
-      const exitDuration = 1000
+      // Continue animation with slowing background and fade out
+      const exitDuration = 3000 // 3 seconds for exit
       const exitStartTime = Date.now()
+      const initialBackgroundY = backgroundY.value
 
       const exitAnimate = () => {
         const exitElapsed = Date.now() - exitStartTime
         const exitProgress = Math.min(exitElapsed / exitDuration, 1)
 
-        // Continue moving up
+        // Easing function for deceleration (ease-out)
+        const easeOut = 1 - Math.pow(1 - exitProgress, 3)
+
+        // Continue moving rocket up
         rocketY.value = 170 + (exitProgress * 50) // Move further off screen
 
-        // Keep background at final position
-        backgroundY.value = window.innerHeight * 2 // Stay at 200vh
+        // Slow down background movement (only move an additional 20% of viewport)
+        backgroundY.value = initialBackgroundY + (easeOut * window.innerHeight * 0.2)
+
+        // Fade out during the last half of the exit animation
+        if (exitProgress > 0.5) {
+          const fadeProgress = (exitProgress - 0.5) * 2 // Map 0.5-1 to 0-1
+          opacity.value = 1 - fadeProgress
+        }
 
         if (exitProgress < 1) {
           requestAnimationFrame(exitAnimate)
         } else {
           // Animation completed
           animationPhase.value = 'finished'
+          opacity.value = 0
           setTimeout(() => {
             emit('completed')
-          }, 300)
+          }, 100)
         }
       }
 
@@ -210,9 +240,11 @@ onMounted(async () => {
     console.warn('Failed to preload some images:', error)
   }
   
-  // Auto-start the animation
-  animationStarted.value = true
-  startAnimation()
+  // Auto-start the animation after a small delay
+  setTimeout(() => {
+    animationStarted.value = true
+    startAnimation()
+  }, 100)
 })
 </script>
 
@@ -226,6 +258,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: opacity 0.3s ease-out;
 
   &__background {
     position: absolute;

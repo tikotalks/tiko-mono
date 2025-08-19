@@ -10,7 +10,7 @@
       <TransitionGroup name="order-item">
         <div v-for="(item, index) in items" :key="item.id" :class="bemm('item')" :style="{ '--index': index }">
           <div :class="bemm('item-number')">{{ index + 1 }}</div>
-          <TCardTile :class="bemm('tile')" :card="item" :show-image="true" :show-title="true" :edit-mode="false" />
+          <TCardTile :class="bemm('tile')" :card="item" :show-image="true" :show-title="false" :edit-mode="false" />
         </div>
       </TransitionGroup>
     </div>
@@ -35,17 +35,21 @@ const totalItems = computed(() => props.totalItems || props.items.length)
 </script>
 
 <style lang="scss">
+@use '@tiko/ui/styles/mixins' as mixins;
+
 .bottom-order-board {
-  background: var(--color-background);
-  border: 1px solid var(--color-primary);
+
   border-radius: var(--border-radius);
   padding: var(--space);
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
   transition: .3s cubic-bezier(0, .5, .5, 1.5);
 
   position: fixed;
-bottom: 0; left: 0; right: 0;
-margin: var(--space);
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: var(--space);
+--glass-background: color-mix(in srgb, var(--color-primary), transparent 25%);
+  @include mixins.glass();
 
   &--no-items {
     transform: scale(.75);
