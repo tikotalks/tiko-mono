@@ -647,6 +647,7 @@ const openCardEditForm = async (card: SequenceTile, index: number) => {
   // Calculate isOwner explicitly
   const isOwner = isNewCard ? true : (card.ownerId === authStore.user?.id || card.user_id === authStore.user?.id);
   console.log('[SequenceView] Calculated isOwner:', isOwner, 'isNewCard:', isNewCard);
+  console.log('[SequenceView] showVisibilityToggle will be:', true);
   
   popupService.open({
     component: SequenceForm,

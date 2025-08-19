@@ -92,6 +92,8 @@ export const sequenceService = {
           parentId: item.parent_id || undefined,
           base_locale: item.base_locale || 'en',
           effective_locale: item.effective_locale || item.base_locale || 'en',
+          isPublic: item.is_public || false,
+          isCurated: item.is_curated || false
         };
 
         console.log('[loadSequence] Card tile created:', {
@@ -148,6 +150,8 @@ export const sequenceService = {
           parentId: item.parent_id || undefined,
           base_locale: item.base_locale || 'en',
           effective_locale: item.effective_locale || item.base_locale || 'en',
+          isPublic: item.is_public || false,
+          isCurated: item.is_curated || false
         };
       });
     } catch (error) {

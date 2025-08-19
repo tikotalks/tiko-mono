@@ -10,34 +10,19 @@
           </h4>
         </div>
         <!-- Email Step -->
-        <div :class="bemm('content',['','login'])">
+        <div :class="bemm('content', ['', 'login'])">
           <!-- Email Input -->
           <TForm @submit.prevent="handleEmailSubmit" data-cy="email-form">
-            <TInputEmail
-              v-model="email"
-              type="email"
-              :label="t(keys.auth.emailAddress)"
-              :placeholder="t(keys.auth.enterEmail)"
-              :disabled="isLoading"
-              required
-              :class="bemm('input')"
-              data-cy="email-input"
-            />
+            <TInputEmail v-model="email" type="email" :label="t(keys.auth.emailAddress)"
+              :placeholder="t(keys.auth.enterEmail)" :disabled="isLoading" required :class="bemm('input')"
+              data-cy="email-input" />
 
-            <TButton
-              :label="t(keys.auth.sendCode)"
-              color="primary"
-              size="large"
-              @click="handleEmailSubmit"
-              :disabled="!isEmailValid || isLoading"
-              :loading="isLoading"
-              :class="bemm('submit-button')"
-              data-cy="submit-email-button"
-              >{{ t(keys.auth.sendCode) }}</TButton
-            >
+            <TButton :label="t(keys.auth.sendCode)" color="primary" size="large" @click="handleEmailSubmit"
+              :disabled="!isEmailValid || isLoading" :loading="isLoading" :class="bemm('submit-button')"
+              data-cy="submit-email-button">{{ t(keys.auth.sendCode) }}</TButton>
           </TForm>
-</div>
-<section :class="bemm('content',['','other-options'])">
+        </div>
+        <section :class="bemm('content', ['', 'other-options'])">
           <!-- Divider -->
           <!-- <div :class="bemm('divider')">
             <span :class="bemm('divider-text')">{{ t(keys.auth.or) }}</span>
@@ -65,32 +50,15 @@
           > -->
 
           <!-- Skip Auth Button -->
-          <TButton
-            v-if="allowSkipAuth"
-            type="outline"
-            size="large"
-            :color="BaseColors.BLUE"
-            :icon="Icons.ARROW_RIGHT"
-            @click="handleSkipAuth"
-            :disabled="isLoading"
-            :class="bemm('skip-button')"
-            data-cy="skip-auth-button"
-            >{{ t(keys.auth.skipLogin) }}</TButton
-          >
+          <TButton v-if="allowSkipAuth" type="outline" size="large" :color="BaseColors.BLUE" :icon="Icons.ARROW_RIGHT"
+            @click="handleSkipAuth" :disabled="isLoading" :class="bemm('skip-button')" data-cy="skip-auth-button">{{
+              t(keys.auth.skipLogin) }}</TButton>
 
           <!-- Register Link -->
           <div :class="bemm('register')">
-            <span :class="bemm('register-text')"
-              >{{ t(keys.auth.dontHaveAccount) }}&nbsp;</span
-            >
-            <TButton
-              size="large"
-              :color="BaseColors.BLUE"
-              :class="bemm('register-link')"
-              :icon="Icons.USER_ADD"
-              @click="toggleMode"
-              data-cy="toggle-register"
-            >
+            <p :class="bemm('register-text')">{{ t(keys.auth.dontHaveAccount) }}</p>
+            <TButton size="large" :color="BaseColors.BLUE" :class="bemm('register-link')" :icon="Icons.USER_ADD"
+              @click="toggleMode" data-cy="toggle-register">
               {{ t(keys.auth.register) }}
             </TButton>
           </div>
@@ -102,10 +70,7 @@
         <div :class="bemm('content')">
           <div :class="bemm('verification-info')" data-cy="verification-info">
             <TIcon name="mail" :class="bemm('verification-icon')" />
-            <p
-              :class="bemm('verification-text')"
-              data-cy="verification-message"
-            >
+            <p :class="bemm('verification-text')" data-cy="verification-message">
               We've sent you an email with two options:<br />
               <strong data-cy="verification-email">{{ email }}</strong>
             </p>
@@ -119,62 +84,32 @@
             </div>
           </div>
 
-          <TForm
-            @submit.prevent="handleVerificationSubmit"
-            data-cy="verification-form"
-          >
-            <TInputText
-              v-model="verificationCode"
-              type="text"
-              inputmode="numeric"
-              pattern="[0-9]*"
-              :label="t(keys.auth.verificationCode)"
-              :placeholder="t(keys.auth.enterDigitCode, { codeLength })"
-              :error="verificationError ? [verificationError] : undefined"
-              :disabled="isLoading"
-              :maxlength="codeLength"
-              required
-              :class="bemm('code-input')"
-              data-cy="verification-code-input"
-              autocomplete="one-time-code"
-            />
+          <TForm @submit.prevent="handleVerificationSubmit" data-cy="verification-form">
+            <TInputText v-model="verificationCode" type="text" inputmode="numeric" pattern="[0-9]*"
+              :label="t(keys.auth.verificationCode)" :placeholder="t(keys.auth.enterDigitCode, { codeLength })"
+              :error="verificationError ? [verificationError] : undefined" :disabled="isLoading" :maxlength="codeLength"
+              required :class="bemm('code-input')" data-cy="verification-code-input" autocomplete="one-time-code" />
 
-            <TButton
-              :label="t(keys.auth.verifyCode)"
-              color="primary"
-              size="large"
-              @click="handleVerificationSubmit"
-              :disabled="!isVerificationValid || isLoading"
-              :loading="isLoading"
-              :class="bemm('submit-button')"
-              data-cy="verify-code-button"
-              >{{ t(keys.auth.verifyCode) }}</TButton
-            >
+            <TButton :label="t(keys.auth.verifyCode)" color="primary" size="large" @click="handleVerificationSubmit"
+              :disabled="!isVerificationValid || isLoading" :loading="isLoading" :class="bemm('submit-button')"
+              data-cy="verify-code-button">{{ t(keys.auth.verifyCode) }}</TButton>
           </TForm>
 
           <!-- Actions -->
-          <TButtonGroup :class="bemm('actions')">
-            <TButton
-              :class="bemm('action-link')"
-              @click="handleResendCode"
-              :disabled="isLoading || resendCooldown > 0"
-              data-cy="resend-code-button"
-            >
+          <TButtonGroup :class="bemm('actions')" :direction="'row'">
+            <TButton :color="'secondary'" :class="bemm('action-link')" @click="handleResendCode" :disabled="isLoading || resendCooldown > 0"
+              data-cy="resend-code-button">
               {{
                 resendCooldown > 0
                   ? `Resend in ${resendCooldown}s`
                   : t(keys.auth.didntReceiveCode) +
-                    ' ' +
-                    t(keys.auth.resendCode)
+                  ' ' +
+                  t(keys.auth.resendCode)
               }}
             </TButton>
 
-            <TButton
-              :class="bemm('action-link')"
-              @click="goBackToEmail"
-              :disabled="isLoading"
-              data-cy="back-to-email-button"
-            >
+            <TButton :color="'secondary'"  :class="bemm('action-link')" @click="goBackToEmail" :disabled="isLoading"
+              data-cy="back-to-email-button">
               {{ t(keys.auth.useDifferentEmail) }}
             </TButton>
           </TButtonGroup>
@@ -190,52 +125,25 @@
         </div>
         <div :class="bemm('content')">
           <TForm @submit.prevent="handleRegisterSubmit" data-cy="register-form">
-            <TInputEmail
-              v-model="email"
-              type="email"
-              :label="t(keys.auth.emailAddress)"
-              :placeholder="t(keys.auth.enterEmail)"
-              :disabled="isLoading"
-              required
-              :class="bemm('input')"
-              data-cy="register-email-input"
-            />
+            <TInputEmail v-model="email" type="email" :label="t(keys.auth.emailAddress)"
+              :placeholder="t(keys.auth.enterEmail)" :disabled="isLoading" required :class="bemm('input')"
+              data-cy="register-email-input" />
 
-            <TInputText
-              v-model="fullName"
-              type="text"
-              :label="t(keys.auth.fullNameOptional)"
-              :placeholder="t(keys.auth.enterFullName)"
-              :disabled="isLoading"
-              :class="bemm('input')"
-              data-cy="register-name-input"
-            />
+            <TInputText v-model="fullName" type="text" :label="t(keys.auth.fullNameOptional)"
+              :placeholder="t(keys.auth.enterFullName)" :disabled="isLoading" :class="bemm('input')"
+              data-cy="register-name-input" />
 
-            <TButton
-              :label="t(keys.auth.sendCode)"
-              type="fancy"
-              color="primary"
-              size="large"
-              @click="handleRegisterSubmit"
-              :disabled="!isEmailValid || isLoading"
-              :loading="isLoading"
-              :class="bemm('submit-button')"
-              data-cy="register-submit-button"
-              >{{ t(keys.auth.sendCode) }}</TButton
-            >
+            <TButton :label="t(keys.auth.sendCode)" type="fancy" color="primary" size="large"
+              @click="handleRegisterSubmit" :disabled="!isEmailValid || isLoading" :loading="isLoading"
+              :class="bemm('submit-button')" data-cy="register-submit-button">{{ t(keys.auth.sendCode) }}</TButton>
           </TForm>
 
           <!-- Back to Login -->
           <div :class="bemm('register')">
             <span :class="bemm('register-text')">{{
               t(keys.auth.alreadyHaveAccount)
-            }}</span>
-            <button
-              type="button"
-              :class="bemm('register-link')"
-              @click="toggleMode"
-              data-cy="toggle-login"
-            >
+              }}</span>
+            <button type="button" :class="bemm('register-link')" @click="toggleMode" data-cy="toggle-login">
               {{ t(keys.auth.login) }}
             </button>
           </div>
@@ -243,18 +151,11 @@
       </template>
 
       <!-- Error Message (shown for all steps) -->
-      <div v-if="error" :class="bemm('error')" data-cy="error-message">
-        <TIcon name="alert-circle" :class="bemm('error-icon')" />
-        <p :class="bemm('error-message')">{{ error }}</p>
-        <TButton
-          :label="t(keys.auth.tryAgain)"
-          type="outline"
-          color="secondary"
-          size="small"
-          @click="clearError"
-          :class="bemm('error-button')"
-          >{{ t(keys.auth.tryAgain) }}</TButton
-        >
+      <div v-if="error" :class="bemm('error')" data-cy="warning-message">
+        <TIcon :name="Icons.TRIANGLED_EXCLAMATION_MARK" :class="bemm('warning-icon')" />
+        <p :class="bemm('warning-message')">{{ error }}</p>
+        <TButton :label="t(keys.auth.tryAgain)" type="outline" color="secondary" size="small" @click="clearError"
+          :class="bemm('error-button')">{{ t(keys.auth.tryAgain) }}</TButton>
       </div>
     </div>
   </div>
@@ -277,9 +178,9 @@ import type {
   LoginFormStep,
 } from './TLoginForm.model';
 import { Icons } from 'open-icon';
-import { BaseColors, Colors } from '../../../types';
+import { BaseColors } from '../../../types';
 
-const props = withDefaults(defineProps<TLoginFormProps>(), {
+withDefaults(defineProps<TLoginFormProps>(), {
   isLoading: false,
   error: null,
   enableSSO: true,
@@ -430,6 +331,8 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
 
+
+  transition: .3s ease-in-out;
   --card-padding: var(--space-xl);
 
   .button {
@@ -441,7 +344,7 @@ onUnmounted(() => {
     border-radius: var(--border-radius);
     box-shadow: 0 var(--space-s) var(--space-s) rgba(0, 0, 0, 0.1);
     width: 100%;
-  overflow: hidden;
+    overflow: hidden;
   }
 
   &__header {
@@ -462,7 +365,7 @@ onUnmounted(() => {
     flex-direction: column;
     gap: 1.5rem;
 
-    &--other-options{
+    &--other-options {
       background-color: color-mix(in srgb, var(--color-primary), var(--color-background) 90%);
     }
   }
@@ -507,6 +410,7 @@ onUnmounted(() => {
     display: flex;
     flex-wrap: wrap;
   }
+
   &__register-link {
     width: auto;
   }
@@ -524,12 +428,18 @@ onUnmounted(() => {
     margin-bottom: var(--space-s);
   }
 
-  &__error{
+  &__error {
     padding: var(--space);
-    background-color: color-mix(in srgb, var(--color-error), transparent 75%);
-    border: 1px solid var(--color-error);
+    background-color: color-mix(in srgb, var(--color-warning), transparent 95%);
+    border: 1px solid var(--color-warning);
     margin: var(--space);
     border-radius: var(--border-radius);
+  }
+  &__warning-icon {
+    color: var(--color-warning);
+    margin-right: var(--space-xs);
+    float: left;font-size:2.5em;
+    margin-bottom: 0em;
   }
 }
 </style>

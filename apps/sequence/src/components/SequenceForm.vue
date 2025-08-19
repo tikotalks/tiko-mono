@@ -6,87 +6,81 @@
       <TFormGroup>
         <TInputText :inline="true" :label="t('common.title')" v-model="form.title"
           :placeholder="t('sequence.enterSequenceTitle')" :class="bemm('input')" />
-        <TColorPicker :inline="true"  :label="t('common.color')" v-model="form.color" :colors="availableColors" />
-        <TImageInput :inline="true"  :label="t('common.image')" v-model="form.image" :color="form.color"
+        <TColorPicker :inline="true" :label="t('common.color')" v-model="form.color" :colors="availableColors" />
+        <TImageInput :inline="true" :label="t('common.image')" v-model="form.image" :color="form.color"
           :placeholder="t('sequence.uploadSequenceImage')" :title="t('sequence.selectSequenceImage')" />
-      </TFormGroup>
 
-      <!-- Visibility toggle -->
-      <div :class="bemm('field')" v-if="props.showVisibilityToggle">
-        <label :class="bemm('label')">{{ t('common.visibility') }}</label>
-        <div :class="bemm('visibility-options')">
-          <label :class="bemm('checkbox-label')">
-            <TInputCheckbox v-model="form.isPublic" :label="t('sequence.makePublic')" :class="bemm('checkbox')" />
-            <TIcon :name="Icons.INFO_M" :title="t('sequence.publicDescription')" :class="bemm('info-icon')" />
-          </label>
-          <p v-if="form.isPublic" :class="bemm('visibility-note')">
-            {{ t('sequence.publicNote') }}
+
+        <!-- Visibility toggle -->
+        <template v-if="props.showVisibilityToggle">
+          <TInputCheckbox v-model="form.isPublic" :label="t('common.makePublic')" :class="bemm('checkbox')" />
+
+          <p v-if="form.isPublic" :class="bemm('visibility-note')">{{ t('common.publicNote') }}
           </p>
           <p v-if="form.isCurated" :class="bemm('visibility-note', 'curated')">
-            <TIcon name="star" size="small" />
-            {{ t('sequence.curatedNote') }}
+            <TIcon :name="Icons.STAR_M" size="small" />
+            {{ t('common.curatedNote') }}
           </p>
-        </div>
-      </div>
-    </div>
 
-    <!-- Sequence items -->
-    <div :class="bemm('section')">
-      <div :class="bemm('section-header')">
-        <h3 :class="bemm('section-title')">{{ t('sequence.sequenceItems') }}</h3>
-        <TButton :icon="Icons.ADD" size="small" @click="addItem">
-          {{ t('sequence.addItem') }}
-        </TButton>
-      </div>
+        </template>
+      </TFormGroup>
 
-      <!-- Draggable items list -->
-      <div :class="bemm('items')" @dragover.prevent @drop="handleDrop">
-        <TransitionGroup name="sequence-item">
-          <div v-for="(item, index) in form.items" :key="item.id" :class="bemm('item', ['',
-            draggedIndex === index ? 'dragging' : '',
-            dragOverIndex === index ? 'drag-over' : ''
-          ])" :draggable="true" @dragstart="handleDragStart(index, $event)" @dragend="handleDragEnd"
-            @dragenter="handleDragEnter(index)">
-            <!-- Drag handle -->
-            <div :class="bemm('item-handle')">
-              <TIcon :name="Icons.DRAG" size="small" />
-              <span :class="bemm('item-number')">{{ index + 1 }}</span>
-            </div>
 
-            <!-- Item content -->
-            <div :class="bemm('item-content')">
-              <!-- Title -->
-              <TInputText v-model="item.title" :placeholder="t('sequence.itemTitle')" :class="bemm('item-input')" />
-
-              <!-- Color -->
-              <TColorPickerPopup v-model="item.color" :colors="availableColors" size="small" />
-
-              <!-- Image selector -->
-              <TImageInput v-model="item.image" :color="item.color" :title="t('sequence.selectItemImage')" small
-                @mousedown.stop @click.stop />
-
-              <!-- Speak text -->
-              <TInputText v-model="item.speak" :placeholder="t('sequence.speakText')"
-                :class="bemm('item-input', ['speak'])" />
-            </div>
-
-            <!-- Delete button -->
-            <TButton :icon="Icons.TRASH" :color="Colors.ERROR" type="ghost" size="small" @click="removeItem(index)"
-              :aria-label="t('common.delete')" />
-          </div>
-        </TransitionGroup>
-
-        <!-- Empty state -->
-        <div v-if="form.items.length === 0" :class="bemm('empty')">
-          <p>{{ t('sequence.noItemsYet') }}</p>
-          <TButton :icon="Icons.ADD" @click="addItem">
-            {{ t('sequence.addFirstItem') }}
+      <div :class="bemm('section')">
+        <div :class="bemm('section-header')">
+          <h3 :class="bemm('section-title')">{{ t('sequence.sequenceItems') }}</h3>
+          <TButton :icon="Icons.ADD" size="small" @click="addItem">
+            {{ t('sequence.addItem') }}
           </TButton>
         </div>
+
+        <!-- Draggable items list -->
+        <div :class="bemm('items')" @dragover.prevent @drop="handleDrop">
+          <TransitionGroup name="sequence-item">
+            <div v-for="(item, index) in form.items" :key="item.id" :class="bemm('item', ['',
+              draggedIndex === index ? 'dragging' : '',
+              dragOverIndex === index ? 'drag-over' : ''
+            ])" :draggable="true" @dragstart="handleDragStart(index, $event)" @dragend="handleDragEnd"
+              @dragenter="handleDragEnter(index)">
+              <!-- Drag handle -->
+              <div :class="bemm('item-handle')">
+                <TIcon :name="Icons.DRAG" size="small" />
+                <span :class="bemm('item-number')">{{ index + 1 }}</span>
+              </div>
+
+              <!-- Item content -->
+              <div :class="bemm('item-content')">
+                <!-- Title -->
+                <TInputText v-model="item.title" :placeholder="t('sequence.itemTitle')" :class="bemm('item-input')" />
+
+                <!-- Color -->
+                <TColorPickerPopup v-model="item.color" :colors="availableColors" size="small" />
+
+                <!-- Image selector -->
+                <TImageInput v-model="item.image" :color="item.color" :title="t('sequence.selectItemImage')" small
+                  @mousedown.stop @click.stop />
+
+                <!-- Speak text -->
+                <TInputText v-model="item.speak" :placeholder="t('sequence.speakText')"
+                  :class="bemm('item-input', ['speak'])" />
+              </div>
+
+              <!-- Delete button -->
+              <TButton :icon="Icons.TRASH" :color="Colors.ERROR" type="ghost" size="small" @click="removeItem(index)"
+                :aria-label="t('common.delete')" />
+            </div>
+          </TransitionGroup>
+
+          <!-- Empty state -->
+          <div v-if="form.items.length === 0" :class="bemm('empty')">
+            <p>{{ t('sequence.noItemsYet') }}</p>
+            <TButton :icon="Icons.ADD" @click="addItem">
+              {{ t('sequence.addFirstItem') }}
+            </TButton>
+          </div>
+        </div>
       </div>
     </div>
-
-
   </div>
 </template>
 

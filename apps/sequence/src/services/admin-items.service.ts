@@ -33,6 +33,11 @@ class AdminItemsService {
            false;
   }
 
+  async getPublicItems(filter: AdminItemsFilter = {}): Promise<CardTile[]> {
+    const response = await this.loadPublicItems(filter);
+    return response.items;
+  }
+
   async loadPublicItems(filter: AdminItemsFilter = {}): Promise<AdminItemsResponse> {
     try {
       const authStore = useAuthStore();
@@ -89,6 +94,10 @@ class AdminItemsService {
       console.error('Error loading admin public items:', error);
       throw error;
     }
+  }
+
+  async toggleCurated(itemId: string, isCurated: boolean): Promise<void> {
+    return this.toggleCuratedStatus(itemId, isCurated);
   }
 
   async toggleCuratedStatus(itemId: string, isCurated: boolean): Promise<void> {

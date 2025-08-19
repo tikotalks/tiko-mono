@@ -18,6 +18,7 @@ const props = withDefaults(defineProps<TButtonGroupProps>(), {
 const bemm = useBemm('button-group');
 
 const modifiers = computed(() => ({
+  '': true,
   [props.direction]: true,
   fluid: props.fluid,
   [`gap-${props.gap}`]: true,
@@ -35,6 +36,7 @@ const modifiers = computed(() => ({
   }
 
   &--column {
+    border: 1px solid red;
     flex-direction: column;
   }
 

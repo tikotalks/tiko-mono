@@ -20,6 +20,8 @@ export interface TCardTile {
   parentId?: string;
   base_locale?: string;
   effective_locale?: string; // The locale of the content being displayed (from translation)
+  isPublic?: boolean;
+  isCurated?: boolean;
 }
 
 export interface TCardTileProps {
