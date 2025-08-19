@@ -38,7 +38,7 @@ export const useSequenceStore = defineStore('sequence', () => {
   const allSequenceLoaded = ref(false)
   const isLoadingSequence = ref(false)
   const hasOfflineData = ref(false)
-  const CACHE_DURATION = 30 * 60 * 1000 // 30 minutes - increased from 5 minutes to prevent data loss
+  const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000 // 7 days - cache is cleared on refresh anyway
 
 
   // Play state
