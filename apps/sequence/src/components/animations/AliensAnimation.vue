@@ -121,10 +121,15 @@ onUnmounted(() => {
   // Clean up any timers if needed
 })
 
+</script>
+
+<script lang="ts">
+import type { AnimationImage } from './types'
+
 // Export required images for preloading
 export const animationImages: AnimationImage[] = [
-  { id: backgroundId, options: { media: 'assets' } },
-  { id: spaceshipId, options: { media: 'public' } }
+  { id: 'fd203d8b-c163-46d5-b7fe-b7901609ec76', options: { media: 'assets' } },
+  { id: 'a3c1a0fe-b85d-4ec6-ace2-c6acf3bca3cc', options: { media: 'public' } }
 ]
 </script>
 
