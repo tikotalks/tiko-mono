@@ -53,6 +53,7 @@ watch(() => props.items.length, async (newLength, oldLength) => {
 
 <style lang="scss">
 @use '@tiko/ui/styles/mixins' as mixins;
+@use '@tiko/ui/styles/media' as media;
 
 .bottom-order-board {
 
@@ -101,7 +102,7 @@ watch(() => props.items.length, async (newLength, oldLength) => {
 
   &__items {
 
-    @include mixins.scrollbar(red, blue);
+    @include media.scrollbar(var(--color-primary), transparent);
     display: flex;
     gap:var(--space-s);
     overflow-x: auto;
