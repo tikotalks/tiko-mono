@@ -2,9 +2,9 @@
   <div :class="bemm('',['', isApp ? 'is-app' : 'is-website'])" :style="themeStyles">
     <TAuthWrapper
       :background-image="backgroundImage"
-      :title="tikoConfig?.name"
+      :title="tikoConfig?.name || tikoConfig?.appName"
       :is-app="isApp"
-      :app-name="tikoConfig?.id"
+      :app-name="tikoConfig?.id || tikoConfig?.appId"
       :require-auth="computedRequireAuth"
       :show-splash-screen="showSplashScreen"
       :allow-skip-auth="props.config?.auth?.skipAuth"
@@ -216,7 +216,7 @@ const currentRouteName = computed(() => route?.name?.toString() || '')
 // Display properties
 const displayTitle = computed(() => {
   if (topBar.value.showTitle === false) return ''
-  return tikoConfig.name
+  return tikoConfig.name || tikoConfig.appName
 })
 
 const displaySubtitle = computed(() => {

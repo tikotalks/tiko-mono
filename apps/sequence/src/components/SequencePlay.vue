@@ -26,7 +26,7 @@
     />
 
     <!-- Complete overlay -->
-    <RewardOverlay v-if="isComplete" @restart="$emit('restart')" @close="$emit('close')" />
+    <RewardOverlay v-if="showRewardOverlay" @restart="$emit('restart')" @close="$emit('close')" />
   </div>
 </template>
 
