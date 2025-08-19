@@ -310,47 +310,46 @@ const generateGhostSequence = (): SequenceTile[] => {
 };
 
 const loadSequence = async () => {
-  try {
-    isLoading.value = true;
+  console.log('[SequenceView] Starting loadSequence for groupId:', currentGroupId.value);
+  
+  // Load from store (which handles caching and loading state)
+  const savedSequence = await sequenceStore.loadSequence(currentGroupId.value, currentLocale.value);
+  
+  console.log('[SequenceView] Loaded sequence from store:', savedSequence.length, 'items');
 
-    // Load from store (which handles caching)
-    const savedSequence = await sequenceStore.loadSequence(currentGroupId.value, currentLocale.value);
+  // Always set the sequence data immediately - don't wait for children
+  sequence.value = savedSequence;
 
-    if (savedSequence.length > 0) {
-      sequence.value = savedSequence;
+  if (savedSequence.length > 0) {
+    // Preload audio for sequence with speech
+    const textsToPreload = savedSequence
+      .filter(card => !card.id.startsWith('empty-') && card.speech)
+      .map(card => ({
+        text: card.speech || ''
+      }));
 
-      // Preload audio for sequence with speech
-      const textsToPreload = savedSequence
-        .filter(card => !card.id.startsWith('empty-') && card.speech)
-        .map(card => ({
-          text: card.speech || ''
-        }));
-
-      if (textsToPreload.length > 0) {
-        preloadAudio(textsToPreload);
-      }
-
-      // The store already handles caching, so we just need to trigger loading for children
-      // This ensures the data is in the cache for the computed properties to use
-      const sequenceTiles = savedSequence.filter(card => card.type === 'sequence' && !card.id.startsWith('empty-'));
-
-      if (sequenceTiles.length > 0) {
-        // Load children data in parallel - the store will cache it
-        await Promise.all(
-          sequenceTiles.map(card =>
-            sequenceStore.loadSequence(card.id, currentLocale.value).catch(err => {
-              console.error(`[SequenceView] Failed to load children for ${card.id}:`, err);
-              return [];
-            })
-          )
-        );
-      }
-    } else {
-      // Start with empty board - no mock data
-      sequence.value = [];
+    if (textsToPreload.length > 0) {
+      preloadAudio(textsToPreload);
     }
-  } finally {
-    isLoading.value = false;
+
+    // Load children data in parallel in the background - don't await this
+    // This ensures the data is in the cache for the computed properties to use
+    const sequenceTiles = savedSequence.filter(card => card.type === 'sequence' && !card.id.startsWith('empty-'));
+
+    if (sequenceTiles.length > 0) {
+      console.log('[SequenceView] Loading children for', sequenceTiles.length, 'sequence tiles in background');
+      // Load children data in parallel without blocking the UI
+      Promise.all(
+        sequenceTiles.map(card =>
+          sequenceStore.loadSequence(card.id, currentLocale.value).catch(err => {
+            console.error(`[SequenceView] Failed to load children for ${card.id}:`, err);
+            return [];
+          })
+        )
+      ).then(() => {
+        console.log('[SequenceView] Finished loading all children data');
+      });
+    }
   }
 };
 // Computed
@@ -1437,49 +1436,21 @@ const buildBreadcrumbs = async (cardId: string | undefined) => {
 
 // Watch for route changes
 watch(() => route.params.cardId as string | undefined, async (cardId) => {
-  // If we're not already loading (ghost sequence not shown), show them now
+  console.log('[SequenceView] Route changed to cardId:', cardId);
+  
+  // Show loading state while loading
   if (!isLoading.value) {
+    console.log('[SequenceView] Setting ghost sequence while loading');
     sequence.value = generateGhostSequence();
-    isLoading.value = true;
   }
 
+  // Update breadcrumbs (this also sets currentGroupId)
   await buildBreadcrumbs(cardId);
+  
+  // Load the sequence
   await loadSequence();
 
-  // If we're at the home screen (no cardId), ensure children are loaded for sequences
-  if (!cardId) {
-    // Give a small delay then check if all sequences have their children loaded
-    setTimeout(async () => {
-      // Only retry if we still don't have children loaded and the sequence still exists
-      if (sequence.value.length === 0) {
-        console.log('[SequenceView] Sequence was cleared, skipping retry');
-        return;
-      }
-
-      const sequences = sequence.value.filter(card => card.type === 'sequence' && !card.id.startsWith('empty-') && !card.id.startsWith('ghost-'));
-      const unloadedSequences = sequences.filter(seq => !tilesWithChildren.value.has(seq.id));
-
-      if (unloadedSequences.length > 0) {
-        console.log(`[SequenceView] Retrying to load children for ${unloadedSequences.length} sequences`);
-
-        // Retry loading children for sequences that don't have them
-        const retryPromises = unloadedSequences.map(seq =>
-          sequenceStore.loadSequence(seq.id, currentLocale.value).catch(err => {
-            console.error(`[SequenceView] Failed to load children for ${seq.id} on retry:`, err);
-            return [];
-          })
-        );
-
-        await Promise.all(retryPromises);
-
-        // Only force re-render if we still have the same sequence data
-        if (sequence.value.length > 0 && !sequence.value[0]?.id.startsWith('ghost-')) {
-          console.log('[SequenceView] Triggering re-render after children retry');
-          sequence.value = [...sequence.value];
-        }
-      }
-    }, 1000);
-  }
+  console.log('[SequenceView] Route change handling complete');
 }, { immediate: true });
 
 // Watch edit mode changes - clear selection when edit mode is disabled
