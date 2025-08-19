@@ -26,11 +26,14 @@ class AdminItemsService {
     if (!user) return false;
     
     // Check if user has admin role
-    // This should be implemented based on your auth system
-    // For now, we'll check a metadata field or specific email domains
-    return user.email?.endsWith('@admin.tiko.app') || 
+    // Check multiple possible locations for the role
+    const role = user.role || user.user_metadata?.role || authStore.userRole;
+    console.log('[AdminItemsService] Checking admin access - user role:', role, 'user:', user);
+    
+    return role === 'admin' || 
+           user.email?.endsWith('@admin.tiko.app') || 
            user.user_metadata?.role === 'admin' ||
-           false;
+           authStore.userRole === 'admin';
   }
 
   async getPublicItems(filter: AdminItemsFilter = {}): Promise<CardTile[]> {
