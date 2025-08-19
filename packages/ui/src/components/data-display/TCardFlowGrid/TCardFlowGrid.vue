@@ -77,6 +77,9 @@ const tileSize = ref(props.minTileSize)
 const gridColumns = ref(1)
 const gridRows = ref(1)
 
+// Top padding constant (4rem + var(--spacing))
+const TOP_PADDING = 80 // 64px (4rem) + 16px (typical --spacing value)
+
 // Calculate optimal tile size based on container dimensions
 const calculateOptimalLayout = () => {
   if (!containerRef.value) return
@@ -113,7 +116,8 @@ const calculateOptimalLayout = () => {
 
     // Calculate tile size to fit nicely in viewport
     const availableWidth = containerWidth - (props.gap * 2)
-    const availableHeight = containerHeight - (props.gap * 2)
+    // Account for top padding in height calculation
+    const availableHeight = containerHeight - TOP_PADDING - (props.gap * 2)
     
     const maxTileWidth = (availableWidth - ((optimalCols - 1) * props.gap)) / optimalCols
     const maxTileHeight = (availableHeight - ((optimalRows - 1) * props.gap)) / optimalRows
@@ -133,7 +137,7 @@ const calculateOptimalLayout = () => {
     // Regular calculation for many items
     if (props.scrollDirection === 'horizontal') {
       // Calculate based on height
-      const availableHeight = containerHeight - (props.gap * 2)
+      const availableHeight = containerHeight - TOP_PADDING - (props.gap * 2)
       
       // Try different row counts to find optimal tile size
       let bestSize = props.minTileSize
@@ -198,7 +202,8 @@ const gridStyles = computed(() => {
   
   styles.display = 'grid'
   styles.gap = `${props.gap}px`
-  styles.padding = `${props.gap}px`
+  // Add top padding of 4rem + var(--spacing)
+  styles.padding = `calc(4rem + var(--spacing)) ${props.gap}px ${props.gap}px`
   
   if (props.scrollDirection === 'horizontal') {
     styles.gridTemplateRows = `repeat(${gridRows.value}, ${tileSize.value}px)`

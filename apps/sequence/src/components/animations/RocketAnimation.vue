@@ -34,7 +34,7 @@
 import { onMounted, ref, computed } from 'vue'
 import { useBemm } from 'bemm'
 import { TImage } from '@tiko/ui'
-import { usePlaySound, SOUNDS } from '@tiko/core'
+import { usePlaySound, SOUNDS, useImageResolver } from '@tiko/core'
 
 const emit = defineEmits<{
   completed: []
@@ -47,6 +47,7 @@ const IMAGE = {
 }
 const bemm = useBemm('rocket-animation')
 const { playSound } = usePlaySound()
+const { preloadImages } = useImageResolver()
 
 // State
 const animationStarted = ref(false)
@@ -198,7 +199,17 @@ const startAnimation = async () => {
   requestAnimationFrame(animate)
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // Preload images before starting animation
+  try {
+    await preloadImages([
+      { src: IMAGE.background, options: { media: 'assets' } },
+      { src: IMAGE.rocket, options: { media: 'public' } }
+    ])
+  } catch (error) {
+    console.warn('Failed to preload some images:', error)
+  }
+  
   // Auto-start the animation
   animationStarted.value = true
   startAnimation()
