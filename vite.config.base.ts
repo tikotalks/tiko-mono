@@ -38,6 +38,7 @@ export const createViteConfig = (args: {
     },
   },
   appName: string,
+  appId: string,
   i18nConfig: {
     excludeSections?: string[],
   }

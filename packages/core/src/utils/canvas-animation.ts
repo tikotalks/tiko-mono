@@ -25,6 +25,7 @@ export interface AnimationObject {
   scaleY: number
   opacity: number
   visible: boolean
+  debug?: boolean
 }
 
 export interface AnimationStep {
@@ -162,7 +163,8 @@ export class CanvasAnimation {
       scaleX: 1,
       scaleY: 1,
       opacity: 1,
-      visible: true
+      visible: true,
+      debug: false
     }
 
     this.objects.set(id, obj)
@@ -330,6 +332,18 @@ export class CanvasAnimation {
       obj.height
     )
 
+    // Draw debug border if enabled
+    if (obj.debug) {
+      this.ctx.strokeStyle = obj.id.includes('fire') ? '#ff0000' : '#00ff00' // Red for fire, green for others
+      this.ctx.lineWidth = 2
+      this.ctx.strokeRect(-obj.width / 2, -obj.height / 2, obj.width, obj.height)
+      
+      // Draw object ID label
+      this.ctx.fillStyle = obj.id.includes('fire') ? '#ff0000' : '#00ff00'
+      this.ctx.font = '14px monospace'
+      this.ctx.fillText(obj.id, -obj.width / 2, -obj.height / 2 - 5)
+    }
+
     this.ctx.restore()
   }
 
@@ -395,5 +409,10 @@ export class CanvasAnimation {
   
   getImage(id: string): ImageAsset | undefined {
     return this.images.get(id)
+  }
+  
+  // Debug helper to get all objects
+  getAllObjects(): Map<string, AnimationObject> {
+    return this.objects
   }
 }

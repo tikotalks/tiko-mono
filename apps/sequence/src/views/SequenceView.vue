@@ -636,8 +636,35 @@ const openCardEditForm = async (card: SequenceTile, index: number) => {
               popupId,
               formComponent,
               hasFormComponent: !!formComponent,
-              availableRefs: Object.keys(popupRefs)
+              availableRefs: Object.keys(popupRefs),
+              componentKeys: formComponent ? Object.keys(formComponent) : [],
+              componentType: formComponent ? formComponent.constructor?.name : null,
+              componentProps: formComponent ? Object.getOwnPropertyNames(formComponent) : [],
+              hasSave: formComponent ? 'save' in formComponent : false,
+              saveType: formComponent && formComponent.save ? typeof formComponent.save : 'undefined'
             });
+            
+            // Try alternative access patterns
+            if (formComponent) {
+              // Try accessing through $refs if it's a wrapper
+              const actualComponent = formComponent.$refs?.component || formComponent;
+              if (actualComponent && typeof actualComponent.save === 'function') {
+                console.log('Found save method through $refs');
+                actualComponent.save();
+                return;
+              }
+              
+              // Try accessing exposed properties directly
+              if (actualComponent && actualComponent.isValid && actualComponent.formData) {
+                console.log('Manually triggering save with exposed properties');
+                if (actualComponent.isValid.value) {
+                  const onSave = formComponent.$props?.onSave || actualComponent.$props?.onSave;
+                  if (onSave && actualComponent.formData) {
+                    onSave(actualComponent.formData.value || actualComponent.formData);
+                  }
+                }
+              }
+            }
           }
         }
       }
