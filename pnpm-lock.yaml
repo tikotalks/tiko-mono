@@ -257,58 +257,55 @@ importers:
       '@tiko/ui':
         specifier: workspace:*
         version: link:../../packages/ui
-      '@vueuse/core':
-        specifier: ^10.7.0
-        version: 10.11.1(vue@3.5.18(typescript@5.9.2))
       bemm:
-        specifier: ^1.2.2
+        specifier: ^1.0.0
         version: 1.2.2
+      lodash-es:
+        specifier: ^4.17.21
+        version: 4.17.21
       open-icon:
         specifier: ^1.1.2
-        version: 1.1.2(vue@3.5.18(typescript@5.9.2))
+        version: 1.1.2(vue@3.5.18(typescript@5.3.3))
       pinia:
         specifier: ^2.1.7
-        version: 2.3.1(typescript@5.9.2)(vue@3.5.18(typescript@5.9.2))
+        version: 2.3.1(typescript@5.3.3)(vue@3.5.18(typescript@5.3.3))
       vue:
-        specifier: ^3.3.9
-        version: 3.5.18(typescript@5.9.2)
+        specifier: ^3.4.21
+        version: 3.5.18(typescript@5.3.3)
       vue-router:
-        specifier: ^4.2.5
-        version: 4.5.1(vue@3.5.18(typescript@5.9.2))
-      vuedraggable:
-        specifier: ^4.1.0
-        version: 4.1.0(vue@3.5.18(typescript@5.9.2))
+        specifier: ^4.3.0
+        version: 4.5.1(vue@3.5.18(typescript@5.3.3))
     devDependencies:
-      '@types/node':
-        specifier: ^20.10.0
-        version: 20.19.9
+      '@types/workbox-window':
+        specifier: ^5.0.0
+        version: 5.0.0
       '@vitejs/plugin-vue':
-        specifier: ^4.5.0
-        version: 4.6.2(vite@5.4.19(@types/node@20.19.9)(sass@1.89.2)(terser@5.43.1))(vue@3.5.18(typescript@5.9.2))
-      '@vue/compiler-sfc':
-        specifier: ^3.3.9
-        version: 3.5.18
-      eslint:
-        specifier: ^8.54.0
-        version: 8.57.1
-      eslint-plugin-vue:
-        specifier: ^9.18.1
-        version: 9.33.0(eslint@8.57.1)
+        specifier: ^4.6.2
+        version: 4.6.2(vite@5.4.19(@types/node@24.1.0)(sass@1.89.2)(terser@5.43.1))(vue@3.5.18(typescript@5.3.3))
+      '@vue/test-utils':
+        specifier: ^2.4.4
+        version: 2.4.6
       sass:
-        specifier: ^1.69.5
+        specifier: ^1.71.1
         version: 1.89.2
       typescript:
-        specifier: ^5.3.2
-        version: 5.9.2
+        specifier: ~5.3.3
+        version: 5.3.3
       vite:
-        specifier: ^5.0.4
-        version: 5.4.19(@types/node@20.19.9)(sass@1.89.2)(terser@5.43.1)
+        specifier: ^5.1.4
+        version: 5.4.19(@types/node@24.1.0)(sass@1.89.2)(terser@5.43.1)
       vite-plugin-pwa:
-        specifier: ^0.17.2
-        version: 0.17.5(vite@5.4.19(@types/node@20.19.9)(sass@1.89.2)(terser@5.43.1))(workbox-build@7.3.0)(workbox-window@7.3.0)
+        specifier: ^1.0.2
+        version: 1.0.2(vite@5.4.19(@types/node@24.1.0)(sass@1.89.2)(terser@5.43.1))(workbox-build@7.3.0)(workbox-window@7.3.0)
+      vitest:
+        specifier: ^1.3.1
+        version: 1.6.1(@types/node@24.1.0)(@vitest/ui@1.6.1)(jsdom@22.1.0)(sass@1.89.2)(terser@5.43.1)
       vue-tsc:
-        specifier: ^1.8.24
-        version: 1.8.27(typescript@5.9.2)
+        specifier: ^1.8.27
+        version: 1.8.27(typescript@5.3.3)
+      workbox-window:
+        specifier: ^7.3.0
+        version: 7.3.0
 
   apps/tiko:
     dependencies:
@@ -761,6 +758,22 @@ importers:
       vue-tsc:
         specifier: ^1.8.27
         version: 1.8.27(typescript@5.3.3)
+
+  workers/assets-upload:
+    dependencies:
+      '@supabase/supabase-js':
+        specifier: ^2.39.7
+        version: 2.53.0
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20240129.0
+        version: 4.20250802.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.2
+      wrangler:
+        specifier: ^3.28.2
+        version: 3.114.12(@cloudflare/workers-types@4.20250802.0)
 
   workers/content-api:
     dependencies:
@@ -3114,9 +3127,6 @@ packages:
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
 
-  '@types/web-bluetooth@0.0.20':
-    resolution: {integrity: sha512-g9gZnnXVq7gM7v3tJCWV/qw7w+KeOlSHAhgF9RytFyifW6AF61hdT2ucrYhPq9hLs5JIryeupHV3qGk95dH9ow==}
-
   '@types/workbox-window@5.0.0':
     resolution: {integrity: sha512-AAUnws51yqkLuCHRM6L2nclwkkaIT6i2r+KnoUjopAcfQdHz4F6YAzoxFZFGQZbgwNIBmCtEyBFGFCbf1pb+SQ==}
     deprecated: This is a stub types definition. workbox-window provides its own type definitions, so you do not need this installed.
@@ -3341,15 +3351,6 @@ packages:
 
   '@vue/test-utils@2.4.6':
     resolution: {integrity: sha512-FMxEjOpYNYiFe0GkaHsnJPXFHxQ6m4t8vI/ElPGpMWxZKpmRvQ33OIrvRXemy6yha03RxhOlQuy+gZMC3CQSow==}
-
-  '@vueuse/core@10.11.1':
-    resolution: {integrity: sha512-guoy26JQktXPcz+0n3GukWIy/JDNKti9v6VEMu6kV2sYBsWuGiTU8OWdg+ADfUbHg3/3DlqySDe7JmdHrktiww==}
-
-  '@vueuse/metadata@10.11.1':
-    resolution: {integrity: sha512-IGa5FXd003Ug1qAZmyE8wF3sJ81xGLSqTqtQ6jaVfkeZ4i5kS2mwQF61yhVqojRnenVew5PldLyRgvdl4YYuSw==}
-
-  '@vueuse/shared@10.11.1':
-    resolution: {integrity: sha512-LHpC8711VFZlDaYUXEBbFBCQ7GS3dVU9mjOhhMhXP6txTV4EhYQg/KGnQuvt/sPAtoUKq7VVUnL6mVtFoL42sA==}
 
   '@xmldom/xmldom@0.8.10':
     resolution: {integrity: sha512-2WALfTl4xo2SkGCYRt6rDTFfk9R1czmBvUQy12gK2KuRKIpWEhcbbzy8EZXtz/jkRqHX8bFEc6FC1HjX4TUWYw==}
@@ -5022,6 +5023,9 @@ packages:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
     engines: {node: '>=10'}
 
+  lodash-es@4.17.21:
+    resolution: {integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==}
+
   lodash.debounce@4.0.8:
     resolution: {integrity: sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==}
 
@@ -5881,9 +5885,6 @@ packages:
   smob@1.5.0:
     resolution: {integrity: sha512-g6T+p7QO8npa+/hNx9ohv1E5pVCmWrVCUzUXJyLdMmftX6ER0oiWY/w9knEonLpnOp6b6FenKnMfR8gqwWdwig==}
 
-  sortablejs@1.14.0:
-    resolution: {integrity: sha512-pBXvQCs5/33fdN1/39pPL0NZF20LeRbLQ5jtnheIPN9JQAaufGjKdWduZn4U7wCtVuzKhmRkI0DFYHYRbB2H1w==}
-
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
@@ -6349,14 +6350,6 @@ packages:
   vite-plugin-circular-dependency@0.5.0:
     resolution: {integrity: sha512-7SQX1IZbf5to/S3A3/syfntRNg20Cth6KgTCwHpNZIcuDCtPclV2Bwvdd9HWG+alKZ04mmdlchNOPQgBl7/vQQ==}
 
-  vite-plugin-pwa@0.17.5:
-    resolution: {integrity: sha512-UxRNPiJBzh4tqU/vc8G2TxmrUTzT6BqvSzhszLk62uKsf+npXdvLxGDz9C675f4BJi6MbD2tPnJhi5txlMzxbQ==}
-    engines: {node: '>=16.0.0'}
-    peerDependencies:
-      vite: ^3.1.0 || ^4.0.0 || ^5.0.0
-      workbox-build: ^7.0.0
-      workbox-window: ^7.0.0
-
   vite-plugin-pwa@0.21.2:
     resolution: {integrity: sha512-vFhH6Waw8itNu37hWUJxL50q+CBbNcMVzsKaYHQVrfxTt3ihk3PeLO22SbiP1UNWzcEPaTQv+YVxe4G0KOjAkg==}
     engines: {node: '>=16.0.0'}
@@ -6555,11 +6548,6 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
-
-  vuedraggable@4.1.0:
-    resolution: {integrity: sha512-FU5HCWBmsf20GpP3eudURW3WdWTKIbEIQxh9/8GE806hydR9qZqRRxRE3RjqX7PkuLuMQG/A7n3cfj9rCEchww==}
-    peerDependencies:
-      vue: ^3.0.1
 
   w3c-xmlserializer@4.0.0:
     resolution: {integrity: sha512-d+BFHzbiCx6zGfz0HyQ6Rg69w9k19nviJspaj4yNscGjrHu94sVP+aRm75yEbCh+r2/yR+7q6hux9LVtbuTGBw==}
@@ -9055,8 +9043,6 @@ snapshots:
 
   '@types/trusted-types@2.0.7': {}
 
-  '@types/web-bluetooth@0.0.20': {}
-
   '@types/workbox-window@5.0.0':
     dependencies:
       workbox-window: 7.3.0
@@ -9203,11 +9189,6 @@ snapshots:
     dependencies:
       vite: 5.4.19(@types/node@18.16.9)(sass@1.89.2)(terser@5.43.1)
       vue: 3.5.18(typescript@5.3.3)
-
-  '@vitejs/plugin-vue@4.6.2(vite@5.4.19(@types/node@20.19.9)(sass@1.89.2)(terser@5.43.1))(vue@3.5.18(typescript@5.9.2))':
-    dependencies:
-      vite: 5.4.19(@types/node@20.19.9)(sass@1.89.2)(terser@5.43.1)
-      vue: 3.5.18(typescript@5.9.2)
 
   '@vitejs/plugin-vue@4.6.2(vite@5.4.19(@types/node@24.1.0)(sass@1.89.2)(terser@5.43.1))(vue@3.5.18(typescript@5.3.3))':
     dependencies:
@@ -9439,25 +9420,6 @@ snapshots:
     dependencies:
       js-beautify: 1.15.4
       vue-component-type-helpers: 2.2.12
-
-  '@vueuse/core@10.11.1(vue@3.5.18(typescript@5.9.2))':
-    dependencies:
-      '@types/web-bluetooth': 0.0.20
-      '@vueuse/metadata': 10.11.1
-      '@vueuse/shared': 10.11.1(vue@3.5.18(typescript@5.9.2))
-      vue-demi: 0.14.10(vue@3.5.18(typescript@5.9.2))
-    transitivePeerDependencies:
-      - '@vue/composition-api'
-      - vue
-
-  '@vueuse/metadata@10.11.1': {}
-
-  '@vueuse/shared@10.11.1(vue@3.5.18(typescript@5.9.2))':
-    dependencies:
-      vue-demi: 0.14.10(vue@3.5.18(typescript@5.9.2))
-    transitivePeerDependencies:
-      - '@vue/composition-api'
-      - vue
 
   '@xmldom/xmldom@0.8.10': {}
 
@@ -11382,6 +11344,8 @@ snapshots:
     dependencies:
       p-locate: 5.0.0
 
+  lodash-es@4.17.21: {}
+
   lodash.debounce@4.0.8: {}
 
   lodash.merge@4.6.2: {}
@@ -12369,8 +12333,6 @@ snapshots:
 
   smob@1.5.0: {}
 
-  sortablejs@1.14.0: {}
-
   source-map-js@1.2.1: {}
 
   source-map-support@0.5.19:
@@ -12895,17 +12857,6 @@ snapshots:
     transitivePeerDependencies:
       - rollup
 
-  vite-plugin-pwa@0.17.5(vite@5.4.19(@types/node@20.19.9)(sass@1.89.2)(terser@5.43.1))(workbox-build@7.3.0)(workbox-window@7.3.0):
-    dependencies:
-      debug: 4.4.1(supports-color@8.1.1)
-      fast-glob: 3.3.3
-      pretty-bytes: 6.1.1
-      vite: 5.4.19(@types/node@20.19.9)(sass@1.89.2)(terser@5.43.1)
-      workbox-build: 7.3.0
-      workbox-window: 7.3.0
-    transitivePeerDependencies:
-      - supports-color
-
   vite-plugin-pwa@0.21.2(vite@5.4.19(@types/node@24.1.0)(sass@1.89.2)(terser@5.43.1))(workbox-build@7.3.0)(workbox-window@7.3.0):
     dependencies:
       debug: 4.4.1(supports-color@8.1.1)
@@ -12957,17 +12908,6 @@ snapshots:
       rollup: 4.46.2
     optionalDependencies:
       '@types/node': 18.16.9
-      fsevents: 2.3.3
-      sass: 1.89.2
-      terser: 5.43.1
-
-  vite@5.4.19(@types/node@20.19.9)(sass@1.89.2)(terser@5.43.1):
-    dependencies:
-      esbuild: 0.21.5
-      postcss: 8.5.6
-      rollup: 4.46.2
-    optionalDependencies:
-      '@types/node': 20.19.9
       fsevents: 2.3.3
       sass: 1.89.2
       terser: 5.43.1
@@ -13148,11 +13088,6 @@ snapshots:
       '@vue/shared': 3.5.18
     optionalDependencies:
       typescript: 5.9.2
-
-  vuedraggable@4.1.0(vue@3.5.18(typescript@5.9.2)):
-    dependencies:
-      sortablejs: 1.14.0
-      vue: 3.5.18(typescript@5.9.2)
 
   w3c-xmlserializer@4.0.0:
     dependencies:

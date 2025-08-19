@@ -1,5 +1,9 @@
 # CLAUDE.md - Development Notes
 
+## IMPORTANT: Git Commit Rules
+
+**NEVER include "Co-Authored-By: Claude" in commit messages.** The user does not want Claude credited as a co-author in commits.
+
 ## Commands to Run After Code Changes
 
 When making changes to the Cards app:
