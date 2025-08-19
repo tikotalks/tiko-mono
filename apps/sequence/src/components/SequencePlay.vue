@@ -226,7 +226,7 @@ watch(() => props.sequenceId, async (newId) => {
     min-height: 0; // Important for proper flex sizing
     position: relative;
     overflow: hidden; // Prevent double scrollbars
-    
+
     // The flow grid will handle its own scrolling and sizing
     .t-card-flow-grid {
       height: 100%;
@@ -235,11 +235,11 @@ watch(() => props.sequenceId, async (newId) => {
   }
 
   &__order-board {
-    flex-shrink: 0;
-    z-index: 10; // Ensure it stays above the grid
-    background: var(--color-background);
-    border-top: 1px solid var(--color-border);
-    padding-top: var(--space-m);
+    // flex-shrink: 0;
+    // z-index: 10; // Ensure it stays above the grid
+    // background: var(--color-background);
+    // border-top: 1px solid var(--color-border);
+    // padding-top: var(--space-m);
   }
 }
 

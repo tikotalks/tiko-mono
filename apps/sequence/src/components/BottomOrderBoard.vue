@@ -1,10 +1,5 @@
 <template>
   <div :class="bemm('', ['', items.length ? 'has-items' : 'no-items'])">
-    <div :class="bemm('header')">
-      <div :class="bemm('counter')">
-        {{ items.length }} / {{ totalItems }}
-      </div>
-    </div>
 
     <div :class="bemm('items')">
       <TransitionGroup name="order-item">
@@ -14,13 +9,22 @@
         </div>
       </TransitionGroup>
     </div>
+    <div :class="bemm('footer')">
+      <TProgressBar
+        :value="items.length"
+        :max="totalItems"
+        :prefix="`${items.length} / ${totalItems}`"
+        :class="bemm('progress')"
+      />
+    </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useBemm } from 'bemm'
-import { TCardTile, useI18n } from '@tiko/ui'
+import { TCardTile, TProgressBar, useI18n } from '@tiko/ui'
 import type { TCardTile as CardTileType } from '@tiko/ui'
 
 const props = defineProps<{
@@ -84,6 +88,7 @@ const totalItems = computed(() => props.totalItems || props.items.length)
     display: flex;
     gap: 0.5rem;
     padding-bottom: 0.5rem;
+    overflow: auto;
 
     &::-webkit-scrollbar {
       height: 6px;

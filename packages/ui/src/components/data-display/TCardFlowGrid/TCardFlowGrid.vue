@@ -36,6 +36,7 @@ import { useBemm } from 'bemm'
 import { TCardTile } from '../TCardTile'
 import type { TCardTile as CardTileType } from '../TCardTile/TCardTile.model'
 import type { MenuItem } from '../../navigation/TContextMenu/TContextMenu.model'
+import { VERTICAL_PADDING, getPreferredLayout } from './TCardFlowGrid.model'
 
 export interface TCardFlowGridProps {
   cards: CardTileType[]
@@ -77,9 +78,6 @@ const tileSize = ref(props.minTileSize)
 const gridColumns = ref(1)
 const gridRows = ref(1)
 
-// Top and bottom padding constant (4rem + var(--spacing))
-const VERTICAL_PADDING = 80 // 64px (4rem) + 16px (typical --spacing value)
-
 // Calculate optimal tile size based on container dimensions
 const calculateOptimalLayout = () => {
   if (!containerRef.value) return
@@ -95,31 +93,42 @@ const calculateOptimalLayout = () => {
   const availableWidth = containerWidth - (props.gap * 2)
   const availableHeight = containerHeight - (VERTICAL_PADDING * 2) - (props.gap * 2)
   
-  console.log('[TCardFlowGrid] Calculating layout for', cardCount, 'items')
-  console.log('[TCardFlowGrid] Available space:', { width: availableWidth, height: availableHeight })
-  console.log('[TCardFlowGrid] Props:', { minTileSize: props.minTileSize, maxTileSize: props.maxTileSize })
   
-  // Try different layouts to find the one that maximizes tile size
+  // Get preferred layout based on item count and screen size
+  const [preferredCols, preferredRows] = getPreferredLayout(cardCount, containerWidth)
+  
+  // Calculate tile size for preferred layout
+  const preferredTileSizeByWidth = (availableWidth - ((preferredCols - 1) * props.gap)) / preferredCols
+  const preferredTileSizeByHeight = (availableHeight - ((preferredRows - 1) * props.gap)) / preferredRows
+  const preferredTileSize = Math.min(preferredTileSizeByWidth, preferredTileSizeByHeight)
+  
+  
   let bestTileSize = 0
-  let bestCols = 1
-  let bestRows = 1
+  let bestCols = preferredCols
+  let bestRows = preferredRows
   
-  // Try different column counts from 1 to a reasonable maximum
-  const maxCols = Math.min(cardCount, Math.ceil(availableWidth / props.minTileSize))
-  
-  for (let cols = 1; cols <= maxCols; cols++) {
-    const rows = Math.ceil(cardCount / cols)
+  // Check if preferred layout produces valid tile sizes
+  if (preferredTileSize >= props.minTileSize) {
+    // Use preferred layout, but cap at maxTileSize
+    bestTileSize = Math.min(preferredTileSize, props.maxTileSize)
+  } else {
+    // Preferred layout doesn't work, fall back to algorithm
     
-    // Calculate tile size for this layout
-    const tileSizeByWidth = (availableWidth - ((cols - 1) * props.gap)) / cols
-    const tileSizeByHeight = (availableHeight - ((rows - 1) * props.gap)) / rows
-    const tileSize = Math.min(tileSizeByWidth, tileSizeByHeight)
+    // Try different column counts to find best fit
+    const maxCols = Math.min(cardCount, Math.ceil(availableWidth / props.minTileSize))
     
-    // Check if this layout is valid (tiles not too small or too large)
-    if (tileSize >= props.minTileSize && tileSize <= props.maxTileSize) {
-      // Check if this gives us larger tiles than the current best
-      if (tileSize > bestTileSize) {
-        bestTileSize = tileSize
+    for (let cols = 1; cols <= maxCols; cols++) {
+      const rows = Math.ceil(cardCount / cols)
+      
+      // Skip if too many rows for screen
+      if (rows * props.minTileSize > availableHeight) continue
+      
+      const tileSizeByWidth = (availableWidth - ((cols - 1) * props.gap)) / cols
+      const tileSizeByHeight = (availableHeight - ((rows - 1) * props.gap)) / rows
+      const tileSize = Math.min(tileSizeByWidth, tileSizeByHeight)
+      
+      if (tileSize >= props.minTileSize && tileSize > bestTileSize) {
+        bestTileSize = Math.min(tileSize, props.maxTileSize)
         bestCols = cols
         bestRows = rows
       }
@@ -131,12 +140,6 @@ const calculateOptimalLayout = () => {
     tileSize.value = Math.floor(bestTileSize)
     gridColumns.value = bestCols
     gridRows.value = bestRows
-    console.log('[TCardFlowGrid] Best layout found:', { 
-      cols: bestCols, 
-      rows: bestRows, 
-      tileSize: Math.floor(bestTileSize),
-      dynamicMaxTileSize 
-    })
   } else {
     // Fallback: If no valid layout found, use minimum tile size
     if (props.scrollDirection === 'horizontal') {
