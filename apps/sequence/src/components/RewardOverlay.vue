@@ -3,6 +3,12 @@
     <!-- Animation Layer -->
     <div :class="bemm('animation')" v-if="!animationCompleted">
       <RocketCanvasAnimation 
+        v-if="selectedAnimation === 'rocket'"
+        ref="animationRef" 
+        @completed="onAnimationCompleted" 
+      />
+      <AliensCanvasAnimation 
+        v-else-if="selectedAnimation === 'alien'"
         ref="animationRef" 
         @completed="onAnimationCompleted" 
       />
@@ -45,6 +51,7 @@ import { useBemm } from 'bemm'
 import { TButton, useI18n } from '@tiko/ui'
 import { useImageResolver } from '@tiko/core'
 import RocketCanvasAnimation from './animations/RocketCanvasAnimation.vue'
+import AliensCanvasAnimation from './animations/AliensCanvasAnimation.vue'
 import type { AnimationImage } from './animations/types'
 import { Icons } from 'open-icon';
 
@@ -57,10 +64,15 @@ const bemm = useBemm('reward-overlay')
 const { t } = useI18n()
 const { preloadImages } = useImageResolver()
 
+// Randomly select animation type
+const animations = ['rocket', 'alien'] as const
+type AnimationType = typeof animations[number]
+const selectedAnimation = ref<AnimationType>(animations[Math.floor(Math.random() * animations.length)])
+
 // State
 const animationCompleted = ref(false)
 const showContent = ref(false)
-const animationRef = ref<InstanceType<typeof RocketCanvasAnimation> | null>(null)
+const animationRef = ref<InstanceType<typeof RocketCanvasAnimation> | InstanceType<typeof AliensCanvasAnimation> | null>(null)
 
 const onAnimationCompleted = () => {
   animationCompleted.value = true
@@ -73,16 +85,30 @@ const onAnimationCompleted = () => {
 // Preload animation images before component mounts
 onBeforeMount(async () => {
   try {
-    const { animationImages } = await import('./animations/RocketCanvasAnimation.vue')
-    
-    if (animationImages && animationImages.length > 0) {
-      await preloadImages(
-        animationImages.map((img: AnimationImage) => ({
-          src: img.id,
-          options: img.options
-        }))
-      )
-      console.log('Rocket animation images preloaded successfully')
+    if (selectedAnimation.value === 'rocket') {
+      const { animationImages } = await import('./animations/RocketCanvasAnimation.vue')
+      
+      if (animationImages && animationImages.length > 0) {
+        await preloadImages(
+          animationImages.map((img: AnimationImage) => ({
+            src: img.id,
+            options: img.options
+          }))
+        )
+        console.log('Rocket animation images preloaded successfully')
+      }
+    } else if (selectedAnimation.value === 'alien') {
+      const { animationImages } = await import('./animations/AliensCanvasAnimation.vue')
+      
+      if (animationImages && animationImages.length > 0) {
+        await preloadImages(
+          animationImages.map((img: AnimationImage) => ({
+            src: img.id,
+            options: img.options
+          }))
+        )
+        console.log('Aliens animation images preloaded successfully')
+      }
     }
   } catch (error) {
     console.warn('Failed to preload some animation images:', error)
@@ -90,7 +116,7 @@ onBeforeMount(async () => {
 })
 
 onMounted(() => {
-  console.log('[RewardOverlay] Component mounted! Using rocket animation')
+  console.log(`[RewardOverlay] Component mounted! Using ${selectedAnimation.value} animation`)
   // Trigger haptic feedback when overlay appears
   if ('vibrate' in navigator) {
     navigator.vibrate([100, 50, 100, 50, 200])
