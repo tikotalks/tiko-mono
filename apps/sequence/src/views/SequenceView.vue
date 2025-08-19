@@ -510,7 +510,13 @@ const handleSaveSequence = async (formData: any, card: SequenceTile, isNewCard: 
   try {
     if (isNewCard) {
       // Create new sequence at the specified position
-      const sequenceId = await sequenceService.createSequence(formData, currentGroupId.value, index);
+      const sequenceId = await sequenceService.createSequence({
+        title: formData.title,
+        color: formData.color,
+        image: formData.image,
+        isPublic: formData.isPublic || false,
+        items: formData.items
+      }, currentGroupId.value, index);
       if (sequenceId) {
         // Optimistically add to cache
         const newSequence: SequenceTile = {
@@ -522,7 +528,8 @@ const handleSaveSequence = async (formData: any, card: SequenceTile, isNewCard: 
           index: index,
           speech: '',
           icon: 'square',
-          parentId: currentGroupId.value
+          parentId: currentGroupId.value,
+          isPublic: formData.isPublic || false
         };
 
         await sequenceStore.addCardToCache(newSequence, currentGroupId.value, currentLocale.value);
@@ -559,14 +566,21 @@ const handleSaveSequence = async (formData: any, card: SequenceTile, isNewCard: 
       }
     } else {
       // Update existing sequence
-      await sequenceService.updateSequence(card.id, formData);
+      await sequenceService.updateSequence(card.id, {
+        title: formData.title,
+        color: formData.color,
+        image: formData.image,
+        isPublic: formData.isPublic || false,
+        items: formData.items
+      });
 
       // Optimistically update cache and UI
       const updatedSequence: SequenceTile = {
         ...card,
         title: formData.title,
         color: formData.color,
-        image: formData.image?.url || null
+        image: formData.image?.url || null,
+        isPublic: formData.isPublic || false
       };
 
       await sequenceStore.updateCardInCache(updatedSequence, currentGroupId.value, currentLocale.value);

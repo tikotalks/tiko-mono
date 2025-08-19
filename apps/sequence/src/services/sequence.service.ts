@@ -216,6 +216,7 @@ export const sequenceService = {
         color: card.color,
         order_index: index ?? card.index ?? 0,
         base_locale: card.base_locale,
+        is_public: card.isPublic || false
       };
 
       let cardId: string;
@@ -330,6 +331,7 @@ export const sequenceService = {
     title: string;
     color: string;
     image?: { url: string; alt: string } | null;
+    isPublic?: boolean;
     items: Array<{
       title: string;
       color: string;
@@ -352,7 +354,8 @@ export const sequenceService = {
         color: sequenceData.color,
         image: sequenceData.image?.url || '',
         type: 'sequence',
-        index: index || 0
+        index: index || 0,
+        isPublic: sequenceData.isPublic || false
       };
 
       const sequenceId = await this.saveCard(sequenceCard, parentId, index);
@@ -387,6 +390,7 @@ export const sequenceService = {
     title: string;
     color: string;
     image?: { url: string; alt: string } | null;
+    isPublic?: boolean;
     items: Array<{
       id?: string;
       title: string;
@@ -414,7 +418,8 @@ export const sequenceService = {
         image: sequenceData.image?.url || '',
         type: 'sequence',
         index: existingSequence?.order_index, // Preserve existing index
-        parentId: existingSequence?.parent_id // Preserve existing parent
+        parentId: existingSequence?.parent_id, // Preserve existing parent
+        isPublic: sequenceData.isPublic ?? existingSequence?.is_public ?? false
       };
 
       await this.saveCard(sequenceCard, existingSequence?.parent_id, existingSequence?.order_index);

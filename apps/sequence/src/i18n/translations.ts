@@ -50,5 +50,12 @@ export const cardTranslations = {
     'sequence.showHintsDescription': 'Highlight the next item in the sequence',
     'sequence.hapticFeedback': 'Haptic Feedback',
     'sequence.hapticFeedbackDescription': 'Vibrate on correct/incorrect selections',
+    'sequence.visibility': 'Visibility',
+    'sequence.makePublic': 'Make Public',
+    'sequence.publicDescription': 'Allow other users to see and use this sequence',
+    'sequence.publicNote': 'This sequence will be visible to all users',
+    'sequence.curatedNote': 'This sequence has been curated by administrators',
+    'sequence.selectSequenceImage': 'Select Sequence Image',
+    'sequence.selectItemImage': 'Select Item Image',
   }
 };
