@@ -97,6 +97,11 @@ const isComplete = computed(() => {
   console.log('[SequencePlay] isComplete computed:', complete)
   return complete
 })
+const showRewardOverlay = computed(() => {
+  const shouldShow = playState.value.isComplete && !props.editMode
+  console.log('[SequencePlay] showRewardOverlay:', shouldShow, 'isComplete:', playState.value.isComplete, 'editMode:', props.editMode)
+  return shouldShow
+})
 const showHints = computed(() => sequenceStore.settings.showHints)
 
 // Check if item is selected
@@ -180,6 +185,14 @@ const openItemEditForm = (card: CardTileType, index: number) => {
   // TODO: Implement item editing
   console.log('Edit item:', card.title)
 }
+
+// Watch for completion
+watch(isComplete, (newVal) => {
+  console.log('[SequencePlay] isComplete changed to:', newVal)
+  if (newVal) {
+    console.log('[SequencePlay] Sequence completed! RewardOverlay should show')
+  }
+})
 
 // Start play when component mounts
 watch(() => props.sequenceId, async (newId) => {
