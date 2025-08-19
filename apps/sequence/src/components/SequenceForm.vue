@@ -62,7 +62,8 @@
               <TColorPickerPopup v-model="item.color" :colors="availableColors" size="small" />
 
               <!-- Image selector -->
-              <TImageInput v-model="item.image" :color="item.color" :title="t('sequence.selectItemImage')" small />
+              <TImageInput v-model="item.image" :color="item.color" :title="t('sequence.selectItemImage')" small 
+                @mousedown.stop @click.stop />
 
               <!-- Speak text -->
               <TInputText v-model="item.speak" :placeholder="t('sequence.speakText')"
