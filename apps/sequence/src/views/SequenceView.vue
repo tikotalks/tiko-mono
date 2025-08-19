@@ -608,10 +608,10 @@ const openCardEditForm = async (card: SequenceTile, index: number) => {
     }
   }
 
-  console.log('Opening popup with popupService:', popupService);
-  console.log('Current popups before open:', popupService.popups?.value?.length || 'undefined');
+  // Create a ref to store the component instance
+  let formComponentRef = null;
   
-  const popupId = popupService.open({
+  popupService.open({
     component: SequenceForm,
     title: isNewCard ? t('sequence.createSequence') : t('sequence.editSequence'),
     actions: [
@@ -628,44 +628,12 @@ const openCardEditForm = async (card: SequenceTile, index: number) => {
         type: 'default',
         color: 'primary',
         action: async () => {
-          // Wait for component to be mounted and accessible
-          await nextTick();
-          
-          const formComponent = popupRefs[popupId];
-          
-          if (formComponent && typeof formComponent.save === 'function') {
-            console.log('Calling save method directly');
-            formComponent.save();
-          } else if (formComponent && formComponent.isValid && formComponent.formData) {
-            // Call onSave directly if we can access form data and validation
-            console.log('Manually calling onSave with form data');
-            if (formComponent.isValid.value || formComponent.isValid) {
-              const formData = formComponent.formData.value || formComponent.formData;
-              if (formData) {
-                await handleSaveSequence(formData, card, isNewCard, index);
-                popupService.close();
-              }
-            } else {
-              console.warn('Form is not valid');
-            }
+          // Trigger save through the component's exposed method
+          if (formComponentRef?.triggerSave) {
+            console.log('Calling triggerSave on component');
+            formComponentRef.triggerSave();
           } else {
-            // Fallback: try to find and validate any form within the popup
-            console.warn('Direct component access failed, trying fallback approach');
-            
-            // Simple fallback: assume form is valid and create minimal sequence data
-            const fallbackData = {
-              title: card.title || 'New Sequence',
-              color: card.color || 'primary',
-              image: card.image || '',
-              items: card.items || []
-            };
-            
-            try {
-              await handleSaveSequence(fallbackData, card, isNewCard, index);
-              popupService.close();
-            } catch (error) {
-              console.error('Fallback save failed:', error);
-            }
+            console.error('No triggerSave method available on component', formComponentRef);
           }
         }
       }
@@ -675,6 +643,11 @@ const openCardEditForm = async (card: SequenceTile, index: number) => {
       isNew: isNewCard,
       isOwner: isNewCard || card.ownerId === authStore.user?.id || card.user_id === authStore.user?.id,
       showVisibilityToggle: true,
+      // Pass a ref callback to get the component instance
+      onMounted: (componentInstance: any) => {
+        console.log('Form component mounted with instance:', componentInstance);
+        formComponentRef = componentInstance;
+      },
       onSave: async (formData: any) => {
         try {
           await handleSaveSequence(formData, card, isNewCard, index);
@@ -686,10 +659,6 @@ const openCardEditForm = async (card: SequenceTile, index: number) => {
       }
     }
   });
-  
-  console.log('Opened popup with ID:', popupId);
-  console.log('Current popups after open:', popupService.popups?.value?.length || 'undefined');
-  console.log('PopupRefs after open:', Object.keys(popupRefs));
 };
 
 // Confirm delete card action

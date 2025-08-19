@@ -90,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import { useBemm } from 'bemm'
 import {
   TButton,
@@ -135,6 +135,7 @@ const props = defineProps<{
   showVisibilityToggle?: boolean
   onClose?: () => void
   onSave?: (data: SequenceForm) => void
+  onMounted?: (instance: any) => void
 }>()
 
 const emit = defineEmits<{
@@ -312,14 +313,37 @@ const isValid = computed(() => {
   return form.value.items.every(item => item.title.trim())
 })
 
+// Trigger save method that can be called from popup actions
+const triggerSave = () => {
+  console.log('triggerSave called, isValid:', isValid.value);
+  if (isValid.value && props.onSave) {
+    props.onSave(form.value)
+  } else {
+    console.warn('Form is not valid or onSave not provided:', { 
+      isValid: isValid.value, 
+      hasOnSave: !!props.onSave,
+      formData: form.value 
+    });
+  }
+}
+
 // Expose validation and form data for parent components
 defineExpose({
   isValid,
   formData: form,
-  save: () => {
-    if (isValid.value && props.onSave) {
-      props.onSave(form.value)
-    }
+  triggerSave,
+  save: triggerSave // Keep backward compatibility
+})
+
+// Call onMounted when component is ready
+onMounted(() => {
+  console.log('SequenceForm mounted, calling onMounted callback');
+  if (props.onMounted) {
+    props.onMounted({
+      triggerSave,
+      isValid,
+      formData: form
+    });
   }
 })
 
