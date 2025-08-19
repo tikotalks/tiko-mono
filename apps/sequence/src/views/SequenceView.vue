@@ -240,6 +240,18 @@ const localSettings = reactive({
 type SequenceTile = TCardTile;
 
 const sequence = ref<SequenceTile[]>([]);
+
+// Debug watcher to track when sequence changes
+if (import.meta.env.DEV) {
+  watch(() => sequence.value.length, (newLength, oldLength) => {
+    if (newLength !== oldLength) {
+      console.log(`[SequenceView] Sequence length changed from ${oldLength} to ${newLength}`);
+      if (newLength === 0 && oldLength > 0) {
+        console.warn('[SequenceView] WARNING: Sequence was cleared!', new Error().stack);
+      }
+    }
+  }, { immediate: true });
+}
 const currentGroupId = ref<string | undefined>(undefined);
 const breadcrumbs = ref<Array<{ id?: string; title: string }>>([]);
 
@@ -317,8 +329,13 @@ const loadSequence = async () => {
   
   console.log('[SequenceView] Loaded sequence from store:', savedSequence.length, 'items');
 
-  // Always set the sequence data immediately - don't wait for children
-  sequence.value = savedSequence;
+  // Only update if we got data or if we currently have ghost cards
+  // This prevents clearing existing data with empty arrays
+  if (savedSequence.length > 0 || sequence.value.some(c => c.id.startsWith('ghost-'))) {
+    sequence.value = savedSequence;
+  } else if (savedSequence.length === 0 && sequence.value.length > 0) {
+    console.warn('[SequenceView] Received empty array but have existing data, keeping current sequence');
+  }
 
   if (savedSequence.length > 0) {
     // Preload audio for sequence with speech

@@ -150,10 +150,11 @@ export const useSequenceStore = defineStore('sequence', () => {
       }
     }
 
-    // If all sequence are loaded, we should have the data in cache
-    if (allSequenceLoaded.value && !forceRefresh) {
-      console.log(`[SequenceStore] All sequence loaded, but cache miss for ${cacheKey}. Returning empty array.`)
-      // Cache the empty result to prevent future API calls
+    // If all sequence are loaded and this is not a parent request, return empty
+    // But don't cache empty arrays for parent requests as they might have data
+    if (allSequenceLoaded.value && !forceRefresh && parentId) {
+      console.log(`[SequenceStore] All sequence loaded, cache miss for child ${cacheKey}. This sequence likely has no items.`)
+      // Only cache empty result for child sequences, not for root level
       const newCache = new Map(cache)
       newCache.set(cacheKey, {
         parentId,
