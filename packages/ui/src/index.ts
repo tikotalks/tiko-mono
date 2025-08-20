@@ -98,6 +98,12 @@ export type { TEmptyProps } from './components/feedback/TEmpty/TEmpty.model'
 export { default as TEmptyState } from './components/feedback/TEmptyState/TEmptyState.vue'
 export type { TEmptyStateProps } from './components/feedback/TEmptyState/TEmptyState.model'
 
+// About App Component
+export { default as TAboutApp } from './components/feedback/TAboutApp/TAboutApp.vue'
+
+// Report Issue Component
+export { default as TReportIssue } from './components/feedback/TReportIssue/TReportIssue.vue'
+
 // ============================================
 // Additional Specific Component Exports
 // ============================================

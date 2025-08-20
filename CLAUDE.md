@@ -69,6 +69,7 @@ Workers are deployed to Cloudflare Workers with these triggers:
 - `[build:i18n-translator]` - Deploy only the i18n translator worker
 - `[build:media-upload]` - Deploy only the media upload worker
 - `[build:sentence-engine]` - Deploy only the sentence engine worker
+- `[build:report-issue]` - Deploy only the report issue worker
 - `[build:all]` or `[build:workers]` - Deploy all workers
 
 ### Multiple Deployments

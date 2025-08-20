@@ -117,6 +117,10 @@ export type {
 // Translation Initialization Service
 export { initializeTranslations } from './translation-init.service'
 
+// Admin Items Service
+export { adminItemsService } from './admin-items.service'
+export type { AdminItemsFilter, AdminItem } from './admin-items.service'
+
 // Alternative: Export Supabase implementations
 // import { SupabaseParentModeService } from './parent-mode-supabase.service'
 // import { SupabaseUserSettingsService } from './user-settings-supabase.service'

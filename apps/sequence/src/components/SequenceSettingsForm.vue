@@ -69,15 +69,12 @@ const form = ref<SequenceSettings>({
   showCuratedItems: props.settings?.showCuratedItems ?? true
 })
 
-const handleSubmit = () => {
-  if (props.onApply) {
-    props.onApply(form.value)
-  }
-}
-
-// Watch for changes and auto-apply
+// Watch for changes and emit them without closing the popup
 watch(form, () => {
-  handleSubmit()
+  if (props.onApply) {
+    // Create a copy of the form data to avoid reference issues
+    props.onApply({ ...form.value })
+  }
 }, { deep: true })
 </script>
 

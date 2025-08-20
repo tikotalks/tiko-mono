@@ -132,22 +132,62 @@ class SequenceSupabaseService {
     }
   }
 
-  async getAllSequence(userId: string): Promise<CardItem[]> {
-    const params = new URLSearchParams();
-    params.append('user_id', `eq.${userId}`);
-    params.append('app_name', 'eq.sequence');
-    params.append('order', 'order_index.asc');
+  async getAllSequence(userId: string, includeCurated = false): Promise<CardItem[]> {
+    // If includeCurated is true, we need to fetch both user's items and curated public items
+    if (includeCurated) {
+      console.log('[getAllSequence] Fetching user sequences AND curated public sequences');
+      
+      // Fetch user's own sequences
+      const userParams = new URLSearchParams();
+      userParams.append('user_id', `eq.${userId}`);
+      userParams.append('app_name', 'eq.sequence');
+      userParams.append('order', 'order_index.asc');
+      
+      // Fetch curated public sequences (not owned by user)
+      const curatedParams = new URLSearchParams();
+      curatedParams.append('app_name', 'eq.sequence');
+      curatedParams.append('is_public', 'eq.true');
+      curatedParams.append('is_curated', 'eq.true');
+      curatedParams.append('user_id', `neq.${userId}`); // Exclude user's own items
+      curatedParams.append('order', 'order_index.asc');
+      
+      try {
+        // Fetch both in parallel
+        const [userSequences, curatedSequences] = await Promise.all([
+          this.apiRequest<CardItem[]>(`items?${userParams.toString()}`),
+          this.apiRequest<CardItem[]>(`items?${curatedParams.toString()}`)
+        ]);
+        
+        console.log('[getAllSequence] Found', userSequences.length, 'user sequences');
+        console.log('[getAllSequence] Found', curatedSequences.length, 'curated public sequences');
+        
+        // Combine and return all sequences
+        const allSequences = [...userSequences, ...curatedSequences];
+        console.log('[getAllSequence] Total sequences:', allSequences.length);
+        
+        return allSequences;
+      } catch (error) {
+        console.error('[getAllSequence] Error fetching sequences:', error);
+        throw error;
+      }
+    } else {
+      // Original behavior - only user's sequences
+      const params = new URLSearchParams();
+      params.append('user_id', `eq.${userId}`);
+      params.append('app_name', 'eq.sequence');
+      params.append('order', 'order_index.asc');
 
-    const url = `items?${params.toString()}`;
-    console.log('[getAllSequence] Fetching ALL sequence from:', url);
+      const url = `items?${params.toString()}`;
+      console.log('[getAllSequence] Fetching ALL sequence from:', url);
 
-    try {
-      const result = await this.apiRequest<CardItem[]>(url);
-      console.log('[getAllSequence] Found', result.length, 'total sequence');
-      return result;
-    } catch (error) {
-      console.error('[getAllSequence] Error fetching all sequence:', error);
-      throw error;
+      try {
+        const result = await this.apiRequest<CardItem[]>(url);
+        console.log('[getAllSequence] Found', result.length, 'total sequence');
+        return result;
+      } catch (error) {
+        console.error('[getAllSequence] Error fetching all sequence:', error);
+        throw error;
+      }
     }
   }
 
@@ -277,11 +317,11 @@ class SequenceSupabaseService {
   }
 
   // Get ALL sequence with translations for the current locale
-  async getAllSequenceWithTranslations(userId: string, locale?: string): Promise<CardItem[]> {
-    console.log('[getAllSequenceWithTranslations] Called with:', { userId, locale });
+  async getAllSequenceWithTranslations(userId: string, locale?: string, includeCurated = false): Promise<CardItem[]> {
+    console.log('[getAllSequenceWithTranslations] Called with:', { userId, locale, includeCurated });
 
     // First get ALL sequence
-    const sequence = await this.getAllSequence(userId);
+    const sequence = await this.getAllSequence(userId, includeCurated);
     console.log('[getAllSequenceWithTranslations] Found total sequence:', sequence.length);
 
     if (sequence.length === 0) return sequence;

@@ -25,13 +25,15 @@
 
       <!-- Filters -->
       <div :class="bemm('filters')">
-        <TInput
+        <TInputText
+          :label="t('common.search')"
           v-model="searchQuery"
           :placeholder="t('common.search')"
           :icon="Icons.SEARCH_M"
           clearable
         />
         <TInputSelect
+          :label="t('common.templates')"
           v-model="selectedTemplateId"
           :options="templateOptions"
           :placeholder="t('admin.content.items.allTemplates')"
@@ -204,14 +206,14 @@ import {
   TListItem,
   TListCell,
   TEmptyState,
-  TInput,
   TInputSelect,
   TSpinner,
   TChip,
   useI18n,
   listActions,
   type ToastService,
-  type PopupService
+  type PopupService,
+  TInputText
 } from '@tiko/ui'
 import { Icons } from 'open-icon'
 import { contentService, type Item, type ItemTemplate } from '@tiko/core'

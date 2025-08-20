@@ -79,18 +79,12 @@ const { t, keys } = useI18n()
 // Local state
 const localSettings = reactive({ ...props.settings })
 
-// Methods
-const handleApply = () => {
-  props.onApply?.(localSettings)
-  emit('close')
-}
-
 // Add title and actions
 const title = t('common.settings')
 
-// Watch for changes and call onApply
+// Watch for changes and apply them without closing the popup
 watch(localSettings, () => {
-  handleApply()
+  props.onApply?.({ ...localSettings })
 }, { deep: true })
 </script>
 

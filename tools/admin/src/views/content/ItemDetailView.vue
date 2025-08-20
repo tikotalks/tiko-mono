@@ -137,8 +137,7 @@ import {
   useI18n,
   listActions,
   type ToastService,
-  type PopupService,
-  TInputSelect
+  type PopupService
 } from '@tiko/ui'
 import { Icons } from 'open-icon'
 import {

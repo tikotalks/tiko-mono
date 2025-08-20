@@ -399,7 +399,6 @@ const handleAppSettings = () => {
       onApply: async (newSettings: any) => {
         Object.assign(localSettings, newSettings);
         await yesNoStore.updateSettings(newSettings);
-        popupService.close();
       },
     },
   });

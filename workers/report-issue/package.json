@@ -1,0 +1,17 @@
+{
+  "name": "report-issue-worker",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker for handling issue reports",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "deploy:dev": "wrangler deploy --env development",
+    "deploy:prod": "wrangler deploy --env production"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20231025.0",
+    "wrangler": "^3.0.0",
+    "typescript": "^5.0.0"
+  }
+}

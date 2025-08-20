@@ -1,0 +1,1 @@
+export { default as TAboutApp } from './TAboutApp.vue'

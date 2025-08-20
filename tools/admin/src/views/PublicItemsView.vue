@@ -37,7 +37,10 @@
       </div>
 
       <div v-else-if="filteredItems.length === 0" :class="bemm('empty')">
-        <p>{{ t('admin.items.noItems') }}</p>
+        <TEmptyState 
+          :title="t('admin.items.noItems')"
+          :description="t('admin.items.noItemsDescription')"
+        />
       </div>
 
       <div v-else>
@@ -66,33 +69,41 @@
           </TButton>
         </div>
 
-        <div :class="bemm('list')">
-          <div
+        <TList :columns="columns">
+          <TListItem
             v-for="item in filteredItems"
             :key="item.id"
-            :class="bemm('item', selectedItems.includes(item.id) ? 'selected' : '')"
+            :selected="selectedItems.includes(item.id)"
           >
-            <TInputCheckbox
-              :model-value="selectedItems.includes(item.id)"
-              @update:model-value="toggleItemSelection(item.id)"
-            />
+            <TListCell type="custom">
+              <TInputCheckbox
+                :model-value="selectedItems.includes(item.id)"
+                @update:model-value="toggleItemSelection(item.id)"
+              />
+            </TListCell>
             
-            <div :class="bemm('item-info')">
-              <h3>{{ item.name || item.title }}</h3>
-              <p>{{ t('admin.items.owner') }}: {{ item.owner_name || item.owner_email || t('common.unknown') }}</p>
+            <TListCell type="text" :content="item.title" />
+            
+            <TListCell type="text" :content="item.app_name" />
+            
+            <TListCell type="text" :content="item.user_email || t('common.unknown')" />
+            
+            <TListCell type="custom">
               <div :class="bemm('badges')">
-                <TChip v-if="item.is_public" type="info">
+                <TChip v-if="item.isPublic" type="info" size="small">
                   {{ t('common.public') }}
                 </TChip>
-                <TChip v-if="item.is_curated" type="warning">
+                <TChip v-if="item.isCurated" type="warning" size="small">
                   {{ t('common.curated') }}
                 </TChip>
               </div>
-            </div>
-
-            <div :class="bemm('item-actions')">
+            </TListCell>
+            
+            <TListCell type="text" :content="formatDate(item.created_at)" />
+            
+            <TListCell type="actions">
               <TButton
-                v-if="!item.is_curated"
+                v-if="!item.isCurated"
                 type="primary"
                 size="small"
                 @click="toggleCurated(item.id, true)"
@@ -107,9 +118,9 @@
               >
                 {{ t('admin.items.removeCurated') }}
               </TButton>
-            </div>
-          </div>
-        </div>
+            </TListCell>
+          </TListItem>
+        </TList>
       </div>
     </div>
   </div>
@@ -125,6 +136,10 @@ import {
   TIcon, 
   TInputCheckbox, 
   TChip,
+  TList,
+  TListItem,
+  TListCell,
+  TEmptyState,
   useI18n,
   type ToastService
 } from '@tiko/ui';
@@ -135,15 +150,24 @@ const bemm = useBemm('public-items-view');
 const { t } = useI18n();
 const toastService = inject<ToastService>('toastService');
 
-// Direct import from sequence app
-import { adminItemsService } from '../../../../apps/sequence/src/services/admin-items.service';
+import { adminItemsService, type AdminItemsFilter, type AdminItem } from '@tiko/core';
 
 const selectedApp = ref<string>('all');
 const visibilityFilter = ref<string>('all');
 const searchQuery = ref('');
 const isLoading = ref(false);
-const items = ref<any[]>([]);
+const items = ref<AdminItem[]>([]);
 const selectedItems = ref<string[]>([]);
+
+const columns = [
+  { key: 'select', label: '', width: '40px' },
+  { key: 'title', label: t('admin.items.title') },
+  { key: 'app', label: t('admin.items.app'), width: '120px' },
+  { key: 'owner', label: t('admin.items.owner'), width: '200px' },
+  { key: 'status', label: t('admin.items.status'), width: '200px' },
+  { key: 'created', label: t('admin.items.created'), width: '150px' },
+  { key: 'actions', label: '', width: '200px' },
+];
 
 const appOptions = [
   { value: 'all', label: t('common.all') },
@@ -163,13 +187,18 @@ const filteredItems = computed(() => {
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
     filtered = filtered.filter(item => 
-      (item.name || item.title || '').toLowerCase().includes(query) ||
-      (item.owner_name || '').toLowerCase().includes(query)
+      (item.title || '').toLowerCase().includes(query) ||
+      (item.app_name || '').toLowerCase().includes(query)
     );
   }
 
   return filtered;
 });
+
+const formatDate = (date: string) => {
+  if (!date) return '-';
+  return new Date(date).toLocaleDateString();
+};
 
 const toggleItemSelection = (itemId: string) => {
   const index = selectedItems.value.indexOf(itemId);
@@ -187,11 +216,12 @@ const clearSelection = () => {
 const loadItems = async () => {
   isLoading.value = true;
   try {
-    items.value = await adminItemsService.getPublicItems({
+    const filter: AdminItemsFilter = {
       app: selectedApp.value === 'all' ? undefined : selectedApp.value,
-      visibility: visibilityFilter.value,
+      visibility: visibilityFilter.value as any,
       search: searchQuery.value || undefined,
-    });
+    };
+    items.value = await adminItemsService.getPublicItems(filter);
   } catch (error) {
     console.error('Failed to load items:', error);
     toastService?.show({
@@ -304,11 +334,10 @@ onMounted(() => {
     background: var(--color-background);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius);
-    padding: var(--space);
+    overflow: hidden;
   }
 
-  &__loading,
-  &__empty {
+  &__loading {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -318,70 +347,27 @@ onMounted(() => {
     text-align: center;
   }
 
+  &__empty {
+    padding: var(--space-xl);
+  }
+
   &__bulk-actions {
     display: flex;
     align-items: center;
     gap: var(--space);
     padding: var(--space);
     background: var(--color-background-secondary);
-    border-radius: var(--border-radius);
-    margin-bottom: var(--space);
+    border-bottom: 1px solid var(--color-border);
 
     span {
       font-weight: 500;
     }
   }
 
-  &__list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-s);
-  }
-
-  &__item {
-    display: flex;
-    align-items: center;
-    gap: var(--space);
-    padding: var(--space);
-    background: var(--color-background);
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
-    transition: all 0.2s ease;
-
-    &:hover {
-      border-color: var(--color-primary-light);
-    }
-
-    &--selected {
-      background: var(--color-primary-light);
-      border-color: var(--color-primary);
-    }
-  }
-
-  &__item-info {
-    flex: 1;
-
-    h3 {
-      margin: 0 0 var(--space-xs) 0;
-      font-size: 1.125rem;
-      font-weight: 500;
-    }
-
-    p {
-      margin: 0 0 var(--space-xs) 0;
-      color: var(--color-text-secondary);
-      font-size: 0.875rem;
-    }
-  }
-
   &__badges {
     display: flex;
     gap: var(--space-xs);
-  }
-
-  &__item-actions {
-    display: flex;
-    gap: var(--space-xs);
+    align-items: center;
   }
 }
 </style>

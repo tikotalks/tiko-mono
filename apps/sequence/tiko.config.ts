@@ -3,7 +3,7 @@ import { defineConfig } from '@tiko/core'
 export default defineConfig({
   appId: 'sequence',
   appName: 'Sequence',
-  appIcon: 'check-circle',
+  appIcon: 'c2e7188c-1ac4-41d6-a29c-2b122ec812e8',
   description: 'Sequence App',
   theme: {
     primary: 'turquoise',

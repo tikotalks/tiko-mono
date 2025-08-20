@@ -2,6 +2,7 @@
   <TAppLayout
     :title="t('sequence.sequenceTitle')"
     :show-header="true"
+    app-name="sequence"
     @profile="handleProfile"
     @settings="handleSettings"
     @logout="handleLogout"
@@ -389,14 +390,13 @@ const handleAppSettings = () => {
       onApply: async (newSettings: any) => {
         Object.assign(localSettings, newSettings);
         await sequenceStore.updateSettings(newSettings);
-        popupService.close();
       },
     },
   });
 };
 
 const goToAdminPanel = async () => {
-  await router.push('/admin/public-items');
+  await router.push('/admin');
 };
 
 

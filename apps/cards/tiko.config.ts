@@ -3,7 +3,7 @@ import { defineConfig } from '@tiko/core'
 export default defineConfig({
   appId: 'cards',
   appName: 'Cards',
-  appIcon: 'check-circle',
+  appIcon: 'e37943b4-582c-40ee-be3a-c47be7c6e658',
   description: 'Cards App',
   theme: {
     primary: 'green',

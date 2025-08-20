@@ -5,6 +5,7 @@ import ContentSectionsView from '../views/content/SectionsView.vue'
 
 // Lazy load all route components
 const AdminDashboard = () => import('../views/Dashboard.vue')
+// const NotAuthorizedView = () => import('../views/NotAuthorizedView.vue')
 const AssetsView = () => import('../views/AssetsView.vue')
 const LibraryView = () => import('../views/LibraryView.vue')
 const MediaDashboardView = () => import('../views/MediaDashboardView.vue')

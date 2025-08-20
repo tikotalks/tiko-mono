@@ -56,18 +56,20 @@ watch(() => props.items.length, async (newLength, oldLength) => {
 @use '@tiko/ui/styles/media' as media;
 
 .bottom-order-board {
-
-  border-radius: var(--border-radius);
-
-  transition: .3s cubic-bezier(0, .5, .5, 1.5);
+  --glass-background: color-mix(in srgb, var(--color-primary), transparent 75%);
 
   position: fixed;
   bottom: 0;
+  border-radius: var(--border-radius);
+  transition: .3s cubic-bezier(0, .5, .5, 1.5);
   left: 0;
   right: 0;
   margin: var(--space);
---glass-background: color-mix(in srgb, var(--color-primary), transparent 25%);
   @include mixins.glass();
+
+  @media screen and (max-width: 1024px) {
+     font-size: .5em;
+    }
 
   &--no-items {
     transform: scale(.75);
@@ -80,12 +82,16 @@ watch(() => props.items.length, async (newLength, oldLength) => {
   }
 
   &__footer {
+    --progress-color: var(--color-secondary);
+
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: var(--space-s);
 
-    --progress-color: var(--color-secondary);
+    @media screen and (max-width: 1024px) {
+      display:none;
+    }
   }
 
   &__title {
@@ -124,8 +130,8 @@ watch(() => props.items.length, async (newLength, oldLength) => {
   }
 
   &__tile {
-    width: 80px;
-    height: 80px;
+    width: 8em;
+    height: 8em;
 
     :deep(.t-card-tile) {
       width: 100%;

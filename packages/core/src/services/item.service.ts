@@ -23,6 +23,7 @@ export interface BaseItem {
   is_favorite?: boolean
   is_completed?: boolean
   is_public?: boolean
+  is_curated?: boolean // Admin-curated items
   tags?: string[]
   icon?: string
   color?: string

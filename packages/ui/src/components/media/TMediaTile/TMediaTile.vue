@@ -152,7 +152,7 @@ const isAudioFile = computed(() => {
   if (!props.media) return false;
   const mimeType = props.media.type || '';
   const filename = props.media.original_filename || '';
-  return mimeType.startsWith('audio/') || 
+  return mimeType.startsWith('audio/') ||
          filename.toLowerCase().endsWith('.mp3') ||
          filename.toLowerCase().endsWith('.wav') ||
          filename.toLowerCase().endsWith('.ogg') ||
@@ -370,28 +370,28 @@ onUnmounted(() => {
     width: 100%;
     max-width: 280px;
     height: 40px;
-    
+
     &:focus {
       outline: none;
     }
-    
+
     // Style the audio controls
     &::-webkit-media-controls-panel {
       background-color: rgba(255, 255, 255, 0.9);
       border-radius: var(--border-radius);
     }
-    
+
     &::-webkit-media-controls-play-button,
     &::-webkit-media-controls-pause-button {
       background-color: var(--color-primary);
       border-radius: 50%;
     }
-    
+
     &::-webkit-media-controls-timeline {
       background-color: var(--color-primary-100);
       border-radius: var(--border-radius);
     }
-    
+
     &::-webkit-media-controls-current-time-display,
     &::-webkit-media-controls-time-remaining-display {
       color: var(--color-foreground);

@@ -1,7 +1,7 @@
 <template>
   <TButtonGroup :class="bemm()">
     <TButton
-      :type="modelValue === 'tiles' ? 'default' : 'outline'"
+      :type="'icon-only'"
       :icon="tilesIcon"
       :size="size"
       @click="emit('update:modelValue', 'tiles')"
@@ -9,7 +9,7 @@
       {{ tilesLabel }}
     </TButton>
     <TButton
-      :type="modelValue === 'list' ? 'default' : 'outline'"
+      :type="'icon-only'"
       :icon="listIcon"
       :size="size"
       @click="emit('update:modelValue', 'list')"

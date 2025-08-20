@@ -217,8 +217,9 @@ watch(() => props.sequenceId, async (newId) => {
     opacity: 0.5;
     pointer-events: none;
 
+    transform: scale(0.75);
     .t-card-tile {
-      transform: scale(0.95);
+      transform: scale(0.75);
       box-shadow: none;
       filter: grayscale(50%);
     }

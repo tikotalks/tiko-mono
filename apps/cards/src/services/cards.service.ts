@@ -92,7 +92,7 @@ export const cardsService = {
     }
   },
 
-  async loadAllCards(): Promise<CardTile[]> {
+  async loadAllCards(includeCurated = false): Promise<CardTile[]> {
     try {
       const authStore = useAuthStore();
       const userId = authStore.user?.id;
@@ -104,10 +104,10 @@ export const cardsService = {
       // Get current locale from i18n
       const { currentLocale } = useI18n();
       const locale = currentLocale.value;
-      console.log('[loadAllCards] Loading ALL cards with locale:', locale);
+      console.log('[loadAllCards] Loading ALL cards with locale:', locale, 'includeCurated:', includeCurated);
       
       // Load ALL cards with translations for current locale
-      const items = await cardsSupabaseService.getAllCardsWithTranslations(userId, locale);
+      const items = await cardsSupabaseService.getAllCardsWithTranslations(userId, locale, includeCurated);
       console.log('[loadAllCards] Total items loaded:', items.length);
       
       return items.map(item => {

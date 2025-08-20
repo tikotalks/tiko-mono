@@ -217,9 +217,10 @@ export const useCardStore = defineStore('yesno', () => {
     isLoadingCards.value = true
     
     try {
-      // Load ALL cards in a single API call
-      const allCards = await cardsService.loadAllCards()
-      console.log(`[CardsStore] Loaded ${allCards.length} cards in single call`)
+      // Load ALL cards in a single API call, including curated items if enabled in settings
+      const includeCurated = settings.value.showCuratedItems
+      const allCards = await cardsService.loadAllCards(includeCurated)
+      console.log(`[CardsStore] Loaded ${allCards.length} cards in single call (includeCurated: ${includeCurated})`)
       
       // Build cache structure from all cards
       const cardsByParent = new Map<string, CardTile[]>()

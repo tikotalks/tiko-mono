@@ -103,22 +103,62 @@ class CardsSupabaseService {
     }
   }
 
-  async getAllCards(userId: string): Promise<CardItem[]> {
-    const params = new URLSearchParams();
-    params.append('user_id', `eq.${userId}`);
-    params.append('app_name', 'eq.cards');
-    params.append('order', 'order_index.asc');
-    
-    const url = `items?${params.toString()}`;
-    console.log('[getAllCards] Fetching ALL cards from:', url);
-    
-    try {
-      const result = await this.apiRequest<CardItem[]>(url);
-      console.log('[getAllCards] Found', result.length, 'total cards');
-      return result;
-    } catch (error) {
-      console.error('[getAllCards] Error fetching all cards:', error);
-      throw error;
+  async getAllCards(userId: string, includeCurated = false): Promise<CardItem[]> {
+    // If includeCurated is true, we need to fetch both user's items and curated public items
+    if (includeCurated) {
+      console.log('[getAllCards] Fetching user cards AND curated public cards');
+      
+      // Fetch user's own cards
+      const userParams = new URLSearchParams();
+      userParams.append('user_id', `eq.${userId}`);
+      userParams.append('app_name', 'eq.cards');
+      userParams.append('order', 'order_index.asc');
+      
+      // Fetch curated public cards (not owned by user)
+      const curatedParams = new URLSearchParams();
+      curatedParams.append('app_name', 'eq.cards');
+      curatedParams.append('is_public', 'eq.true');
+      curatedParams.append('is_curated', 'eq.true');
+      curatedParams.append('user_id', `neq.${userId}`); // Exclude user's own items
+      curatedParams.append('order', 'order_index.asc');
+      
+      try {
+        // Fetch both in parallel
+        const [userCards, curatedCards] = await Promise.all([
+          this.apiRequest<CardItem[]>(`items?${userParams.toString()}`),
+          this.apiRequest<CardItem[]>(`items?${curatedParams.toString()}`)
+        ]);
+        
+        console.log('[getAllCards] Found', userCards.length, 'user cards');
+        console.log('[getAllCards] Found', curatedCards.length, 'curated public cards');
+        
+        // Combine and return all cards
+        const allCards = [...userCards, ...curatedCards];
+        console.log('[getAllCards] Total cards:', allCards.length);
+        
+        return allCards;
+      } catch (error) {
+        console.error('[getAllCards] Error fetching cards:', error);
+        throw error;
+      }
+    } else {
+      // Original behavior - only user's cards
+      const params = new URLSearchParams();
+      params.append('user_id', `eq.${userId}`);
+      params.append('app_name', 'eq.cards');
+      params.append('order', 'order_index.asc');
+      
+      const url = `items?${params.toString()}`;
+      console.log('[getAllCards] Fetching ALL cards from:', url);
+      
+      try {
+        const result = await this.apiRequest<CardItem[]>(url);
+        console.log('[getAllCards] Found', result.length, 'total cards');
+        return result;
+      } catch (error) {
+        console.error('[getAllCards] Error fetching all cards:', error);
+        throw error;
+      }
     }
   }
 
@@ -248,11 +288,11 @@ class CardsSupabaseService {
   }
 
   // Get ALL cards with translations for the current locale
-  async getAllCardsWithTranslations(userId: string, locale?: string): Promise<CardItem[]> {
-    console.log('[getAllCardsWithTranslations] Called with:', { userId, locale });
+  async getAllCardsWithTranslations(userId: string, locale?: string, includeCurated = false): Promise<CardItem[]> {
+    console.log('[getAllCardsWithTranslations] Called with:', { userId, locale, includeCurated });
     
     // First get ALL cards
-    const cards = await this.getAllCards(userId);
+    const cards = await this.getAllCards(userId, includeCurated);
     console.log('[getAllCardsWithTranslations] Found total cards:', cards.length);
     
     if (cards.length === 0) return cards;

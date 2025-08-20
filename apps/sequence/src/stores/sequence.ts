@@ -254,9 +254,10 @@ export const useSequenceStore = defineStore('sequence', () => {
     isLoadingSequence.value = true
 
     try {
-      // Load ALL sequence in a single API call
-      const allSequence = await sequenceService.loadAllSequence()
-      console.log(`[SequenceStore] Loaded ${allSequence.length} sequence in single call`)
+      // Load ALL sequence in a single API call, including curated items if enabled in settings
+      const includeCurated = settings.value.showCuratedItems
+      const allSequence = await sequenceService.loadAllSequence(includeCurated)
+      console.log(`[SequenceStore] Loaded ${allSequence.length} sequence in single call (includeCurated: ${includeCurated})`)
 
       // Build cache structure from all sequence
       const sequenceByParent = new Map<string, CardTile[]>()

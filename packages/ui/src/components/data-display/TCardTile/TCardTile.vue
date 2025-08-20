@@ -19,7 +19,7 @@
       <article :class="tileClasses" :style="!isEmpty && card?.color ? {
         '--card-color': `var(--color-${card.color})`,
         '--card-text': `var(--color-${card.color}-text)`,
-      } : undefined">
+      } : undefined" tabindex="0">
         <div v-if="isEmpty && editMode" :class="bemm('empty-state')">
           <TIcon name="plus" size="large" />
         </div>
@@ -74,7 +74,8 @@
     @dragend.stop="handleDragEnd" @dragover.stop="handleDragOver" @dragleave.stop="handleDragLeave"
     @drop.stop="handleDrop">
     <article :class="tileClasses"
-      :style="!isEmpty && card?.color ? { '--card-color': `var(--color-${card.color})`, '--card-text': `var(--color-${card.color}-text)`, } : undefined">
+      :style="!isEmpty && card?.color ? { '--card-color': `var(--color-${card.color})`, '--card-text': `var(--color-${card.color}-text)`, } : undefined"
+      tabindex="0">
       <div v-if="isEmpty && editMode" :class="bemm('empty-state')">
         <TIcon name="plus" size="large" />
       </div>
@@ -321,13 +322,65 @@ const tileClasses = computed(() => {
   height: 100%;
   background-image: radial-gradient(circle at center, var(--card-color) 0%, color-mix(in srgb, var(--card-color), var(--color-background) 25%) 100%);
   border-radius: var(--border-radius);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  // transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
   color: var(--card-text);
+  transition: all .2s ease-in-out;
+  transform: scale(1);
+  animation: tile-no-hover 0.2s ease-in-out forwards;
+
 
   &:hover {
-    transform: scale(.95);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    animation: tile-hover 0.2s ease-in-out forwards;
+    .t-card-tile__image{
+      transform: scale(1.1);
+    }
+  }
+
+  &:hover:focus {
+    animation: tile-focus 0.2s ease-in-out forwards;
+  }
+
+  @keyframes tile-hover {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      opacity: 1;
+    }
+
+    100% {
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      opacity: 1;
+    }
+  }
+
+  @keyframes tile-no-hover {
+    0% {
+      transform: scale(1.05);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      opacity: 1;
+    }
+
+    100% {
+      transform: scale(1);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      opacity: 1;
+    }
+  }
+
+  @keyframes tile-focus {
+    0% {
+      transform: scale(1.05);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      opacity: 1;
+    }
+
+    100% {
+      transform: scale(.95);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      opacity: 1;
+    }
   }
 
   &__wrapper {
@@ -337,6 +390,7 @@ const tileClasses = computed(() => {
     align-items: center;
     justify-content: center;
     position: relative;
+
 
     &--selected {
       article {
@@ -352,24 +406,11 @@ const tileClasses = computed(() => {
     }
   }
 
-  // Pop-in animation when image loads
-  &--pop-in {
-    animation: tile-image-pop-in 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
-  }
-
   // Remove debug borders
   &--no-image {
     --card-title-bottom: 50%;
     --card-title-font-size: clamp(.75em, 3vw, 1.125em);
     --card-title-transform: translateY(50%);
-  }
-
-  // Ensure hover works for cards with images
-  &--has-image {
-    &:hover {
-      transform: scale(.95);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    }
   }
 
   &__container {
@@ -453,6 +494,8 @@ const tileClasses = computed(() => {
     user-select: none;
     -webkit-user-drag: none;
     pointer-events: none;
+    transform: scale(1);
+    transition: transform 0.2s ease-in-out;
   }
 
   &__title {

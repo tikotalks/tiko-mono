@@ -112,7 +112,7 @@ export const sequenceService = {
     }
   },
 
-  async loadAllSequence(): Promise<typeof CardTile[]> {
+  async loadAllSequence(includeCurated = false): Promise<typeof CardTile[]> {
     try {
       const authStore = useAuthStore();
       const userId = authStore.user?.id;
@@ -124,10 +124,10 @@ export const sequenceService = {
       // Get current locale from i18n
       const { currentLocale } = useI18n();
       const locale = currentLocale.value;
-      console.log('[loadAllSequence] Loading ALL sequence with locale:', locale);
+      console.log('[loadAllSequence] Loading ALL sequence with locale:', locale, 'includeCurated:', includeCurated);
 
       // Load ALL sequence with translations for current locale
-      const items = await sequenceSupabaseService.getAllSequenceWithTranslations(userId, locale);
+      const items = await sequenceSupabaseService.getAllSequenceWithTranslations(userId, locale, includeCurated);
       console.log('[loadAllSequence] Total items loaded:', items.length);
 
       return items.map(item => {

@@ -1,0 +1,1 @@
+export { default as TReportIssue } from './TReportIssue.vue'

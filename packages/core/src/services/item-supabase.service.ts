@@ -333,13 +333,6 @@ export class SupabaseItemService implements ItemService {
     return this.apiRequest<BaseItem[]>(`items?parent_id=eq.${parentId}&order=order_index.asc`)
   }
 
-  async getPublicItems(filters?: ItemFilters): Promise<BaseItem[]> {
-    const baseQuery = 'is_public=eq.true'
-    const additionalFilters = this.applyFiltersToQuery(filters)
-    const query = additionalFilters ? `${baseQuery}&${additionalFilters}` : baseQuery
-    
-    return this.apiRequest<BaseItem[]>(`items?${query}&order=order_index.asc`)
-  }
 
   async searchItems(userId: string, query: string, filters?: ItemFilters): Promise<BaseItem[]> {
     return this.getItems(userId, { ...filters, search: query })
@@ -455,5 +448,74 @@ export class SupabaseItemService implements ItemService {
     }))
     
     return this.createItems(userId, payloads)
+  }
+
+  // Admin methods for managing public items
+  async getPublicItems(filters?: ItemFilters & { is_curated?: boolean }): Promise<BaseItem[]> {
+    const params = new URLSearchParams()
+    
+    // Always filter for public items
+    params.append('is_public', 'eq.true')
+    
+    if (filters?.app_name) {
+      params.append('app_name', `eq.${filters.app_name}`)
+    }
+    
+    if (filters?.type) {
+      params.append('type', `eq.${filters.type}`)
+    }
+    
+    if (filters?.is_curated !== undefined) {
+      params.append('is_curated', `eq.${filters.is_curated}`)
+    }
+    
+    if (filters?.search) {
+      params.append('name', `ilike.*${filters.search}*`)
+    }
+    
+    // Order by created date descending
+    params.append('order', 'created_at.desc')
+    
+    const items = await this.apiRequest<BaseItem[]>(`items?${params.toString()}`)
+    return items
+  }
+
+  async toggleItemCurated(itemId: string, isCurated: boolean): Promise<ItemResult<BaseItem>> {
+    try {
+      const result = await this.apiRequest<BaseItem[]>(`items?id=eq.${itemId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          is_curated: isCurated,
+          updated_at: new Date().toISOString()
+        })
+      })
+
+      return { success: true, data: result[0] }
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Failed to toggle curated status' 
+      }
+    }
+  }
+
+  async bulkToggleCurated(itemIds: string[], isCurated: boolean): Promise<ItemResult<void>> {
+    try {
+      // Process in batches to avoid overwhelming the API
+      const batchSize = 10
+      for (let i = 0; i < itemIds.length; i += batchSize) {
+        const batch = itemIds.slice(i, i + batchSize)
+        await Promise.all(
+          batch.map(id => this.toggleItemCurated(id, isCurated))
+        )
+      }
+      
+      return { success: true }
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Failed to bulk toggle curated status' 
+      }
+    }
   }
 }

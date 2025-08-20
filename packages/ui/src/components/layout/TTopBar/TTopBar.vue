@@ -14,7 +14,19 @@
       </div>
 
       <div :class="bemm('title-section')">
-        <h1 v-if="title" :class="bemm('title')">{{ title }}</h1>
+        <TContextMenu 
+          v-if="title && isApp"
+          :config="titleContextMenuConfig"
+          ref="titleContextMenuRef"
+        >
+          <h1 :class="bemm('title')">{{ title }}</h1>
+        </TContextMenu>
+        <h1 
+          v-else-if="title"
+          :class="bemm('title')"
+        >
+          {{ title }}
+        </h1>
         <p v-if="subtitle" :class="bemm('subtitle')">{{ subtitle }}</p>
       </div>
 
@@ -75,6 +87,7 @@ import { useAuthStore } from '@tiko/core'
 import TButton from '../../ui-elements/TButton/TButton.vue'
 import TButtonGroup from '../../ui-elements/TButton/TButtonGroup.vue'
 import TUserMenu from '../../navigation/TUserMenu/TUserMenu.vue'
+import TContextMenu from '../../navigation/TContextMenu/TContextMenu.vue'
 import { useParentMode } from '../../../composables/useParentMode'
 import TParentModePinInput from '../../auth/TParentMode/TParentModePinInput.vue'
 import { useI18n } from '../../../composables/useI18n'
@@ -139,6 +152,7 @@ const popupService = inject<any>('popupService')
 
 // Refs
 const isMobile = ref(false)
+const titleContextMenuRef = ref<InstanceType<typeof TContextMenu>>()
 
 // Computed
 const user = computed(() => authStore.value?.user)
@@ -147,6 +161,32 @@ const user = computed(() => authStore.value?.user)
 const shouldEnableParentMode = computed(() => {
   return props.enableParentMode !== undefined ? props.enableParentMode : props.isApp
 })
+
+// Context menu configuration for title
+const titleContextMenuConfig = computed(() => ({
+  clickMode: 'long' as const,
+  position: 'bottom-right' as const,
+  menu: [
+    {
+      id: 'about',
+      label: t('common.aboutThisApp'),
+      icon: 'info-m',
+      action: handleAboutApp
+    },
+    {
+      id: 'report',
+      label: t('common.reportIssue'),
+      icon: 'bug',
+      action: handleReportIssue
+    },
+    {
+      id: 'refresh',
+      label: t('common.refresh'),
+      icon: 'arrow-reload-down-up',
+      action: handleRefresh
+    }
+  ]
+}))
 
 
 // Methods
@@ -265,6 +305,78 @@ const handleParentModeKeyDown = (event: KeyboardEvent) => {
   }
 }
 
+// Context menu handlers
+const handleAboutApp = async () => {
+  if (!popupService || !props.appName) {
+    console.error('PopupService or appName not available')
+    return
+  }
+
+  try {
+    // Import TAboutApp component dynamically
+    const { default: TAboutApp } = await import('../../feedback/TAboutApp/TAboutApp.vue')
+    
+    popupService.open({
+      component: TAboutApp,
+      title: t('common.aboutThisApp'),
+      props: {
+        appName: props.appName,
+        title: props.title
+      },
+      actions: [
+        {
+          id: 'close',
+          label: t('common.close'),
+          color: 'primary'
+        }
+      ]
+    })
+  } catch (error) {
+    console.error('Failed to show app info:', error)
+  }
+}
+
+const handleReportIssue = async () => {
+  if (!popupService || !props.appName) {
+    console.error('PopupService or appName not available')
+    return
+  }
+
+  try {
+    // Import TReportIssue component dynamically
+    const { default: TReportIssue } = await import('../../feedback/TReportIssue/TReportIssue.vue')
+    
+    popupService.open({
+      component: TReportIssue,
+      title: t('common.reportIssue'),
+      props: {
+        appName: props.appName,
+        userEmail: user.value?.email
+      },
+      config: {
+        width: '500px',
+        maxWidth: '90vw'
+      },
+      on: {
+        'submitted': (data: any) => {
+          console.log('Issue report submitted:', data)
+          popupService.close()
+        },
+        'cancelled': () => {
+          popupService.close()
+        }
+      },
+      actions: [] // Actions are handled by the component itself
+    })
+  } catch (error) {
+    console.error('Failed to show report issue dialog:', error)
+  }
+}
+
+const handleRefresh = () => {
+  window.location.reload()
+}
+
 // Lifecycle
 onMounted(() => {
   updateIsMobile()
@@ -328,6 +440,18 @@ onUnmounted(() => {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    user-select: none;
+    cursor: default;
+    
+    // When inside context menu (app mode)
+    .context-menu & {
+      cursor: pointer;
+      transition: opacity 0.2s;
+      
+      &:hover {
+        opacity: 0.8;
+      }
+    }
   }
 
   &__subtitle {

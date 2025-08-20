@@ -2,7 +2,6 @@
   <div :class="bemm()">
     <!-- Header -->
     <div :class="bemm('header')">
-      <h2>{{ t('admin.media.selectMedia', 'Select Media') }}</h2>
       <p>
         {{
           multiple
@@ -14,14 +13,16 @@
 
     <!-- Toolbar -->
     <div :class="bemm('toolbar')">
-      <div :class="bemm('toolbar-left')">
-        <!-- Library switcher -->
-        <TInputSelect v-model="libraryType" :options="libraryOptions" :clearable="false"
-          @update:model-value="loadMedia" />
+      <div :class="bemm('toolbar-column', ['', 'left'])">
 
         <TInputText v-model="searchQuery" :placeholder="t('common.search')" :icon="Icons.SEARCH_M"
           @input="handleSearch" />
 
+        <TButton :class="bemm('action', ['', 'show-filter-toggle'])" :icon="Icons.CHEVRON_DOWN" :type="'icon-only'"
+          @click="showFilters = !showFilters" />
+      </div>
+
+      <div :class="bemm('toolbar-column', ['', 'middle',showFilters ? 'show' : 'hide'])" >
         <TInputSelect v-if="libraryType === ImageLibraryType.PUBLIC" v-model="categoryFilter" :options="categoryOptions"
           :placeholder="t('admin.media.filterByCategory', 'Filter by category')" :clearable="true" allow-empty
           @update:model-value="loadMedia" />
@@ -31,12 +32,17 @@
           @update:model-value="loadMedia" />
       </div>
 
-      <div :class="bemm('toolbar-right')">
+      <div :class="bemm('toolbar-column', ['', 'right',showFilters ? 'show' : 'hide'])" v-if="showFilters">
+
+        <!-- Library switcher -->
+        <TInputSelect v-model="libraryType" :options="libraryOptions" :clearable="false"
+          @update:model-value="loadMedia" />
+
         <TInputSelect v-model="sortBy" :options="sortOptions" :placeholder="t('common.sortByLabel')"
           @update:model-value="loadMedia" />
 
         <TViewToggle v-model="viewMode" :tiles-label="t('common.tiles')" :list-label="t('common.list')"
-          :tiles-icon="Icons.GRID_M" :list-icon="Icons.LIST_M" />
+          :tiles-icon="Icons.BOARD_MULTI" :list-icon="Icons.CHECK_LIST" />
       </div>
     </div>
 
@@ -51,8 +57,8 @@
       <TEmptyState v-else-if="filteredMedia.length === 0" :icon="Icons.IMAGE_M"
         :title="searchQuery ? t('admin.media.noSearchResults', 'No search results') : t('admin.media.noMedia', 'No media found')"
         :description="searchQuery
-            ? t('admin.media.noSearchResultsDescription', 'Try adjusting your search or filters')
-            : t('admin.media.noMediaDescription', 'Upload some media files to get started')
+          ? t('admin.media.noSearchResultsDescription', 'Try adjusting your search or filters')
+          : t('admin.media.noMediaDescription', 'Upload some media files to get started')
           ">
         <TButton v-if="searchQuery" type="outline" @click="clearSearch">
           {{ t('common.clearSearch') }}
@@ -166,6 +172,8 @@ const tagFilter = ref<string>('')
 const sortBy = ref('upload_date_desc')
 const viewMode = ref<'tiles' | 'list'>('tiles')
 const libraryType = ref<string>(ImageLibraryType.PUBLIC)
+
+const showFilters = ref(false);
 
 // Use the cached images composable
 const publicImages = useImages({ libraryType: ImageLibraryType.PUBLIC })
@@ -446,15 +454,31 @@ onMounted(() => {
     border-bottom: 1px solid var(--color-border);
     background: var(--color-background-secondary);
 
-    &-left,
-    &-right {
-      display: flex;
-      align-items: center;
-      gap: var(--space);
+    @media screen and (max-width: 960px) {
+      flex-direction: column;
     }
 
-    &-left {
-      flex: 1;
+  }
+
+  &__toolbar-column {
+    display: flex;
+    align-items: center;
+    gap: var(--space);
+
+    &--hide{
+      @media screen and (max-width: 960px) {
+        display: none;
+      }
+    }
+  }
+
+  &__action {
+    &--show-filter-toggle {
+      display: none;
+
+      @media screen and (max-width: 960px) {
+        display: block;
+      }
     }
   }
 
