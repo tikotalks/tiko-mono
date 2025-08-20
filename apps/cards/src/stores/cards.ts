@@ -184,7 +184,8 @@ export const useCardStore = defineStore('yesno', () => {
       // Try to load from API first
       try {
         console.log(`[CardsStore] Loading cards from API for ${cacheKey}`)
-        cards = await cardsService.loadCards(parentId, locale)
+        const showCurated = settings.value.showCuratedItems
+        cards = await cardsService.loadCards(parentId, showCurated, locale)
         
         // Store in offline storage for future use
         await offlineStorageService.storeCards(userId, cards, parentId, locale)

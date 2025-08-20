@@ -1,0 +1,33 @@
+{
+  "appName": "Sequence",
+  "appIcon": "c2e7188c-1ac4-41d6-a29c-2b122ec812e8",
+  "primaryColor": "turquoise",
+  "primaryColorHex": "#63d4c7",
+  "imageUrl": "https://data.tikocdn.org/uploads/1755680477010-1-2-3-sequence.png",
+  "generatedAt": "2025-08-20T10:00:00.000Z",
+  "iconSettings": {
+    "cornerRadius": "45%",
+    "imageScale": "100%",
+    "gradientCenter": "20% darker"
+  },
+  "sizes": [
+    {
+      "size": 16,
+      "type": "favicon",
+      "filename": "favicon-16x16.png",
+      "rounded": true
+    },
+    {
+      "size": 32,
+      "type": "favicon",
+      "filename": "favicon-32x32.png",
+      "rounded": true
+    },
+    {
+      "size": 48,
+      "type": "favicon",
+      "filename": "favicon-48x48.png",
+      "rounded": true
+    }
+  ]
+}

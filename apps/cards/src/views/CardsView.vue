@@ -557,8 +557,8 @@ const openCardEditForm = async (card: CardTile, index: number) => {
   // Calculate ownership
   const isOwner = isNewCard ? true : (card.ownerId === authStore.user?.id || card.user_id === authStore.user?.id);
   
-  // Check if this is a top-level group (has children and no parent)
-  const isTopLevelGroup = !isNewCard && tilesWithChildren.value.has(card.id) && !card.parentId && !currentGroupId.value;
+  // Check if this is a top-level card (no parent) - visibility toggle only for top-level items
+  const isTopLevelCard = !isNewCard && !card.parentId && !currentGroupId.value;
   
   // Define actions for the popup
   const actions = computed(() => [
@@ -594,7 +594,7 @@ const openCardEditForm = async (card: CardTile, index: number) => {
         index: index,
         hasChildren: tilesWithChildren.value.has(card.id),
         translations: translations,
-        showVisibilityToggle: isTopLevelGroup, // Only show for top-level groups
+        showVisibilityToggle: isTopLevelCard, // Only show for top-level cards
         isOwner: isOwner,
         onMounted: (instance: any) => {
           formComponentRef = instance;
@@ -849,8 +849,9 @@ const handleCardClick = async (card: CardTile, index: number) => {
 };
 
 const handleTileAction = async (tile: CardTile) => {
-  // Check if this tile has children
-  const hasChildren = await cardsService.hasChildren(tile.id);
+  // Check if this tile has children (include curated items based on settings)
+  const showCurated = settings.value.showCuratedItems;
+  const hasChildren = await cardsService.hasChildren(tile.id, showCurated);
 
   if (hasChildren) {
     // Navigate to children

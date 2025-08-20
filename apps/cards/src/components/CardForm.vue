@@ -73,20 +73,11 @@
             <!-- Visibility toggle -->
             <TFormField v-if="showVisibilityToggle && isOwner" :label="t('common.visibility')" name="visibility">
               <div :class="bemm('visibility-options')">
-                <label :class="bemm('checkbox-label')">
-                  <input
-                    type="checkbox"
-                    v-model="form.isPublic"
-                    :class="bemm('checkbox')"
-                  />
-                  <span>{{ t('common.makePublic') }}</span>
-                  <TIcon 
-                    name="info" 
-                    size="small" 
-                    :title="t('common.publicDescription')"
-                    :class="bemm('info-icon')"
-                  />
-                </label>
+                <TInputCheckbox
+                  v-model="form.isPublic"
+                  :label="t('common.makePublic')"
+                  :help="t('common.publicDescription')"
+                />
                 <p v-if="form.isPublic" :class="bemm('visibility-note')">
                   {{ t('common.publicNote') }}
                 </p>
@@ -135,6 +126,7 @@ import {
   TInputText,
   TMediaSelector,
   TIcon,
+  TInputCheckbox,
   debounce,
   ButtonType,
   TFormGroup,
@@ -606,33 +598,6 @@ background-color: var(--current-color);
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-  }
-
-  &__checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-
-    &:hover {
-      color: var(--color-primary);
-    }
-  }
-
-  &__checkbox {
-    width: 1.25rem;
-    height: 1.25rem;
-    cursor: pointer;
-  }
-
-  &__info-icon {
-    margin-left: 0.25rem;
-    color: var(--color-text-secondary);
-    cursor: help;
-
-    &:hover {
-      color: var(--color-primary);
-    }
   }
 
   &__visibility-note {

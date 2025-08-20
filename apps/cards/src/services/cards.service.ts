@@ -18,7 +18,7 @@ interface CardMetadata {
 const childrenCache = new Map<string, boolean>();
 
 export const cardsService = {
-  async loadCards(parentId?: string): Promise<CardTile[]> {
+  async loadCards(parentId?: string, includeCurated = false, locale?: string): Promise<CardTile[]> {
     try {
       const authStore = useAuthStore();
       const userId = authStore.user?.id;
@@ -27,21 +27,24 @@ export const cardsService = {
         return [];
       }
       
-      // Get current locale from i18n
+      // Get current locale from i18n or use provided locale
       const { currentLocale } = useI18n();
-      const locale = currentLocale.value;
-      console.log('[loadCards] Current locale from useI18n:', locale, typeof locale);
-      console.log('[loadCards] Raw currentLocale object:', currentLocale);
+      const effectiveLocale = locale || currentLocale.value;
+      console.log('[loadCards] Current locale from useI18n:', effectiveLocale, 'includeCurated:', includeCurated);
       
       // Load cards with translations for current locale
-      const items = await cardsSupabaseService.getCardsWithTranslations(userId, parentId, locale);
-      console.log('[loadCards] Items returned from getCardsWithTranslations:', items.length, items.map(i => ({ 
-        id: i.id, 
-        name: i.name, 
-        content: i.content,
-        base_locale: i.base_locale,
-        effective_locale: i.effective_locale 
-      })));
+      // If includeCurated is true, we need to get both user and curated cards for the parent
+      let items;
+      if (includeCurated) {
+        // Get cards with curated items and translations
+        items = await cardsSupabaseService.getCardsWithCuratedAndTranslations(userId, parentId, effectiveLocale);
+        console.log('[loadCards] Found cards with curated and translations:', items.length);
+      } else {
+        // Standard loading for user cards only
+        items = await cardsSupabaseService.getCardsWithTranslations(userId, parentId, effectiveLocale);
+      }
+      
+      console.log('[loadCards] Items to process:', items.length);
       
       return items.map(item => {
         const metadata = item.metadata as CardMetadata;
@@ -51,20 +54,9 @@ export const cardsService = {
           ? item.content || metadata?.speech || ''  // Use translated content if available
           : metadata?.speech || item.content || ''; // Otherwise use metadata speech or base content
         
-        console.log('[loadCards] Speech determination for card:', {
-          id: item.id,
-          name: item.name,
-          effective_locale: item.effective_locale,
-          base_locale: item.base_locale,
-          item_content: item.content,
-          metadata_speech: metadata?.speech,
-          final_speech: speech,
-          is_translated: item.effective_locale && item.effective_locale !== item.base_locale
-        });
-        
         const result = {
           id: item.id,
-          title: item.name, // This will already be the translated name from getCardsWithTranslations
+          title: item.name, // This will already be the translated name
           type: item.type as any,
           icon: metadata?.icon || item.icon || 'square',
           color: metadata?.color || item.color || 'primary',
@@ -79,14 +71,6 @@ export const cardsService = {
           ownerId: item.user_id, // Add ownerId for ownership checks
           user_id: item.user_id // Add user_id for ownership checks
         };
-        
-        console.log('[loadCards] Card tile created:', {
-          id: result.id,
-          title: result.title,
-          speech: result.speech,
-          base_locale: result.base_locale,
-          effective_locale: result.effective_locale
-        });
         
         return result;
       });
@@ -107,11 +91,11 @@ export const cardsService = {
       
       // Get current locale from i18n
       const { currentLocale } = useI18n();
-      const locale = currentLocale.value;
-      console.log('[loadAllCards] Loading ALL cards with locale:', locale, 'includeCurated:', includeCurated);
+      const effectiveLocale = currentLocale.value;
+      console.log('[loadAllCards] Loading ALL cards with locale:', effectiveLocale, 'includeCurated:', includeCurated);
       
       // Load ALL cards with translations for current locale
-      const items = await cardsSupabaseService.getAllCardsWithTranslations(userId, locale, includeCurated);
+      const items = await cardsSupabaseService.getAllCardsWithTranslations(userId, effectiveLocale, includeCurated);
       console.log('[loadAllCards] Total items loaded:', items.length);
       
       return items.map(item => {
@@ -146,10 +130,11 @@ export const cardsService = {
     }
   },
 
-  async hasChildren(parentId: string): Promise<boolean> {
-    // Check cache first
-    if (childrenCache.has(parentId)) {
-      return childrenCache.get(parentId)!;
+  async hasChildren(parentId: string, includeCurated = false): Promise<boolean> {
+    // Check cache first - use different cache keys for curated vs non-curated
+    const cacheKey = includeCurated ? `${parentId}_curated` : parentId;
+    if (childrenCache.has(cacheKey)) {
+      return childrenCache.get(cacheKey)!;
     }
     
     try {
@@ -159,11 +144,15 @@ export const cardsService = {
         return false;
       }
       
-      const children = await cardsSupabaseService.getCards(userId, parentId);
+      // Use getCardsWithCurated if includeCurated is true
+      const children = includeCurated 
+        ? await cardsSupabaseService.getCardsWithCurated(userId, parentId)
+        : await cardsSupabaseService.getCards(userId, parentId);
+      
       const hasChildren = children.length > 0;
       
       // Cache the result
-      childrenCache.set(parentId, hasChildren);
+      childrenCache.set(cacheKey, hasChildren);
       
       return hasChildren;
     } catch (error) {

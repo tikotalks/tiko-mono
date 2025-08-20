@@ -108,6 +108,56 @@ class CardsSupabaseService {
     }
   }
 
+  async getCardsWithCurated(userId: string, parentId?: string): Promise<CardItem[]> {
+    console.log('[getCardsWithCurated] Called with:', { userId, parentId });
+    
+    // Fetch user's own cards
+    const userParams = new URLSearchParams();
+    userParams.append('user_id', `eq.${userId}`);
+    userParams.append('app_name', 'eq.cards');
+    
+    if (parentId === undefined || parentId === null) {
+      userParams.append('parent_id', 'is.null');
+    } else {
+      userParams.append('parent_id', `eq.${parentId}`);
+    }
+    userParams.append('order', 'order_index.asc');
+    
+    // Fetch curated public cards for the same parent
+    const curatedParams = new URLSearchParams();
+    curatedParams.append('app_name', 'eq.cards');
+    curatedParams.append('is_public', 'eq.true');
+    curatedParams.append('is_curated', 'eq.true');
+    curatedParams.append('user_id', `neq.${userId}`); // Exclude user's own items
+    
+    if (parentId === undefined || parentId === null) {
+      curatedParams.append('parent_id', 'is.null');
+    } else {
+      curatedParams.append('parent_id', `eq.${parentId}`);
+    }
+    curatedParams.append('order', 'order_index.asc');
+    
+    try {
+      // Fetch both in parallel
+      const [userCards, curatedCards] = await Promise.all([
+        this.apiRequest<CardItem[]>(`items?${userParams.toString()}`),
+        this.apiRequest<CardItem[]>(`items?${curatedParams.toString()}`)
+      ]);
+      
+      console.log('[getCardsWithCurated] Found', userCards.length, 'user cards');
+      console.log('[getCardsWithCurated] Found', curatedCards.length, 'curated cards');
+      
+      // Combine and return all cards
+      const allCards = [...userCards, ...curatedCards];
+      console.log('[getCardsWithCurated] Total cards:', allCards.length);
+      
+      return allCards;
+    } catch (error) {
+      console.error('[getCardsWithCurated] Error fetching cards:', error);
+      throw error;
+    }
+  }
+
   async getAllCards(userId: string, includeCurated = false): Promise<CardItem[]> {
     // If includeCurated is true, we need to fetch both user's items and curated public items
     if (includeCurated) {
@@ -289,6 +339,62 @@ class CardsSupabaseService {
     });
     
     console.log('[getCardsWithTranslations] Final result:', result.map(c => ({ id: c.id, name: c.name, effective_locale: c.effective_locale })));
+    return result;
+  }
+
+  async getCardsWithCuratedAndTranslations(userId: string, parentId?: string, locale?: string): Promise<CardItem[]> {
+    console.log('[getCardsWithCuratedAndTranslations] Called with:', { userId, parentId, locale });
+    
+    // First get ALL cards (user + curated) for this parent
+    const cards = await this.getCardsWithCurated(userId, parentId);
+    console.log('[getCardsWithCuratedAndTranslations] Found cards:', cards.length);
+    
+    if (cards.length === 0) return cards;
+    
+    // Get translations for all cards
+    const cardIds = cards.map(c => c.id);
+    let translations: ItemTranslation[] = [];
+    
+    if (locale) {
+      // Try to get translations for the locale with fallback logic
+      const exactParams = new URLSearchParams();
+      exactParams.append('item_id', `in.(${cardIds.join(',')})`);
+      exactParams.append('locale', `eq.${locale}`);
+      
+      translations = await this.apiRequest<ItemTranslation[]>(`item_translations?${exactParams.toString()}`);
+      
+      // Try base language if no exact match
+      if (translations.length === 0 && locale.includes('-')) {
+        const baseLanguage = locale.split('-')[0];
+        const baseParams = new URLSearchParams();
+        baseParams.append('item_id', `in.(${cardIds.join(',')})`);
+        baseParams.append('locale', `eq.${baseLanguage}`);
+        
+        translations = await this.apiRequest<ItemTranslation[]>(`item_translations?${baseParams.toString()}`);
+      }
+    }
+    
+    // Map translations to cards
+    const translationMap = new Map<string, ItemTranslation>();
+    translations.forEach(t => {
+      translationMap.set(t.item_id, t);
+    });
+    
+    // Apply translations to cards
+    const result = cards.map(card => {
+      const translation = translationMap.get(card.id);
+      if (translation) {
+        return {
+          ...card,
+          name: translation.name || card.name,
+          content: translation.content || card.content,
+          effective_locale: translation.locale
+        };
+      }
+      return card;
+    });
+    
+    console.log('[getCardsWithCuratedAndTranslations] Returning', result.length, 'cards with translations');
     return result;
   }
 
