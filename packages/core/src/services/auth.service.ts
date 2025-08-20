@@ -323,7 +323,10 @@ export class ManualAuthService implements AuthService {
         body: JSON.stringify({
           email,
           password,
-          data: fullName ? { full_name: fullName } : undefined
+          data: fullName ? { full_name: fullName } : undefined,
+          options: {
+            emailRedirectTo: this.getAuthRedirectUrl()
+          }
         })
       })
 
@@ -347,7 +350,10 @@ export class ManualAuthService implements AuthService {
       const body = {
         email,
         create_user: true,
-        data: fullName ? { full_name: fullName } : undefined
+        data: fullName ? { full_name: fullName } : undefined,
+        options: {
+          emailRedirectTo: this.getAuthRedirectUrl()
+        }
       }
       
       console.log('[AuthService] Sending POST request to:', url)
@@ -884,6 +890,15 @@ export class ManualAuthService implements AuthService {
       created_at: supabaseUser.created_at || new Date().toISOString(),
       updated_at: supabaseUser.updated_at || new Date().toISOString()
     }
+  }
+
+  /**
+   * Get the authentication redirect URL based on environment
+   */
+  private getAuthRedirectUrl(): string {
+    // Use VITE_SITE_URL if available, otherwise fall back to current origin
+    const siteUrl = import.meta.env?.VITE_SITE_URL || window.location.origin
+    return `${siteUrl}/auth/callback`
   }
 
   /**

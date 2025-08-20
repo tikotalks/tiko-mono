@@ -20,6 +20,11 @@ interface CardItem {
   effective_locale?: string;
   created_at: string;
   updated_at: string;
+  // Public card fields
+  owner_id?: string;
+  is_public?: boolean;
+  is_curated?: boolean;
+  custom_index?: number; // From user_card_order join
 }
 
 class CardsSupabaseService {
@@ -389,13 +394,40 @@ class CardsSupabaseService {
   }
 
   async upsertItemTranslations(translations: Omit<ItemTranslation, 'id'>[]): Promise<ItemTranslation[]> {
-    return this.apiRequest<ItemTranslation[]>('item_translations', {
-      method: 'POST',
-      headers: {
-        'Prefer': 'resolution=merge-duplicates,return=representation'
-      },
-      body: JSON.stringify(translations)
+    // Use PATCH with upsert to handle duplicate key constraints
+    const promises = translations.map(async (translation) => {
+      const params = new URLSearchParams();
+      params.append('item_id', `eq.${translation.item_id}`);
+      params.append('locale', `eq.${translation.locale}`);
+      
+      // First try to update existing translation
+      const existingResponse = await this.apiRequest<ItemTranslation[]>(`item_translations?${params.toString()}`, {
+        method: 'PATCH',
+        headers: {
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({
+          name: translation.name,
+          content: translation.content
+        })
+      });
+      
+      // If no existing translation found, create new one
+      if (existingResponse.length === 0) {
+        const newResponse = await this.apiRequest<ItemTranslation[]>('item_translations', {
+          method: 'POST',
+          headers: {
+            'Prefer': 'return=representation'
+          },
+          body: JSON.stringify(translation)
+        });
+        return newResponse[0];
+      }
+      
+      return existingResponse[0];
     });
+    
+    return Promise.all(promises);
   }
   
   async upsertSingleTranslation(translation: Omit<ItemTranslation, 'id'>): Promise<ItemTranslation> {

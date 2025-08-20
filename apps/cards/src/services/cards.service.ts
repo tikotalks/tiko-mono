@@ -74,6 +74,10 @@ export const cardsService = {
           parentId: item.parent_id || undefined,
           base_locale: item.base_locale || 'en',
           effective_locale: item.effective_locale || item.base_locale || 'en',
+          isPublic: item.is_public || false,
+          isCurated: item.is_curated || false,
+          ownerId: item.user_id, // Add ownerId for ownership checks
+          user_id: item.user_id // Add user_id for ownership checks
         };
         
         console.log('[loadCards] Card tile created:', {
@@ -130,6 +134,10 @@ export const cardsService = {
           parentId: item.parent_id || undefined,
           base_locale: item.base_locale || 'en',
           effective_locale: item.effective_locale || item.base_locale || 'en',
+          isPublic: item.is_public || false,
+          isCurated: item.is_curated || false,
+          ownerId: item.user_id, // Add ownerId for ownership checks
+          user_id: item.user_id // Add user_id for ownership checks
         };
       });
     } catch (error) {
@@ -180,6 +188,8 @@ export const cardsService = {
         speech: card.speech,
       };
 
+      const isPublic = card.isPublic || false;
+      
       const itemData = {
         user_id: userId,
         app_name: APP_NAME,
@@ -192,6 +202,10 @@ export const cardsService = {
         color: card.color,
         order_index: index ?? card.index ?? 0,
         base_locale: card.base_locale,
+        is_public: isPublic,
+        // When making something non-public, also remove curated status
+        // since curated items should always be public
+        is_curated: isPublic ? undefined : false
       };
 
       let cardId: string;
@@ -200,6 +214,16 @@ export const cardsService = {
         // Update existing card
         await cardsSupabaseService.updateCard(card.id, itemData);
         cardId = card.id;
+        
+        // If this is a group being updated and public status changed, cascade to children
+        if (!parentId && typeof card.isPublic === 'boolean') {
+          try {
+            await this.updateGroupChildrenVisibility(cardId, userId, card.isPublic);
+          } catch (error) {
+            console.warn('Failed to update children visibility:', error);
+          }
+        }
+        
         // Clear cache for parent if card moved
         if (parentId) childrenCache.delete(parentId);
       } else {
@@ -215,13 +239,19 @@ export const cardsService = {
         const translationsToSave: Record<string, { name?: string; content?: string }> = {};
         
         translations.forEach(t => {
-          translationsToSave[t.locale] = {
-            name: t.name,
-            content: t.content
-          };
+          // Only include translations that have actual content
+          if (t.locale && (t.name || t.content)) {
+            translationsToSave[t.locale] = {
+              name: t.name,
+              content: t.content
+            };
+          }
         });
         
-        await ItemTranslationService.saveMultipleTranslations(cardId, translationsToSave);
+        // Only save if we have translations with content
+        if (Object.keys(translationsToSave).length > 0) {
+          await ItemTranslationService.saveMultipleTranslations(cardId, translationsToSave);
+        }
       }
       
       return cardId
@@ -300,5 +330,29 @@ export const cardsService = {
     }
     
     return path;
+  },
+
+  async updateGroupChildrenVisibility(groupId: string, userId: string, isPublic: boolean): Promise<void> {
+    try {
+      // Get all children of this group
+      const children = await cardsSupabaseService.getCards(userId, groupId);
+      
+      // Update each child's visibility
+      const updatePromises = children.map(child => 
+        cardsSupabaseService.updateCard(child.id, {
+          is_public: isPublic,
+          // When making items non-public, also remove curated status
+          is_curated: isPublic ? undefined : false
+        })
+      );
+      
+      await Promise.all(updatePromises);
+      
+      // Clear cache for this group
+      childrenCache.delete(groupId);
+    } catch (error) {
+      console.error('Failed to update children visibility:', error);
+      throw error;
+    }
   },
 };

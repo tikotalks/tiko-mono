@@ -11,6 +11,7 @@ export interface YesNoSettings {
   autoSpeak: boolean
   hapticFeedback: boolean
   showCuratedItems: boolean
+  hiddenItems: string[] // Array of item IDs that user has hidden
 }
 
 interface CardCacheEntry {
@@ -37,7 +38,8 @@ export const useCardStore = defineStore('yesno', () => {
     buttonSize: 'large',
     autoSpeak: true,
     hapticFeedback: true,
-    showCuratedItems: true
+    showCuratedItems: true,
+    hiddenItems: []
   }
 
   // Getters
@@ -120,7 +122,15 @@ export const useCardStore = defineStore('yesno', () => {
       const entry = cache.get(cacheKey)!
       if (isCacheValid(entry, locale || 'default')) {
         console.log(`[CardsStore] Returning cached cards for ${cacheKey}`)
-        return entry.cards
+        // Only filter out hidden items for ROOT level, not for children
+        if (!parentId) {
+          const hiddenItems = settings.value.hiddenItems || []
+          const filteredCards = entry.cards.filter(item => !hiddenItems.includes(item.id))
+          return filteredCards
+        } else {
+          // For children, return all items (don't filter)
+          return entry.cards
+        }
       }
     }
     
@@ -153,7 +163,15 @@ export const useCardStore = defineStore('yesno', () => {
       if (cache.has(cacheKey)) {
         const entry = cache.get(cacheKey)!
         if (isCacheValid(entry, locale || 'default')) {
-          return entry.cards
+          // Only filter out hidden items for ROOT level, not for children
+          if (!parentId) {
+            const hiddenItems = settings.value.hiddenItems || []
+            const filteredCards = entry.cards.filter(item => !hiddenItems.includes(item.id))
+            return filteredCards
+          } else {
+            // For children, return all items (don't filter)
+            return entry.cards
+          }
         }
       }
     }
@@ -195,7 +213,21 @@ export const useCardStore = defineStore('yesno', () => {
       cardCache.value = newCache
       
       console.log(`[CardsStore] Cached ${cards.length} cards for ${cacheKey}`)
-      return cards
+      
+      // Only filter out hidden items for ROOT level, not for children
+      if (!parentId) {
+        const hiddenItems = settings.value.hiddenItems || []
+        const filteredCards = cards.filter(item => !hiddenItems.includes(item.id))
+        
+        if (filteredCards.length !== cards.length) {
+          console.log(`[CardsStore] Filtered out ${cards.length - filteredCards.length} hidden items`)
+        }
+        
+        return filteredCards
+      } else {
+        // For children, return all items (don't filter)
+        return cards
+      }
     } finally {
       isLoadingCards.value = false
     }
@@ -300,7 +332,15 @@ export const useCardStore = defineStore('yesno', () => {
     const entry = cardCache.value.get(cacheKey)
     
     if (entry && isCacheValid(entry, locale || 'default')) {
-      return entry.cards
+      // Only filter out hidden items for ROOT level, not for children
+      if (!parentId) {
+        const hiddenItems = settings.value.hiddenItems || []
+        const filteredCards = entry.cards.filter(item => !hiddenItems.includes(item.id))
+        return filteredCards
+      } else {
+        // For children, return all items (don't filter)
+        return entry.cards
+      }
     }
     
     return undefined

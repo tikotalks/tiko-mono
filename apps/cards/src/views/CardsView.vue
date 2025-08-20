@@ -189,13 +189,20 @@ import CardForm from '../components/CardForm.vue';
 import GroupSelector from '../components/GroupSelector.vue';
 import BulkCardCreator from '../components/BulkCardCreator.vue';
 import AddCardsModal from '../components/AddCardsModal.vue';
-import type { TCardTile as CardTile } from '@tiko/ui';
 import { useEditMode } from '../composables/useEditMode';
 import { useSpeak, useEventBus, useAuthStore } from '@tiko/core';
 import { cardsService } from '../services/cards.service';
 import { ItemTranslationService } from '../services/item-translation.service';
 import type { ItemTranslation } from '../models/ItemTranslation.model';
 import { Icons } from 'open-icon';
+import type { TCardTile } from '@tiko/ui';
+
+// Extend TCardTile interface to include additional properties
+interface CardTile extends TCardTile {
+  ownerId?: string;
+  user_id?: string;
+  speak?: string;
+}
 
 const bemm = useBemm('cards-view');
 const route = useRoute();
@@ -469,8 +476,12 @@ const getCardContextMenu = (card: CardTile, index: number) => {
     }
   ];
 
-  // Only show edit actions if parent mode is unlocked
-  if (parentMode.isUnlocked.value) {
+  // Check ownership and curation status
+  const isOwner = card.ownerId === authStore.user?.id || card.user_id === authStore.user?.id;
+  const isCurated = card.isCurated || false;
+
+  // Show edit actions if user owns the item and parent mode is unlocked
+  if (isOwner && parentMode.isUnlocked.value) {
     items.push(
       {
         id: 'edit',
@@ -502,6 +513,26 @@ const getCardContextMenu = (card: CardTile, index: number) => {
     );
   }
 
+  // Show hide option for curated items (regardless of ownership)
+  if (isCurated) {
+    items.push({
+      id: 'hide',
+      label: t('cards.hideThisItem'),
+      icon: Icons.EYE_OFF,
+      action: () => hideItem(card.id)
+    });
+  }
+
+  // Show duplicate option for curated items that user doesn't own
+  if (isCurated && !isOwner) {
+    items.push({
+      id: 'duplicate',
+      label: t('cards.duplicateToEdit'),
+      icon: Icons.COPY,
+      action: () => duplicateItem(card)
+    });
+  }
+
   return items;
 };
 
@@ -525,6 +556,9 @@ const openCardEditForm = async (card: CardTile, index: number) => {
   
   // Calculate ownership
   const isOwner = isNewCard ? true : (card.ownerId === authStore.user?.id || card.user_id === authStore.user?.id);
+  
+  // Check if this is a top-level group (has children and no parent)
+  const isTopLevelGroup = !isNewCard && tilesWithChildren.value.has(card.id) && !card.parentId && !currentGroupId.value;
   
   // Define actions for the popup
   const actions = computed(() => [
@@ -560,7 +594,7 @@ const openCardEditForm = async (card: CardTile, index: number) => {
         index: index,
         hasChildren: tilesWithChildren.value.has(card.id),
         translations: translations,
-        showVisibilityToggle: true, // Always show for owned cards
+        showVisibilityToggle: isTopLevelGroup, // Only show for top-level groups
         isOwner: isOwner,
         onMounted: (instance: any) => {
           formComponentRef = instance;
@@ -591,7 +625,10 @@ const openCardEditForm = async (card: CardTile, index: number) => {
               popupService.close();
             } catch (error) {
               console.error('Failed to create card:', error);
-              toastService.error(t('cards.failedToCreateCard'));
+              toastService?.show({
+                message: t('cards.failedToCreateCard'),
+                type: 'error'
+              });
             } finally {
               isSaving.value = false;
             }
@@ -634,7 +671,10 @@ const openCardEditForm = async (card: CardTile, index: number) => {
               await yesNoStore.updateCardInCache(originalCard, currentGroupId.value, currentLocale.value);
               
               // Show error toast
-              toastService.error(t('cards.failedToSaveCard'));
+              toastService?.show({
+                message: t('cards.failedToSaveCard'),
+                type: 'error'
+              });
             } finally {
               isSaving.value = false;
             }
@@ -642,54 +682,7 @@ const openCardEditForm = async (card: CardTile, index: number) => {
         },
         onCancel: () => {
           popupService.close();
-        },
-        onDelete: async () => {
-          // Store original state for rollback
-          const originalCards = [...cards.value];
-          const originalHasChildren = tilesWithChildren.value.has(card.id);
-          const originalChildren = tileChildrenMap.value.get(card.id);
-          
-          try {
-            // Optimistic update - remove from UI immediately
-            cards.value = cards.value.filter(c => c.id !== card.id);
-            tilesWithChildren.value.delete(card.id);
-            tileChildrenMap.value.delete(card.id);
-            
-            // Remove from store cache
-            await yesNoStore.removeCardFromCache(card.id, currentGroupId.value, currentLocale.value);
-            
-            // Close popup immediately for better UX
-            popupService.close();
-            
-            // Delete from database in background
-            const success = await cardsService.deleteCard(card.id);
-            
-            if (!success) {
-              throw new Error('Failed to delete card');
-            }
-            
-            // Success - no need to do anything, UI is already updated
-            console.log('Card deleted successfully:', card.id);
-            
-          } catch (error) {
-            console.error('Failed to delete card:', error);
-            
-            // Rollback on failure
-            cards.value = originalCards;
-            if (originalHasChildren) {
-              tilesWithChildren.value.add(card.id);
-            }
-            if (originalChildren) {
-              tileChildrenMap.value.set(card.id, originalChildren);
-            }
-            
-            // Re-add to cache
-            await yesNoStore.updateCardInCache(card, currentGroupId.value, currentLocale.value);
-            
-            // Show error toast
-            toastService.error(t('cards.failedToDeleteCard'));
-          }
-        },
+        }
       },
     });
 };
@@ -742,8 +735,94 @@ const confirmDeleteCard = async (card: CardTile) => {
       await yesNoStore.updateCardInCache(card, currentGroupId.value, currentLocale.value);
       
       // Show error toast
-      toastService.error(t('cards.failedToDeleteCard'));
+      toastService?.show({
+        message: t('cards.failedToDeleteCard'),
+        type: 'error'
+      });
     }
+  }
+};
+
+// Hide item from user's view
+const hideItem = async (itemId: string) => {
+  try {
+    const currentSettings = yesNoStore.settings;
+    const hiddenItems = [...(currentSettings.hiddenItems || []), itemId];
+    
+    await yesNoStore.updateSettings({ hiddenItems });
+    
+    // Remove from current view
+    cards.value = cards.value.filter(c => c.id !== itemId);
+    
+    toastService?.show({
+      message: t('cards.itemHidden'),
+      type: 'success'
+    });
+    popupService.close();
+  } catch (error) {
+    console.error('Failed to hide item:', error);
+    toastService?.show({
+      message: 'Failed to hide item',
+      type: 'error'
+    });
+  }
+};
+
+// Duplicate item and mark original as hidden
+const duplicateItem = async (originalCard: CardTile) => {
+  try {
+    // Create the duplicate with reference to original
+    const duplicateData = {
+      title: `${originalCard.title} (Copy)`,
+      color: originalCard.color,
+      image: originalCard.image,
+      speech: originalCard.speech,
+      isPublic: false, // Duplicated items are private by default
+      type: originalCard.type,
+      parentId: originalCard.parentId
+    };
+
+    // Create the duplicate card
+    const cardId = await cardsService.saveCard(duplicateData, originalCard.parentId, originalCard.index);
+
+    if (cardId) {
+      // Hide the original item
+      const currentSettings = yesNoStore.settings;
+      const hiddenItems = [...(currentSettings.hiddenItems || []), originalCard.id];
+      await yesNoStore.updateSettings({ hiddenItems });
+
+      // Remove original from view and add duplicate
+      cards.value = cards.value.filter(c => c.id !== originalCard.id);
+
+      const newCard: CardTile = {
+        id: cardId,
+        title: duplicateData.title,
+        color: duplicateData.color,
+        image: duplicateData.image || '',
+        speech: duplicateData.speech || '',
+        type: duplicateData.type as any,
+        index: originalCard.index,
+        parentId: originalCard.parentId,
+        isPublic: false,
+        isCurated: false,
+        ownerId: authStore.user?.id,
+        user_id: authStore.user?.id
+      };
+
+      cards.value.push(newCard);
+
+      toastService?.show({
+        message: t('cards.itemDuplicated'),
+        type: 'success'
+      });
+      popupService.close();
+    }
+  } catch (error) {
+    console.error('Failed to duplicate item:', error);
+    toastService?.show({
+      message: 'Failed to duplicate item',
+      type: 'error'
+    });
   }
 };
 
@@ -1090,7 +1169,10 @@ const moveSelectedToGroup = async () => {
     console.log('[CardsView] Selected cards:', selectedCards.length);
 
     if (selectedCards.length === 0) {
-      alert('No cards selected');
+      toastService?.show({
+        message: 'No cards selected',
+        type: 'warning'
+      });
       return;
     }
 
@@ -1202,7 +1284,10 @@ const moveSelectedToGroup = async () => {
           await navigateToTile(group);
         } catch (error) {
           console.error('Failed to move cards:', error);
-          alert('Failed to move cards. Please try again.');
+          toastService?.show({
+            message: 'Failed to move cards. Please try again.',
+            type: 'error'
+          });
         }
       },
       onCancel: () => {
@@ -1212,7 +1297,10 @@ const moveSelectedToGroup = async () => {
   });
   } catch (error) {
     console.error('[CardsView] Error in moveSelectedToGroup:', error);
-    alert('Failed to load groups. Please try again.');
+    toastService?.show({
+      message: 'Failed to load groups. Please try again.',
+      type: 'error'
+    });
   }
 };
 
@@ -1245,7 +1333,10 @@ const changeSelectedColor = () => {
           popupService.close();
         } catch (error) {
           console.error('Failed to update colors:', error);
-          alert('Failed to update colors. Please try again.');
+          toastService?.show({
+            message: 'Failed to update colors. Please try again.',
+            type: 'error'
+          });
         }
       }
     }
@@ -1285,7 +1376,10 @@ const deleteSelectedCards = async () => {
     clearSelection();
   } catch (error) {
     console.error('Failed to delete cards:', error);
-    alert('Failed to delete some cards. Please try again.');
+    toastService?.show({
+      message: 'Failed to delete some cards. Please try again.',
+      type: 'error'
+    });
   }
 };
 
@@ -1406,7 +1500,10 @@ const openBulkAddMode = () => {
           popupService.close();
         } catch (error) {
           console.error('Failed to create cards:', error);
-          alert('Failed to create some cards. Please try again.');
+          toastService?.show({
+            message: 'Failed to create some cards. Please try again.',
+            type: 'error'
+          });
         }
       }
     }

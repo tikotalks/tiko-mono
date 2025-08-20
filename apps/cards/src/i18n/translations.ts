@@ -18,5 +18,10 @@ export const cardTranslations = {
     'cards.errorGeneratingTranslations': 'Error generating translations',
     'cards.allLanguagesTranslated': 'All languages already have translations',
     'cards.manageTranslations': 'Manage Translations',
+    'cards.hideThisItem': 'Hide this item',
+    'cards.duplicateToEdit': 'Duplicate to edit',
+    'cards.itemHidden': 'Item hidden from view',
+    'cards.itemDuplicated': 'Item duplicated successfully',
+    'cards.createCard': 'Create Card',
   }
 };

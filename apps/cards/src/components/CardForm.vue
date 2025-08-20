@@ -288,6 +288,11 @@ const isOwner = computed(() => {
   return props.isOwner !== undefined ? props.isOwner : true;
 });
 
+// Check if we should show visibility toggle
+const showVisibilityToggle = computed(() => {
+  return props.showVisibilityToggle !== undefined ? props.showVisibilityToggle : false;
+});
+
 const handleSubmit = () => {
   if (!isValid.value) return;
 
