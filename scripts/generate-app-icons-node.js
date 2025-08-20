@@ -120,18 +120,32 @@ async function loadTikoConfig(appPath) {
   const configContent = await fs.readFile(configPath, 'utf-8');
   
   // Simple regex parsing for the config values we need
+  // Try new format first (icon, primary in theme, name)
+  const iconMatch = configContent.match(/icon:\s*['"]([^'"]+)['"]/);
+  const nameMatch = configContent.match(/name:\s*['"]([^'"]+)['"]/);
+  const primaryColorMatch = configContent.match(/primary:\s*['"]([^'"]+)['"]|primary:\s*BaseColors\.([A-Z]+)/);
+  
+  // Fallback to old format
   const appIconMatch = configContent.match(/appIcon:\s*['"]([^'"]+)['"]/);
-  const primaryColorMatch = configContent.match(/primary:\s*['"]([^'"]+)['"]/);
   const appNameMatch = configContent.match(/appName:\s*['"]([^'"]+)['"]/);
   
-  if (!appIconMatch || !primaryColorMatch) {
-    throw new Error('Could not parse appIcon or primary color from tiko.config.ts');
+  const appIcon = iconMatch?.[1] || appIconMatch?.[1];
+  const appName = nameMatch?.[1] || appNameMatch?.[1] || 'App';
+  let primaryColor = null;
+  
+  if (primaryColorMatch) {
+    // Handle both direct color values and BaseColors references
+    primaryColor = primaryColorMatch[1] || primaryColorMatch[2]?.toLowerCase();
+  }
+  
+  if (!appIcon || !primaryColor) {
+    throw new Error('Could not parse icon or primary color from tiko.config.ts');
   }
   
   return {
-    appIcon: appIconMatch[1],
-    primaryColor: primaryColorMatch[1],
-    appName: appNameMatch ? appNameMatch[1] : 'App'
+    appIcon,
+    primaryColor,
+    appName
   };
 }
 
@@ -383,13 +397,26 @@ async function main() {
   let appPaths = [];
   
   if (specificApp) {
-    // Generate for specific app
-    const appPath = path.join(process.cwd(), 'apps', specificApp);
-    if (!fs.existsSync(appPath)) {
-      console.error(`App "${specificApp}" not found at ${appPath}`);
+    // Generate for specific app - check in apps, tools, and websites directories
+    const possiblePaths = [
+      path.join(process.cwd(), 'apps', specificApp),
+      path.join(process.cwd(), 'tools', specificApp),
+      path.join(process.cwd(), 'websites', specificApp)
+    ];
+    
+    let foundPath = null;
+    for (const possiblePath of possiblePaths) {
+      if (fs.existsSync(path.join(possiblePath, 'tiko.config.ts'))) {
+        foundPath = possiblePath;
+        break;
+      }
+    }
+    
+    if (!foundPath) {
+      console.error(`App "${specificApp}" not found in apps/, tools/, or websites/ directories`);
       process.exit(1);
     }
-    appPaths = [appPath];
+    appPaths = [foundPath];
   } else {
     // Generate for all apps
     const appsDir = path.join(process.cwd(), 'apps');
