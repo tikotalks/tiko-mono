@@ -1,34 +1,50 @@
 <template>
   <div :class="bemm()">
+    <!-- Button Size -->
     <div :class="bemm('group')">
+      <label :class="bemm('label')">{{ t('yesno.buttonSize') }}</label>
       <TInputSelect v-model="localSettings.buttonSize" :options="[
         {
-          label: t(keys.yesno.small),
+          label: t('yesno.small'),
           value: 'small'
         },
         {
-          label: t(keys.yesno.medium),
+          label: t('yesno.medium'),
           value: 'medium'
         },
         {
-          label: t(keys.yesno.large),
+          label: t('yesno.large'),
           value: 'large'
         }
       ]">
       </TInputSelect>
-      <!-- <label :class="bemm('label')">{{ t(keys.yesno.buttonSize) }}</label>
-      <select  :class="bemm('select')">
-        <option value="small">{{ t(keys.yesno.small) }}</option>
-        <option value="medium">{{ t(keys.yesno.medium) }}</option>
-        <option value="large">{{ t(keys.yesno.large) }}</option>
-      </select> -->
+    </div>
+
+    <!-- Button Style -->
+    <div :class="bemm('group')">
+      <label :class="bemm('label')">Button Style</label>
+      <TInputSelect v-model="localSettings.buttonStyle" :options="[
+        {
+          label: 'Text (Yes/No)',
+          value: 'text'
+        },
+        {
+          label: 'Icons',
+          value: 'icons'
+        },
+        {
+          label: 'Hands',
+          value: 'hands'
+        }
+      ]">
+      </TInputSelect>
     </div>
 
     <div :class="bemm('group')">
 
       <TInputCheckbox
         v-model="localSettings.autoSpeak"
-        :label="t(keys.yesno.autoSpeakAnswers)"
+        :label="t('yesno.autoSpeakAnswers')"
         :class="bemm('checkbox')"
       />
     </div>
@@ -36,7 +52,7 @@
     <div :class="bemm('group')">
       <TInputCheckbox
         v-model="localSettings.hapticFeedback"
-        :label="t(keys.yesno.hapticFeedback)"
+        :label="t('yesno.hapticFeedback')"
         :class="bemm('checkbox')"
       />
     </div>
@@ -50,6 +66,7 @@ import { TButton, TInputSelect, TInputCheckbox, useI18n } from '@tiko/ui'
 
 interface YesNoSettings {
   buttonSize: 'small' | 'medium' | 'large'
+  buttonStyle: 'hands' | 'icons' | 'text'
   autoSpeak: boolean
   hapticFeedback: boolean
 }
@@ -65,7 +82,7 @@ const emit = defineEmits<{
 }>()
 
 const bemm = useBemm('yes-no-settings-form')
-const { t, keys } = useI18n()
+const { t } = useI18n()
 
 // Local state
 const localSettings = reactive({ ...props.settings })
@@ -77,7 +94,7 @@ const handleApply = () => {
 }
 
 // Add title and actions
-const title = t(keys.common.settings)
+const title = t('common.settings')
 
 // Watch for changes and call onApply
 watch(localSettings, () => {

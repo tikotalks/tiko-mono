@@ -1,9 +1,45 @@
 #!/usr/bin/env node
-import { Canvas, createCanvas, loadImage } from 'canvas';
+import { createCanvas, loadImage } from 'canvas';
 import fs from 'fs-extra';
 import path from 'path';
 import { glob } from 'glob';
-import sharp from 'sharp';
+import https from 'https';
+
+// Use native fetch if available (Node 18+), otherwise use https module
+async function fetch(url: string, options: any = {}): Promise<any> {
+  if (typeof globalThis.fetch !== 'undefined') {
+    return globalThis.fetch(url, options);
+  }
+  
+  // Fallback to https module for older Node versions
+  return new Promise((resolve, reject) => {
+    const parsedUrl = new URL(url);
+    const reqOptions = {
+      hostname: parsedUrl.hostname,
+      path: parsedUrl.pathname + parsedUrl.search,
+      method: options.method || 'GET',
+      headers: options.headers || {}
+    };
+    
+    const req = https.request(reqOptions, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        resolve({
+          ok: res.statusCode >= 200 && res.statusCode < 300,
+          status: res.statusCode,
+          statusText: res.statusMessage,
+          json: async () => JSON.parse(data),
+          text: async () => data
+        });
+      });
+    });
+    
+    req.on('error', reject);
+    if (options.body) req.write(options.body);
+    req.end();
+  });
+}
 
 // Icon sizes configuration
 const ICON_SIZES = {
@@ -19,6 +55,12 @@ interface IconConfig {
   type: 'favicon' | 'apple' | 'android' | 'pwa' | 'general';
   filename: string;
   rounded: boolean;
+}
+
+interface AppConfig {
+  appIcon: string;
+  primaryColor: string;
+  appName: string;
 }
 
 // Get all icon configurations
@@ -79,53 +121,91 @@ function getIconConfigs(): IconConfig[] {
 }
 
 // Load Tiko config
-async function loadTikoConfig(appPath: string) {
+async function loadTikoConfig(appPath: string): Promise<AppConfig> {
   const configPath = path.join(appPath, 'tiko.config.ts');
   
   if (!fs.existsSync(configPath)) {
     throw new Error(`No tiko.config.ts found at ${configPath}`);
   }
   
-  // We need to use a different approach since we can't directly import TS files
   // Read the file and extract the config
   const configContent = await fs.readFile(configPath, 'utf-8');
   
   // Simple regex parsing for the config values we need
-  const appIconMatch = configContent.match(/appIcon:\s*['"]([^'"]+)['"]/);
-  const primaryColorMatch = configContent.match(/primary:\s*['"]([^'"]+)['"]/);
+  // Try new format first (icon.mediaId, icon.color, name)
+  const iconMediaIdMatch = configContent.match(/mediaId:\s*['"]([^'"]+)['"]/);
+  const iconColorMatch = configContent.match(/color:\s*['"]([^'"]+)['"]|color:\s*BaseColors\.([A-Z]+)/);
+  const nameMatch = configContent.match(/name:\s*['"]([^'"]+)['"]/);
   
-  if (!appIconMatch || !primaryColorMatch) {
-    throw new Error('Could not parse appIcon or primary color from tiko.config.ts');
+  // Fallback to old format
+  const iconMatch = configContent.match(/icon:\s*['"]([^'"]+)['"]/);
+  const primaryColorMatch = configContent.match(/primary:\s*['"]([^'"]+)['"]|primary:\s*BaseColors\.([A-Z]+)/);
+  const appIconMatch = configContent.match(/appIcon:\s*['"]([^'"]+)['"]/);
+  const appNameMatch = configContent.match(/appName:\s*['"]([^'"]+)['"]/);
+  
+  const appIcon = iconMediaIdMatch?.[1] || iconMatch?.[1] || appIconMatch?.[1];
+  const appName = nameMatch?.[1] || appNameMatch?.[1] || 'App';
+  let primaryColor: string | null = null;
+  
+  if (iconColorMatch) {
+    // Handle both direct color values and BaseColors references from icon.color
+    primaryColor = iconColorMatch[1] || iconColorMatch[2]?.toLowerCase();
+  } else if (primaryColorMatch) {
+    // Fallback to theme.primary
+    primaryColor = primaryColorMatch[1] || primaryColorMatch[2]?.toLowerCase();
+  }
+  
+  if (!appIcon || !primaryColor) {
+    throw new Error('Could not parse icon or primary color from tiko.config.ts');
   }
   
   return {
-    appIcon: appIconMatch[1],
-    primaryColor: primaryColorMatch[1]
+    appIcon,
+    primaryColor,
+    appName
   };
 }
 
-// Convert color names to hex
+// Convert color names to hex using Tiko UI color values
 function getColorHex(colorName: string): string {
+  // These values are from packages/ui/src/types/color.ts
   const colors: Record<string, string> = {
-    red: '#ef4444',
-    orange: '#f97316',
-    amber: '#f59e0b',
-    yellow: '#eab308',
-    lime: '#84cc16',
-    green: '#22c55e',
-    emerald: '#10b981',
-    teal: '#14b8a6',
-    cyan: '#06b6d4',
-    sky: '#0ea5e9',
-    blue: '#3b82f6',
-    indigo: '#6366f1',
-    violet: '#8b5cf6',
-    purple: '#a855f7',
-    fuchsia: '#d946ef',
-    pink: '#ec4899',
-    rose: '#f43f5e'
+    'purple': "#9049ce",
+    'blue': "#7bcdff",
+    'navy': "#2217bc",
+    'royal-blue': "#146bee",
+    'dark-blue': "#220d5c",
+    'green': "#4fcf4f",
+    'lime': "#8aff84",
+    'yellow': "#ffc94b",
+    'orange': "#f6883a",
+    'maroon': "#b04f4f",
+    'olive': "#b0b04f",
+    'sand': "#e2d699",
+    'charcoal': "#333333",
+    'peach': "#ffb3a7",
+    'teal': "#4fb0b0",
+    'blue-gray': "#4f4fb0",
+    'blue-green': "#4fb04f",
+    'red': "#ff4d5e",
+    'pink': "#ea7f9a",
+    'brown': "#4f332d",
+    'gray': "#b0b0b0",
+    'black': "#111111",
+    'white': "#ffffff",
+    'turquoise': "#63d4c7",
+    'cyan': "#baf0ff",
+    'indigo': "#571ab4",
+    'violet': "#dfbaff",
+    'magenta': "#e524b5",
+    'rose': "#ff7dff",
+    'coral': "#ff7d7d",
+    'gold': "#ffd700",
+    'silver': "#c0c0c0",
+    'bronze': "#cd7f32"
   };
   
+  // Return the color if found, otherwise assume it's already a hex value
   return colors[colorName] || colorName;
 }
 
@@ -149,7 +229,7 @@ async function createIcon(
   
   // Fill background with gradient
   if (rounded) {
-    const radius = size * 0.15; // 15% corner radius
+    const radius = size * 0.45; // 45% corner radius (3x more rounded)
     roundRect(ctx, 0, 0, size, size, radius);
     ctx.fillStyle = gradient;
     ctx.fill();
@@ -162,11 +242,11 @@ async function createIcon(
     // Load and draw the icon image
     const image = await loadImage(imageUrl);
     
-    // Calculate 80% size
-    const iconSize = size * 0.8;
-    const offset = size * 0.1;
+    // Use full size (100%)
+    const iconSize = size;
+    const offset = 0;
     
-    // Draw image centered
+    // Draw image centered at full size
     ctx.drawImage(
       image,
       offset,
@@ -223,12 +303,8 @@ function adjustBrightness(hex: string, percent: number): string {
     .toString(16).slice(1);
 }
 
-// Resolve image URL using Tiko's image resolver
+// Resolve image URL using Tiko's image resolver logic
 async function resolveImageUrl(imageId: string): Promise<string> {
-  // For now, we'll use a placeholder approach
-  // In production, this would use the actual image resolver
-  const baseUrl = process.env.VITE_SUPABASE_URL || 'https://tikoapi.com';
-  
   // Check if it's already a full URL
   if (imageId.startsWith('http')) {
     return imageId;
@@ -239,31 +315,141 @@ async function resolveImageUrl(imageId: string): Promise<string> {
     return `file://${path.resolve(imageId)}`;
   }
   
-  // Otherwise, assume it's a media ID
-  return `${baseUrl}/storage/v1/object/public/media/${imageId}`;
+  // If it's a UUID, fetch the media entry from Supabase
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(imageId)) {
+    const API_URL = 'https://kejvhvszhevfwgsztedf.supabase.co/rest/v1';
+    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlanZodnN6aGV2Zndnc3p0ZWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4ODg2MTIsImV4cCI6MjA2NzQ2NDYxMn0.xUYXxNodJTpTwChlKbuBSojVJqX9CDW87aVISEUc2rE';
+    
+    try {
+      console.log(`  Fetching media info for UUID: ${imageId}`);
+      
+      const response = await fetch(`${API_URL}/media?select=*&id=eq.${imageId}`, {
+        headers: {
+          'apikey': ANON_KEY,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch media info: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      if (!data || data.length === 0) {
+        throw new Error(`Media not found for ID: ${imageId}`);
+      }
+      
+      const media = data[0];
+      if (!media.original_url) {
+        throw new Error(`No original_url found for media ID: ${imageId}`);
+      }
+      
+      console.log(`  Found media URL: ${media.original_url}`);
+      return media.original_url;
+    } catch (error) {
+      console.error(`  Failed to resolve media URL: ${error.message}`);
+      // Fallback to direct storage URL
+      return `https://xqjibuvlhfisvgvwgfbn.supabase.co/storage/v1/object/public/media/${imageId}`;
+    }
+  }
+  
+  // Otherwise assume it's a named icon in the default Supabase
+  return `https://xqjibuvlhfisvgvwgfbn.supabase.co/storage/v1/object/public/media/icons/${imageId}.png`;
+}
+
+// Update index.html with proper favicon references
+async function updateIndexHtml(appPath: string, appName: string) {
+  const indexHtmlPath = path.join(appPath, 'index.html');
+  
+  if (!fs.existsSync(indexHtmlPath)) {
+    console.log('  No index.html found, skipping favicon link updates');
+    return;
+  }
+  
+  let htmlContent = await fs.readFile(indexHtmlPath, 'utf-8');
+  
+  // Define the new favicon links
+  const faviconLinks = `    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48x48.png" />
+    <link rel="shortcut icon" href="/favicon.ico" />`;
+    
+  const appleIconLinks = `    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-touch-icon-57x57.png" />
+    <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-touch-icon-60x60.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-touch-icon-72x72.png" />
+    <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-touch-icon-76x76.png" />
+    <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-touch-icon-114x114.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-touch-icon-120x120.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-touch-icon-144x144.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-touch-icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon-180x180.png" />`;
+  
+  // Remove existing favicon and apple-touch-icon links
+  htmlContent = htmlContent.replace(/\s*<!--\s*Favicons?\s*-->[\s\S]*?(?=\s*<meta|\s*<title|\s*<!--|\s*<link(?!\s+rel="(?:icon|shortcut icon|apple-touch-icon))|\s*<\/head>)/i, '');
+  htmlContent = htmlContent.replace(/\s*<!--\s*Apple Touch Icons?\s*-->[\s\S]*?(?=\s*<meta|\s*<title|\s*<!--|\s*<link(?!\s+rel="apple-touch-icon)|\s*<\/head>)/i, '');
+  htmlContent = htmlContent.replace(/\s*<link[^>]*rel=["'](?:icon|shortcut icon|apple-touch-icon)[^>]*>/gi, '');
+  
+  // Find the head section and add favicon links after charset
+  const charsetMatch = htmlContent.match(/(<meta charset="[^"]*"\s*\/>)/i);
+  if (charsetMatch) {
+    const newContent = htmlContent.replace(charsetMatch[1], `${charsetMatch[1]}\n${faviconLinks}`);
+    htmlContent = newContent;
+  } else {
+    // Fallback: add after <head>
+    htmlContent = htmlContent.replace(/(<head[^>]*>)/i, `$1\n${faviconLinks}`);
+  }
+  
+  // Add Apple touch icons after PWA meta tags or before closing head
+  if (htmlContent.includes('<meta name="apple-mobile-web-app-')) {
+    // Find the last apple-mobile-web-app meta tag and add after it
+    const lastAppleMetaMatch = htmlContent.match(/(<meta name="apple-mobile-web-app-[^"]*"[^>]*>)/gi);
+    if (lastAppleMetaMatch) {
+      const lastAppleMeta = lastAppleMetaMatch[lastAppleMetaMatch.length - 1];
+      htmlContent = htmlContent.replace(lastAppleMeta, `${lastAppleMeta}\n    \n${appleIconLinks}`);
+    }
+  } else {
+    // Add before Open Graph or Accessibility section, or before closing head tag
+    if (htmlContent.includes('<!-- Open Graph -->')) {
+      htmlContent = htmlContent.replace(/(<!-- Open Graph -->)/i, `${appleIconLinks}\n    \n    $1`);
+    } else if (htmlContent.includes('<!-- Accessibility -->')) {
+      htmlContent = htmlContent.replace(/(<!-- Accessibility -->)/i, `${appleIconLinks}\n    \n    $1`);
+    } else {
+      htmlContent = htmlContent.replace(/(\s*<\/head>)/i, `\n${appleIconLinks}\n$1`);
+    }
+  }
+  
+  await fs.writeFile(indexHtmlPath, htmlContent);
+  console.log('  ✅ Updated index.html with favicon links');
 }
 
 // Generate icons for a specific app
 async function generateAppIcons(appPath: string) {
-  console.log(`Generating icons for ${appPath}...`);
+  console.log(`\nGenerating icons for ${path.basename(appPath)}...`);
   
   try {
     // Load config
     const config = await loadTikoConfig(appPath);
-    console.log(`Config loaded:`, config);
+    console.log(`  App: ${config.appName}`);
+    console.log(`  Icon: ${config.appIcon}`);
+    console.log(`  Color: ${config.primaryColor}`);
     
     // Resolve image URL
     const imageUrl = await resolveImageUrl(config.appIcon);
-    console.log(`Image URL resolved: ${imageUrl}`);
+    console.log(`  Image URL: ${imageUrl}`);
     
-    // Create public directory if it doesn't exist
+    // Create public/icons directory if it doesn't exist
     const publicDir = path.join(appPath, 'public');
-    await fs.ensureDir(publicDir);
+    const iconsDir = path.join(publicDir, 'icons');
+    await fs.ensureDir(iconsDir);
     
     // Generate each icon size
     const configs = getIconConfigs();
+    let generated = 0;
+    
     for (const iconConfig of configs) {
-      console.log(`Generating ${iconConfig.filename}...`);
+      process.stdout.write(`\r  Generating icons... ${++generated}/${configs.length}`);
       
       const iconBuffer = await createIcon(
         imageUrl,
@@ -272,12 +458,11 @@ async function generateAppIcons(appPath: string) {
         iconConfig.rounded
       );
       
-      const outputPath = path.join(publicDir, iconConfig.filename);
+      const outputPath = path.join(iconsDir, iconConfig.filename);
       await fs.writeFile(outputPath, iconBuffer);
     }
     
     // Generate favicon.ico with multiple sizes
-    console.log('Generating favicon.ico...');
     const faviconSizes = [16, 32, 48];
     const faviconBuffers = await Promise.all(
       faviconSizes.map(size => 
@@ -285,13 +470,19 @@ async function generateAppIcons(appPath: string) {
       )
     );
     
-    // For favicon.ico, we'll just use the 32x32 version
-    const faviconPath = path.join(publicDir, 'favicon.ico');
-    await fs.writeFile(faviconPath, faviconBuffers[1]);
+    // For favicon.ico, we'll put it in both locations for compatibility
+    // One in public/icons/ and one in public/ root
+    const faviconIconsPath = path.join(iconsDir, 'favicon.ico');
+    const faviconRootPath = path.join(publicDir, 'favicon.ico');
+    await fs.writeFile(faviconIconsPath, faviconBuffers[1]);
+    await fs.writeFile(faviconRootPath, faviconBuffers[1]);
     
-    console.log(`✅ Icons generated successfully for ${path.basename(appPath)}`);
+    console.log(`\n  ✅ ${configs.length + 1} icons generated successfully!`);
+    
+    // Update index.html with proper favicon links
+    await updateIndexHtml(appPath, config.appName);
   } catch (error) {
-    console.error(`❌ Error generating icons for ${appPath}:`, error);
+    console.error(`\n  ❌ Error: ${error.message}`);
   }
 }
 
@@ -300,16 +491,31 @@ async function main() {
   const args = process.argv.slice(2);
   const specificApp = args[0];
   
+  console.log('🎨 Tiko App Icon Generator\n');
+  
   let appPaths: string[] = [];
   
   if (specificApp) {
-    // Generate for specific app
-    const appPath = path.join(process.cwd(), 'apps', specificApp);
-    if (!fs.existsSync(appPath)) {
-      console.error(`App "${specificApp}" not found at ${appPath}`);
+    // Generate for specific app - check in apps, tools, and websites directories
+    const possiblePaths = [
+      path.join(process.cwd(), 'apps', specificApp),
+      path.join(process.cwd(), 'tools', specificApp),
+      path.join(process.cwd(), 'websites', specificApp)
+    ];
+    
+    let foundPath: string | null = null;
+    for (const possiblePath of possiblePaths) {
+      if (fs.existsSync(path.join(possiblePath, 'tiko.config.ts'))) {
+        foundPath = possiblePath;
+        break;
+      }
+    }
+    
+    if (!foundPath) {
+      console.error(`App "${specificApp}" not found in apps/, tools/, or websites/ directories`);
       process.exit(1);
     }
-    appPaths = [appPath];
+    appPaths = [foundPath];
   } else {
     // Generate for all apps
     const appsDir = path.join(process.cwd(), 'apps');
@@ -322,6 +528,13 @@ async function main() {
       const websites = await glob('*/tiko.config.ts', { cwd: websitesDir });
       appPaths.push(...websites.map(site => path.join(websitesDir, path.dirname(site))));
     }
+    
+    // Also check tools
+    const toolsDir = path.join(process.cwd(), 'tools');
+    if (fs.existsSync(toolsDir)) {
+      const tools = await glob('*/tiko.config.ts', { cwd: toolsDir });
+      appPaths.push(...tools.map(tool => path.join(toolsDir, path.dirname(tool))));
+    }
   }
   
   console.log(`Found ${appPaths.length} app(s) to process`);
@@ -330,7 +543,7 @@ async function main() {
     await generateAppIcons(appPath);
   }
   
-  console.log('\n✨ All done!');
+  console.log('\n✨ All done!\n');
 }
 
 // Run the script

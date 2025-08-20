@@ -40,7 +40,7 @@
       :content="tooltip"
       :position="'top'"
       :disabled="!tooltip"
-      :delay=".5"
+      :delay="tooltipSettings.delay"
       :max-width="'200px'"
     >
        {{tooltip}}
@@ -55,6 +55,7 @@ import { useI18n } from '../../../composables/useI18n'
 import TIcon from '../TIcon/TIcon.vue'
 import { ButtonType, ButtonSize, ButtonColor, ButtonStatus, type TButtonProps } from './TButton.model'
 import TToolTip from '../../feedback/TToolTip/TToolTip.vue'
+import { ToolTipPosition } from '../../feedback/TToolTip'
 
 const props = withDefaults(defineProps<TButtonProps>(), {
   icon: '',
@@ -68,6 +69,10 @@ const props = withDefaults(defineProps<TButtonProps>(), {
   href: undefined,
   element: 'button',
   tooltip: '',
+  tooltipSettings: {
+    position: ToolTipPosition.TOP,
+    delay: .5
+  },
   shadow: false,
   htmlButtonType: 'auto',
   hideLabel: 'none',

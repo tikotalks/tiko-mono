@@ -1,15 +1,15 @@
 <template>
   <div :class="bemm()">
     <div :class="bemm('header')">
-      <h3 :class="bemm('title')">{{ t(keys.yesno.setQuestion) }}</h3>
-      <p :class="bemm('subtitle')">{{ t(keys.yesno.typeYourQuestionOrSelect) }}</p>
+      <h3 :class="bemm('title')">{{ t('yesno.setQuestion') }}</h3>
+      <p :class="bemm('subtitle')">{{ t('yesno.typeYourQuestionOrSelect') }}</p>
     </div>
 
     <div :class="bemm('content')">
       <div :class="bemm('form')">
       <TInputTextArea
         v-model="inputQuestion"
-        :placeholder="t(keys.yesno.typeYourQuestionPlaceholder)"
+        :placeholder="t('yesno.typeYourQuestionPlaceholder')"
         :rows="3"
         :maxlength="200"
         @keydown.enter.prevent="handleSubmit"
@@ -18,7 +18,7 @@
     </div>
 
     <div v-if="recentQuestionItems.length > 0" :class="bemm('recent')">
-      <h4 :class="bemm('recent-title')">{{ t(keys.yesno.recentQuestions) }}</h4>
+      <h4 :class="bemm('recent-title')">{{ t('yesno.recentQuestions') }}</h4>
 
       <div :class="bemm('recent-list')">
         <div
@@ -36,7 +36,7 @@
               :class="bemm('recent-item-favorite', ['', item.is_favorite ? 'active' : ''])"
               :color="item.is_favorite ? 'primary' : 'secondary'"
               @click.stop="() => { console.log('Favorite clicked for', item.id); yesNoStore.toggleFavorite(item.id) }"
-              :aria-label="item.is_favorite ? t(keys.yesno.removeFromFavorites) : t(keys.yesno.addToFavorites)"
+              :aria-label="item.is_favorite ? t('yesno.removeFromFavorites') : t('yesno.addToFavorites')"
             />
             <TButton
               icon="trash"
@@ -44,7 +44,7 @@
               size="small"
               color="error"
               @click.stop="() => { console.log('Delete clicked for', item.id); yesNoStore.deleteQuestion(item.id) }"
-              :aria-label="t(keys.yesno.deleteQuestion)"
+              :aria-label="t('yesno.deleteQuestion')"
             />
           </div>
         </div>
@@ -54,10 +54,10 @@
           type="ghost"
           size="small"
           @click="showMore()"
-          :aria-label="t(keys.common.showMore)"
+          :aria-label="t('common.showMore')"
           :class="bemm('load-more')"
         >
-          {{ t(keys.common.showMore) }}
+          {{ t('common.showMore') }}
         </TButton>
       </div>
       </div>
@@ -70,7 +70,7 @@
         @click="emit('close')"
         size="medium"
       >
-        {{ t(keys.common.cancel) }}
+        {{ t('common.cancel') }}
       </TButton>
       <TButton
         type="default"
@@ -79,7 +79,7 @@
         :disabled="!inputQuestion.trim()"
         size="medium"
       >
-        {{ t(keys.yesno.saveQuestion) }}
+        {{ t('yesno.saveQuestion') }}
       </TButton>
     </div>
   </div>
@@ -106,9 +106,9 @@ const emit = defineEmits<{
 const bemm = useBemm('question-input-form')
 const yesNoStore = useYesNoStore()
 const inputQuestion = ref('')
-const { t, keys } = useI18n()
+const { t } = useI18n()
 
-const recentQuestionItems = computed(() => yesNoStore.recentQuestionItems.splice(0, maxShowRecentItems.value))
+const recentQuestionItems = computed(() => yesNoStore.recentQuestionItems.slice(0, maxShowRecentItems.value))
 const hasMoreQuestions = computed(() => yesNoStore.recentQuestionItems.length > 4)
 
 const showMore = () => {

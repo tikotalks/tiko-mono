@@ -1,22 +1,26 @@
 import { defineConfig } from '@tiko/core'
+import { BaseColors, ColorValue } from '@tiko/ui'
 
 export default defineConfig({
-  appId: 'sequence',
-  appName: 'Sequence',
-  appIcon: 'c2e7188c-1ac4-41d6-a29c-2b122ec812e8',
+  id: 'sequence',
+  name: 'Sequence',
+  icon: {
+    mediaId:'c2e7188c-1ac4-41d6-a29c-2b122ec812e8',
+    color: BaseColors.GREEN,
+  },
   description: 'Sequence App',
   theme: {
-    primary: 'turquoise',
-    secondary: 'orange',
-    tertiary: 'blue'
+    primary: BaseColors.TURQUOISE,
+    secondary: BaseColors.ORANGE,
+    tertiary: BaseColors.BLUE,
   },
   auth: {
     skipAuth: true // Allow using the app without login
   },
   splash: {
     appName: 'Sequence',
-    backgroundColor: '#f8f9fa',
-    themeColor: '#40c8c6',
+    backgroundColor: ColorValue.ORANGE,
+    themeColor: ColorValue.BLACK,
     loadingText: 'Loading Sequence...'
   }
 })

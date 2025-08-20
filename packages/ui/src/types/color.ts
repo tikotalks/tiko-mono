@@ -57,41 +57,53 @@ export type Colors = (typeof Colors)[keyof typeof Colors];
 
 export const AllColors = { ...BaseColors, ...Colors };
 export type AllColors = BaseColors & Colors;
+// ColorValues.ts
+export const ColorValues = {
+  purple: "#9049ce",
+  blue: "#7bcdff",
+  navy: "#2217bc",
+  "royal-blue": "#146bee",
+  "dark-blue": "#220d5c",
+  green: "#4fcf4f",
+  lime: "#8aff84",
+  yellow: "#ffc94b",
+  orange: "#f6883a",
+  maroon: "#b04f4f",
+  olive: "#b0b04f",
+  sand: "#e2d699",
+  charcoal: "#333333",
+  peach: "#ffb3a7",
+  teal: "#4fb0b0",
+  "blue-gray": "#4f4fb0",
+  "blue-green": "#4fb04f",
+  red: "#ff4d5e",
+  pink: "#ea7f9a",
+  brown: "#4f332d",
+  gray: "#b0b0b0",
+  black: "#111111",
+  white: "#ffffff",
+  turquoise: "#63d4c7",
+  cyan: "#baf0ff",
+  indigo: "#571ab4",
+  violet: "#dfbaff",
+  magenta: "#e524b5",
+  rose: "#ff7dff",
+  coral: "#ff7d7d",
+  gold: "#ffd700",
+  silver: "#c0c0c0",
+  bronze: "#cd7f32",
+} as const;
 
+export type BaseColorValue = keyof typeof ColorValues;
 
-// This needs to be kept in sync with the colors used in the UI styling variables
-export const ColorValues: Record<BaseColors, string> = {
-  'purple': "#9049ce",
-	'blue': "#7bcdff",
-	'navy': "#2217bc",
-	'royal-blue': "#146bee",
-	'dark-blue': "#220d5c",
-	'green': "#4fcf4f",
-	'lime': "#8aff84",
-	'yellow': "#ffc94b",
-	'orange': "#f6883a",
-	'maroon': "#b04f4f",
-	'olive': "#b0b04f",
-	'sand': "#e2d699",
-	'charcoal': "#333333",
-	'peach': "#ffb3a7",
-	'teal': "#4fb0b0",
-	'blue-gray': "#4f4fb0",
-	'blue-green': "#4fb04f",
-	'red': "#ff4d5e",
-	'pink': "#ea7f9a",
-	'brown': "#4f332d",
-	'gray': "#b0b0b0",
-	'black': "#111111",
-	'white': "#ffffff",
-	'turquoise': "#63d4c7",
-	'cyan': "#baf0ff",
-	'indigo': "#571ab4",
-	'violet': "#dfbaff",
-	'magenta': "#e524b5",
-	'rose': "#ff7dff",
-	'coral': "#ff7d7d",
-	'gold': "#ffd700",
-	'silver': "#c0c0c0",
-	'bronze': "#cd7f32",
-}
+// Auto-generate uppercase keys (BLUE, NAVY, etc.)
+export const ColorValue = Object.fromEntries(
+  Object.entries(ColorValues).map(([key, value]) => [key.toUpperCase().replace(/-/g, "_"), value])
+) as {
+  readonly [K in Uppercase<BaseColorValue> as ReplaceHyphens<K>]: string;
+};
+
+// Helper type: replace "-" with "_"
+type ReplaceHyphens<S extends string> = S extends `${infer A}-${infer B}`
+  ? `${ReplaceHyphens<A>}_${ReplaceHyphens<B>}`
+  : S;

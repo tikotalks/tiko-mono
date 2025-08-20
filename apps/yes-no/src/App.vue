@@ -25,7 +25,7 @@ import { initializeTranslations } from '@tiko/core'
 
 const route = useRoute()
 const loading = ref(true)
-const { t, keys } = useI18n()
+const { t } = useI18n()
 
 // Initialize translations on app startup
 onMounted(async () => {
@@ -45,9 +45,6 @@ const isAuthCallbackRoute = computed(() => {
 
 // Framework configuration - use computed to ensure translations are reactive
 const frameworkConfig = computed<FrameworkConfig>(() => {
-  // Safely access the yesno settings key
-  const yesnoSettingsKey = keys.value?.yesno?.yesnoSettings || 'yesno.yesnoSettings'
-  
   return {
     ...tikoConfig,
     auth: {
@@ -65,7 +62,7 @@ const frameworkConfig = computed<FrameworkConfig>(() => {
       sections: [
         {
           id: 'yes-no-settings',
-          title: t(yesnoSettingsKey),
+          title: t('yesno.yesnoSettings'),
           icon: 'circle-question',
           order: 10
         }

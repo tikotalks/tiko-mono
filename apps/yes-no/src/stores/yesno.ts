@@ -4,6 +4,7 @@ import { useAppStore, useAuthStore, itemService } from '@tiko/core'
 
 export interface YesNoSettings {
   buttonSize: 'small' | 'medium' | 'large'
+  buttonStyle: 'hands' | 'icons' | 'text'
   autoSpeak: boolean
   hapticFeedback: boolean
 }
@@ -21,6 +22,7 @@ export const useYesNoStore = defineStore('yesno', () => {
   // Settings with defaults
   const defaultSettings: YesNoSettings = {
     buttonSize: 'large',
+    buttonStyle: 'icons',
     autoSpeak: true,
     hapticFeedback: true
   }
@@ -89,23 +91,16 @@ export const useYesNoStore = defineStore('yesno', () => {
     currentQuestion.value = question
   }
 
-  const speakQuestion = async () => {
+  const speakQuestion = async (speakFn?: (text: string, options: any) => Promise<void>) => {
     if (!currentQuestion.value || isPlaying.value) return
 
     isPlaying.value = true
 
     try {
-      // Import useTextToSpeech dynamically to avoid circular dependencies
-      const { useTextToSpeech } = await import('@tiko/ui')
-      const tts = useTextToSpeech()
-      
-      // Speak with language-aware voice
-      await tts.speak(currentQuestion.value, {
-        rate: 0.8,
-        pitch: 1.0,
-        volume: 1.0
-      })
-      
+      if (speakFn) {
+        // Use enhanced TTS function passed from component
+        await speakFn(currentQuestion.value, {})
+      }
       isPlaying.value = false
     } catch (error) {
       console.error('Failed to speak question:', error)
@@ -113,7 +108,7 @@ export const useYesNoStore = defineStore('yesno', () => {
     }
   }
 
-  const handleAnswer = async (answer: 'yes' | 'no') => {
+  const handleAnswer = async (answer: 'yes' | 'no', speakFn?: (text: string, options: any) => Promise<void>, translateFn?: (key: string) => string) => {
     // Haptic feedback if enabled
     if (settings.value.hapticFeedback && 'vibrate' in navigator) {
       navigator.vibrate(answer === 'yes' ? [50, 50, 50] : [100])
@@ -121,48 +116,35 @@ export const useYesNoStore = defineStore('yesno', () => {
 
     // Auto-speak the answer if enabled
     if (settings.value.autoSpeak) {
-      await speakAnswer(answer)
+      await speakAnswer(answer, speakFn, translateFn)
     }
 
     // Could emit events here for analytics
     console.log(`Answer: ${answer} to question: "${currentQuestion.value}"`)
   }
 
-  const speakAnswer = async (answer: 'yes' | 'no') => {
+  const speakAnswer = async (answer: 'yes' | 'no', speakFn?: (text: string, options: any) => Promise<void>, translateFn?: (key: string) => string) => {
     try {
-      // Import useTextToSpeech and useI18n dynamically
-      const { useTextToSpeech, useI18n } = await import('@tiko/ui')
-      const tts = useTextToSpeech()
-      const { t, keys } = useI18n()
-      
-      // Get translated answer
-      const translatedAnswer = answer === 'yes' 
-        ? t('common.yes') 
-        : t('common.no')
-      
-      // Speak with language-aware voice
-      await tts.speak(translatedAnswer, {
-        rate: 0.8,
-        pitch: 1.2,
-        volume: 1.0
-      })
+      if (speakFn && translateFn) {
+        // Get translated answer
+        const translatedAnswer = answer === 'yes' 
+          ? translateFn('common.yes') 
+          : translateFn('common.no')
+        
+        // Use enhanced TTS function passed from component
+        await speakFn(translatedAnswer, {})
+      }
     } catch (error) {
       console.error('Failed to speak answer:', error)
     }
   }
 
-  const speakText = async (text: string) => {
+  const speakText = async (text: string, speakFn?: (text: string, options: any) => Promise<void>) => {
     try {
-      // Import useTextToSpeech dynamically
-      const { useTextToSpeech } = await import('@tiko/ui')
-      const tts = useTextToSpeech()
-      
-      // Speak with language-aware voice
-      await tts.speak(text, {
-        rate: 0.8,
-        pitch: 1.0,
-        volume: 1.0
-      })
+      if (speakFn) {
+        // Use enhanced TTS function passed from component
+        await speakFn(text, {})
+      }
     } catch (error) {
       console.error('Failed to speak text:', error)
     }

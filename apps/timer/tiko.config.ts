@@ -1,18 +1,26 @@
 import { defineConfig } from '@tiko/core'
+import { BaseColors, ColorValue } from '@tiko/ui'
 
 export default defineConfig({
   id: 'timer',
   name: 'Timer',
-  icon: 'clock',
+  icon: {
+    mediaId: 'e0fd103e-8879-4a2f-bbce-8ed1210bd265',
+    color: BaseColors.ORANGE,
+  },
   description: 'Timer app with countdown and stopwatch features',
   theme: {
-    primary: 'orange',
-    secondary: 'blue'
+    primary: BaseColors.ORANGE,
+    secondary: BaseColors.BLUE,
+    tertiary: BaseColors.GREEN,
+  },
+  auth: {
+    skipAuth: true
   },
   splash: {
     appName: 'Timer',
-    backgroundColor: '#ffffff',
-    themeColor: '#28a745',
+    backgroundColor: ColorValue.ORANGE,
+    themeColor: ColorValue.ORANGE,
     loadingText: 'Loading Timer...'
   }
 })

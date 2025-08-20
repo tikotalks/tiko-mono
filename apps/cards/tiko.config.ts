@@ -1,22 +1,26 @@
 import { defineConfig } from '@tiko/core'
+import { BaseColors, ColorValue } from '@tiko/ui'
 
 export default defineConfig({
-  appId: 'cards',
-  appName: 'Cards',
-  appIcon: 'e37943b4-582c-40ee-be3a-c47be7c6e658',
+  id: 'cards',
+  name: 'Cards',
+  icon: {
+    mediaId:'e37943b4-582c-40ee-be3a-c47be7c6e658',
+    color: BaseColors.GREEN,
+  },
   description: 'Cards App',
   theme: {
-    primary: 'green',
-    secondary: 'orange',
-    tertiary: 'blue'
+    primary: BaseColors.GREEN,
+    secondary: BaseColors.ORANGE,
+    tertiary: BaseColors.BLUE,
   },
   auth: {
-    skipAuth: true // Allow using the app without login
+    skipAuth: true
   },
   splash: {
     appName: 'Cards',
-    backgroundColor: '#f8f9fa',
-    themeColor: '#22c55e',
+    backgroundColor: ColorValue.BLUE,
+    themeColor: ColorValue.BLACK,
     loadingText: 'Loading Cards...'
   }
 })

@@ -1,77 +1,55 @@
 <template>
-  <header :class="bemm('',['',isApp ? 'is-app' : 'is-website'])">
-    <!-- Left Section -->
-    <div :class="bemm('left')">
-      <div v-if="showBackButton" :class="bemm('back')">
-        <TButton
-          icon="arrow-left"
-          type="ghost"
-          size="medium"
-          @click="handleBackClick"
-          :aria-label="backButtonLabel"
-          :class="bemm('back-button')"
-        />
+  <header :class="bemm('', ['', isApp ? 'is-app' : 'is-website'])">
+    <div :class="bemm('container')">
+      <!-- Left Section -->
+      <div :class="bemm('left')">
+        <div v-if="showBackButton" :class="bemm('back')">
+          <TButton icon="arrow-left" type="ghost" size="medium" @click="handleBackClick" :aria-label="backButtonLabel"
+            :class="bemm('back-button')" />
+        </div>
+
+        <div :class="bemm('title-section')">
+          <TContextMenu v-if="title && isApp" :config="titleContextMenuConfig" ref="titleContextMenuRef">
+            <h1 :class="bemm('title')">{{ title }}</h1>
+          </TContextMenu>
+          <h1 v-else-if="title" :class="bemm('title')">
+            {{ title }}
+          </h1>
+          <p v-if="subtitle" :class="bemm('subtitle')">{{ subtitle }}</p>
+        </div>
+
+        <!-- App-specific controls slot -->
+        <div v-if="$slots['app-controls']" :class="bemm('app-controls')">
+          <slot name="app-controls" />
+        </div>
       </div>
 
-      <div :class="bemm('title-section')">
-        <TContextMenu 
-          v-if="title && isApp"
-          :config="titleContextMenuConfig"
-          ref="titleContextMenuRef"
-        >
-          <h1 :class="bemm('title')">{{ title }}</h1>
-        </TContextMenu>
-        <h1 
-          v-else-if="title"
-          :class="bemm('title')"
-        >
-          {{ title }}
-        </h1>
-        <p v-if="subtitle" :class="bemm('subtitle')">{{ subtitle }}</p>
+      <!-- Center Section -->
+      <div :class="bemm('center')">
+        <slot name="center" />
       </div>
 
-      <!-- App-specific controls slot -->
-      <div v-if="$slots['app-controls']" :class="bemm('app-controls')">
-        <slot name="app-controls" />
+      <!-- Right Section -->
+      <div :class="bemm('right')">
+        <TButtonGroup :class="bemm('actions')">
+          <slot name="actions" />
+        </TButtonGroup>
+
+        <!-- User Avatar with Parent Mode Integration -->
+        <div v-if="user" :class="bemm('user-section')">
+          <!-- Parent Mode Enabled Indicator -->
+          <TButton v-if="parentMode.value?.isUnlocked?.value" type="outline" size="medium" icon="shield"
+            :class="bemm('parent-mode-indicator')">
+            {{ t('parentMode.parentMode') }}
+          </TButton>
+
+          <!-- User Menu -->
+          <TUserMenu :user="user" :show-user-info="showUserInfo" :show-online-status="showOnlineStatus"
+            :is-online="isUserOnline" :custom-menu-items="customMenuItems" :enable-parent-mode="shouldEnableParentMode"
+            @logout="handleLogout" />
+        </div>
       </div>
     </div>
-
-    <!-- Center Section -->
-    <div :class="bemm('center')">
-      <slot name="center" />
-    </div>
-
-    <!-- Right Section -->
-    <div :class="bemm('right')">
-      <TButtonGroup :class="bemm('actions')">
-        <slot name="actions" />
-      </TButtonGroup>
-
-      <!-- User Avatar with Parent Mode Integration -->
-      <div v-if="user" :class="bemm('user-section')">
-        <!-- Parent Mode Enabled Indicator -->
-        <TButton
-          v-if="parentMode.value?.isUnlocked?.value"
-          type="outline"
-          size="medium"
-          icon="shield"
-          :class="bemm('parent-mode-indicator')"
-        >
-          {{ t('parentMode.parentMode') }}
-        </TButton>
-
-        <!-- User Menu -->
-        <TUserMenu
-          :user="user"
-          :show-user-info="showUserInfo"
-          :show-online-status="showOnlineStatus"
-          :is-online="isUserOnline"
-          :custom-menu-items="customMenuItems"
-          :enable-parent-mode="shouldEnableParentMode"
-          @logout="handleLogout"
-        />
-    </div>
-  </div>
 
     <!-- Loading overlay -->
     <div v-if="isLoading" :class="bemm('loading')">
@@ -123,7 +101,7 @@ const initializeStores = () => {
       console.warn('[TTopBar] Failed to initialize auth store:', e.message)
     }
   }
-  
+
   if (!parentMode.value) {
     try {
       parentMode.value = useParentMode(props.appName || 'default')
@@ -315,7 +293,7 @@ const handleAboutApp = async () => {
   try {
     // Import TAboutApp component dynamically
     const { default: TAboutApp } = await import('../../feedback/TAboutApp/TAboutApp.vue')
-    
+
     popupService.open({
       component: TAboutApp,
       title: t('common.aboutThisApp'),
@@ -345,7 +323,7 @@ const handleReportIssue = async () => {
   try {
     // Import TReportIssue component dynamically
     const { default: TReportIssue } = await import('../../feedback/TReportIssue/TReportIssue.vue')
-    
+
     popupService.open({
       component: TReportIssue,
       title: t('common.reportIssue'),
@@ -391,16 +369,30 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 .top-bar {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-s);
-  padding-left: var(--space);
-  background: var(--color-background);
-  border-bottom: 1px solid var(--color-border);
-  min-height: 4rem;
   z-index: 100;
-  border-radius: inherit;
+
+  // &::before{
+  //   content: ""; width: calc(100% + 4px);
+  //   height: calc(100% + 2px);
+  //   position: absolute;
+  //   left: -2px; top: 0;
+  //   border-radius: inherit;
+  //   background-color: blue;
+  //   background-image:radial-gradient(50% 50%,rgba(255, 255, 255, 1) 0%, rgba(0, 0, 0, 0) 50%);
+  // }
+
+  &__container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-s);
+    padding-left: var(--space);
+    background: var(--color-background);
+    border-bottom: 1px solid var(--color-border);
+    min-height: 4rem;
+    border-radius: inherit;
+  }
 
 
 
@@ -442,12 +434,12 @@ onUnmounted(() => {
     white-space: nowrap;
     user-select: none;
     cursor: default;
-    
+
     // When inside context menu (app mode)
     .context-menu & {
       cursor: pointer;
       transition: opacity 0.2s;
-      
+
       &:hover {
         opacity: 0.8;
       }
@@ -518,7 +510,7 @@ onUnmounted(() => {
     animation: spin 1s linear infinite;
   }
 
-  &__actions{
+  &__actions {
     flex-wrap: nowrap
   }
 }
@@ -532,7 +524,6 @@ onUnmounted(() => {
 // Mobile responsive
 @media (max-width: 768px) {
   .top-bar {
-    padding: 1rem;
 
     &__title {
       font-size: 1.125rem;

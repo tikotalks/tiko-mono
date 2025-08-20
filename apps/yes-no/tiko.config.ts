@@ -1,22 +1,26 @@
 import { defineConfig } from '@tiko/core'
+import { BaseColors, ColorValue } from '@tiko/ui'
 
 export default defineConfig({
-  id: 'yesno',
-  name: 'Yes/No',
-  icon: 'check-circle',
+  id: 'yes-no',
+  name: 'Yes-No',
+  icon: {
+    mediaId: '07eb3cb4-cd71-49c5-8498-ee1e8a3ab7f5',
+    color: BaseColors.NAVY,
+  },
   description: 'Simple yes/no decision maker app',
   theme: {
-    primary: 'purple',
-    secondary: 'green',
-    tertiary: 'red'
+    primary: BaseColors.PURPLE,
+    secondary: BaseColors.GREEN,
+    tertiary: BaseColors.RED,
   },
   auth: {
-    skipAuth: true // Allow using the app without login
+    skipAuth: true
   },
   splash: {
-    appName: 'Yes No',
-    backgroundColor: '#ffffff',
-    themeColor: '#20c997',
-    loadingText: 'Loading Yes No...'
+    appName: 'Yes-No',
+    backgroundColor: ColorValue.DARK_BLUE,
+    themeColor: ColorValue.PURPLE,
+    loadingText: 'Loading Yes-No...'
   }
 })

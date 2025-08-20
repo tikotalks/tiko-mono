@@ -17,7 +17,6 @@ export interface TikoThemeColors {
 export interface TikoConfig {
   id: string
   name: string
-  icon?: string
   description?: string
   theme?: TikoThemeColors
   isApp?: boolean
@@ -28,6 +27,10 @@ export interface TikoConfig {
   settings?: {
     [key: string]: any
   },
+  icon?: {
+    mediaId: string
+    color: string
+  },
   splash?: {
     appName: string,
     backgroundColor: string,
@@ -37,7 +40,8 @@ export interface TikoConfig {
   auth?: {
     required?: boolean
     providers?: ('email' | 'apple')[]
-    skipAuth?: boolean // Allow app to run without authentication
+    skipAuth?: boolean,
+    canRegister?: boolean
   }
 }
 
@@ -45,7 +49,10 @@ export const defaultTikoConfig: Required<TikoConfig> = {
   id: 'default',
   name: 'Tiko App',
   isApp: true,
-  icon: '',
+  icon: {
+    mediaId: '',
+    color:''
+  },
   description: '',
   theme: {
     primary: '#6200ee',
@@ -73,7 +80,8 @@ export const defaultTikoConfig: Required<TikoConfig> = {
   auth: {
     required: false,
     providers: ['email'],
-    skipAuth: false
+    skipAuth: false,
+    canRegister: true
   }
 }
 

@@ -5,6 +5,7 @@
 
 import { Icons } from "open-icon";
 import { AllColors } from "../../../types";
+import { ToolTipPosition } from "../../feedback/TToolTip";
 
 export const ButtonSize = {
   SMALL: 'small',
@@ -70,6 +71,10 @@ export interface TButtonProps {
   element?: string;
   /** Tooltip text */
   tooltip?: string;
+  tooltipSettings?: {
+    delay: number,
+    position: ToolTipPosition
+  },
   /** Whether to show shadow */
   shadow?: boolean;
   /** HTML button type attribute */

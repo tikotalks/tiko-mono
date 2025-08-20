@@ -2,64 +2,36 @@
   <div :class="bemm()">
     <div :class="bemm('content')">
       <!-- Timer Duration (countdown only) -->
-    <div v-if="mode === 'down'" :class="bemm('group')">
-      <label :class="bemm('label')">{{ t(keys.timer.timerDuration) }}</label>
-      <div :class="bemm('time-inputs')">
-        <TInputNumber
-          v-model="localMinutes"
-          type="number"
-          :min="0"
-          :max="99"
-          placeholder="MM"
-          :class="bemm('time-input')"
-        />
-        <span>:</span>
-        <TInputNumber
-          v-model="localSeconds"
-          type="number"
-          :min="0"
-          :max="59"
-          placeholder="SS"
-          :class="bemm('time-input')"
-        />
+      <div v-if="mode === 'down'" :class="bemm('group')">
+        <label :class="bemm('label')">{{ t('timer.timerDuration') }}</label>
+        <div :class="bemm('time-inputs')">
+          <TInputNumber v-model="localMinutes" type="number" :min="0" :max="99" placeholder="MM"
+            :class="bemm('time-input')" />
+          <span>:</span>
+          <TInputNumber v-model="localSeconds" type="number" :min="0" :max="59" placeholder="SS"
+            :class="bemm('time-input')" />
+        </div>
+        <div :class="bemm('time-presets')">
+          <TButton v-for="preset in timePresets" :key="preset.label" :size="'small'" :class="bemm('preset-button')"
+            @click="setPreset(preset.minutes, preset.seconds)">
+            {{ preset.label }}
+          </TButton>
+        </div>
       </div>
-      <div :class="bemm('time-presets')">
-        <TButton
-          v-for="preset in timePresets"
-          :key="preset.label"
-          :size="'small'"
-          :class="bemm('preset-button')"
-          @click="setPreset(preset.minutes, preset.seconds)"
-        >
-          {{ preset.label }}
+
+      <!-- Notifications -->
+      <TInputCheckbox v-model="localSettings.soundEnabled" :label="t('timer.soundNotification')"
+        :class="bemm('checkbox')" />
+
+      <TInputCheckbox v-model="localSettings.vibrationEnabled" :label="t('timer.vibrationNotification')"
+        :class="bemm('checkbox')" />
+
+      <div :class="bemm('actions')">
+        <TButton type="default" color="primary" @click="handleClose" size="medium">
+          {{ t('common.close') }}
         </TButton>
       </div>
     </div>
-
-    <!-- Notifications -->
-     <TInputCheckbox
-      v-model="localSettings.soundEnabled"
-      :label="t(keys.timer.soundNotification)"
-      :class="bemm('checkbox')"
-    />
-
-    <TInputCheckbox
-      v-model="localSettings.vibrationEnabled"
-      :label="t(keys.timer.vibrationNotification)"
-      :class="bemm('checkbox')"
-    />
-
-    <div :class="bemm('actions')">
-      <TButton
-        type="default"
-        color="primary"
-        @click="handleClose"
-        size="medium"
-      >
-        {{ t(keys.common.close) }}
-      </TButton>
-    </div>
-  </div>
   </div>
 </template>
 
@@ -75,6 +47,7 @@ interface Props {
   seconds: number
   settings: TimerSettings
   onApply?: (data: { minutes: number, seconds: number, settings: TimerSettings }) => void
+  onClose?: () => void
 }
 
 const props = defineProps<Props>()
@@ -83,7 +56,7 @@ const emit = defineEmits<{
 }>()
 
 const bemm = useBemm('timer-settings-form')
-const { t, keys } = useI18n()
+const { t } = useI18n()
 
 // Local state
 const localMinutes = ref(props.minutes)
@@ -108,6 +81,7 @@ const setPreset = (presetMinutes: number, presetSeconds: number) => {
 
 
 const handleClose = () => {
+  props.onClose?.()
   emit('close')
 }
 

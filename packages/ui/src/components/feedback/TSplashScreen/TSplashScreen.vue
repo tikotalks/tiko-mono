@@ -51,11 +51,11 @@ let hideTimer: NodeJS.Timeout | null = null
 const splashStyles = computed(() => {
   const styles: Record<string, string> = {}
 
-  // Always use primary color for background
-  styles.backgroundColor = 'var(--color-primary)'
+  // Use custom background color if provided, otherwise fallback to primary color
+  styles.backgroundColor = props.backgroundColor || 'var(--color-primary)'
 
-  // Always use primary text color for text
-  styles.color = 'var(--color-primary-text)'
+  // Use custom text color if provided, otherwise fallback to primary text color  
+  styles.color = props.textColor || 'var(--color-primary-text)'
 
   return styles
 })

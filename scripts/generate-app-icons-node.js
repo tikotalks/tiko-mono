@@ -120,21 +120,26 @@ async function loadTikoConfig(appPath) {
   const configContent = await fs.readFile(configPath, 'utf-8');
   
   // Simple regex parsing for the config values we need
-  // Try new format first (icon, primary in theme, name)
-  const iconMatch = configContent.match(/icon:\s*['"]([^'"]+)['"]/);
+  // Try new format first (icon.mediaId, icon.color, name)
+  const iconMediaIdMatch = configContent.match(/mediaId:\s*['"]([^'"]+)['"]/);
+  const iconColorMatch = configContent.match(/color:\s*['"]([^'"]+)['"]|color:\s*BaseColors\.([A-Z]+)/);
   const nameMatch = configContent.match(/name:\s*['"]([^'"]+)['"]/);
-  const primaryColorMatch = configContent.match(/primary:\s*['"]([^'"]+)['"]|primary:\s*BaseColors\.([A-Z]+)/);
   
   // Fallback to old format
+  const iconMatch = configContent.match(/icon:\s*['"]([^'"]+)['"]/);
+  const primaryColorMatch = configContent.match(/primary:\s*['"]([^'"]+)['"]|primary:\s*BaseColors\.([A-Z]+)/);
   const appIconMatch = configContent.match(/appIcon:\s*['"]([^'"]+)['"]/);
   const appNameMatch = configContent.match(/appName:\s*['"]([^'"]+)['"]/);
   
-  const appIcon = iconMatch?.[1] || appIconMatch?.[1];
+  const appIcon = iconMediaIdMatch?.[1] || iconMatch?.[1] || appIconMatch?.[1];
   const appName = nameMatch?.[1] || appNameMatch?.[1] || 'App';
   let primaryColor = null;
   
-  if (primaryColorMatch) {
-    // Handle both direct color values and BaseColors references
+  if (iconColorMatch) {
+    // Handle both direct color values and BaseColors references from icon.color
+    primaryColor = iconColorMatch[1] || iconColorMatch[2]?.toLowerCase();
+  } else if (primaryColorMatch) {
+    // Fallback to theme.primary
     primaryColor = primaryColorMatch[1] || primaryColorMatch[2]?.toLowerCase();
   }
   
@@ -328,6 +333,73 @@ async function resolveImageUrl(imageId) {
   return `https://xqjibuvlhfisvgvwgfbn.supabase.co/storage/v1/object/public/media/icons/${imageId}.png`;
 }
 
+// Update index.html with proper favicon references
+async function updateIndexHtml(appPath, appName) {
+  const indexHtmlPath = path.join(appPath, 'index.html');
+  
+  if (!fs.existsSync(indexHtmlPath)) {
+    console.log('  No index.html found, skipping favicon link updates');
+    return;
+  }
+  
+  let htmlContent = await fs.readFile(indexHtmlPath, 'utf-8');
+  
+  // Define the new favicon links
+  const faviconLinks = `    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48x48.png" />
+    <link rel="shortcut icon" href="/favicon.ico" />`;
+    
+  const appleIconLinks = `    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-touch-icon-57x57.png" />
+    <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-touch-icon-60x60.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-touch-icon-72x72.png" />
+    <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-touch-icon-76x76.png" />
+    <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-touch-icon-114x114.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-touch-icon-120x120.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-touch-icon-144x144.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-touch-icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon-180x180.png" />`;
+  
+  // Remove existing favicon and apple-touch-icon links
+  htmlContent = htmlContent.replace(/\s*<!--\s*Favicons?\s*-->[\s\S]*?(?=\s*<meta|\s*<title|\s*<!--|\s*<link(?!\s+rel="(?:icon|shortcut icon|apple-touch-icon))|\s*<\/head>)/i, '');
+  htmlContent = htmlContent.replace(/\s*<!--\s*Apple Touch Icons?\s*-->[\s\S]*?(?=\s*<meta|\s*<title|\s*<!--|\s*<link(?!\s+rel="apple-touch-icon)|\s*<\/head>)/i, '');
+  htmlContent = htmlContent.replace(/\s*<link[^>]*rel=["'](?:icon|shortcut icon|apple-touch-icon)[^>]*>/gi, '');
+  
+  // Find the head section and add favicon links after charset
+  const charsetMatch = htmlContent.match(/(<meta charset="[^"]*"\s*\/>)/i);
+  if (charsetMatch) {
+    const newContent = htmlContent.replace(charsetMatch[1], `${charsetMatch[1]}\n${faviconLinks}`);
+    htmlContent = newContent;
+  } else {
+    // Fallback: add after <head>
+    htmlContent = htmlContent.replace(/(<head[^>]*>)/i, `$1\n${faviconLinks}`);
+  }
+  
+  // Add Apple touch icons after PWA meta tags or before closing head
+  if (htmlContent.includes('<meta name="apple-mobile-web-app-')) {
+    // Find the last apple-mobile-web-app meta tag and add after it
+    const lastAppleMetaMatch = htmlContent.match(/(<meta name="apple-mobile-web-app-[^"]*"[^>]*>)/gi);
+    if (lastAppleMetaMatch) {
+      const lastAppleMeta = lastAppleMetaMatch[lastAppleMetaMatch.length - 1];
+      htmlContent = htmlContent.replace(lastAppleMeta, `${lastAppleMeta}\n    \n${appleIconLinks}`);
+    }
+  } else {
+    // Add before Open Graph or Accessibility section, or before closing head tag
+    if (htmlContent.includes('<!-- Open Graph -->')) {
+      htmlContent = htmlContent.replace(/(<!-- Open Graph -->)/i, `${appleIconLinks}\n    \n    $1`);
+    } else if (htmlContent.includes('<!-- Accessibility -->')) {
+      htmlContent = htmlContent.replace(/(<!-- Accessibility -->)/i, `${appleIconLinks}\n    \n    $1`);
+    } else {
+      htmlContent = htmlContent.replace(/(\s*<\/head>)/i, `\n${appleIconLinks}\n$1`);
+    }
+  }
+  
+  await fs.writeFile(indexHtmlPath, htmlContent);
+  console.log('  ✅ Updated index.html with favicon links');
+}
+
 // Generate icons for a specific app
 async function generateAppIcons(appPath) {
   console.log(`\nGenerating icons for ${path.basename(appPath)}...`);
@@ -382,6 +454,9 @@ async function generateAppIcons(appPath) {
     await fs.writeFile(faviconRootPath, faviconBuffers[1]);
     
     console.log(`\n  ✅ ${configs.length + 1} icons generated successfully!`);
+    
+    // Update index.html with proper favicon links
+    await updateIndexHtml(appPath, config.appName);
   } catch (error) {
     console.error(`\n  ❌ Error: ${error.message}`);
   }

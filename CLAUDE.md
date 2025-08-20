@@ -13,6 +13,26 @@ npm run typecheck  # Check TypeScript types
 npm run lint       # Run ESLint
 ```
 
+## Translation System Rules
+
+**CRITICAL: DO NOT EDIT LANGUAGE FILES**
+- NEVER edit any files in `packages/ui/src/i18n/generated/` directories
+- Translation keys are managed in the database, not in code files
+- When encountering missing translation keys, use direct string literals (e.g., `t('yesno.buttonSize')`) in the code
+- The user will add missing keys to the database separately
+- Language files are auto-generated and should never be manually modified
+
+**When providing translation keys to user:**
+- Format as `key : value` with each key on a new line
+- Always provide values in English
+- Do not use quotes (") in the values
+- Example format:
+```
+yesno.buttonSize : Button Size
+yesno.small : Small
+yesno.medium : Medium
+```
+
 ## Known Issues
 
 1. **TypeScript Errors in i18n Generated Types**: The file `packages/ui/src/i18n/generated/types.ts` contains invalid characters that cause TypeScript errors. This is a pre-existing issue and not related to new code changes.

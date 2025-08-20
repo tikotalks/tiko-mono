@@ -1,45 +1,21 @@
 <template>
   <TAppLayout
-    :title="t(keys.yesno.yesOrNo)"
+    :title="t('yesno.yesOrNo')"
     :show-header="true"
     @profile="handleProfile"
     @settings="handleSettings"
     @logout="handleLogout"
   >
     <template #app-controls>
-      <!-- Speech permission button (only on iOS if not granted) -->
-      <TButton
-        v-if="!hasPermission && localSettings.autoSpeak"
-        icon="volume-iii"
-        type="outline"
-        color="warning"
-        @click="handleSpeechPermission"
-        :aria-label="'Enable speech'"
-        title="Tap to enable speech on iOS"
-      />
-
-      <!-- App-specific controls on the left -->
-      <TButton
-        icon="edit"
-        type="outline"
-        color="secondary"
-        @click="showQuestionInput()"
-        :aria-label="t(keys.yesno.editQuestion)"
-      />
-
       <!-- App settings button (only visible in parent mode) -->
       <TButton
         v-if="parentMode.isUnlocked.value"
-        icon="settings"
+        :icon="Icons.SETTINGS2"
         type="outline"
         color="secondary"
         @click="handleAppSettings"
-        :aria-label="t(keys.yesno.yesnoSettings)"
+        :aria-label="t('common.settings')"
       />
-
-      <TButton :type="localSettings.buttonStyle == 'text' ? 'default' : 'outline'" @click="localSettings.buttonStyle = 'text'">yes/no</TButton>
-      <TButton :type="localSettings.buttonStyle == 'icons' ? 'default' : 'outline'" @click="localSettings.buttonStyle = 'icons'">icons</TButton>
-      <TButton :type="localSettings.buttonStyle == 'hands' ? 'default' : 'outline'" @click="localSettings.buttonStyle = 'hands'">hands</TButton>
     </template>
 
     <div :class="bemm('', ['', showFeedback ? feedbackType : ''])">
@@ -61,22 +37,23 @@
               type="outline"
               :size="'large'"
               @click.stop="showQuestionInput"
-              :tooltip="t(keys.yesno.editQuestion)"
-              :aria-label="t(keys.yesno.editQuestion)"
+              :tooltip="t('yesno.editQuestion')"
+              :aria-label="t('yesno.editQuestion')"
             />
             <TButton
-              :icon="isPlaying ? Icons.VOLUME_MUTE : Icons.VOLUME_III"
+              :icon="isGeneratingQuestionAudio ? Icons.THREE_DOTS_HORIZONTAL : (isPlaying ? Icons.VOLUME_MUTE : Icons.VOLUME_III)"
               type="outline"
               :size="'large'"
               @click.stop="speakQuestion"
-              :tooltip="t(keys.common.speak)"
-              :aria-label="t(keys.common.speak)"
+              :disabled="isGeneratingQuestionAudio || isPlaying"
+              :tooltip="isGeneratingQuestionAudio ? 'Generating audio...' : t('common.speak')"
+              :aria-label="isGeneratingQuestionAudio ? 'Generating audio...' : t('common.speak')"
             />
           </div>
         </div>
 
         <!-- Answer buttons -->
-        <div :class="bemm('answers', ['', localSettings.buttonSize])">
+        <div v-if="settingsLoaded" :class="bemm('answers', ['', localSettings.buttonSize])">
 
             <YesNoButton
             :class="bemm('answer', ['', 'yes'])"
@@ -103,6 +80,7 @@
 import { ref, computed, onMounted, reactive, watch, toRefs, inject } from 'vue';
 import { useBemm } from 'bemm';
 import { TButton, TIcon, TAppLayout, useI18n, useParentMode, useTextToSpeech } from '@tiko/ui';
+import { useSpeak } from '@tiko/core';
 import { Icons } from 'open-icon';
 import { useYesNoStore } from '../stores/yesno';
 import YesNoSettingsForm from '../components/YesNoSettingsForm.vue';
@@ -111,9 +89,10 @@ import YesNoButton from '../components/YesNoButton.vue';
 
 const bemm = useBemm('yes-no');
 const yesNoStore = useYesNoStore();
-const { t, keys } = useI18n();
+const { t, currentLocale } = useI18n();
 const parentMode = useParentMode('yes-no');
 const { hasPermission, requestPermission } = useTextToSpeech();
+const { speak, preloadAudio } = useSpeak();
 
 // Inject the popup service from TFramework
 const popupService = inject<any>('popupService');
@@ -121,6 +100,8 @@ const popupService = inject<any>('popupService');
 // Local state
 const showFeedback = ref(false);
 const feedbackType = ref<'yes' | 'no'>('yes');
+const isGeneratingQuestionAudio = ref(false);
+const settingsLoaded = ref(false);
 
 // Local settings copy for immediate UI updates
 const localSettings = reactive({
@@ -142,25 +123,49 @@ watch(
   { immediate: true },
 );
 
-// Methods
-const speakQuestion = async () => {
-  // Request permission if needed before speaking
-  if (!hasPermission.value) {
-    const granted = await requestPermission();
-    if (!granted) {
-      console.warn('Cannot speak without permission');
-      return;
+// Watch locale changes and preload audio in new language
+watch(currentLocale, async (newLocale) => {
+  console.log('[YesNoView] Locale changed to:', newLocale);
+  await preloadAnswers();
+});
+
+// Watch question changes and preload new question audio
+// Note: This handles cases where question changes programmatically,
+// while onApply handles user-initiated question saves
+watch(currentQuestion, async (newQuestion, oldQuestion) => {
+  if (newQuestion && newQuestion !== oldQuestion) {
+    console.log('[YesNoView] Question changed programmatically to:', newQuestion);
+    // Preload just the new question (Yes/No are already cached)
+    try {
+      const speakLanguage = currentLocale.value.split('-')[0];
+      await preloadAudio([
+        { text: newQuestion, language: speakLanguage }
+      ]);
+      console.log('[YesNoView] Question audio preloaded via watcher');
+    } catch (error) {
+      console.warn('[YesNoView] Failed to preload question audio via watcher:', error);
     }
   }
-  yesNoStore.speakQuestion();
+});
+
+// Enhanced TTS function for the store
+const enhancedSpeak = async (text: string, options: any = {}) => {
+  const speakLanguage = currentLocale.value.split('-')[0]; // Convert 'en-GB' to 'en'
+  await speak(text, { language: speakLanguage, ...options });
+};
+
+// Methods
+const speakQuestion = async () => {
+  // Pass the enhanced TTS function to the store
+  await yesNoStore.speakQuestion(enhancedSpeak);
 };
 
 const handleAnswer = async (answer: 'yes' | 'no') => {
   feedbackType.value = answer;
   showFeedback.value = true;
 
-  // The store's handleAnswer already handles haptic feedback and speaking
-  await yesNoStore.handleAnswer(answer);
+  // Pass the enhanced TTS function and translate function to the store
+  await yesNoStore.handleAnswer(answer, enhancedSpeak, t);
 
   // Hide feedback after 1.5 seconds
   setTimeout(() => {
@@ -186,6 +191,25 @@ const showQuestionInput = () => {
         onApply: async (question: string) => {
           console.log('[YesNoView] onApply called with:', question);
           await yesNoStore.setQuestion(question);
+
+          // Show loading state while generating audio
+          isGeneratingQuestionAudio.value = true;
+
+          // Immediately preload audio for the new question (don't play, just cache)
+          try {
+            const speakLanguage = currentLocale.value.split('-')[0];
+            console.log('[YesNoView] Preloading audio for new question:', question);
+            await preloadAudio([
+              { text: question, language: speakLanguage }
+            ]);
+            console.log('[YesNoView] New question audio preloaded successfully');
+          } catch (error) {
+            console.warn('[YesNoView] Failed to preload new question audio:', error);
+          } finally {
+            // Hide loading state when done (success or failure)
+            isGeneratingQuestionAudio.value = false;
+          }
+
           popupService.close();
         },
       },
@@ -199,9 +223,9 @@ const showQuestionInput = () => {
 const handleAppSettings = () => {
   popupService.open({
     component: YesNoSettingsForm,
-    title: t('yesno.yesnoSettings'),
+    title: t('common.settings'),
     props: {
-      settings: settings.value,
+      settings: localSettings,
       onApply: async (newSettings: any) => {
         Object.assign(localSettings, newSettings);
         await yesNoStore.updateSettings(newSettings);
@@ -229,12 +253,39 @@ const handleLogout = () => {
   // The auth store handles the logout, this is just for any cleanup
 };
 
-const handleSpeechPermission = async () => {
-  const granted = await requestPermission();
-  if (granted) {
-    console.log('Speech permission granted');
-  } else {
-    console.warn('Speech permission denied');
+// const handleSpeechPermission = async () => {
+//   const granted = await requestPermission();
+//   if (granted) {
+//     console.log('Speech permission granted');
+//   } else {
+//     console.warn('Speech permission denied');
+//   }
+// };
+
+// Preload Yes/No audio and current question for faster response
+const preloadAnswers = async () => {
+  try {
+    const speakLanguage = currentLocale.value.split('-')[0];
+    const yesText = t('common.yes');
+    const noText = t('common.no');
+    const currentQuestionText = currentQuestion.value || 'Do you want to play?';
+
+    console.log('[YesNoView] Preloading audio for:', {
+      yesText,
+      noText,
+      currentQuestionText,
+      language: speakLanguage
+    });
+
+    await preloadAudio([
+      { text: yesText, language: speakLanguage },
+      { text: noText, language: speakLanguage },
+      { text: currentQuestionText, language: speakLanguage }
+    ]);
+
+    console.log('[YesNoView] Audio preloaded successfully');
+  } catch (error) {
+    console.warn('[YesNoView] Failed to preload audio (will fallback to browser TTS):', error);
   }
 };
 
@@ -244,14 +295,23 @@ onMounted(async () => {
   try {
     await yesNoStore.loadState();
     console.log('[YesNoView] State loaded successfully');
+
+    // Mark settings as loaded
+    settingsLoaded.value = true;
+
+    // Preload Yes/No audio after state is loaded
+    await preloadAnswers();
   } catch (error) {
     console.error('[YesNoView] Failed to load state:', error);
+    // Even on error, show the UI with defaults
+    settingsLoaded.value = true;
   }
 });
 </script>
 
 <style lang="scss" scoped>
 .yes-no {
+
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -305,9 +365,22 @@ onMounted(async () => {
   &__answers {
     display: flex;
     // gap: var(--space-s);
-    width: 100%;
+    width: 90vw;
     justify-content: center;
-    font-size: 20vmin;
+    font-size: 15vmin;
+
+    position: fixed; bottom: 10vh;
+    height: fit-content;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    &--medium{
+      width: 70vw;
+    }
+    &--small{
+      width: 60vw;
+    }
   }
 
   &__question {
@@ -320,6 +393,9 @@ onMounted(async () => {
     padding: var(--space);
     border-radius: var(--border-radius);
     transition: background-color 0.2s ease;
+
+    position: absolute;
+    top: 20vh;
 
     &:hover {
       background-color: rgba(255, 255, 255, 0.1);

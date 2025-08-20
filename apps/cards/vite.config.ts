@@ -52,5 +52,7 @@ export default createViteConfig({
   dirname: __dirname,
   port: 3003,
   pwaConfig,
-  appName: 'cards', i18nConfig
+  appName: 'cards',
+  appId: 'cards',
+  i18nConfig
 })

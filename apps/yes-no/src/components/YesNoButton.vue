@@ -1,13 +1,13 @@
 <template>
-  <div
-    :class="
-      bemm('', ['', props.style, props.mode === 0 ? 'no' : 'yes', props.size])
-    "
-  >
-    <img v-if="imageUrl" :src="imageUrl" :alt="props.style" />
-    <span :class="bemm('text')" v-else>
-      {{ mode == 0 ? t('common.no') : t('common.yes') }}
-    </span>
+  <div :class="bemm('', ['', props.style, props.mode === 0 ? 'no' : 'yes', props.size])
+    ">
+    <div :class="bemm('container')">
+
+      <img v-if="imageUrl" :src="imageUrl" :alt="props.style" />
+      <span :class="bemm('text')" v-else>
+        {{ mode == 0 ? t('common.no') : t('common.yes') }}
+      </span>
+    </div>
   </div>
 </template>
 
@@ -94,32 +94,49 @@ const imageData = {
 .yes-no-button {
   $b: &;
 
+
+  --yes-no-padding: var(--space-xs);
+
+
   width: 100%;
-  aspect-ratio: 1/1;
   background-color: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: 0.15s ease-in-out;
+  padding: var(--spacing);
 
   img {
     width: 100%;
   }
 
-  &--text {
-    margin: var(--space-xs);
-    border-radius: var(--space-xs);
-    padding: var(--space-xs);
-    font-weight: 600;
-    color: var(--color-text);
+  &__container {
+    position: relative;
+    border-radius: var(--border-radius);
+
+    background-color: var(--yes-no-button__background, transparent);
     width: 100%;
     aspect-ratio: 1/1;
-    flex-shrink: 1;
+    display: block;
+  }
+
+  &--text {
+    padding: var(--yes-no-padding, .1em);
+
+
     &#{$b}--yes {
-      background-color: var(--color-success);
+      --yes-no-button__background: var(--color-success);
     }
+
     &#{$b}--no {
-      background-color: var(--color-error);
+      --yes-no-button__background: var(--color-error);
+    }
+
+    span {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
     }
 
     &:hover {
@@ -128,44 +145,68 @@ const imageData = {
   }
 
   &--icons {
+    padding: var(--yes-no-padding);
+
+    @media screen and (max-width: 720px){
+      padding: 0;
+    }
     &:hover {
       &#{$b}--yes {
         animation: iconYes 0.8s ease-in-out forwards;
       }
+
       &#{$b}--no {
-        animation: iconNo 0.8s ease-in-out forwards;
+        animation: iconNo 0.3s ease-in-out forwards;
       }
     }
+
     @keyframes iconYes {
+
       0%,
       100% {
         transform: scale(1) translateY(0);
       }
-      20%, 60% {
+
+      20%,
+      60% {
         transform: scale(1) translateY(-0.2em);
       }
-      40%, 80% {
+
+      40%,
+      80% {
         transform: scale(1) translateY(0.2em);
       }
     }
+
     @keyframes iconNo {
+
       0%,
       100% {
         transform: scale(1) translateY(0);
       }
-      20%, 60% {
+
+      20%,
+      60% {
         transform: scale(1) translateX(-0.2em);
       }
-      40%, 80% {
+
+      40%,
+      80% {
         transform: scale(1) translateX(0.2em);
       }
     }
   }
 
   &--hands {
+    padding: var(--yes-no-padding);
+
+    @media screen and (max-width: 720px){
+      padding: 0;
+    }
     &#{$b}--yes {
       transform: translateY(-0.25em);
     }
+
     &#{$b}--no {
       transform: translateY(0.25em);
     }
@@ -174,37 +215,47 @@ const imageData = {
       &#{$b}--yes {
         animation: handYes 0.8s ease-in-out forwards;
       }
+
       &#{$b}--no {
         animation: handNo 0.8s ease-in-out forwards;
       }
     }
 
     @keyframes handYes {
+
       0%,
       100% {
         transform: translateY(-0.25em);
       }
+
       25% {
         transform: translateY(-0.5em);
       }
+
       50% {
         transform: translateY(-0.25em);
       }
+
       75% {
         transform: translateY(-0.5em);
       }
     }
+
     @keyframes handNo {
+
       0%,
       100% {
         transform: translateY(0.25em);
       }
+
       25% {
         transform: translateY(0.5em);
       }
+
       50% {
         transform: translateY(0.25em);
       }
+
       75% {
         transform: translateY(0.5em);
       }

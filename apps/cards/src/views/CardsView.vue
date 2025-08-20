@@ -553,13 +553,13 @@ const openCardEditForm = async (card: CardTile, index: number) => {
   // Create refs to store the component instance and save loading state
   let formComponentRef: any = null;
   const isSaving = ref(false);
-  
+
   // Calculate ownership
   const isOwner = isNewCard ? true : (card.ownerId === authStore.user?.id || card.user_id === authStore.user?.id);
-  
+
   // Check if this is a top-level card (no parent) - visibility toggle only for top-level items
   const isTopLevelCard = !isNewCard && !card.parentId && !currentGroupId.value;
-  
+
   // Define actions for the popup
   const actions = computed(() => [
     {
@@ -615,10 +615,10 @@ const openCardEditForm = async (card: CardTile, index: number) => {
                   id: savedId,
                   index: index,
                 } as CardTile;
-                
+
                 // Update local state
                 cards.value = [...cards.value.filter(c => !c.id.startsWith('empty-')), newCard];
-                
+
                 // Update store cache
                 await yesNoStore.addCardToCache(newCard, currentGroupId.value, currentLocale.value);
               }
@@ -636,7 +636,7 @@ const openCardEditForm = async (card: CardTile, index: number) => {
             // For existing cards, use optimistic update
             const originalCard = { ...card };
             const originalCardsArray = [...cards.value];
-            
+
             try {
               // Optimistic update - update UI immediately
               const updatedCard = { ...card, ...cardData };
@@ -646,30 +646,30 @@ const openCardEditForm = async (card: CardTile, index: number) => {
                 updatedCards[existingIndex] = updatedCard;
                 cards.value = updatedCards;
               }
-              
+
               // Update store cache optimistically
               await yesNoStore.updateCardInCache(updatedCard, currentGroupId.value, currentLocale.value);
-              
+
               // Close popup immediately for better UX
               popupService.close();
-              
+
               // Save to database in background
               const savedId = await cardsService.saveCard(updatedCard, currentGroupId.value, undefined, newTranslations);
-              
+
               if (!savedId) {
                 throw new Error('Failed to save card');
               }
-              
+
               // Success - no need to do anything, UI is already updated
               console.log('Card saved successfully:', savedId);
-              
+
             } catch (error) {
               console.error('Failed to save card:', error);
-              
+
               // Rollback on failure
               cards.value = originalCardsArray;
               await yesNoStore.updateCardInCache(originalCard, currentGroupId.value, currentLocale.value);
-              
+
               // Show error toast
               toastService?.show({
                 message: t('cards.failedToSaveCard'),
@@ -699,29 +699,29 @@ const confirmDeleteCard = async (card: CardTile) => {
     const originalCards = [...cards.value];
     const originalHasChildren = tilesWithChildren.value.has(card.id);
     const originalChildren = tileChildrenMap.value.get(card.id);
-    
+
     try {
       // Optimistic update - remove from UI immediately
       cards.value = cards.value.filter(c => c.id !== card.id);
       tilesWithChildren.value.delete(card.id);
       tileChildrenMap.value.delete(card.id);
-      
+
       // Remove from store cache
       await yesNoStore.removeCardFromCache(card.id, currentGroupId.value, currentLocale.value);
-      
+
       // Delete from database in background
       const success = await cardsService.deleteCard(card.id);
-      
+
       if (!success) {
         throw new Error('Failed to delete card');
       }
-      
+
       // Success - no need to do anything, UI is already updated
       console.log('Card deleted successfully:', card.id);
-      
+
     } catch (error) {
       console.error('Failed to delete card:', error);
-      
+
       // Rollback on failure
       cards.value = originalCards;
       if (originalHasChildren) {
@@ -730,10 +730,10 @@ const confirmDeleteCard = async (card: CardTile) => {
       if (originalChildren) {
         tileChildrenMap.value.set(card.id, originalChildren);
       }
-      
+
       // Re-add to cache
       await yesNoStore.updateCardInCache(card, currentGroupId.value, currentLocale.value);
-      
+
       // Show error toast
       toastService?.show({
         message: t('cards.failedToDeleteCard'),
@@ -748,12 +748,12 @@ const hideItem = async (itemId: string) => {
   try {
     const currentSettings = yesNoStore.settings;
     const hiddenItems = [...(currentSettings.hiddenItems || []), itemId];
-    
+
     await yesNoStore.updateSettings({ hiddenItems });
-    
+
     // Remove from current view
     cards.value = cards.value.filter(c => c.id !== itemId);
-    
+
     toastService?.show({
       message: t('cards.itemHidden'),
       type: 'success'
@@ -870,7 +870,7 @@ const handleTileAction = async (tile: CardTile) => {
     // Extract language code for metadata (e.g., 'nl-NL' -> 'nl')
     const speakLanguage = speakLocale.split('-')[0];
     console.log(`[TTS] Speaking text in locale: ${speakLocale}, language code: ${speakLanguage}`);
-    
+
     // Pass both the language code and the speech text
     // The TTS service will handle adding language hints if needed
     await speak(tile.speech, { language: speakLanguage });
@@ -1487,7 +1487,7 @@ const openBulkAddMode = () => {
               } else {
                 cards.value.push(newCard);
               }
-              
+
               // Update store cache
               await yesNoStore.addCardToCache(newCard, currentGroupId.value, currentLocale.value);
             }
@@ -1598,13 +1598,13 @@ watch(() => parentMode.isUnlocked?.value, (isUnlocked) => {
 watch(() => currentLocale.value, async (newLocale, oldLocale) => {
   if (newLocale !== oldLocale && newLocale) {
     console.log('[CardsView] Locale changed from', oldLocale, 'to', newLocale, '- reloading cards...');
-    
+
     // Clear the cache for the old locale to force fresh load
     await yesNoStore.clearCacheForLocale(oldLocale);
-    
+
     // Load all cards with new locale
     await yesNoStore.loadAllCards(newLocale);
-    
+
     // Reload current view with new translations
     await loadCards();
   }
@@ -1626,7 +1626,7 @@ onMounted(async () => {
     }
 
     await yesNoStore.loadState();
-    
+
     // Load ALL cards initially in single API call
     console.log('[CardsView] Loading all cards on app initialization...');
     await yesNoStore.loadAllCards(currentLocale.value);
@@ -1850,7 +1850,8 @@ onUnmounted(() => {
     // gap: var(--space-s);
     width: 100%;
     justify-content: center;
-    font-size: 20vmin;
+    font-size: 10vh;
+    border: 2px solid red;
   }
 
   &__question {

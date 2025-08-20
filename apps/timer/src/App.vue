@@ -1,6 +1,6 @@
 <template>
-  <TFramework 
-    :config="frameworkConfig" 
+  <TFramework
+    :config="frameworkConfig"
     :background-image="backgroundImage"
     :loading="loading"
   >
@@ -12,42 +12,50 @@
         type="icon-only"
         size="medium"
         @click="start"
-        :aria-label="t(keys.timer.start)"
+        :aria-label="t('timer.start')"
       />
       <TButton
         v-else
         icon="pause"
-        type="icon-only"
+        type="outline"
         color="success"
         size="medium"
         @click="pause"
-        :aria-label="t(keys.timer.pause)"
+        :aria-label="t('timer.pause')"
+        :tooltip="t('timer.pause')"
+        :tooltipSettings="{delay: .5, position: ToolTipPosition.BOTTOM}"
       />
 
       <TButton
         icon="arrow-rotate-top-left"
-        type="icon-only"
+        type="outline"
         size="medium"
         @click="reset"
-        :aria-label="t(keys.timer.reset)"
+        :aria-label="t('timer.reset')"
+        :tooltip="t('timer.reset')"
+        :tooltipSettings="{delay: .5, position: ToolTipPosition.BOTTOM}"
       />
 
       <!-- Edit Timer Button -->
       <TButton
         icon="edit"
-        type="icon-only"
+        type="outline"
         size="medium"
         @click="showEditSettings"
-        :aria-label="t(keys?.settings?.title || 'timer.settings')"
+        :aria-label="t('common.settings')"
+        :tooltip="t('common.settings')"
+        :tooltipSettings="{delay: .5, position: ToolTipPosition.BOTTOM}"
       />
 
       <!-- Mode Toggle -->
       <TButton
         :icon="mode === 'up' ? 'arrow-up' : 'arrow-down'"
-        type="icon-only"
+        type="outline"
         size="medium"
         @click="toggleMode"
-        :aria-label="mode === 'up' ? t(keys.timer.countDown) : t(keys.timer.countUp)"
+        :aria-label="mode === 'up' ? t('timer.countDown') : t('timer.countUp')"
+        :tooltip="mode === 'up' ? t('timer.countDown') : t('timer.countUp')"
+        :tooltipSettings="{delay: .5, position: ToolTipPosition.BOTTOM}"
       />
     </template>
 
@@ -57,7 +65,7 @@
 
 <script setup lang="ts">
 import { computed, inject, ref, onMounted } from 'vue'
-import { TFramework, TButton, type FrameworkConfig, popupService as importedPopupService, useI18n } from '@tiko/ui'
+import { TFramework, TButton, type FrameworkConfig, popupService as importedPopupService, useI18n, ToolTipPosition} from '@tiko/ui'
 import { useTimer } from './composables/useTimer'
 import TimerSettingsForm from './components/TimerSettingsForm.vue'
 import tikoConfig from '../tiko.config'
@@ -79,7 +87,7 @@ const {
 } = useTimer()
 
 // i18n
-const { t, keys } = useI18n()
+const { t } = useI18n()
 
 // Local state for time settings
 const minutes = ref(5)
@@ -111,7 +119,7 @@ const frameworkConfig = computed<FrameworkConfig>(() => ({
     sections: [
       {
         id: 'timer-settings',
-        title: t(keys?.settings?.title || 'timer.settings'),
+        title: t('common.settings'),
         icon: 'clock',
         order: 10,
         component: TimerSettingsForm,
@@ -134,10 +142,12 @@ const frameworkConfig = computed<FrameworkConfig>(() => ({
 
 // Show timer settings
 const showEditSettings = () => {
+  console.log('showEditSettings called, popupService:', popupService)
   if (popupService) {
-    popupService.open({
+    console.log('Opening popup with popupService.open')
+    const result = popupService.open({
       component: TimerSettingsForm,
-      title: t(keys.settings.title),
+      title: t('common.settings'),
       props: {
         mode: mode.value,
         minutes: minutes.value,
@@ -153,6 +163,7 @@ const showEditSettings = () => {
         onClose: () => popupService.close()
       }
     })
+    console.log('Popup open result:', result)
   } else {
     console.error('PopupService not available')
   }

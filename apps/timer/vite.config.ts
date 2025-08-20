@@ -42,4 +42,11 @@ const i18nConfig = {
   excludeSections: ['admin', 'deployment', 'media', 'content']
 }
 
-export default createViteConfig(__dirname, 3001, pwaConfig, 'timer', i18nConfig)
+export default createViteConfig({
+  dirname: __dirname,
+  port: 3001,
+  pwaConfig,
+  appName: 'timer',
+  appId: 'timer',
+  i18nConfig
+})
