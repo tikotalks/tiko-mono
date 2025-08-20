@@ -2,33 +2,15 @@
   <div :class="bemm()">
     <TForm @submit.prevent="handleSubmit" :class="bemm('form')">
 
-      <!-- Form Actions -->
-      <TFormActions :class="bemm('actions')">
-        <TButtonGroup :class="bemm('main-actions')">
-
-
-          <TButton v-if="isEditing" icon="trash" :type="ButtonType.ICON_ONLY" :tooltip="t('common.delete')"
-            color="error" @click="handleDelete" :class="bemm('delete-button')">
-            {{ t('common.delete') }}
-          </TButton>
-          <TButton type="outline" color="secondary" @click="handleCancel">
-            {{ t('common.cancel') }}
-          </TButton>
-          <TButton type="default" color="primary" htmlButtonType="submit" :disabled="!isValid">
-            {{ isEditing ? t('common.saveChanges') : t('common.createCard') }}
-          </TButton>
-        </TButtonGroup>
-
-        <TButtonGroup v-if="isEditing" :class="bemm('secondary-actions')">
-             <!-- Left side: Translations toggle -->
-             <TButton type="outline" color="primary" :icon="Icons.SPEECH_BALLOON" @click="toggleTranslations">
-            {{ showTranslations ? t('common.hide') : t('common.show') }} {{ t('cards.translations') }}
-            <span v-if="form.translations.length > 0" :class="bemm('translations-count')">
-              ({{ form.translations.length }})
-            </span>
-          </TButton>
-      </TButtonGroup>
-      </TFormActions>
+      <!-- Translations toggle button (only when editing) -->
+      <div v-if="isEditing" :class="bemm('translations-toggle')">
+        <TButton type="outline" color="primary" :icon="Icons.SPEECH_BALLOON" @click="toggleTranslations">
+          {{ showTranslations ? t('common.hide') : t('common.show') }} {{ t('cards.translations') }}
+          <span v-if="form.translations.length > 0" :class="bemm('translations-count')">
+            ({{ form.translations.length }})
+          </span>
+        </TButton>
+      </div>
 
         <!-- Left Column: Main Form Fields -->
         <section :class="bemm('section', ['', 'main'])">
@@ -89,7 +71,7 @@
             </TFormField>
 
             <!-- Visibility toggle -->
-            <TFormField v-if="showVisibilityToggle && isOwner" :label="t('cards.visibility')" name="visibility">
+            <TFormField v-if="showVisibilityToggle && isOwner" :label="t('common.visibility')" name="visibility">
               <div :class="bemm('visibility-options')">
                 <label :class="bemm('checkbox-label')">
                   <input
@@ -97,20 +79,20 @@
                     v-model="form.isPublic"
                     :class="bemm('checkbox')"
                   />
-                  <span>{{ t('cards.makePublic') }}</span>
+                  <span>{{ t('common.makePublic') }}</span>
                   <TIcon 
                     name="info" 
                     size="small" 
-                    :title="t('cards.publicDescription')"
+                    :title="t('common.publicDescription')"
                     :class="bemm('info-icon')"
                   />
                 </label>
                 <p v-if="form.isPublic" :class="bemm('visibility-note')">
-                  {{ t('cards.publicNote') }}
+                  {{ t('common.publicNote') }}
                 </p>
                 <p v-if="form.isCurated" :class="bemm('visibility-note', 'curated')">
                   <TIcon name="star" size="small" />
-                  {{ t('cards.curatedNote') }}
+                  {{ t('common.curatedNote') }}
                 </p>
               </div>
             </TFormField>
@@ -178,6 +160,7 @@ const props = defineProps<{
   translations?: ItemTranslation[];
   showVisibilityToggle?: boolean;
   isOwner?: boolean;
+  onMounted?: (instance: any) => void;
 }>();
 
 const emit = defineEmits<{
@@ -300,6 +283,11 @@ const isValid = computed(() => {
   return form.title.trim().length > 0;
 });
 
+// Check if user owns the card
+const isOwner = computed(() => {
+  return props.isOwner !== undefined ? props.isOwner : true;
+});
+
 const handleSubmit = () => {
   if (!isValid.value) return;
 
@@ -310,9 +298,17 @@ const handleSubmit = () => {
     speech: form.speech?.trim() || '',
     icon: 'square',
     base_locale: form.base_locale, // Store the base locale
+    isPublic: form.isPublic,
+    isCurated: form.isCurated,
   };
 
   emit('submit', cardData, props.index || 0, form.translations);
+};
+
+// Trigger save method that can be called from popup actions
+const triggerSave = () => {
+  console.log('CardForm triggerSave called, isValid:', isValid.value);
+  handleSubmit();
 };
 
 const handleCancel = () => {
@@ -397,6 +393,26 @@ watch(() => props.translations, (newTranslations) => {
     form.translations = [...newTranslations];
   }
 }, { immediate: true });
+
+// Expose methods for parent components
+defineExpose({
+  isValid,
+  formData: form,
+  triggerSave,
+  save: triggerSave // Keep backward compatibility
+});
+
+// Call onMounted when component is ready
+onMounted(() => {
+  console.log('CardForm mounted, calling onMounted callback');
+  if (props.onMounted) {
+    props.onMounted({
+      triggerSave,
+      isValid,
+      formData: form
+    });
+  }
+});
 </script>
 
 <style lang="scss">
@@ -446,13 +462,10 @@ watch(() => props.translations, (newTranslations) => {
     margin-left: var(--space-xs);
   }
 
-  &__actions {
-    margin-top: var(--space-lg);
-    padding-top: var(--space);
-    border-top: 1px solid var(--color-border);
+  &__translations-toggle {
+    margin-bottom: var(--space);
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: flex-end;
   }
 
   &__image-field {

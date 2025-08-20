@@ -23,6 +23,7 @@ export interface AdminItem {
   title: string;
   type: string;
   app_name: string;
+  parent_id?: string;
   icon?: string;
   color?: string;
   image?: string;
@@ -66,6 +67,15 @@ class AdminItemsService {
       // Get public items using the core service
       const items = await this.itemService.getPublicItems(itemFilters)
       
+      // Debug: Log a few items to see what fields are available
+      console.log('AdminItems: First few items from service:', items.slice(0, 3).map(item => ({
+        id: item.id,
+        name: item.name,
+        parent_id: item.parent_id,
+        app_name: item.app_name,
+        type: item.type
+      })))
+      
       // Get unique user IDs
       const userIds = [...new Set(items.map(item => item.user_id).filter(Boolean))]
       
@@ -86,21 +96,40 @@ class AdminItemsService {
       }
       
       // Map the items to our admin format
-      return items.map((item: BaseItem): AdminItem => ({
-        id: item.id,
-        title: item.name || 'Untitled',
-        type: item.type,
-        app_name: item.app_name,
-        icon: item.icon,
-        color: item.color,
-        image: item.metadata?.image,
-        isPublic: item.is_public,
-        isCurated: item.is_curated,
-        user_id: item.user_id,
-        user_email: userMap.get(item.user_id) || undefined,
-        created_at: item.created_at,
-        updated_at: item.updated_at,
-      }))
+      const adminItems = items.map((item: BaseItem): AdminItem => {
+        const adminItem = {
+          id: item.id,
+          title: item.name || 'Untitled',
+          type: item.type,
+          app_name: item.app_name,
+          parent_id: item.parent_id,
+          icon: item.icon,
+          color: item.color,
+          image: item.metadata?.image,
+          isPublic: item.is_public,
+          isCurated: item.is_curated,
+          user_id: item.user_id,
+          user_email: userMap.get(item.user_id) || undefined,
+          created_at: item.created_at,
+          updated_at: item.updated_at,
+        }
+        
+        // Debug: Log items with parent_id
+        if (item.parent_id) {
+          console.log('AdminItems: Item with parent_id found:', {
+            id: item.id,
+            name: item.name,
+            parent_id: item.parent_id,
+            mapped_parent_id: adminItem.parent_id
+          })
+        }
+        
+        return adminItem
+      })
+      
+      console.log('AdminItems: Total items:', adminItems.length, 'with parent_id:', adminItems.filter(item => item.parent_id).length)
+      
+      return adminItems
     } catch (error) {
       console.error('Error loading public items:', error)
       throw error

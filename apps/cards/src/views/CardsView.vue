@@ -191,19 +191,27 @@ import BulkCardCreator from '../components/BulkCardCreator.vue';
 import AddCardsModal from '../components/AddCardsModal.vue';
 import type { TCardTile as CardTile } from '@tiko/ui';
 import { useEditMode } from '../composables/useEditMode';
-import { useSpeak, useEventBus } from '@tiko/core';
+import { useSpeak, useEventBus, useAuthStore } from '@tiko/core';
 import { cardsService } from '../services/cards.service';
 import { ItemTranslationService } from '../services/item-translation.service';
 import type { ItemTranslation } from '../models/ItemTranslation.model';
 import { Icons } from 'open-icon';
 
 const bemm = useBemm('cards-view');
-const settings = ref();
 const route = useRoute();
 const router = useRouter();
 const yesNoStore = useCardStore();
+const authStore = useAuthStore();
 const { t, currentLocale } = useI18n();
 const parentMode = useParentMode();
+
+// Initialize settings from store
+const settings = computed(() => yesNoStore.settings || {
+  buttonSize: 'large' as 'small' | 'medium' | 'large',
+  autoSpeak: true,
+  hapticFeedback: true,
+  buttonStyle: 'icons' as 'hands' | 'icons' | 'text',
+});
 
 // Parent mode computed state
 const isParentModeUnlocked = computed(() => {
@@ -511,19 +519,58 @@ const openCardEditForm = async (card: CardTile, index: number) => {
     }
   }
 
+  // Create refs to store the component instance and save loading state
+  let formComponentRef: any = null;
+  const isSaving = ref(false);
+  
+  // Calculate ownership
+  const isOwner = isNewCard ? true : (card.ownerId === authStore.user?.id || card.user_id === authStore.user?.id);
+  
+  // Define actions for the popup
+  const actions = computed(() => [
+    {
+      id: 'cancel',
+      label: t('common.cancel'),
+      type: 'outline',
+      color: 'secondary',
+      action: () => popupService.close(),
+    },
+    {
+      id: 'save',
+      label: isNewCard ? t('common.create') : t('common.save'),
+      type: 'default',
+      color: 'primary',
+      status: isSaving.value ? 'loading' : 'default',
+      action: async () => {
+        if (formComponentRef?.triggerSave) {
+          formComponentRef.triggerSave();
+        } else {
+          console.error('No triggerSave method available on component', formComponentRef);
+        }
+      },
+    },
+  ]);
+
   popupService.open({
     component: CardForm,
     title: isNewCard ? 'Create New Tile' : 'Edit Tile',
+    actions: actions,
       props: {
         card: card,
         index: index,
         hasChildren: tilesWithChildren.value.has(card.id),
         translations: translations,
+        showVisibilityToggle: true, // Always show for owned cards
+        isOwner: isOwner,
+        onMounted: (instance: any) => {
+          formComponentRef = instance;
+        },
         onTranslationsGenerated: async () => {
           // Reload cards when translations are generated
           await loadCards();
         },
         onSubmit: async (cardData: Partial<CardTile>, cardIndex: number, newTranslations: ItemTranslation[]) => {
+          isSaving.value = true;
           if (isNewCard) {
             // For new cards, we need to save first to get the ID
             try {
@@ -545,6 +592,8 @@ const openCardEditForm = async (card: CardTile, index: number) => {
             } catch (error) {
               console.error('Failed to create card:', error);
               toastService.error(t('cards.failedToCreateCard'));
+            } finally {
+              isSaving.value = false;
             }
           } else {
             // For existing cards, use optimistic update
@@ -586,6 +635,8 @@ const openCardEditForm = async (card: CardTile, index: number) => {
               
               // Show error toast
               toastService.error(t('cards.failedToSaveCard'));
+            } finally {
+              isSaving.value = false;
             }
           }
         },

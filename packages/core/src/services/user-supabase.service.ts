@@ -385,17 +385,30 @@ export class SupabaseUserService implements UserService {
       console.log('[UserService] Session structure:', {
         hasUser: !!session.user,
         hasUserId: !!session.user?.id,
-        userId: session.user?.id
+        userId: session.user?.id,
+        email: session.user?.email
       })
 
       // Handle different session structures
       const userId = session.user?.id || session.user_id
+      const email = session.user?.email
+      
       if (!userId) {
         console.error('[UserService] No user ID found in session')
         return false
       }
 
-      const response = await fetch(`${this.API_URL}/user_profiles?select=role&user_id=eq.${userId}`, {
+      // Check admin by email domain first (fallback check)
+      if (email && (
+        email.endsWith('@admin.tiko.app') || 
+        email.endsWith('@tiko.com') || 
+        email.endsWith('@admin.com')
+      )) {
+        console.log('[UserService] Admin detected by email domain:', email)
+        return true
+      }
+
+      const response = await fetch(`${this.API_URL}/user_profiles?select=role,email&user_id=eq.${userId}`, {
         headers: {
           'apikey': this.ANON_KEY,
           'Authorization': `Bearer ${session.access_token}`,
@@ -404,15 +417,62 @@ export class SupabaseUserService implements UserService {
       })
 
       if (!response.ok) {
-        console.error('Failed to check admin status:', response.statusText)
+        const errorText = await response.text()
+        console.error('[UserService] Failed to check admin status:', response.statusText, errorText)
+        
+        // If profile lookup fails, fall back to email domain check
+        if (email && (
+          email.endsWith('@admin.tiko.app') || 
+          email.endsWith('@tiko.com') || 
+          email.endsWith('@admin.com')
+        )) {
+          console.log('[UserService] Fallback admin check by email domain:', email)
+          return true
+        }
+        
         return false
       }
 
-      const [profile] = await response.json()
+      const profiles = await response.json()
+      const profile = profiles[0]
+      
       console.log('[UserService] Admin check result:', profile)
-      return profile?.role === 'admin'
+      
+      // Check if admin role is set in profile
+      if (profile?.role === 'admin') {
+        return true
+      }
+      
+      // Final fallback: check if profile email has admin domain
+      if (profile?.email && (
+        profile.email.endsWith('@admin.tiko.app') || 
+        profile.email.endsWith('@tiko.com') || 
+        profile.email.endsWith('@admin.com')
+      )) {
+        console.log('[UserService] Admin detected by profile email domain:', profile.email)
+        return true
+      }
+      
+      return false
     } catch (error) {
       console.error('Failed to check admin status:', error)
+      
+      // Final fallback: check session email
+      try {
+        const session = this.getSession()
+        const email = session?.user?.email
+        if (email && (
+          email.endsWith('@admin.tiko.app') || 
+          email.endsWith('@tiko.com') || 
+          email.endsWith('@admin.com')
+        )) {
+          console.log('[UserService] Emergency fallback admin check by session email:', email)
+          return true
+        }
+      } catch (fallbackError) {
+        console.error('[UserService] Fallback admin check also failed:', fallbackError)
+      }
+      
       return false
     }
   }

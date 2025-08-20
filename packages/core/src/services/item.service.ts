@@ -76,6 +76,7 @@ export interface UpdateItemPayload {
   is_favorite?: boolean
   is_completed?: boolean
   is_public?: boolean
+  is_curated?: boolean
   tags?: string[]
   icon?: string
   color?: string

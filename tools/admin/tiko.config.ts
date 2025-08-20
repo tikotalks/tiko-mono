@@ -10,5 +10,11 @@ export default defineConfig({
     primary: 'blue',
     secondary: 'purple',
     tertiary: 'green'
+  },
+  splash: {
+    appName: 'Admin',
+    backgroundColor: '#f8f9fa',
+    themeColor: '#007bff',
+    loadingText: 'Loading Admin...'
   }
 })

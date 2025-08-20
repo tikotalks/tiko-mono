@@ -12,5 +12,11 @@ export default defineConfig({
   },
   auth: {
     skipAuth: true // Allow using the app without login
+  },
+  splash: {
+    appName: 'Yes No',
+    backgroundColor: '#ffffff',
+    themeColor: '#20c997',
+    loadingText: 'Loading Yes No...'
   }
 })

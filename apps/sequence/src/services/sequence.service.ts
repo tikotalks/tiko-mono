@@ -93,7 +93,9 @@ export const sequenceService = {
           base_locale: item.base_locale || 'en',
           effective_locale: item.effective_locale || item.base_locale || 'en',
           isPublic: item.is_public || false,
-          isCurated: item.is_curated || false
+          isCurated: item.is_curated || false,
+          ownerId: item.user_id, // Add ownerId for ownership checks
+          user_id: item.user_id // Add user_id for ownership checks
         };
 
         console.log('[loadSequence] Card tile created:', {
@@ -151,7 +153,9 @@ export const sequenceService = {
           base_locale: item.base_locale || 'en',
           effective_locale: item.effective_locale || item.base_locale || 'en',
           isPublic: item.is_public || false,
-          isCurated: item.is_curated || false
+          isCurated: item.is_curated || false,
+          ownerId: item.user_id, // Add ownerId for ownership checks
+          user_id: item.user_id // Add user_id for ownership checks
         };
       });
     } catch (error) {
@@ -208,6 +212,8 @@ export const sequenceService = {
         metadata: metadata
       });
 
+      const isPublic = card.isPublic || false;
+      
       const itemData = {
         user_id: userId,
         app_name: APP_NAME,
@@ -220,7 +226,10 @@ export const sequenceService = {
         color: card.color,
         order_index: index ?? card.index ?? 0,
         base_locale: card.base_locale,
-        is_public: card.isPublic || false
+        is_public: isPublic,
+        // When making something non-public, also remove curated status
+        // since curated items should always be public
+        is_curated: isPublic ? undefined : false
       };
 
       let cardId: string;
@@ -229,6 +238,16 @@ export const sequenceService = {
         // Update existing card
         await sequenceSupabaseService.updateCard(card.id, itemData);
         cardId = card.id;
+        
+        // If this is a sequence being updated, cascade visibility to children
+        if (card.type === 'sequence') {
+          try {
+            await sequenceSupabaseService.updateSequenceChildrenVisibility(cardId, userId, itemData.is_public || false);
+          } catch (error) {
+            console.warn('Failed to update children visibility:', error);
+          }
+        }
+        
         // Clear cache for parent if card moved
         if (parentId) childrenCache.delete(parentId);
       } else {
@@ -238,6 +257,7 @@ export const sequenceService = {
         // Clear cache for parent since we added a child
         if (parentId) childrenCache.delete(parentId);
       }
+
 
       // Save translations if provided
       if (cardId && translations && translations.length > 0) {
@@ -367,7 +387,9 @@ export const sequenceService = {
         throw new Error('Failed to create sequence');
       }
 
-      // Then create all the sequence items
+      // Then create all the sequence items - inherit public status from parent sequence
+      const parentIsPublic = sequenceData.isPublic || false;
+      
       for (const item of sequenceData.items) {
         const itemCard: Partial<CardTile> = {
           title: item.title,
@@ -377,7 +399,8 @@ export const sequenceService = {
           speech: item.speak,
           type: 'sequence-item',
           parentId: sequenceId,
-          index: item.orderIndex
+          index: item.orderIndex,
+          isPublic: parentIsPublic // Inherit public status from parent sequence
         };
 
         await this.saveCard(itemCard, sequenceId, item.orderIndex);
@@ -432,7 +455,9 @@ export const sequenceService = {
       const existingItems = await this.loadSequence(sequenceId);
       const existingIds = new Set(existingItems.map(item => item.id));
 
-      // Update or create items
+      // Update or create items - inherit public status from parent sequence
+      const parentIsPublic = sequenceData.isPublic ?? existingSequence?.is_public ?? false;
+      
       for (const item of sequenceData.items) {
         const itemCard: Partial<CardTile> = {
           id: item.id,
@@ -443,7 +468,8 @@ export const sequenceService = {
           speech: item.speak,
           type: 'sequence-item',
           parentId: sequenceId,
-          index: item.orderIndex
+          index: item.orderIndex,
+          isPublic: parentIsPublic // Inherit public status from parent sequence
         };
 
         await this.saveCard(itemCard, sequenceId, item.orderIndex);
@@ -533,7 +559,7 @@ export const sequenceService = {
         throw new Error('No authenticated user');
       }
 
-      await sequenceSupabaseService.updateItemVisibility(itemId, userId, isPublic);
+      await sequenceSupabaseService.updateSequenceVisibility(itemId, userId, isPublic);
     } catch (error) {
       console.error('Error toggling item visibility:', error);
       throw error;

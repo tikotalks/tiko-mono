@@ -73,20 +73,20 @@ class SequenceSupabaseService {
 
   async getSequence(userId: string, parentId?: string): Promise<CardItem[]> {
     const params = new URLSearchParams();
-    params.append('user_id', `eq.${userId}`);
-
+    
     // Try with app_name filter first
     params.append('app_name', 'eq.sequence');
 
     if (parentId === undefined || parentId === null) {
+      // For top level, get user's own sequences AND curated public sequences
       params.append('parent_id', 'is.null');
-      // When loading top level, only get sequences
       params.append('type', 'eq.sequence');
+      params.append('or', `(user_id.eq.${userId},and(is_curated.eq.true,is_public.eq.true,user_id.neq.${userId}))`);
     } else {
+      // For children, we need to get items regardless of owner (for curated sequences)
       params.append('parent_id', `eq.${parentId}`);
-      // When loading children, only get sequence-items
-      // Temporarily commenting out type filter to debug
-      // params.append('type', 'eq.sequence-item');
+      // For curated sequences, only load public children that other users can see
+      params.append('or', `(user_id.eq.${userId},is_public.eq.true)`);
     }
 
     // Use correct PostgREST syntax for ordering
@@ -98,6 +98,35 @@ class SequenceSupabaseService {
     try {
       let result = await this.apiRequest<CardItem[]>(url);
       console.log('[getSequence] Result with app_name filter:', result.length, 'items found');
+      
+      // Debug: Log details about what we found when loading children
+      if (parentId && result.length === 0) {
+        console.warn(`[getSequence] WARNING: No children found for parentId ${parentId}`);
+        console.log('[getSequence] Query URL was:', url);
+        
+        // Try a more permissive query to see if items exist but aren't being returned
+        const debugParams = new URLSearchParams();
+        debugParams.append('parent_id', `eq.${parentId}`);
+        const debugUrl = `items?${debugParams.toString()}`;
+        console.log('[getSequence] Trying debug query without filters:', debugUrl);
+        
+        try {
+          const debugResult = await this.apiRequest<CardItem[]>(debugUrl);
+          console.log('[getSequence] Debug query found:', debugResult.length, 'items');
+          if (debugResult.length > 0) {
+            console.log('[getSequence] Debug items:', debugResult.map(r => ({
+              id: r.id,
+              name: r.name,
+              user_id: r.user_id,
+              app_name: r.app_name,
+              type: r.type,
+              parent_id: r.parent_id
+            })));
+          }
+        } catch (debugError) {
+          console.error('[getSequence] Debug query failed:', debugError);
+        }
+      }
       if (result.length > 0) {
         console.log('[getSequence] First few results:', result.slice(0, 3).map(r => ({
           id: r.id,
@@ -314,6 +343,89 @@ class SequenceSupabaseService {
 
     console.log('[getSequenceWithTranslations] Final result:', result.map(c => ({ id: c.id, name: c.name, effective_locale: c.effective_locale })));
     return result;
+  }
+
+  // Get ALL sequence - both owned and curated
+  async getAllSequence(userId: string, includeCurated = false): Promise<CardItem[]> {
+    if (!includeCurated) {
+      // Simple case: only user's own items
+      const params = new URLSearchParams();
+      params.append('app_name', 'eq.sequence');
+      params.append('user_id', `eq.${userId}`);
+      params.append('order', 'parent_id.asc.nullsfirst,order_index.asc');
+
+      const url = `items?${params.toString()}`;
+      console.log('[getAllSequence] Fetching user items from:', url);
+
+      try {
+        const result = await this.apiRequest<CardItem[]>(url);
+        console.log('[getAllSequence] Found', result.length, 'user items');
+        return result;
+      } catch (error) {
+        console.error('[getAllSequence] Error:', error);
+        throw error;
+      }
+    }
+
+    // Complex case: user items + curated items + ALL their children
+    console.log('[getAllSequence] Loading with curated items...');
+    
+    try {
+      // Step 1: Get user's own root sequences
+      const userParams = new URLSearchParams();
+      userParams.append('app_name', 'eq.sequence');
+      userParams.append('user_id', `eq.${userId}`);
+      userParams.append('order', 'parent_id.asc.nullsfirst,order_index.asc');
+
+      console.log('[getAllSequence] Step 1: Getting user items...');
+      const userItems = await this.apiRequest<CardItem[]>(`items?${userParams.toString()}`);
+      console.log('[getAllSequence] Step 1: Found', userItems.length, 'user items');
+
+      // Step 2: Get curated root sequences (only curated sequences, not their children yet)
+      const curatedParams = new URLSearchParams();
+      curatedParams.append('app_name', 'eq.sequence');
+      curatedParams.append('is_curated', 'eq.true');
+      curatedParams.append('user_id', `neq.${userId}`); // From other users
+      curatedParams.append('parent_id', 'is.null'); // Only root sequences
+      curatedParams.append('type', 'eq.sequence'); // Only sequences, not items
+      curatedParams.append('order', 'order_index.asc');
+
+      console.log('[getAllSequence] Step 2: Getting curated sequences...');
+      const curatedSequences = await this.apiRequest<CardItem[]>(`items?${curatedParams.toString()}`);
+      console.log('[getAllSequence] Step 2: Found', curatedSequences.length, 'curated sequences');
+
+      // Step 3: For each curated sequence, get ALL its children (regardless of owner)
+      const allCuratedChildren: CardItem[] = [];
+      
+      for (const curatedSeq of curatedSequences) {
+        console.log(`[getAllSequence] Step 3: Loading children for curated sequence "${curatedSeq.name}" (${curatedSeq.id})`);
+        
+        const childParams = new URLSearchParams();
+        childParams.append('app_name', 'eq.sequence');
+        childParams.append('parent_id', `eq.${curatedSeq.id}`);
+        childParams.append('is_public', 'eq.true'); // Only load public children for curated sequences
+        childParams.append('order', 'order_index.asc');
+
+        const children = await this.apiRequest<CardItem[]>(`items?${childParams.toString()}`);
+        console.log(`[getAllSequence] Step 3: Found ${children.length} children for "${curatedSeq.name}"`);
+        
+        allCuratedChildren.push(...children);
+      }
+
+      // Step 4: Combine everything
+      const allItems = [...userItems, ...curatedSequences, ...allCuratedChildren];
+      console.log('[getAllSequence] Final result:', allItems.length, 'total items');
+      console.log('[getAllSequence] Breakdown:', {
+        userItems: userItems.length,
+        curatedSequences: curatedSequences.length,
+        curatedChildren: allCuratedChildren.length
+      });
+
+      return allItems;
+    } catch (error) {
+      console.error('[getAllSequence] Error in curated loading:', error);
+      throw error;
+    }
   }
 
   // Get ALL sequence with translations for the current locale
@@ -577,12 +689,39 @@ class SequenceSupabaseService {
 
   async updateSequenceVisibility(sequenceId: string, userId: string, isPublic: boolean): Promise<void> {
     try {
+      // First, update the sequence itself
       await this.apiRequest(`items?id=eq.${sequenceId}&user_id=eq.${userId}`, {
         method: 'PATCH',
         body: JSON.stringify({ is_public: isPublic })
       });
+
+      // Then, update all children to have the same visibility
+      await this.updateSequenceChildrenVisibility(sequenceId, userId, isPublic);
+
+      console.log(`Updated sequence ${sequenceId} and all its children to ${isPublic ? 'public' : 'private'}`);
     } catch (error) {
       console.error('Error updating sequence visibility:', error);
+      throw error;
+    }
+  }
+
+  async updateSequenceChildrenVisibility(sequenceId: string, userId: string, isPublic: boolean): Promise<void> {
+    try {
+      // When making children non-public, also remove curated status
+      // When making children public, leave curated status unchanged
+      const updateData: any = { is_public: isPublic };
+      if (!isPublic) {
+        updateData.is_curated = false;
+      }
+      
+      await this.apiRequest(`items?parent_id=eq.${sequenceId}&user_id=eq.${userId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(updateData)
+      });
+
+      console.log(`Updated all children of sequence ${sequenceId} to ${isPublic ? 'public' : 'private'}`);
+    } catch (error) {
+      console.error('Error updating sequence children visibility:', error);
       throw error;
     }
   }
@@ -685,6 +824,65 @@ class SequenceSupabaseService {
       });
     } catch (error) {
       console.error('Error updating item curated status:', error);
+      throw error;
+    }
+  }
+
+  async updateCard(cardId: string, itemData: any): Promise<void> {
+    try {
+      // Handle public/curated relationship: when making item non-public, also remove curated status
+      const updateData = { ...itemData }
+      if (itemData.is_public === false) {
+        updateData.is_curated = false
+      }
+      
+      await this.apiRequest(`items?id=eq.${cardId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          ...updateData,
+          updated_at: new Date().toISOString()
+        })
+      });
+    } catch (error) {
+      console.error('Error updating card:', error);
+      throw error;
+    }
+  }
+
+  async createCard(itemData: any): Promise<CardItem> {
+    try {
+      const result = await this.apiRequest<CardItem[]>('items', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...itemData,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+      });
+      return result[0];
+    } catch (error) {
+      console.error('Error creating card:', error);
+      throw error;
+    }
+  }
+
+  async getCard(cardId: string): Promise<CardItem | null> {
+    try {
+      const result = await this.apiRequest<CardItem[]>(`items?id=eq.${cardId}`);
+      return result[0] || null;
+    } catch (error) {
+      console.error('Error getting card:', error);
+      return null;
+    }
+  }
+
+  async deleteCard(cardId: string): Promise<void> {
+    try {
+      await this.apiRequest(`items?id=eq.${cardId}`, {
+        method: 'DELETE'
+      });
+    } catch (error) {
+      console.error('Error deleting card:', error);
       throw error;
     }
   }

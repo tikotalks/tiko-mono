@@ -18,6 +18,13 @@
           :options="visibilityOptions"
           :placeholder="t('admin.items.filterVisibility')"
         />
+
+        <div :class="bemm('filter-toggle')">
+          <TInputCheckbox
+            v-model="hideChildItems"
+            label="Show flat list (hide hierarchy)"
+          />
+        </div>
       </div>
 
       <div :class="bemm('search')">
@@ -70,56 +77,130 @@
         </div>
 
         <TList :columns="columns">
-          <TListItem
-            v-for="item in filteredItems"
-            :key="item.id"
-            :selected="selectedItems.includes(item.id)"
-          >
-            <TListCell type="custom">
-              <TInputCheckbox
-                :model-value="selectedItems.includes(item.id)"
-                @update:model-value="toggleItemSelection(item.id)"
-              />
-            </TListCell>
-            
-            <TListCell type="text" :content="item.title" />
-            
-            <TListCell type="text" :content="item.app_name" />
-            
-            <TListCell type="text" :content="item.user_email || t('common.unknown')" />
-            
-            <TListCell type="custom">
-              <div :class="bemm('badges')">
-                <TChip v-if="item.isPublic" type="info" size="small">
-                  {{ t('common.public') }}
-                </TChip>
-                <TChip v-if="item.isCurated" type="warning" size="small">
-                  {{ t('common.curated') }}
-                </TChip>
-              </div>
-            </TListCell>
-            
-            <TListCell type="text" :content="formatDate(item.created_at)" />
-            
-            <TListCell type="actions">
-              <TButton
-                v-if="!item.isCurated"
-                type="primary"
-                size="small"
-                @click="toggleCurated(item.id, true)"
+          <template v-for="item in filteredItems" :key="item.id">
+            <!-- Parent Item -->
+            <TListItem :selected="selectedItems.includes(item.id)">
+              <TListCell type="custom">
+                <TInputCheckbox
+                  :model-value="selectedItems.includes(item.id)"
+                  @update:model-value="toggleItemSelection(item.id)"
+                />
+              </TListCell>
+              
+              <TListCell type="custom">
+                <div :class="bemm('item-name')">
+                  <TButton
+                    v-if="!hideChildItems && hasChildren(item.id)"
+                    type="ghost"
+                    size="small"
+                    :icon="expandedItems.has(item.id) ? Icons.CHEVRON_DOWN : Icons.CHEVRON_RIGHT"
+                    @click.stop="toggleItemExpanded(item.id)"
+                    :class="bemm('expand-button')"
+                  />
+                  <span>{{ item.title }}</span>
+                </div>
+              </TListCell>
+              
+              <TListCell type="text" :content="hideChildItems ? (item.parent_id || '-') : (hasChildren(item.id) ? getItemChildren(item.id).length.toString() : '-')" />
+              
+              <TListCell type="text" :content="item.app_name" />
+              
+              <TListCell type="text" :content="item.user_email || t('common.unknown')" />
+              
+              <TListCell type="custom">
+                <div :class="bemm('badges')">
+                  <TChip v-if="item.isPublic" type="info" size="small">
+                    {{ t('common.public') }}
+                  </TChip>
+                  <TChip v-if="item.isCurated" type="warning" size="small">
+                    {{ t('common.curated') }}
+                  </TChip>
+                </div>
+              </TListCell>
+              
+              <TListCell type="text" :content="formatDate(item.created_at)" />
+              
+              <TListCell type="actions">
+                <TButton
+                  v-if="!item.isCurated"
+                  type="primary"
+                  size="small"
+                  @click="toggleCurated(item.id, true)"
+                >
+                  {{ t('admin.items.makeCurated') }}
+                </TButton>
+                <TButton
+                  v-else
+                  type="ghost"
+                  size="small"
+                  @click="toggleCurated(item.id, false)"
+                >
+                  {{ t('admin.items.removeCurated') }}
+                </TButton>
+              </TListCell>
+            </TListItem>
+
+            <!-- Child Items (when expanded) -->
+            <template v-if="!hideChildItems && expandedItems.has(item.id)">
+              <TListItem
+                v-for="child in getItemChildren(item.id)"
+                :key="child.id"
+                :selected="selectedItems.includes(child.id)"
+                :class="bemm('child-item')"
               >
-                {{ t('admin.items.makeCurated') }}
-              </TButton>
-              <TButton
-                v-else
-                type="ghost"
-                size="small"
-                @click="toggleCurated(item.id, false)"
-              >
-                {{ t('admin.items.removeCurated') }}
-              </TButton>
-            </TListCell>
-          </TListItem>
+                <TListCell type="custom">
+                  <TInputCheckbox
+                    :model-value="selectedItems.includes(child.id)"
+                    @update:model-value="toggleItemSelection(child.id)"
+                  />
+                </TListCell>
+                
+                <TListCell type="custom">
+                  <div :class="bemm('child-name')">
+                    <span>{{ child.title }}</span>
+                  </div>
+                </TListCell>
+                
+                <TListCell type="text" content="-" />
+                
+                <TListCell type="text" content="-" />
+                
+                <TListCell type="text" content="-" />
+                
+                <TListCell type="custom">
+                  <div :class="bemm('badges')">
+                    <TChip v-if="child.isPublic" type="info" size="small">
+                      {{ t('common.public') }}
+                    </TChip>
+                    <TChip v-if="child.isCurated" type="warning" size="small">
+                      {{ t('common.curated') }}
+                    </TChip>
+                  </div>
+                </TListCell>
+                
+                <TListCell type="text" :content="formatDate(child.created_at)" />
+                
+                <TListCell type="actions">
+                  <TButton
+                    v-if="!child.isCurated"
+                    type="primary"
+                    size="small"
+                    @click="toggleCurated(child.id, true)"
+                  >
+                    {{ t('admin.items.makeCurated') }}
+                  </TButton>
+                  <TButton
+                    v-else
+                    type="ghost"
+                    size="small"
+                    @click="toggleCurated(child.id, false)"
+                  >
+                    {{ t('admin.items.removeCurated') }}
+                  </TButton>
+                </TListCell>
+              </TListItem>
+            </template>
+          </template>
         </TList>
       </div>
     </div>
@@ -155,13 +236,16 @@ import { adminItemsService, type AdminItemsFilter, type AdminItem } from '@tiko/
 const selectedApp = ref<string>('all');
 const visibilityFilter = ref<string>('all');
 const searchQuery = ref('');
+const hideChildItems = ref<boolean>(false); // Default to showing hierarchical view
 const isLoading = ref(false);
 const items = ref<AdminItem[]>([]);
 const selectedItems = ref<string[]>([]);
+const expandedItems = ref<Set<string>>(new Set());
 
 const columns = [
   { key: 'select', label: '', width: '40px' },
-  { key: 'title', label: t('admin.items.title') },
+  { key: 'title', label: t('admin.items.title'), width: '300px' },
+  { key: 'relationship', label: 'Relationship', width: '120px' },
   { key: 'app', label: t('admin.items.app'), width: '120px' },
   { key: 'owner', label: t('admin.items.owner'), width: '200px' },
   { key: 'status', label: t('admin.items.status'), width: '200px' },
@@ -181,8 +265,47 @@ const visibilityOptions = [
   { value: 'curated', label: t('admin.items.visibility.curated') },
 ];
 
+// Get parent items (items without parent_id)
+const parentItems = computed(() => {
+  return items.value.filter(item => !item.parent_id);
+});
+
+// Get children for a specific parent
+const getItemChildren = (parentId: string) => {
+  return items.value.filter(item => item.parent_id === parentId);
+};
+
+// Check if item has children
+const hasChildren = (itemId: string) => {
+  return items.value.some(item => item.parent_id === itemId);
+};
+
+// Toggle expanded state
+const toggleItemExpanded = (itemId: string) => {
+  if (expandedItems.value.has(itemId)) {
+    expandedItems.value.delete(itemId);
+  } else {
+    expandedItems.value.add(itemId);
+  }
+};
+
 const filteredItems = computed(() => {
   let filtered = items.value;
+
+  console.log('filteredItems: hideChildItems =', hideChildItems.value);
+  console.log('filteredItems: total items =', filtered.length);
+  console.log('filteredItems: items with parent_id =', filtered.filter(item => item.parent_id).length);
+
+  // In hierarchical mode, only show parent items (children are shown nested)
+  // In flat mode with hideChildItems, filter out child items
+  if (hideChildItems.value) {
+    const beforeFilter = filtered.length;
+    filtered = filtered.filter(item => !item.parent_id);
+    console.log('filteredItems: after hiding child items =', filtered.length, '(removed', beforeFilter - filtered.length, ')');
+  } else {
+    // In hierarchical mode, only show parent items in the main list
+    filtered = parentItems.value;
+  }
 
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
@@ -368,6 +491,46 @@ onMounted(() => {
     display: flex;
     gap: var(--space-xs);
     align-items: center;
+  }
+
+  &__item-name {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
+  &__expand-button {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    padding: 0;
+  }
+
+  &__child-item {
+    background: var(--color-background-secondary);
+    
+    &:hover {
+      background: var(--color-background-tertiary);
+    }
+  }
+
+  &__child-name {
+    padding-left: var(--space-l);
+    position: relative;
+    
+    &:before {
+      content: '└';
+      position: absolute;
+      left: var(--space-xs);
+      color: var(--color-text-tertiary);
+      font-family: monospace;
+    }
+  }
+
+  &__filter-toggle {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
   }
 }
 </style>

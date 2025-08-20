@@ -24,6 +24,12 @@ const config: TikoConfig = {
   },
   pwa: {
     enabled: false // Web-only app
+  },
+  splash: {
+    appName: 'UI Documentation',
+    backgroundColor: '#f8f9fa',
+    themeColor: '#8b5cf6',
+    loadingText: 'Loading UI Documentation...'
   }
 }
 

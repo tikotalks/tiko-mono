@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
-          
+
       - name: Check triggers
         id: check
         run: |
@@ -53,12 +53,12 @@ jobs:
           echo "build-radio=false" >> $GITHUB_OUTPUT
           echo "build-todo=false" >> $GITHUB_OUTPUT
           echo "build-type=false" >> $GITHUB_OUTPUT
-          
+
           # Handle workflow_dispatch trigger
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             TARGET="${{ github.event.inputs.target }}"
             echo "Workflow dispatch target: $TARGET"
-            
+
             if [[ "$TARGET" == "all" ]]; then
               echo "build-timer=true" >> $GITHUB_OUTPUT
               echo "build-yes-no=true" >> $GITHUB_OUTPUT
@@ -84,11 +84,11 @@ jobs:
             fi
             exit 0
           fi
-          
+
           # Handle push trigger - check commit message
           COMMIT_MSG='${{ github.event.head_commit.message }}'
           echo "Commit message: $COMMIT_MSG"
-          
+
           # Check for build all triggers
           if [[ "$COMMIT_MSG" == *"[build:all]"* ]] || [[ "$COMMIT_MSG" == *"[build:apps]"* ]]; then
             echo "build-timer=true" >> $GITHUB_OUTPUT
@@ -100,7 +100,7 @@ jobs:
             echo "build-type=true" >> $GITHUB_OUTPUT
             exit 0
           fi
-          
+
           # Check for specific app triggers
           if [[ "$COMMIT_MSG" == *"[build:timer]"* ]]; then
             echo "build-timer=true" >> $GITHUB_OUTPUT
@@ -138,19 +138,19 @@ jobs:
             exit 1
           fi
           echo "✅ CLOUDFLARE_API_TOKEN is configured"
-      
+
       - name: Check Supabase Environment Variables
         run: |
           MISSING_VARS=""
-          
+
           if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ]; then
             MISSING_VARS="$MISSING_VARS VITE_SUPABASE_URL"
           fi
-          
+
           if [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ]; then
             MISSING_VARS="$MISSING_VARS VITE_SUPABASE_ANON_KEY"
           fi
-          
+
           if [ -n "$MISSING_VARS" ]; then
             echo "❌ ERROR: Missing required Supabase secrets:"
             for var in $MISSING_VARS; do
@@ -160,9 +160,9 @@ jobs:
             echo "Please add these secrets in GitHub Settings > Secrets and variables > Actions"
             exit 1
           fi
-          
+
           echo "✅ Supabase environment variables are configured"
-      
+
       - name: Check Cloudflare Project Names
         run: |
           # Note: Cloudflare Pages projects are created automatically from git
@@ -176,22 +176,22 @@ jobs:
     name: Deploy Timer App
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: pnpm/action-setup@v2
         with:
           version: 8
-          
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-          
+
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
-        
+
       - name: Generate i18n translations
         run: pnpm generate:i18n:worker:prod
-        
+
       - name: Build Timer app
         run: |
           pnpm --filter=@tiko/ui build
@@ -200,12 +200,13 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_TTS_WORKER_URL: https://tts.tikoapi.org
-          VITE_TTS_CDN_URL: https://tts.tikocdn.org
-          
+          VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
+          VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
+          VITE_SITE_URL: https://timer.tikoapps.org
+
       - name: Install Wrangler
         run: npm install -g wrangler
-        
+
       - name: Deploy to Cloudflare Pages
         run: |
           wrangler pages project create tiko-timer --production-branch=master || echo "Project already exists"
@@ -221,22 +222,22 @@ jobs:
     name: Deploy Yes-No App
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: pnpm/action-setup@v2
         with:
           version: 8
-          
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-          
+
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
-        
+
       - name: Generate i18n translations
         run: pnpm generate:i18n:worker:prod
-        
+
       - name: Build Yes-No app
         run: |
           pnpm --filter=@tiko/ui build
@@ -245,12 +246,13 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_TTS_WORKER_URL: https://tts.tikoapi.org
-          VITE_TTS_CDN_URL: https://tts.tikocdn.org
-          
+          VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
+          VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
+          VITE_SITE_URL: https://yesno.tikoapps.org
+
       - name: Install Wrangler
         run: npm install -g wrangler
-        
+
       - name: Deploy to Cloudflare Pages
         run: |
           wrangler pages project create tiko-yes-no --production-branch=master || echo "Project already exists"
@@ -266,22 +268,22 @@ jobs:
     name: Deploy Cards App
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: pnpm/action-setup@v2
         with:
           version: 8
-          
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-          
+
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
-        
+
       - name: Generate i18n translations
         run: pnpm generate:i18n:worker:prod
-        
+
       - name: Build Cards app
         run: |
           pnpm --filter=@tiko/ui build
@@ -290,12 +292,13 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_TTS_WORKER_URL: https://tts.tikoapi.org
-          VITE_TTS_CDN_URL: https://tts.tikocdn.org
-          
+          VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
+          VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
+          VITE_SITE_URL: https://cards.tikoapps.org
+
       - name: Install Wrangler
         run: npm install -g wrangler
-        
+
       - name: Deploy to Cloudflare Pages
         run: |
           wrangler pages project create tiko-cards --production-branch=master || echo "Project already exists"
@@ -311,22 +314,22 @@ jobs:
     name: Deploy Radio App
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: pnpm/action-setup@v2
         with:
           version: 8
-          
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-          
+
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
-        
+
       - name: Generate i18n translations
         run: pnpm generate:i18n:worker:prod
-        
+
       - name: Build Radio app
         run: |
           pnpm --filter=@tiko/ui build
@@ -335,12 +338,13 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_TTS_WORKER_URL: https://tts.tikoapi.org
-          VITE_TTS_CDN_URL: https://tts.tikocdn.org
-          
+          VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
+          VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
+          VITE_SITE_URL: https://radio.tikoapps.org
+
       - name: Install Wrangler
         run: npm install -g wrangler
-        
+
       - name: Deploy to Cloudflare Pages
         run: |
           wrangler pages project create tiko-radio --production-branch=master || echo "Project already exists"
@@ -356,22 +360,22 @@ jobs:
     name: Deploy Todo App
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: pnpm/action-setup@v2
         with:
           version: 8
-          
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-          
+
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
-        
+
       - name: Generate i18n translations
         run: pnpm generate:i18n:worker:prod
-        
+
       - name: Build Todo app
         run: |
           pnpm --filter=@tiko/ui build
@@ -380,19 +384,20 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_TTS_WORKER_URL: https://tts.tikoapi.org
-          VITE_TTS_CDN_URL: https://tts.tikocdn.org
-          
+          VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
+          VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
+          VITE_SITE_URL: https://todo.tikoapps.org
+
       - name: Install Wrangler
         run: npm install -g wrangler
-        
+
       - name: Deploy to Cloudflare Pages
         run: |
           wrangler pages project create tiko-todo --production-branch=master || echo "Project already exists"
           wrangler pages deploy ./apps/todo/dist --project-name=tiko-todo
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: dc2b7d14a69351375cab6de9a13ddee9
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
   deploy-type:
     needs: [check-triggers, check-environment]
@@ -401,22 +406,22 @@ jobs:
     name: Deploy Type App
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: pnpm/action-setup@v2
         with:
           version: 8
-          
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-          
+
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
-        
+
       - name: Generate i18n translations
         run: pnpm generate:i18n:worker:prod
-        
+
       - name: Build Type app
         run: |
           pnpm --filter=@tiko/ui build
@@ -425,12 +430,13 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_TTS_WORKER_URL: https://tts.tikoapi.org
-          VITE_TTS_CDN_URL: https://tts.tikocdn.org
-          
+          VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
+          VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
+          VITE_SITE_URL: https://type.tikoapps.org
+
       - name: Install Wrangler
         run: npm install -g wrangler
-        
+
       - name: Deploy to Cloudflare Pages
         run: |
           wrangler pages project create tiko-type --production-branch=master || echo "Project already exists"
@@ -446,22 +452,22 @@ jobs:
     name: Deploy Sequence App
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: pnpm/action-setup@v2
         with:
           version: 8
-          
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-          
+
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
-        
+
       - name: Generate i18n translations
         run: pnpm generate:i18n:worker:prod
-        
+
       - name: Build Sequence app
         run: |
           pnpm --filter=@tiko/ui build
@@ -470,12 +476,13 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_TTS_WORKER_URL: https://tts.tikoapi.org
-          VITE_TTS_CDN_URL: https://tts.tikocdn.org
-          
+          VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
+          VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
+          VITE_SITE_URL: https://sequence.tikoapps.org
+
       - name: Install Wrangler
         run: npm install -g wrangler
-        
+
       - name: Deploy to Cloudflare Pages
         run: |
           wrangler pages project create tiko-sequence --production-branch=master || echo "Project already exists"

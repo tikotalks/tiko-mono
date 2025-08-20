@@ -12,5 +12,11 @@ export default defineConfig({
   },
   auth: {
     skipAuth: true // Allow using the app without login
+  },
+  splash: {
+    appName: 'Cards',
+    backgroundColor: '#f8f9fa',
+    themeColor: '#22c55e',
+    loadingText: 'Loading Cards...'
   }
 })

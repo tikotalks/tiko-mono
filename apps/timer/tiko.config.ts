@@ -8,5 +8,11 @@ export default defineConfig({
   theme: {
     primary: 'orange',
     secondary: 'blue'
+  },
+  splash: {
+    appName: 'Timer',
+    backgroundColor: '#ffffff',
+    themeColor: '#28a745',
+    loadingText: 'Loading Timer...'
   }
 })

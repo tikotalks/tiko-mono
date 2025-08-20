@@ -1,76 +1,35 @@
 <template>
-  <TAppLayout
-    :title="t('sequence.sequenceTitle')"
-    :show-header="true"
-    app-name="sequence"
-    @profile="handleProfile"
-    @settings="handleSettings"
-    @logout="handleLogout"
-  >
+  <TAppLayout :title="t('sequence.sequenceTitle')" :show-header="true" app-name="sequence" @profile="handleProfile"
+    @settings="handleSettings" @logout="handleLogout">
     <template #app-controls>
       <!-- Back button when in sub-level or play mode -->
-      <TButton
-        v-if="currentGroupId || isPlayMode"
-        :icon="Icons.CHEVRON_LEFT"
-        type="outline"
-        color="primary"
-        @click="handleBack"
-        :aria-label="t('common.back')"
-      >{{ t('common.back') }}</TButton>
+      <TButton v-if="currentGroupId || isPlayMode" :icon="Icons.CHEVRON_LEFT" type="outline" color="primary"
+        @click="handleBack" :aria-label="t('common.back')">{{ t('common.back') }}</TButton>
 
       <!-- Edit mode toggle (only visible in parent mode) -->
-      <TButton
-        v-if="isParentModeUnlocked"
-        :icon="isEditMode ? Icons.EDIT_M : Icons.EDIT_LINE"
-        :type="isEditMode ? 'default' : 'outline'"
-        :color="isEditMode ? 'primary' : 'secondary'"
-        @click="toggleEditMode"
+      <TButton v-if="isParentModeUnlocked" :icon="isEditMode ? Icons.EDIT_M : Icons.EDIT_LINE"
+        :type="isEditMode ? 'default' : 'outline'" :color="isEditMode ? 'primary' : 'secondary'" @click="toggleEditMode"
         :tooltip="isEditMode ? t('common.exitEditMode') : t('common.enterEditMode')"
-        :aria-label="isEditMode ? t('common.exitEditMode') : t('common.enterEditMode')"
-      />
+        :aria-label="isEditMode ? t('common.exitEditMode') : t('common.enterEditMode')" />
 
       <!-- Bulk Add button (only in edit mode) -->
-      <TButton
-        v-if="isEditMode"
-        :icon="Icons.ADD_FAT"
-        type="icon-only"
-        color="secondary"
-        @click="openBulkAddMode"
-        :aria-label="t('sequence.bulkAdd')"
-        :tooltip="t('sequence.bulkAdd')"
-      />
+      <TButton v-if="isEditMode" :icon="Icons.ADD_FAT" type="icon-only" color="secondary" @click="openBulkAddMode"
+        :aria-label="t('sequence.bulkAdd')" :tooltip="t('sequence.bulkAdd')" />
 
       <!-- App settings button (only visible in parent mode) -->
-      <TButton
-        v-if="isParentModeUnlocked"
-        :icon="Icons.SETTINGS"
-        type="outline"
-        color="secondary"
-        @click="handleAppSettings"
-        :aria-label="t('sequence.sequenceSettings')"
-      />
+      <TButton v-if="isParentModeUnlocked" :icon="Icons.SETTINGS" type="outline" color="secondary"
+        @click="handleAppSettings" :aria-label="t('sequence.sequenceSettings')" />
 
       <!-- Admin button (only visible to admins) -->
-      <TButton
-        v-if="isAdmin"
-        :icon="Icons.SHIELD"
-        type="outline"
-        color="warning"
-        @click="goToAdminPanel"
-        :tooltip="t('admin.managePublicItems')"
-        :aria-label="t('admin.managePublicItems')"
-      />
+      <TButton v-if="isAdmin" :icon="Icons.SHIELD" type="outline" color="warning" @click="goToAdminPanel"
+        :tooltip="t('admin.managePublicItems')" :aria-label="t('admin.managePublicItems')" />
     </template>
 
     <div :class="bemm('container')">
       <!-- Breadcrumb navigation -->
       <nav v-if="breadcrumbs.length > 0" :class="bemm('breadcrumbs')">
-        <button
-          v-for="(crumb, index) in breadcrumbs"
-          :key="crumb.id || 'root'"
-          :class="bemm('breadcrumb')"
-          @click="navigateToBreadcrumb(index)"
-        >
+        <button v-for="(crumb, index) in breadcrumbs" :key="crumb.id || 'root'" :class="bemm('breadcrumb')"
+          @click="navigateToBreadcrumb(index)">
           <TIcon v-if="index > 0" name="chevron-right" size="small" />
           {{ crumb.title }}
         </button>
@@ -78,32 +37,15 @@
 
       <!-- Main display - either grid or play mode -->
       <div :class="bemm('main')">
-        <SequencePlay
-          v-if="isPlayMode && currentSequenceId"
-          :sequence-id="currentSequenceId"
-          :edit-mode="isEditMode"
-          @restart="restartPlay"
-          @close="exitPlayMode"
-        />
-        <TCardGrid
-          v-else
-          :cards="sequence"
-          :show-arrows="true"
-          :edit-mode="isEditMode"
-          :tiles-with-children="tilesWithChildren"
-          :tile-children-map="tileChildrenMap"
-          :is-tile-dragging="isTileDragging"
-          :selection-mode="selectionMode"
-          :selected-tile-ids="selectedTileIds"
-          :is-loading="isLoading"
-          :get-context-menu="isEditMode ? getCardContextMenu : undefined"
-          @card-click="handleCardClick"
-          @card-drop="handleCardDrop"
-          @card-reorder="handleCardReorder"
-          @sequence-drop="handleMultiCardDrop"
-          @sequence-reorder="handleMultiCardReorder"
-          @update:tile-dragging="isTileDragging = $event"
-        />
+        <SequencePlay v-if="isPlayMode && currentSequenceId" :sequence-id="currentSequenceId" :edit-mode="isEditMode"
+          @restart="restartPlay" @close="exitPlayMode" />
+        <TCardGrid v-else :cards="sequence" :show-arrows="true" :edit-mode="isEditMode"
+          :tiles-with-children="tilesWithChildren" :tile-children-map="tileChildrenMap"
+          :is-tile-dragging="isTileDragging" :selection-mode="selectionMode" :selected-tile-ids="selectedTileIds"
+          :is-loading="isLoading" :get-context-menu="isEditMode ? getCardContextMenu : undefined"
+          @card-click="handleCardClick" @card-drop="handleCardDrop" @card-reorder="handleCardReorder"
+          @sequence-drop="handleMultiCardDrop" @sequence-reorder="handleMultiCardReorder"
+          @update:tile-dragging="isTileDragging = $event" />
       </div>
     </div>
 
@@ -119,39 +61,19 @@
 
         <div :class="bemm('selection-actions')">
           <TButtonGroup>
-            <TButton
-              size="small"
-              type="outline"
-              :icon="Icons.FOLDER_ADD"
-              @click="moveSelectedToGroup"
-            >
+            <TButton size="small" type="outline" :icon="Icons.FOLDER_ADD" @click="moveSelectedToGroup">
               Move to Group
             </TButton>
 
-            <TButton
-              size="small"
-              type="outline"
-              :icon="Icons.COLOR_PALLETTE"
-              @click="changeSelectedColor"
-            >
+            <TButton size="small" type="outline" :icon="Icons.COLOR_PALLETTE" @click="changeSelectedColor">
               Change Color
             </TButton>
 
-            <TButton
-              size="small"
-              type="outline"
-              color="error"
-              :icon="Icons.TRASH"
-              @click="deleteSelected"
-            >
+            <TButton size="small" type="outline" color="error" :icon="Icons.TRASH" @click="deleteSelected">
               Delete
             </TButton>
 
-            <TButton
-              size="small"
-              type="ghost"
-              @click="clearSelection"
-            >
+            <TButton size="small" type="ghost" @click="clearSelection">
               Clear Selection
             </TButton>
           </TButtonGroup>
@@ -177,12 +99,14 @@ import {
   useTextToSpeech,
   type PopupAction,
   popupRefs,
+  Status,
 } from '@tiko/ui';
 import { useI18n } from '@tiko/ui';
 import { useSequenceStore } from '../stores/sequence';
 import SequenceSettingsForm from '../components/SequenceSettingsForm.vue';
 import { TCardGrid } from '@tiko/ui';
 import SequenceForm from '../components/SequenceForm.vue';
+import CuratedItemActions from '../components/CuratedItemActions.vue';
 import GroupSelector from '../components/GroupSelector.vue';
 import AddSequenceModal from '../components/AddSequenceModal.vue';
 import SequencePlay from '../components/SequencePlay.vue';
@@ -215,8 +139,8 @@ const isAdmin = computed(() => {
 
   // Check for admin role - adjust based on your auth system
   return user.email?.endsWith('@admin.tiko.app') ||
-         user.user_metadata?.role === 'admin' ||
-         false;
+    user.user_metadata?.role === 'admin' ||
+    false;
 });
 
 const { hasPermission, requestPermission } = useTextToSpeech();
@@ -324,10 +248,10 @@ const generateGhostSequence = (): SequenceTile[] => {
 
 const loadSequence = async () => {
   console.log('[SequenceView] Starting loadSequence for groupId:', currentGroupId.value);
-  
+
   // Load from store (which handles caching and loading state)
   const savedSequence = await sequenceStore.loadSequence(currentGroupId.value, currentLocale.value);
-  
+
   console.log('[SequenceView] Loaded sequence from store:', savedSequence.length, 'items');
 
   // Only update if we got data or if we currently have ghost cards
@@ -468,8 +392,12 @@ const getCardContextMenu = (card: SequenceTile, index: number) => {
     }
   ];
 
-  // Only show edit actions if parent mode is unlocked
-  if (parentMode.isUnlocked) {
+  // Check ownership and curation status
+  const isOwner = card.ownerId === authStore.user?.id || card.user_id === authStore.user?.id;
+  const isCurated = card.isCurated || false;
+
+  // Show edit actions if user owns the item and parent mode is unlocked
+  if (isOwner && parentMode.isUnlocked) {
     items.push(
       {
         id: 'edit',
@@ -499,6 +427,26 @@ const getCardContextMenu = (card: SequenceTile, index: number) => {
         action: () => confirmDeleteCard(card)
       }
     );
+  }
+
+  // Show hide option for curated items (regardless of ownership)
+  if (isCurated) {
+    items.push({
+      id: 'hide',
+      label: t('sequence.hideThisItem'),
+      icon: Icons.EYE_OFF,
+      action: () => hideItem(card.id)
+    });
+  }
+
+  // Show duplicate option for curated items that user doesn't own
+  if (isCurated && !isOwner) {
+    items.push({
+      id: 'duplicate',
+      label: t('sequence.duplicateToEdit'),
+      icon: Icons.COPY,
+      action: () => duplicateItem(card)
+    });
   }
 
   return items;
@@ -625,10 +573,152 @@ const handleSaveSequence = async (formData: any, card: SequenceTile, isNewCard: 
   }
 };
 
+// Hide item from user's view
+const hideItem = async (itemId: string) => {
+  try {
+    const currentSettings = settings.value;
+    const hiddenItems = [...currentSettings.hiddenItems, itemId];
+
+    await sequenceStore.updateSettings({ hiddenItems });
+
+    // Remove from current view
+    sequence.value = sequence.value.filter(c => c.id !== itemId);
+
+    toastService.success(t('sequence.itemHidden'));
+    popupService.close();
+  } catch (error) {
+    console.error('Failed to hide item:', error);
+    toastService.error('Failed to hide item');
+  }
+};
+
+// Duplicate item and mark original as hidden
+const duplicateItem = async (originalCard: SequenceTile) => {
+  try {
+    // Force load the full sequence with items directly from the service (bypass cache for curated items)
+    console.log('[SequenceView] Loading items for curated sequence:', {
+      id: originalCard.id,
+      title: originalCard.title,
+      type: originalCard.type,
+      isCurated: originalCard.isCurated,
+      user_id: originalCard.user_id,
+      ownerId: originalCard.ownerId
+    });
+
+    const items = originalCard.type === 'sequence'
+      ? await sequenceService.loadSequence(originalCard.id)
+      : [];
+
+    console.log('[SequenceView] Loaded', items.length, 'items for duplication');
+    if (items.length === 0) {
+      console.warn('[SequenceView] WARNING: No items found for curated sequence. This means children are not loading!');
+    } else {
+      console.log('[SequenceView] Items loaded:', items.map(item => ({ id: item.id, title: item.title, type: item.type })));
+    }
+
+    // Create the duplicate with reference to original
+    const duplicateData = {
+      title: `${originalCard.title} (Copy)`,
+      color: originalCard.color,
+      image: originalCard.image ? { url: originalCard.image, alt: originalCard.title } : null,
+      isPublic: false, // Duplicated items are private by default
+      items: items.map((item, idx) => ({
+        id: `temp-${Date.now()}-${idx}`,
+        title: item.title,
+        color: item.color || originalCard.color,
+        image: item.image ? { url: item.image, alt: item.title } : null,
+        speak: item.speech || '',
+        orderIndex: idx
+      })),
+      // Add metadata about the original item
+      originalItemId: originalCard.id,
+      originalOwnerId: originalCard.user_id || originalCard.ownerId
+    };
+
+    // Find position to insert
+    const targetIndex = findFirstEmptyPosition();
+
+    // Create the sequence
+    const sequenceId = await sequenceService.createSequence(
+      duplicateData,
+      currentGroupId.value,
+      targetIndex
+    );
+
+    if (sequenceId) {
+      // Hide the original item
+      const currentSettings = settings.value;
+      const hiddenItems = [...currentSettings.hiddenItems, originalCard.id];
+      await sequenceStore.updateSettings({ hiddenItems });
+
+      // Remove original from view and add duplicate
+      sequence.value = sequence.value.filter(c => c.id !== originalCard.id);
+
+      const newSequence: SequenceTile = {
+        id: sequenceId,
+        title: duplicateData.title,
+        color: duplicateData.color,
+        image: duplicateData.image?.url || null,
+        type: 'sequence' as any,
+        index: targetIndex,
+        speech: '',
+        icon: 'square',
+        parentId: currentGroupId.value,
+        isPublic: false,
+        user_id: authStore.user?.id,
+        // Store reference to original
+        originalItemId: originalCard.id
+      };
+
+      // Add to sequence
+      const updatedSequence = [...sequence.value];
+      const emptyCardIndex = updatedSequence.findIndex(c => c.id.startsWith('empty-') && c.index === targetIndex);
+      if (emptyCardIndex >= 0) {
+        updatedSequence[emptyCardIndex] = newSequence;
+      } else {
+        updatedSequence.push(newSequence);
+      }
+      sequence.value = updatedSequence.sort((a, b) => a.index - b.index);
+
+      await sequenceStore.addCardToCache(newSequence, currentGroupId.value, currentLocale.value);
+
+      // If the duplicated sequence has items, add them to the cache with correct parentId
+      if (duplicateData.items && duplicateData.items.length > 0) {
+        console.log('[SequenceView] Adding', duplicateData.items.length, 'child items to cache');
+        const childrenTiles: SequenceTile[] = duplicateData.items.map((item: any, idx: number) => ({
+          id: item.id, // Keep the temp ID for now, will get real ID after save
+          title: item.title,
+          color: item.color,
+          image: item.image?.url || '',
+          speech: item.speak || '',
+          type: 'sequence-item' as any,
+          icon: 'square',
+          index: item.orderIndex,
+          parentId: sequenceId, // IMPORTANT: Set the new sequence ID as parent
+          user_id: authStore.user?.id
+        }));
+
+        // Add children to cache
+        await sequenceStore.replaceCacheForParent(childrenTiles, sequenceId, currentLocale.value);
+
+        // Update the tilesWithChildren tracking
+        tilesWithChildren.value.add(sequenceId);
+        tileChildrenMap.value.set(sequenceId, childrenTiles);
+      }
+
+      toastService.success(t('sequence.itemDuplicated'));
+      popupService.close();
+    }
+  } catch (error) {
+    console.error('Failed to duplicate item:', error);
+    toastService.error('Failed to duplicate item');
+  }
+};
+
 // Open the card edit form
 const openCardEditForm = async (card: SequenceTile, index: number) => {
   const isNewCard = card.id.startsWith('empty-');
-  
+
   console.log('[SequenceView] openCardEditForm - isNewCard:', isNewCard, 'card:', card);
   console.log('[SequenceView] authStore.user?.id:', authStore.user?.id);
 
@@ -641,41 +731,71 @@ const openCardEditForm = async (card: SequenceTile, index: number) => {
     }
   }
 
-  // Create a ref to store the component instance
-  let formComponentRef = null;
-  
-  // Calculate isOwner explicitly
+  // Calculate ownership
   const isOwner = isNewCard ? true : (card.ownerId === authStore.user?.id || card.user_id === authStore.user?.id);
-  console.log('[SequenceView] Calculated isOwner:', isOwner, 'isNewCard:', isNewCard);
+  const isCurated = card.isCurated || false;
+
+  console.log('[SequenceView] Calculated isOwner:', isOwner, 'isCurated:', isCurated);
+
+  // If it's a curated item that the user doesn't own, show curated actions instead
+  if (!isOwner && isCurated) {
+    popupService.open({
+      component: CuratedItemActions,
+      title: t('sequence.curatedSequence'),
+      actions: [
+        {
+          id: 'close',
+          label: t('common.close'),
+          type: 'outline',
+          color: 'secondary',
+          action: () => popupService.close()
+        }
+      ],
+      props: {
+        sequence: card,
+        onHide: hideItem,
+        onDuplicate: duplicateItem
+      }
+    });
+    return;
+  }
+
+  // Create refs to store the component instance and save loading state
+  let formComponentRef = null;
+  const isSaving = ref(false);
+
   console.log('[SequenceView] showVisibilityToggle will be:', true);
-  
+
+  const actions = computed(() => [
+    {
+      id: 'cancel',
+      label: t('common.cancel'),
+      type: 'outline',
+      color: 'secondary',
+      action: () => popupService.close(),
+    },
+    {
+      id: 'save',
+      label: isNewCard ? t('common.create') : t('common.save'),
+      type: 'default',
+      color: 'primary',
+      status: isSaving.value ? 'loading' : 'default',
+      action: async () => {
+        if (formComponentRef?.triggerSave) {
+          console.log('Calling triggerSave on component');
+          formComponentRef.triggerSave();
+        } else {
+          console.error('No triggerSave method available on component', formComponentRef);
+        }
+      },
+    },
+  ]);
+
+
   popupService.open({
     component: SequenceForm,
     title: isNewCard ? t('sequence.createSequence') : t('sequence.editSequence'),
-    actions: [
-      {
-        id: 'cancel',
-        label: t('common.cancel'),
-        type: 'outline',
-        color: 'secondary',
-        action: () => popupService.close()
-      },
-      {
-        id: 'save',
-        label: isNewCard ? t('common.create') : t('common.save'),
-        type: 'default',
-        color: 'primary',
-        action: async () => {
-          // Trigger save through the component's exposed method
-          if (formComponentRef?.triggerSave) {
-            console.log('Calling triggerSave on component');
-            formComponentRef.triggerSave();
-          } else {
-            console.error('No triggerSave method available on component', formComponentRef);
-          }
-        }
-      }
-    ],
+    actions: actions,
     props: {
       sequence: card,
       isNew: isNewCard,
@@ -688,11 +808,14 @@ const openCardEditForm = async (card: SequenceTile, index: number) => {
       },
       onSave: async (formData: any) => {
         try {
+          isSaving.value = true;
           await handleSaveSequence(formData, card, isNewCard, index);
           popupService.close();
         } catch (error) {
           console.error('Failed to save sequence:', error);
           // Don't close popup on error so user can retry
+        } finally {
+          isSaving.value = false;
         }
       }
     }
@@ -1198,47 +1321,47 @@ const moveSelectedToGroup = async () => {
       props: {
         groups: availableGroups,
         selectedCount: selectedSequence.length,
-      onSelect: async (group: SequenceTile) => {
-        try {
-          // Get existing children to find the next available index
-          const existingChildren = await sequenceService.loadSequence(group.id);
-          let nextIndex = existingChildren.length;
+        onSelect: async (group: SequenceTile) => {
+          try {
+            // Get existing children to find the next available index
+            const existingChildren = await sequenceService.loadSequence(group.id);
+            let nextIndex = existingChildren.length;
 
-          // Move all selected sequence to the target group with sequential indices
-          for (const card of selectedSequence) {
-            await sequenceService.saveCard({
-              ...card,
-              parentId: group.id,  // Set the new parent
-              index: nextIndex     // Set the sequential index
-            }, group.id, nextIndex);  // Pass both parentId and index parameters
+            // Move all selected sequence to the target group with sequential indices
+            for (const card of selectedSequence) {
+              await sequenceService.saveCard({
+                ...card,
+                parentId: group.id,  // Set the new parent
+                index: nextIndex     // Set the sequential index
+              }, group.id, nextIndex);  // Pass both parentId and index parameters
 
-            nextIndex++; // Increment for next card
+              nextIndex++; // Increment for next card
+            }
+
+            // Remove moved sequence from current view
+            sequence.value = sequence.value.filter(c => !selectedTileIds.value.has(c.id));
+
+            // Clear selection
+            clearSelection();
+
+            // Update target group cache
+            tilesWithChildren.value.add(group.id);
+
+            popupService.close();
+
+            // Navigate to the target group to show the moved sequence
+            console.log(`[SequenceView] Navigating to target group: ${group.id}`);
+            await navigateToTile(group);
+          } catch (error) {
+            console.error('Failed to move sequence:', error);
+            alert('Failed to move sequence. Please try again.');
           }
-
-          // Remove moved sequence from current view
-          sequence.value = sequence.value.filter(c => !selectedTileIds.value.has(c.id));
-
-          // Clear selection
-          clearSelection();
-
-          // Update target group cache
-          tilesWithChildren.value.add(group.id);
-
+        },
+        onCancel: () => {
           popupService.close();
-
-          // Navigate to the target group to show the moved sequence
-          console.log(`[SequenceView] Navigating to target group: ${group.id}`);
-          await navigateToTile(group);
-        } catch (error) {
-          console.error('Failed to move sequence:', error);
-          alert('Failed to move sequence. Please try again.');
         }
-      },
-      onCancel: () => {
-        popupService.close();
       }
-    }
-  });
+    });
   } catch (error) {
     console.error('[SequenceView] Error in moveSelectedToGroup:', error);
     alert('Failed to load groups. Please try again.');
@@ -1476,7 +1599,7 @@ const buildBreadcrumbs = async (cardId: string | undefined) => {
 // Watch for route changes
 watch(() => route.params.cardId as string | undefined, async (cardId) => {
   console.log('[SequenceView] Route changed to cardId:', cardId);
-  
+
   // Show loading state while loading
   if (!isLoading.value) {
     console.log('[SequenceView] Setting ghost sequence while loading');
@@ -1485,7 +1608,7 @@ watch(() => route.params.cardId as string | undefined, async (cardId) => {
 
   // Update breadcrumbs (this also sets currentGroupId)
   await buildBreadcrumbs(cardId);
-  
+
   // Load the sequence
   await loadSequence();
 

@@ -186,10 +186,16 @@ export class SupabaseItemService implements ItemService {
 
   async updateItem(itemId: string, payload: UpdateItemPayload): Promise<ItemResult<BaseItem>> {
     try {
+      // Handle public/curated relationship: when making item non-public, also remove curated status
+      const updatePayload = { ...payload }
+      if (payload.is_public === false) {
+        updatePayload.is_curated = false
+      }
+      
       const result = await this.apiRequest<BaseItem[]>(`items?id=eq.${itemId}`, {
         method: 'PATCH',
         body: JSON.stringify({
-          ...payload,
+          ...updatePayload,
           updated_at: new Date().toISOString()
         })
       })
@@ -285,12 +291,18 @@ export class SupabaseItemService implements ItemService {
 
   async updateItems(payload: BulkUpdatePayload): Promise<ItemResult<BaseItem[]>> {
     try {
+      // Handle public/curated relationship: when making items non-public, also remove curated status
+      const updatePayload = { ...payload.updates }
+      if (payload.updates.is_public === false) {
+        updatePayload.is_curated = false
+      }
+      
       const result = await this.apiRequest<BaseItem[]>(
         `items?id=in.(${payload.ids.join(',')})`, 
         {
           method: 'PATCH',
           body: JSON.stringify({
-            ...payload.updates,
+            ...updatePayload,
             updated_at: new Date().toISOString()
           })
         }

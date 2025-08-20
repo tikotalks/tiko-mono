@@ -1,8 +1,6 @@
 <template>
   <div :class="bemm()">
     <div :class="bemm('group')">
-      <h3 :class="bemm('title')">{{ t('sequence.gameSettings') }}</h3>
-
       <div :class="bemm('item')">
         <TInputCheckbox
           v-model="form.autoSpeak"
@@ -80,7 +78,6 @@ watch(form, () => {
 
 <style lang="scss">
 .sequence-settings-form {
-  padding: var(--space-l);
   max-width: 600px;
   margin: 0 auto;
 
@@ -102,7 +99,7 @@ watch(form, () => {
 
   &__item {
     margin-bottom: var(--space-l);
-    
+
     &:last-child {
       margin-bottom: 0;
     }
@@ -160,7 +157,7 @@ watch(form, () => {
 
     &__description {
       opacity: 0.7;
-      
+
       .sequence-settings-form__item:hover & {
         opacity: 0.9;
       }

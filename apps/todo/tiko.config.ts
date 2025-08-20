@@ -9,5 +9,11 @@ export default defineConfig({
     primary: 'blue',
     secondary: 'green',
     tertiary: 'orange'
+  },
+  splash: {
+    appName: 'Todo',
+    backgroundColor: '#f8f9fa',
+    themeColor: '#6f42c1',
+    loadingText: 'Loading Todo...'
   }
 })

@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       target:
-        description: 'Target worker to deploy (i18n-translator, media-upload, sentence-engine, report-issue, or all)'
+        description: 'Target worker to deploy (i18n-translator, media-upload, sentence-engine, report-issue, user-removal, or all)'
         required: true
         default: 'all'
         type: choice
@@ -17,6 +17,7 @@ on:
           - media-upload
           - sentence-engine
           - report-issue
+          - user-removal
       message:
         description: 'Deployment message'
         required: false
@@ -31,6 +32,7 @@ jobs:
       build-media: ${{ steps.check.outputs.build-media }}
       build-sentence: ${{ steps.check.outputs.build-sentence }}
       build-report-issue: ${{ steps.check.outputs.build-report-issue }}
+      build-user-removal: ${{ steps.check.outputs.build-user-removal }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -45,6 +47,7 @@ jobs:
           echo "build-media=false" >> $GITHUB_OUTPUT
           echo "build-sentence=false" >> $GITHUB_OUTPUT
           echo "build-report-issue=false" >> $GITHUB_OUTPUT
+          echo "build-user-removal=false" >> $GITHUB_OUTPUT
           
           # Handle workflow_dispatch trigger
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
@@ -57,6 +60,7 @@ jobs:
               echo "build-media=true" >> $GITHUB_OUTPUT
               echo "build-sentence=true" >> $GITHUB_OUTPUT
               echo "build-report-issue=true" >> $GITHUB_OUTPUT
+              echo "build-user-removal=true" >> $GITHUB_OUTPUT
             elif [[ "$TARGET" == "i18n-translator" ]]; then
               echo "build-i18n=true" >> $GITHUB_OUTPUT
               echo "should-build=true" >> $GITHUB_OUTPUT
@@ -68,6 +72,9 @@ jobs:
               echo "should-build=true" >> $GITHUB_OUTPUT
             elif [[ "$TARGET" == "report-issue" ]]; then
               echo "build-report-issue=true" >> $GITHUB_OUTPUT
+              echo "should-build=true" >> $GITHUB_OUTPUT
+            elif [[ "$TARGET" == "user-removal" ]]; then
+              echo "build-user-removal=true" >> $GITHUB_OUTPUT
               echo "should-build=true" >> $GITHUB_OUTPUT
             fi
             exit 0
@@ -84,6 +91,7 @@ jobs:
             echo "build-media=true" >> $GITHUB_OUTPUT
             echo "build-sentence=true" >> $GITHUB_OUTPUT
             echo "build-report-issue=true" >> $GITHUB_OUTPUT
+            echo "build-user-removal=true" >> $GITHUB_OUTPUT
             exit 0
           fi
           
@@ -102,6 +110,10 @@ jobs:
           fi
           if [[ "$COMMIT_MSG" == *"[build:report-issue]"* ]]; then
             echo "build-report-issue=true" >> $GITHUB_OUTPUT
+            echo "should-build=true" >> $GITHUB_OUTPUT
+          fi
+          if [[ "$COMMIT_MSG" == *"[build:user-removal]"* ]]; then
+            echo "build-user-removal=true" >> $GITHUB_OUTPUT
             echo "should-build=true" >> $GITHUB_OUTPUT
           fi
 
@@ -190,3 +202,17 @@ jobs:
             VITE_RESEND_KEY
             VITE_SUPABASE_URL
             VITE_SUPABASE_SERVICE_KEY
+
+      - name: Deploy user-removal worker
+        if: needs.check-triggers.outputs.build-user-removal == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: dc2b7d14a69351375cab6de9a13ddee9
+          workingDirectory: 'workers/user-removal'
+          command: deploy --env production
+          wranglerVersion: 'latest'
+          secrets: |
+            VITE_SUPABASE_URL
+            VITE_SUPABASE_SERVICE_KEY
+            ADMIN_API_KEY

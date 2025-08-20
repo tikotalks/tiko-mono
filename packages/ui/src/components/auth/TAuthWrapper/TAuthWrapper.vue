@@ -8,6 +8,7 @@
         :class="bemm('image')"
       />
     </div>
+
   <!-- Loading State with Splash Screen -->
     <TSplashScreen
       v-if="isInitializing && showSplashScreen"
@@ -66,7 +67,6 @@ import { useI18n } from '../../../composables/useI18n'
 import TLoginForm from '../TLoginForm/TLoginForm.vue'
 import TAppLayout from '../../layout/TAppLayout/TAppLayout.vue'
 import TSplashScreen from '../../feedback/TSplashScreen/TSplashScreen.vue'
-import { defaultTikoSplashConfigs } from '../../../utils/splash-screen-config'
 import { useTikoConfig } from '../../../composables/useTikoConfig'
 import type { TAuthWrapperProps } from './TAuthWrapper.model'
 
@@ -121,26 +121,26 @@ const isAuthCallbackRoute = computed(() => route?.path === '/auth/callback');
 
 // Splash screen configuration
 const splashConfig = computed(() => {
-  // Try to get config for the specific app, otherwise use a default
-  const appConfig = defaultTikoSplashConfigs[props.appName as keyof typeof defaultTikoSplashConfigs];
+  // Use splash config from tiko config if available, otherwise fallback to defaults
+  const splashFromConfig = tikoConfig?.splash;
+  
+  // Use app icon from tiko config if available
+  const iconPath = tikoConfig?.appIcon 
+    ? `/assets/image/${tikoConfig.appIcon}.png`
+    : `/assets/image/app-icon-${props.appName}.png`;
 
-  // If no config found, create a default one using the app name from props
-  const config = appConfig || {
-    appName: props.title || props.appName,
-    backgroundColor: '#f8f9fa',
-    themeColor: '#007bff',
-    iconPath: `/assets/image/app-icon-${props.appName}.png`
-  };
-
-  // Get primary color from Tiko config
+  // Use primary color from tiko config
   const primaryColor = tikoConfig?.theme?.primary;
-  const backgroundColor = primaryColor ? `var(--color-${primaryColor})` : config.backgroundColor;
+  const defaultBackgroundColor = primaryColor ? `var(--color-${primaryColor})` : '#f8f9fa';
 
   const finalConfig = {
-    ...config,
+    appName: splashFromConfig?.appName || tikoConfig?.appName || props.title || props.appName,
+    backgroundColor: splashFromConfig?.backgroundColor || defaultBackgroundColor,
+    themeColor: splashFromConfig?.themeColor || defaultBackgroundColor,
+    iconPath,
     version: '1.0.0',
     theme: 'auto' as const,
-    backgroundColor
+    loadingText: splashFromConfig?.loadingText || 'Loading...',
   };
 
   return finalConfig;

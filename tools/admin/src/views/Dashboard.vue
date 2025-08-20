@@ -83,7 +83,7 @@
           <h3>{{ t('admin.dashboard.completionByLocale') }}</h3>
           <div :class="bemm('locale-list')">
             <TProgressBar
-              v-for="(data, locale) in Object.entries(translationStats.completeness).filter(([key]) => !key.includes('-'))"
+              v-for="([locale, data]) in Object.entries(translationStats.completeness).filter(([key]) => !key.includes('-'))"
               :key="locale"
               :prefix="locale"
               :value="data.percentage"

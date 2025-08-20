@@ -11,6 +11,7 @@ export interface SequenceSettings {
   showHints: boolean
   hapticFeedback: boolean
   showCuratedItems: boolean
+  hiddenItems: string[] // Array of item IDs that user has hidden
 }
 
 interface CardCacheEntry {
@@ -56,7 +57,8 @@ export const useSequenceStore = defineStore('sequence', () => {
     autoSpeak: true,
     showHints: false,
     hapticFeedback: true,
-    showCuratedItems: true
+    showCuratedItems: true,
+    hiddenItems: []
   }
 
   // Getters
@@ -142,7 +144,15 @@ export const useSequenceStore = defineStore('sequence', () => {
       const entry = cache.get(cacheKey)!
       if (isCacheValid(entry, locale || 'default')) {
         console.log(`[SequenceStore] Returning cached sequence for ${cacheKey}`)
-        return entry.sequence
+        // Only filter out hidden items for ROOT level, not for children
+        if (!parentId) {
+          const hiddenItems = settings.value.hiddenItems || []
+          const filteredSequence = entry.sequence.filter(item => !hiddenItems.includes(item.id))
+          return filteredSequence
+        } else {
+          // For children, return all items (don't filter)
+          return entry.sequence
+        }
       } else {
         // Cache is expired but still return the data while we refresh in background
         console.log(`[SequenceStore] Cache expired for ${cacheKey}, returning stale data while refreshing`)
@@ -150,7 +160,15 @@ export const useSequenceStore = defineStore('sequence', () => {
         loadSequence(parentId, locale, true).catch(err => 
           console.error(`[SequenceStore] Background refresh failed for ${cacheKey}:`, err)
         )
-        return entry.sequence
+        // Only filter out hidden items for ROOT level, not for children
+        if (!parentId) {
+          const hiddenItems = settings.value.hiddenItems || []
+          const filteredSequence = entry.sequence.filter(item => !hiddenItems.includes(item.id))
+          return filteredSequence
+        } else {
+          // For children, return all items (don't filter)
+          return entry.sequence
+        }
       }
     }
 
@@ -190,7 +208,15 @@ export const useSequenceStore = defineStore('sequence', () => {
         const entry = cache.get(cacheKey)!
         if (isCacheValid(entry, locale || 'default')) {
           console.log(`[SequenceStore] Found cached data after waiting for ${cacheKey}`)
-          return entry.sequence
+          // Only filter out hidden items for ROOT level, not for children
+          if (!parentId) {
+            const hiddenItems = settings.value.hiddenItems || []
+            const filteredSequence = entry.sequence.filter(item => !hiddenItems.includes(item.id))
+            return filteredSequence
+          } else {
+            // For children, return all items (don't filter)
+            return entry.sequence
+          }
         }
       }
     }
@@ -232,7 +258,21 @@ export const useSequenceStore = defineStore('sequence', () => {
       cardCache.value = newCache
 
       console.log(`[SequenceStore] Cached ${sequence.length} sequence for ${cacheKey}`)
-      return sequence
+      
+      // Only filter out hidden items for ROOT level, not for children
+      if (!parentId) {
+        const hiddenItems = settings.value.hiddenItems || []
+        const filteredSequence = sequence.filter(item => !hiddenItems.includes(item.id))
+        
+        if (filteredSequence.length !== sequence.length) {
+          console.log(`[SequenceStore] Filtered out ${sequence.length - filteredSequence.length} hidden items`)
+        }
+        
+        return filteredSequence
+      } else {
+        // For children, return all items (don't filter)
+        return sequence
+      }
     } finally {
       isLoadingSequence.value = false
     }

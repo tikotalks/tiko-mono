@@ -12,5 +12,11 @@ export default defineConfig({
   },
   auth: {
     skipAuth: true // Allow using the app without login
+  },
+  splash: {
+    appName: 'Sequence',
+    backgroundColor: '#f8f9fa',
+    themeColor: '#40c8c6',
+    loadingText: 'Loading Sequence...'
   }
 })

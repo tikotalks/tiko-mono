@@ -77,6 +77,18 @@
         <span :class="bemm('detail-value')">{{ currentLanguageDisplay }}</span>
       </div>
 
+      <!-- User Type -->
+      <div :class="bemm('detail-item')">
+        <span :class="bemm('detail-label')">{{ t('profile.userType') }}</span>
+        <span :class="bemm('detail-value')">
+          <TIcon
+            :name="userTypeIcon"
+            :class="bemm('detail-icon', userTypeClass)"
+          />
+          {{ userTypeDisplay }}
+        </span>
+      </div>
+
       <!-- Parent Mode Status -->
       <div v-if="parentMode.isEnabled.value" :class="bemm('detail-item')">
         <span :class="bemm('detail-label')">{{ t('profile.parentMode') }}</span>
@@ -112,6 +124,16 @@
         >
           {{ t('profile.setupParentMode') }}
         </TButton>
+
+        <TButton
+          type="outline"
+          color="danger"
+          icon="trash"
+          @click="handleRemoveUser"
+          :class="bemm('action-button', 'danger')"
+        >
+          {{ t('profile.removeAccount') }}
+        </TButton>
       </div>
     </section>
   </div>
@@ -132,6 +154,7 @@ import TMediaPicker from '../../media/TMediaPicker/TMediaPicker.vue'
 import type { TProfileProps } from './TProfile.model'
 import type { PopupService } from '../../feedback/TPopup/TPopup.service'
 import type { ToastService } from '../../feedback/TToast/TToast.service'
+import { userRemovalService, type UserRemovalProgress } from '../../../services/user-removal.service'
 
 const props = defineProps<TProfileProps>()
 
@@ -205,6 +228,35 @@ const currentLanguageDisplay = computed(() => {
   const userLanguage = props.user.user_metadata?.settings?.language || locale.value
   const localeInfo = availableLocales.value.find(l => l.code === userLanguage)
   return localeInfo ? localeInfo.name : userLanguage
+})
+
+const userType = computed(() => {
+  const user = props.user
+  
+  // Check various sources for admin role
+  if (authStore.isAdmin ||
+      user.user_metadata?.role === 'admin' ||
+      user.app_metadata?.role === 'admin' ||
+      (user as any)?.role === 'admin' ||
+      user.email?.endsWith('@admin.tiko.app') ||
+      user.email?.endsWith('@tiko.com') ||
+      user.email?.endsWith('@admin.com')) {
+    return 'admin'
+  }
+  
+  return 'user'
+})
+
+const userTypeDisplay = computed(() => {
+  return userType.value === 'admin' ? t('profile.administrator') : t('profile.standardUser')
+})
+
+const userTypeIcon = computed(() => {
+  return userType.value === 'admin' ? 'shield' : 'user'
+})
+
+const userTypeClass = computed(() => {
+  return userType.value === 'admin' ? 'admin' : 'user'
 })
 
 const avatarMenuItems = computed<Partial<ContextMenuItem>[]>(() => [
@@ -414,6 +466,104 @@ const handleSetupParentMode = () => {
   // Close the profile popup to let parent mode setup open
   popupService?.close()
 }
+
+const handleRemoveUser = () => {
+  if (!popupService) {
+    console.error('PopupService not available')
+    return
+  }
+
+  // Show confirmation dialog with serious warning
+  const confirmationTitle = t('profile.removeAccountConfirmation')
+  const warningMessage = t('profile.removeAccountWarning')
+  
+  popupService.confirm({
+    title: confirmationTitle,
+    message: warningMessage,
+    type: 'danger',
+    confirmText: t('profile.removeAccountConfirm'),
+    cancelText: t('common.cancel'),
+    onConfirm: async () => {
+      // Show second confirmation for extra safety
+      const secondConfirmation = await new Promise((resolve) => {
+        popupService.confirm({
+          title: t('profile.finalConfirmation'),
+          message: t('profile.finalConfirmationWarning'),
+          type: 'danger',
+          confirmText: t('profile.yesRemoveEverything'),
+          cancelText: t('common.cancel'),
+          onConfirm: () => resolve(true),
+          onCancel: () => resolve(false)
+        })
+      })
+
+      if (secondConfirmation) {
+        await executeUserRemoval()
+      }
+    }
+  })
+}
+
+const executeUserRemoval = async () => {
+  if (!authStore.user?.id) {
+    toastService?.show({
+      message: t('profile.removalError'),
+      type: 'error'
+    })
+    return
+  }
+
+  try {
+    isProcessing.value = true
+    
+    // Show progress toast
+    toastService?.show({
+      message: t('profile.removingUserData'),
+      type: 'info',
+      duration: 0 // Don't auto-hide
+    })
+
+    // Call user removal service (we'll create this)
+    await removeUserAndAllData(authStore.user.id)
+    
+    // Show success message
+    toastService?.show({
+      message: t('profile.accountRemoved'),
+      type: 'success'
+    })
+    
+    // Sign out the user
+    await authStore.signOut()
+    
+  } catch (error: any) {
+    console.error('Failed to remove user account:', error)
+    toastService?.show({
+      message: error.message || t('profile.removalFailed'),
+      type: 'error'
+    })
+  } finally {
+    isProcessing.value = false
+  }
+}
+
+// User removal service function - removes ALL user data
+const removeUserAndAllData = async (userId: string) => {
+  // Track removal progress
+  const progressToastId = Date.now().toString()
+  
+  await userRemovalService.removeUserAndAllData(
+    userId,
+    (progress: UserRemovalProgress) => {
+      // Update progress toast
+      toastService?.show({
+        id: progressToastId,
+        message: `${progress.step}: ${progress.message}`,
+        type: 'info',
+        duration: 0 // Keep showing until completed
+      })
+    }
+  )
+}
 </script>
 
 <style lang="scss" scoped>
@@ -581,6 +731,14 @@ const handleSetupParentMode = () => {
     &--inactive {
       color: var(--color-text-secondary);
     }
+
+    &--admin {
+      color: var(--color-warning);
+    }
+
+    &--user {
+      color: var(--color-info);
+    }
   }
 
   &__actions {
@@ -603,6 +761,16 @@ const handleSetupParentMode = () => {
 
   &__action-button {
     justify-content: flex-start;
+
+    &--danger {
+      color: var(--color-danger);
+      border-color: var(--color-danger);
+
+      &:hover {
+        background: var(--color-danger);
+        color: white;
+      }
+    }
   }
 }
 

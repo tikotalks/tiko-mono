@@ -8,5 +8,11 @@ export default defineConfig({
   theme: {
     primary: 'yellow',
     secondary: 'blue'
+  },
+  splash: {
+    appName: 'Radio',
+    backgroundColor: '#1a1a1a',
+    themeColor: '#ff6b6b',
+    loadingText: 'Loading Radio...'
   }
 })

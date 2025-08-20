@@ -208,7 +208,10 @@ const grid = computed(() => {
   calculatedTileSize = Math.max(calculatedTileSize, TILE_CONFIG.minTileSize);
 
   // Calculate how many rows fit based on height
-  const effectiveHeight = screenHeight.value - TILE_CONFIG.verticalPadding;
+  // Use full screen height if using container dimensions, otherwise subtract padding
+  const effectiveHeight = containerElement?.parentElement 
+    ? screenHeight.value - TILE_CONFIG.tileGap // Only subtract one gap for top margin
+    : screenHeight.value - TILE_CONFIG.verticalPadding; // Fallback to old behavior
   const totalTileHeight = calculatedTileSize + TILE_CONFIG.tileGap;
   const targetRows = Math.floor(effectiveHeight / totalTileHeight);
 
