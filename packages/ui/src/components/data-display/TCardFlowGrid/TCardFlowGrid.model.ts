@@ -1,5 +1,6 @@
 import type { TCardTile } from '../TCardTile/TCardTile.model'
 import type { MenuItem } from '../../navigation/TContextMenu/TContextMenu.model'
+import { GRID_SPACING } from '../../../utils'
 
 export interface TCardFlowGridProps {
   cards: TCardTile[]
@@ -23,7 +24,7 @@ export interface TCardFlowGridEmits {
 }
 
 // Layout configuration constants
-export const VERTICAL_PADDING = 80 // 64px (4rem) + 16px (typical --spacing value)
+export const VERTICAL_PADDING = GRID_SPACING.TOTAL_VERTICAL_PADDING
 
 // Screen size breakpoints
 export const SCREEN_BREAKPOINTS = {

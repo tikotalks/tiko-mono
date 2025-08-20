@@ -28,3 +28,6 @@ export * from './mock';
 
 // Debounce utilities
 export * from './debounce';
+
+// Grid spacing constants
+export * from './grid-spacing.constants';

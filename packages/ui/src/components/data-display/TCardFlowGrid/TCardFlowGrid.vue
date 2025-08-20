@@ -38,6 +38,7 @@ import { TCardTile } from '../TCardTile'
 import type { TCardTile as CardTileType } from '../TCardTile/TCardTile.model'
 import type { MenuItem } from '../../navigation/TContextMenu/TContextMenu.model'
 import { VERTICAL_PADDING, getPreferredLayout } from './TCardFlowGrid.model'
+import { GRID_SPACING } from '../../../utils'
 
 export interface TCardFlowGridProps {
   cards: CardTileType[]
@@ -179,8 +180,8 @@ const gridStyles = computed(() => {
   
   styles.display = 'grid'
   styles.gap = `${props.gap}px`
-  // Add top and bottom padding of 4rem + var(--spacing)
-  styles.padding = `calc(4rem + var(--spacing)) ${props.gap}px calc(4rem + var(--spacing)) ${props.gap}px`
+  // Add proper top and bottom spacing using shared constants
+  styles.padding = `${GRID_SPACING.MIN_TOP_SPACE}px ${props.gap}px ${GRID_SPACING.MIN_BOTTOM_SPACE}px ${props.gap}px`
   
   if (props.scrollDirection === 'horizontal') {
     styles.gridTemplateRows = `repeat(${gridRows.value}, ${tileSize.value}px)`

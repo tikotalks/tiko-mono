@@ -1,4 +1,4 @@
-import { defineConfig } from '@tiko/ui/types/tiko-config'
+import { defineConfig } from '@tiko/core'
 
 export default defineConfig({
   id: 'type',

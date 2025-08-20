@@ -1,9 +1,10 @@
-import { defineConfig } from '@tiko/ui'
+import { defineConfig } from '@tiko/core'
 
 export default defineConfig({
   id: 'admin',
   name: 'Admin',
   icon: 'settings',
+  appName: 'Admin',
   description: 'Admin dashboard for Tiko',
   isApp: false,
   theme: {

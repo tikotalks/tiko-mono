@@ -13,6 +13,8 @@
       <div :class="bemm('panels-track')" :style="{
         transform: `translateX(${translateX}px)`,
         transition: isTransitioning ? 'transform 0.3s ease-out' : 'none',
+        '--top-spacing': `${LAYOUT_SPACING.VERTICAL_PADDING_TOP}px`,
+        '--bottom-spacing': `${LAYOUT_SPACING.VERTICAL_PADDING_BOTTOM}px`,
       }">
         <!-- Each page panel -->
         <div v-for="(pageCards, pageIndex) in paginatedCards" :key="`page-${pageIndex}`" :class="bemm('panel')">
@@ -79,6 +81,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch, nextTick } from 'vue'
 import { CardTileType as CardTileTypes, type TCardTile } from '../TCardTile/TCardTile.model';
 import TCardTileComponent from '../TCardTile/TCardTile.vue';
 import type { TCardGridProps } from './TCardGrid.model';
+import { GRID_SPACING } from '../../../utils';
 
 const bemm = useBemm('t-card-grid');
 
@@ -129,9 +132,11 @@ const GRID_COLUMNS = {
 
 // Layout spacing constants
 const LAYOUT_SPACING = {
-  HORIZONTAL_PADDING: 40, // 20px on each side
-  VERTICAL_PADDING: 80, // 4rem (64px) + var(--space) (16px) = 80px
-  TILE_GAP: 16, // Gap between tiles in pixels
+  HORIZONTAL_PADDING: GRID_SPACING.HORIZONTAL_PADDING,
+  VERTICAL_PADDING_TOP: GRID_SPACING.MIN_TOP_SPACE,
+  VERTICAL_PADDING_BOTTOM: GRID_SPACING.MIN_BOTTOM_SPACE,
+  VERTICAL_PADDING: GRID_SPACING.TOTAL_VERTICAL_PADDING,
+  TILE_GAP: GRID_SPACING.TILE_GAP,
   MIN_ROWS: 2, // Minimum number of rows
 } as const;
 
@@ -208,10 +213,8 @@ const grid = computed(() => {
   calculatedTileSize = Math.max(calculatedTileSize, TILE_CONFIG.minTileSize);
 
   // Calculate how many rows fit based on height
-  // Use full screen height if using container dimensions, otherwise subtract padding
-  const effectiveHeight = containerElement?.parentElement 
-    ? screenHeight.value - TILE_CONFIG.tileGap // Only subtract one gap for top margin
-    : screenHeight.value - TILE_CONFIG.verticalPadding; // Fallback to old behavior
+  // Always subtract the full vertical padding (top + bottom spacing)
+  const effectiveHeight = screenHeight.value - LAYOUT_SPACING.VERTICAL_PADDING;
   const totalTileHeight = calculatedTileSize + TILE_CONFIG.tileGap;
   const targetRows = Math.floor(effectiveHeight / totalTileHeight);
 
@@ -910,7 +913,7 @@ watch(() => props.cards, (newCards) => {
     flex: 0 0 100%;
     width: 100%;
     height: 100%;
-    padding: var(--spacing);
+    padding: var(--top-spacing, 80px) var(--spacing) var(--bottom-spacing, 120px) var(--spacing);
     box-sizing: border-box;
   }
 

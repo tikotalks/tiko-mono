@@ -68,4 +68,4 @@ export {
 export { createTikoApp } from './utils/createTikoApp'
 export type { TikoAppOptions } from './utils/createTikoApp'
 export { defineConfig } from './utils/defineConfig'
-export type { TikoConfig } from './utils/defineConfig'
+export type { TikoConfig, TikoThemeColors } from './utils/defineConfig'

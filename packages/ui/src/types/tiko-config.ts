@@ -27,6 +27,12 @@ export interface TikoConfig {
   }
   settings?: {
     [key: string]: any
+  },
+  splash: {
+    appName: string,
+    backgroundColor: string,
+    themeColor: string,
+    loadingText: string
   }
 }
 
@@ -54,12 +60,12 @@ export const defaultTikoConfig: Required<TikoConfig> = {
   },
   features: {},
   settings: {},
-}
-
-
-export function defineConfig(config: TikoConfig): Required<TikoConfig> {
-  return {
-    ...defaultTikoConfig,
-    ...config
+  splash: {
+    appName: 'Tiko',
+    backgroundColor: '#f8f9fa',
+    themeColor: '#007bff',
+    loadingText: 'Loading Tiko...'
   }
 }
+
+
