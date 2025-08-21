@@ -74,7 +74,13 @@ const props = withDefaults(defineProps<Props>(), {
 
 const bemm = useBemm('t-page-content')
 const { t, locale } = useI18n()
-const { getPageContent } = useContent()
+
+// Initialize content with options from environment
+const content = useContent({
+  useWorker: import.meta.env?.VITE_USE_CONTENT_WORKER === 'true',
+  workerUrl: import.meta.env?.VITE_CONTENT_API_URL,
+  deployedVersionId: import.meta.env?.VITE_DEPLOYED_VERSION_ID
+})
 
 // State
 const loading = ref(true)
@@ -90,16 +96,16 @@ const loadPageContent = async () => {
     // Use provided language code or extract from locale
     const langCode = props.languageCode || locale.value.split('-')[0]
     
-    const content = await getPageContent(props.pageSlug, langCode)
+    const pageData = await content.getPage(props.pageSlug, langCode)
     
-    if (!content || !content.page) {
+    if (!pageData || !pageData.page) {
       error.value = t('errors.pageNotFound')
       emit('page-not-found')
       return
     }
     
-    pageContent.value = content
-    emit('page-loaded', content)
+    pageContent.value = pageData
+    emit('page-loaded', pageData)
   } catch (err) {
     console.error('Failed to load page content:', err)
     error.value = err instanceof Error ? err.message : t('errors.loadingFailed')

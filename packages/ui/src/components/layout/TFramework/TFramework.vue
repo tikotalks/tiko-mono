@@ -117,6 +117,8 @@ const frameworkStyles = computed(() => ({
   '--tz': deviceTilt.tilt.tz + 'px'
 }));
 
+document.documentElement.setAttribute('data-app', tikoConfig.isApp ? 'true' : 'false')
+
 // Initialize PWA update checking if registerSW is provided
 if (props.isApp && props.pwaRegisterSW) {
   usePWAUpdate({

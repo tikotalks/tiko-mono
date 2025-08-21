@@ -65,7 +65,7 @@ const { locale } = useI18n();
 
 const content = useContent({
   projectSlug: 'marketing',
-useWorker: import.meta.env.VITE_USE_CONTENT_WORKER === 'true',
+  useWorker: import.meta.env.VITE_USE_CONTENT_WORKER === 'true',
   workerUrl: import.meta.env.VITE_CONTENT_API_URL,
   deployedVersionId: import.meta.env.VITE_DEPLOYED_VERSION_ID,
   noCache: false
@@ -100,9 +100,6 @@ async function loadContent() {
     const page = await content.getPage(pageSlug.value, languageCode, false);
     const loadTime = Date.now() - startTime;
 
-    console.log(`[PageContent] Loaded "${pageSlug.value}" in ${loadTime}ms (${loadTime < 50 ? 'from cache' : 'from network'})`);
-    console.log(`[PageContent] Page data:`, page);
-    console.log(`[PageContent] Sections found:`, page?.sections?.length || 0);
 
     if (page) {
       // For cached content, add small delay for smoother transition
@@ -117,7 +114,7 @@ async function loadContent() {
       emit('page-not-found', pageSlug.value);
     }
   } catch (err) {
-    console.error(`[PageContent] Failed to load ${pageSlug.value} page:`, err);
+    console.error(`[PageContent] Failed to load page:`, err);
     error.value = `Failed to load content: ${err instanceof Error ? err.message : 'Unknown error'}`;
   } finally {
     loading.value = false;

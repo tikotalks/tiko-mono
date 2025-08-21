@@ -10,8 +10,8 @@
       :class="bemm('nav')"
     />
     <TUserMenu v-if="authStore.user" :class="bemm('user-menu')" />
-    <TButton 
-      v-else 
+    <TButton
+      v-else
       @click="router.push('/auth/login')"
       :class="bemm('login-button')"
       size="small"
@@ -43,7 +43,7 @@ const navigationItems = ref<NavigationItem[]>([
 
 <style lang="scss">
 .page-header {
-  position: fixed;
+  position: sticky;
   display: flex;
   align-items: center;
   justify-content: space-between;

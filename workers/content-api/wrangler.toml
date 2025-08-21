@@ -15,11 +15,14 @@ routes = [
 binding = "CONTENT_CACHE"
 id = "19e053c7a4c94f16a1ee4a436bfac34a"
 
-# Environment variables (set these in Cloudflare dashboard)
+# Environment variables
 [vars]
 CACHE_TTL = "86400" # 24 hours in seconds
 SUPABASE_URL = "https://kejvhvszhevfwgsztedf.supabase.co"
-# API keys should be set as secrets via wrangler secret put SUPABASE_SERVICE_KEY
+
+# Secret must be set as worker secret:
+# In Cloudflare Dashboard: Workers & Pages > tiko-content-api > Settings > Variables
+# Add Secret: SUPABASE_SECRET with the new Supabase secret key (sb_secret_...)
 
 # Durable Objects for advanced caching (optional)
 # [[durable_objects.bindings]]

@@ -4,18 +4,18 @@
     <div v-if="collectionsStore.isLoading" :class="bemm('loading')">
       Loading curated collections...
     </div>
-    
+
     <div v-else-if="collectionsStore.error" :class="bemm('error')">
       Error loading collections: {{ collectionsStore.error }}
     </div>
-    
+
     <div v-else-if="curatedCollections.length === 0" :class="bemm('empty')">
       <p>No curated collections available yet.</p>
       <p style="font-size: 0.9em; color: var(--color-text-secondary);">
         Debug info: {{ curatedCollections.length }} curated collections found
       </p>
     </div>
-    
+
     <template v-else>
       <div :class="bemm('header')">
         <h2 :class="bemm('title')">{{ t('media.home.curatedCollections') }}</h2>
@@ -24,7 +24,9 @@
           <TIcon :name="Icons.ARROW_RIGHT" />
         </router-link>
       </div>
-    
+
+      <section :class="bemm('media-grid')">
+
     <TGrid :min-item-width="'350px'" :lazy="true">
       <router-link
         v-for="collection in curatedCollections"
@@ -39,16 +41,16 @@
         >
           <template #content>
             <div :class="bemm('curated-badge')">
-              <TIcon :name="Icons.STAR" size="xs" />
+              <TIcon :name="Icons.STAR_M" size="xs" />
               {{ t('media.collections.curated') }}
             </div>
-            
+
             <div :class="bemm('collection-info')">
-              <h3 :class="bemm('collection-name')">{{ collection.name }}</h3>
+              <h4 :class="bemm('collection-name')">{{ collection.name }}</h4>
               <p v-if="collection.description" :class="bemm('collection-description')">
                 {{ collection.description }}
               </p>
-              
+
               <div :class="bemm('collection-stats')">
                 <span :class="bemm('stat')">
                   <TIcon :name="Icons.IMAGE" size="xs" />
@@ -67,7 +69,8 @@
           </template>
         </TMediaTile>
       </router-link>
-    </TGrid>
+    </TGrid>      </section>
+
     </template>
   </section>
 </template>
@@ -118,7 +121,7 @@ onMounted(async () => {
   console.log('CuratedCollections - onMounted')
   console.log('Current curated collections:', collectionsStore.curatedCollections)
   console.log('Current curated collections length:', collectionsStore.curatedCollections.length)
-  
+
   if (collectionsStore.curatedCollections.length === 0) {
     console.log('Loading curated collections...')
     try {
@@ -134,6 +137,7 @@ onMounted(async () => {
 
 <style lang="scss">
 .curated-collections {
+  padding: var(--spacing);
   &__header {
     display: flex;
     justify-content: space-between;
@@ -167,6 +171,8 @@ onMounted(async () => {
     height: 100%;
   }
 
+  &__media-grid{}
+
   &__curated-badge {
     position: absolute;
     top: var(--space-s);
@@ -184,6 +190,7 @@ onMounted(async () => {
     background: color-mix(in srgb, var(--color-background), transparent 10%);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     z-index: 2;
+    display:none;
   }
 
   &__collection-info {
@@ -193,7 +200,8 @@ onMounted(async () => {
     right: 0;
     background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
     color: white;
-    padding: var(--space-xl) var(--space) var(--space);
+    padding: var(--space);
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
   }
 
   &__collection-name {

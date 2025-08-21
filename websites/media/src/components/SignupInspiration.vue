@@ -7,15 +7,15 @@
         {{ t('media.collections.signupInspiration') }}
       </p>
       <div :class="bemm('actions')">
-        <TButton 
-          @click="router.push('/auth/login')" 
+        <TButton
+          @click="router.push('/auth/login')"
           size="large"
         >
           {{ t('auth.login') }}
         </TButton>
-        <TButton 
-          @click="router.push('/auth/signup')" 
-          type="outline" 
+        <TButton
+          @click="router.push('/auth/signup')"
+          type="outline"
           size="large"
         >
           {{ t('auth.signup') }}
@@ -42,12 +42,14 @@ const router = useRouter()
 
 <style lang="scss">
 .signup-inspiration {
+  padding: var(--spacing);
+
   &__content {
     text-align: center;
-    padding: var(--space-2xl);
+    padding: var(--spacing);
     background: var(--color-surface);
     border-radius: var(--border-radius);
-    max-width: 600px;
+    background-color: var(--color-background);
     margin: 0 auto;
   }
 

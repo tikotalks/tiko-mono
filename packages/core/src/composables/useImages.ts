@@ -4,6 +4,7 @@ import type { UserMedia } from '../services/user-media.service'
 import { mediaService, userMediaService } from '../services'
 import { useEventBus } from './useEventBus'
 import { useAuthStore } from '../stores/auth'
+import { logger } from '../utils/logger'
 
 export interface ImageStats {
   totalImages: number
@@ -70,7 +71,7 @@ export function useImages(options: UseImagesOptions = {}): UseImagesReturn {
   
   const isUserLibrary = resolvedLibraryType === ImageLibraryType.USER
   
-  console.log('[useImages] Composable initialized with libraryType:', resolvedLibraryType)
+  logger.debug('[useImages] Composable initialized with libraryType:', resolvedLibraryType)
   
   // Instance-specific state
   const stats = ref<ImageStats>({
@@ -128,12 +129,12 @@ export function useImages(options: UseImagesOptions = {}): UseImagesReturn {
   })
 
   const loadImages = async () => {
-    console.log(`[useImages] loadImages called - libraryType: ${resolvedLibraryType}`)
+    logger.debug(`[useImages] loadImages called - libraryType: ${resolvedLibraryType}`)
     
     if (isUserLibrary) {
       // Load user images
       if (userImagesLoaded.value && userImages.value.length > 0) {
-        console.log('[useImages] User images already loaded, returning cached data. Use refresh() to force reload.')
+        logger.debug('[useImages] User images already loaded, returning cached data')
         await refreshStats()
         return
       }
@@ -151,15 +152,15 @@ export function useImages(options: UseImagesOptions = {}): UseImagesReturn {
           if (!userId) {
             throw new Error('User not authenticated')
           }
-          console.log('[useImages] Loading user media for user:', userId)
+          logger.debug('[useImages] Loading user media for user:', userId)
           const userMedia = await userMediaService.getUserMedia(userId)
-          console.log('[useImages] Loaded user media:', userMedia.length, 'items')
+          logger.debug(`[useImages] Loaded ${userMedia.length} user media items`)
           userImages.value = userMedia
           userImagesLoaded.value = true
           await refreshStats()
         } catch (err) {
           error.value = err instanceof Error ? err.message : 'Failed to load user images'
-          console.error('Failed to load user images:', err)
+          logger.error('Failed to load user images:', err)
         } finally {
           loading.value = false
           userLoadPromise = null
@@ -170,7 +171,7 @@ export function useImages(options: UseImagesOptions = {}): UseImagesReturn {
     } else {
       // Load public/global images
       if (publicImagesLoaded.value && publicImages.value.length > 0) {
-        console.log('[useImages] Public images already loaded, returning cached data. Use refresh() to force reload.')
+        logger.debug('[useImages] Public images already loaded, returning cached data')
         await refreshStats()
         return
       }
@@ -187,14 +188,14 @@ export function useImages(options: UseImagesOptions = {}): UseImagesReturn {
           if (resolvedLibraryType === ImageLibraryType.PUBLIC) {
             publicImages.value = await mediaService.getPublicMediaList()
           } else {
-            console.log('[useImages] Loading images from authenticated service')
+            logger.debug('[useImages] Loading images from authenticated service')
             publicImages.value = await mediaService.getMediaList()
           }
           publicImagesLoaded.value = true
           await refreshStats()
         } catch (err) {
           error.value = err instanceof Error ? err.message : 'Failed to load images'
-          console.error('Failed to load images:', err)
+          logger.error('Failed to load images:', err)
         } finally {
           loading.value = false
           publicLoadPromise = null
@@ -243,7 +244,7 @@ export function useImages(options: UseImagesOptions = {}): UseImagesReturn {
         lastUpload
       }
     } catch (err) {
-      console.error('Failed to calculate stats:', err)
+      logger.error('Failed to calculate stats:', err)
     }
   }
 

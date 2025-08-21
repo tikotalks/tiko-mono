@@ -5,6 +5,7 @@ export default defineConfig({
   id: 'media',
   name: 'Media',
   description: 'Media Website for Tiko',
+  isApp: false,
   icon: {
     mediaId:'987bc1c3-8f28-4573-8d49-e361016a0f3c',
     color: BaseColors.RED,

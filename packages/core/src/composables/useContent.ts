@@ -2,6 +2,7 @@ import { ref, computed } from 'vue'
 import { contentService } from '../services/content.service'
 import { ContentWorkerService } from '../services/content-worker.service'
 import { processContentFields } from '../utils/field-processing'
+import { contentLogger } from '../utils/logger'
 import type { 
   ContentProject, 
   ContentSection, 
@@ -72,7 +73,7 @@ export function useContent(options?: UseContentOptions) {
         const response = await service.getLanguages()
         languages.value = response
       } catch (err) {
-        console.error('Failed to load languages:', err)
+        contentLogger.error('Failed to load languages:', err)
       }
     }
   }
@@ -83,7 +84,7 @@ export function useContent(options?: UseContentOptions) {
     
     // Check cache first (unless skipCache is true)
     if (!skipCache && pageCache.has(cacheKey)) {
-      console.log(`[useContent] Returning cached page for key: ${cacheKey}`)
+      contentLogger.log(`[useContent] Returning cached page for key: ${cacheKey}`)
       return pageCache.get(cacheKey)!
     }
 
@@ -96,7 +97,7 @@ export function useContent(options?: UseContentOptions) {
     try {
       // Check if we can use the optimized method (only available in worker service)
       if (service instanceof ContentWorkerService) {
-        console.log('🚀 [useContent] Using optimized getPageWithFullContent method')
+        contentLogger.info('[useContent] Using content worker for optimized loading')
         
         const result = await service.getPageWithFullContent(
           pageIdOrSlug,
@@ -112,10 +113,7 @@ export function useContent(options?: UseContentOptions) {
         // Worker has already simplified the structure
         const processedResult: PageContent = result
 
-        console.log(`🎯 [useContent] OPTIMIZED RESULT: ${processedResult.sections.length} sections loaded`)
-        processedResult.sections.forEach((section, index) => {
-          console.log(`   ${index}: ${section.section?.name || 'unknown'} (${Object.keys(section.content || {}).length} content fields)`)
-        })
+        contentLogger.log(`[useContent] Loaded ${processedResult.sections.length} sections`)
 
         // Cache the result
         pageCache.set(cacheKey, processedResult)
@@ -124,7 +122,7 @@ export function useContent(options?: UseContentOptions) {
       }
 
       // Fallback to the old method for direct service
-      console.log('📊 [useContent] Using traditional multi-query method (direct service)')
+      contentLogger.info('[useContent] Using direct Supabase queries')
       let page: ContentPage | null = null
       
       // Check if it's a UUID
@@ -149,12 +147,12 @@ export function useContent(options?: UseContentOptions) {
 
       // Get page sections
       const pageSections = await service.getPageSections(page.id)
-      console.log(`🔍 [useContent] Found ${pageSections.length} page sections for page ${page.id}:`, pageSections)
+      contentLogger.log(`[useContent] Found ${pageSections.length} page sections`)
       
       // Check for null section_ids
       const nullSectionIds = pageSections.filter(ps => !ps.section_id)
       if (nullSectionIds.length > 0) {
-        console.error(`❌ [useContent] ${nullSectionIds.length} page sections have NULL section_id:`, nullSectionIds)
+        contentLogger.error(`[useContent] ${nullSectionIds.length} page sections have NULL section_id`)
       }
       
       // Load sections with their content
@@ -164,25 +162,24 @@ export function useContent(options?: UseContentOptions) {
           section: ContentSection
           content: Record<string, any>
         } | null> => {
-          console.log(`🔧 [useContent] Processing pageSection ${index} (${pageSection.override_name}):`, pageSection)
+          contentLogger.log(`[useContent] Processing pageSection ${index} (${pageSection.override_name})`)
           
           // Get section instance first
           let sectionInstance = null
           if (pageSection.section_id) {
-            console.log(`🔍 [useContent] Loading section instance ${pageSection.section_id}...`)
+            contentLogger.log(`[useContent] Loading section instance ${pageSection.section_id}`)
             try {
               sectionInstance = await service.getSection(pageSection.section_id)
-              console.log(`✅ [useContent] Section instance loaded:`, sectionInstance)
+              contentLogger.log(`[useContent] Section instance loaded`)
             } catch (error) {
-              console.error(`❌ [useContent] Failed to load section instance ${pageSection.section_id}:`, error)
+              contentLogger.error(`[useContent] Failed to load section instance ${pageSection.section_id}:`, error)
             }
           } else {
-            console.error(`❌ [useContent] PageSection ${pageSection.override_name} has NULL section_id - cannot load!`)
+            contentLogger.error(`[useContent] PageSection ${pageSection.override_name} has NULL section_id`)
           }
           
           if (!sectionInstance) {
-            console.error(`❌ [useContent] No section instance found for pageSection:`, pageSection)
-            console.error(`❌ [useContent] This section will be filtered out and NOT rendered on marketing site`)
+            contentLogger.error(`[useContent] No section instance found for pageSection, will be filtered out`)
             return null
           }
           
@@ -198,64 +195,47 @@ export function useContent(options?: UseContentOptions) {
 
           // Get fields for this section template
           const fields = await service.getFieldsBySectionTemplate(sectionTemplateId)
-          console.log(`🔍 [useContent] ALL FIELDS for template ${sectionTemplateId}:`)
-          fields.forEach(field => {
-            console.log(`  - Field: ${field.field_key} | Type: ${field.field_type} | ID: ${field.id}`)
-          })
+          contentLogger.log(`[useContent] Template ${sectionTemplateId} has ${fields.length} fields`)
           
           let content: Record<string, any> = {}
           
           // If this page section references a section instance, load content from there
           if (pageSection.section_id && sectionInstance) {
             try {
-              console.log(`🔍 [useContent] About to load content for section ${pageSection.section_id}`)
-              console.log(`🔍 [useContent] Section instance:`, sectionInstance)
+              contentLogger.log(`[useContent] Loading content for section ${pageSection.section_id}`)
               
               // Load content from the section instance
               // IMPORTANT: Use the section instance's language_code, not the requested language
               // Global sections have language_code = null, language-specific sections have their own language_code
               const sectionLanguage = sectionInstance.language_code
-              console.log(`🔍 [useContent] Loading content for section ${pageSection.section_id} with language: ${sectionLanguage || 'null (global)'}`)
+              contentLogger.log(`[useContent] Section language: ${sectionLanguage || 'global'}`)
               
-              console.log(`🔍 [useContent] Calling service.getSectionData...`)
               const rawContent = await service.getSectionData(pageSection.section_id, sectionLanguage)
-              console.log(`✅ [useContent] Loaded raw content from section instance ${pageSection.section_id}:`, rawContent)
+              contentLogger.log(`[useContent] Loaded raw content from section ${pageSection.section_id}`)
               
               // Process fields for frontend consumption
-              console.log(`🔧 [useContent] About to process fields for section ${pageSection.section_id}`)
-              console.log(`🔧 [useContent] Raw content before processing:`, rawContent)
-              console.log(`🔧 [useContent] Fields for processing:`, fields.map(f => ({ key: f.field_key, type: f.field_type })))
+              contentLogger.log(`[useContent] Processing ${fields.length} fields for section ${pageSection.section_id}`)
               
               // Check specifically for list fields
               const listFields = fields.filter(f => f.field_type === 'list')
               if (listFields.length > 0) {
-                console.log(`📋 [useContent] Found ${listFields.length} list fields:`, listFields.map(f => f.field_key))
-                listFields.forEach(field => {
-                  const fieldValue = rawContent[field.field_key]
-                  console.log(`📋 [useContent] List field '${field.field_key}':`, typeof fieldValue, fieldValue)
-                })
+                contentLogger.log(`[useContent] Found ${listFields.length} list fields`)
               }
               
               content = await processContentFields(rawContent, fields, resolveLinkedItems, language || page?.language_code || 'en')
-              console.log(`✅ [useContent] Processed content fields result:`, content)
+              contentLogger.log(`[useContent] Processed content with ${Object.keys(content).length} fields`)
               
               // Double-check list fields after processing
-              if (listFields.length > 0) {
-                listFields.forEach(field => {
-                  const processedValue = content[field.field_key]
-                  console.log(`📋 [useContent] After processing, '${field.field_key}':`, typeof processedValue, Array.isArray(processedValue) ? 'IS ARRAY' : 'NOT ARRAY', processedValue)
-                })
-              }
               if (Object.keys(content).length === 0) {
-                console.warn(`⚠️ [useContent] Section instance ${pageSection.section_id} has no content data`)
+                contentLogger.warn(`[useContent] Section instance ${pageSection.section_id} has no content data`)
               }
             } catch (error) {
-              console.error(`❌ [useContent] Failed to load section instance data for ${pageSection.section_id}:`, error)
+              contentLogger.error(`[useContent] Failed to load section instance data for ${pageSection.section_id}:`, error)
             }
           } else if (pageSection.section_id && !sectionInstance) {
-            console.error(`❌ [useContent] Have section_id ${pageSection.section_id} but no section instance loaded`)
+            contentLogger.error(`[useContent] Have section_id ${pageSection.section_id} but no section instance loaded`)
           } else {
-            console.log(`❌ [useContent] No section_id found for pageSection ${pageSection.override_name}`)
+            contentLogger.log(`[useContent] No section_id found for pageSection ${pageSection.override_name}`)
           }
           
           // If no section instance or it failed, fall back to page-specific field values
@@ -275,11 +255,9 @@ export function useContent(options?: UseContentOptions) {
               })
             
             // Process fields for frontend consumption
-            console.log(`🔧 [useContent] About to process page-specific fields`)
-            console.log(`🔧 [useContent] Raw page content before processing:`, rawContent)
-            console.log(`🔧 [useContent] Fields for processing:`, fields.map(f => ({ key: f.field_key, type: f.field_type })))
+            contentLogger.log(`[useContent] Processing page-specific fields`)
             content = await processContentFields(rawContent, fields, resolveLinkedItems, language || page!.language_code)
-            console.log(`✅ [useContent] Processed page content fields result:`, content)
+            contentLogger.log(`[useContent] Processed page content fields`)
           }
 
           return {
@@ -302,24 +280,20 @@ export function useContent(options?: UseContentOptions) {
         _cached_at: new Date().toISOString()
       } as PageContent & { _cached_at?: string }
 
-      console.log(`🎯 [useContent] FINAL RESULT: ${sectionsWithContent.length} sections loaded for marketing site:`)
-      sectionsWithContent.forEach((section, index) => {
-        console.log(`   ${index}: ${section.section?.name || 'unknown'} (${Object.keys(section.content || {}).length} content fields)`)
-      })
+      contentLogger.info(`[useContent] Page loaded with ${sectionsWithContent.length} sections`)
       
       if (sectionsWithContent.length === 0) {
-        console.error(`❌ [useContent] NO SECTIONS WILL BE RENDERED! All sections were filtered out.`)
-        console.error(`❌ [useContent] This is why the marketing site shows no sections after reorder.`)
+        contentLogger.error(`[useContent] NO SECTIONS WILL BE RENDERED! All sections were filtered out.`)
       }
 
       // Cache the result
       pageCache.set(cacheKey, result)
-      console.log(`[useContent] Cached page at ${(result as any)._cached_at}`)
+      contentLogger.log(`[useContent] Page cached`)
       
       return result
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load page'
-      console.error('Failed to load page:', err)
+      contentLogger.error('Failed to load page:', err)
       return null
     } finally {
       loading.value = false
@@ -336,7 +310,7 @@ export function useContent(options?: UseContentOptions) {
       return pages
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load pages'
-      console.error('Failed to load pages:', err)
+      contentLogger.error('Failed to load pages:', err)
       return []
     } finally {
       loading.value = false
@@ -363,7 +337,7 @@ export function useContent(options?: UseContentOptions) {
       return section
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load section'
-      console.error('Failed to load section:', err)
+      contentLogger.error('Failed to load section:', err)
       return null
     } finally {
       loading.value = false
@@ -444,7 +418,7 @@ export function useContent(options?: UseContentOptions) {
       return projectsList
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load projects'
-      console.error('Failed to load projects:', err)
+      contentLogger.error('Failed to load projects:', err)
       return []
     } finally {
       loading.value = false
@@ -466,7 +440,7 @@ export function useContent(options?: UseContentOptions) {
       pageCache.clear()
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to update content'
-      console.error('Failed to update content:', err)
+      contentLogger.error('Failed to update content:', err)
       throw err
     } finally {
       loading.value = false
@@ -496,7 +470,7 @@ export function useContent(options?: UseContentOptions) {
       return content
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to create content'
-      console.error('Failed to create content:', err)
+      contentLogger.error('Failed to create content:', err)
       throw err
     } finally {
       loading.value = false
@@ -567,15 +541,15 @@ export function useContent(options?: UseContentOptions) {
       }
       
       // Get merged data (translated + inherited fields)
-      console.log(`📦 [getItem] Getting data for item ${item.id}`)
+      contentLogger.log(`[getItem] Getting data for item ${item.id}`)
       const data = await service.getItemData(item.id, true)
-      console.log(`📦 [getItem] Raw item data:`, data)
+      contentLogger.log(`[getItem] Raw item data loaded`)
       
       // Process fields
       const fields = await service.getFieldsByItemTemplate(item.item_template_id)
-      console.log(`📦 [getItem] Fields for template ${item.item_template_id}:`, fields.map(f => f.field_key))
+      contentLogger.log(`[getItem] Processing ${fields.length} fields for template ${item.item_template_id}`)
       const processedData = await processContentFields(data, fields, resolveLinkedItems, language)
-      console.log(`📦 [getItem] Processed item data:`, processedData)
+      contentLogger.log(`[getItem] Item data processed`)
       
       return {
         item,
@@ -585,7 +559,7 @@ export function useContent(options?: UseContentOptions) {
       }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load item'
-      console.error('Failed to load item:', err)
+      contentLogger.error('Failed to load item:', err)
       return null
     } finally {
       loading.value = false
@@ -602,7 +576,7 @@ export function useContent(options?: UseContentOptions) {
       return items
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load items'
-      console.error('Failed to load items:', err)
+      contentLogger.error('Failed to load items:', err)
       return []
     } finally {
       loading.value = false
@@ -618,13 +592,12 @@ export function useContent(options?: UseContentOptions) {
     
     try {
       // Regular flow
-      console.log(`🔍 [resolveLinkedItems] Resolving ${itemIds.length} items with language:`, language)
-      console.log(`🔍 [resolveLinkedItems] Item IDs:`, itemIds)
+      contentLogger.log(`[resolveLinkedItems] Resolving ${itemIds.length} items for language: ${language}`)
       
       // Ensure all items are strings
       const validItemIds = itemIds.filter(id => {
         if (typeof id !== 'string') {
-          console.error(`❌ [resolveLinkedItems] Invalid item ID (not a string):`, id, typeof id)
+          contentLogger.error(`[resolveLinkedItems] Invalid item ID (not a string):`, id, typeof id)
           return false
         }
         return true
@@ -632,26 +605,21 @@ export function useContent(options?: UseContentOptions) {
       
       const resolvedItems = await Promise.all(
         validItemIds.map(async (itemId) => {
-          console.log(`📦 [resolveLinkedItems] Resolving item:`, itemId)
+          contentLogger.log(`[resolveLinkedItems] Resolving item: ${itemId}`)
           const result = await getItem(itemId, language)
-          console.log(`✅ [resolveLinkedItems] Item ${itemId} resolved:`, result ? 'SUCCESS' : 'FAILED')
           if (result) {
-            console.log(`📄 [resolveLinkedItems] Item data:`, { 
-              name: result.item?.name, 
-              hasData: !!result.data,
-              dataKeys: result.data ? Object.keys(result.data) : []
-            })
+            contentLogger.log(`[resolveLinkedItems] Item ${itemId} resolved successfully`)
           }
           return result
         })
       )
       
       const filtered = resolvedItems.filter(Boolean)
-      console.log(`🎯 [resolveLinkedItems] Returning ${filtered.length} resolved items`)
+      contentLogger.log(`[resolveLinkedItems] Resolved ${filtered.length} items`)
       return filtered
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to resolve linked items'
-      console.error('Failed to resolve linked items:', err)
+      contentLogger.error('Failed to resolve linked items:', err)
       return []
     } finally {
       loading.value = false
@@ -674,7 +642,7 @@ export function useContent(options?: UseContentOptions) {
       return item
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to create item'
-      console.error('Failed to create item:', err)
+      contentLogger.error('Failed to create item:', err)
       throw err
     } finally {
       loading.value = false
@@ -691,7 +659,7 @@ export function useContent(options?: UseContentOptions) {
       await service.setItemData(itemId, data)
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to update item data'
-      console.error('Failed to update item data:', err)
+      contentLogger.error('Failed to update item data:', err)
       throw err
     } finally {
       loading.value = false
@@ -717,7 +685,7 @@ export function useContent(options?: UseContentOptions) {
     return {
       async getItems(language?: string) {
         if (!currentProject.value) {
-          console.error('[useContent] No project set for navigation')
+          contentLogger.error('[useContent] No project set for navigation')
           return []
         }
         

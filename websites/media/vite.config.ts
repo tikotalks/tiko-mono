@@ -11,9 +11,9 @@ const pwaConfig = {
     maximumFileSizeToCacheInBytes: 3 * 1024 * 1024 // 3 MB
   },
   manifest: {
-    name: 'Admin - Tiko',
-    short_name: 'Admin',
-    description: 'Tiko Media dashboard app',
+    name: 'Media - Tiko',
+    short_name: 'Media',
+    description: 'Tiko Media library app',
     theme_color: '#667eea',
     background_color: '#ffffff',
     display: 'standalone',
@@ -42,7 +42,14 @@ const pwaConfig = {
 }
 
 // Disable PWA for development to avoid caching issues
-export default createViteConfig(__dirname, 5000, process.env.NODE_ENV === 'production' ? pwaConfig : null, 'admin', {
-  // Admin uses shared @tiko/ui translations, no app-specific translations
-  appSpecific: false
+export default createViteConfig({
+  dirname: __dirname,
+  port: 5000,
+  pwaConfig: process.env.NODE_ENV === 'production' ? pwaConfig : null,
+  appName: 'media',
+  appId: 'media',
+  i18nConfig: {
+    // Media uses shared @tiko/ui translations, no app-specific translations
+    appSpecific: false
+  }
 })

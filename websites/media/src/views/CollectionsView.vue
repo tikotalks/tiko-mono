@@ -1,20 +1,23 @@
 <template>
   <div :class="bemm()">
+    <section :class="bemm('intro')">
+
     <div :class="bemm('header')">
       <h1 :class="bemm('title')">{{ t('media.collections.title') }}</h1>
       <p :class="bemm('description')">{{ t('media.collections.description') }}</p>
     </div>
+  </section>
 
     <!-- My Collections Section (when logged in) -->
-    <MyCollections 
-      v-if="authStore.user" 
+    <MyCollections
+      v-if="authStore.user"
       @create="showCreateDialog = true"
       :class="bemm('section')"
     />
 
     <!-- Signup Inspiration Section (when not logged in) -->
-    <SignupInspiration 
-      v-else 
+    <SignupInspiration
+      v-else
       :class="bemm('section')"
     />
 
@@ -58,27 +61,30 @@ const handleCollectionCreated = () => {
 
 <style lang="scss">
 .collections-view {
-  padding: var(--space-lg);
   max-width: var(--max-width);
   margin: 0 auto;
-  
+
+
+  &__intro{
+    padding: var(--spacing);
+  }
+
   &__header {
     margin-bottom: var(--space-xl);
   }
-  
+
   &__title {
     font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
     margin: 0 0 var(--space-s) 0;
   }
-  
+
   &__description {
     color: var(--color-foreground-secondary);
     margin: 0;
   }
-  
+
   &__section {
-    margin-bottom: var(--space-2xl);
 
     &:last-child {
       margin-bottom: 0;

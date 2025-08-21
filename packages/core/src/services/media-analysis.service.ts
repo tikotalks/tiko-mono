@@ -7,6 +7,7 @@
 
 import type { MediaItem } from './media.service'
 import { mediaService } from './media-supabase.service'
+import { logger } from '../utils/logger'
 
 export interface MediaAnalysisResult {
   success: boolean
@@ -104,7 +105,7 @@ export class MediaAnalysisService {
       }
 
     } catch (error) {
-      console.error('Failed to analyze media:', error)
+      logger.error('Failed to analyze media:', error)
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Analysis failed'
@@ -158,7 +159,7 @@ export class MediaAnalysisService {
       }
 
     } catch (error) {
-      console.error('Failed to analyze image URL:', error)
+      logger.error('Failed to analyze image URL:', error)
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Analysis failed'

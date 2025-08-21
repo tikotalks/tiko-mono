@@ -20,7 +20,12 @@ import { contentService, useContent } from '@tiko/core'
 
 const bemm = useBemm('content-debug')
 const debugOutput = ref<any>({})
-const content = useContent({ projectSlug: 'marketing' })
+const content = useContent({ 
+  projectSlug: 'marketing',
+  useWorker: import.meta.env.VITE_USE_CONTENT_WORKER === 'true',
+  workerUrl: import.meta.env.VITE_CONTENT_API_URL,
+  deployedVersionId: import.meta.env.VITE_DEPLOYED_VERSION_ID
+})
 
 async function testNullQuery() {
   try {
