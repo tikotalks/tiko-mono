@@ -191,6 +191,9 @@ jobs:
 
       - name: Generate i18n translations
         run: pnpm generate:i18n:worker:prod
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
       - name: Build Timer app
         run: |
@@ -237,6 +240,9 @@ jobs:
 
       - name: Generate i18n translations
         run: pnpm generate:i18n:worker:prod
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
       - name: Build Yes-No app
         run: |
@@ -283,6 +289,9 @@ jobs:
 
       - name: Generate i18n translations
         run: pnpm generate:i18n:worker:prod
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
       - name: Build Cards app
         run: |
@@ -329,6 +338,9 @@ jobs:
 
       - name: Generate i18n translations
         run: pnpm generate:i18n:worker:prod
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
       - name: Build Radio app
         run: |
@@ -375,6 +387,9 @@ jobs:
 
       - name: Generate i18n translations
         run: pnpm generate:i18n:worker:prod
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
       - name: Build Todo app
         run: |
@@ -421,6 +436,9 @@ jobs:
 
       - name: Generate i18n translations
         run: pnpm generate:i18n:worker:prod
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
       - name: Build Type app
         run: |
@@ -467,6 +485,9 @@ jobs:
 
       - name: Generate i18n translations
         run: pnpm generate:i18n:worker:prod
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
       - name: Build Sequence app
         run: |
