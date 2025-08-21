@@ -47,10 +47,10 @@ class DatabaseI18nGenerator {
     
     // Get environment variables
     this.supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL
-    this.supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
+    this.supabaseKey = process.env.VITE_SUPABASE_PUBLIC || process.env.SUPABASE_ANON_KEY
     
     if (!this.supabaseUrl || !this.supabaseKey) {
-      console.warn('⚠️  Missing Supabase configuration. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.')
+      console.warn('⚠️  Missing Supabase configuration. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLIC environment variables.')
       console.warn('💡 Falling back to mock data generation...')
       throw new Error('NO_SUPABASE_CONFIG')
     }

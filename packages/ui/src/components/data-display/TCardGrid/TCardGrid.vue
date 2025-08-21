@@ -865,6 +865,17 @@ watch(() => props.cards, (newCards) => {
   height: 100%;
   overflow: hidden;
 
+
+  transform: perspective(3000px) rotateX(var(--rx)) rotateY(var(--ry)) translateZ(var(--tz));
+    transform-style: preserve-3d;
+    will-change: transform;
+    transition: transform 80ms linear;
+
+    @media (prefers-reduced-motion: reduce) {
+      transform: none !important;
+    }
+
+
   &__pagination {
     position: fixed;
     bottom: var(--space);

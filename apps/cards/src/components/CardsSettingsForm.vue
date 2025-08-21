@@ -48,6 +48,14 @@
         :class="bemm('checkbox')"
       />
     </div>
+
+    <div :class="bemm('group')">
+      <TInputCheckbox
+        v-model="localSettings.showHiddenItems"
+        :label="t('cards.showHiddenItems')"
+        :class="bemm('checkbox')"
+      />
+    </div>
   </div>
 </template>
 
@@ -61,6 +69,7 @@ interface YesNoSettings {
   autoSpeak: boolean
   hapticFeedback: boolean
   showCuratedItems: boolean
+  showHiddenItems: boolean
 }
 
 interface Props {

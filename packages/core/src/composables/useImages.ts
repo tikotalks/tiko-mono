@@ -84,7 +84,15 @@ export function useImages(options: UseImagesOptions = {}): UseImagesReturn {
   
   // Event bus for listening to upload completion
   const eventBus = useEventBus()
-  const authStore = useAuthStore()
+  
+  // Lazy initialization for auth store to avoid Pinia initialization issues
+  let authStore: ReturnType<typeof useAuthStore> | null = null
+  const getAuthStore = () => {
+    if (!authStore) {
+      authStore = useAuthStore()
+    }
+    return authStore
+  }
   
   // Computed property that returns the appropriate image list
   const imageList = computed(() => {
@@ -139,7 +147,7 @@ export function useImages(options: UseImagesOptions = {}): UseImagesReturn {
         error.value = null
 
         try {
-          const userId = authStore.user?.id
+          const userId = getAuthStore().user?.id
           if (!userId) {
             throw new Error('User not authenticated')
           }

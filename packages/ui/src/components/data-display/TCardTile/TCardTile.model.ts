@@ -22,6 +22,7 @@ export interface TCardTile {
   effective_locale?: string; // The locale of the content being displayed (from translation)
   isPublic?: boolean;
   isCurated?: boolean;
+  isHidden?: boolean; // Item is hidden but being shown with opacity
 }
 
 export interface TCardTileProps {

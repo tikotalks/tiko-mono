@@ -19,7 +19,7 @@
       <div :class="bemm('thumbnail-container')">
         <img
           :src="displayThumbnail"
-          :alt="currentItem?.title || t(keys.radio.noAudioSelected)"
+          :alt="currentItem?.title || t('radio.noAudioSelected')"
           :class="bemm('thumbnail', { spinning: isPlaying })"
           @error="handleImageError"
         />
@@ -158,7 +158,7 @@
           @click="$emit('back-to-grid')"
           :class="bemm('back-button')"
         >
-          {{ t(keys.common.back) }}
+          {{ t('common.back') }}
         </TButton>
       </div>
 
@@ -166,7 +166,7 @@
       <div v-if="sleepTimer.isActive" :class="bemm('sleep-timer')">
         <TIcon name="moon" :class="bemm('sleep-icon')" />
         <span :class="bemm('sleep-text')">
-          {{ t(keys.radio.sleepIn, { minutes: sleepTimer.remainingMinutes }) }}
+          {{ t('radio.sleepIn', { minutes: sleepTimer.remainingMinutes }) }}
         </span>
         <TButton
           icon="x"
@@ -188,7 +188,7 @@
         @click="clearError"
         :class="bemm('error-dismiss')"
       >
-        {{ t(keys.common.dismiss) }}
+        {{ t('common.dismiss') }}
       </TButton>
     </div>
   </div>

@@ -1,19 +1,26 @@
 import { defineConfig } from '@tiko/core'
+import { BaseColors, ColorValue } from '@tiko/ui'
 
 export default defineConfig({
   id: 'tiko',
   name: 'Tiko',
-  icon: 'dashboard',
-  description: 'Main dashboard for accessing all Tiko apps',
+  icon: {
+    mediaId:'c2e7188c-1ac4-41d6-a29c-2b122ec812e8',
+    color: BaseColors.GREEN,
+  },
+  description: 'Tiko App',
   theme: {
-    primary: 'purple',
-    secondary: 'blue',
-    tertiary: 'cyan'
+    primary: BaseColors.TURQUOISE,
+    secondary: BaseColors.ORANGE,
+    tertiary: BaseColors.BLUE,
+  },
+  auth: {
+    skipAuth: true // Allow using the app without login
   },
   splash: {
     appName: 'Tiko',
-    backgroundColor: '#f8f9fa',
-    themeColor: '#9333ea',
+    backgroundColor: ColorValue.ORANGE,
+    themeColor: ColorValue.BLACK,
     loadingText: 'Loading Tiko...'
   }
 })

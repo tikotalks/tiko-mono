@@ -14,7 +14,7 @@
         icon="add"
         @click="showAddGroupModal"
       >
-        {{ t(keys.todo.addGroup) }}
+        {{ t('todo.addGroup') }}
       </TButton>
       <TButton
         v-if="showAddItemButton"
@@ -24,7 +24,7 @@
         icon="add"
         @click="showAddItemModal"
       >
-        {{ t(keys.todo.addItem) }}
+        {{ t('todo.addItem') }}
       </TButton>
       <TButton
         v-if="showResetButton"
@@ -34,7 +34,7 @@
         icon="refresh"
         @click="handleResetItems"
       >
-        {{ t(keys.todo.resetItems) }}
+        {{ t('todo.resetItems') }}
       </TButton>
     </template>
 
@@ -48,6 +48,7 @@ import { useRoute } from 'vue-router'
 import { TFramework, TButton, type FrameworkConfig, useI18n, useParentMode } from '@tiko/ui'
 import { storeToRefs } from 'pinia'
 import { useTodoStore } from './stores/todo'
+import { useTodoSettingsStore } from './stores/todoSettings'
 import tikoConfig from '../tiko.config'
 import backgroundImage from './assets/app-icon-todo.png'
 import AddGroupModal from './components/AddGroupModal.vue'
@@ -56,6 +57,7 @@ import type { TodoGroup } from './types/todo.types'
 import { initializeTranslations } from '@tiko/core'
 
 const todoStore = useTodoStore()
+const todoSettingsStore = useTodoSettingsStore()
 const route = useRoute()
 const { t, keys } = useI18n()
 const parentMode = useParentMode('todo')
@@ -74,6 +76,8 @@ const loading = computed(() => translationsLoading.value || todoStore.loading)
 // Initialize translations on mount
 onMounted(async () => {
   await initializeTranslations()
+  // Load todo settings
+  await todoSettingsStore.loadState()
   translationsLoading.value = false
 })
 
@@ -93,7 +97,7 @@ const frameworkConfig = computed<FrameworkConfig>(() => ({
     sections: [
       {
         id: 'todo-settings',
-        title: t(keys.settings.title),
+        title: t('settings.title'),
         icon: 'clipboard-list',
         order: 10
         // component: TodoSettings // Add custom settings component if needed
@@ -120,7 +124,7 @@ const routeTitle = computed(() => {
   if (route.name === 'group') {
     const groupId = route.params.id as string
     const group = groups.value.find(g => g.id === groupId)
-    return group?.title || t(keys.common.loading)
+    return group?.title || t('common.loading')
   }
   return ''
 })
@@ -149,7 +153,7 @@ const handleResetItems = async () => {
     const groupId = route.params.id as string
     await todoStore.resetGroupItems(groupId)
     toastService?.show({
-      message: t(keys.todo.allItemsReset),
+      message: t('todo.allItemsReset'),
       type: 'success'
     })
   }

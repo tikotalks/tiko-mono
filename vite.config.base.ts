@@ -17,7 +17,7 @@ const __dirname = pathDirname(fileURLToPath(import.meta.url))
 export const createViteConfig = (args: {
   dirname: string,
   port: number,
-  pwaConfig: {
+  pwaConfig: null | {
     registerType: string,
     includeAssets: string[],
     manifest: {

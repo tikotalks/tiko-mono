@@ -31,8 +31,22 @@ export interface TranslationContributor {
 }
 
 class TranslationVersionedService {
-  private readonly API_URL = 'https://kejvhvszhevfwgsztedf.supabase.co/rest/v1';
-  private readonly ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlanZodnN6aGV2Zndnc3p0ZWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4ODg2MTIsImV4cCI6MjA2NzQ2NDYxMn0.xUYXxNodJTpTwChlKbuBSojVJqX9CDW87aVISEUc2rE';
+  private readonly API_URL: string;
+  private readonly apiKey: string;
+
+  constructor() {
+    const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL;
+    if (!supabaseUrl) {
+      throw new Error('VITE_SUPABASE_URL environment variable is required');
+    }
+    this.API_URL = `${supabaseUrl}/rest/v1`;
+    
+    // Use public key for browser compatibility
+    this.apiKey = import.meta.env?.VITE_SUPABASE_PUBLIC;
+    if (!this.apiKey) {
+      throw new Error('VITE_SUPABASE_PUBLIC environment variable is required');
+    }
+  }
 
   /**
    * Get current session from localStorage
@@ -68,8 +82,8 @@ class TranslationVersionedService {
     const response = await fetch(`${this.API_URL}${path}`, {
       ...options,
       headers: {
-        'apikey': this.ANON_KEY,
-        'Authorization': token ? `Bearer ${token}` : `Bearer ${this.ANON_KEY}`,
+        'apikey': this.apiKey,
+        'Authorization': token ? `Bearer ${token}` : `Bearer ${this.apiKey}`,
         'Content-Type': 'application/json',
         'Prefer': 'return=representation',
         ...options.headers,

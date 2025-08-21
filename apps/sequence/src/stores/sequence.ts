@@ -11,6 +11,7 @@ export interface SequenceSettings {
   showHints: boolean
   hapticFeedback: boolean
   showCuratedItems: boolean
+  showHiddenItems: boolean // Show hidden items with opacity
   hiddenItems: string[] // Array of item IDs that user has hidden
 }
 
@@ -58,6 +59,7 @@ export const useSequenceStore = defineStore('sequence', () => {
     showHints: false,
     hapticFeedback: true,
     showCuratedItems: true,
+    showHiddenItems: false,
     hiddenItems: []
   }
 
@@ -147,8 +149,19 @@ export const useSequenceStore = defineStore('sequence', () => {
         // Only filter out hidden items for ROOT level, not for children
         if (!parentId) {
           const hiddenItems = settings.value.hiddenItems || []
-          const filteredSequence = entry.sequence.filter(item => !hiddenItems.includes(item.id))
-          return filteredSequence
+          const showHidden = settings.value.showHiddenItems
+          
+          if (showHidden) {
+            // Show all sequence items, but mark hidden ones
+            return entry.sequence.map(item => ({
+              ...item,
+              isHidden: hiddenItems.includes(item.id)
+            }))
+          } else {
+            // Filter out hidden items completely
+            const filteredSequence = entry.sequence.filter(item => !hiddenItems.includes(item.id))
+            return filteredSequence
+          }
         } else {
           // For children, return all items (don't filter)
           return entry.sequence
@@ -163,8 +176,19 @@ export const useSequenceStore = defineStore('sequence', () => {
         // Only filter out hidden items for ROOT level, not for children
         if (!parentId) {
           const hiddenItems = settings.value.hiddenItems || []
-          const filteredSequence = entry.sequence.filter(item => !hiddenItems.includes(item.id))
-          return filteredSequence
+          const showHidden = settings.value.showHiddenItems
+          
+          if (showHidden) {
+            // Show all sequence items, but mark hidden ones
+            return entry.sequence.map(item => ({
+              ...item,
+              isHidden: hiddenItems.includes(item.id)
+            }))
+          } else {
+            // Filter out hidden items completely
+            const filteredSequence = entry.sequence.filter(item => !hiddenItems.includes(item.id))
+            return filteredSequence
+          }
         } else {
           // For children, return all items (don't filter)
           return entry.sequence
@@ -211,8 +235,19 @@ export const useSequenceStore = defineStore('sequence', () => {
           // Only filter out hidden items for ROOT level, not for children
           if (!parentId) {
             const hiddenItems = settings.value.hiddenItems || []
-            const filteredSequence = entry.sequence.filter(item => !hiddenItems.includes(item.id))
-            return filteredSequence
+            const showHidden = settings.value.showHiddenItems
+            
+            if (showHidden) {
+              // Show all sequence items, but mark hidden ones
+              return entry.sequence.map(item => ({
+                ...item,
+                isHidden: hiddenItems.includes(item.id)
+              }))
+            } else {
+              // Filter out hidden items completely
+              const filteredSequence = entry.sequence.filter(item => !hiddenItems.includes(item.id))
+              return filteredSequence
+            }
           } else {
             // For children, return all items (don't filter)
             return entry.sequence
@@ -262,13 +297,31 @@ export const useSequenceStore = defineStore('sequence', () => {
       // Only filter out hidden items for ROOT level, not for children
       if (!parentId) {
         const hiddenItems = settings.value.hiddenItems || []
-        const filteredSequence = sequence.filter(item => !hiddenItems.includes(item.id))
+        const showHidden = settings.value.showHiddenItems
         
-        if (filteredSequence.length !== sequence.length) {
-          console.log(`[SequenceStore] Filtered out ${sequence.length - filteredSequence.length} hidden items`)
+        if (showHidden) {
+          // Show all sequence items, but mark hidden ones
+          const markedSequence = sequence.map(item => ({
+            ...item,
+            isHidden: hiddenItems.includes(item.id)
+          }))
+          
+          const hiddenCount = markedSequence.filter(item => item.isHidden).length
+          if (hiddenCount > 0) {
+            console.log(`[SequenceStore] Showing ${hiddenCount} hidden items with opacity`)
+          }
+          
+          return markedSequence
+        } else {
+          // Filter out hidden items completely
+          const filteredSequence = sequence.filter(item => !hiddenItems.includes(item.id))
+          
+          if (filteredSequence.length !== sequence.length) {
+            console.log(`[SequenceStore] Filtered out ${sequence.length - filteredSequence.length} hidden items`)
+          }
+          
+          return filteredSequence
         }
-        
-        return filteredSequence
       } else {
         // For children, return all items (don't filter)
         return sequence
@@ -750,6 +803,52 @@ export const useSequenceStore = defineStore('sequence', () => {
     }
   }
 
+  // Hide/show item functions
+  const hideItem = async (itemId: string) => {
+    const currentHidden = settings.value.hiddenItems || []
+    if (!currentHidden.includes(itemId)) {
+      await updateSettings({ 
+        hiddenItems: [...currentHidden, itemId] 
+      })
+      console.log(`[SequenceStore] Hid item: ${itemId}`)
+      
+      // Clear cache to trigger re-filtering
+      await clearCache()
+    }
+  }
+  
+  const showItem = async (itemId: string) => {
+    const currentHidden = settings.value.hiddenItems || []
+    if (currentHidden.includes(itemId)) {
+      await updateSettings({ 
+        hiddenItems: currentHidden.filter(id => id !== itemId) 
+      })
+      console.log(`[SequenceStore] Showed item: ${itemId}`)
+      
+      // Clear cache to trigger re-filtering
+      await clearCache()
+    }
+  }
+  
+  const toggleItemVisibility = async (itemId: string) => {
+    const currentHidden = settings.value.hiddenItems || []
+    if (currentHidden.includes(itemId)) {
+      await showItem(itemId)
+    } else {
+      await hideItem(itemId)
+    }
+  }
+  
+  const toggleShowHiddenItems = async () => {
+    await updateSettings({ 
+      showHiddenItems: !settings.value.showHiddenItems 
+    })
+    console.log(`[SequenceStore] Toggled show hidden items: ${settings.value.showHiddenItems}`)
+    
+    // Clear cache to trigger re-filtering
+    await clearCache()
+  }
+
   return {
     // Getters
     settings,
@@ -783,5 +882,11 @@ export const useSequenceStore = defineStore('sequence', () => {
     selectItem,
     resetPlay,
     restartPlay,
+    
+    // Hidden items functions
+    hideItem,
+    showItem,
+    toggleItemVisibility,
+    toggleShowHiddenItems,
    }
 })

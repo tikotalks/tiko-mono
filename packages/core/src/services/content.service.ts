@@ -210,6 +210,8 @@ class ContentService {
     try {
       const session = await authService.getSession()
       const token = session?.access_token || null
+      
+      const apiKey = import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLIC
 
       const url = `${this.baseUrl}${endpoint}`
       console.log(`[ContentService] Making request to: ${url}`)
@@ -218,7 +220,7 @@ class ContentService {
         ...options,
         headers: {
           'Content-Type': 'application/json',
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'apikey': apiKey,
           'Authorization': token ? `Bearer ${token}` : '',
           'Prefer': 'return=representation',
           ...options.headers,

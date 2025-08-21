@@ -4,7 +4,7 @@ export interface Env {
   
   // Environment variables
   SUPABASE_URL: string;
-  SUPABASE_ANON_KEY: string;
+  SUPABASE_SERVICE_KEY: string;
   CACHE_TTL: string;
   
   // Optional: R2 bucket for large content

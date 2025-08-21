@@ -36,6 +36,15 @@
         />
         <p :class="bemm('description')">{{ t('sequence.showCuratedItemsDescription') }}</p>
       </div>
+
+      <div :class="bemm('item')">
+        <TInputCheckbox
+          v-model="form.showHiddenItems"
+          :label="t('sequence.showHiddenItems')"
+          :class="bemm('checkbox')"
+        />
+        <p :class="bemm('description')">{{ t('sequence.showHiddenItemsDescription') }}</p>
+      </div>
     </div>
   </div>
 </template>
@@ -50,6 +59,7 @@ interface SequenceSettings {
   showHints: boolean
   hapticFeedback: boolean
   showCuratedItems: boolean
+  showHiddenItems: boolean
 }
 
 const props = defineProps<{
@@ -64,7 +74,8 @@ const form = ref<SequenceSettings>({
   autoSpeak: props.settings?.autoSpeak ?? true,
   showHints: props.settings?.showHints ?? false,
   hapticFeedback: props.settings?.hapticFeedback ?? true,
-  showCuratedItems: props.settings?.showCuratedItems ?? true
+  showCuratedItems: props.settings?.showCuratedItems ?? true,
+  showHiddenItems: props.settings?.showHiddenItems ?? false
 })
 
 // Watch for changes and emit them without closing the popup

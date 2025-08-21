@@ -25,7 +25,7 @@
     
     <div :class="bemm('stats')">
       <span :class="bemm('count')">
-        {{ t(keys.todo.completedCount, { completed: progress.completed, total: progress.total }) }}
+        {{ t('todo.completedCount, { completed: progress.completed, total: progress.total }') }}
       </span>
       <div :class="bemm('progress')">
         <div 

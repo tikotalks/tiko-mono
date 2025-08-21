@@ -62,9 +62,9 @@
             @click="handleSectionClick(section)"
           >
             <TListCell type="text" :content="section.name" />
-            <TListCell type="text" :content="getTemplateName(section.section_template_id)" />
-            <TListCell type="text" :content="section.language_code || t('common.global')" />
-            <TListCell type="text" :content="getSectionTypeLabel(section.component_type)" />
+            <TListCell type="badge" :content="getTemplateName(section.section_template_id)" />
+            <TListCell type="badge" :content="section.language_code || t('common.global')" />
+            <TListCell type="badge" :content="getSectionTypeLabel(section.component_type)" />
             <TListCell type="custom">
               <div :class="bemm('metadata')">
                 <TChip
@@ -480,10 +480,10 @@ function openEditTemplateDialog(template: SectionTemplate) {
 async function handleDeleteTemplate(template: SectionTemplate) {
   // Count sections using this template
   const sectionsUsingTemplate = sections.value.filter(s => s.section_template_id === template.id).length
-  
+
   let warningMessage = t('admin.content.sections.deleteTemplateMessage', { name: template.name })
   if (sectionsUsingTemplate > 0) {
-    warningMessage += '\n\n' + t('admin.content.sections.templateInUseWarning', 
+    warningMessage += '\n\n' + t('admin.content.sections.templateInUseWarning',
       `Warning: ${sectionsUsingTemplate} section(s) are using this template. You must delete them first.`,
       { count: sectionsUsingTemplate })
   }
@@ -508,11 +508,11 @@ async function handleDeleteTemplate(template: SectionTemplate) {
           await loadSectionTemplates()
         } catch (error: any) {
           console.error('Failed to delete template:', error)
-          
+
           // Check if it's a foreign key constraint error
           if (error.message?.includes('foreign key constraint') || error.message?.includes('is still referenced')) {
             toastService?.show({
-              message: t('admin.content.sections.templateDeleteConstraintError', 
+              message: t('admin.content.sections.templateDeleteConstraintError',
                 'Cannot delete this template because it has sections using it. Delete all sections of this type first.'),
               type: 'error',
               duration: 5000

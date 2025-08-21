@@ -3,12 +3,12 @@
         <!-- Empty State -->
         <div v-if="groups.length === 0" :class="bemm('empty')">
           <TIcon name="clipboard" size="4rem" />
-          <h2>{{ t(keys.todo.noTodoListsYet) }}</h2>
+          <h2>{{ t('todo.noTodoListsYet') }}</h2>
           <p v-if="!parentMode.canManageContent.value">
-            {{ t(keys.todo.askParentCreate) }}
+            {{ t('todo.askParentCreate') }}
           </p>
           <p v-else>
-            {{ t(keys.todo.createFirstTodoList) }}
+            {{ t('todo.createFirstTodoList') }}
           </p>
         </div>
 
@@ -86,23 +86,23 @@ const editGroup = (group: TodoGroup) => {
 
 const confirmDeleteGroup = (group: TodoGroup) => {
   popupService.showNotification({
-    title: t(keys.todo.deleteTodoList),
-    message: t(keys.todo.deleteTodoListConfirm, { title: group.title }),
+    title: t('todo.deleteTodoList'),
+    message: t('todo.deleteTodoListConfirm', { title: group.title }),
     type: 'warning',
     actions: [
       {
-        label: t(keys.common.cancel),
+        label: t('common.cancel'),
         color: 'secondary',
         handler: () => popupService.close()
       },
       {
-        label: t(keys.common.delete),
+        label: t('common.delete'),
         color: 'error',
         handler: () => {
           todoStore.deleteGroup(group.id)
           popupService.close()
           toastService.show({
-            message: t(keys.todo.todoListDeleted),
+            message: t('todo.todoListDeleted'),
             type: 'success'
           })
         }

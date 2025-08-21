@@ -11,6 +11,7 @@ export interface YesNoSettings {
   autoSpeak: boolean
   hapticFeedback: boolean
   showCuratedItems: boolean
+  showHiddenItems: boolean // Show hidden items with opacity
   hiddenItems: string[] // Array of item IDs that user has hidden
 }
 
@@ -39,6 +40,7 @@ export const useCardStore = defineStore('yesno', () => {
     autoSpeak: true,
     hapticFeedback: true,
     showCuratedItems: true,
+    showHiddenItems: false,
     hiddenItems: []
   }
 
@@ -125,8 +127,19 @@ export const useCardStore = defineStore('yesno', () => {
         // Only filter out hidden items for ROOT level, not for children
         if (!parentId) {
           const hiddenItems = settings.value.hiddenItems || []
-          const filteredCards = entry.cards.filter(item => !hiddenItems.includes(item.id))
-          return filteredCards
+          const showHidden = settings.value.showHiddenItems
+          
+          if (showHidden) {
+            // Show all cards, but mark hidden ones
+            return entry.cards.map(item => ({
+              ...item,
+              isHidden: hiddenItems.includes(item.id)
+            }))
+          } else {
+            // Filter out hidden items completely
+            const filteredCards = entry.cards.filter(item => !hiddenItems.includes(item.id))
+            return filteredCards
+          }
         } else {
           // For children, return all items (don't filter)
           return entry.cards
@@ -166,8 +179,19 @@ export const useCardStore = defineStore('yesno', () => {
           // Only filter out hidden items for ROOT level, not for children
           if (!parentId) {
             const hiddenItems = settings.value.hiddenItems || []
-            const filteredCards = entry.cards.filter(item => !hiddenItems.includes(item.id))
-            return filteredCards
+            const showHidden = settings.value.showHiddenItems
+            
+            if (showHidden) {
+              // Show all cards, but mark hidden ones
+              return entry.cards.map(item => ({
+                ...item,
+                isHidden: hiddenItems.includes(item.id)
+              }))
+            } else {
+              // Filter out hidden items completely
+              const filteredCards = entry.cards.filter(item => !hiddenItems.includes(item.id))
+              return filteredCards
+            }
           } else {
             // For children, return all items (don't filter)
             return entry.cards
@@ -218,13 +242,31 @@ export const useCardStore = defineStore('yesno', () => {
       // Only filter out hidden items for ROOT level, not for children
       if (!parentId) {
         const hiddenItems = settings.value.hiddenItems || []
-        const filteredCards = cards.filter(item => !hiddenItems.includes(item.id))
+        const showHidden = settings.value.showHiddenItems
         
-        if (filteredCards.length !== cards.length) {
-          console.log(`[CardsStore] Filtered out ${cards.length - filteredCards.length} hidden items`)
+        if (showHidden) {
+          // Show all cards, but mark hidden ones
+          const markedCards = cards.map(item => ({
+            ...item,
+            isHidden: hiddenItems.includes(item.id)
+          }))
+          
+          const hiddenCount = markedCards.filter(item => item.isHidden).length
+          if (hiddenCount > 0) {
+            console.log(`[CardsStore] Showing ${hiddenCount} hidden items with opacity`)
+          }
+          
+          return markedCards
+        } else {
+          // Filter out hidden items completely
+          const filteredCards = cards.filter(item => !hiddenItems.includes(item.id))
+          
+          if (filteredCards.length !== cards.length) {
+            console.log(`[CardsStore] Filtered out ${cards.length - filteredCards.length} hidden items`)
+          }
+          
+          return filteredCards
         }
-        
-        return filteredCards
       } else {
         // For children, return all items (don't filter)
         return cards
@@ -336,8 +378,19 @@ export const useCardStore = defineStore('yesno', () => {
       // Only filter out hidden items for ROOT level, not for children
       if (!parentId) {
         const hiddenItems = settings.value.hiddenItems || []
-        const filteredCards = entry.cards.filter(item => !hiddenItems.includes(item.id))
-        return filteredCards
+        const showHidden = settings.value.showHiddenItems
+        
+        if (showHidden) {
+          // Show all cards, but mark hidden ones
+          return entry.cards.map(item => ({
+            ...item,
+            isHidden: hiddenItems.includes(item.id)
+          }))
+        } else {
+          // Filter out hidden items completely
+          const filteredCards = entry.cards.filter(item => !hiddenItems.includes(item.id))
+          return filteredCards
+        }
       } else {
         // For children, return all items (don't filter)
         return entry.cards
@@ -499,6 +552,52 @@ export const useCardStore = defineStore('yesno', () => {
     }
   }
   
+  // Hide/show item functions
+  const hideItem = async (itemId: string) => {
+    const currentHidden = settings.value.hiddenItems || []
+    if (!currentHidden.includes(itemId)) {
+      await updateSettings({ 
+        hiddenItems: [...currentHidden, itemId] 
+      })
+      console.log(`[CardsStore] Hid item: ${itemId}`)
+      
+      // Clear cache to trigger re-filtering
+      await clearCache()
+    }
+  }
+  
+  const showItem = async (itemId: string) => {
+    const currentHidden = settings.value.hiddenItems || []
+    if (currentHidden.includes(itemId)) {
+      await updateSettings({ 
+        hiddenItems: currentHidden.filter(id => id !== itemId) 
+      })
+      console.log(`[CardsStore] Showed item: ${itemId}`)
+      
+      // Clear cache to trigger re-filtering
+      await clearCache()
+    }
+  }
+  
+  const toggleItemVisibility = async (itemId: string) => {
+    const currentHidden = settings.value.hiddenItems || []
+    if (currentHidden.includes(itemId)) {
+      await showItem(itemId)
+    } else {
+      await hideItem(itemId)
+    }
+  }
+  
+  const toggleShowHiddenItems = async () => {
+    await updateSettings({ 
+      showHiddenItems: !settings.value.showHiddenItems 
+    })
+    console.log(`[CardsStore] Toggled show hidden items: ${settings.value.showHiddenItems}`)
+    
+    // Clear cache to trigger re-filtering
+    await clearCache()
+  }
+  
   return {
     // Getters
     settings,
@@ -523,5 +622,11 @@ export const useCardStore = defineStore('yesno', () => {
     updateCardInCache,
     addCardToCache,
     removeCardFromCache,
+    
+    // Hidden items functions
+    hideItem,
+    showItem,
+    toggleItemVisibility,
+    toggleShowHiddenItems,
    }
 })

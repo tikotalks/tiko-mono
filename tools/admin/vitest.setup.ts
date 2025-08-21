@@ -3,7 +3,7 @@ import { config } from '@vue/test-utils'
 
 // Set up Supabase environment variables for testing
 process.env.VITE_SUPABASE_URL = 'https://test.supabase.co'
-process.env.VITE_SUPABASE_ANON_KEY = 'test-anon-key'
+process.env.VITE_SUPABASE_PUBLIC = 'test-anon-key'
 
 // Mock navigator object with vibrate support
 global.navigator = {

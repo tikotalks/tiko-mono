@@ -144,7 +144,7 @@ const isAdmin = computed(() => {
 });
 
 const { hasPermission, requestPermission } = useTextToSpeech();
-const { speak, preloadAudio } = useSpeak();
+const { speak, preloadAudio, clearCache: clearAudioCache } = useSpeak();
 const { isEditMode, toggleEditMode, disableEditMode, enableEditMode } = useEditMode();
 
 // Inject the popup service from TFramework
@@ -264,14 +264,19 @@ const loadSequence = async () => {
 
   if (savedSequence.length > 0) {
     // Preload audio for sequence with speech
-    const textsToPreload = savedSequence
-      .filter(card => !card.id.startsWith('empty-') && card.speech)
-      .map(card => ({
-        text: card.speech || ''
-      }));
+    const sequencesWithSpeech = savedSequence.filter(card => !card.id.startsWith('empty-') && card.speech);
 
-    if (textsToPreload.length > 0) {
-      preloadAudio(textsToPreload);
+    if (sequencesWithSpeech.length > 0) {
+      console.log(`[SequenceView] Pre-generating speech for ${sequencesWithSpeech.length} sequences`);
+      const language = currentLocale.value.split('-')[0];
+      
+      await Promise.all(
+        sequencesWithSpeech.map(card => 
+          preloadAudio(card.speech || '', language).catch(err => 
+            console.warn(`[SequenceView] Failed to pre-generate speech for sequence ${card.id}:`, err)
+          )
+        )
+      );
     }
 
     // Load children data in parallel in the background - don't await this
@@ -282,14 +287,33 @@ const loadSequence = async () => {
       console.log('[SequenceView] Loading children for', sequenceTiles.length, 'sequence tiles in background');
       // Load children data in parallel without blocking the UI
       Promise.all(
-        sequenceTiles.map(card =>
-          sequenceStore.loadSequence(card.id, currentLocale.value).catch(err => {
+        sequenceTiles.map(async card => {
+          try {
+            const children = await sequenceStore.loadSequence(card.id, currentLocale.value);
+            
+            // Pre-generate speech for children with speech content
+            const childrenWithSpeech = children.filter(child => child.speech);
+            if (childrenWithSpeech.length > 0) {
+              console.log(`[SequenceView] Pre-generating speech for ${childrenWithSpeech.length} items in sequence ${card.id}`);
+              const language = currentLocale.value.split('-')[0];
+              
+              await Promise.all(
+                childrenWithSpeech.map(child => 
+                  preloadAudio(child.speech, language).catch(err => 
+                    console.warn(`[SequenceView] Failed to pre-generate speech for child ${child.id}:`, err)
+                  )
+                )
+              );
+            }
+            
+            return children;
+          } catch (err) {
             console.error(`[SequenceView] Failed to load children for ${card.id}:`, err);
             return [];
-          })
-        )
+          }
+        })
       ).then(() => {
-        console.log('[SequenceView] Finished loading all children data');
+        console.log('[SequenceView] Finished loading all children data and pre-generating speech');
       });
     }
   }
@@ -429,8 +453,19 @@ const getCardContextMenu = (card: SequenceTile, index: number) => {
     );
   }
 
-  // Show hide option for curated items (regardless of ownership)
-  if (isCurated) {
+  // Show hide/show options based on item state
+  const isHidden = sequenceStore.settings.hiddenItems.includes(card.id);
+  
+  if (isHidden) {
+    // Show option for hidden items
+    items.push({
+      id: 'show',
+      label: t('sequence.showThisItem'),
+      icon: Icons.EYE,
+      action: () => showItem(card.id)
+    });
+  } else if (isCurated) {
+    // Hide option for curated items (only if not already hidden)
     items.push({
       id: 'hide',
       label: t('sequence.hideThisItem'),
@@ -508,7 +543,26 @@ const handleSaveSequence = async (formData: any, card: SequenceTile, isNewCard: 
 
           tileChildrenMap.value.set(sequenceId, childrenTiles);
           tilesWithChildren.value.add(sequenceId);
+          
+          // Pre-generate speech for all items with speech content
+          const itemsWithSpeech = childrenTiles.filter(item => item.speech);
+          if (itemsWithSpeech.length > 0) {
+            console.log(`[SequenceView] Pre-generating speech for ${itemsWithSpeech.length} new items`);
+            const language = currentLocale.value.split('-')[0];
+            
+            // Pre-generate speech for each item in parallel
+            await Promise.all(
+              itemsWithSpeech.map(item => 
+                preloadAudio(item.speech, language).catch(err => 
+                  console.warn(`[SequenceView] Failed to pre-generate speech for item ${item.id}:`, err)
+                )
+              )
+            );
+          }
         }
+
+        // Clear audio cache to ensure new speech content is used immediately
+        clearAudioCache();
 
         popupService.close();
       }
@@ -557,10 +611,37 @@ const handleSaveSequence = async (formData: any, card: SequenceTile, isNewCard: 
 
         // Replace the entire cache for this sequence's children
         await sequenceStore.replaceCacheForParent(childrenTiles, card.id, currentLocale.value);
+        
+        // Also update the local tileChildrenMap for immediate playback
+        tileChildrenMap.value.set(card.id, childrenTiles);
+        
+        // Pre-generate speech for all items with speech content
+        const itemsWithSpeech = childrenTiles.filter(item => item.speech);
+        if (itemsWithSpeech.length > 0) {
+          console.log(`[SequenceView] Pre-generating speech for ${itemsWithSpeech.length} items`);
+          const language = currentLocale.value.split('-')[0];
+          
+          // Pre-generate speech for each item in parallel
+          await Promise.all(
+            itemsWithSpeech.map(item => 
+              preloadAudio(item.speech, language).catch(err => 
+                console.warn(`[SequenceView] Failed to pre-generate speech for item ${item.id}:`, err)
+              )
+            )
+          );
+        }
+        
       } else if (formData.items && formData.items.length === 0) {
         // Clear the cache for this sequence's children
         await sequenceStore.replaceCacheForParent([], card.id, currentLocale.value);
+        
+        // Also clear the local tileChildrenMap
+        tileChildrenMap.value.delete(card.id);
+        tilesWithChildren.value.delete(card.id);
       }
+
+      // Clear audio cache to ensure new speech content is used immediately
+      clearAudioCache();
 
       popupService.close();
 
@@ -589,6 +670,25 @@ const hideItem = async (itemId: string) => {
   } catch (error) {
     console.error('Failed to hide item:', error);
     toastService.error('Failed to hide item');
+  }
+};
+
+// Show previously hidden item
+const showItem = async (itemId: string) => {
+  try {
+    const currentSettings = settings.value;
+    const hiddenItems = currentSettings.hiddenItems.filter(id => id !== itemId);
+
+    await sequenceStore.updateSettings({ hiddenItems });
+
+    // Refresh the current view to show the item
+    await loadSequenceFromStore(currentSequenceId.value);
+
+    toastService.success(t('sequence.itemShown'));
+    popupService.close();
+  } catch (error) {
+    console.error('Failed to show item:', error);
+    toastService.error('Failed to show item');
   }
 };
 

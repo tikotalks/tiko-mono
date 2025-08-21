@@ -513,8 +513,19 @@ const getCardContextMenu = (card: CardTile, index: number) => {
     );
   }
 
-  // Show hide option for curated items (regardless of ownership)
-  if (isCurated) {
+  // Show hide/show options based on item state
+  const isHidden = yesNoStore.settings.hiddenItems.includes(card.id);
+  
+  if (isHidden) {
+    // Show option for hidden items
+    items.push({
+      id: 'show',
+      label: t('cards.showThisItem'),
+      icon: Icons.EYE,
+      action: () => showItem(card.id)
+    });
+  } else if (isCurated) {
+    // Hide option for curated items (only if not already hidden)
     items.push({
       id: 'hide',
       label: t('cards.hideThisItem'),
@@ -763,6 +774,31 @@ const hideItem = async (itemId: string) => {
     console.error('Failed to hide item:', error);
     toastService?.show({
       message: 'Failed to hide item',
+      type: 'error'
+    });
+  }
+};
+
+// Show previously hidden item
+const showItem = async (itemId: string) => {
+  try {
+    const currentSettings = yesNoStore.settings;
+    const hiddenItems = (currentSettings.hiddenItems || []).filter(id => id !== itemId);
+
+    await yesNoStore.updateSettings({ hiddenItems });
+
+    // Refresh the current view to show the item
+    await loadCardsFromStore(currentGroupId.value);
+
+    toastService?.show({
+      message: t('cards.itemShown'),
+      type: 'success'
+    });
+    popupService.close();
+  } catch (error) {
+    console.error('Failed to show item:', error);
+    toastService?.show({
+      message: 'Failed to show item',
       type: 'error'
     });
   }

@@ -1,7 +1,7 @@
 <template>
   <div :class="bemm()">
     <div :class="bemm('header')">
-      <h2>{{ isEditing ? t(keys.todo.editTodoList) : t(keys.todo.createTodoList) }}</h2>
+      <h2>{{ isEditing ? t('todo.editTodoList') : t('todo.createTodoList') }}</h2>
       <TButton
         icon="multiply"
         type="ghost"
@@ -12,16 +12,16 @@
 
     <form :class="bemm('form')" @submit.prevent="handleSubmit">
       <div :class="bemm('field')">
-        <label>{{ t(keys.todo.listName) }}</label>
+        <label>{{ t('todo.listName') }}</label>
         <TInputText
           v-model="formData.title"
-          :placeholder="t(keys.todo.enterListName)"
+          :placeholder="t('todo.enterListName')"
           required
         />
       </div>
 
       <div :class="bemm('field')">
-        <label>{{ t(keys.todo.iconOptional) }}</label>
+        <label>{{ t('todo.iconOptional') }}</label>
         <div :class="bemm('icon-grid')">
           <div
             v-for="icon in availableIcons"
@@ -35,7 +35,7 @@
       </div>
 
       <div :class="bemm('field')">
-        <label>{{ t(keys.todo.colorOptional) }}</label>
+        <label>{{ t('todo.colorOptional') }}</label>
         <div :class="bemm('color-grid')">
           <div
             v-for="color in availableColors"
@@ -53,7 +53,7 @@
           color="secondary"
           @click="$emit('close')"
         >
-          {{ t(keys.common.cancel) }}
+          {{ t('common.cancel') }}
         </TButton>
         <TButton
           type="default"
@@ -61,7 +61,7 @@
           :disabled="!formData.title"
           @click="handleSubmit"
         >
-          {{ isEditing ? t(keys.todo.saveChanges) : t(keys.todo.createGroup) }}
+          {{ isEditing ? t('todo.saveChanges') : t('todo.createGroup') }}
         </TButton>
       </div>
     </form>

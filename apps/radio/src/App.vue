@@ -14,7 +14,7 @@
         icon="plus"
         @click="handleAddClick"
       >
-        {{ t(keys.radio.addAudio) }}
+        {{ t('radio.addAudio') }}
       </TButton>
 
       <!-- Settings -->
@@ -81,14 +81,14 @@ const frameworkConfig = computed<FrameworkConfig>(() => ({
     showTitle: true,
     showSubtitle: false,
     showSearch: true,
-    searchPlaceholder: t(keys.radio.searchAudio)
+    searchPlaceholder: t('radio.searchAudio')
   },
   settings: {
     enabled: true,
     sections: [
       {
         id: 'radio-settings',
-        title: t(keys.radio.radioSettings),
+        title: t('radio.radioSettings'),
         icon: 'music',
         order: 10
       }

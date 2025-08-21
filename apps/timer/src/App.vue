@@ -67,6 +67,7 @@
 import { computed, inject, ref, onMounted } from 'vue'
 import { TFramework, TButton, type FrameworkConfig, popupService as importedPopupService, useI18n, ToolTipPosition} from '@tiko/ui'
 import { useTimer } from './composables/useTimer'
+import { useTimerStore } from './stores/timer'
 import TimerSettingsForm from './components/TimerSettingsForm.vue'
 import tikoConfig from '../tiko.config'
 import backgroundImage from './assets/app-icon-timer.png'
@@ -89,6 +90,9 @@ const {
 // i18n
 const { t } = useI18n()
 
+// Get timer store
+const timerStore = useTimerStore()
+
 // Local state for time settings
 const minutes = ref(5)
 const seconds = ref(0)
@@ -97,6 +101,8 @@ const loading = ref(true)
 // Initialize translations on mount
 onMounted(async () => {
   await initializeTranslations()
+  // Load timer state
+  await timerStore.loadState()
   loading.value = false
 })
 

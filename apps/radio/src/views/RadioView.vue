@@ -50,7 +50,7 @@
               @click="clearTagFilters"
               :class="bemm('clear-filters')"
             >
-              {{ t(keys.radio.clear) }}
+              {{ t('radio.clear') }}
             </TButton>
           </div>
         </div>
@@ -65,7 +65,7 @@
             size="small"
             @click="activeFilter = 'all'"
           >
-            {{ t(keys.radio.all) }} ({{ items.length }})
+            {{ t('radio.all') }} ({{ items.length }})
           </TButton>
 
           <TButton
@@ -73,7 +73,7 @@
             size="small"
             @click="activeFilter = 'favorites'"
           >
-            {{ t(keys.radio.favorites) }} ({{ favoriteItems.length }})
+            {{ t('radio.favorites') }} ({{ favoriteItems.length }})
           </TButton>
 
           <TButton
@@ -81,29 +81,29 @@
             size="small"
             @click="activeFilter = 'recent'"
           >
-            {{ t(keys.radio.recent) }} ({{ recentItems.length }})
+            {{ t('radio.recent') }} ({{ recentItems.length }})
           </TButton>
         </div>
 
         <!-- Loading State -->
         <div v-if="loading" :class="bemm('loading')">
           <div :class="bemm('spinner')" />
-          <p>{{ t(keys.radio.loadingAudioCollection) }}</p>
+          <p>{{ t('radio.loadingAudioCollection') }}</p>
         </div>
 
         <!-- Error State -->
         <div v-else-if="error" :class="bemm('error')">
           <TIcon name="alert-circle" :class="bemm('error-icon')" />
           <p :class="bemm('error-text')">{{ error }}</p>
-          <TButton @click="fetchItems">{{ t(keys.radio.tryAgain) }}</TButton>
+          <TButton @click="fetchItems">{{ t('radio.tryAgain') }}</TButton>
         </div>
 
         <!-- Empty State -->
         <div v-else-if="filteredItems.length === 0 && items.length === 0" :class="bemm('empty')">
           <TIcon name="music" :class="bemm('empty-icon')" />
-          <h3 :class="bemm('empty-title')">{{ t(keys.radio.noAudioTracksYet) }}</h3>
+          <h3 :class="bemm('empty-title')">{{ t('radio.noAudioTracksYet') }}</h3>
           <p :class="bemm('empty-description')">
-            {{ t(keys.radio.startBuildingCollection) }}
+            {{ t('radio.startBuildingCollection') }}
           </p>
           <TButton
             v-if="parentMode.canManageContent.value"
@@ -111,18 +111,18 @@
             icon="plus"
             @click="handleAddClick"
           >
-            {{ t(keys.radio.addYourFirstAudio) }}
+            {{ t('radio.addYourFirstAudio') }}
           </TButton>
         </div>
 
         <!-- No Search Results -->
         <div v-else-if="filteredItems.length === 0" :class="bemm('no-results')">
           <TIcon name="search" :class="bemm('no-results-icon')" />
-          <h3 :class="bemm('no-results-title')">{{ t(keys.radio.noResultsFound) }}</h3>
+          <h3 :class="bemm('no-results-title')">{{ t('radio.noResultsFound') }}</h3>
           <p :class="bemm('no-results-description')">
-            {{ t(keys.radio.tryAdjustingSearch) }}
+            {{ t('radio.tryAdjustingSearch') }}
           </p>
-          <TButton @click="clearFilters">{{ t(keys.radio.clearAllFilters) }}</TButton>
+          <TButton @click="clearFilters">{{ t('radio.clearAllFilters') }}</TButton>
         </div>
 
         <!-- Audio Grid -->
@@ -223,10 +223,12 @@ import SearchResultsModal from '../components/SearchResultsModal.vue'
 import { useRadioItems } from '../composables/useRadioItems'
 import { useRadioPlayer } from '../composables/useRadioPlayer'
 import { useRadioSettings } from '../composables/useRadioSettings'
+import { useRadioStore } from '../stores/radio'
 import type { RadioItem } from '../types/radio.types'
 
 const bemm = useBemm('radio-view')
 const parentMode = useParentMode('radio')
+const radioStore = useRadioStore()
 const popupService = inject('popupService')!
 const toastService = inject('toastService')!
 const eventBus = useEventBus()
@@ -352,7 +354,7 @@ const editItem = (item: RadioItem) => {
   console.log('Edit item clicked - opening EditItemModal for:', item.title)
   popupService.showPopup({
     component: EditItemModal,
-    title: t(keys.radio.editAudioItem),
+    title: t('radio.editAudioItem'),
     props: {
       item: item,
       onSubmit: (itemId: string, updates: Partial<RadioItem>) => handleEditItem(itemId, updates)
@@ -361,7 +363,7 @@ const editItem = (item: RadioItem) => {
 }
 
 const deleteItem = async (item: RadioItem) => {
-  if (confirm(t(keys.radio.deleteTrackConfirm, { title: item.title }))) {
+  if (confirm(t('radio.deleteTrackConfirm', { title: item.title }))) {
     await removeItem(item.id)
   }
 }
@@ -487,7 +489,7 @@ onMounted(async () => {
     console.log('Fetching radio items...')
     await fetchItems()
     console.log('Loading radio settings...')
-    await loadSettings()
+    await radioStore.loadState()
     console.log('Radio app initialization complete')
   } catch (error) {
     console.error('Error during Radio app initialization:', error)

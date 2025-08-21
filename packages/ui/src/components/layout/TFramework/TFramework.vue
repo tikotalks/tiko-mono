@@ -1,27 +1,11 @@
 <template>
-  <div :class="bemm('',['', isApp ? 'is-app' : 'is-website'])" :style="themeStyles">
-    <TAuthWrapper
-      :background-image="backgroundImage"
-      :title="tikoConfig?.name || tikoConfig?.appName"
-      :is-app="isApp"
-      :app-name="tikoConfig?.id || tikoConfig?.appId"
-      :require-auth="computedRequireAuth"
-      :show-splash-screen="showSplashScreen"
-      :allow-skip-auth="props.config?.auth?.skipAuth"
-    >
-      <TAppLayout
-        :title="displayTitle"
-        :subtitle="displaySubtitle"
-        :show-header="showTopBar"
-        :show-back="showBackButton"
-        :is-loading="loading"
-        :is-app="isApp"
-        :config="tikoConfig"
-        @profile="handleProfile"
-        @settings="handleSettings"
-        @logout="handleLogout"
-        @back="handleBack"
-      >
+  <div :class="bemm('', ['', isApp ? 'is-app' : 'is-website'])" :style="frameworkStyles">
+    <TAuthWrapper :background-image="backgroundImage" :title="tikoConfig?.name" :is-app="isApp"
+      :app-name="tikoConfig?.id" :require-auth="computedRequireAuth" :show-splash-screen="showSplashScreen"
+      :allow-skip-auth="props.config?.auth?.skipAuth">
+      <TAppLayout :title="displayTitle" :subtitle="displaySubtitle" :show-header="showTopBar"
+        :show-back="showBackButton" :is-loading="loading" :is-app="isApp" :config="tikoConfig" @profile="handleProfile"
+        @settings="handleSettings" @logout="handleLogout" @back="handleBack">
         <!-- TopBar middle content (for route display) -->
         <template v-if="topBar.showCurrentRoute && topBar.routeDisplay === 'middle'" #top-bar-middle>
           <div :class="bemm('route-display')">
@@ -37,17 +21,13 @@
 
         <!-- Main content -->
         <slot />
-        
+
         <!-- Login button when in skip auth mode -->
-        <TButton
-          v-if="isSkipAuthMode"
-          :class="bemm('login-button')"
-          type="ghost"
-          :icon="Icons.USER"
-          @click="handleSkipAuthLogin"
-        >
+        <TButton v-if="isSkipAuthMode" :class="bemm('login-button')" type="ghost" :icon="Icons.USER"
+          @click="handleSkipAuthLogin">
           {{ t(keys.auth.login) }}
         </TButton>
+
       </TAppLayout>
     </TAuthWrapper>
 
@@ -71,7 +51,6 @@ import TPopup from '../../feedback/TPopup/TPopup.vue'
 import TToast from '../../feedback/TToast/TToast.vue'
 import TSettings from './/TSettings.vue'
 import TProfile from '../../user/TProfile/TProfile.vue'
-import TSpinner from '../../feedback/TSpinner/TSpinner.vue'
 import TButton from '../../ui-elements/TButton/TButton.vue'
 import { Icons } from 'open-icon'
 import { popupService } from '../../feedback/TPopup/TPopup.service'
@@ -82,6 +61,7 @@ import { useI18n } from '../../../composables/useI18n'
 import { usePWAUpdate } from '../../../composables/usePWAUpdate'
 import type { TFrameworkProps, TFrameworkEmits } from './TFramework.model'
 import type { Locale } from '../../i18n/types'
+import { useDeviceTilt } from '../../../composables/useDeviceTilt'
 
 const props = withDefaults(defineProps<TFrameworkProps>(), {
   loading: false,
@@ -127,6 +107,15 @@ const { setLocale, t, keys, locale } = useI18n()
 
 // Set config and get theme styles
 const { themeStyles, config: tikoConfig } = useTikoConfig(props.config)
+
+const deviceTilt = useDeviceTilt({ source: 'pointer', maxDeg: 10, smooth: .1, liftPx: 30 });
+
+const frameworkStyles = computed(() => ({
+  ...(themeStyles?.value ?? {}),
+  '--rx': deviceTilt.tilt.rx + 'deg',
+  '--ry': deviceTilt.tilt.ry + 'deg',
+  '--tz': deviceTilt.tilt.tz + 'px'
+}));
 
 // Initialize PWA update checking if registerSW is provided
 if (props.isApp && props.pwaRegisterSW) {
@@ -226,6 +215,7 @@ const displaySubtitle = computed(() => {
   }
   return ''
 })
+
 
 const showBackButton = computed(() => {
   if (topBar.value.showBack === false) return false
@@ -329,12 +319,12 @@ watch(currentLanguage, (newLanguage, oldLanguage) => {
     console.log('[TFramework] Ignoring language change during locale setting')
     return
   }
-  
+
   if (newLanguage && newLanguage !== locale.value && newLanguage !== oldLanguage) {
     console.log('[TFramework] Language changed in settings:', newLanguage, 'current locale:', locale.value)
     isSettingLocale = true
     setLocale(newLanguage as Locale)
-    
+
     // Reset flag after a short delay
     setTimeout(() => {
       isSettingLocale = false
@@ -403,15 +393,27 @@ onMounted(async () => {
   updateRouteTitle()
 
   emit('ready')
+
+
+
 })
+
+
+
 </script>
 
 <style lang="scss" scoped>
 .framework {
+  --bg-outside: color-mix(in srgb, var(--color-primary), var(--color-dark) 95%);
+  --bg-inside: color-mix(in srgb, var(--color-primary), var(--color-dark) 50%);
+
+  background-image: radial-gradient(var(--bg-inside), var(--bg-outside));
+
   width: 100vw;
   display: flex;
   flex-direction: column;
-  
+
+
   &__login-button {
     position: fixed;
     top: var(--space);
@@ -419,7 +421,7 @@ onMounted(async () => {
     z-index: 100;
   }
 
-  &--is-app{
+  &--is-app {
     overflow: hidden;
     height: 100vh;
   }

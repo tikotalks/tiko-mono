@@ -7,7 +7,7 @@ import { UnifiedContentService } from '@tiko/core'
 // Use the same config as the existing content service
 const config = {
   supabaseUrl: import.meta.env.VITE_SUPABASE_URL || 'https://kejvhvszhevfwgsztedf.supabase.co',
-  supabaseKey: import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key',
+  supabaseKey: import.meta.env.VITE_SUPABASE_PUBLIC || 'your-anon-key',
   defaultLanguage: 'en'
 }
 

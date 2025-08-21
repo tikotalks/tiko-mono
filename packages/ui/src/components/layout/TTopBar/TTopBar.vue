@@ -1,5 +1,5 @@
 <template>
-  <header :class="bemm('', ['', isApp ? 'is-app' : 'is-website'])">
+  <header :class="bemm('', ['', isApp ? 'is-app' : 'is-website'])" :style="`--x: ${pointer.x}; --y: ${pointer.y}`" @pointermove="setPointerPosition">
     <div :class="bemm('container')">
       <!-- Left Section -->
       <div :class="bemm('left')">
@@ -355,14 +355,36 @@ const handleRefresh = () => {
   window.location.reload()
 }
 
+const pointer = ref({
+  x: 0,
+  y: 0
+})
+
+const setPointerPosition = (e: PointerEvent) => {
+  const target = e.currentTarget as HTMLElement
+  if (!target) return
+
+  const rect = target.getBoundingClientRect()
+  const x = ((e.clientX - rect.left) / rect.width) * 100
+  const y = ((e.clientY - rect.top) / rect.height) * 100
+
+  pointer.value = {
+    x: Math.round(Math.max(0, Math.min(100, x)) * 100)/100,
+    y: Math.round(Math.max(0, Math.min(100, y)) * 100)/100
+  }
+}
+
+
 // Lifecycle
 onMounted(() => {
   updateIsMobile()
   window.addEventListener('resize', updateIsMobile)
+  // window.addEventListener('pointerover', setPointerPosition)
 })
 
 onUnmounted(() => {
-  window.removeEventListener('resize', updateIsMobile)
+  window.removeEventListener('resize', updateIsMobile);
+  // window.removeEventListener('pointerover',setPointerPosition )
 })
 </script>
 
@@ -371,15 +393,17 @@ onUnmounted(() => {
   position: relative;
   z-index: 100;
 
-  // &::before{
-  //   content: ""; width: calc(100% + 4px);
-  //   height: calc(100% + 2px);
-  //   position: absolute;
-  //   left: -2px; top: 0;
-  //   border-radius: inherit;
-  //   background-color: blue;
-  //   background-image:radial-gradient(50% 50%,rgba(255, 255, 255, 1) 0%, rgba(0, 0, 0, 0) 50%);
-  // }
+  &::before {
+    --thickness: 1px;
+    content: "";
+    width: calc(100% + (var(--thickness) * 2));
+    height: calc(100% + var(--thickness));
+    position: absolute;
+    left: calc(var(--thickness) * -1);
+    top: 0;
+    border-radius: 0 0 calc(var(--border-radius) + var(--thickness)) calc(var(--border-radius) + var(--thickness));
+    background-image: radial-gradient(circle at calc(var(--x) * 1%) calc(var(--y) * 1%), color-mix(in srgb, var(--color-primary), transparent 50%) 0%, rgba(0, 0, 0, 0) 50%);
+  }
 
   &__container {
     position: relative;
@@ -388,10 +412,14 @@ onUnmounted(() => {
     justify-content: space-between;
     padding: var(--space-s);
     padding-left: var(--space);
-    background: var(--color-background);
+    background: color-mix(in srgb, var(--color-background), transparent 50%);
     border-bottom: 1px solid var(--color-border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     min-height: 4rem;
-    border-radius: inherit;
+    background-image: radial-gradient(circle at calc(var(--x) * 1%) calc(var(--y) * 1%), color-mix(in srgb, var(--color-primary), transparent 80%) 0%, rgba(0, 0, 0, 0) 100%);
+
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
   }
 
 

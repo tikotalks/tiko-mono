@@ -5,7 +5,7 @@ export interface TListCellProps {
   /** Content to display in the cell */
   content?: string | number
   /** Type of cell content for styling */
-  type?: 'text' | 'image' | 'chips' | 'id' | 'size' | 'custom' | 'actions'
+  type?: 'text' | 'image' | 'chips' | 'id' | 'size' | 'custom' | 'actions' | 'badge'
   /** Image source for image type cells */
   imageSrc?: string
   /** Alt text for images */

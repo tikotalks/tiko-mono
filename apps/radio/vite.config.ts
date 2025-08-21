@@ -38,4 +38,10 @@ const pwaConfig = {
   }
 }
 
-export default createViteConfig(__dirname, 3005, pwaConfig)
+export default createViteConfig({
+  dirname: __dirname,
+  port: 3005,
+  pwaConfig,
+  appName: 'radio',
+  appId: 'radio'
+})

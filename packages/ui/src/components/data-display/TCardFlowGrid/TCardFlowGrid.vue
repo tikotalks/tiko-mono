@@ -1,5 +1,5 @@
 <template>
-  <div 
+  <div
     :class="bemm('', ['', scrollDirection])"
     ref="containerRef"
     :style="containerStyles"
@@ -94,41 +94,41 @@ const calculateOptimalLayout = () => {
   // Calculate optimal layout to maximize tile size
   const availableWidth = containerWidth - (props.gap * 2)
   const availableHeight = containerHeight - (VERTICAL_PADDING * 2) - (props.gap * 2)
-  
-  
+
+
   // Get preferred layout based on item count and screen size
   const [preferredCols, preferredRows] = getPreferredLayout(cardCount, containerWidth)
-  
+
   // Calculate tile size for preferred layout
   const preferredTileSizeByWidth = (availableWidth - ((preferredCols - 1) * props.gap)) / preferredCols
   const preferredTileSizeByHeight = (availableHeight - ((preferredRows - 1) * props.gap)) / preferredRows
   const preferredTileSize = Math.min(preferredTileSizeByWidth, preferredTileSizeByHeight)
-  
-  
+
+
   let bestTileSize = 0
   let bestCols = preferredCols
   let bestRows = preferredRows
-  
+
   // Check if preferred layout produces valid tile sizes
   if (preferredTileSize >= props.minTileSize) {
     // Use preferred layout, but cap at maxTileSize
     bestTileSize = Math.min(preferredTileSize, props.maxTileSize)
   } else {
     // Preferred layout doesn't work, fall back to algorithm
-    
+
     // Try different column counts to find best fit
     const maxCols = Math.min(cardCount, Math.ceil(availableWidth / props.minTileSize))
-    
+
     for (let cols = 1; cols <= maxCols; cols++) {
       const rows = Math.ceil(cardCount / cols)
-      
+
       // Skip if too many rows for screen
       if (rows * props.minTileSize > availableHeight) continue
-      
+
       const tileSizeByWidth = (availableWidth - ((cols - 1) * props.gap)) / cols
       const tileSizeByHeight = (availableHeight - ((rows - 1) * props.gap)) / rows
       const tileSize = Math.min(tileSizeByWidth, tileSizeByHeight)
-      
+
       if (tileSize >= props.minTileSize && tileSize > bestTileSize) {
         bestTileSize = Math.min(tileSize, props.maxTileSize)
         bestCols = cols
@@ -136,7 +136,7 @@ const calculateOptimalLayout = () => {
       }
     }
   }
-  
+
   // If we found a valid layout, use it
   if (bestTileSize > 0) {
     tileSize.value = Math.floor(bestTileSize)
@@ -163,13 +163,13 @@ const calculateOptimalLayout = () => {
 // Container styles to ensure proper height
 const containerStyles = computed(() => {
   const styles: Record<string, string> = {}
-  
+
   if (props.scrollDirection === 'vertical') {
     styles.minHeight = '100vh'
   } else {
     styles.minHeight = '100%'
   }
-  
+
   return styles
 })
 
@@ -177,18 +177,18 @@ const containerStyles = computed(() => {
 const gridStyles = computed(() => {
   const styles: Record<string, string> = {}
   const cardCount = props.cards.length
-  
+
   styles.display = 'grid'
   styles.gap = `${props.gap}px`
   // Add proper top and bottom spacing using shared constants
   styles.padding = `${GRID_SPACING.MIN_TOP_SPACE}px ${props.gap}px ${GRID_SPACING.MIN_BOTTOM_SPACE}px ${props.gap}px`
-  
+
   if (props.scrollDirection === 'horizontal') {
     styles.gridTemplateRows = `repeat(${gridRows.value}, ${tileSize.value}px)`
     styles.gridTemplateColumns = `repeat(${gridColumns.value}, ${tileSize.value}px)`
     styles.width = 'max-content'
     styles.minWidth = '100%'
-    
+
     if (props.centerItems) {
       styles.alignContent = 'center'
       styles.height = '100%'
@@ -197,13 +197,13 @@ const gridStyles = computed(() => {
     styles.gridTemplateColumns = `repeat(${gridColumns.value}, ${tileSize.value}px)`
     styles.gridAutoRows = `${tileSize.value}px`
     styles.width = '100%'
-    
+
     // For centering the grid
     if (props.centerItems) {
       styles.justifyContent = 'center'
       styles.alignContent = 'center'
       styles.minHeight = '100vh'
-      
+
       // If we have fewer items than would fill a row, adjust grid
       if (cardCount < gridColumns.value) {
         // Make the grid only as wide as needed
@@ -211,7 +211,7 @@ const gridStyles = computed(() => {
       }
     }
   }
-  
+
   return styles
 })
 
@@ -250,7 +250,7 @@ let resizeObserver: ResizeObserver | null = null
 
 onMounted(() => {
   calculateOptimalLayout()
-  
+
   // Set up resize observer
   if (containerRef.value) {
     resizeObserver = new ResizeObserver(() => {
@@ -258,7 +258,7 @@ onMounted(() => {
     })
     resizeObserver.observe(containerRef.value)
   }
-  
+
   // Also recalculate on window resize
   window.addEventListener('resize', calculateOptimalLayout)
 })
@@ -282,47 +282,58 @@ watch(() => props.cards.length, async () => {
   width: 100%;
   height: 100%;
   position: relative;
-  
+
+  transform: perspective(5000px) rotateX(var(--rx)) rotateY(var(--ry)) translateZ(var(--tz));
+    transform-style: preserve-3d;
+    will-change: transform;
+    transition: transform 80ms linear;
+
+    @media (prefers-reduced-motion: reduce) {
+      transform: none !important;
+    }
+
+
+
   &--vertical {
     overflow-y: auto;
     overflow-x: hidden;
   }
-  
+
   &--horizontal {
     overflow-x: auto;
     overflow-y: hidden;
     display: flex;
     align-items: center;
   }
-  
+
   &__grid {
     position: relative;
-    
+
     // Smooth transitions for layout changes
     transition: all 0.3s ease;
   }
-  
+
   // Custom scrollbar styling
   &::-webkit-scrollbar {
     width: 12px;
     height: 12px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: var(--color-background-secondary);
     border-radius: var(--border-radius);
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: var(--color-border);
     border-radius: var(--border-radius);
     border: 2px solid var(--color-background-secondary);
-    
+
     &:hover {
       background: var(--color-border-hover);
     }
   }
-  
+
   // Loading state
   &--loading {
     .t-card-flow-grid__grid {

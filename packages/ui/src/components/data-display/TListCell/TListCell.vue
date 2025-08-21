@@ -71,10 +71,15 @@
       <slot />
     </div>
 
-    <!-- Text Cell (default) -->
-    <span v-else :class="bemm('text', { truncate })">
-      {{ content }}
-    </span>
+<!-- Text Cell (default) -->
+<span v-else-if="type == 'badge'" :class="bemm('text', { truncate })">
+  <TChip>{{ content }}</TChip>
+</span>
+
+<!-- Text Cell (default) -->
+<span v-else :class="bemm('text', { truncate })">
+  {{ content }}
+</span>
   </div>
 </template>
 

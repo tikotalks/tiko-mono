@@ -19,7 +19,7 @@ id = "19e053c7a4c94f16a1ee4a436bfac34a"
 [vars]
 CACHE_TTL = "86400" # 24 hours in seconds
 SUPABASE_URL = "https://kejvhvszhevfwgsztedf.supabase.co"
-SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlanZodnN6aGV2Zndnc3p0ZWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4ODg2MTIsImV4cCI6MjA2NzQ2NDYxMn0.xUYXxNodJTpTwChlKbuBSojVJqX9CDW87aVISEUc2rE"
+# API keys should be set as secrets via wrangler secret put SUPABASE_SERVICE_KEY
 
 # Durable Objects for advanced caching (optional)
 # [[durable_objects.bindings]]

@@ -1,14 +1,14 @@
 <template>
   <div :class="bemm()">
-    <h2 :class="bemm('title')">{{ t(keys.radio.searchAudio) }}</h2>
+    <h2 :class="bemm('title')">{{ t('radio.searchAudio') }}</h2>
     
     <!-- Search Input -->
     <div :class="bemm('search-header')">
       <TInputText
         ref="searchInput"
         v-model="localSearchQuery"
-        :label="t(keys.common.search)"
-        :placeholder="t(keys.radio.searchAudioPlaceholder)"
+        :label="t('common.search')"
+        :placeholder="t('radio.searchAudioPlaceholder')"
         icon="search"
         :class="bemm('search-input')"
         @input="handleSearchInput"
@@ -17,10 +17,10 @@
 
     <div v-if="localSearchQuery.trim()" :class="bemm('search-info')">
       <p :class="bemm('query')">
-        {{ t(keys.radio.searchingFor) }}: <strong>"{{ localSearchQuery }}"</strong>
+        {{ t('radio.searchingFor') }}: <strong>"{{ localSearchQuery }}"</strong>
       </p>
       <p :class="bemm('count')">
-        {{ t(keys.radio.resultsFound, { count: results.length }) }}
+        {{ t('radio.resultsFound', { count: results.length }) }}
       </p>
     </div>
 
@@ -28,15 +28,15 @@
       <!-- Loading State -->
       <div v-if="loading" :class="bemm('loading')">
         <div :class="bemm('spinner')" />
-        <p>{{ t(keys.radio.searchingCollection) }}</p>
+        <p>{{ t('radio.searchingCollection') }}</p>
       </div>
 
       <!-- No Results -->
       <div v-else-if="results.length === 0" :class="bemm('no-results')">
         <TIcon name="search" :class="bemm('no-results-icon')" />
-        <h3 :class="bemm('no-results-title')">{{ t(keys.radio.noResultsFound) }}</h3>
+        <h3 :class="bemm('no-results-title')">{{ t('radio.noResultsFound') }}</h3>
         <p :class="bemm('no-results-description')">
-          {{ t(keys.radio.tryDifferentKeywords) }}
+          {{ t('radio.tryDifferentKeywords') }}
         </p>
       </div>
 
@@ -71,7 +71,7 @@
                   {{ tag }}
                 </span>
                 <span v-if="item.tags.length > 3" :class="bemm('result-tag-more')">
-                  +{{ item.tags.length - 3 }} {{ t(keys.common.more) }}
+                  +{{ item.tags.length - 3 }} {{ t('common.more') }}
                 </span>
               </div>
               
@@ -80,7 +80,7 @@
                   {{ formatDuration(item.durationSeconds) }}
                 </span>
                 <span v-if="item.playCount > 0" :class="bemm('result-plays')">
-                  {{ item.playCount }} {{ item.playCount === 1 ? t(keys.radio.play) : t(keys.radio.plays) }}
+                  {{ item.playCount }} {{ item.playCount === 1 ? t('radio.play') : t('radio.plays') }}
                 </span>
                 <TIcon
                   v-if="item.isFavorite"
@@ -119,7 +119,7 @@
         type="ghost"
         @click="emit('close')"
       >
-        {{ t(keys.common.close) }}
+        {{ t('common.close') }}
       </TButton>
       
       <TButton
@@ -127,7 +127,7 @@
         color="primary"
         @click="playAll"
       >
-        {{ t(keys.radio.playAllResults) }}
+        {{ t('radio.playAllResults') }}
       </TButton>
     </div>
   </div>

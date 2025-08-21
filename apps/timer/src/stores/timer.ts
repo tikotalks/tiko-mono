@@ -54,6 +54,20 @@ export const useTimerStore = defineStore('timer', () => {
     return mode.value === 'down' && currentTime.value >= targetTime.value
   })
 
+  const timeLeft = computed(() => {
+    if (mode.value === 'down') {
+      return Math.max(0, targetTime.value - currentTime.value)
+    }
+    return 0
+  })
+
+  const formattedTime = computed(() => {
+    const time = displayTime.value
+    const minutes = Math.floor(time / 60)
+    const seconds = time % 60
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+  })
+
   // Timer interval reference
   let timerInterval: number | null = null
 
@@ -145,6 +159,10 @@ export const useTimerStore = defineStore('timer', () => {
     reset()
   }
 
+  const toggleMode = () => {
+    setMode(mode.value === 'up' ? 'down' : 'up')
+  }
+
   const updateSettings = async (newSettings: Partial<TimerSettings>) => {
     const currentSettings = settings.value
     const updatedSettings = { ...currentSettings, ...newSettings }
@@ -193,13 +211,17 @@ export const useTimerStore = defineStore('timer', () => {
     displayTime,
     progress,
     isExpired,
+    timeLeft,
+    formattedTime,
     
     // Actions
     start,
     pause,
     reset,
+    expire,
     setTime,
     setMode,
+    toggleMode,
     updateSettings,
     saveState,
     loadState,

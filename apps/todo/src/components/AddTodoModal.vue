@@ -1,7 +1,7 @@
 <template>
   <div :class="bemm()">
     <div :class="bemm('header')">
-      <h2>{{ isEditing ? t(keys.todo.editItem) : t(keys.todo.addTodoItem) }}</h2>
+      <h2>{{ isEditing ? t('todo.editItem') : t('todo.addTodoItem') }}</h2>
       <TButton
         icon="multiply"
         type="ghost"
@@ -12,16 +12,16 @@
 
     <form :class="bemm('form')" @submit.prevent="handleSubmit">
       <div :class="bemm('field')">
-        <label>{{ t(keys.todo.itemTitle) }}</label>
+        <label>{{ t('todo.itemTitle') }}</label>
         <TInputText
           v-model="formData.title"
-          :placeholder="t(keys.todo.whatNeedsDone)"
+          :placeholder="t('todo.whatNeedsDone')"
           required
         />
       </div>
 
       <div :class="bemm('field')">
-        <label>{{ t(keys.todo.imageOptional) }}</label>
+        <label>{{ t('todo.imageOptional') }}</label>
         <div :class="bemm('image-upload')">
           <div v-if="formData.imageUrl" :class="bemm('image-preview')">
             <img :src="formData.imageUrl" alt="Preview" />
@@ -35,7 +35,7 @@
           </div>
           <div v-else :class="bemm('image-placeholder')">
             <TIcon name="image" size="2rem" />
-            <p>{{ t(keys.todo.clickToAddImage) }}</p>
+            <p>{{ t('todo.clickToAddImage') }}</p>
             <input
               type="file"
               accept="image/*"
@@ -44,7 +44,7 @@
           </div>
         </div>
         <p :class="bemm('help-text')">
-          {{ t(keys.todo.uploadImagePrompt) }}
+          {{ t('todo.uploadImagePrompt') }}
         </p>
       </div>
 
@@ -54,7 +54,7 @@
           color="secondary"
           @click="$emit('close')"
         >
-          {{ t(keys.common.cancel) }}
+          {{ t('common.cancel') }}
         </TButton>
         <TButton
           type="default"
@@ -62,7 +62,7 @@
           :disabled="!formData.title"
           @click="handleSubmit"
         >
-          {{ isEditing ? t(keys.todo.saveChanges) : t(keys.todo.addItem) }}
+          {{ isEditing ? t('todo.saveChanges') : t('todo.addItem') }}
         </TButton>
       </div>
     </form>

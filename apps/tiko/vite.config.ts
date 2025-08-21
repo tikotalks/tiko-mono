@@ -8,12 +8,12 @@ const pwaConfig = {
   registerType: 'autoUpdate',
   includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
   manifest: {
-    name: 'Tiko - Dashboard',
+    name: 'Tiko - Tiko',
     short_name: 'Tiko',
-    description: 'Main dashboard for accessing all Tiko apps',
-    theme_color: '#8b5cf6',
+    description: 'Tiko App',
+    theme_color: '#000000',
     background_color: '#ffffff',
-    display: 'standalone',
+    display: "standalone" as "standalone",
     orientation: 'portrait',
     scope: '/',
     start_url: '/',
@@ -38,4 +38,15 @@ const pwaConfig = {
   }
 }
 
-export default createViteConfig(__dirname, 4212, pwaConfig)
+const i18nConfig = {
+  excludeSections: ['admin', 'deployment', 'media', 'content']
+}
+
+export default createViteConfig({
+  dirname: __dirname,
+  port: 3003,
+  pwaConfig,
+  appName: 'Tiko',
+  appId: 'tiko',
+  i18nConfig
+})

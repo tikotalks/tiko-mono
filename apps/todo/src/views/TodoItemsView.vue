@@ -3,11 +3,11 @@
     <!-- Empty State -->
     <div v-if="items.length === 0" :class="bemm('empty')">
       <TIcon name="clipboard" />
-      <h2>{{ t(keys.todo.noItemsYet) }}</h2>
+      <h2>{{ t('todo.noItemsYet') }}</h2>
       <p v-if="!parentMode.canManageContent.value">
-        {{ t(keys.todo.askParentAddItems) }}
+        {{ t('todo.askParentAddItems') }}
       </p>
-      <p v-else>{{ t(keys.todo.addFirstTodoItem) }}</p>
+      <p v-else>{{ t('todo.addFirstTodoItem') }}</p>
     </div>
 
     <!-- Items Grid -->
@@ -38,7 +38,7 @@
         />
       </div>
       <span :class="bemm('progress-text')">
-        {{ t(keys.todo.completedCount, { completed: completedCount, total: items.length }) }}
+        {{ t('todo.completedCount, { completed: completedCount, total: items.length }') }}
       </span>
     </div>
   </div>
@@ -126,23 +126,23 @@ const confirmDeleteItem = (item: TodoItem) => {
   popupService.open({
     component: 'notification',
     props: {
-      title: t(keys.todo.deleteItem),
-      message: t(keys.todo.deleteItemConfirm, { title: item.title }),
+      title: t('todo.deleteItem'),
+      message: t('todo.deleteItemConfirm, { title: item.title }'),
       type: 'warning',
       actions: [
         {
-          label: t(keys.common.cancel),
+          label: t('common.cancel'),
           color: 'secondary',
           handler: () => popupService.close(),
         },
         {
-          label: t(keys.common.delete),
+          label: t('common.delete'),
           color: 'error',
           handler: () => {
             todoStore.deleteItem(item.id);
             popupService.close();
             toastService.show({
-              message: t(keys.todo.itemDeleted),
+              message: t('todo.itemDeleted'),
               type: 'success',
             });
           },

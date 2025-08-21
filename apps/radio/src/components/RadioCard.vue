@@ -80,7 +80,7 @@
           :class="bemm('admin-button')"
           @click.stop="editItem"
         >
-          {{ t(keys.common.edit) }}
+          {{ t('common.edit') }}
         </TButton>
 
         <TButton
@@ -91,7 +91,7 @@
           :class="bemm('admin-button')"
           @click.stop="deleteItem"
         >
-          {{ t(keys.common.delete) }}
+          {{ t('common.delete') }}
         </TButton>
       </div>
     </div>
@@ -205,11 +205,11 @@ const deleteItem = () => {
  * Format play count for display
  */
 const formatPlayCount = (count: number): string => {
-  if (count === 0) return t(keys.radio.neverPlayed)
-  if (count === 1) return t(keys.radio.onePlay)
-  if (count < 1000) return `${count} ${t(keys.radio.plays)}`
-  if (count < 1000000) return `${Math.floor(count / 100) / 10}K ${t(keys.radio.plays)}`
-  return `${Math.floor(count / 100000) / 10}M ${t(keys.radio.plays)}`
+  if (count === 0) return t('radio.neverPlayed')
+  if (count === 1) return t('radio.onePlay')
+  if (count < 1000) return `${count} ${t('radio.plays')}`
+  if (count < 1000000) return `${Math.floor(count / 100) / 10}K ${t('radio.plays')}`
+  return `${Math.floor(count / 100000) / 10}M ${t('radio.plays')}`
 }
 
 /**
@@ -222,10 +222,10 @@ const formatLastPlayed = (date: Date): string => {
   const diffHours = Math.floor(diffMins / 60)
   const diffDays = Math.floor(diffHours / 24)
 
-  if (diffMins < 1) return t(keys.common.justNow)
-  if (diffMins < 60) return t(keys.common.minutesAgo, { count: diffMins })
-  if (diffHours < 24) return t(keys.common.hoursAgo, { count: diffHours })
-  if (diffDays < 7) return t(keys.common.daysAgo, { count: diffDays })
+  if (diffMins < 1) return t('common.justNow')
+  if (diffMins < 60) return t('common.minutesAgo', { count: diffMins })
+  if (diffHours < 24) return t('common.hoursAgo', { count: diffHours })
+  if (diffDays < 7) return t('common.daysAgo', { count: diffDays })
 
   // For older dates, just show the date
   return date.toLocaleDateString()

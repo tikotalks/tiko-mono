@@ -1,14 +1,10 @@
 <template>
 	<!-- eslint-disable vue/no-v-html -->
-	<div
-		v-if="iconData || isRegistered"
-		:class="[bemm(), bemm('', [props.name, props.animation ? 'animated' : ''])]"
-		v-html="iconData"
-	/>
-	<div
-		v-else
-		:class="[bemm(), bemm('', ['placeholder'])]"
-	>
+	<div v-if="iconData || isRegistered" :class="[bemm(), bemm('', [props.name, props.animation ? 'animated' : ''])]">
+		<span v-html="iconData" :class="bemm('data')"></span>
+		<TToolTip :v-if="tooltip">{{ tooltip }}</TToolTip>
+	</div>
+	<div v-else :class="[bemm(), bemm('', ['placeholder'])]">
 		<span :class="bemm('placeholder-text')">{{ props.name }}</span>
 	</div>
 	<!-- eslint-enable -->
@@ -18,6 +14,7 @@
 import { useBemm } from 'bemm';
 import { ref, watch, computed, type PropType, onMounted } from 'vue';
 import { getIcon, type Icons } from 'open-icon';
+import TToolTip from '../../feedback/TToolTip/TToolTip.vue';
 import { useIconRegistry } from '../../../icons';
 
 const bemm = useBemm('icon');
@@ -30,6 +27,10 @@ const props = defineProps({
 	animation: {
 		type: Boolean,
 	},
+	tooltip: {
+		type: String,
+		required: false
+	}
 });
 
 const iconData = ref<string>('');
@@ -37,37 +38,37 @@ const iconRegistry = useIconRegistry();
 const isRegistered = ref(false);
 
 // Legacy name mappings for backward compatibility
-const iconName = computed(()=>{
-  switch(props.name){
-   case 'edit':
-      return 'edit-m';
-    case 'plus':
-      return 'add-m';
-    case 'check':
-      return 'check-m';
-    case 'x':
-      return 'multiply-m';
-    case 'close':
-      return 'multiply-m';
+const iconName = computed(() => {
+	switch (props.name) {
+		case 'edit':
+			return 'edit-m';
+		case 'plus':
+			return 'add-m';
+		case 'check':
+			return 'check-m';
+		case 'x':
+			return 'multiply-m';
+		case 'close':
+			return 'multiply-m';
 		case 'play':
 			return 'playback-play';
 		case 'pause':
 			return 'playback-pause';
-    case 'arrow-left':
-      return 'arrow-left-m';
-    case 'eye':
-      return 'view-m';
-    case 'eye-off':
-      return 'view-off-m';
-    case 'lock':
-      return 'lock-m';
-    case 'lock-open':
-      return 'lock-open-m';
-    case 'unlock':
-      return 'unlock-m';
-    default:
-      return props.name;
-  }
+		case 'arrow-left':
+			return 'arrow-left-m';
+		case 'eye':
+			return 'view-m';
+		case 'eye-off':
+			return 'view-off-m';
+		case 'lock':
+			return 'lock-m';
+		case 'lock-open':
+			return 'lock-open-m';
+		case 'unlock':
+			return 'unlock-m';
+		default:
+			return props.name;
+	}
 })
 
 const loadIcon = async (iconName: string) => {
@@ -84,7 +85,7 @@ const loadIcon = async (iconName: string) => {
 			// For now, we'll fall through to dynamic loading
 		}
 	}
-	
+
 	// Fall back to dynamic loading if not in registry
 	try {
 		const iconLoadData = await getIcon(iconName as Icons);
@@ -134,7 +135,7 @@ watch(
 			fill: currentColor;
 		}
 	}
-	
+
 	&--placeholder {
 		display: flex;
 		align-items: center;
@@ -144,7 +145,7 @@ watch(
 		font-size: 0.7em;
 		overflow: hidden;
 	}
-	
+
 	&__placeholder-text {
 		text-overflow: ellipsis;
 		white-space: nowrap;

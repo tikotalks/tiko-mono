@@ -24,6 +24,10 @@
           <TIcon name="plus" size="large" />
         </div>
         <div v-else :class="bemm('container')">
+          <div :class="bemm('status')" v-if="isPublic || isCurated">
+            <TIcon v-if="isCurated" :name="Icons.STAR_M" :tooltip="t('common.curated')"></TIcon>
+            <TIcon v-else-if="isPublic" :name="Icons.ACCESSIBILITY_PERSON" :tooltip="t('common.public')"></TIcon>
+          </div>
 
           <!-- Show mini grid for groups with children -->
           <div v-if="hasChildren && children?.length" :class="bemm('mini-grid')">
@@ -80,6 +84,10 @@
         <TIcon name="plus" size="large" />
       </div>
       <div v-else :class="bemm('container')">
+        <div :class="bemm('status')" v-if="isPublic || isCurated">
+          <TIcon v-if="isCurated" :name="Icons.STAR_M" :tooltip="t('common.curated')"></TIcon>
+          <TIcon v-else-if="isPublic" :name="Icons.ACCESSIBILITY_PERSON" :tooltip="t('common.public')"></TIcon>
+        </div>
         <!-- Show mini grid for groups with children -->
         <div v-if="hasChildren && children?.length" :class="bemm('mini-grid')">
           <!-- Background image -->
@@ -115,10 +123,17 @@
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
 import { ref, computed, watch } from 'vue';
+import { Icons } from 'open-icon';
+import { useImageUrl } from '@tiko/core';
+
 import type { TCardTile, TCardTileProps } from './TCardTile.model';
 import { TIcon } from '../../ui-elements/TIcon';
 import { TContextMenu } from '../../navigation/TContextMenu';
-import { useImageUrl } from '@tiko/core';
+import { useI18n } from '../../../composables/useI18n'
+
+
+const { t } = useI18n()
+
 
 const bemm = useBemm('t-card-tile');
 const { getImageVariants } = useImageUrl();
@@ -169,6 +184,13 @@ const imageUrl = computed(() => {
     return props.card.image;
   }
 });
+
+const isCurated = computed(() => {
+  return props.card.isCurated;
+})
+const isPublic = computed(() => {
+  return props.card.isPublic;
+})
 
 // Get thumbnail URL for mini tiles
 const getThumbnailUrl = (imageUrl: string): string => {
@@ -311,7 +333,8 @@ const tileClasses = computed(() => {
     props.isEmpty ? 'empty' : 'filled',
     props.editMode ? 'edit-mode' : 'non-edit-mode',
     displayImage.value && imageUrl.value ? 'has-image' : 'no-image',
-    isImageLoaded.value && displayImage.value && imageUrl.value ? 'pop-in' : ''
+    isImageLoaded.value && displayImage.value && imageUrl.value ? 'pop-in' : '',
+    props.card?.isHidden ? 'hidden' : ''
   ])
 });
 </script>
@@ -332,8 +355,13 @@ const tileClasses = computed(() => {
 
   &:hover {
     animation: tile-hover 0.2s ease-in-out forwards;
+
     .t-card-tile__image{
       transform: scale(1.1);
+
+    }
+      .t-card-tile__mini-grid {
+      transform: scale(1.05);
     }
   }
 
@@ -369,6 +397,22 @@ const tileClasses = computed(() => {
     }
   }
 
+  &__status {
+    position: absolute;
+    top: var(--space-xs);
+    right: var(--space-xs);
+    background-color: var(--card-color);
+    border-radius: var(--border-radius);
+    opacity: .5;
+    transition: .3s ease-in-out;
+
+    &:hover {
+      z-index: 100;
+      opacity: 1;
+    }
+
+  }
+
   @keyframes tile-focus {
     0% {
       transform: scale(1.05);
@@ -390,7 +434,6 @@ const tileClasses = computed(() => {
     align-items: center;
     justify-content: center;
     position: relative;
-
 
     &--selected {
       article {
@@ -422,7 +465,6 @@ const tileClasses = computed(() => {
     width: 100%;
     height: 100%;
     position: relative;
-    overflow: hidden;
   }
 
   &__mini-grid {
@@ -431,6 +473,8 @@ const tileClasses = computed(() => {
     height: 100%;
     overflow: hidden;
     border-radius: var(--border-radius);
+    transform: scale(1);
+    transition: .2s ease-in-out;
   }
 
   &__mini-grid-bg {
@@ -580,6 +624,15 @@ const tileClasses = computed(() => {
     &:hover {
       transform: scale(0.98);
       box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  &--hidden {
+    opacity: 0.5;
+    filter: grayscale(20%);
+
+    &:hover {
+      opacity: 0.7;
     }
   }
 

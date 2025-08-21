@@ -26,7 +26,7 @@ const __dirname = path.dirname(__filename)
 // Configuration
 const WORKER_URLS = {
   development: 'http://localhost:8787', // Local development
-  production: 'https://i18n-data.silvandiepen.workers.dev' // Production worker URL (update with your subdomain)
+  production: 'https://i18n-data-production.silvandiepen.workers.dev' // Production worker URL
 }
 
 const OUTPUT_DIR = path.join(__dirname, '../packages/ui/src/i18n/generated')

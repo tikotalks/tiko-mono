@@ -12,8 +12,8 @@ export default defineConfig({
     color: BaseColors.YELLOW
   },
   theme: {
-    primary: BaseColors.PURPLE,
-    secondary: BaseColors.YELLOW,
+    primary: BaseColors.BLUE,
+    secondary: BaseColors.PURPLE,
     tertiary: BaseColors.GREEN,
   },
   auth: {
@@ -21,7 +21,7 @@ export default defineConfig({
   },
   splash: {
     appName: 'Admin',
-    backgroundColor: ColorValue.PURPLE,
+    backgroundColor: ColorValue.INDIGO,
     themeColor: ColorValue.BLACK,
     loadingText: 'Loading Admin...'
   }

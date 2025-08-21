@@ -1,457 +1,467 @@
-/**
- * Generic Item Service
- *
- * @module services/item.service
- * @description
- * Generic service for managing items across all Tiko apps.
- * Provides a unified API for todo items, radio stations, cards, etc.
- */
+// ItemService provides a unified interface for all item operations
+// This replaces direct database calls from individual apps
 
-/**
- * Base item structure shared by all apps
- */
 export interface BaseItem {
   id: string
   user_id: string
-  app_name: string // 'todo', 'radio', 'cards', etc.
-  type: string // app-specific type (e.g., 'todo_item', 'radio_station', 'card')
-  name: string
-  content?: string // flexible content field
-  metadata?: Record<string, any> // app-specific data
-  parent_id?: string // for hierarchical items (e.g., todo items in groups)
-  order_index: number
-  is_favorite?: boolean
-  is_completed?: boolean
-  is_public?: boolean
-  is_curated?: boolean // Admin-curated items
-  tags?: string[]
-  icon?: string
-  color?: string
-  created_at: string
-  updated_at: string
-}
-
-/**
- * Query filters for items
- */
-export interface ItemFilters {
-  app_name?: string
-  type?: string
-  parent_id?: string | null
-  is_favorite?: boolean
-  is_completed?: boolean
-  is_public?: boolean
-  tags?: string[]
-  search?: string
-}
-
-/**
- * Create item payload
- */
-export interface CreateItemPayload {
   app_name: string
   type: string
   name: string
   content?: string
-  metadata?: Record<string, any>
+  metadata?: any
   parent_id?: string
-  order_index?: number
-  is_favorite?: boolean
-  is_completed?: boolean
-  is_public?: boolean
-  tags?: string[]
+  order_index: number
   icon?: string
   color?: string
-}
-
-/**
- * Update item payload
- */
-export interface UpdateItemPayload {
-  name?: string
-  content?: string
-  metadata?: Record<string, any>
-  parent_id?: string
-  order_index?: number
-  is_favorite?: boolean
-  is_completed?: boolean
+  base_locale?: string
+  effective_locale?: string
+  created_at: string
+  updated_at: string
+  
+  // Public item fields
+  owner_id?: string
   is_public?: boolean
   is_curated?: boolean
-  tags?: string[]
-  icon?: string
-  color?: string
+  custom_index?: number
+  
+  // Children loaded automatically
+  children?: BaseItem[]
 }
 
-/**
- * Bulk update payload
- */
-export interface BulkUpdatePayload {
-  ids: string[]
-  updates: UpdateItemPayload
+export interface ItemLoadOptions {
+  includeCurated?: boolean
+  includeChildren?: boolean
+  locale?: string
 }
 
-/**
- * Item service result
- */
-export interface ItemResult<T = any> {
-  success: boolean
-  data?: T
-  error?: string
-}
-
-/**
- * Item statistics
- */
-export interface ItemStats {
-  total: number
-  by_app: Record<string, number>
-  by_type: Record<string, number>
-  favorites: number
-  completed: number
-  public: number
-}
-
-/**
- * Item service interface
- */
-export interface ItemService {
-  // CRUD operations
-  getItems(userId: string, filters?: ItemFilters): Promise<BaseItem[]>
-  getItem(itemId: string): Promise<BaseItem | null>
-  createItem(userId: string, payload: CreateItemPayload): Promise<ItemResult<BaseItem>>
-  updateItem(itemId: string, payload: UpdateItemPayload): Promise<ItemResult<BaseItem>>
-  deleteItem(itemId: string): Promise<ItemResult>
-
-  // Bulk operations
-  createItems(userId: string, payloads: CreateItemPayload[]): Promise<ItemResult<BaseItem[]>>
-  updateItems(payload: BulkUpdatePayload): Promise<ItemResult<BaseItem[]>>
-  deleteItems(itemIds: string[]): Promise<ItemResult>
-
-  // Specialized queries
-  getItemsByParent(parentId: string): Promise<BaseItem[]>
-  getPublicItems(filters?: ItemFilters): Promise<BaseItem[]>
-  searchItems(userId: string, query: string, filters?: ItemFilters): Promise<BaseItem[]>
-
-  // Ordering
-  reorderItems(itemIds: string[], startIndex?: number): Promise<ItemResult>
-  moveItem(itemId: string, newParentId: string | null, newIndex?: number): Promise<ItemResult<BaseItem>>
-
-  // Statistics
-  getStats(userId: string, appName?: string): Promise<ItemStats>
-
-  // Import/Export
-  exportItems(userId: string, filters?: ItemFilters): Promise<BaseItem[]>
-  importItems(userId: string, items: Omit<BaseItem, 'id' | 'user_id' | 'created_at' | 'updated_at'>[]): Promise<ItemResult<BaseItem[]>>
-}
-
-/**
- * Create localStorage-based item service
- */
-export function createLocalStorageItemService(): ItemService {
-  const ITEMS_KEY = 'tiko_items'
-
-  const getStoredItems = (): BaseItem[] => {
-    const stored = localStorage.getItem(ITEMS_KEY)
-    return stored ? JSON.parse(stored) : []
+class ItemService {
+  private async getAuthToken(): Promise<string | null> {
+    const sessionData = localStorage.getItem('tiko_auth_session');
+    if (!sessionData) return null;
+    
+    try {
+      const session = JSON.parse(sessionData);
+      return session.access_token;
+    } catch {
+      return null;
+    }
   }
 
-  const saveItems = (items: BaseItem[]) => {
-    localStorage.setItem(ITEMS_KEY, JSON.stringify(items))
+  private async apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLIC;
+    const token = await this.getAuthToken();
+    
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Supabase credentials missing');
+    }
+    
+    const response = await fetch(`${supabaseUrl}/rest/v1/${endpoint}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': supabaseKey,
+        'Authorization': token ? `Bearer ${token}` : '',
+        'Prefer': 'return=representation',
+        ...options.headers
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(`API request failed: ${JSON.stringify(errorData)}`);
+    }
+
+    return response.json();
   }
 
-  const applyFilters = (items: BaseItem[], filters?: ItemFilters): BaseItem[] => {
-    if (!filters) return items
+  /**
+   * Load a single item by ID with automatic children loading
+   */
+  async loadItemById(itemId: string, options: ItemLoadOptions = {}): Promise<BaseItem | null> {
+    const {
+      includeChildren = true,
+      locale = 'en-GB'
+    } = options;
 
-    let filtered = items
+    try {
+      console.log('[ItemService] Loading item by ID:', itemId);
 
-    if (filters.app_name) {
-      filtered = filtered.filter(item => item.app_name === filters.app_name)
+      // Load the main item
+      const params = new URLSearchParams();
+      params.append('id', `eq.${itemId}`);
+      
+      const items = await this.apiRequest<BaseItem[]>(`items?${params.toString()}`);
+      
+      if (items.length === 0) {
+        console.log('[ItemService] Item not found:', itemId);
+        return null;
+      }
+
+      const item = items[0];
+      console.log('[ItemService] Item loaded:', item.name);
+
+      // Load children if requested
+      if (includeChildren) {
+        const children = await this.loadItemChildren(itemId, options);
+        item.children = children;
+        console.log('[ItemService] Loaded', children.length, 'children for item:', item.name);
+      }
+
+      return item;
+    } catch (error) {
+      console.error('[ItemService] Error loading item by ID:', error);
+      throw error;
     }
-
-    if (filters.type) {
-      filtered = filtered.filter(item => item.type === filters.type)
-    }
-
-    if (filters.parent_id !== undefined) {
-      filtered = filtered.filter(item => item.parent_id === filters.parent_id)
-    }
-
-    if (filters.is_favorite !== undefined) {
-      filtered = filtered.filter(item => item.is_favorite === filters.is_favorite)
-    }
-
-    if (filters.is_completed !== undefined) {
-      filtered = filtered.filter(item => item.is_completed === filters.is_completed)
-    }
-
-    if (filters.is_public !== undefined) {
-      filtered = filtered.filter(item => item.is_public === filters.is_public)
-    }
-
-    if (filters.tags && filters.tags.length > 0) {
-      filtered = filtered.filter(item =>
-        item.tags && filters.tags!.some(tag => item.tags!.includes(tag))
-      )
-    }
-
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase()
-      filtered = filtered.filter(item =>
-        item.name.toLowerCase().includes(searchLower) ||
-        (item.content && item.content.toLowerCase().includes(searchLower))
-      )
-    }
-
-    return filtered
   }
 
-  return {
-    // CRUD operations
-    async getItems(userId: string, filters?: ItemFilters): Promise<BaseItem[]> {
-      const items = getStoredItems().filter(item => item.user_id === userId)
-      const filtered = applyFilters(items, filters)
-      return filtered.sort((a, b) => a.order_index - b.order_index)
-    },
+  /**
+   * Load items by user and app with automatic children loading
+   */
+  async loadItemsByUserAndApp(
+    userId: string, 
+    appName: string, 
+    options: ItemLoadOptions = {}
+  ): Promise<BaseItem[]> {
+    const {
+      includeCurated = true,
+      includeChildren = true,
+      locale = 'en-GB'
+    } = options;
 
-    async getItem(itemId: string): Promise<BaseItem | null> {
-      return getStoredItems().find(item => item.id === itemId) || null
-    },
+    try {
+      console.log('[ItemService] Loading items for user:', userId, 'app:', appName);
 
-    async createItem(userId: string, payload: CreateItemPayload): Promise<ItemResult<BaseItem>> {
-      const items = getStoredItems()
+      // Build query for user items
+      let userItems: BaseItem[] = [];
+      if (userId) {
+        const userParams = new URLSearchParams();
+        userParams.append('user_id', `eq.${userId}`);
+        userParams.append('app_name', `eq.${appName}`);
+        userParams.append('order', 'order_index.asc,created_at.asc');
+        
+        userItems = await this.apiRequest<BaseItem[]>(`items?${userParams.toString()}`);
+        console.log('[ItemService] Loaded', userItems.length, 'user items');
+      }
 
-      // Calculate order index if not provided
-      let orderIndex = payload.order_index
-      if (orderIndex === undefined) {
-        const siblingItems = items.filter(item =>
-          item.user_id === userId &&
-          item.app_name === payload.app_name &&
-          item.parent_id === payload.parent_id
+      // Load curated public items if requested
+      let curatedItems: BaseItem[] = [];
+      if (includeCurated) {
+        const curatedParams = new URLSearchParams();
+        curatedParams.append('app_name', `eq.${appName}`);
+        curatedParams.append('is_curated', 'eq.true');
+        curatedParams.append('is_public', 'eq.true');
+        curatedParams.append('order', 'order_index.asc,created_at.asc');
+        
+        curatedItems = await this.apiRequest<BaseItem[]>(`items?${curatedParams.toString()}`);
+        console.log('[ItemService] Loaded', curatedItems.length, 'curated items');
+      }
+
+      // Combine and deduplicate items
+      const allItems = [...userItems, ...curatedItems];
+      const deduplicatedItems = allItems.filter((item, index, arr) => 
+        arr.findIndex(i => i.id === item.id) === index
+      );
+
+      console.log('[ItemService] Total items after deduplication:', deduplicatedItems.length);
+
+      // Load children for all items if requested
+      if (includeChildren) {
+        console.log('[ItemService] Loading children for all items...');
+        
+        await Promise.all(
+          deduplicatedItems.map(async (item) => {
+            const children = await this.loadItemChildren(item.id, options);
+            item.children = children;
+          })
+        );
+
+        const totalChildren = deduplicatedItems.reduce((sum, item) => sum + (item.children?.length || 0), 0);
+        console.log('[ItemService] Loaded', totalChildren, 'children total across all items');
+      }
+
+      return deduplicatedItems;
+    } catch (error) {
+      console.error('[ItemService] Error loading items by user and app:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Load children of a specific item
+   */
+  async loadItemChildren(parentId: string, options: ItemLoadOptions = {}): Promise<BaseItem[]> {
+    try {
+      const params = new URLSearchParams();
+      params.append('parent_id', `eq.${parentId}`);
+      params.append('order', 'order_index.asc,created_at.asc');
+      
+      const children = await this.apiRequest<BaseItem[]>(`items?${params.toString()}`);
+      
+      // Recursively load children of children if they exist
+      if (options.includeChildren !== false) {
+        await Promise.all(
+          children.map(async (child) => {
+            const grandchildren = await this.loadItemChildren(child.id, options);
+            child.children = grandchildren;
+          })
+        );
+      }
+
+      return children;
+    } catch (error) {
+      console.error('[ItemService] Error loading item children:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Load items by parent ID (alias for loadItemChildren for consistency)
+   */
+  async loadItemsByParentId(parentId: string, options: ItemLoadOptions = {}): Promise<BaseItem[]> {
+    return this.loadItemChildren(parentId, options);
+  }
+
+  /**
+   * Create a new item
+   */
+  async createItem(itemData: Partial<BaseItem>): Promise<BaseItem> {
+    try {
+      console.log('[ItemService] Creating new item:', itemData.name);
+
+      const response = await this.apiRequest<BaseItem[]>('items', {
+        method: 'POST',
+        body: JSON.stringify([itemData]) // Supabase expects an array for POST
+      });
+
+      const createdItem = response[0];
+      console.log('[ItemService] Item created:', createdItem.name, 'ID:', createdItem.id);
+      return createdItem;
+    } catch (error) {
+      console.error('[ItemService] Error creating item:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update an existing item
+   */
+  async updateItem(itemId: string, updates: Partial<BaseItem>): Promise<BaseItem> {
+    try {
+      console.log('[ItemService] Updating item:', itemId, updates);
+
+      const params = new URLSearchParams();
+      params.append('id', `eq.${itemId}`);
+
+      const response = await this.apiRequest<BaseItem[]>(`items?${params.toString()}`, {
+        method: 'PATCH',
+        body: JSON.stringify(updates)
+      });
+
+      if (response.length === 0) {
+        throw new Error('Item not found or update failed');
+      }
+
+      const updatedItem = response[0];
+      console.log('[ItemService] Item updated:', updatedItem.name);
+      return updatedItem;
+    } catch (error) {
+      console.error('[ItemService] Error updating item:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete an item
+   */
+  async deleteItem(itemId: string): Promise<void> {
+    try {
+      console.log('[ItemService] Deleting item:', itemId);
+
+      const params = new URLSearchParams();
+      params.append('id', `eq.${itemId}`);
+
+      await this.apiRequest(`items?${params.toString()}`, {
+        method: 'DELETE'
+      });
+
+      console.log('[ItemService] Item deleted:', itemId);
+    } catch (error) {
+      console.error('[ItemService] Error deleting item:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update item order indices for a set of items
+   */
+  async updateItemOrder(itemUpdates: Array<{ id: string; order_index: number }>): Promise<void> {
+    try {
+      console.log('[ItemService] Updating order for', itemUpdates.length, 'items');
+
+      // Update each item's order_index
+      await Promise.all(
+        itemUpdates.map(update => 
+          this.updateItem(update.id, { order_index: update.order_index })
         )
-        orderIndex = siblingItems.length
+      );
+
+      console.log('[ItemService] Order updated for all items');
+    } catch (error) {
+      console.error('[ItemService] Error updating item order:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Duplicate an item (and optionally its children)
+   */
+  async duplicateItem(itemId: string, includeChildren = true): Promise<BaseItem> {
+    try {
+      console.log('[ItemService] Duplicating item:', itemId, 'includeChildren:', includeChildren);
+
+      // Load the original item with its children
+      const originalItem = await this.loadItemById(itemId, { includeChildren });
+      if (!originalItem) {
+        throw new Error('Original item not found');
       }
 
-      const newItem: BaseItem = {
-        id: crypto.randomUUID(),
-        user_id: userId,
-        app_name: payload.app_name,
-        type: payload.type,
-        name: payload.name,
-        content: payload.content,
-        metadata: payload.metadata,
-        parent_id: payload.parent_id,
-        order_index: orderIndex,
-        is_favorite: payload.is_favorite,
-        is_completed: payload.is_completed,
-        is_public: payload.is_public,
-        tags: payload.tags,
-        icon: payload.icon,
-        color: payload.color,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+      // Create the duplicate (without children first)
+      const duplicateData: Partial<BaseItem> = {
+        ...originalItem,
+        id: undefined, // Let the database generate a new ID
+        name: `${originalItem.name} (Copy)`,
+        created_at: undefined,
+        updated_at: undefined,
+        children: undefined // Don't include children in the create request
+      };
+
+      const duplicatedItem = await this.createItem(duplicateData);
+
+      // If including children, recursively duplicate them
+      if (includeChildren && originalItem.children && originalItem.children.length > 0) {
+        const duplicatedChildren = await Promise.all(
+          originalItem.children.map(async (child) => {
+            const duplicatedChild = await this.duplicateItem(child.id, true);
+            // Update the parent_id to point to the new parent
+            return await this.updateItem(duplicatedChild.id, { parent_id: duplicatedItem.id });
+          })
+        );
+
+        duplicatedItem.children = duplicatedChildren;
       }
 
-      items.push(newItem)
-      saveItems(items)
+      console.log('[ItemService] Item duplicated:', duplicatedItem.name);
+      return duplicatedItem;
+    } catch (error) {
+      console.error('[ItemService] Error duplicating item:', error);
+      throw error;
+    }
+  }
 
-      return { success: true, data: newItem }
-    },
+  /**
+   * Search items by name or content
+   */
+  async searchItems(
+    userId: string, 
+    appName: string, 
+    searchQuery: string, 
+    options: ItemLoadOptions = {}
+  ): Promise<BaseItem[]> {
+    try {
+      console.log('[ItemService] Searching items:', searchQuery);
 
-    async updateItem(itemId: string, payload: UpdateItemPayload): Promise<ItemResult<BaseItem>> {
-      const items = getStoredItems()
-      const index = items.findIndex(item => item.id === itemId)
+      const params = new URLSearchParams();
+      params.append('user_id', `eq.${userId}`);
+      params.append('app_name', `eq.${appName}`);
+      params.append('or', `name.ilike.*${searchQuery}*,content.ilike.*${searchQuery}*`);
+      params.append('order', 'name.asc');
 
-      if (index === -1) {
-        return { success: false, error: 'Item not found' }
+      const items = await this.apiRequest<BaseItem[]>(`items?${params.toString()}`);
+
+      // Load children if requested
+      if (options.includeChildren) {
+        await Promise.all(
+          items.map(async (item) => {
+            const children = await this.loadItemChildren(item.id, options);
+            item.children = children;
+          })
+        );
       }
 
-      items[index] = {
-        ...items[index],
-        ...payload,
-        updated_at: new Date().toISOString()
+      console.log('[ItemService] Found', items.length, 'items matching search');
+      return items;
+    } catch (error) {
+      console.error('[ItemService] Error searching items:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Load all root-level items (items without a parent) for a user and app
+   */
+  async loadRootItems(userId: string, appName: string, options: ItemLoadOptions = {}): Promise<BaseItem[]> {
+    const {
+      includeCurated = true,
+      includeChildren = true,
+      locale = 'en-GB'
+    } = options;
+
+    try {
+      console.log('[ItemService] Loading root items for user:', userId, 'app:', appName);
+
+      // Build query for user root items
+      let userItems: BaseItem[] = [];
+      if (userId) {
+        const userParams = new URLSearchParams();
+        userParams.append('user_id', `eq.${userId}`);
+        userParams.append('app_name', `eq.${appName}`);
+        userParams.append('parent_id', 'is.null');
+        userParams.append('order', 'order_index.asc,created_at.asc');
+        
+        userItems = await this.apiRequest<BaseItem[]>(`items?${userParams.toString()}`);
       }
 
-      saveItems(items)
-      return { success: true, data: items[index] }
-    },
-
-    async deleteItem(itemId: string): Promise<ItemResult> {
-      const items = getStoredItems()
-
-      // Delete item and its children recursively
-      const idsToDelete = new Set([itemId])
-      let hasNewIds = true
-
-      while (hasNewIds) {
-        const currentSize = idsToDelete.size
-        items.forEach(item => {
-          if (item.parent_id && idsToDelete.has(item.parent_id)) {
-            idsToDelete.add(item.id)
-          }
-        })
-        hasNewIds = idsToDelete.size > currentSize
+      // Load curated public root items if requested
+      let curatedItems: BaseItem[] = [];
+      if (includeCurated) {
+        const curatedParams = new URLSearchParams();
+        curatedParams.append('app_name', `eq.${appName}`);
+        curatedParams.append('is_curated', 'eq.true');
+        curatedParams.append('is_public', 'eq.true');
+        curatedParams.append('parent_id', 'is.null');
+        curatedParams.append('order', 'order_index.asc,created_at.asc');
+        
+        curatedItems = await this.apiRequest<BaseItem[]>(`items?${curatedParams.toString()}`);
       }
 
-      const filtered = items.filter(item => !idsToDelete.has(item.id))
-      saveItems(filtered)
+      // Combine and deduplicate
+      const allItems = [...userItems, ...curatedItems];
+      const deduplicatedItems = allItems.filter((item, index, arr) => 
+        arr.findIndex(i => i.id === item.id) === index
+      );
 
-      return { success: true }
-    },
-
-    // Bulk operations
-    async createItems(userId: string, payloads: CreateItemPayload[]): Promise<ItemResult<BaseItem[]>> {
-      const newItems: BaseItem[] = []
-
-      for (const payload of payloads) {
-        const result = await this.createItem(userId, payload)
-        if (result.success && result.data) {
-          newItems.push(result.data)
-        }
+      // Load children if requested
+      if (includeChildren) {
+        await Promise.all(
+          deduplicatedItems.map(async (item) => {
+            const children = await this.loadItemChildren(item.id, options);
+            item.children = children;
+          })
+        );
       }
 
-      return { success: true, data: newItems }
-    },
-
-    async updateItems(payload: BulkUpdatePayload): Promise<ItemResult<BaseItem[]>> {
-      const items = getStoredItems()
-      const updatedItems: BaseItem[] = []
-      const now = new Date().toISOString()
-
-      payload.ids.forEach(id => {
-        const index = items.findIndex(item => item.id === id)
-        if (index !== -1) {
-          items[index] = {
-            ...items[index],
-            ...payload.updates,
-            updated_at: now
-          }
-          updatedItems.push(items[index])
-        }
-      })
-
-      saveItems(items)
-      return { success: true, data: updatedItems }
-    },
-
-    async deleteItems(itemIds: string[]): Promise<ItemResult> {
-      for (const id of itemIds) {
-        await this.deleteItem(id)
-      }
-      return { success: true }
-    },
-
-    // Specialized queries
-    async getItemsByParent(parentId: string): Promise<BaseItem[]> {
-      return getStoredItems()
-        .filter(item => item.parent_id === parentId)
-        .sort((a, b) => a.order_index - b.order_index)
-    },
-
-    async getPublicItems(filters?: ItemFilters): Promise<BaseItem[]> {
-      const items = getStoredItems().filter(item => item.is_public)
-      const filtered = applyFilters(items, filters)
-      return filtered.sort((a, b) => a.order_index - b.order_index)
-    },
-
-    async searchItems(userId: string, query: string, filters?: ItemFilters): Promise<BaseItem[]> {
-      const items = await this.getItems(userId, { ...filters, search: query })
-      return items
-    },
-
-    // Ordering
-    async reorderItems(itemIds: string[], startIndex = 0): Promise<ItemResult> {
-      const items = getStoredItems()
-      const now = new Date().toISOString()
-
-      itemIds.forEach((id, index) => {
-        const item = items.find(i => i.id === id)
-        if (item) {
-          item.order_index = startIndex + index
-          item.updated_at = now
-        }
-      })
-
-      saveItems(items)
-      return { success: true }
-    },
-
-    async moveItem(itemId: string, newParentId: string | null, newIndex?: number): Promise<ItemResult<BaseItem>> {
-      const items = getStoredItems()
-      const item = items.find(i => i.id === itemId)
-
-      if (!item) {
-        return { success: false, error: 'Item not found' }
-      }
-
-      // Update parent
-      item.parent_id = newParentId || undefined
-
-      // Update order index
-      if (newIndex !== undefined) {
-        item.order_index = newIndex
-      } else {
-        // Place at end of siblings
-        const siblings = items.filter(i =>
-          i.user_id === item.user_id &&
-          i.app_name === item.app_name &&
-          i.parent_id === newParentId
-        )
-        item.order_index = siblings.length
-      }
-
-      item.updated_at = new Date().toISOString()
-
-      saveItems(items)
-      return { success: true, data: item }
-    },
-
-    // Statistics
-    async getStats(userId: string, appName?: string): Promise<ItemStats> {
-      const items = getStoredItems().filter(item =>
-        item.user_id === userId &&
-        (!appName || item.app_name === appName)
-      )
-
-      const stats: ItemStats = {
-        total: items.length,
-        by_app: {},
-        by_type: {},
-        favorites: items.filter(i => i.is_favorite).length,
-        completed: items.filter(i => i.is_completed).length,
-        public: items.filter(i => i.is_public).length
-      }
-
-      items.forEach(item => {
-        stats.by_app[item.app_name] = (stats.by_app[item.app_name] || 0) + 1
-        stats.by_type[item.type] = (stats.by_type[item.type] || 0) + 1
-      })
-
-      return stats
-    },
-
-    // Import/Export
-    async exportItems(userId: string, filters?: ItemFilters): Promise<BaseItem[]> {
-      return this.getItems(userId, filters)
-    },
-
-    async importItems(userId: string, items: Omit<BaseItem, 'id' | 'user_id' | 'created_at' | 'updated_at'>[]): Promise<ItemResult<BaseItem[]>> {
-      const now = new Date().toISOString()
-      const newItems: BaseItem[] = items.map(item => ({
-        ...item,
-        id: crypto.randomUUID(),
-        user_id: userId,
-        created_at: now,
-        updated_at: now
-      }))
-
-      const existingItems = getStoredItems()
-      existingItems.push(...newItems)
-      saveItems(existingItems)
-
-      return { success: true, data: newItems }
+      console.log('[ItemService] Loaded', deduplicatedItems.length, 'root items');
+      return deduplicatedItems;
+    } catch (error) {
+      console.error('[ItemService] Error loading root items:', error);
+      throw error;
     }
   }
 }
 
-// Default service instance
-export const itemService: ItemService = createLocalStorageItemService()
+// Export singleton instance
+export const unifiedItemService = new ItemService();
+
+// Also export as itemService for backwards compatibility
+export const itemService = unifiedItemService;

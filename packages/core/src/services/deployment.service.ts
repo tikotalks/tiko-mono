@@ -53,7 +53,7 @@ class DeploymentService {
 
   constructor() {
     this.supabaseUrl = import.meta.env['VITE_SUPABASE_URL'] || ''
-    this.supabaseKey = import.meta.env['VITE_SUPABASE_ANON_KEY'] || ''
+    this.supabaseKey = import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLIC || ''
   }
 
   /**

@@ -11,6 +11,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useTodos } from '../composables/useTodos'
 import type { UseTodosReturn } from '../composables/useTodos'
+import { useTodoSettingsStore } from './todoSettings'
 
 export const useTodoStore = defineStore('todo', () => {
   // Lazy initialization of todos composable

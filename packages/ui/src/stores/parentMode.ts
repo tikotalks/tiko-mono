@@ -2,6 +2,15 @@ import { defineStore } from 'pinia'
 import { useAuthStore, parentModeService } from '@tiko/core'
 import type { ParentModeSettings } from '../composables/useParentMode.model'
 
+// Lazy initialization for auth store to avoid Pinia initialization issues
+let authStore: ReturnType<typeof useAuthStore> | null = null
+const getAuthStore = () => {
+  if (!authStore) {
+    authStore = useAuthStore()
+  }
+  return authStore
+}
+
 export const useParentModeStore = defineStore('parentMode', {
   state: () => ({
     isEnabled: false,
@@ -48,7 +57,7 @@ export const useParentModeStore = defineStore('parentMode', {
       }
 
       try {
-        const authStore = useAuthStore()
+        const authStore = getAuthStore()
         const user = authStore.user
         if (!user) return
 
@@ -86,7 +95,7 @@ export const useParentModeStore = defineStore('parentMode', {
 
     async enable(pin: string): Promise<{ success: boolean; error?: string }> {
       try {
-        const authStore = useAuthStore()
+        const authStore = getAuthStore()
         const user = authStore.user
         if (!user) {
           return { success: false, error: 'User not authenticated' }
@@ -119,7 +128,7 @@ export const useParentModeStore = defineStore('parentMode', {
 
     async disable(): Promise<{ success: boolean; error?: string }> {
       try {
-        const authStore = useAuthStore()
+        const authStore = getAuthStore()
         const user = authStore.user
         if (!user) {
           return { success: false, error: 'User not authenticated' }
@@ -148,7 +157,7 @@ export const useParentModeStore = defineStore('parentMode', {
 
     async unlock(pin: string): Promise<{ success: boolean; error?: string }> {
       try {
-        const authStore = useAuthStore()
+        const authStore = getAuthStore()
         const user = authStore.user
         if (!user) {
           return { success: false, error: 'User not authenticated' }
@@ -187,7 +196,7 @@ export const useParentModeStore = defineStore('parentMode', {
           return { success: false, error: 'Parent mode must be unlocked to change settings' }
         }
 
-        const authStore = useAuthStore()
+        const authStore = getAuthStore()
         const user = authStore.user
         if (!user) {
           return { success: false, error: 'User not authenticated' }

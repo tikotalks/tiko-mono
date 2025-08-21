@@ -1,19 +1,29 @@
 import { defineConfig } from '@tiko/core'
+import { BaseColors, ColorValue } from '@tiko/ui'
 
 export default defineConfig({
   id: 'todo',
-  name: 'Todo',
-  icon: 'check-list',
-  description: 'Visual todo list app with groups and items',
+  name: 'To Do',
+  description: 'To Do App',
+  icon: {
+    mediaId:'13a53fe8-b34d-46bc-befe-20b5fed3694c',
+    color: BaseColors.SAND,
+  },
   theme: {
-    primary: 'blue',
-    secondary: 'green',
-    tertiary: 'orange'
+    primary: BaseColors.BLUE,
+    secondary: BaseColors.TURQUOISE,
+    tertiary: BaseColors.GOLD,
+  },
+  auth: {
+    skipAuth: true
   },
   splash: {
-    appName: 'Todo',
-    backgroundColor: '#f8f9fa',
-    themeColor: '#6f42c1',
-    loadingText: 'Loading Todo...'
+    appName: 'To Do',
+    backgroundColor: ColorValue.SAND,
+    themeColor: ColorValue.BLACK,
+    loadingText: 'Loading To do\'s...'
   }
 })
+
+
+

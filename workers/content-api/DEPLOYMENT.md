@@ -44,14 +44,16 @@ Set your secrets using Wrangler:
 ```bash
 # Production secrets
 wrangler secret put SUPABASE_URL
-wrangler secret put SUPABASE_ANON_KEY
+wrangler secret put SUPABASE_SERVICE_KEY
 
 # For staging (optional)
 wrangler secret put SUPABASE_URL --env staging
-wrangler secret put SUPABASE_ANON_KEY --env staging
+wrangler secret put SUPABASE_SERVICE_KEY --env staging
 ```
 
-When prompted, enter your Supabase project URL and anonymous key.
+When prompted, enter your Supabase project URL and service role key (not the anon key).
+
+**Important**: Use the service role key from your Supabase dashboard under Settings > API. This key has full access to your database and should be kept secret.
 
 ### 4. Configure Custom Domain
 

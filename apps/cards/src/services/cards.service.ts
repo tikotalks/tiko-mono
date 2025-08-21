@@ -1,4 +1,4 @@
-import { useAuthStore } from '@tiko/core';
+import { useAuthStore, unifiedItemService, type BaseItem, type ItemLoadOptions } from '@tiko/core';
 import { useI18n } from '@tiko/ui';
 import type { TCardTile as CardTile } from '@tiko/ui';
 import { cardsSupabaseService } from './supabase-cards.service';
@@ -17,65 +17,68 @@ interface CardMetadata {
 // Cache for hasChildren checks
 const childrenCache = new Map<string, boolean>();
 
+// Helper function to convert BaseItem to CardTile
+function baseItemToCardTile(item: BaseItem): CardTile {
+  const metadata = item.metadata as CardMetadata;
+  
+  return {
+    id: item.id,
+    title: item.name,
+    type: item.type as any,
+    icon: metadata?.icon || item.icon || 'square',
+    color: metadata?.color || item.color || 'primary',
+    image: metadata?.image || '',
+    speech: metadata?.speech || item.content || '',
+    index: item.order_index ?? 0,
+    parentId: item.parent_id || undefined,
+    base_locale: item.base_locale || 'en',
+    effective_locale: item.effective_locale || item.base_locale || 'en',
+    isPublic: item.is_public || false,
+    isCurated: item.is_curated || false,
+    ownerId: item.user_id,
+    user_id: item.user_id
+  };
+}
+
 export const cardsService = {
   async loadCards(parentId?: string, includeCurated = false, locale?: string): Promise<CardTile[]> {
     try {
       const authStore = useAuthStore();
       const userId = authStore.user?.id;
       if (!userId) {
-        console.warn('No authenticated user found');
+        console.warn('[CardsService] No authenticated user found');
         return [];
       }
       
       // Get current locale from i18n or use provided locale
       const { currentLocale } = useI18n();
       const effectiveLocale = locale || currentLocale.value;
-      console.log('[loadCards] Current locale from useI18n:', effectiveLocale, 'includeCurated:', includeCurated);
+      console.log('[CardsService] loadCards - userId:', userId, 'parentId:', parentId, 'includeCurated:', includeCurated, 'locale:', effectiveLocale);
       
-      // Load cards with translations for current locale
-      // If includeCurated is true, we need to get both user and curated cards for the parent
-      let items;
-      if (includeCurated) {
-        // Get cards with curated items and translations
-        items = await cardsSupabaseService.getCardsWithCuratedAndTranslations(userId, parentId, effectiveLocale);
-        console.log('[loadCards] Found cards with curated and translations:', items.length);
+      let items: BaseItem[];
+      
+      if (parentId) {
+        // Load children of specific parent
+        items = await unifiedItemService.loadItemsByParentId(parentId, {
+          includeCurated,
+          includeChildren: false, // We don't need nested children for card loading
+          locale: effectiveLocale
+        });
       } else {
-        // Standard loading for user cards only
-        items = await cardsSupabaseService.getCardsWithTranslations(userId, parentId, effectiveLocale);
+        // Load root level cards
+        items = await unifiedItemService.loadRootItems(userId, APP_NAME, {
+          includeCurated,
+          includeChildren: false, // We don't need nested children for card loading
+          locale: effectiveLocale
+        });
       }
       
-      console.log('[loadCards] Items to process:', items.length);
+      console.log('[CardsService] Loaded', items.length, 'items from ItemService');
       
-      return items.map(item => {
-        const metadata = item.metadata as CardMetadata;
-        
-        // If we have a translation (effective_locale is set), use the translated content for speech
-        const speech = item.effective_locale && item.effective_locale !== item.base_locale
-          ? item.content || metadata?.speech || ''  // Use translated content if available
-          : metadata?.speech || item.content || ''; // Otherwise use metadata speech or base content
-        
-        const result = {
-          id: item.id,
-          title: item.name, // This will already be the translated name
-          type: item.type as any,
-          icon: metadata?.icon || item.icon || 'square',
-          color: metadata?.color || item.color || 'primary',
-          image: metadata?.image || '',
-          speech: speech,
-          index: item.order_index ?? 0,
-          parentId: item.parent_id || undefined,
-          base_locale: item.base_locale || 'en',
-          effective_locale: item.effective_locale || item.base_locale || 'en',
-          isPublic: item.is_public || false,
-          isCurated: item.is_curated || false,
-          ownerId: item.user_id, // Add ownerId for ownership checks
-          user_id: item.user_id // Add user_id for ownership checks
-        };
-        
-        return result;
-      });
+      // Convert BaseItem to CardTile
+      return items.map(baseItemToCardTile);
     } catch (error) {
-      console.error('Failed to load cards:', error);
+      console.error('[CardsService] Failed to load cards:', error);
       return [];
     }
   },
@@ -85,47 +88,43 @@ export const cardsService = {
       const authStore = useAuthStore();
       const userId = authStore.user?.id;
       if (!userId) {
-        console.warn('No authenticated user found');
+        console.warn('[CardsService] No authenticated user found');
         return [];
       }
       
       // Get current locale from i18n
       const { currentLocale } = useI18n();
       const effectiveLocale = currentLocale.value;
-      console.log('[loadAllCards] Loading ALL cards with locale:', effectiveLocale, 'includeCurated:', includeCurated);
+      console.log('[CardsService] loadAllCards - userId:', userId, 'includeCurated:', includeCurated, 'locale:', effectiveLocale);
       
-      // Load ALL cards with translations for current locale
-      const items = await cardsSupabaseService.getAllCardsWithTranslations(userId, effectiveLocale, includeCurated);
-      console.log('[loadAllCards] Total items loaded:', items.length);
-      
-      return items.map(item => {
-        const metadata = item.metadata as CardMetadata;
-        
-        // If we have a translation (effective_locale is set), use the translated content for speech
-        const speech = item.effective_locale && item.effective_locale !== item.base_locale
-          ? item.content || metadata?.speech || ''  // Use translated content if available
-          : metadata?.speech || item.content || ''; // Otherwise use metadata speech or base content
-        
-        return {
-          id: item.id,
-          title: item.name, // This will already be the translated name from getCardsWithTranslations
-          type: item.type as any,
-          icon: metadata?.icon || item.icon || 'square',
-          color: metadata?.color || item.color || 'primary',
-          image: metadata?.image || '',
-          speech: speech,
-          index: item.order_index ?? 0,
-          parentId: item.parent_id || undefined,
-          base_locale: item.base_locale || 'en',
-          effective_locale: item.effective_locale || item.base_locale || 'en',
-          isPublic: item.is_public || false,
-          isCurated: item.is_curated || false,
-          ownerId: item.user_id, // Add ownerId for ownership checks
-          user_id: item.user_id // Add user_id for ownership checks
-        };
+      // Load ALL cards (user + curated) with children automatically loaded
+      const items = await unifiedItemService.loadItemsByUserAndApp(userId, APP_NAME, {
+        includeCurated,
+        includeChildren: true, // Load all children - this solves the children loading issue!
+        locale: effectiveLocale
       });
+      
+      console.log('[CardsService] Loaded', items.length, 'total items from ItemService (including children)');
+      
+      // Flatten the hierarchy - convert all items and their children to a flat array
+      const allItems: BaseItem[] = [];
+      
+      function collectAllItems(items: BaseItem[]) {
+        for (const item of items) {
+          allItems.push(item);
+          if (item.children && item.children.length > 0) {
+            collectAllItems(item.children);
+          }
+        }
+      }
+      
+      collectAllItems(items);
+      console.log('[CardsService] Flattened to', allItems.length, 'total items');
+      
+      // Convert BaseItem to CardTile
+      return allItems.map(baseItemToCardTile);
     } catch (error) {
-      console.error('Failed to load all cards:', error);
+      console.error('[CardsService] Failed to load all cards:', error);
       return [];
     }
   },

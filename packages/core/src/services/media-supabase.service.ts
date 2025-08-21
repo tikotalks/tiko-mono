@@ -12,8 +12,22 @@ import type {
 import { getSupabase } from '../lib/supabase-lazy'
 
 export class SupabaseMediaService implements MediaService {
-  private readonly API_URL = 'https://kejvhvszhevfwgsztedf.supabase.co/rest/v1'
-  private readonly ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlanZodnN6aGV2Zndnc3p0ZWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4ODg2MTIsImV4cCI6MjA2NzQ2NDYxMn0.xUYXxNodJTpTwChlKbuBSojVJqX9CDW87aVISEUc2rE'
+  private readonly API_URL: string
+  private readonly apiKey: string
+
+  constructor() {
+    const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL
+    if (!supabaseUrl) {
+      throw new Error('VITE_SUPABASE_URL environment variable is required')
+    }
+    this.API_URL = `${supabaseUrl}/rest/v1`
+    
+    // Use public key for browser compatibility
+    this.apiKey = import.meta.env?.VITE_SUPABASE_PUBLIC
+    if (!this.apiKey) {
+      throw new Error('VITE_SUPABASE_PUBLIC environment variable is required')
+    }
+  }
 
   /**
    * Get current session from localStorage
@@ -39,7 +53,7 @@ export class SupabaseMediaService implements MediaService {
       const response = await fetch(`${this.API_URL}/media`, {
         method: 'POST',
         headers: {
-          'apikey': this.ANON_KEY,
+          'apikey': this.apiKey,
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
           'Prefer': 'return=representation'
@@ -99,7 +113,7 @@ export class SupabaseMediaService implements MediaService {
         
         const response = await fetch(url, {
           headers: {
-            'apikey': this.ANON_KEY,
+            'apikey': this.apiKey,
             'Authorization': `Bearer ${session.access_token}`,
             'Content-Type': 'application/json',
             'Prefer': 'count=exact'
@@ -189,7 +203,7 @@ export class SupabaseMediaService implements MediaService {
         try {
           const testResponse = await fetch(testUrl, {
             headers: {
-              'apikey': this.ANON_KEY,
+              'apikey': this.apiKey,
               'Authorization': `Bearer ${session.access_token}`,
               'Content-Type': 'application/json',
               'Prefer': 'count=exact'
@@ -235,7 +249,7 @@ export class SupabaseMediaService implements MediaService {
         
         const response = await fetch(url, {
           headers: {
-            'apikey': this.ANON_KEY,
+            'apikey': this.apiKey,
             'Content-Type': 'application/json',
             'Prefer': 'count=exact'
             // Explicitly no Authorization header for public access
@@ -353,7 +367,7 @@ export class SupabaseMediaService implements MediaService {
       
       const response = await fetch(url, {
         headers: {
-          'apikey': this.ANON_KEY,
+          'apikey': this.apiKey,
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         }
@@ -378,7 +392,7 @@ export class SupabaseMediaService implements MediaService {
     try {
       const response = await fetch(`${this.API_URL}/media?select=*&id=eq.${id}`, {
         headers: {
-          'apikey': this.ANON_KEY,
+          'apikey': this.apiKey,
           'Content-Type': 'application/json'
           // No Authorization header for public access
         }
@@ -410,7 +424,7 @@ export class SupabaseMediaService implements MediaService {
       const response = await fetch(`${this.API_URL}/media?id=eq.${id}`, {
         method: 'PATCH',
         headers: {
-          'apikey': this.ANON_KEY,
+          'apikey': this.apiKey,
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
           'Prefer': 'return=representation'
@@ -443,7 +457,7 @@ export class SupabaseMediaService implements MediaService {
       const response = await fetch(`${this.API_URL}/media?id=eq.${id}`, {
         method: 'DELETE',
         headers: {
-          'apikey': this.ANON_KEY,
+          'apikey': this.apiKey,
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         }
@@ -491,7 +505,7 @@ export class SupabaseMediaService implements MediaService {
       const url = `${this.API_URL}/media?${queryParams.join('&')}`
       
       const headers: any = {
-        'apikey': this.ANON_KEY,
+        'apikey': this.apiKey,
         'Content-Type': 'application/json'
       }
       

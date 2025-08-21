@@ -23,7 +23,7 @@ class TTSService {
     this.workerUrl = import.meta.env.VITE_TTS_WORKER_URL || 'https://tts.tikoapi.org';
     this.cdnUrl = import.meta.env.VITE_TTS_CDN_URL || 'https://tts.tikocdn.org';
     this.supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-    this.supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+    this.supabaseKey = import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLIC || '';
     this.loadBrowserVoices();
     
     if (!import.meta.env.VITE_TTS_WORKER_URL) {

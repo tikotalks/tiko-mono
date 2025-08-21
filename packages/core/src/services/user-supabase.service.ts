@@ -5,8 +5,22 @@
 import type { UserService, UserProfile, UserStats } from './user.service'
 
 export class SupabaseUserService implements UserService {
-  private readonly API_URL = 'https://kejvhvszhevfwgsztedf.supabase.co/rest/v1'
-  private readonly ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlanZodnN6aGV2Zndnc3p0ZWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4ODg2MTIsImV4cCI6MjA2NzQ2NDYxMn0.xUYXxNodJTpTwChlKbuBSojVJqX9CDW87aVISEUc2rE'
+  private readonly API_URL: string
+  private readonly apiKey: string
+
+  constructor() {
+    const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL
+    if (!supabaseUrl) {
+      throw new Error('VITE_SUPABASE_URL environment variable is required')
+    }
+    this.API_URL = `${supabaseUrl}/rest/v1`
+    
+    // Use public key for browser compatibility
+    this.apiKey = import.meta.env?.VITE_SUPABASE_PUBLIC
+    if (!this.apiKey) {
+      throw new Error('VITE_SUPABASE_PUBLIC environment variable is required')
+    }
+  }
 
   /**
    * Get current session from localStorage
@@ -32,7 +46,7 @@ export class SupabaseUserService implements UserService {
       console.log('[UserService] Fetching all user profiles...')
       const response = await fetch(`${this.API_URL}/user_profiles?select=*&order=created_at.desc`, {
         headers: {
-          'apikey': this.ANON_KEY,
+          'apikey': this.apiKey,
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         }
@@ -80,7 +94,7 @@ export class SupabaseUserService implements UserService {
 
       const response = await fetch(`${this.API_URL}/user_profiles?select=*&user_id=eq.${userId}`, {
         headers: {
-          'apikey': this.ANON_KEY,
+          'apikey': this.apiKey,
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         }
@@ -133,7 +147,7 @@ export class SupabaseUserService implements UserService {
       const response = await fetch(`${this.API_URL}/user_profiles?user_id=eq.${userId}`, {
         method: 'PATCH',
         headers: {
-          'apikey': this.ANON_KEY,
+          'apikey': this.apiKey,
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
           'Prefer': 'return=representation'
@@ -245,7 +259,7 @@ export class SupabaseUserService implements UserService {
       console.log('[UserService] Fetching user profiles for stats...')
       const response = await fetch(`${this.API_URL}/user_profiles?select=id,created_at,is_active,role`, {
         headers: {
-          'apikey': this.ANON_KEY,
+          'apikey': this.apiKey,
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         }
@@ -294,7 +308,7 @@ export class SupabaseUserService implements UserService {
 
       const response = await fetch(`${this.API_URL}/user_profiles?select=*&or=(email.ilike.*${query}*,name.ilike.*${query}*,username.ilike.*${query}*)&order=created_at.desc`, {
         headers: {
-          'apikey': this.ANON_KEY,
+          'apikey': this.apiKey,
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         }
@@ -337,7 +351,7 @@ export class SupabaseUserService implements UserService {
 
       const response = await fetch(`${this.API_URL}/user_profiles?select=*&user_id=in.(${userIds.join(',')})`, {
         headers: {
-          'apikey': this.ANON_KEY,
+          'apikey': this.apiKey,
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         }
@@ -410,7 +424,7 @@ export class SupabaseUserService implements UserService {
 
       const response = await fetch(`${this.API_URL}/user_profiles?select=role,email&user_id=eq.${userId}`, {
         headers: {
-          'apikey': this.ANON_KEY,
+          'apikey': this.apiKey,
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         }

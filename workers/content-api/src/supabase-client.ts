@@ -6,7 +6,7 @@ let supabaseClient: SupabaseClient | null = null;
 export function getSupabaseClient(env: Env): SupabaseClient {
   // Try to access the secrets - they might be empty in debug but work in actual usage
   const url = env.SUPABASE_URL;
-  const key = env.SUPABASE_ANON_KEY;
+  const key = env.SUPABASE_SERVICE_KEY;
   
   if (!url || !key) {
     throw new Error(`Supabase credentials not configured. URL exists: ${!!url}, Key exists: ${!!key}`);

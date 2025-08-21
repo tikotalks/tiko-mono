@@ -21,14 +21,14 @@
     <div v-if="isExpired" :class="bemm('expired')">
       <div :class="bemm('expired-content')">
         <TIcon name="clock" size="4rem" />
-        <h2 :class="bemm('expired-title')">{{ t(keys.timer.timesUp) }}</h2>
+        <h2 :class="bemm('expired-title')">{{ t('timer.timesUp') }}</h2>
         <TButton
           type="default"
           color="primary"
           @click="reset"
           size="large"
         >
-          {{ t(keys.timer.dismiss) }}
+          {{ t('timer.dismiss') }}
         </TButton>
       </div>
     </div>
@@ -48,10 +48,12 @@ import { onMounted, onUnmounted } from 'vue'
 import { useBemm } from 'bemm'
 import { TButton, TIcon, useI18n } from '@tiko/ui'
 import { useTimer } from '../composables/useTimer'
+import { useTimerStore } from '../stores/timer'
 import TimeDisplay from '../components/TimeDisplay.vue'
 
 const bemm = useBemm('timer-view')
 const { t, keys } = useI18n()
+const timerStore = useTimerStore()
 const {
   mode,
   isRunning,
@@ -93,7 +95,11 @@ const handleKeydown = (event: KeyboardEvent) => {
 }
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
+  // Load timer state from storage
+  await timerStore.loadState()
+  
+  // Add keyboard event listener
   document.addEventListener('keydown', handleKeydown)
 })
 

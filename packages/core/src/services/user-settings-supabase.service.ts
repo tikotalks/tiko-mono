@@ -21,8 +21,22 @@ import type { UserSettingsService, UserSettings, UserSettingsResult } from './us
  * Uses direct API calls to bypass the broken Supabase SDK
  */
 export class SupabaseUserSettingsService implements UserSettingsService {
-  private readonly API_URL = 'https://kejvhvszhevfwgsztedf.supabase.co/rest/v1'
-  private readonly ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlanZodnN6aGV2Zndnc3p0ZWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4ODg2MTIsImV4cCI6MjA2NzQ2NDYxMn0.xUYXxNodJTpTwChlKbuBSojVJqX9CDW87aVISEUc2rE'
+  private readonly API_URL: string
+  private readonly apiKey: string
+
+  constructor() {
+    const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL
+    if (!supabaseUrl) {
+      throw new Error('VITE_SUPABASE_URL environment variable is required')
+    }
+    this.API_URL = `${supabaseUrl}/rest/v1`
+    
+    // Use public key for browser compatibility
+    this.apiKey = import.meta.env?.VITE_SUPABASE_PUBLIC
+    if (!this.apiKey) {
+      throw new Error('VITE_SUPABASE_PUBLIC environment variable is required')
+    }
+  }
 
   /**
    * Get current auth token for API calls
@@ -50,7 +64,7 @@ export class SupabaseUserSettingsService implements UserSettingsService {
     const token = await this.getAuthToken()
     
     const headers: HeadersInit = {
-      'apikey': this.ANON_KEY,
+      'apikey': this.apiKey,
       'Content-Type': 'application/json',
       'Prefer': 'return=representation'
     }
