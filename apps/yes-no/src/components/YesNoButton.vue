@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import { useBemm } from 'bemm';
 import { computed, onMounted, PropType, ref } from 'vue';
-import { useImages, useImageUrl } from '@tiko/core';
+import { useImageUrl, useMediaStore } from '@tiko/core';
 import { useI18n } from '@tiko/core';
 
 const bemm = useBemm('yes-no-button');
@@ -40,36 +40,54 @@ const props = defineProps({
   },
 });
 
-const { getImage, loadImages } = useImages(true); // Use public mode for marketing site
 const { getImageVariants } = useImageUrl();
+const mediaStore = useMediaStore();
+
+// Create reactive refs for media items
+const mediaItems = ref<Record<string, any>>({});
 
 const imageUrl = computed(() => {
-  let currentImageData;
-
-  console.log('hi', props.style, props.mode);
+  let currentImageId;
 
   switch (props.style) {
     case 'hands':
-      console.log('doing hands');
-      currentImageData = imageData.hands[props.mode === 0 ? 'no' : 'yes'];
+      currentImageId = imageData.hands[props.mode === 0 ? 'no' : 'yes'];
       break;
     case 'icons':
-      console.log('doing icons');
-      currentImageData = imageData.icons[props.mode === 0 ? 'no' : 'yes'];
+      currentImageId = imageData.icons[props.mode === 0 ? 'no' : 'yes'];
       break;
   }
 
-  if (!!currentImageData) {
-    const img = getImage(currentImageData);
-    if (img) {
-      return getImageVariants(img.original_url).original;
-    }
+  if (currentImageId && mediaItems.value[currentImageId]) {
+    const mediaItem = mediaItems.value[currentImageId];
+    return getImageVariants(mediaItem.original_url).original;
   }
   return null;
 });
 
+// Preload only the required media items on mount
 onMounted(async () => {
-  await loadImages();
+  const requiredMediaIds = [
+    imageData.hands.no,
+    imageData.hands.yes,
+    imageData.icons.no,
+    imageData.icons.yes
+  ];
+  
+  try {
+    // Preload all 4 media items in parallel
+    await mediaStore.preloadMedia(requiredMediaIds);
+    
+    // Get the media items from the store cache
+    for (const id of requiredMediaIds) {
+      const mediaItem = await mediaStore.getMediaItem(id);
+      if (mediaItem) {
+        mediaItems.value[id] = mediaItem;
+      }
+    }
+  } catch (error) {
+    console.error('[YesNoButton] Failed to load media items:', error);
+  }
 });
 
 const imageData = {
