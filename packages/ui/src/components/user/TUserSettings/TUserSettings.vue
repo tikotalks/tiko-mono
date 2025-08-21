@@ -56,14 +56,13 @@ import type { TUserSettingsProps, TUserSettingsEmits, UserSettings } from './TUs
 
 import type { PopupService } from '../../feedback/TPopup/TPopup.service'
 import type { ToastService } from '../../feedback/TToast/TToast.service'
-import type { Locale } from '../../i18n/types'
 import { Icons } from 'open-icon'
 
 const props = defineProps<TUserSettingsProps>()
 const emit = defineEmits<TUserSettingsEmits>()
 
 const bemm = useBemm('user-settings')
-const { t, keys, locale, availableLocales } = useI18n()
+const { t, keys, locale, availableLocales, setLocale } = useI18n()
 const authStore = useAuthStore()
 const { userSettings } = storeToRefs(authStore)
 
@@ -88,10 +87,10 @@ const themeOptions = computed(() => [
 
 // Computed
 const currentLanguageDisplay = computed(() => {
-  const currentLocale = formData.value?.language as Locale
+  const currentLocale = formData.value?.language
   if (!currentLocale) return locale.value || 'en-US'
-  const localeInfo = availableLocales.value.find(l => l.code === currentLocale)
-  return localeInfo ? `${localeInfo.name} (${currentLocale})` : currentLocale
+  const localeInfo = availableLocales.value.find(l => l === currentLocale)
+  return localeInfo ? `${localeInfo} (${currentLocale})` : currentLocale
 })
 
 // Watch for changes in user settings to update form data
@@ -143,7 +142,7 @@ const handleSave = async () => {
 
     // Update the i18n locale if language changed
     if (formData.value.language !== locale.value) {
-      locale.value = formData.value.language
+      await setLocale(formData.value.language)
     }
 
     // Apply theme to document

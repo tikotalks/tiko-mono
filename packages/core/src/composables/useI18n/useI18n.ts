@@ -28,7 +28,6 @@ export function useI18n(options: I18nOptions = {}) {
   // // Initialize store immediately if not already initialized
   // // This ensures the store is ready when the composable is first used
   if (!store.isReady && !store.isLoading) {
-    alert('hi')
     store.initialize(options)
   }
 

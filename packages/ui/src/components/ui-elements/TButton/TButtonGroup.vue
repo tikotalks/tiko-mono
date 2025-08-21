@@ -42,6 +42,7 @@ const modifiers = computed(() => ({
 
   &--fluid {
     width: 100%;
+    gap: 0;
 
     .button {
       --border-radius: 0;
@@ -56,23 +57,23 @@ const modifiers = computed(() => ({
   }
 
   &--gap-xs {
-    gap: var(--space-xs);
+    --button-group-gap:  var(--space-xs);
   }
 
   &--gap-s {
-    gap: var(--space-s);
+    --button-group-gap:  var(--space-s);
   }
 
   &--gap-m {
-    gap: var(--space);
+    --button-group-gap: var(--space);
   }
 
   &--gap-lg {
-    gap: var(--space-lg);
+    --button-group-gap:  var(--space-lg);
   }
 
   &--gap-xl {
-    gap: var(--space-xl);
+    --button-group-gap:  var(--space-xl);
   }
 
   .button {
