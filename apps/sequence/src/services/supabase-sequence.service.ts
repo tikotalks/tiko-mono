@@ -1,8 +1,8 @@
-import { useAuthStore } from '@tiko/core';
+// Import removed - useAuthStore not used in this service
 import type { ItemTranslation } from '../models/ItemTranslation.model';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLIC;
 
 interface CardItem {
   id: string;
@@ -83,10 +83,24 @@ class SequenceSupabaseService {
       params.append('type', 'eq.sequence');
       params.append('or', `(user_id.eq.${userId},and(is_curated.eq.true,is_public.eq.true,user_id.neq.${userId}))`);
     } else {
-      // For children, we need to get items regardless of owner (for curated sequences)
+      // For children, first check if the parent is accessible
+      // If the parent is owned by user or is curated, load ALL its children
+      const parentCard = await this.getCard(parentId);
+      if (!parentCard) {
+        console.warn(`[getSequence] Parent ${parentId} not found`);
+        return [];
+      }
+      
+      const isParentAccessible = parentCard.user_id === userId || parentCard.is_curated === true;
+      if (!isParentAccessible) {
+        console.warn(`[getSequence] User ${userId} doesn't have access to parent ${parentId}`);
+        return [];
+      }
+      
+      // Parent is accessible, so load all its children without filters
       params.append('parent_id', `eq.${parentId}`);
-      // For curated sequences, only load public children that other users can see
-      params.append('or', `(user_id.eq.${userId},is_public.eq.true)`);
+      // Don't filter by ownership or public status for children
+      // If the parent is accessible (curated or owned), all its children should be accessible
     }
 
     // Use correct PostgREST syntax for ordering
@@ -403,7 +417,8 @@ class SequenceSupabaseService {
         const childParams = new URLSearchParams();
         childParams.append('app_name', 'eq.sequence');
         childParams.append('parent_id', `eq.${curatedSeq.id}`);
-        childParams.append('is_public', 'eq.true'); // Only load public children for curated sequences
+        // Remove the is_public filter - load ALL children of curated sequences
+        // The parent sequence being curated is enough permission
         childParams.append('order', 'order_index.asc');
 
         const children = await this.apiRequest<CardItem[]>(`items?${childParams.toString()}`);
