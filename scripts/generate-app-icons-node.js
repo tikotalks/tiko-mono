@@ -294,14 +294,14 @@ async function resolveImageUrl(imageId) {
   // If it's a UUID, fetch the media entry from Supabase
   if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(imageId)) {
     const API_URL = 'https://kejvhvszhevfwgsztedf.supabase.co/rest/v1';
-    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlanZodnN6aGV2Zndnc3p0ZWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4ODg2MTIsImV4cCI6MjA2NzQ2NDYxMn0.xUYXxNodJTpTwChlKbuBSojVJqX9CDW87aVISEUc2rE';
+    const PUBLISHABLE_KEY = 'sb_publishable_fk77WDXOflYEwFkLf4Hlig_v2hlbbAG';
     
     try {
       console.log(`  Fetching media info for UUID: ${imageId}`);
       
       const response = await fetch(`${API_URL}/media?select=*&id=eq.${imageId}`, {
         headers: {
-          'apikey': ANON_KEY,
+          'apikey': PUBLISHABLE_KEY,
           'Content-Type': 'application/json'
         }
       });

@@ -79,8 +79,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive, watch, toRefs, inject } from 'vue';
 import { useBemm } from 'bemm';
-import { TButton, TIcon, TAppLayout, useI18n, useParentMode, useTextToSpeech } from '@tiko/ui';
-import { useSpeak } from '@tiko/core';
+import { TButton, TIcon, TAppLayout, useParentMode } from '@tiko/ui';
+import { useSpeak, useI18n, useTextToSpeech } from '@tiko/core';
 import { Icons } from 'open-icon';
 import { useYesNoStore } from '../stores/yesno';
 import YesNoSettingsForm from '../components/YesNoSettingsForm.vue';

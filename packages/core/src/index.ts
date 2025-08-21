@@ -48,6 +48,9 @@ export { usePlaySound, SOUNDS } from './composables/usePlaySound'
 export type { PlaySoundOptions, UsePlaySoundReturn, SoundId } from './composables/usePlaySound'
 export { useImageResolver } from './composables/useImageResolver'
 export type { MediaType, ResolveImageOptions, ResolvedImage } from './composables/useImageResolver'
+export { useI18n, cleanupI18n, createScopedT } from './composables/useI18n'
+export { useTextToSpeech } from './composables/useTextToSpeech'
+export type { TextToSpeechOptions } from './composables/useTextToSpeech'
 
 // Constants
 export * from './constants'

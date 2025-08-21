@@ -1,5 +1,5 @@
 import { ref, onUnmounted, computed } from 'vue';
-import { useTextToSpeech } from '@tiko/ui';
+import { useTextToSpeech } from './useTextToSpeech';
 import { ttsService } from '../services/tts/tts.service';
 import { useAuthStore } from '../stores/auth';
 import type { AudioMetadata } from '../services/tts/types';

@@ -4,7 +4,7 @@
  * This service should be used by all Tiko apps
  */
 
-import { useI18n } from '@tiko/ui';
+import { useI18n } from '../composables/useI18n';
 
 // Default locale - can be overridden by user preferences
 const DEFAULT_LOCALE = 'en-GB';

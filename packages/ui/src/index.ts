@@ -117,7 +117,6 @@ export { default as TI18nDebug } from './components/dev-tools/TI18nDebug/TI18nDe
 export type { TI18nDebugProps } from './components/dev-tools/TI18nDebug/TI18nDebug.model'
 
 // Composables
-export { useI18n } from './composables/useI18n'
 export { i18nDevtoolsPlugin, useI18nDevtools } from './composables/useI18nDevtools'
 export { initializeDatabaseKeys, getDatabaseKeys, databaseKeys } from './i18n/database-keys'
 export type { TranslationKey } from './i18n/types'
@@ -127,7 +126,6 @@ export { useI18nStore } from './stores/i18n.store'
 export type { I18nState } from './stores/i18n.store'
 export { useParentModeStore } from './stores/parentMode'
 export { useEventBus, createEventBus } from '@tiko/core'
-export { useTextToSpeech } from './composables/useTextToSpeech'
 export type {
   EventMap,
   EventHandler,

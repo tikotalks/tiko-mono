@@ -96,12 +96,11 @@ import {
   TColorPicker,
   BaseColors,
   useParentMode,
-  useTextToSpeech,
   type PopupAction,
   popupRefs,
   Status,
 } from '@tiko/ui';
-import { useI18n } from '@tiko/ui';
+import { useI18n } from '@tiko/core';
 import { useSequenceStore } from '../stores/sequence';
 import SequenceSettingsForm from '../components/SequenceSettingsForm.vue';
 import { TCardGrid } from '@tiko/ui';
@@ -112,7 +111,7 @@ import AddSequenceModal from '../components/AddSequenceModal.vue';
 import SequencePlay from '../components/SequencePlay.vue';
 import type { TCardTile } from '@tiko/ui';
 import { useEditMode } from '../composables/useEditMode';
-import { useSpeak, useEventBus, useAuthStore } from '@tiko/core';
+import { useSpeak, useEventBus, useAuthStore, useTextToSpeech } from '@tiko/core';
 import { sequenceService } from '../services/sequence.service';
 import { ItemTranslationService } from '../services/item-translation.service';
 import type { ItemTranslation } from '../models/ItemTranslation.model';

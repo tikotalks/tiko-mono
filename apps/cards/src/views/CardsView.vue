@@ -179,9 +179,8 @@ import {
   TContextMenu,
   BaseColors,
   useParentMode,
-  useTextToSpeech,
 } from '@tiko/ui';
-import { useI18n } from '@tiko/ui';
+import { useI18n } from '@tiko/core';
 import { useCardStore } from '../stores/cards';
 import CardsSettingsForm from '../components/CardsSettingsForm.vue';
 import { TCardGrid, TCardGhostTile } from '@tiko/ui';
@@ -190,7 +189,7 @@ import GroupSelector from '../components/GroupSelector.vue';
 import BulkCardCreator from '../components/BulkCardCreator.vue';
 import AddCardsModal from '../components/AddCardsModal.vue';
 import { useEditMode } from '../composables/useEditMode';
-import { useSpeak, useEventBus, useAuthStore } from '@tiko/core';
+import { useSpeak, useEventBus, useAuthStore, useTextToSpeech } from '@tiko/core';
 import { cardsService } from '../services/cards.service';
 import { ItemTranslationService } from '../services/item-translation.service';
 import type { ItemTranslation } from '../models/ItemTranslation.model';
