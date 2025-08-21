@@ -169,8 +169,41 @@ jobs:
           # No additional secrets needed for project names
           echo "✅ Cloudflare Pages will use git repository structure"
 
-  deploy-timer:
+  generate-translations:
     needs: [check-triggers, check-environment]
+    if: needs.check-triggers.outputs.build-timer == 'true' || needs.check-triggers.outputs.build-yes-no == 'true' || needs.check-triggers.outputs.build-cards == 'true' || needs.check-triggers.outputs.build-sequence == 'true' || needs.check-triggers.outputs.build-radio == 'true' || needs.check-triggers.outputs.build-todo == 'true' || needs.check-triggers.outputs.build-type == 'true'
+    runs-on: ubuntu-latest
+    name: Generate Translations
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Download translation files
+        uses: actions/download-artifact@v4
+        with:
+          name: i18n-translations
+          path: packages/core/src/i18n/generated/
+
+      - name: Upload translation files
+        uses: actions/upload-artifact@v4
+        with:
+          name: i18n-translations
+          path: packages/core/src/i18n/generated/
+          retention-days: 1
+
+  deploy-timer:
+    needs: [check-triggers, check-environment, generate-translations]
     if: needs.check-triggers.outputs.build-timer == 'true'
     runs-on: ubuntu-latest
     name: Deploy Timer App
@@ -189,11 +222,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Generate i18n translations
-        run: pnpm generate:i18n:worker:prod
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      - name: Download translation files
+        uses: actions/download-artifact@v4
+        with:
+          name: i18n-translations
+          path: packages/core/src/i18n/generated/
 
       - name: Build Timer app
         run: |
@@ -219,7 +252,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: dc2b7d14a69351375cab6de9a13ddee9
 
   deploy-yes-no:
-    needs: [check-triggers, check-environment]
+    needs: [check-triggers, check-environment, generate-translations]
     if: needs.check-triggers.outputs.build-yes-no == 'true'
     runs-on: ubuntu-latest
     name: Deploy Yes-No App
@@ -238,11 +271,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Generate i18n translations
-        run: pnpm generate:i18n:worker:prod
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      - name: Download translation files
+        uses: actions/download-artifact@v4
+        with:
+          name: i18n-translations
+          path: packages/core/src/i18n/generated/
 
       - name: Build Yes-No app
         run: |
@@ -268,7 +301,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: dc2b7d14a69351375cab6de9a13ddee9
 
   deploy-cards:
-    needs: [check-triggers, check-environment]
+    needs: [check-triggers, check-environment, generate-translations]
     if: needs.check-triggers.outputs.build-cards == 'true'
     runs-on: ubuntu-latest
     name: Deploy Cards App
@@ -287,11 +320,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Generate i18n translations
-        run: pnpm generate:i18n:worker:prod
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      - name: Download translation files
+        uses: actions/download-artifact@v4
+        with:
+          name: i18n-translations
+          path: packages/core/src/i18n/generated/
 
       - name: Build Cards app
         run: |
@@ -317,7 +350,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: dc2b7d14a69351375cab6de9a13ddee9
 
   deploy-radio:
-    needs: [check-triggers, check-environment]
+    needs: [check-triggers, check-environment, generate-translations]
     if: needs.check-triggers.outputs.build-radio == 'true'
     runs-on: ubuntu-latest
     name: Deploy Radio App
@@ -336,11 +369,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Generate i18n translations
-        run: pnpm generate:i18n:worker:prod
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      - name: Download translation files
+        uses: actions/download-artifact@v4
+        with:
+          name: i18n-translations
+          path: packages/core/src/i18n/generated/
 
       - name: Build Radio app
         run: |
@@ -366,7 +399,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: dc2b7d14a69351375cab6de9a13ddee9
 
   deploy-todo:
-    needs: [check-triggers, check-environment]
+    needs: [check-triggers, check-environment, generate-translations]
     if: needs.check-triggers.outputs.build-todo == 'true'
     runs-on: ubuntu-latest
     name: Deploy Todo App
@@ -385,11 +418,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Generate i18n translations
-        run: pnpm generate:i18n:worker:prod
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      - name: Download translation files
+        uses: actions/download-artifact@v4
+        with:
+          name: i18n-translations
+          path: packages/core/src/i18n/generated/
 
       - name: Build Todo app
         run: |
@@ -415,7 +448,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
   deploy-type:
-    needs: [check-triggers, check-environment]
+    needs: [check-triggers, check-environment, generate-translations]
     if: needs.check-triggers.outputs.build-type == 'true'
     runs-on: ubuntu-latest
     name: Deploy Type App
@@ -434,11 +467,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Generate i18n translations
-        run: pnpm generate:i18n:worker:prod
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      - name: Download translation files
+        uses: actions/download-artifact@v4
+        with:
+          name: i18n-translations
+          path: packages/core/src/i18n/generated/
 
       - name: Build Type app
         run: |
@@ -464,7 +497,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: dc2b7d14a69351375cab6de9a13ddee9
 
   deploy-sequence:
-    needs: [check-triggers, check-environment]
+    needs: [check-triggers, check-environment, generate-translations]
     if: needs.check-triggers.outputs.build-sequence == 'true'
     runs-on: ubuntu-latest
     name: Deploy Sequence App
@@ -483,11 +516,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Generate i18n translations
-        run: pnpm generate:i18n:worker:prod
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      - name: Download translation files
+        uses: actions/download-artifact@v4
+        with:
+          name: i18n-translations
+          path: packages/core/src/i18n/generated/
 
       - name: Build Sequence app
         run: |
