@@ -18,7 +18,7 @@ const DEFAULT_CONFIG = {
     development: 'http://localhost:8787',
     production: 'https://i18n-data.silvandiepen.workers.dev'
   },
-  outputDir: '../packages/ui/src/i18n/generated',
+  outputDir: '../packages/core/src/i18n/generated',
   environment: 'production', // Default to production for builds
   app: null // Optional app filter
 }
