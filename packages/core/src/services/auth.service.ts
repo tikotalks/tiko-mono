@@ -280,8 +280,27 @@ export interface AuthService {
  * This bypasses the broken Supabase SDK and manages sessions manually
  */
 export class ManualAuthService implements AuthService {
-  private readonly API_URL = 'https://kejvhvszhevfwgsztedf.supabase.co/auth/v1'
-  private readonly ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlanZodnN6aGV2Zndnc3p0ZWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4ODg2MTIsImV4cCI6MjA2NzQ2NDYxMn0.xUYXxNodJTpTwChlKbuBSojVJqX9CDW87aVISEUc2rE'
+  private readonly API_URL: string
+  private readonly API_KEY: string
+
+  constructor() {
+    const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL
+    const supabaseSecretKey = import.meta.env?.VITE_SUPABASE_SECRET
+    const supabasePublishableKey = import.meta.env?.VITE_SUPABASE_PUBLIC
+
+    if (!supabaseUrl) {
+      throw new Error('Missing required Supabase environment variable: VITE_SUPABASE_URL')
+    }
+
+    // Use only publishable key for browser environment
+    const apiKey = supabasePublishableKey
+    if (!apiKey) {
+      throw new Error('Missing required Supabase environment variable: VITE_SUPABASE_PUBLIC')
+    }
+
+    this.API_URL = `${supabaseUrl}/auth/v1`
+    this.API_KEY = apiKey
+  }
 
   async signInWithEmail(email: string, password: string): Promise<AuthResult> {
     try {
@@ -289,7 +308,7 @@ export class ManualAuthService implements AuthService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': this.ANON_KEY
+          'apikey': this.API_KEY
         },
         body: JSON.stringify({
           email,
@@ -318,15 +337,13 @@ export class ManualAuthService implements AuthService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': this.ANON_KEY
+          'apikey': this.API_KEY
         },
         body: JSON.stringify({
           email,
           password,
           data: fullName ? { full_name: fullName } : undefined,
-          options: {
-            emailRedirectTo: this.getAuthRedirectUrl()
-          }
+          emailRedirectTo: this.getAuthRedirectUrl()
         })
       })
 
@@ -351,9 +368,7 @@ export class ManualAuthService implements AuthService {
         email,
         create_user: true,
         data: fullName ? { full_name: fullName } : undefined,
-        options: {
-          emailRedirectTo: this.getAuthRedirectUrl()
-        }
+        emailRedirectTo: this.getAuthRedirectUrl()
       }
       
       console.log('[AuthService] Sending POST request to:', url)
@@ -363,7 +378,7 @@ export class ManualAuthService implements AuthService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': this.ANON_KEY
+          'apikey': this.API_KEY
         },
         body: JSON.stringify(body)
       })
@@ -400,7 +415,7 @@ export class ManualAuthService implements AuthService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': this.ANON_KEY
+          'apikey': this.API_KEY
         },
         body: JSON.stringify(body)
       })
@@ -466,7 +481,7 @@ export class ManualAuthService implements AuthService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': this.ANON_KEY
+          'apikey': this.API_KEY
         },
         body: JSON.stringify({
           type: 'email',
@@ -573,7 +588,7 @@ export class ManualAuthService implements AuthService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': this.ANON_KEY
+          'apikey': this.API_KEY
         },
         body: JSON.stringify({
           refresh_token: refreshToken
@@ -606,7 +621,7 @@ export class ManualAuthService implements AuthService {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': this.ANON_KEY,
+          'apikey': this.API_KEY,
           'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify(updates)
@@ -635,7 +650,7 @@ export class ManualAuthService implements AuthService {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': this.ANON_KEY,
+          'apikey': this.API_KEY,
           'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
@@ -689,7 +704,7 @@ export class ManualAuthService implements AuthService {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'apikey': this.ANON_KEY,
+            'apikey': this.API_KEY,
             'Authorization': `Bearer ${session.access_token}`
           },
           body: JSON.stringify({
@@ -785,12 +800,13 @@ export class ManualAuthService implements AuthService {
       if (!session) return null
       
       // Use RPC function to get current user's role
+      const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL
       const response = await fetch(
-        'https://kejvhvszhevfwgsztedf.supabase.co/rest/v1/rpc/get_my_role',
+        `${supabaseUrl}/rest/v1/rpc/get_my_role`,
         {
           method: 'POST',
           headers: {
-            'apikey': this.ANON_KEY,
+            'apikey': this.API_KEY,
             'Authorization': `Bearer ${session.access_token}`,
             'Content-Type': 'application/json',
             'Prefer': 'return=representation'
@@ -845,7 +861,7 @@ export class ManualAuthService implements AuthService {
       const response = await fetch(`${this.API_URL}/user`, {
         method: 'GET',
         headers: {
-          'apikey': this.ANON_KEY,
+          'apikey': this.API_KEY,
           'Authorization': `Bearer ${session.access_token}`
         }
       })

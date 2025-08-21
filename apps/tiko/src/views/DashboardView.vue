@@ -1,242 +1,289 @@
 <template>
-  <div :class="bemm()">
-    <div :class="bemm('header')">
-      <h1 :class="bemm('title')">{{ t(keys.tiko.welcome) }}</h1>
-      <p :class="bemm('subtitle')">{{ t(keys.tiko.selectApp) }}</p>
-    </div>
+  <TAppLayout 
+    :title="t('dashboard.title')" 
+    :show-header="true" 
+    app-name="tiko" 
+    @profile="handleProfile"
+    @settings="handleSettings" 
+    @logout="handleLogout"
+  >
+    <template #app-controls>
+      <!-- Login/Logout button -->
+      <TButton 
+        v-if="!isAuthenticated"
+        :icon="Icons.USER" 
+        type="outline" 
+        color="primary"
+        @click="handleLogin"
+        :aria-label="t('auth.signIn')"
+      >
+        {{ t('auth.signIn') }}
+      </TButton>
+    </template>
 
-    <TDraggableList
-      :items="availableApps"
-      :enabled="true"
-      :on-reorder="handleReorder"
-      :class="bemm('apps-list')"
-    >
-      <template #default="{ item: app }">
-        <AppTile
-          :app="app"
-          @click="handleAppClick(app)"
-        />
-      </template>
-    </TDraggableList>
+    <div :class="bemm('container')">
+      <!-- Welcome Section -->
+      <div :class="bemm('welcome')" v-if="isAuthenticated">
+        <h1 :class="bemm('welcome-title')">{{ t('dashboard.welcome', { name: userName }) }}</h1>
+        <p :class="bemm('welcome-subtitle')">{{ t('dashboard.chooseApp') }}</p>
+      </div>
+      
+      <div :class="bemm('welcome')" v-else>
+        <h1 :class="bemm('welcome-title')">{{ t('dashboard.welcomeGuest') }}</h1>
+        <p :class="bemm('welcome-subtitle')">{{ t('dashboard.signInForBest') }}</p>
+      </div>
 
-    <div v-if="unavailableApps.length > 0" :class="bemm('unavailable-section')">
-      <h2 :class="bemm('section-title')">{{ t(keys.tiko.moreApps) }}</h2>
-      <div :class="bemm('apps-grid')">
-        <AppTile
-          v-for="app in unavailableApps"
-          :key="app.id"
-          :app="app"
-          :disabled="true"
-          @click="handleUnavailableAppClick(app)"
+      <!-- App Grid -->
+      <div :class="bemm('apps-section')">
+        <TCardGrid 
+          :cards="appCards" 
+          :show-arrows="false" 
+          :edit-mode="false"
+          :is-loading="isLoading"
+          @card-click="handleAppClick"
         />
       </div>
+
+      <!-- SSO Section for authenticated users -->
+      <div :class="bemm('sso-section')" v-if="isAuthenticated">
+        <h2 :class="bemm('section-title')">{{ t('dashboard.ssoTitle') }}</h2>
+        <p :class="bemm('section-subtitle')">{{ t('dashboard.ssoDescription') }}</p>
+      </div>
     </div>
-  </div>
+  </TAppLayout>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useBemm } from 'bemm'
-import { useI18n, TDraggableList } from '@tiko/ui'
-import AppTile from '../components/AppTile.vue'
-import type { TikoApp } from '../types/tiko.types'
+import { ref, computed, onMounted, watch } from 'vue';
+import { useBemm } from 'bemm';
+import { useRouter, useRoute } from 'vue-router';
+import {
+  TButton,
+  TAppLayout,
+  TCardGrid,
+  type TCardTile
+} from '@tiko/ui';
+import { useI18n } from '@tiko/ui';
+import { useAuthStore } from '@tiko/core';
+import { Icons } from 'open-icon';
+import { appsService } from '../services/apps.service';
+import { ssoService } from '../services/sso.service';
 
-// Import app icons
-import appIconTodo from '../assets/app-icon-todo.png'
-import appIconTimer from '../assets/app-icon-timer.png'
-import appIconCards from '../assets/app-icon-cards.png'
-import appIconRadio from '../assets/app-icon-radio.png'
-import appIconType from '../assets/app-icon-type.png'
-import appIconYesNo from '../assets/app-icon-yes-no.png'
+const bemm = useBemm('dashboard-view');
+const router = useRouter();
+const route = useRoute();
+const authStore = useAuthStore();
+const { t } = useI18n();
 
-const bemm = useBemm('dashboard-view')
-const { t, keys } = useI18n()
+// Reactive state
+const isLoading = ref(false);
+const appCards = ref<TCardTile[]>([]);
 
-// Define available apps with proper URLs and icons
-const allApps = ref<TikoApp[]>([
-  {
-    id: 'todo',
-    name: 'Todo',
-    description: 'Visual todo list app with groups and items',
-    icon: 'check-list',
-    iconImage: appIconTodo,
-    color: 'blue',
-    url: 'https://todo.tiko.mt',
-    installed: true,
-    order: 1
-  },
-  {
-    id: 'timer',
-    name: 'Timer',
-    description: 'Count up and count down timer',
-    icon: 'clock',
-    iconImage: appIconTimer,
-    color: 'green',
-    url: 'https://timer.tiko.mt',
-    installed: true,
-    order: 2
-  },
-  {
-    id: 'cards',
-    name: 'Cards',
-    description: 'Communication cards for AAC',
-    icon: 'cards',
-    iconImage: appIconCards,
-    color: 'orange',
-    url: 'https://cards.tiko.mt',
-    installed: true,
-    order: 3
-  },
-  {
-    id: 'radio',
-    name: 'Radio',
-    description: 'Audio streaming and podcast player',
-    icon: 'radio',
-    iconImage: appIconRadio,
-    color: 'red',
-    url: 'https://radio.tiko.mt',
-    installed: true,
-    order: 4
-  },
-  {
-    id: 'type',
-    name: 'Type',
-    description: 'Text to speech typing app',
-    icon: 'keyboard',
-    iconImage: appIconType,
-    color: 'purple',
-    url: 'https://type.tiko.mt',
-    installed: true,
-    order: 5
-  },
-  {
-    id: 'yesno',
-    name: 'Yes/No',
-    description: 'Simple yes or no decision maker',
-    icon: 'question',
-    iconImage: appIconYesNo,
-    color: 'cyan',
-    url: 'https://yes-no.tiko.mt',
-    installed: true,
-    order: 6
+// Computed properties
+const isAuthenticated = computed(() => authStore.isAuthenticated);
+const userName = computed(() => {
+  const user = authStore.user;
+  if (user?.user_metadata?.full_name) {
+    return user.user_metadata.full_name;
   }
-])
-
-// Filter apps by availability and sort by order
-const availableApps = computed(() => 
-  allApps.value
-    .filter(app => app.installed)
-    .sort((a, b) => a.order - b.order)
-)
-const unavailableApps = computed(() => allApps.value.filter(app => !app.installed))
-
-// Handle app click
-const handleAppClick = (app: TikoApp) => {
-  if (app.installed && app.url) {
-    // Open the app URL in a new tab/window
-    window.open(app.url, '_blank')
+  if (user?.email) {
+    return user.email.split('@')[0];
   }
-}
+  return t('common.user');
+});
 
-// Handle unavailable app click (would link to app store in mobile)
-const handleUnavailableAppClick = (app: TikoApp) => {
-  console.log(`App ${app.name} is not installed. Would link to app store.`)
-  // In a real implementation, this would link to the app store
-}
+// Event handlers
+const handleProfile = () => {
+  console.log('Profile clicked');
+};
 
-// Handle reordering of apps
-const handleReorder = (reorderedApps: TikoApp[]) => {
-  // Update the order based on new positions
-  reorderedApps.forEach((app, index) => {
-    const originalApp = allApps.value.find(a => a.id === app.id)
-    if (originalApp) {
-      originalApp.order = index + 1
-    }
-  })
-  
-  // Optionally save the new order to localStorage or backend
-  localStorage.setItem('tikoAppOrder', JSON.stringify(
-    allApps.value.map(app => ({ id: app.id, order: app.order }))
-  ))
-}
+const handleSettings = () => {
+  console.log('Settings clicked');
+};
 
-// Load saved app order on component mount
-const loadSavedOrder = () => {
-  const savedOrder = localStorage.getItem('tikoAppOrder')
-  if (savedOrder) {
+const handleLogout = () => {
+  console.log('User logged out');
+};
+
+const handleLogin = () => {
+  // Navigate to login or open login modal
+  console.log('Login clicked');
+};
+
+const handleAppClick = async (card: TCardTile) => {
+  if (card.url) {
     try {
-      const orderData: { id: string; order: number }[] = JSON.parse(savedOrder)
-      orderData.forEach(({ id, order }) => {
-        const app = allApps.value.find(a => a.id === id)
-        if (app) {
-          app.order = order
-        }
-      })
+      // Get the full app data for SSO URL generation
+      const app = await appsService.getApp(card.id);
+      if (!app) {
+        window.location.href = card.url;
+        return;
+      }
+
+      // Generate SSO URL with token if authenticated
+      const ssoUrl = appsService.generateSSOUrl(
+        app, 
+        isAuthenticated.value ? authStore.session?.access_token : undefined
+      );
+      
+      window.location.href = ssoUrl;
     } catch (error) {
-      console.error('Failed to load app order:', error)
+      console.error('Failed to navigate to app:', error);
+      // Fallback to direct navigation
+      window.location.href = card.url;
     }
   }
-}
+};
 
-// Load saved order on mount
-loadSavedOrder()
+// Data loading
+const loadApps = async () => {
+  isLoading.value = true;
+  
+  try {
+    // Load apps from the apps service
+    appCards.value = await appsService.getAppsAsCards();
+  } catch (error) {
+    console.error('Failed to load apps:', error);
+    appCards.value = [];
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// SSO handling
+const handleSSORequest = async () => {
+  const requestId = route.query.request_id as string;
+  const appId = route.query.app_id as string;
+  const returnUrl = route.query.return_url as string;
+
+  if (requestId && appId && returnUrl) {
+    try {
+      const ssoResponse = await ssoService.handleSSORequest(requestId, appId, returnUrl);
+      
+      if (ssoResponse.success) {
+        // User is authenticated, redirect back with tokens
+        const redirectUrl = new URL(returnUrl);
+        redirectUrl.searchParams.set('sso_token', ssoResponse.accessToken!);
+        if (ssoResponse.refreshToken) {
+          redirectUrl.searchParams.set('sso_refresh_token', ssoResponse.refreshToken);
+        }
+        redirectUrl.searchParams.set('sso_request_id', requestId);
+        redirectUrl.searchParams.set('sso_success', 'true');
+        
+        window.location.href = redirectUrl.toString();
+        return;
+      } else if (ssoResponse.error === 'Authentication required') {
+        // User needs to login, SSO request is stored for later
+        console.log('User needs to authenticate for SSO');
+        // The SSO request is now stored in sessionStorage
+        // After successful login, completeSSOFlow will be called
+      }
+    } catch (error) {
+      console.error('SSO request handling failed:', error);
+    }
+  }
+};
+
+// Watch for authentication changes to complete SSO flow
+watch(
+  () => authStore.isAuthenticated,
+  async (isAuthenticated) => {
+    if (isAuthenticated) {
+      // Try to complete any pending SSO flow
+      const completed = await ssoService.completeSSOFlow();
+      if (completed) {
+        console.log('SSO flow completed successfully');
+        // The page will redirect, so we don't need to do anything else
+      }
+    }
+  }
+);
+
+// Initialize
+onMounted(async () => {
+  await loadApps();
+  
+  // Handle SSO request if present
+  if (route.path === '/sso' || route.query.request_id) {
+    await handleSSORequest();
+  }
+});
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .dashboard-view {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xl);
-  padding: var(--space);
-
-  &__header {
-    text-align: center;
+  &__container {
+    padding: var(--space);
+    max-width: 1200px;
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: var(--space-xs);
+    gap: var(--space-xl);
   }
 
-  &__title {
-    font-size: 2em;
-    font-weight: 600;
-    color: var(--color-foreground);
-    margin: 0;
+  &__welcome {
+    text-align: center;
+    padding: var(--space-xl) 0;
   }
 
-  &__subtitle {
-    font-size: 1.2em;
-    color: var(--color-foreground-muted);
-    margin: 0;
+  &__welcome-title {
+    font-size: var(--font-size-xxl);
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: var(--space);
   }
 
-  &__apps-list {
-    max-width: 600px;
-    margin: 0 auto;
+  &__welcome-subtitle {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-muted);
+    font-weight: 400;
+  }
+
+  &__apps-section {
     width: 100%;
   }
 
-  &__apps-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--space);
-    
-    @media (max-width: 768px) {
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    }
-  }
-
-  &__unavailable-section {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space);
+  &__sso-section {
+    background: var(--color-background-secondary);
+    border: 2px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: var(--space-xl);
+    text-align: center;
   }
 
   &__section-title {
-    font-size: 1.5em;
+    font-size: var(--font-size-xl);
     font-weight: 600;
-    color: var(--color-foreground);
-    margin: 0;
-    text-align: center;
+    color: var(--color-text);
+    margin-bottom: var(--space);
+  }
+
+  &__section-subtitle {
+    font-size: var(--font-size);
+    color: var(--color-text-muted);
+    font-weight: 400;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .dashboard-view {
+    &__container {
+      padding: var(--space);
+      gap: var(--space-lg);
+    }
+
+    &__welcome {
+      padding: var(--space-lg) 0;
+    }
+
+    &__welcome-title {
+      font-size: var(--font-size-xl);
+    }
+
+    &__welcome-subtitle {
+      font-size: var(--font-size);
+    }
   }
 }
 </style>

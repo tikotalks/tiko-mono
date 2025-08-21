@@ -222,6 +222,64 @@ const handleSplashComplete = () => {
   // The splash screen will automatically hide when isInitializing becomes false
 };
 
+// Handle SSO callback from Tiko dashboard
+const handleSSOCallback = async (urlParams: URLSearchParams) => {
+  const ssoToken = urlParams.get('sso_token');
+  const ssoRefreshToken = urlParams.get('sso_refresh_token');
+  const ssoRequestId = urlParams.get('sso_request_id');
+  
+  if (!ssoToken) {
+    throw new Error('No SSO token provided');
+  }
+  
+  // Validate the stored request
+  const storedRequest = localStorage.getItem('tiko_sso_request');
+  if (!storedRequest) {
+    throw new Error('No SSO request found');
+  }
+  
+  const request = JSON.parse(storedRequest);
+  
+  // Validate request ID matches
+  if (request.requestId !== ssoRequestId) {
+    throw new Error('SSO request ID mismatch');
+  }
+  
+  // Check request age (should be within 10 minutes)
+  const requestAge = Date.now() - request.timestamp;
+  if (requestAge > 10 * 60 * 1000) {
+    localStorage.removeItem('tiko_sso_request');
+    throw new Error('SSO request expired');
+  }
+  
+  // Clean up stored request
+  localStorage.removeItem('tiko_sso_request');
+  
+  // Create a session object that matches the expected format
+  const session = {
+    access_token: ssoToken,
+    refresh_token: ssoRefreshToken,
+    expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour from now
+    token_type: 'bearer',
+    user: null // Will be populated by auth service
+  };
+  
+  // Store the session in localStorage (this matches how the auth service stores sessions)
+  localStorage.setItem('tiko_auth_session', JSON.stringify(session));
+  
+  // Clear SSO parameters from URL
+  const url = new URL(window.location.href);
+  const paramsToRemove = ['sso_token', 'sso_refresh_token', 'sso_request_id', 'sso_success'];
+  paramsToRemove.forEach(param => {
+    url.searchParams.delete(param);
+  });
+  
+  // Update URL without reload
+  window.history.replaceState({}, document.title, url.toString());
+  
+  console.log('[TAuthWrapper] SSO session stored successfully');
+};
+
 // Initialize authentication
 onMounted(async () => {
   // If auth is not required and splash screen is not needed, skip initialization
@@ -230,10 +288,24 @@ onMounted(async () => {
     return;
   }
 
+  // Check for SSO callback first
+  const urlParams = new URLSearchParams(window.location.search);
+  const hasSSOCallback = urlParams.has('sso_token') && urlParams.get('sso_success') === 'true';
+  
+  if (hasSSOCallback) {
+    try {
+      console.log('[TAuthWrapper] Processing SSO callback...');
+      await handleSSOCallback(urlParams);
+    } catch (error) {
+      console.error('[TAuthWrapper] SSO callback processing failed:', error);
+    }
+  }
+
   // Check if we're returning from auth callback or if there's already a session
   const isReturningFromAuth = document.referrer.includes('/auth/callback') ||
                               window.location.search.includes('from=auth') ||
-                              window.location.hash.includes('access_token');
+                              window.location.hash.includes('access_token') ||
+                              hasSSOCallback;
 
   // Magic link tokens are handled by the router which redirects to /auth/callback
   // We don't need to process them here anymore

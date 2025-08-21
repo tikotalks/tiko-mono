@@ -30,14 +30,26 @@ const props = withDefaults(defineProps<TSSOButtonProps>(), {
 const handleClick = async () => {
   const currentUrl = window.location.href
   
+  // Generate a unique request ID for this SSO flow
+  const requestId = `sso_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  
+  // Store SSO request for validation
+  const ssoRequest = {
+    returnUrl: currentUrl,
+    appId: props.appId,
+    requestId,
+    timestamp: Date.now()
+  }
+  localStorage.setItem('tiko_sso_request', JSON.stringify(ssoRequest))
+  
   // Check if we're in a mobile app (Capacitor)
   if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-    // For mobile apps, try to open Tiko app first
+    // For mobile apps, try to open Tiko dashboard app first
     const appScheme = `tiko-${props.appId}://`
     const returnUrl = `${appScheme}auth/callback`
     
-    // Try to open Tiko app with deep link
-    const tikoAppUrl = `tiko://signin?return_to=${encodeURIComponent(returnUrl)}&app_id=${props.appId}&app_name=${encodeURIComponent(props.appName || props.appId)}`
+    // Try to open Tiko dashboard with deep link
+    const tikoAppUrl = `tiko://sso?request_id=${requestId}&app_id=${props.appId}&return_url=${encodeURIComponent(returnUrl)}&app_name=${encodeURIComponent(props.appName || props.appId)}`
     
     try {
       // Use Capacitor App plugin to open URL if available
@@ -47,28 +59,30 @@ const handleClick = async () => {
       }
     } catch (error) {
       // If opening Tiko app fails, fall back to web
-      console.log('Could not open Tiko app, falling back to web')
+      console.log('Could not open Tiko dashboard app, falling back to web')
     }
     
-    // Fallback to web-based signin
-    const webSigninUrl = new URL('https://app.tiko.mt/signin')
-    webSigninUrl.searchParams.set('return_to', returnUrl)
-    webSigninUrl.searchParams.set('app_id', props.appId)
-    webSigninUrl.searchParams.set('app_name', props.appName || props.appId)
-    webSigninUrl.searchParams.set('mobile', 'true')
+    // Fallback to web-based SSO
+    const webSSOUrl = new URL('https://tiko.tikoapps.org/sso')
+    webSSOUrl.searchParams.set('request_id', requestId)
+    webSSOUrl.searchParams.set('app_id', props.appId)
+    webSSOUrl.searchParams.set('return_url', returnUrl)
+    webSSOUrl.searchParams.set('app_name', props.appName || props.appId)
+    webSSOUrl.searchParams.set('mobile', 'true')
     
-    window.location.href = webSigninUrl.toString()
+    window.location.href = webSSOUrl.toString()
   } else {
-    // Web browser - use standard web flow
-    const signinUrl = new URL('https://app.tiko.mt/signin')
-    signinUrl.searchParams.set('return_to', currentUrl)
-    signinUrl.searchParams.set('app_id', props.appId)
+    // Web browser - use Tiko dashboard SSO flow
+    const ssoUrl = new URL('https://tiko.tikoapps.org/sso')
+    ssoUrl.searchParams.set('request_id', requestId)
+    ssoUrl.searchParams.set('app_id', props.appId)
+    ssoUrl.searchParams.set('return_url', currentUrl)
     
     if (props.appName) {
-      signinUrl.searchParams.set('app_name', props.appName)
+      ssoUrl.searchParams.set('app_name', props.appName)
     }
 
-    window.location.href = signinUrl.toString()
+    window.location.href = ssoUrl.toString()
   }
 }
 </script>

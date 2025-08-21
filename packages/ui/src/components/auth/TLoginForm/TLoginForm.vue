@@ -29,14 +29,14 @@
           </div> -->
 
           <!-- SSO Button (only show if not in Tiko app and SSO is enabled) -->
-          <!-- <TSSOButton
+          <TSSOButton
             v-if="enableSSO && appId && appId !== 'tiko'"
             :app-id="appId"
             :app-name="appName"
             size="large"
             :disabled="isLoading"
             :class="bemm('sso-button')"
-          /> -->
+          />
 
           <!-- Apple Sign-In -->
           <!-- <TButton
@@ -171,7 +171,7 @@ import TIcon from '../../ui-elements/TIcon/TIcon.vue';
 import TForm from '../../forms/TForm/TForm.vue';
 import TInputText from '../../forms/TForm/inputs/TInputText/TInputText.vue';
 import TInputEmail from '../../forms/TForm/InputEmail/InputEmail.vue';
-// import TSSOButton from '../TSSOButton/TSSOButton.vue';
+import TSSOButton from '../TSSOButton/TSSOButton.vue';
 import type {
   TLoginFormProps,
   TLoginFormEmits,
