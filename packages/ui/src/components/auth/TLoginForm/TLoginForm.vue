@@ -6,7 +6,7 @@
         <!-- Header -->
         <div :class="bemm('header')">
           <h4 :class="bemm('title')" data-cy="login-title">
-            {{ t(keys.auth.loginToAccount) }}
+            {{ t('auth.loginToAccount') }}
           </h4>
         </div>
         <!-- Email Step -->
@@ -14,12 +14,12 @@
           <!-- Email Input -->
           <TForm @submit.prevent="handleEmailSubmit" data-cy="email-form">
             <TInputEmail v-model="email" type="email" :label="t(keys.auth.emailAddress)"
-              :placeholder="t(keys.auth.enterEmail)" :disabled="isLoading" required :class="bemm('input')"
+              :placeholder="t('auth.enterEmail')" :disabled="isLoading" required :class="bemm('input')"
               data-cy="email-input" />
 
-            <TButton :label="t(keys.auth.sendCode)" color="primary" size="large" @click="handleEmailSubmit"
+            <TButton :label="t('auth.sendCode')" color="primary" size="large" @click="handleEmailSubmit"
               :disabled="!isEmailValid || isLoading" :loading="isLoading" :class="bemm('submit-button')"
-              data-cy="submit-email-button">{{ t(keys.auth.sendCode) }}</TButton>
+              data-cy="submit-email-button">{{ t('auth.sendCode') }}</TButton>
           </TForm>
         </div>
         <section :class="bemm('content', ['', 'other-options'])">
