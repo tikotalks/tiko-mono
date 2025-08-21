@@ -54,5 +54,6 @@ export default createViteConfig({
   pwaConfig,
   appName: 'cards',
   appId: 'cards',
-  i18nConfig
+  i18nConfig,
+  base: '/'
 })

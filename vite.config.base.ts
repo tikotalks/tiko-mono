@@ -41,10 +41,11 @@ export const createViteConfig = (args: {
   appId: string,
   i18nConfig: {
     excludeSections?: string[],
-  }
+  },
+  base?: string
 }) => {
 
-  const { dirname, port, pwaConfig, appName, i18nConfig } = args
+  const { dirname, port, pwaConfig, appName, i18nConfig, base } = args
 
 
   let buildInfo = null;
@@ -148,6 +149,7 @@ export const createViteConfig = (args: {
   // Only set envDir for local development, not CI
   const config = {
     plugins,
+    base: base || '/',
     resolve: {
       alias: {
         '@': path.resolve(dirname, './src'),
