@@ -83,8 +83,9 @@ import {
   TInputSelect,
   TInputCheckbox,
   TButton,
-  useI18n
 } from '@tiko/ui'
+import {
+  useI18n } from "@tiko/core";
 import { Icons } from 'open-icon'
 import { kebabCase } from '@sil/case'
 import FieldOptionsEditor from './FieldOptionsEditor.vue'

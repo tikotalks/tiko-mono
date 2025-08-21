@@ -2,15 +2,15 @@
   <div :class="bemm()">
     <!-- Animation Layer -->
     <div :class="bemm('animation')" v-if="!animationCompleted">
-      <RocketCanvasAnimation 
+      <RocketCanvasAnimation
         v-if="selectedAnimation === 'rocket'"
-        ref="animationRef" 
-        @completed="onAnimationCompleted" 
+        ref="animationRef"
+        @completed="onAnimationCompleted"
       />
-      <AliensCanvasAnimation 
+      <AliensCanvasAnimation
         v-else-if="selectedAnimation === 'alien'"
-        ref="animationRef" 
-        @completed="onAnimationCompleted" 
+        ref="animationRef"
+        @completed="onAnimationCompleted"
       />
     </div>
 
@@ -48,7 +48,8 @@
 <script setup lang="ts">
 import { onMounted, ref, onBeforeMount } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, useI18n } from '@tiko/ui'
+import { TButton } from '@tiko/ui'
+import { useI18n } from '@tiko/core';
 import { useImageResolver } from '@tiko/core'
 import RocketCanvasAnimation from './animations/RocketCanvasAnimation.vue'
 import AliensCanvasAnimation from './animations/AliensCanvasAnimation.vue'
@@ -87,7 +88,7 @@ onBeforeMount(async () => {
   try {
     if (selectedAnimation.value === 'rocket') {
       const { animationImages } = await import('./animations/RocketCanvasAnimation.vue')
-      
+
       if (animationImages && animationImages.length > 0) {
         await preloadImages(
           animationImages.map((img: AnimationImage) => ({
@@ -99,7 +100,7 @@ onBeforeMount(async () => {
       }
     } else if (selectedAnimation.value === 'alien') {
       const { animationImages } = await import('./animations/AliensCanvasAnimation.vue')
-      
+
       if (animationImages && animationImages.length > 0) {
         await preloadImages(
           animationImages.map((img: AnimationImage) => ({

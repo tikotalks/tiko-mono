@@ -33,7 +33,6 @@ import { Icons } from 'open-icon';
 import {
   TMediaTile,
   TButton,
-  useI18n,
   type MediaItem,
   type PopupService,
 } from '@tiko/ui';
@@ -42,6 +41,7 @@ import {
   useFavoritesStore,
   useCollectionsStore,
   useImageUrl,
+  useI18n,
 } from '@tiko/core';
 import CollectionSelectionPopup from './CollectionSelectionPopup.vue';
 import CreateCollectionPopup from './CreateCollectionPopup.vue';

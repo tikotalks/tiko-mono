@@ -249,7 +249,6 @@ import { ref, onMounted, inject, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useBemm } from 'bemm';
 import {
-  useI18n,
   TList,
   TListCell,
   TListItem,
@@ -265,7 +264,8 @@ import {
 } from '@tiko/ui';
 import type { PopupService, ToastService, TranslationKeyData } from '@tiko/ui';
 import { Icons } from 'open-icon';
-import { useI18nDatabaseService } from '@tiko/core';
+import { useI18nDatabaseService,
+  useI18n } from '@tiko/core';
 import type { Language } from '@tiko/core';
 import AdminPageHeader from '@/components/AdminPageHeader.vue';
 

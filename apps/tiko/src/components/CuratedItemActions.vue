@@ -12,7 +12,7 @@
           <p :class="bemm('item-type')">{{ t('sequence.curatedSequence') }}</p>
         </div>
       </div>
-      
+
       <div :class="bemm('curated-badge')">
         <TIcon :name="Icons.STAR_M" size="small" />
         <span>{{ t('common.curated') }}</span>
@@ -26,20 +26,20 @@
 
     <!-- Actions -->
     <div :class="bemm('actions')">
-      <TButton 
-        :icon="Icons.EYE_OFF" 
-        type="outline" 
-        color="secondary" 
+      <TButton
+        :icon="Icons.EYE_OFF"
+        type="outline"
+        color="secondary"
         @click="handleHide"
         size="large"
       >
         {{ t('sequence.hideThisItem') }}
       </TButton>
-      
-      <TButton 
-        :icon="Icons.COPY" 
-        type="default" 
-        color="primary" 
+
+      <TButton
+        :icon="Icons.COPY"
+        type="default"
+        color="primary"
         @click="handleDuplicate"
         size="large"
       >
@@ -63,7 +63,8 @@
 
 <script setup lang="ts">
 import { useBemm } from 'bemm'
-import { TButton, TIcon, useI18n } from '@tiko/ui'
+import { useI18n } from '@tiko/core';
+import { TButton, TIcon } from '@tiko/ui'
 import { Icons } from 'open-icon'
 import type { TCardTile } from '@tiko/ui'
 

@@ -71,10 +71,9 @@
 <script setup lang="ts">
 import { ref, reactive, inject } from 'vue'
 import { useBemm } from 'bemm'
-import { TInput, TButton, TFormGroup, TInputSelect, TInputCheckbox, useI18n } from '@tiko/ui'
-import { userService } from '@tiko/core'
-import type { UserProfile } from '@tiko/core'
-import type { ToastService } from '@tiko/ui'
+import { TInput, TButton, TFormGroup, TInputSelect, TInputCheckbox } from '@tiko/ui'
+import { useI18n, userService } from '@tiko/core'
+import type { UserProfile, ToastService } from '@tiko/core'
 
 interface Props {
   user?: UserProfile

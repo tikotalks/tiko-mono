@@ -209,14 +209,14 @@ import {
   TInputSelect,
   TSpinner,
   TChip,
-  useI18n,
   listActions,
   type ToastService,
   type PopupService,
   TInputText
 } from '@tiko/ui'
 import { Icons } from 'open-icon'
-import { contentService, type Item, type ItemTemplate } from '@tiko/core'
+import { contentService, type Item, type ItemTemplate,
+  useI18n } from '@tiko/core'
 import AdminPageHeader from '@/components/AdminPageHeader.vue'
 import CreateItemDialog from './components/CreateItemDialog.vue'
 import EditItemDialog from './components/EditItemDialog.vue'

@@ -16,6 +16,12 @@ export default defineConfig({
     //   exclude: /node_modules/
     // })
   ],
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+      '@tiko/core': resolve(__dirname, '../core/src')
+    }
+  },
   css: {
     preprocessorOptions: {
       scss: {

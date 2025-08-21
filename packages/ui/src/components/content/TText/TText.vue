@@ -1,6 +1,6 @@
 <template>
-  <span 
-    :data-i18n="key" 
+  <span
+    :data-i18n="key"
     :class="['t-text', { 't-text--untranslated': isUntranslated }]"
     v-if="wrapped"
   >
@@ -13,7 +13,7 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue';
-import { useI18n } from '../../../composables/useI18n';
+import { useI18n } from '@tiko/core';
 
 const { t } = useI18n();
 

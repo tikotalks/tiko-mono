@@ -123,13 +123,21 @@ export class SupabaseItemService implements ItemService {
   }
 
   // CRUD operations
-  async getItems(userId: string, filters?: ItemFilters): Promise<BaseItem[]> {
-    const queryParams = this.applyFiltersToQuery(filters)
-    const userFilter = `user_id=eq.${userId}`
-    const orderBy = 'order_index=asc'
-    const fullQuery = queryParams ? `${userFilter}&${queryParams}&${orderBy}` : `${userFilter}&${orderBy}`
-    
-    return this.apiRequest<BaseItem[]>(`items?${fullQuery}`)
+  async getItems(userId: string, filters?: ItemFilters): Promise<ItemResult<BaseItem[]>> {
+    try {
+      const queryParams = this.applyFiltersToQuery(filters)
+      const userFilter = `user_id=eq.${userId}`
+      const orderBy = 'order_index=asc'
+      const fullQuery = queryParams ? `${userFilter}&${queryParams}&${orderBy}` : `${userFilter}&${orderBy}`
+      
+      const data = await this.apiRequest<BaseItem[]>(`items?${fullQuery}`)
+      return { success: true, data }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error)
+      }
+    }
   }
 
   async getItem(itemId: string): Promise<BaseItem | null> {
@@ -141,96 +149,54 @@ export class SupabaseItemService implements ItemService {
     }
   }
 
-  async createItem(userId: string, payload: CreateItemPayload): Promise<ItemResult<BaseItem>> {
-    try {
-      // Calculate order index if not provided
-      let orderIndex = payload.order_index
-      if (orderIndex === undefined) {
-        const siblings = await this.getItems(userId, {
-          app_name: payload.app_name,
-          parent_id: payload.parent_id
-        })
-        orderIndex = siblings.length
-      }
-
-      const newItem = {
-        user_id: userId,
-        app_name: payload.app_name,
-        type: payload.type,
-        name: payload.name,
-        content: payload.content,
-        metadata: payload.metadata,
-        parent_id: payload.parent_id,
-        order_index: orderIndex,
-        is_favorite: payload.is_favorite || false,
-        is_completed: payload.is_completed || false,
-        is_public: payload.is_public || false,
-        tags: payload.tags || [],
-        icon: payload.icon,
-        color: payload.color
-      }
-
-      const result = await this.apiRequest<BaseItem[]>('items', {
-        method: 'POST',
-        body: JSON.stringify(newItem)
-      })
-
-      return { success: true, data: result[0] }
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to create item' 
-      }
+  async createItem(payload: CreateItemPayload): Promise<BaseItem> {
+    const newItem = {
+      ...payload,
+      is_favorite: payload.is_favorite || false,
+      is_completed: payload.is_completed || false,
+      is_public: payload.is_public || false,
+      tags: payload.tags || []
     }
+
+    const result = await this.apiRequest<BaseItem[]>('items', {
+      method: 'POST',
+      body: JSON.stringify(newItem)
+    })
+
+    return result[0]
   }
 
-  async updateItem(itemId: string, payload: UpdateItemPayload): Promise<ItemResult<BaseItem>> {
-    try {
-      // Handle public/curated relationship: when making item non-public, also remove curated status
-      const updatePayload = { ...payload }
-      if (payload.is_public === false) {
-        updatePayload.is_curated = false
-      }
-      
-      const result = await this.apiRequest<BaseItem[]>(`items?id=eq.${itemId}`, {
-        method: 'PATCH',
-        body: JSON.stringify({
-          ...updatePayload,
-          updated_at: new Date().toISOString()
-        })
-      })
-
-      if (result.length === 0) {
-        return { success: false, error: 'Item not found' }
-      }
-
-      return { success: true, data: result[0] }
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to update item' 
-      }
+  async updateItem(itemId: string, payload: UpdateItemPayload): Promise<BaseItem> {
+    // Handle public/curated relationship: when making item non-public, also remove curated status
+    const updatePayload = { ...payload }
+    if (payload.is_public === false) {
+      updatePayload.is_curated = false
     }
+    
+    const result = await this.apiRequest<BaseItem[]>(`items?id=eq.${itemId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        ...updatePayload,
+        updated_at: new Date().toISOString()
+      })
+    })
+
+    if (result.length === 0) {
+      throw new Error('Item not found')
+    }
+
+    return result[0]
   }
 
-  async deleteItem(itemId: string): Promise<ItemResult> {
-    try {
-      // First get all children
-      const children = await this.getItemChildren(itemId)
-      const idsToDelete = [itemId, ...children.map(c => c.id)]
-      
-      // Delete all items
-      await this.apiRequest(`items?id=in.(${idsToDelete.join(',')})`, {
-        method: 'DELETE'
-      })
-
-      return { success: true }
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to delete item' 
-      }
-    }
+  async deleteItem(itemId: string): Promise<void> {
+    // First get all children
+    const children = await this.getItemChildren(itemId)
+    const idsToDelete = [itemId, ...children.map(c => c.id)]
+    
+    // Delete all items
+    await this.apiRequest(`items?id=in.(${idsToDelete.join(',')})`, {
+      method: 'DELETE'
+    })
   }
 
   // Helper to get all children recursively
@@ -347,15 +313,16 @@ export class SupabaseItemService implements ItemService {
 
 
   async searchItems(userId: string, query: string, filters?: ItemFilters): Promise<BaseItem[]> {
-    return this.getItems(userId, { ...filters, search: query })
+    const result = await this.getItems(userId, { ...filters, search: query })
+    return result.success && result.data ? result.data : []
   }
 
   // Ordering
-  async reorderItems(itemIds: string[], startIndex = 0): Promise<ItemResult> {
+  async reorderItems(itemIds: string[]): Promise<ItemResult<void>> {
     try {
       const updates = itemIds.map((id, index) => ({
         id,
-        order_index: startIndex + index,
+        order_index: index,
         updated_at: new Date().toISOString()
       }))
 
@@ -418,18 +385,30 @@ export class SupabaseItemService implements ItemService {
   // Statistics
   async getStats(userId: string, appName?: string): Promise<ItemStats> {
     const filters: ItemFilters = appName ? { app_name: appName } : {}
-    const items = await this.getItems(userId, filters)
+    const result = await this.getItems(userId, filters)
     
+    if (!result.success || !result.data) {
+      return {
+        total: 0,
+        by_app: {},
+        by_type: {},
+        favorites: 0,
+        completed: 0,
+        public: 0
+      }
+    }
+    
+    const items = result.data
     const stats: ItemStats = {
       total: items.length,
       by_app: {},
       by_type: {},
-      favorites: items.filter(i => i.is_favorite).length,
-      completed: items.filter(i => i.is_completed).length,
-      public: items.filter(i => i.is_public).length
+      favorites: items.filter((i: BaseItem) => i.is_favorite).length,
+      completed: items.filter((i: BaseItem) => i.is_completed).length,
+      public: items.filter((i: BaseItem) => i.is_public).length
     }
     
-    items.forEach(item => {
+    items.forEach((item: BaseItem) => {
       stats.by_app[item.app_name] = (stats.by_app[item.app_name] || 0) + 1
       stats.by_type[item.type] = (stats.by_type[item.type] || 0) + 1
     })
@@ -439,7 +418,8 @@ export class SupabaseItemService implements ItemService {
 
   // Import/Export
   async exportItems(userId: string, filters?: ItemFilters): Promise<BaseItem[]> {
-    return this.getItems(userId, filters)
+    const result = await this.getItems(userId, filters)
+    return result.success && result.data ? result.data : []
   }
 
   async importItems(userId: string, items: Omit<BaseItem, 'id' | 'user_id' | 'created_at' | 'updated_at'>[]): Promise<ItemResult<BaseItem[]>> {

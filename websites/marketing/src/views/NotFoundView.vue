@@ -20,7 +20,8 @@
 <script setup lang="ts">
 import { useBemm } from 'bemm';
 import { useRouter } from 'vue-router';
-import { TButton, useI18n } from '@tiko/ui';
+import { TButton } from '@tiko/ui';
+import { useI18n } from '@tiko/core';
 
 const bemm = useBemm('not-found');
 const router = useRouter();

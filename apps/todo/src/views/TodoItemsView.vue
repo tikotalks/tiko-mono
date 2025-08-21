@@ -59,8 +59,8 @@ import {
   TIcon,
   TDraggableList,
   useParentMode,
-  useI18n,
 } from '@tiko/ui';
+import { useI18n } from '@tiko/core';
 import { storeToRefs } from 'pinia';
 import { useTodoStore } from '../stores/todo';
 import TodoItemCard from '../components/TodoItemCard.vue';

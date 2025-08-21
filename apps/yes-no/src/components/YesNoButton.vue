@@ -15,7 +15,7 @@
 import { useBemm } from 'bemm';
 import { computed, onMounted, PropType, ref } from 'vue';
 import { useImages, useImageUrl } from '@tiko/core';
-import { useI18n } from '@tiko/ui';
+import { useI18n } from '@tiko/core';
 
 const bemm = useBemm('yes-no-button');
 const { t } = useI18n();

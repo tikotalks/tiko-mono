@@ -31,7 +31,7 @@
         <TInputText
           v-model="searchQuery"
           :placeholder="t('common.search')"
-          :icon="Icons.SEARCH"
+          :icon="Icons.SEARCH_M"
           @input="debouncedSearch"
         />
       </div>
@@ -44,7 +44,7 @@
       </div>
 
       <div v-else-if="filteredItems.length === 0" :class="bemm('empty')">
-        <TEmptyState 
+        <TEmptyState
           :title="t('admin.items.noItems')"
           :description="t('admin.items.noItemsDescription')"
         />
@@ -86,7 +86,7 @@
                   @update:model-value="toggleItemSelection(item.id)"
                 />
               </TListCell>
-              
+
               <TListCell type="custom">
                 <div :class="bemm('item-name')">
                   <TButton
@@ -100,13 +100,13 @@
                   <span>{{ item.title }}</span>
                 </div>
               </TListCell>
-              
+
               <TListCell type="text" :content="hideChildItems ? (item.parent_id || '-') : (hasChildren(item.id) ? getItemChildren(item.id).length.toString() : '-')" />
-              
+
               <TListCell type="text" :content="item.app_name" />
-              
+
               <TListCell type="text" :content="item.user_email || t('common.unknown')" />
-              
+
               <TListCell type="custom">
                 <div :class="bemm('badges')">
                   <TChip v-if="item.isPublic" type="info" size="small">
@@ -117,9 +117,9 @@
                   </TChip>
                 </div>
               </TListCell>
-              
+
               <TListCell type="text" :content="formatDate(item.created_at)" />
-              
+
               <TListCell type="actions">
                 <TButton
                   v-if="!item.isCurated"
@@ -154,19 +154,19 @@
                     @update:model-value="toggleItemSelection(child.id)"
                   />
                 </TListCell>
-                
+
                 <TListCell type="custom">
                   <div :class="bemm('child-name')">
                     <span>{{ child.title }}</span>
                   </div>
                 </TListCell>
-                
+
                 <TListCell type="text" content="-" />
-                
+
                 <TListCell type="text" content="-" />
-                
+
                 <TListCell type="text" content="-" />
-                
+
                 <TListCell type="custom">
                   <div :class="bemm('badges')">
                     <TChip v-if="child.isPublic" type="info" size="small">
@@ -177,9 +177,9 @@
                     </TChip>
                   </div>
                 </TListCell>
-                
+
                 <TListCell type="text" :content="formatDate(child.created_at)" />
-                
+
                 <TListCell type="actions">
                   <TButton
                     v-if="!child.isCurated"
@@ -210,22 +210,23 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, inject } from 'vue';
 import { useBemm } from 'bemm';
-import { 
-  TButton, 
-  TInputText, 
-  TInputSelect, 
-  TIcon, 
-  TInputCheckbox, 
+import {
+  TButton,
+  TInputText,
+  TInputSelect,
+  TIcon,
+  TInputCheckbox,
   TChip,
   TList,
   TListItem,
   TListCell,
   TEmptyState,
-  useI18n,
   type ToastService
 } from '@tiko/ui';
+import {
+  useI18n,} from "@tiko/core";
 import { Icons } from 'open-icon';
-import { debounce } from 'lodash-es';
+import { debounce } from '@tiko/ui';
 
 const bemm = useBemm('public-items-view');
 const { t } = useI18n();
@@ -309,7 +310,7 @@ const filteredItems = computed(() => {
 
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
-    filtered = filtered.filter(item => 
+    filtered = filtered.filter(item =>
       (item.title || '').toLowerCase().includes(query) ||
       (item.app_name || '').toLowerCase().includes(query)
     );
@@ -359,12 +360,12 @@ const loadItems = async () => {
 const toggleCurated = async (itemId: string, isCurated: boolean) => {
   try {
     await adminItemsService.toggleCurated(itemId, isCurated);
-    
+
     toastService?.show({
       message: isCurated ? t('admin.items.madeCurated') : t('admin.items.removedCurated'),
       type: 'success'
     });
-    
+
     await loadItems();
   } catch (error) {
     console.error('Failed to update item:', error);
@@ -380,14 +381,14 @@ const toggleCuratedBulk = async (isCurated: boolean) => {
 
   try {
     await adminItemsService.bulkToggleCurated(selectedItems.value, isCurated);
-    
+
     toastService?.show({
-      message: isCurated 
+      message: isCurated
         ? t('admin.items.bulkMadeCurated', { count: selectedItems.value.length })
         : t('admin.items.bulkRemovedCurated', { count: selectedItems.value.length }),
       type: 'success'
     });
-    
+
     selectedItems.value = [];
     await loadItems();
   } catch (error) {
@@ -508,7 +509,7 @@ onMounted(() => {
 
   &__child-item {
     background: var(--color-background-secondary);
-    
+
     &:hover {
       background: var(--color-background-tertiary);
     }
@@ -517,7 +518,7 @@ onMounted(() => {
   &__child-name {
     padding-left: var(--space-l);
     position: relative;
-    
+
     &:before {
       content: '└';
       position: absolute;

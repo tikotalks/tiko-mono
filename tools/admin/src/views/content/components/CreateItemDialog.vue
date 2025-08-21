@@ -61,7 +61,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useBemm } from 'bemm'
-import { TFormGroup, TButton, TInputSelect, useI18n, TInputText } from '@tiko/ui'
+import { TFormGroup, TButton, TInputSelect, TInputText } from '@tiko/ui'
 import { translationService } from '@tiko/core'
 import type { Item, ItemTemplate, Language } from '@tiko/core'
 

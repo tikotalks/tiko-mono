@@ -41,7 +41,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TInputText, useI18n, TAlert, TFormGroup } from '@tiko/ui'
+import { TButton, TInputText, TAlert, TFormGroup } from '@tiko/ui'
 import { useI18nDatabaseService } from '@tiko/core'
 import type { EditKeyDialogProps } from './EditKeyDialog.model'
 

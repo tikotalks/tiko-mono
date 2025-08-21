@@ -25,7 +25,7 @@ import { useBemm } from 'bemm'
 import { Icons } from 'open-icon'
 import { TIcon } from '../../ui-elements/TIcon'
 import TColorPicker from '../TColorPicker/TColorPicker.vue'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 import { BaseColors, type Colors } from '../../../types'
 
 const props = defineProps<{

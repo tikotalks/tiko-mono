@@ -14,7 +14,7 @@
 import { computed } from 'vue'
 import { useBemm } from 'bemm'
 import { TIcon } from '../../ui-elements/TIcon'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 import { Icons } from 'open-icon'
 import { useAppStore } from '@tiko/core'
 import type { TOfflineIndicatorProps } from './TOfflineIndicator.model'

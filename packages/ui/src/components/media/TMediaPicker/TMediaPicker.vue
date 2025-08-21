@@ -1,35 +1,35 @@
 <template>
   <div :class="bemm()">
     <div :class="bemm('grid')">
-      <div 
-        v-for="media in mediaItems" 
+      <div
+        v-for="media in mediaItems"
         :key="media.id"
         :class="bemm('item', { selected: selectedId === media.id })"
         @click="selectMedia(media)"
       >
-        <img 
-          :src="media.thumbnail_url || media.url" 
+        <img
+          :src="media.thumbnail_url || media.url"
           :alt="media.original_filename"
-          :class="bemm('image')" 
+          :class="bemm('image')"
         />
         <div :class="bemm('overlay')">
           <TIcon v-if="selectedId === media.id" name="check" :class="bemm('check')" />
         </div>
       </div>
     </div>
-    
+
     <div v-if="mediaItems.length === 0" :class="bemm('empty')">
       <TIcon name="image" :class="bemm('empty-icon')" />
       <p>{{ t('common.noItemsFound') }}</p>
     </div>
-    
+
     <div :class="bemm('actions')">
       <TButton type="ghost" @click="handleCancel">
         {{ t('common.cancel') }}
       </TButton>
-      <TButton 
-        type="primary" 
-        :disabled="!selectedId" 
+      <TButton
+        type="primary"
+        :disabled="!selectedId"
         @click="handleConfirm"
       >
         {{ t('common.select') }}
@@ -41,7 +41,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useBemm } from 'bemm'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 import TIcon from '../../ui-elements/TIcon/TIcon.vue'
 import TButton from '../../ui-elements/TButton/TButton.vue'
 import type { TMediaPickerProps, TMediaPickerEmits } from './TMediaPicker.model'
@@ -76,7 +76,7 @@ const handleCancel = () => {
   display: flex;
   flex-direction: column;
   gap: var(--space);
-  
+
   &__grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -87,7 +87,7 @@ const handleCancel = () => {
     background: var(--color-background-secondary);
     border-radius: var(--border-radius);
   }
-  
+
   &__item {
     position: relative;
     aspect-ratio: 1;
@@ -96,22 +96,22 @@ const handleCancel = () => {
     overflow: hidden;
     border: 2px solid transparent;
     transition: all 0.2s ease;
-    
+
     &:hover {
       transform: scale(1.05);
     }
-    
+
     &--selected {
       border-color: var(--color-primary);
     }
   }
-  
+
   &__image {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-  
+
   &__overlay {
     position: absolute;
     top: 0;
@@ -124,17 +124,17 @@ const handleCancel = () => {
     justify-content: center;
     opacity: 0;
     transition: opacity 0.2s ease;
-    
+
     .media-picker__item--selected & {
       opacity: 1;
     }
   }
-  
+
   &__check {
     color: white;
     font-size: 2rem;
   }
-  
+
   &__empty {
     display: flex;
     flex-direction: column;
@@ -144,13 +144,13 @@ const handleCancel = () => {
     color: var(--color-text-secondary);
     text-align: center;
   }
-  
+
   &__empty-icon {
     font-size: 3rem;
     margin-bottom: var(--space);
     opacity: 0.5;
   }
-  
+
   &__actions {
     display: flex;
     justify-content: flex-end;

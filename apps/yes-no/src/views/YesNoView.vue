@@ -94,6 +94,7 @@ const parentMode = useParentMode('yes-no');
 const { hasPermission, requestPermission } = useTextToSpeech();
 const { speak, preloadAudio } = useSpeak();
 
+
 // Inject the popup service from TFramework
 const popupService = inject<any>('popupService');
 
@@ -124,7 +125,7 @@ watch(
 );
 
 // Watch locale changes and preload audio in new language
-watch(currentLocale, async (newLocale) => {
+watch(() => currentLocale.value, async (newLocale) => {
   console.log('[YesNoView] Locale changed to:', newLocale);
   await preloadAnswers();
 });

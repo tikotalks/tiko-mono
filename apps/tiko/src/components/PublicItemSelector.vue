@@ -81,7 +81,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useBemm } from 'bemm';
-import { TButton, TInput, TIcon, TCardTile, useI18n } from '@tiko/ui';
+import { useI18n } from '@tiko/core';
+import { TButton, TInput, TIcon, TCardTile } from '@tiko/ui';
 import { useAuthStore } from '@tiko/core';
 import { Icons } from 'open-icon';
 import { sequenceService } from '../services/sequence.service';
@@ -119,12 +120,12 @@ const tabs = computed(() => {
     { id: 'public' as const, label: t('common.publicItems') },
     { id: 'mine' as const, label: props.itemType === 'sequence' ? t('sequence.mySequences') : t('cards.myCards') },
   ];
-  
+
   // Filter out curated tab if showCuratedItems is false
   if (!sequenceStore.settings.showCuratedItems) {
     return allTabs.filter(tab => tab.id !== 'curated');
   }
-  
+
   return allTabs;
 });
 
@@ -154,7 +155,7 @@ const filteredItems = computed(() => {
   // Apply search filter
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
-    filtered = filtered.filter(s => 
+    filtered = filtered.filter(s =>
       s.title.toLowerCase().includes(query)
     );
   }
@@ -326,12 +327,12 @@ onMounted(() => {
     border-radius: var(--border-radius-s);
     font-size: 0.75rem;
     font-weight: 500;
-    
+
     &--curated {
       background: rgba(255, 215, 0, 0.9); // Gold for curated
       color: #333;
     }
-    
+
     &--public {
       background: rgba(0, 0, 0, 0.7);
       color: white;

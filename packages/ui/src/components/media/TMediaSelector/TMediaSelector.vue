@@ -135,10 +135,10 @@ import {
   TEmptyState,
   TSpinner,
   TIcon,
-  useI18n,
   TVirtualGrid,
   debounce,
 } from '@tiko/ui'
+import { useI18n } from "@tiko/core";
 import { Icons } from 'open-icon'
 import { useAuthStore, useImageUrl, ImageLibraryType, useImages, type MediaItem, type UserMedia } from '@tiko/core'
 

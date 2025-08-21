@@ -71,7 +71,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TIcon, TInputText, useI18n } from '@tiko/ui'
+import { useI18n } from '@tiko/core';
+import { TButton, TIcon, TInputText } from '@tiko/ui'
 import { useTodoStore } from '../stores/todo'
 import type { TodoGroup } from '../types/todo.types'
 

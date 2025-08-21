@@ -69,8 +69,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useBemm } from 'bemm'
-import { useI18n } from '../../../composables/useI18n'
-import { useI18nDatabaseService } from '@tiko/core'
+import { useI18n, useI18nDatabaseService } from '@tiko/core';
 import TInputText from '../../forms/TForm/inputs/TInputText/TInputText.vue'
 import { groupDatabaseLanguages, getBaseLanguageCode, type LanguageGroup } from '../../../utils/languageGroups'
 import { Icons } from 'open-icon'

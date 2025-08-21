@@ -63,7 +63,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useBemm } from 'bemm'
 import { useAuthStore } from '@tiko/core'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 import TLoginForm from '../TLoginForm/TLoginForm.vue'
 import TAppLayout from '../../layout/TAppLayout/TAppLayout.vue'
 import TSplashScreen from '../../feedback/TSplashScreen/TSplashScreen.vue'
@@ -123,9 +123,9 @@ const isAuthCallbackRoute = computed(() => route?.path === '/auth/callback');
 const splashConfig = computed(() => {
   // Use splash config from tiko config if available, otherwise fallback to defaults
   const splashFromConfig = tikoConfig?.splash;
-  
+
   // Use app icon from tiko config if available
-  const iconPath = tikoConfig?.appIcon 
+  const iconPath = tikoConfig?.appIcon
     ? `/assets/image/${tikoConfig.appIcon}.png`
     : `/assets/image/app-icon-${props.appName}.png`;
 
@@ -227,34 +227,34 @@ const handleSSOCallback = async (urlParams: URLSearchParams) => {
   const ssoToken = urlParams.get('sso_token');
   const ssoRefreshToken = urlParams.get('sso_refresh_token');
   const ssoRequestId = urlParams.get('sso_request_id');
-  
+
   if (!ssoToken) {
     throw new Error('No SSO token provided');
   }
-  
+
   // Validate the stored request
   const storedRequest = localStorage.getItem('tiko_sso_request');
   if (!storedRequest) {
     throw new Error('No SSO request found');
   }
-  
+
   const request = JSON.parse(storedRequest);
-  
+
   // Validate request ID matches
   if (request.requestId !== ssoRequestId) {
     throw new Error('SSO request ID mismatch');
   }
-  
+
   // Check request age (should be within 10 minutes)
   const requestAge = Date.now() - request.timestamp;
   if (requestAge > 10 * 60 * 1000) {
     localStorage.removeItem('tiko_sso_request');
     throw new Error('SSO request expired');
   }
-  
+
   // Clean up stored request
   localStorage.removeItem('tiko_sso_request');
-  
+
   // Create a session object that matches the expected format
   const session = {
     access_token: ssoToken,
@@ -263,20 +263,20 @@ const handleSSOCallback = async (urlParams: URLSearchParams) => {
     token_type: 'bearer',
     user: null // Will be populated by auth service
   };
-  
+
   // Store the session in localStorage (this matches how the auth service stores sessions)
   localStorage.setItem('tiko_auth_session', JSON.stringify(session));
-  
+
   // Clear SSO parameters from URL
   const url = new URL(window.location.href);
   const paramsToRemove = ['sso_token', 'sso_refresh_token', 'sso_request_id', 'sso_success'];
   paramsToRemove.forEach(param => {
     url.searchParams.delete(param);
   });
-  
+
   // Update URL without reload
   window.history.replaceState({}, document.title, url.toString());
-  
+
   console.log('[TAuthWrapper] SSO session stored successfully');
 };
 
@@ -291,7 +291,7 @@ onMounted(async () => {
   // Check for SSO callback first
   const urlParams = new URLSearchParams(window.location.search);
   const hasSSOCallback = urlParams.has('sso_token') && urlParams.get('sso_success') === 'true';
-  
+
   if (hasSSOCallback) {
     try {
       console.log('[TAuthWrapper] Processing SSO callback...');

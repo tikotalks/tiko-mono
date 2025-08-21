@@ -90,10 +90,10 @@ import {
   TInputText,
   TTextArea,
   TFormGroup,
-  useI18n,
   TInputSelect
 } from '@tiko/ui'
-import { translationService } from '@tiko/core'
+import { translationService,
+  useI18n } from '@tiko/core'
 import type { ContentProject, Language } from '@tiko/core'
 
 interface Props {

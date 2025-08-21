@@ -271,7 +271,7 @@
 import { ref, computed, onMounted, reactive, watch, nextTick } from 'vue'
 import { useBemm } from 'bemm'
 import { Icons } from 'open-icon'
-import { TButton, TInputText, TTextArea, useI18n, TProgressBar, TChip, TButtonGroup, TCard, TAlert, TFormGroup, parseTranslationKeys, extractKeys, createKeyValueMap } from '@tiko/ui'
+import { TButton, TInputText, TTextArea, TProgressBar, TChip, TButtonGroup, TCard, TAlert, TFormGroup, parseTranslationKeys, extractKeys, createKeyValueMap } from '@tiko/ui'
 import { useI18nDatabaseService, gptTranslationService } from '@tiko/core'
 import type { Language } from '@tiko/core'
 import type { AddTranslationKeyDialogProps, LanguageTranslation } from './AddTranslationKeyDialog.model'

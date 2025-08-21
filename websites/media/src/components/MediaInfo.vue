@@ -105,12 +105,12 @@ import { useBemm } from 'bemm'
 import { Icons } from 'open-icon'
 import type { MediaItem } from '@tiko/ui'
 import {
-  useI18n,
   TButton,
   TKeyValue,
   TChip,
   TChipGroup
 } from '@tiko/ui'
+import { useI18n } from '@tiko/core'
 
 interface Props {
   media: MediaItem

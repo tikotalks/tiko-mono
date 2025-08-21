@@ -89,7 +89,8 @@
 import { ref, onMounted, computed } from 'vue'
 import { Icons } from 'open-icon';
 import { useBemm } from 'bemm'
-import { TButton, useI18n, TInputTextArea } from '@tiko/ui'
+import { TButton, TInputTextArea } from '@tiko/ui'
+import { useI18n } from '@tiko/core'
 import { useYesNoStore } from '../stores/yesno'
 
 interface Props {

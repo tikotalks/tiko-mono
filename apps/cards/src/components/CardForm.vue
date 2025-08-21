@@ -131,7 +131,7 @@ import {
   ButtonType,
   TFormGroup,
 } from '@tiko/ui';
-import { useI18n } from '@tiko/ui';
+import { useI18n } from '@tiko/core';
 import type { TCardTile as CardTile } from '@tiko/ui';
 import { mediaService, useImages, useImageUrl, useAuthStore } from '@tiko/core';
 import CardTranslations from './CardTranslations/CardTranslations.vue';

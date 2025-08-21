@@ -1,4 +1,4 @@
-import type { Colors } from '../../../types/colors'
+import type { Colors } from '../../../types/color'
 
 export interface TColorPickerPopupProps {
   modelValue?: Colors

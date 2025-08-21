@@ -27,7 +27,7 @@
             ref="avatarMenuRef"
             :config="avatarMenuConfig"
           >
-            <div 
+            <div
               :class="bemm('avatar-upload')"
               role="button"
               tabindex="0"
@@ -38,7 +38,7 @@
               </div>
             </div>
           </TContextMenu>
-          
+
           <!-- Hidden file input -->
           <input
             ref="fileInput"
@@ -142,7 +142,7 @@
 <script setup lang="ts">
 import { ref, computed, inject } from 'vue'
 import { useBemm } from 'bemm'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 import { useParentMode } from '../../../composables/useParentMode'
 import { useAuthStore, userMediaService } from '@tiko/core'
 import TIcon from '../../ui-elements/TIcon/TIcon.vue'
@@ -232,7 +232,7 @@ const currentLanguageDisplay = computed(() => {
 
 const userType = computed(() => {
   const user = props.user
-  
+
   // Check various sources for admin role
   if (authStore.isAdmin ||
       user.user_metadata?.role === 'admin' ||
@@ -243,7 +243,7 @@ const userType = computed(() => {
       user.email?.endsWith('@admin.com')) {
     return 'admin'
   }
-  
+
   return 'user'
 })
 
@@ -330,12 +330,12 @@ const handleFileSelect = async (event: Event) => {
     // The service automatically updates the user metadata
     // Just update the local preview
     avatarPreview.value = media.url
-    
+
     // Force refresh the user data in auth store to ensure avatar is updated everywhere
     try {
       // Add a small delay to ensure Supabase has processed the update
       await new Promise(resolve => setTimeout(resolve, 1000))
-      
+
       if (typeof authStore.refreshUserData === 'function') {
         await authStore.refreshUserData()
       } else {
@@ -388,13 +388,13 @@ const handleChooseFromMedia = async () => {
   try {
     // Get user's existing media
     const existingMedia = await userMediaService.getUserMedia(authStore.user?.id)
-    
+
     // Filter to only show images
-    const imageMedia = existingMedia.filter(m => 
-      m.mime_type.startsWith('image/') && 
+    const imageMedia = existingMedia.filter(m =>
+      m.mime_type.startsWith('image/') &&
       !m.url.startsWith('data:')
     )
-    
+
     if (imageMedia.length === 0) {
       toastService?.show({
         message: t('profile.noMediaFound'),
@@ -402,7 +402,7 @@ const handleChooseFromMedia = async () => {
       })
       return
     }
-    
+
     // Open the media picker popup
     const popupId = popupService.open({
       component: TMediaPicker,
@@ -413,15 +413,15 @@ const handleChooseFromMedia = async () => {
       on: {
         select: async (media: any) => {
           popupService.close({ id: popupId })
-          
+
           // Update the user's profile picture
           await userMediaService.updateUserProfilePicture(media.url)
           avatarPreview.value = media.url
-          
+
           // Refresh user data
           try {
             await new Promise(resolve => setTimeout(resolve, 1000))
-            
+
             if (typeof authStore.refreshUserData === 'function') {
               await authStore.refreshUserData()
             } else {
@@ -430,7 +430,7 @@ const handleChooseFromMedia = async () => {
           } catch (updateError) {
             console.error('Failed to update user data in store:', updateError)
           }
-          
+
           toastService?.show({
             message: t('profile.profileUpdated'),
             type: 'success'
@@ -476,7 +476,7 @@ const handleRemoveUser = () => {
   // Show confirmation dialog with serious warning
   const confirmationTitle = t('profile.removeAccountConfirmation')
   const warningMessage = t('profile.removeAccountWarning')
-  
+
   popupService.confirm({
     title: confirmationTitle,
     message: warningMessage,
@@ -515,7 +515,7 @@ const executeUserRemoval = async () => {
 
   try {
     isProcessing.value = true
-    
+
     // Show progress toast
     toastService?.show({
       message: t('profile.removingUserData'),
@@ -525,16 +525,16 @@ const executeUserRemoval = async () => {
 
     // Call user removal service (we'll create this)
     await removeUserAndAllData(authStore.user.id)
-    
+
     // Show success message
     toastService?.show({
       message: t('profile.accountRemoved'),
       type: 'success'
     })
-    
+
     // Sign out the user
     await authStore.signOut()
-    
+
   } catch (error: any) {
     console.error('Failed to remove user account:', error)
     toastService?.show({
@@ -550,7 +550,7 @@ const executeUserRemoval = async () => {
 const removeUserAndAllData = async (userId: string) => {
   // Track removal progress
   const progressToastId = Date.now().toString()
-  
+
   await userRemovalService.removeUserAndAllData(
     userId,
     (progress: UserRemovalProgress) => {

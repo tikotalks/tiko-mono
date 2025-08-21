@@ -118,7 +118,7 @@ node scripts/generate-i18n-from-worker.js --app=timer --env=production
 </template>
 
 <script setup>
-import { useI18n } from '@tiko/ui'
+import { useI18n } from '@tiko/core'
 
 const { t } = useI18n()
 </script>
@@ -132,7 +132,7 @@ const { t } = useI18n()
 </template>
 
 <script setup>
-import { useI18n } from '@tiko/ui'
+import { useI18n } from '@tiko/core'
 
 const { t } = useI18n()
 const userName = ref('John')
@@ -151,7 +151,7 @@ const userName = ref('John')
 </template>
 
 <script setup>
-import { useI18n } from '@tiko/ui'
+import { useI18n } from '@tiko/core'
 
 const { t, setLocale, availableLocales } = useI18n()
 

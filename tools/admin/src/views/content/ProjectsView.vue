@@ -45,8 +45,8 @@
           </div>
         </TListCell>
         <TListCell type="text" :content="pageCount[project.id] || 0" />
-        <TListCell 
-          type="actions" 
+        <TListCell
+          type="actions"
           :actions="[
             listActions.edit((e) => { e.stopPropagation(); editProject(project) }),
             listActions.custom({
@@ -76,11 +76,11 @@ import {
   TList,
   TListItem,
   TListCell,
-  useI18n,
   listActions,
   ToastService
 } from '@tiko/ui'
-import { contentService } from '@tiko/core'
+import { contentService,
+  useI18n } from '@tiko/core'
 import { type PopupService } from "@tiko/ui";
 import type { ContentProject } from '@tiko/core'
 import CreateProjectDialog from './components/CreateProjectDialog.vue'

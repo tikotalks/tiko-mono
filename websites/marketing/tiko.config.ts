@@ -6,8 +6,8 @@ export default defineConfig({
   name: 'Tiko',
   description: 'Marketing Website for Tiko',
   icon: {
-    mediaId:'987bc1c3-8f28-4573-8d49-e361016a0f3c',
-    color: BaseColors.PURPLE,
+    mediaId:'eb3a81ba-f7e1-417f-bd41-8d69550475f4',
+    color: BaseColors.TURQUOISE,
   },
   theme: {
     primary: BaseColors.PURPLE,

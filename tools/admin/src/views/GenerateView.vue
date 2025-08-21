@@ -262,7 +262,7 @@
 import { ref, computed, onMounted, onUnmounted, watch, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
-import { useI18n, type ToastService } from '@tiko/ui'
+import { type ToastService } from '@tiko/ui'
 import { useAuthStore, userMediaService, type UserMedia, type MediaStatus } from '@tiko/core'
 import {
   TAppLayout,

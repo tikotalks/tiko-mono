@@ -126,7 +126,7 @@
 import { ref, inject } from 'vue'
 import { useBemm } from 'bemm'
 import { useUpload } from '@tiko/core'
-import { useI18n, TButton, TIcon, TSpinner } from '@tiko/ui'
+import { TButton, TIcon, TSpinner } from '@tiko/ui'
 import type { ToastService } from '@tiko/ui'
 import { Icons } from 'open-icon'
 import { uploadService } from '../services/upload.service'

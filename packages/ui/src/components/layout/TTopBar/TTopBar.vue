@@ -68,7 +68,7 @@ import TUserMenu from '../../navigation/TUserMenu/TUserMenu.vue'
 import TContextMenu from '../../navigation/TContextMenu/TContextMenu.vue'
 import { useParentMode } from '../../../composables/useParentMode'
 import TParentModePinInput from '../../auth/TParentMode/TParentModePinInput.vue'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 
 import type { TTopBarProps, TTopBarEmits } from './TTopBar.model'
 

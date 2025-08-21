@@ -101,7 +101,7 @@ export default {
           throw new Error(`Failed to fetch count: ${response.status} ${response.statusText}`)
         }
         
-        const countResult = await response.json()
+        const countResult = await response.json() as any[]
         const totalCount = countResult[0]?.count || 0
         
         return new Response(JSON.stringify({

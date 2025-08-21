@@ -57,7 +57,7 @@
 
 <script setup lang="ts">
 import { useBemm } from 'bemm';
-import { useI18n, TButton, TKeyValue } from '@tiko/ui';
+import { TButton, TKeyValue } from '@tiko/ui';
 import type { UserMedia } from '@tiko/core';
 
 const bemm = useBemm('media-detail-dialog');

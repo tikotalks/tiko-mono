@@ -155,14 +155,14 @@ import {
   TSpinner,
   TIcon,
   TDraggableList,
-  useI18n,
   TChip,
   type ToastService,
   type PopupService,
   Colors
 } from '@tiko/ui'
 import { Icons } from 'open-icon'
-import { contentService, type ItemTemplate, type Item, type ContentField } from '@tiko/core'
+import { contentService, type ItemTemplate, type Item, type ContentField,
+  useI18n } from '@tiko/core'
 import FieldEditor from './components/FieldEditor.vue'
 import AdminPageHeader from '@/components/AdminPageHeader.vue'
 import EditItemTemplateDialog from './components/EditItemTemplateDialog.vue'

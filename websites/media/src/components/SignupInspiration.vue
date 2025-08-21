@@ -29,8 +29,8 @@
 import { useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
 import { Icons } from 'open-icon'
+import { useI18n } from '@tiko/core'
 import {
-  useI18n,
   TButton,
   TIcon
 } from '@tiko/ui'

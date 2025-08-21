@@ -20,15 +20,15 @@
         />
       </div>
     </div>
-    
+
     <h3 :class="bemm('title')">{{ group.title }}</h3>
-    
+
     <div :class="bemm('stats')">
       <span :class="bemm('count')">
         {{ t('todo.completedCount, { completed: progress.completed, total: progress.total }') }}
       </span>
       <div :class="bemm('progress')">
-        <div 
+        <div
           :class="bemm('progress-bar')"
           :style="{ width: `${progress.percentage}%` }"
         />
@@ -39,7 +39,8 @@
 
 <script setup lang="ts">
 import { useBemm } from 'bemm'
-import { TIcon, TButton, useI18n } from '@tiko/ui'
+import { useI18n } from '@tiko/core';
+import { TIcon, TButton } from '@tiko/ui'
 import type { TodoGroup } from '../types/todo.types'
 
 interface Props {

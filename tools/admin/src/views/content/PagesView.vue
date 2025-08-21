@@ -71,7 +71,7 @@
                     </a>
                     <TChip size="small" type="outline">{{ item.language_code.toUpperCase() }}</TChip>
                   </div>
-                  
+
                   <!-- Show translations inline if they exist -->
                   <div v-if="item.translations && item.translations.length > 0" :class="bemm('translations')">
                     <div
@@ -104,14 +104,14 @@
                   </div>
                 </div>
               </div>
-              
+
               <div
                 v-if="selectedProjectId === 'all'"
                 :class="bemm('cell', ['', 'project'])"
               >
                 {{ getProjectName(item.project_id) }}
               </div>
-              
+
               <div :class="bemm('cell', ['', 'metadata'])">
                 <div :class="bemm('metadata')">
                   <!-- Show available translation count -->
@@ -122,7 +122,7 @@
                   >
                     {{ item.translations.length }} {{ item.translations.length === 1 ? 'translation' : 'translations' }}
                   </TChip>
-                  
+
                   <!-- Other metadata -->
                   <TChip
                     v-for="meta in getPageMetadata(item)"
@@ -134,7 +134,7 @@
                   </TChip>
                 </div>
               </div>
-              
+
               <div :class="bemm('cell', ['', 'toggle'])">
                 <TToggle
                   :model-value="item.show_in_navigation"
@@ -142,7 +142,7 @@
                   size="small"
                 />
               </div>
-              
+
               <div :class="bemm('cell', ['', 'toggle'])">
                 <TToggle
                   :model-value="item.is_published"
@@ -211,11 +211,11 @@ import {
   TInputSelect,
   TToggle,
   TDragList,
-  useI18n,
   type ToastService,
   type PopupService,
 } from '@tiko/ui';
-import { contentService } from '@tiko/core';
+import { contentService,
+  useI18n, } from '@tiko/core';
 import type { ContentPage, ContentProject } from '@tiko/core';
 
 // Extend ContentPage type to include translations
@@ -267,8 +267,8 @@ const hierarchicalPages = computed(() => {
   // Recursive function to add page and its children
   function addPageWithChildren(page: ContentPage, depth: number = 0) {
     // Add depth info and translations to page
-    const pageWithDepth = { 
-      ...page, 
+    const pageWithDepth = {
+      ...page,
       depth,
       translations: getPageTranslations(page.id)
     };
@@ -888,7 +888,7 @@ onMounted(() => {
     align-items: center;
     justify-content: space-between;
     padding: var(--space-xs) 0;
-    
+
     &:not(:last-child) {
       border-bottom: 1px solid var(--color-border-light);
     }
@@ -900,7 +900,7 @@ onMounted(() => {
     padding: 0;
     font-size: var(--font-size-s);
     color: var(--color-foreground-secondary);
-    
+
     &:hover {
       color: var(--color-primary);
     }

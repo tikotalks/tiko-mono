@@ -22,7 +22,7 @@ import { TMarkdownRenderer } from '@tiko/ui';
 import { processTitle } from '@/utils/processTitle';
 import { ref, onMounted, onUnmounted } from 'vue';
 
-import { useI18n } from '@tiko/ui';
+import { useI18n } from '@tiko/core';
 
 const { t } = useI18n();
 

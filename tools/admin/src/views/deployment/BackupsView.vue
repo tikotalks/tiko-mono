@@ -116,7 +116,7 @@
 <script setup lang="ts">
 import { ref, onMounted, inject } from 'vue';
 import { useBemm } from 'bemm';
-import { TList, TListItem, TListCell, TChip, TSpinner, useI18n, listActions, Size } from '@tiko/ui';
+import { TList, TListItem, TListCell, TChip, TSpinner, listActions, Size } from '@tiko/ui';
 import { Icons } from 'open-icon';
 import { THeader, TButton, TIcon, type PopupService, type ToastService } from '@tiko/ui';
 import { backupService, type DatabaseBackup } from '@tiko/core';

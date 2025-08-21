@@ -101,15 +101,15 @@ import { Icons } from 'open-icon';
 import { useBemm } from 'bemm';
 import {
   useCollectionsStore,
+  useI18n,
   type MediaCollection
 } from '@tiko/core';
-import type { PopupService } from '@tiko/ui';
 import {
-  useI18n,
   TButton,
   TIcon,
   TSpinner,
-  TChip
+  TChip,
+  type  PopupService
 } from '@tiko/ui';
 
 const bemm = useBemm('add-to-collection-dialog');
@@ -176,7 +176,7 @@ const saveChanges = async () => {
     const toAdd = Array.from(selectedCollectionIds.value).filter(
       id => !originalCollectionIds.value.has(id)
     );
-    
+
     // Find collections to remove from
     const toRemove = Array.from(originalCollectionIds.value).filter(
       id => !selectedCollectionIds.value.has(id)
@@ -184,13 +184,13 @@ const saveChanges = async () => {
 
     // Perform all operations
     const promises = [];
-    
+
     // If we have multiple items, add/remove all of them
     const itemsToProcess = props.multipleItems || [{
       id: props.mediaItem.id,
       type: props.mediaItem.type
     }];
-    
+
     for (const collectionId of toAdd) {
       if (props.multipleItems) {
         // Add all multiple items to this collection
@@ -212,7 +212,7 @@ const saveChanges = async () => {
         );
       }
     }
-    
+
     for (const collectionId of toRemove) {
       if (props.multipleItems) {
         // Remove all multiple items from this collection
@@ -236,13 +236,13 @@ const saveChanges = async () => {
         );
       }
     }
-    
+
     await Promise.all(promises);
 
     if (props.onAdd && toAdd.length > 0) {
       props.onAdd(toAdd[0]); // Call with first added collection for compatibility
     }
-    
+
     emit('close');
   } catch (error) {
     console.error('Failed to update collections:', error);
@@ -255,9 +255,9 @@ const saveChanges = async () => {
 const hasChanges = computed(() => {
   const current = Array.from(selectedCollectionIds.value).sort();
   const original = Array.from(originalCollectionIds.value).sort();
-  
+
   if (current.length !== original.length) return true;
-  
+
   return !current.every((id, index) => id === original[index]);
 });
 
@@ -291,22 +291,22 @@ const loadCollections = async () => {
     // Load user collections
     await collectionsStore.loadCollections();
     collections.value = collectionsStore.collections;
-    
+
     // Get collections that already contain this item
     const collectionsWithItem = await collectionsStore.getCollectionsForMediaItem(
       props.mediaItem.id,
       props.mediaItem.type
     );
-    
+
     // Build set of collection IDs that contain the item
     collectionsContainingItem.value = new Set(collectionsWithItem.map(c => c.id));
-    
+
     // Initialize selected collections with ones that already contain the item
     for (const collection of collectionsWithItem) {
       selectedCollectionIds.value.add(collection.id);
       originalCollectionIds.value.add(collection.id);
     }
-    
+
     // Force reactivity
     selectedCollectionIds.value = new Set(selectedCollectionIds.value);
   } catch (error) {
@@ -402,7 +402,7 @@ onMounted(() => {
 
     &--already-in {
       opacity: 0.8;
-      
+
       &:not(.add-to-collection-dialog__collection-item--selected) {
         background: color-mix(in srgb, var(--color-success), transparent 95%);
       }

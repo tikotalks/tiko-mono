@@ -38,7 +38,8 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TInputCheckbox, TInputNumber, useI18n } from '@tiko/ui'
+import { useI18n } from '@tiko/core';
+import { TButton, TInputCheckbox, TInputNumber } from '@tiko/ui'
 import type { TimerMode, TimerSettings } from '../composables/useTimer'
 
 interface Props {

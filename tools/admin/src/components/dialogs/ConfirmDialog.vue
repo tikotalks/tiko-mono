@@ -15,7 +15,8 @@
 
 <script setup lang="ts">
 import { useBemm } from 'bemm'
-import { TButton, useI18n } from '@tiko/ui'
+import { TButton } from '@tiko/ui'
+import { useI18n } from '@tiko/core'
 
 interface Props {
   title?: string

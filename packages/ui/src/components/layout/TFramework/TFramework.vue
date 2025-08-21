@@ -57,7 +57,7 @@ import { popupService } from '../../feedback/TPopup/TPopup.service'
 import { toastService } from '../../feedback/TToast/TToast.service'
 import { useTikoConfig } from '../../../composables/useTikoConfig'
 import { createIconRegistry, iconRegistryKey } from '../../../icons/registry'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 import { usePWAUpdate } from '../../../composables/usePWAUpdate'
 import type { TFrameworkProps, TFrameworkEmits } from './TFramework.model'
 import type { Locale } from '../../i18n/types'

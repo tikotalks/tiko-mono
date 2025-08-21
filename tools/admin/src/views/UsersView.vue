@@ -128,13 +128,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, inject } from 'vue'
 import { useBemm } from 'bemm'
-import { TCard, TButton, TIcon, TSpinner, TInput, TChip, ConfirmDialog, useI18n } from '@tiko/ui'
+import { TCard, TButton, TIcon, TSpinner, TInput, TChip } from '@tiko/ui'
 import { Icons } from 'open-icon'
-import { userService } from '@tiko/core'
-import type { PopupService, ToastService } from '@tiko/ui'
-import type { UserProfile } from '@tiko/core'
+import { useI18n, userService } from '@tiko/core'
+import type { PopupService, ToastService, UserProfile } from '@tiko/core'
 import UserEditModal from '../components/UserEditModal.vue'
 import AdminPageHeader from '../components/AdminPageHeader.vue'
+import ConfirmDialog from '../components/dialogs/ConfirmDialog.vue'
 
 
 const bemm = useBemm('users-view')

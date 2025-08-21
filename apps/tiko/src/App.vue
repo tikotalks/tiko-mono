@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { TFramework, type FrameworkConfig, useI18n, TOfflineIndicator } from '@tiko/ui'
+import { TFramework, type FrameworkConfig, TOfflineIndicator } from '@tiko/ui'
 import { useEventBus, useAppStore } from '@tiko/core'
 import tikoConfig from '../tiko.config'
 import { initializeTranslations } from '@tiko/core'

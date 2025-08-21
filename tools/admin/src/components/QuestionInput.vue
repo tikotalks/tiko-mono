@@ -55,7 +55,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { TButton, useI18n } from '@tiko/ui'
+import { useI18n } from '@tiko/core'
+import { TButton } from '@tiko/ui'
 import { useYesNoStore } from '../stores/yesno'
 
 const emit = defineEmits<{

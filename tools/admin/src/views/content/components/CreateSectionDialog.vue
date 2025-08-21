@@ -175,11 +175,12 @@ import {
   TInputText,
   TTextArea,
   TFormGroup,
-  useI18n,
   TInputCheckbox,
   TInputSelect,
   TCard
 } from '@tiko/ui'
+import {
+  useI18n } from "@tiko/core";
 import { Icons } from 'open-icon'
 import { kebabCase } from '@sil/case'
 import { contentService, translationService } from '@tiko/core'

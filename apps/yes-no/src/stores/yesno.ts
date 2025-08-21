@@ -12,7 +12,7 @@ export interface YesNoSettings {
 export const useYesNoStore = defineStore('yesno', () => {
   const appStore = useAppStore()
   const authStore = useAuthStore()
-  
+
   // State
   const currentQuestion = ref<string>('Do you want to play?')
   const questionHistory = ref<string[]>([]) // This will be populated from Items
@@ -43,7 +43,7 @@ export const useYesNoStore = defineStore('yesno', () => {
       // Favorites first
       if (a.is_favorite && !b.is_favorite) return -1
       if (!a.is_favorite && b.is_favorite) return 1
-      
+
       // Then by created date (newest first)
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     }).slice(0, 10)
@@ -54,10 +54,10 @@ export const useYesNoStore = defineStore('yesno', () => {
     if (!question.trim()) return
 
     currentQuestion.value = question.trim()
-    
+
     // Save current question to settings
     await saveState()
-    
+
     // Save as an item if not already present
     if (!questionHistory.value.includes(question.trim())) {
       try {
@@ -68,8 +68,9 @@ export const useYesNoStore = defineStore('yesno', () => {
           questionHistory.value = [question.trim(), ...questionHistory.value].slice(0, 20)
           return
         }
-        
-        await itemService.createItem(userId, {
+
+        await itemService.createItem({
+          user_id: userId,
           app_name: 'yesno',
           type: 'question',
           name: question.trim(),
@@ -78,7 +79,7 @@ export const useYesNoStore = defineStore('yesno', () => {
             timestamp: new Date().toISOString()
           }
         })
-        
+
         // Reload questions from items
         await loadQuestionsFromItems()
       } catch (error) {
@@ -127,10 +128,10 @@ export const useYesNoStore = defineStore('yesno', () => {
     try {
       if (speakFn && translateFn) {
         // Get translated answer
-        const translatedAnswer = answer === 'yes' 
-          ? translateFn('common.yes') 
+        const translatedAnswer = answer === 'yes'
+          ? translateFn('common.yes')
           : translateFn('common.no')
-        
+
         // Use enhanced TTS function passed from component
         await speakFn(translatedAnswer, {})
       }
@@ -153,7 +154,7 @@ export const useYesNoStore = defineStore('yesno', () => {
   const updateSettings = async (newSettings: Partial<YesNoSettings>) => {
     const currentSettings = settings.value
     const updatedSettings = { ...currentSettings, ...newSettings }
-    
+
     await appStore.updateAppSettings('yes-no', updatedSettings)
   }
 
@@ -173,21 +174,21 @@ export const useYesNoStore = defineStore('yesno', () => {
         // In skip auth mode, questions are only stored locally
         return
       }
-      
-      const items = await itemService.getItems(userId, { 
+
+      const items = await itemService.getItems(userId, {
         app_name: 'yesno',
-        type: 'question' 
+        type: 'question'
       })
-      console.log('[YesNoStore] Loaded questions from items:', items.length)
-      
+      console.log('[YesNoStore] Loaded questions from items:', items.data?.length || 0)
+
       // Store full items
-      questionItems.value = items
-      
+      questionItems.value = items.data ?? []
+
       // Sort by created_at and get the last 20
-      const sortedItems = items.sort((a, b) => 
+      const sortedItems = (items.data ?? []).sort((a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       )
-      
+
       questionHistory.value = sortedItems.slice(0, 20).map(item => item.name).reverse()
     } catch (error) {
       console.error('[YesNoStore] Failed to load questions from items:', error)
@@ -199,17 +200,17 @@ export const useYesNoStore = defineStore('yesno', () => {
   const loadState = async () => {
     console.log('[YesNoStore] Loading state...')
     await appStore.loadAppSettings('yes-no')
-    
+
     const appSettings = appStore.getAppSettings('yes-no')
     console.log('[YesNoStore] Retrieved settings:', appSettings)
-    
+
     if (appSettings?.currentQuestion) {
       currentQuestion.value = appSettings.currentQuestion
       console.log('[YesNoStore] Loaded question:', appSettings.currentQuestion)
     } else {
       console.log('[YesNoStore] No saved question found, using default')
     }
-    
+
     // Load questions from Items service
     await loadQuestionsFromItems()
   }
@@ -222,15 +223,15 @@ export const useYesNoStore = defineStore('yesno', () => {
         console.error('[YesNoStore] Item not found:', itemId)
         return
       }
-      
+
       console.log('[YesNoStore] Toggling favorite from', item.is_favorite, 'to', !item.is_favorite)
-      
+
       const result = await itemService.updateItem(itemId, {
         is_favorite: !item.is_favorite
       })
-      
+
       console.log('[YesNoStore] Update result:', result)
-      
+
       // Reload to reflect changes
       await loadQuestionsFromItems()
     } catch (error) {
@@ -243,7 +244,7 @@ export const useYesNoStore = defineStore('yesno', () => {
     try {
       const result = await itemService.deleteItem(itemId)
       console.log('[YesNoStore] Delete result:', result)
-      
+
       // Reload to reflect changes
       await loadQuestionsFromItems()
     } catch (error) {
@@ -260,13 +261,13 @@ export const useYesNoStore = defineStore('yesno', () => {
         questionHistory.value = []
         return
       }
-      
+
       // Delete all question items for this user
-      const items = await itemService.getItems(userId, { 
+      const items = await itemService.getItems(userId, {
         app_name: 'yesno',
-        type: 'question' 
+        type: 'question'
       })
-      for (const item of items) {
+      for (const item of items.data ?? []) {
         await itemService.deleteItem(item.id)
       }
       questionHistory.value = []
@@ -282,12 +283,12 @@ export const useYesNoStore = defineStore('yesno', () => {
     questionHistory,
     questionItems,
     isPlaying,
-    
+
     // Getters
     settings,
     recentQuestions,
     recentQuestionItems,
-    
+
     // Actions
     setQuestion,
     selectQuestion,

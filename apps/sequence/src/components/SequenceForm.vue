@@ -93,7 +93,6 @@ import {
   TColorPicker,
   TColorPickerPopup,
   TImageInput,
-  useI18n,
   BaseColors,
   TInputText,
   TInputCheckbox,
@@ -103,7 +102,10 @@ import {
 } from '@tiko/ui'
 import { Icons } from 'open-icon'
 import { useSequenceStore } from '../stores/sequence'
-import { useAuthStore } from '@tiko/core'
+import {
+  useAuthStore,
+  useI18n
+} from '@tiko/core'
 
 interface SequenceItem {
   id: string

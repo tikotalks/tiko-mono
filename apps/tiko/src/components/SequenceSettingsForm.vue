@@ -42,7 +42,8 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { TInputCheckbox, TInputSwitch, useI18n } from '@tiko/ui'
+import { useI18n } from '@tiko/core';
+import { TInputCheckbox, TInputSwitch } from '@tiko/ui'
 import { useBemm } from 'bemm'
 
 interface SequenceSettings {

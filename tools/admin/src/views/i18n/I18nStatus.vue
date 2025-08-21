@@ -216,7 +216,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useBemm } from 'bemm';
-import { useI18n } from '@tiko/ui';
+import { useI18n } from '@tiko/core';
 import { TCard, TKeyValue, TChip, TInput } from '@tiko/ui';
 import { Icons } from 'open-icon';
 

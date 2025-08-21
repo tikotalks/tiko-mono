@@ -69,7 +69,7 @@
 import { ref, computed, watch } from 'vue'
 import { useBemm } from 'bemm'
 import { Icons } from 'open-icon'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 import TList from '../TList/TList.vue'
 import TDragList from '../TDragList/TDragList.vue'
 import TButton from '../../ui-elements/TButton/TButton.vue'

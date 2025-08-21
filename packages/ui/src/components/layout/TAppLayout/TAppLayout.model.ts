@@ -1,5 +1,5 @@
 import { TikoConfig } from '../../../types'
-import type { ContextMenuItem } from '../TContextMenu'
+import type { ContextMenuItem } from '../../navigation/TContextMenu/ContextMenu.model'
 
 export interface TAppLayoutProps {
   /**

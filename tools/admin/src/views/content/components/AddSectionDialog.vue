@@ -67,9 +67,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TFormGroup, TInputSelect, TInputText, TSpinner, TEmptyState, useI18n } from '@tiko/ui'
+import { TButton, TFormGroup, TInputSelect, TInputText, TSpinner, TEmptyState, } from '@tiko/ui'
 import { Icons } from 'open-icon'
-import { contentService } from '@tiko/core'
+import { contentService, useI18n } from '@tiko/core'
 import type { ContentSection, PageSection } from '@tiko/core'
 
 interface Props {
@@ -152,7 +152,7 @@ function handleAdd() {
   if (!isValid.value) return
 
   const section = selectedSection.value!
-  
+
   const sectionData = {
     // Reference the section instance
     section_id: section.id,

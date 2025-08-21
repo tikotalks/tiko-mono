@@ -35,8 +35,8 @@
         <TButton type="button" @click="$emit('close')">
           {{ t('common.cancel') }}
         </TButton>
-        <TButton 
-          htmlButtonType="submit" 
+        <TButton
+          htmlButtonType="submit"
           color="primary"
           :disabled="!isValid || saving"
         >
@@ -50,9 +50,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useBemm } from 'bemm';
-import type { CreateCollectionData } from '@tiko/core';
+import { type CreateCollectionData,
+  useI18n, } from '@tiko/core';
 import {
-  useI18n,
   TInputText,
   TInputTextArea,
   TInputCheckbox,
@@ -105,7 +105,7 @@ const validateName = () => {
 // Handle form submission
 const handleSubmit = async () => {
   validateName();
-  
+
   if (!isValid.value) {
     return;
   }

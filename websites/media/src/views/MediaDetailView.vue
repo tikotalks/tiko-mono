@@ -58,10 +58,9 @@ import { ref, computed, onMounted, inject, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
 import { Icons } from 'open-icon'
-import { useImageUrl, useImages, mediaService } from '@tiko/core'
+import { useImageUrl, useImages, mediaService, useI18n } from '@tiko/core'
 import type { MediaItem, ToastService } from '@tiko/ui'
 import {
-  useI18n,
   TButton,
   TSpinner,
   TEmptyState

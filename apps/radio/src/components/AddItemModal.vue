@@ -155,7 +155,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useBemm } from 'bemm'
-import { TInputText, TButton, TIcon, TTextArea, useI18n } from '@tiko/ui'
+import { TInputText, TButton, TIcon, TTextArea } from '@tiko/ui'
+import { useI18n } from '@tiko/core';
 
 // Local utility function for formatting duration
 const formatDuration = (seconds: number): string => {

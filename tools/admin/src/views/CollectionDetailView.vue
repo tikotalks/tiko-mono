@@ -114,16 +114,16 @@ import { ref, computed, onMounted, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Icons } from 'open-icon';
 import { useBemm } from 'bemm';
-import { 
+import {
   useCollectionsStore,
   useAuthStore,
   useImageUrl,
+  useI18n,
   type MediaCollection,
   type CollectionItem
 } from '@tiko/core';
 import type { ToastService, PopupService } from '@tiko/ui';
 import {
-  useI18n,
   TCard,
   TButton,
   TIcon,
@@ -156,7 +156,7 @@ const isOwner = computed(() => collection.value?.user_id === authStore.user?.id)
 
 const collectionItems = computed(() => {
   if (!collection.value?.items) return [];
-  
+
   return collection.value.items.map(item => ({
     ...item,
     media: transformItemMedia(item)
@@ -166,7 +166,7 @@ const collectionItems = computed(() => {
 // Transform item media based on type
 const transformItemMedia = (item: CollectionItem) => {
   if (!item.media) return null;
-  
+
   if (item.item_type === 'media') {
     // Public media is already in the right format
     return item.media;
@@ -249,8 +249,8 @@ const toggleLike = async () => {
   try {
     const isLiked = await collectionsStore.toggleCollectionLike(collection.value.id);
     collection.value.is_liked = isLiked;
-    collection.value.like_count = isLiked ? 
-      (collection.value.like_count || 0) + 1 : 
+    collection.value.like_count = isLiked ?
+      (collection.value.like_count || 0) + 1 :
       Math.max((collection.value.like_count || 0) - 1, 0);
   } catch (error) {
     console.error('Failed to toggle like:', error);
@@ -265,7 +265,7 @@ const toggleLike = async () => {
 
 const viewMedia = async (e: Event, item: CollectionItem) => {
   e.preventDefault();
-  
+
   if (item.item_type === 'media') {
     router.push(`/media/${item.item_id}`);
   } else {
@@ -336,9 +336,9 @@ const removeFromCollection = async (item: CollectionItem) => {
             item.item_id,
             item.item_type
           );
-          
+
           popupService.close({ id: popupId });
-          
+
           toastService?.show({
             message: t('admin.collections.removedFromCollection'),
             type: 'success'

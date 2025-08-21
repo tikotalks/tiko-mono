@@ -38,11 +38,11 @@
 import { onMounted, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
-import { 
-  TIcon, 
+import { useI18n } from "@tiko/core";
+import {
+  TIcon,
   TDraggableList,
   useParentMode,
-  useI18n
 } from '@tiko/ui'
 import { storeToRefs } from 'pinia'
 import { useTodoStore } from '../stores/todo'
@@ -134,12 +134,12 @@ const handleReorderGroups = async (reorderedGroups: TodoGroup[]) => {
     gap: var(--space);
     text-align: center;
     color: var(--color-foreground);
-    
+
     h2 {
       margin: 0;
       font-size: 1.5rem;
     }
-    
+
     p {
       margin: 0;
       opacity: 0.7;

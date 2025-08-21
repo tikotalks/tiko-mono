@@ -79,9 +79,8 @@
 import { computed, onMounted } from 'vue'
 import { useBemm } from 'bemm'
 import { Icons } from 'open-icon'
-import { useCollectionsStore, useImageUrl } from '@tiko/core'
+import { useCollectionsStore, useImageUrl, useI18n} from '@tiko/core'
 import {
-  useI18n,
   TGrid,
   TIcon,
   TMediaTile

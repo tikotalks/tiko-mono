@@ -63,7 +63,7 @@ import {
   TCardGrid,
   type TCardTile
 } from '@tiko/ui';
-import { useI18n } from '@tiko/ui';
+import { useI18n } from '@tiko/core';
 import { useAuthStore } from '@tiko/core';
 import { Icons } from 'open-icon';
 import { appsService } from '../services/apps.service';

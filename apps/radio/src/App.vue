@@ -1,6 +1,6 @@
 <template>
-  <TFramework 
-    :config="frameworkConfig" 
+  <TFramework
+    :config="frameworkConfig"
     :background-image="backgroundImage"
     :loading="loading"
     @search="handleSearch"
@@ -31,7 +31,8 @@
 
 <script setup lang="ts">
 import { computed, ref, inject, onMounted } from 'vue'
-import { TFramework, TButton, type FrameworkConfig, useParentMode, useEventBus, useI18n } from '@tiko/ui'
+import { TFramework, TButton, type FrameworkConfig, useParentMode } from '@tiko/ui'
+import { useI18n, useEventBus } from '@tiko/core';
 import tikoConfig from '../tiko.config'
 import backgroundImage from './assets/app-icon-radio.png'
 import { initializeTranslations } from '@tiko/core'

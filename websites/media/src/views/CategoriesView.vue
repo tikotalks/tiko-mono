@@ -36,10 +36,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { useBemm } from 'bemm'
 import { Icons } from 'open-icon'
-import { useImages } from '@tiko/core'
+import { useImages, useI18n } from '@tiko/core'
 import type { MediaItem } from '@tiko/ui'
 import {
-  useI18n,
   TGrid,
   TSpinner,
   TEmptyState

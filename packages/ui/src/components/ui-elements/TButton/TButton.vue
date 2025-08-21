@@ -51,7 +51,7 @@
 <script setup lang="ts">
 import { computed, useSlots, ref, watch } from 'vue'
 import { useBemm } from 'bemm'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 import TIcon from '../TIcon/TIcon.vue'
 import { ButtonType, ButtonSize, ButtonColor, ButtonStatus, type TButtonProps } from './TButton.model'
 import TToolTip from '../../feedback/TToolTip/TToolTip.vue'

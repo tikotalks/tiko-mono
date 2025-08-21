@@ -1,3 +1,6 @@
+import type { ContextMenuItem } from '../../navigation/TContextMenu/ContextMenu.model'
+
+
 export interface MediaItem {
   id: string
   title?: string
@@ -15,7 +18,6 @@ export interface MediaItem {
   height?: number
 }
 
-import type { ContextMenuItem } from '../TContextMenu/ContextMenu.model'
 
 export interface TMediaTileProps {
   media?: MediaItem

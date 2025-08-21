@@ -35,7 +35,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TInputText, TInputSwitch, useI18n } from '@tiko/ui'
+import { TButton, TInputText, TInputSwitch} from '@tiko/ui'
+import { useI18n  } from "@tiko/core";
 
 interface Props {
   onCreate: (name: string, isPublic: boolean) => void

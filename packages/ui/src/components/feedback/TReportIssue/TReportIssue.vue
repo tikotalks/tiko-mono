@@ -54,7 +54,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useBemm } from 'bemm'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 import { useBuildInfo } from '../../../composables/useBuildInfo'
 import { reportIssueService } from '../../../services/reportIssue.service'
 import TButton from '../../ui-elements/TButton/TButton.vue'

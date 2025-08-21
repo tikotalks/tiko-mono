@@ -7,7 +7,7 @@
       <template #actions>
         <TButton
           @click="router.push({ name: 'I18nDatabase' })"
-          :icon="Icons.DATABASE"
+          :icon="Icons.BOARD_MULTIPLY2"
           type="outline"
         >
           {{ t('admin.i18n.import.backToDatabase') }}
@@ -282,7 +282,6 @@ import {
   TList,
   TListItem,
   TListCell,
-  useI18n,
   ToastService,
   Colors,
   TCard,
@@ -293,6 +292,7 @@ import {
   useI18nDatabaseService,
   useUserPreferences,
   USER_PREFERENCE_KEYS,
+  useI18n,
 } from '@tiko/core';
 import type { Language } from '@tiko/core';
 import AdminPageHeader from '@/components/AdminPageHeader.vue';

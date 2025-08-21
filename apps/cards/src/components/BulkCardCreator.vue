@@ -18,7 +18,7 @@
           @input="handleTitlesChange"
         />
       </TFormField>
-      
+
       <div :class="bemm('stats')">
         <span>{{ cardPreviews.length }} cards will be created</span>
       </div>
@@ -81,9 +81,9 @@ import {
   TIcon,
   BaseColors,
   debounce,
-  useI18n,
 } from '@tiko/ui';
-import { useImages, useImageUrl } from '@tiko/core';
+import {
+  useI18n, useImages, useImageUrl } from '@tiko/core';
 import type { TCardTile as CardTileType } from '@tiko/ui';
 import { TCardTile } from '@tiko/ui';
 import CardForm from './CardForm.vue';
@@ -117,7 +117,7 @@ const imageCache = new Map<string, string>();
 
 // Color palette that works well with different themes
 const smartColors = [
-  'primary', 'secondary', 'accent', 
+  'primary', 'secondary', 'accent',
   'blue', 'green', 'orange', 'purple', 'pink', 'teal'
 ];
 
@@ -128,7 +128,7 @@ const getSmartColor = (title: string): string => {
   for (let i = 0; i < title.length; i++) {
     hash = title.charCodeAt(i) + ((hash << 5) - hash);
   }
-  
+
   // Use specific colors for common categories
   const lowerTitle = title.toLowerCase();
   if (lowerTitle.includes('food') || lowerTitle.includes('fruit') || lowerTitle.includes('vegetable')) {
@@ -143,7 +143,7 @@ const getSmartColor = (title: string): string => {
   if (lowerTitle.includes('love') || lowerTitle.includes('heart')) {
     return 'pink';
   }
-  
+
   // Otherwise use hash to pick a color
   return smartColors[Math.abs(hash) % smartColors.length];
 };
@@ -158,20 +158,20 @@ const findBestImage = async (title: string): Promise<string> => {
   try {
     // Set the search query
     searchImages(title);
-    
+
     // Wait a bit for the reactive search to update
     await new Promise(resolve => setTimeout(resolve, 100));
-    
+
     // Get the filtered results
     if (filteredImages.value.length > 0) {
       const searchTerm = title.toLowerCase();
-      
+
       // First, try to find exact matches in title/filename
       let bestMatch = filteredImages.value.find(img => {
         const imgTitle = ((img as any).title || (img as any).original_filename || '').toLowerCase();
         return imgTitle === searchTerm;
       });
-      
+
       // If no exact match, look for images where the search term is a complete word
       if (!bestMatch) {
         bestMatch = filteredImages.value.find(img => {
@@ -181,7 +181,7 @@ const findBestImage = async (title: string): Promise<string> => {
           return wordBoundaryRegex.test(imgTitle);
         });
       }
-      
+
       // If still no match, check tags for exact matches
       if (!bestMatch) {
         bestMatch = filteredImages.value.find(img => {
@@ -189,12 +189,12 @@ const findBestImage = async (title: string): Promise<string> => {
           return tags.some((tag: string) => tag.toLowerCase() === searchTerm);
         });
       }
-      
+
       // If still no match, use the first result
       if (!bestMatch) {
         bestMatch = filteredImages.value[0];
       }
-      
+
       const imageUrl = bestMatch.original_url || (bestMatch as any).url || '';
       // Cache the result
       imageCache.set(title, imageUrl);
@@ -203,7 +203,7 @@ const findBestImage = async (title: string): Promise<string> => {
   } catch (error) {
     console.error(`Failed to find image for "${title}":`, error);
   }
-  
+
   // Cache empty result too
   imageCache.set(title, '');
   return ''; // No image found
@@ -215,16 +215,16 @@ const processCards = debounce(async () => {
     .split('\n')
     .map(t => t.trim())
     .filter(t => t.length > 0);
-  
+
   // Create a map of existing previews for preservation
   const existingPreviews = new Map<string, CardPreview>();
   cardPreviews.value.forEach(preview => {
     existingPreviews.set(preview.title, preview);
   });
-  
+
   // Create or update previews
   const newPreviews: CardPreview[] = [];
-  
+
   for (const title of titles) {
     // Check if we already have this preview
     const existing = existingPreviews.get(title);
@@ -242,7 +242,7 @@ const processCards = debounce(async () => {
         editing: false
       };
       newPreviews.push(newPreview);
-      
+
       // Load image asynchronously for new previews only
       findBestImage(title).then(imageUrl => {
         newPreview.image = imageUrl;
@@ -250,7 +250,7 @@ const processCards = debounce(async () => {
       });
     }
   }
-  
+
   cardPreviews.value = newPreviews;
 }, 500);
 
@@ -260,9 +260,9 @@ const handleTitlesChange = () => {
 
 const handleCreateAll = async () => {
   if (cardPreviews.value.length === 0) return;
-  
+
   isProcessing.value = true;
-  
+
   try {
     const cards: Partial<CardTileType>[] = cardPreviews.value.map((preview, index) => ({
       title: preview.title,
@@ -273,7 +273,7 @@ const handleCreateAll = async () => {
       type: 'card' as any,
       index
     }));
-    
+
     emit('create', cards);
   } finally {
     isProcessing.value = false;
@@ -318,12 +318,12 @@ const openEditPreview = (preview: CardPreview, index: number) => {
         preview.speech = updatedCard.speech || preview.speech;
         preview.color = updatedCard.color || preview.color;
         preview.image = updatedCard.image || preview.image;
-        
+
         // Update the titles input to reflect the new title
         const titles = titlesInput.value.split('\n');
         titles[index] = preview.title;
         titlesInput.value = titles.join('\n');
-        
+
         popupService.close();
       },
       onCancel: () => {
@@ -344,39 +344,39 @@ onMounted(async () => {
   padding: var(--space);
   max-width: 800px;
   width: 100%;
-  
+
   &__header {
     margin-bottom: var(--space-l);
-    
+
     h3 {
       margin: 0 0 var(--space-xs) 0;
     }
-    
+
     p {
       margin: 0;
       color: var(--color-text-muted);
       font-size: var(--font-size-sm);
     }
   }
-  
+
   &__input-section {
     margin-bottom: var(--space-l);
   }
-  
+
   &__stats {
     margin-top: var(--space-xs);
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
   }
-  
+
   &__preview-section {
     margin-bottom: var(--space-l);
-    
+
     h4 {
       margin: 0 0 var(--space) 0;
     }
   }
-  
+
   &__preview-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -387,19 +387,19 @@ onMounted(async () => {
     background: var(--color-background-secondary);
     border-radius: var(--border-radius);
   }
-  
+
   &__preview-tile {
     position: relative;
     width: 120px;
     height: 120px;
     cursor: pointer;
     transition: transform 0.2s ease;
-    
+
     &:hover {
       transform: scale(1.05);
     }
   }
-  
+
   &__preview-overlay {
     position: absolute;
     top: 0;

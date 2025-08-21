@@ -125,7 +125,7 @@
 import { ref } from 'vue'
 import { useBemm } from 'bemm'
 import { useUpload } from '@tiko/core'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 import { Icons } from 'open-icon'
 import TButton from '../../ui-elements/TButton/TButton.vue'
 import TIcon from '../../ui-elements/TIcon/TIcon.vue'

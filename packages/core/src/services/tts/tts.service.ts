@@ -241,7 +241,7 @@ class TTSService {
       const existingAudio = await this.checkExistingAudio(textHash);
       if (existingAudio) {
         // Convert the relative URL to CDN URL
-        const audioUrl = this.convertToCdnUrl(existingAudio.url);
+        const audioUrl = existingAudio.url ? this.convertToCdnUrl(existingAudio.url) : undefined;
         return {
           success: true,
           audioUrl,

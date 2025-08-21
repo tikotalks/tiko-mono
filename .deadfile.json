@@ -1,0 +1,25 @@
+{
+  "entry": [
+    "apps/*/src/main.ts",
+    "tools/*/src/main.ts",
+    "websites/*/src/main.ts",
+    "workers/*/src/index.ts"
+  ],
+  "exclude": [
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/*.d.ts",
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/coverage/**",
+    "**/.nuxt/**",
+    "**/.output/**"
+  ],
+  "fileExtensions": [
+    ".ts",
+    ".tsx",
+    ".js",
+    ".jsx",
+    ".vue"
+  ]
+}

@@ -35,10 +35,10 @@ import {
   TFormGroup,
   TInputSelect,
   TInputNumber,
-  useI18n,
   TInputCheckbox
 } from '@tiko/ui'
-import { contentService, type ItemTemplate } from '@tiko/core'
+import { contentService, type ItemTemplate,
+  useI18n } from '@tiko/core'
 
 interface Props {
   modelValue: Record<string, any>

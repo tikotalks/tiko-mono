@@ -185,11 +185,11 @@ import {
   useUserSettings,
   useAuthStore,
   userMediaService,
+  useI18n,
   type UserMedia
 } from '@tiko/core';
 import type { ToastService, MediaItem, PopupService } from '@tiko/ui';
 import {
-  useI18n,
   TCard,
   TButton,
   TIcon,
@@ -504,7 +504,7 @@ const addToCollection = async (media: UserMedia) => {
           });
         } catch (error: any) {
           console.error('Failed to add to collection:', error);
-          
+
           // Check if it's a duplicate error
           if (error.code === '23505') {
             toastService?.show({
@@ -638,11 +638,11 @@ onMounted(async () => {
 :global(.t-virtual-grid__item) {
   position: relative;
   z-index: 1;
-  
+
   &:hover {
     z-index: 100;
   }
-  
+
   // When context menu is active
   &:has(.context-panel--active) {
     z-index: 200;
@@ -653,7 +653,7 @@ onMounted(async () => {
 :global(.t-media-tile) {
   position: relative;
   transition: transform 0.2s ease, z-index 0s;
-  
+
   &:hover {
     z-index: 50;
   }

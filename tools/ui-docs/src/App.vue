@@ -23,7 +23,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { TFramework, TButton, useI18n } from '@tiko/ui'
+import { TFramework, TButton,  } from '@tiko/ui'
+import { useI18n } from "@tiko/core";
 import tikoConfig from '../tiko.config'
 import backgroundImage from './assets/ui-docs-icon.png'
 

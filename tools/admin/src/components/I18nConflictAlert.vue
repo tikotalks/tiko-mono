@@ -90,7 +90,8 @@
 import { computed } from 'vue'
 import { useBemm } from 'bemm'
 import { Icons } from 'open-icon'
-import { TAlert, TButton, TIcon, useI18n } from '@tiko/ui'
+import { useI18n } from '@tiko/core'
+import { TAlert, TButton, TIcon } from '@tiko/ui'
 
 interface Props {
   keys: Array<{ id: string; key: string }>

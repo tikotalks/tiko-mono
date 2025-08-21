@@ -3,28 +3,28 @@
     <div :class="bemm('header')">
       <h2 :class="bemm('title')">{{ title || appName }}</h2>
     </div>
-    
+
     <div v-if="appInfo?.content?.description || appInfo?.description" :class="bemm('description')">
       <p>{{ appInfo.content?.description || appInfo.description }}</p>
     </div>
-    
+
     <div v-if="!loading && !contentLoading" :class="bemm('info')">
       <div :class="bemm('info-row')">
         <span :class="bemm('label')">{{ t('common.version') }}:</span>
         <span :class="bemm('value')">{{ versionString }}</span>
       </div>
-      
+
       <div :class="bemm('info-row')">
         <span :class="bemm('label')">{{ t('common.build') }}:</span>
         <span :class="bemm('value')">{{ deploymentString }}</span>
       </div>
-      
+
       <div v-if="buildInfo?.environment" :class="bemm('info-row')">
         <span :class="bemm('label')">{{ t('common.environment') }}:</span>
         <span :class="bemm('value')">{{ buildInfo.environment }}</span>
       </div>
     </div>
-    
+
     <div v-else-if="loading || contentLoading" :class="bemm('loading')">
       <span>{{ t('common.loading') }}...</span>
     </div>
@@ -35,7 +35,7 @@
 import { ref, onMounted } from 'vue'
 import { useBemm } from 'bemm'
 import { useContent } from '@tiko/core'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 import { useBuildInfo } from '../../../composables/useBuildInfo'
 
 interface TAboutAppProps {
@@ -77,7 +77,7 @@ onMounted(async () => {
   } finally {
     contentLoading.value = false
   }
-  
+
   // Load build info
   await loadBuildInfo()
 })
@@ -87,34 +87,34 @@ onMounted(async () => {
 .about-app {
   padding: var(--space);
   text-align: center;
-  
+
   &__header {
     margin-bottom: var(--space);
   }
-  
+
   &__title {
     margin: 0;
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--color-foreground);
   }
-  
+
   &__description {
     margin: var(--space) 0;
     color: var(--color-text-secondary);
-    
+
     p {
       margin: 0;
       line-height: 1.5;
     }
   }
-  
+
   &__info {
     margin-top: var(--space-xl);
     font-size: 0.875rem;
     color: var(--color-text-secondary);
   }
-  
+
   &__info-row {
     margin: var(--space-s) 0;
     display: flex;
@@ -122,15 +122,15 @@ onMounted(async () => {
     justify-content: center;
     gap: var(--space-s);
   }
-  
+
   &__label {
     font-weight: 600;
   }
-  
+
   &__value {
     color: var(--color-foreground);
   }
-  
+
   &__loading {
     margin-top: var(--space-xl);
     color: var(--color-text-secondary);

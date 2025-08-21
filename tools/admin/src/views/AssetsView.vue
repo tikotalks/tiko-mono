@@ -116,7 +116,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, inject } from 'vue'
-import { TButton, TInput, TIcon, TSpinner, useI18n, TInputText, TInputSelect, TMediaTile, type PopupService } from '@tiko/ui'
+import { TButton, TInput, TIcon, TSpinner, TInputText, TInputSelect, TMediaTile, type PopupService } from '@tiko/ui'
 import { Icons } from 'open-icon'
 import { assetsService, type Asset } from '../services/assets.service'
 import AssetUploadDialog from '../components/AssetUploadDialog.vue'

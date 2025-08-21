@@ -14,7 +14,7 @@
         </TButton>
         <TButton
           color="primary"
-          :icon="Icons.EDIT"
+          :icon="Icons.EDIT_M"
           @click="handleEdit"
           :disabled="!page"
         >
@@ -215,10 +215,12 @@ import {
   TDragList,
   TIcon,
   ConfirmDialog,
-  useI18n
+  ToastService,
+  PopupService
+
 } from '@tiko/ui'
-import { contentService } from '@tiko/core'
-import type { ContentPage, ContentProject, PageSection, ContentSection, ToastService, PopupService } from '@tiko/core'
+import { contentService , useI18n} from '@tiko/core'
+import type { ContentPage, ContentProject, PageSection, ContentSection } from '@tiko/core'
 import { Icons } from 'open-icon'
 import CreatePageDialog from './components/CreatePageDialog.vue'
 import AddSectionDialog from './components/AddSectionDialog.vue'
@@ -228,7 +230,7 @@ const bemm = useBemm('page-detail-view')
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
-const toastService = inject<ToastService>('toastService')
+const toastService = inject<typeof ToastService>('toastService')
 const popupService = inject<PopupService>('popupService')
 
 // State
@@ -537,7 +539,7 @@ async function handleSectionsReorder(newSections: any[]) {
 
       if (!section_template_id) {
         console.warn('Section without section_template_id:', s.pageSection?.override_name || 'unknown')
-        
+
         // Try to get it from the section (template/instance) if available
         const fallbackTemplateId = s.section?.section_template_id || s.section?.id
         if (fallbackTemplateId) {

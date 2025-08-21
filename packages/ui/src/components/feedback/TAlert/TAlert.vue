@@ -18,7 +18,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useBemm } from 'bemm'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 import TIcon from '../../ui-elements/TIcon/TIcon.vue'
 import type { TAlertProps } from './TAlert.model'
 

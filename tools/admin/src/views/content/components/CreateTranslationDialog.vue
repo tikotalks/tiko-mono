@@ -34,7 +34,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useBemm } from 'bemm'
-import { TFormGroup, TButton, TInputSelect, useI18n, TInputText } from '@tiko/ui'
+import { TFormGroup, TButton, TInputSelect, TInputText } from '@tiko/ui'
 import type { Item } from '@tiko/core'
 
 const bemm = useBemm('create-translation-dialog')

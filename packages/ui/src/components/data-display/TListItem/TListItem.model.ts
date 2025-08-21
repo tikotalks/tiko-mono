@@ -1,5 +1,5 @@
 import type { Icons } from 'open-icon'
-import {  ButtonType } from '../TButton'
+import {  ButtonType } from '../../ui-elements/TButton';
 
 export type ListActionType = 'view' | 'edit' | 'delete' | 'copy' | 'download' | 'share' | 'custom'
 

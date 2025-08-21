@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useBemm } from 'bemm'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 import { useParentMode } from '../../../composables/useParentMode'
 import { toastService as defaultToastService } from '../../feedback/TToast/TToast.service'
 import type { ToastSettings } from '../../feedback/TToast/TToast.model'

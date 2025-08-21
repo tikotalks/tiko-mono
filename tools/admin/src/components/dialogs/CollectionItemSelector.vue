@@ -16,12 +16,12 @@
       :aspect-ratio="'1:1'"
     >
       <template #default="{ item }">
-        <div 
+        <div
           :class="bemm('item', selectedUrl === item.url ? 'selected' : '')"
           @click="selectImage(item.url)"
         >
-          <img 
-            :src="item.url" 
+          <img
+            :src="item.url"
             :alt="item.name"
             :class="bemm('item-image')"
           />
@@ -36,7 +36,7 @@
       <TButton type="button" @click="$emit('close')">
         {{ t('common.cancel') }}
       </TButton>
-      <TButton 
+      <TButton
         color="primary"
         @click="confirmSelection"
         :disabled="!selectedUrl"
@@ -54,10 +54,10 @@ import { useBemm } from 'bemm';
 import {
   useCollectionsStore,
   collectionsSupabaseService,
+  useI18n,
   type CollectionItem
 } from '@tiko/core';
 import {
-  useI18n,
   TButton,
   TIcon,
   TSpinner,
@@ -90,7 +90,7 @@ const loadItems = async () => {
   try {
     // Get collection items
     const collectionItems = await collectionsSupabaseService.getCollectionItems(props.collectionId);
-    
+
     // Transform items to simple format with URLs
     items.value = collectionItems
       .filter(item => item.media)
@@ -129,7 +129,7 @@ onMounted(() => {
   flex-direction: column;
   min-height: 400px;
   max-height: 70vh;
-  
+
   &__loading {
     display: flex;
     justify-content: center;
@@ -154,11 +154,11 @@ onMounted(() => {
     border-radius: var(--border-radius);
     overflow: hidden;
     transition: all 0.2s ease;
-    
+
     &:hover {
       transform: scale(1.05);
     }
-    
+
     &--selected {
       outline: 3px solid var(--color-primary);
       outline-offset: 2px;
@@ -183,11 +183,11 @@ onMounted(() => {
     background: rgba(0, 0, 0, 0.3);
     opacity: 0;
     transition: opacity 0.2s ease;
-    
+
     .collection-item-selector__item--selected & {
       opacity: 1;
     }
-    
+
     .t-icon {
       width: 40px;
       height: 40px;

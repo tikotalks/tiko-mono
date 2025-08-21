@@ -1,5 +1,5 @@
 import { Icons } from "open-icon";
-import { Colors } from "../../../types/colors";
+import { Colors } from "../../../types/color";
 
 export const CardTileType = {
   RESPONSE: 'response',

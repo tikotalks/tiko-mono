@@ -3,35 +3,35 @@
  * Provides the same API but uses Pinia for state management
  */
 
-import { computed, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useParentModeStore } from '../stores/parentMode'
-import type { ParentModeSettings, ParentModeAppPermissions } from './useParentMode.model'
+import type { ParentModeSettings } from './useParentMode.model'
 
 /**
  * Parent Mode composable - wrapper around the Pinia store
- * 
+ *
  * @returns Parent mode interface with authentication and permission methods
- * 
+ *
  * @example
  * // In any Tiko app
  * const parentMode = useParentMode()
- * 
+ *
  * // Check if parent mode is available and unlocked
  * if (parentMode.canManageContent.value) {
  *   // Show admin controls
  * }
- * 
+ *
  * // Unlock parent mode
  * await parentMode.unlock('1234')
  */
-export function useParentMode(appName?: string) {
+export function useParentMode(_appName?: string) {
   const store = useParentModeStore()
-  
+
   // Get reactive refs from store
-  const { 
-    isEnabled, 
-    isUnlocked, 
+  const {
+    isEnabled,
+    isUnlocked,
     canManageContent,
     showVisualIndicator,
     sessionExpiresAt,
@@ -57,7 +57,7 @@ export function useParentMode(appName?: string) {
     showVisualIndicator,
     sessionExpiresAt,
     settings,
-    
+
     // Actions (direct from store)
     initialize: () => store.initialize(),
     enable: (pin: string) => store.enable(pin),

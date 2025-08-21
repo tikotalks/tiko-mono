@@ -202,7 +202,7 @@ import TButton from '../../ui-elements/TButton/TButton.vue'
 import TIcon from '../../ui-elements/TIcon/TIcon.vue'
 import { toastService } from '../../feedback/TToast/TToast.service'
 import { useLocalStorage } from '../../../composables/useLocalStorage'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 import { groupDatabaseLanguages, findLanguageGroupByLocale, getBaseLanguageCode } from '../../../utils/languageGroups'
 import type { FrameworkConfig, SettingsSection } from './TFramework.model'
 import type { Locale } from '../../i18n/types'
@@ -271,16 +271,16 @@ const getTranslatedLanguageName = (translationKey: string) => {
   if (translationKey.includes('.')) {
     return t(translationKey)
   }
-  
+
   // Otherwise, find the language in our database and use its native name
-  const language = databaseLanguages.value.find(lang => 
+  const language = databaseLanguages.value.find(lang =>
     lang.name.toLowerCase() === translationKey.toLowerCase()
   )
-  
+
   if (language) {
     return language.native_name || language.name
   }
-  
+
   // Fallback to original translation approach
   return t(`languageNames.${translationKey}`)
 }
@@ -350,7 +350,7 @@ const handleBaseLanguageChange = async (event: Event) => {
   const target = event.target as HTMLSelectElement
   const baseCode = target.value
   selectedBaseLanguage.value = baseCode
-  
+
   // Get the language group and select the first variant
   const group = languageGroups.find(g => g.baseCode === baseCode)
   if (group && group.variants.length > 0) {
@@ -378,7 +378,7 @@ const handleChangePassword = () => {
 
 const handleHardRefresh = async () => {
   isRefreshing.value = true
-  
+
   try {
     // Clear all caches
     if ('caches' in window) {
@@ -388,25 +388,25 @@ const handleHardRefresh = async () => {
       )
       console.log('All caches cleared')
     }
-    
+
     // Clear local storage (except auth data)
     const authSession = localStorage.getItem('tiko_auth_session')
     const authUser = localStorage.getItem('tiko_auth_user')
     const parentMode = localStorage.getItem('tiko:parent-mode')
     const locale = localStorage.getItem('tiko:locale')
-    
+
     // Clear all localStorage
     localStorage.clear()
-    
+
     // Restore critical data
     if (authSession) localStorage.setItem('tiko_auth_session', authSession)
     if (authUser) localStorage.setItem('tiko_auth_user', authUser)
     if (parentMode) localStorage.setItem('tiko:parent-mode', parentMode)
     if (locale) localStorage.setItem('tiko:locale', locale)
-    
+
     // Clear session storage
     sessionStorage.clear()
-    
+
     // Unregister service workers
     if ('serviceWorker' in navigator) {
       const registrations = await navigator.serviceWorker.getRegistrations()
@@ -415,16 +415,16 @@ const handleHardRefresh = async () => {
       )
       console.log('Service workers unregistered')
     }
-    
+
     // Show success message
     toastService.success(t('settings.refreshSuccess'))
-    
+
     // Wait a moment for the toast to show
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
+
     // Force reload the page
     window.location.reload()
-    
+
   } catch (error) {
     console.error('Failed to refresh app:', error)
     toastService.error(t('settings.refreshError'))
@@ -460,7 +460,7 @@ const loadLanguages = async () => {
 onMounted(async () => {
   // Load languages from database
   await loadLanguages()
-  
+
   // Initialize language selection
   initializeLanguageSelection()
 
@@ -549,14 +549,14 @@ onMounted(async () => {
     flex: 1;
     color: var(--color-foreground-secondary);
   }
-  
+
   &__setting-info {
     flex: 1;
     display: flex;
     flex-direction: column;
     gap: var(--space-xs);
   }
-  
+
   &__setting-description {
     margin: 0;
     font-size: 0.9em;

@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import { useBemm } from 'bemm'
-import { useI18n, TCard, TIcon, TButton } from '@tiko/ui'
+import { TCard, TIcon, TButton } from '@tiko/ui'
 import { Icons } from 'open-icon'
 
 const { t } = useI18n()

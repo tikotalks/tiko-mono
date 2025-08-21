@@ -144,7 +144,6 @@ import { useBemm } from 'bemm';
 import { Icons } from 'open-icon';
 import { useImageUrl, useImages } from '@tiko/core';
 import {
-  useI18n,
   TGrid,
   TMediaTile,
   TList,
@@ -158,6 +157,7 @@ import {
   TChip,
   TMarkdownRenderer,
 } from '@tiko/ui';
+import { useI18n } from '@tiko/core';
 
 const bemm = useBemm('library-view');
 const { t } = useI18n();

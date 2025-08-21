@@ -126,6 +126,8 @@
 import { ref, computed, watch } from 'vue'
 import { useBemm } from 'bemm'
 import {
+  useI18n } from "@tiko/core";
+import {
   TButton,
   TInputText,
   TTextArea,
@@ -133,7 +135,6 @@ import {
   TInputCheckbox,
   TInputSelect,
   TFormGroup,
-  useI18n
 } from '@tiko/ui'
 import { Icons } from 'open-icon'
 import MediaFieldInstance from './MediaFieldInstance.vue'
@@ -199,7 +200,7 @@ const maxItems = computed(() => props.config?.max_items || 100)
 // Initialize items from modelValue
 watch(() => props.modelValue, (newValue) => {
   console.log('[ItemsFieldInstance] modelValue changed:', newValue, 'type:', typeof newValue, 'isArray:', Array.isArray(newValue))
-  
+
   // Handle case where value is a JSON string
   let actualValue = newValue
   if (typeof newValue === 'string' && newValue.startsWith('[')) {
@@ -211,12 +212,12 @@ watch(() => props.modelValue, (newValue) => {
       actualValue = []
     }
   }
-  
+
   if (Array.isArray(actualValue) && actualValue.length > 0) {
     // Only update if the value is different from current items
     const currentData = items.value.map(({ id, ...item }) => item)
     const newData = actualValue
-    
+
     if (JSON.stringify(currentData) !== JSON.stringify(newData)) {
       items.value = actualValue.map((item, index) => ({
         id: item.id || `item_${Date.now()}_${index}`,
@@ -279,7 +280,7 @@ function addItem() {
 
   items.value.push(newItem)
   expandedItems.value.add(items.value.length - 1)
-  
+
   // Emit update after adding item
   emitUpdate()
 }

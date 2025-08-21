@@ -20,10 +20,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useBemm } from 'bemm'
-import { useImageUrl } from '@tiko/core'
+import { useImageUrl, useI18n } from '@tiko/core'
 import type { MediaItem } from '@tiko/ui'
 import {
-  useI18n,
   TGrid,
   TMediaTile
 } from '@tiko/ui'

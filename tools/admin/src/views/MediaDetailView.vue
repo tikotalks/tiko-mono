@@ -234,7 +234,7 @@ import { ref, onMounted, computed, inject } from 'vue';
 import { Icons } from 'open-icon';
 import { useRoute, useRouter } from 'vue-router';
 import { useBemm } from 'bemm';
-import { TTextArea, useI18n, TFormGroup, TChip,  TCard, TButton, TIcon, TSpinner, TInput, TInputCheckbox, TChipGroup, ConfirmDialog, ButtonType } from '@tiko/ui';
+import { TTextArea, TFormGroup, TChip,  TCard, TButton, TIcon, TSpinner, TInput, TInputCheckbox, TChipGroup, ConfirmDialog, ButtonType } from '@tiko/ui';
 import { useImageUrl, mediaService, mediaAnalysisService } from '@tiko/core';
 import { uploadService } from '../services/upload.service';
 import type { ToastService, PopupService, MediaItem  } from '@tiko/ui';

@@ -9,7 +9,7 @@ export interface BaseItem {
   name: string
   content?: string
   metadata?: any
-  parent_id?: string
+  parent_id?: string | null
   order_index: number
   icon?: string
   color?: string
@@ -24,8 +24,48 @@ export interface BaseItem {
   is_curated?: boolean
   custom_index?: number
   
+  // Additional item properties
+  is_favorite?: boolean
+  is_completed?: boolean
+  tags?: string[]
+  
   // Children loaded automatically
   children?: BaseItem[]
+}
+
+export interface ItemFilters {
+  type?: string
+  parent_id?: string | null
+  is_favorite?: boolean
+  is_completed?: boolean
+  is_public?: boolean
+  tags?: string[]
+  app_name?: string
+  search?: string
+}
+
+export interface CreateItemPayload extends Omit<BaseItem, 'id' | 'created_at' | 'updated_at' | 'user_id'> {}
+
+export interface UpdateItemPayload extends Partial<Omit<BaseItem, 'id' | 'created_at' | 'updated_at' | 'user_id'>> {}
+
+export interface BulkUpdatePayload {
+  ids: string[]
+  updates: Partial<BaseItem>
+}
+
+export interface ItemResult<T = BaseItem> {
+  success: boolean
+  data?: T
+  error?: string
+}
+
+export interface ItemStats {
+  total: number
+  by_type: Record<string, number>
+  by_app: Record<string, number>
+  favorites: number
+  completed: number
+  public: number
 }
 
 export interface ItemLoadOptions {
@@ -34,7 +74,17 @@ export interface ItemLoadOptions {
   locale?: string
 }
 
-class ItemService {
+export interface ItemService {
+  getItems(userId: string, filters?: ItemFilters): Promise<ItemResult<BaseItem[]>>
+  createItem(payload: CreateItemPayload): Promise<BaseItem>
+  updateItem(itemId: string, payload: UpdateItemPayload): Promise<BaseItem>
+  deleteItem(itemId: string): Promise<void>
+  reorderItems(itemIds: string[]): Promise<ItemResult<void>>
+  moveItem(itemId: string, newParentId: string | null, newIndex?: number): Promise<ItemResult<BaseItem>>
+  getStats(userId: string, appName: string): Promise<ItemStats>
+}
+
+class ItemServiceImpl {
   private async getAuthToken(): Promise<string | null> {
     const sessionData = localStorage.getItem('tiko_auth_session');
     if (!sessionData) return null;
@@ -458,10 +508,140 @@ class ItemService {
       throw error;
     }
   }
+
+  /**
+   * Get items with filters (implements ItemService interface)
+   */
+  async getItems(userId: string, filters: ItemFilters = {}): Promise<ItemResult<BaseItem[]>> {
+    try {
+      const params = new URLSearchParams();
+      params.append('user_id', `eq.${userId}`);
+      
+      if (filters.type) {
+        params.append('type', `eq.${filters.type}`);
+      }
+      
+      if (filters.parent_id !== undefined) {
+        if (filters.parent_id === null) {
+          params.append('parent_id', 'is.null');
+        } else {
+          params.append('parent_id', `eq.${filters.parent_id}`);
+        }
+      }
+      
+      if (filters.is_favorite !== undefined) {
+        params.append('is_favorite', `eq.${filters.is_favorite}`);
+      }
+      
+      if (filters.is_completed !== undefined) {
+        params.append('is_completed', `eq.${filters.is_completed}`);
+      }
+      
+      if (filters.is_public !== undefined) {
+        params.append('is_public', `eq.${filters.is_public}`);
+      }
+      
+      params.append('order', 'order_index.asc,created_at.asc');
+      
+      const items = await this.apiRequest<BaseItem[]>(`items?${params.toString()}`);
+      
+      return {
+        success: true,
+        data: items
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error)
+      };
+    }
+  }
+
+  /**
+   * Reorder items (implements ItemService interface)
+   */
+  async reorderItems(itemIds: string[]): Promise<ItemResult<void>> {
+    try {
+      const updates = itemIds.map((id, index) => ({ id, order_index: index }));
+      await this.updateItemOrder(updates);
+      
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error)
+      };
+    }
+  }
+
+  /**
+   * Move item to new parent (implements ItemService interface)
+   */
+  async moveItem(itemId: string, newParentId: string | null, newIndex?: number): Promise<ItemResult<BaseItem>> {
+    try {
+      const updates: Partial<BaseItem> = { parent_id: newParentId };
+      
+      if (newIndex !== undefined) {
+        updates.order_index = newIndex;
+      }
+      
+      const item = await this.updateItem(itemId, updates);
+      
+      return {
+        success: true,
+        data: item
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error)
+      };
+    }
+  }
+
+  /**
+   * Get item statistics (implements ItemService interface)
+   */
+  async getStats(userId: string, appName: string): Promise<ItemStats> {
+    try {
+      const params = new URLSearchParams();
+      params.append('user_id', `eq.${userId}`);
+      params.append('app_name', `eq.${appName}`);
+      
+      const items = await this.apiRequest<BaseItem[]>(`items?${params.toString()}`);
+      
+      const stats: ItemStats = {
+        total: items.length,
+        by_type: {},
+        by_app: {},
+        favorites: items.filter(i => i.is_favorite).length,
+        completed: items.filter(i => i.is_completed).length,
+        public: items.filter(i => i.is_public).length
+      };
+      
+      // Count by type
+      items.forEach(item => {
+        stats.by_type[item.type] = (stats.by_type[item.type] || 0) + 1;
+        stats.by_app[item.app_name] = (stats.by_app[item.app_name] || 0) + 1;
+      });
+      
+      return stats;
+    } catch (error) {
+      console.error('[ItemService] Error getting stats:', error);
+      return {
+        total: 0,
+        by_type: {},
+        by_app: {},
+        favorites: 0,
+        completed: 0,
+        public: 0
+      };
+    }
+  }
 }
 
 // Export singleton instance
-export const unifiedItemService = new ItemService();
+export const unifiedItemService = new ItemServiceImpl();
 
 // Also export as itemService for backwards compatibility
 export const itemService = unifiedItemService;

@@ -38,4 +38,8 @@ const pwaConfig = {
   }
 }
 
-export default createViteConfig(__dirname, 3002, pwaConfig)
+export default createViteConfig({
+  dirname: __dirname,
+  por: 3002,
+  pwaConfig
+})

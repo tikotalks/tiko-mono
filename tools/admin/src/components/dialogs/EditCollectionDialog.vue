@@ -21,11 +21,11 @@
       <!-- Cover Image Section -->
       <div :class="bemm('cover-image-section')">
         <label :class="bemm('label')">{{ t('admin.collections.coverImage') }}</label>
-        
+
         <!-- Preview -->
         <div v-if="formData.cover_image_url" :class="bemm('cover-preview')">
-          <img 
-            :src="formData.cover_image_url" 
+          <img
+            :src="formData.cover_image_url"
             :alt="t('admin.collections.coverImagePreview')"
             :class="bemm('cover-preview-image')"
           />
@@ -48,7 +48,7 @@
           >
             {{ t('admin.collections.selectFromCollection') }}
           </TButton>
-          
+
           <TInputText
             v-model="formData.cover_image_url"
             :placeholder="t('admin.collections.coverImagePlaceholder')"
@@ -74,8 +74,8 @@
         <TButton type="button" @click="$emit('close')">
           {{ t('common.cancel') }}
         </TButton>
-        <TButton 
-          htmlButtonType="submit" 
+        <TButton
+          htmlButtonType="submit"
           color="primary"
           :disabled="!isValid || saving || !hasChanges"
         >
@@ -91,10 +91,11 @@ import { ref, computed, onMounted, inject } from 'vue';
 import { useBemm } from 'bemm';
 import { Icons } from 'open-icon';
 import type { MediaCollection, UpdateCollectionData } from '@tiko/core';
-import { useAuthStore } from '@tiko/core';
-import type { PopupService } from '@tiko/ui';
+import { useAuthStore,
+  useI18n, } from '@tiko/core';
+
 import {
-  useI18n,
+  type PopupService ,
   TInputText,
   TInputTextArea,
   TInputCheckbox,
@@ -150,10 +151,10 @@ const hasChanges = computed(() => {
 // Open media selector
 const openMediaSelector = async () => {
   if (!popupService) return;
-  
+
   // First, let's create a simple collection item selector
   const { default: CollectionItemSelector } = await import('./CollectionItemSelector.vue').catch(() => null);
-  
+
   if (CollectionItemSelector) {
     // Use custom collection item selector if available
     const selectorPopupId = popupService.open({
@@ -171,7 +172,7 @@ const openMediaSelector = async () => {
   } else {
     // Fallback to general media selector
     const { default: MediaSelector } = await import('../MediaSelector.vue');
-    
+
     const selectorPopupId = popupService.open({
       component: MediaSelector,
       title: t('admin.collections.selectCoverImage'),
@@ -203,7 +204,7 @@ const validateName = () => {
 // Handle form submission
 const handleSubmit = async () => {
   validateName();
-  
+
   if (!isValid.value || !hasChanges.value) {
     return;
   }
@@ -212,7 +213,7 @@ const handleSubmit = async () => {
   try {
     // Only send changed fields
     const changes: UpdateCollectionData = {};
-    
+
     if (formData.value.name !== originalData.value.name) {
       changes.name = formData.value.name;
     }
@@ -249,7 +250,7 @@ onMounted(() => {
     is_public: props.collection.is_public,
     is_curated: props.collection.is_curated
   };
-  
+
   formData.value = { ...data };
   originalData.value = { ...data };
 });
@@ -309,7 +310,7 @@ onMounted(() => {
     right: var(--space-xs);
     background-color: rgba(0, 0, 0, 0.7);
     color: white;
-    
+
     &:hover {
       background-color: rgba(0, 0, 0, 0.9);
     }

@@ -24,7 +24,8 @@
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from 'vue'
 import { useBemm } from 'bemm'
-import { TCardTile, TProgressBar, useI18n } from '@tiko/ui'
+import { useI18n } from '@tiko/core';
+import { TCardTile, TProgressBar } from '@tiko/ui'
 import type { TCardTile as CardTileType } from '@tiko/ui'
 
 const props = defineProps<{

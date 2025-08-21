@@ -1,4 +1,4 @@
-import type { ContextMenuItem } from '../TContextMenu'
+import type { ContextMenuItem } from '../../navigation/TContextMenu/ContextMenu.model'
 
 export interface TTopBarProps {
   /**

@@ -111,12 +111,12 @@ import {
   TFormGroup,
   TInputCheckbox,
   TInputSelect,
-  useI18n,
   type PopupService,
   type ToastService
 } from '@tiko/ui'
 import { Icons } from 'open-icon'
-import { contentService } from '@tiko/core'
+import { contentService,
+  useI18n } from '@tiko/core'
 import type { ContentPage, ContentProject, PageTemplate } from '@tiko/core'
 
 interface Props {
@@ -274,7 +274,7 @@ function handleClose() {
 
 async function handleSave() {
   console.log('CreatePageDialog: handleSave called')
-  
+
   // Validate
   if (!formData.title.trim()) {
     errors.title = t('validation.required')
@@ -313,7 +313,7 @@ async function handleSave() {
     }
 
     console.log('CreatePageDialog: Calling save handler with data:', pageData)
-    
+
     // Call the prop callback if provided
     if (props.onSave) {
       await props.onSave(pageData)

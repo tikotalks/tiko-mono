@@ -58,7 +58,7 @@ import InputBase from '../TForm/InputBase.vue'
 import TButton from '../../ui-elements/TButton/TButton.vue'
 import TIcon from '../../ui-elements/TIcon/TIcon.vue'
 import TMediaSelector from '../../media/TMediaSelector/TMediaSelector.vue'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 import { Size } from '../../../types'
 import { Icons } from 'open-icon'
 import type { ImageValue, TImageInputProps } from './TImageInput.model'

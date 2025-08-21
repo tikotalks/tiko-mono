@@ -35,7 +35,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useBemm } from 'bemm'
-import { TFormGroup, TInput, TTextArea, TButton, useI18n, TInputText } from '@tiko/ui'
+import { TFormGroup, TInput, TTextArea, TButton, TInputText } from '@tiko/ui'
 import type { ItemTemplate } from '@tiko/core'
 
 interface Props {

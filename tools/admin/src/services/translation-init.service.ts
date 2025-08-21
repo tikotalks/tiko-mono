@@ -3,7 +3,7 @@
  * Handles loading translations from database on app startup
  */
 
-import { useI18n } from '@tiko/ui';
+import { useI18n } from '@tiko/core';
 
 // Default locale - can be overridden by user preferences
 const DEFAULT_LOCALE = 'en';

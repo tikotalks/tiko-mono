@@ -45,7 +45,7 @@
 <script setup lang="ts">
 import { computed, inject, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { TFramework, TButton, type FrameworkConfig, useI18n, useParentMode } from '@tiko/ui'
+import { TFramework, TButton, type FrameworkConfig, useParentMode } from '@tiko/ui'
 import { storeToRefs } from 'pinia'
 import { useTodoStore } from './stores/todo'
 import { useTodoSettingsStore } from './stores/todoSettings'

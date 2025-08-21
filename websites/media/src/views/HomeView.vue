@@ -99,12 +99,12 @@ import { useBemm } from 'bemm'
 import { Icons } from 'open-icon'
 import { useImageUrl, useImages } from '@tiko/core'
 import {
-  useI18n,
   TButton,
   TGrid,
   TMediaTile,
   TIcon
 } from '@tiko/ui'
+import { useI18n } from '@tiko/core'
 import CuratedCollections from '@/components/CuratedCollections.vue'
 
 const bemm = useBemm('home-view')

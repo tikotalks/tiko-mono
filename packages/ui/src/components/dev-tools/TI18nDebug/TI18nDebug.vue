@@ -7,15 +7,15 @@
 <script setup lang="ts">
 /**
  * TI18nDebug Component
- * 
+ *
  * This is a hidden component that exposes i18n data to Vue DevTools.
  * Include it in your app root to see i18n data in the Components tab.
- * 
+ *
  * @example
  * <TI18nDebug />
  */
 import { computed } from 'vue'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 
 const i18n = useI18n()
 
@@ -46,17 +46,17 @@ const searchableKeys = computed(() => {
 // Missing translations (compared to English)
 const missingTranslations = computed(() => {
   if (i18n.currentLocale.value === 'en') return []
-  
+
   const currentTranslations = i18n.__devtools.currentTranslations.value
   const enTranslations = i18n.__devtools.staticTranslations.value.en || {}
   const missing: string[] = []
-  
+
   for (const key of Object.keys(enTranslations)) {
     if (!currentTranslations[key]) {
       missing.push(key)
     }
   }
-  
+
   return missing
 })
 
@@ -64,13 +64,13 @@ const missingTranslations = computed(() => {
 const translationsByPrefix = computed(() => {
   const translations = i18n.__devtools.currentTranslations.value
   const groups: Record<string, Record<string, string>> = {}
-  
+
   for (const [key, value] of Object.entries(translations)) {
     const prefix = key.split('.')[0]
     if (!groups[prefix]) groups[prefix] = {}
     groups[prefix][key] = value as string
   }
-  
+
   return groups
 })
 

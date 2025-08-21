@@ -13,15 +13,15 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { 
-  TInputText, 
-  TTextArea, 
-  TInputNumber, 
-  TInputCheckbox, 
+import {
+  TInputText,
+  TTextArea,
+  TInputNumber,
+  TInputCheckbox,
   TInputSelect,
-  useI18n 
+
 } from '@tiko/ui'
-import type { ContentField } from '@tiko/core'
+import  { type ContentField, useI18n } from '@tiko/core'
 import ItemsFieldEditor from './ItemsFieldEditor.vue'
 import ListFieldInstance from './ListFieldInstance.vue'
 import LinkedItemsFieldInstance from './LinkedItemsFieldInstance.vue'
@@ -47,7 +47,7 @@ const { t } = useI18n()
 const fieldComponent = computed(() => {
   // Debug: Log all fields to see their types
   console.log(`Rendering field "${props.field.label}" with type: "${props.field.field_type}"`)
-  
+
   switch (props.field.field_type) {
     case 'text':
       return TInputText
@@ -81,13 +81,13 @@ const fieldComponent = computed(() => {
 // Get field-specific props
 const fieldProps = computed(() => {
   const baseProps: any = {}
-  
+
   switch (props.field.field_type) {
     case 'textarea':
     case 'richtext':
       baseProps.rows = 4
       break
-      
+
     case 'select':
     case 'options':
       // Convert options from config
@@ -100,25 +100,25 @@ const fieldProps = computed(() => {
         })
       }
       break
-      
+
     case 'items':
       // Pass the config directly for items field
       baseProps.config = props.field.config || { fields: [] }
       break
-      
+
     case 'linked_items':
       // Pass section and field IDs for linked items
       baseProps.sectionId = props.field.section_id || ''
       baseProps.fieldId = props.field.id
       baseProps.itemTemplateId = props.field.config?.item_template_id
       break
-      
+
     case 'repeater':
       // Pass the field itself for repeater to access schema from config
       baseProps.field = props.field
       break
   }
-  
+
   return baseProps
 })
 

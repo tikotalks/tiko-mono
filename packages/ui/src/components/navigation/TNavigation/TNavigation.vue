@@ -36,7 +36,7 @@
 import { ref } from 'vue'
 import { useBemm } from 'bemm'
 import { useRoute } from 'vue-router'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 import type { TNavigationProps } from './TNavigation.model'
 
 withDefaults(defineProps<TNavigationProps>(), {

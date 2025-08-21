@@ -26,7 +26,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useBemm } from 'bemm'
-import { TFormGroup, TInput, TButton, useI18n } from '@tiko/ui'
+import { useI18n } from '@tiko/core'
+import { TFormGroup, TInput, TButton } from '@tiko/ui'
 import type { Item } from '@tiko/core'
 
 const bemm = useBemm('edit-item-dialog')

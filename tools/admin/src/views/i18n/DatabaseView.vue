@@ -200,7 +200,6 @@ import {
   TList,
   TListItem,
   TListCell,
-  useI18n,
   TKeyValue,
   ToastService,
   TProgressBar,
@@ -214,7 +213,7 @@ import AddTranslationKeyDialog from '../../components/dialogs/AddTranslationKeyD
 import EditKeyDialog from '../../components/dialogs/EditKeyDialog.vue';
 import AdminPageHeader from '@/components/AdminPageHeader.vue';
 import I18nConflictAlert from '@/components/I18nConflictAlert.vue';
-import { useI18nDatabaseService, useUserPreferences, USER_PREFERENCE_KEYS } from '@tiko/core';
+import { useI18nDatabaseService, useUserPreferences, USER_PREFERENCE_KEYS, useI18n } from '@tiko/core';
 
 import type { I18nKey } from '../../types/i18n.types';
 import type { PopupService } from '@tiko/ui';

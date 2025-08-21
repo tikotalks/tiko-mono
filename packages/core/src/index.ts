@@ -9,11 +9,18 @@ export { useCollectionsStore, type Collection } from './stores/collections.store
 export { useEditModeStore } from './stores/editMode'
 export { useAssetsStore, type AssetRecord } from './stores/assets.store'
 export { useMediaStore } from './stores/media.store'
+export { useI18nStore } from './stores/i18n'
 
 // Auth API (excluding types that are already exported from services)
 export { authAPI } from './lib/auth-api'
 
 // Composables
+
+export * from './composables/useEventBus'
+export * from './composables/useI18n'
+
+// I18n types
+export type { TranslationKey } from './i18n/generated/types'
 export { useSSO } from './composables/useSSO'
 export type { SSOOptions } from './composables/useSSO'
 export { useEditMode } from './composables/useEditMode'
@@ -29,15 +36,6 @@ export { useUserSettings } from './composables/useUserSettings'
 export type { UseUserSettingsReturn } from './composables/useUserSettings'
 export { useUpload } from './composables/useUpload'
 export type { UploadItem } from './composables/useUpload'
-export { useEventBus, createEventBus } from './composables/useEventBus'
-export type {
-  EventMap,
-  EventHandler,
-  EventBusComposable,
-  TikoEvents
-} from './composables/useEventBus.model'
-export { useTranslationService } from './composables/useTranslationService'
-export { useI18nDatabaseService } from './composables/useI18nDatabaseService'
 export { useUserPreferences } from './composables/useUserPreferences'
 export type { UserPreferences, ListPreferences } from './composables/useUserPreferences'
 export { useContent } from './composables/useContent'
@@ -48,7 +46,6 @@ export { usePlaySound, SOUNDS } from './composables/usePlaySound'
 export type { PlaySoundOptions, UsePlaySoundReturn, SoundId } from './composables/usePlaySound'
 export { useImageResolver } from './composables/useImageResolver'
 export type { MediaType, ResolveImageOptions, ResolvedImage } from './composables/useImageResolver'
-export { useI18n, cleanupI18n, createScopedT } from './composables/useI18n'
 export { useTextToSpeech } from './composables/useTextToSpeech'
 export type { TextToSpeechOptions } from './composables/useTextToSpeech'
 
@@ -63,7 +60,7 @@ export * from './utils/format'
 export * from './utils/logger'
 export * from './utils/canvas-animation'
 // Export everything except ContentField from field-processing (ContentField is exported from services)
-export { 
+export {
   processContentFields,
   processFieldValue,
   processListFieldValue

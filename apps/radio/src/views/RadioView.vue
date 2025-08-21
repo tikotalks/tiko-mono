@@ -1,27 +1,13 @@
 <template>
   <div :class="bemm()">
     <!-- Full-screen Player Mode -->
-      <RadioPlayer
-      v-if="playerMode === 'fullscreen'"
-      :current-item="currentItem"
-      :playlist="playlist"
-      :current-index="currentIndex"
-      :shuffle-mode="settings.shuffleMode"
-      :repeat-mode="settings.repeatMode"
-      :sleep-timer="sleepTimer"
-      @update:current-time="handleTimeUpdate"
-      @update:duration="handleDurationUpdate"
-      @update:is-playing="handlePlayingUpdate"
-      @update:volume="handleVolumeUpdate"
-      @track-ended="handleTrackEnded"
-      @previous-track="previousTrack"
-      @next-track="nextTrack"
-      @toggle-shuffle="toggleShuffle"
-      @toggle-repeat="toggleRepeat"
-      @back-to-grid="playerMode = 'grid'"
-      @cancel-sleep-timer="cancelSleepTimer"
-      @error="handlePlayerError"
-    />
+    <RadioPlayer v-if="playerMode === 'fullscreen'" :current-item="currentItem" :playlist="playlist"
+      :current-index="currentIndex" :shuffle-mode="settings.shuffleMode" :repeat-mode="settings.repeatMode"
+      :sleep-timer="sleepTimer" @update:current-time="handleTimeUpdate" @update:duration="handleDurationUpdate"
+      @update:is-playing="handlePlayingUpdate" @update:volume="handleVolumeUpdate" @track-ended="handleTrackEnded"
+      @previous-track="previousTrack" @next-track="nextTrack" @toggle-shuffle="toggleShuffle"
+      @toggle-repeat="toggleRepeat" @back-to-grid="playerMode = 'grid'" @cancel-sleep-timer="cancelSleepTimer"
+      @error="handlePlayerError" />
 
     <!-- Grid Mode -->
     <div v-else :class="bemm('grid-container')">
@@ -30,26 +16,14 @@
         <!-- Tag Filters -->
         <div :class="bemm('filters-section')">
           <div v-if="availableTags.length > 0" :class="bemm('tag-filters')">
-            <TButton
-              v-for="tag in availableTags"
-              :key="tag"
-              type="ghost"
-              size="small"
-              :color="selectedTags.includes(tag) ? 'primary' : 'secondary'"
-              @click="toggleTagFilter(tag)"
-              :class="bemm('tag-filter')"
-            >
+            <TButton v-for="tag in availableTags" :key="tag" type="ghost" size="small"
+              :color="selectedTags.includes(tag) ? 'primary' : 'secondary'" @click="toggleTagFilter(tag)"
+              :class="bemm('tag-filter')">
               {{ tag }}
             </TButton>
 
-            <TButton
-              v-if="selectedTags.length > 0"
-              type="ghost"
-              size="small"
-              icon="x"
-              @click="clearTagFilters"
-              :class="bemm('clear-filters')"
-            >
+            <TButton v-if="selectedTags.length > 0" type="ghost" size="small" icon="x" @click="clearTagFilters"
+              :class="bemm('clear-filters')">
               {{ t('radio.clear') }}
             </TButton>
           </div>
@@ -60,27 +34,17 @@
       <div :class="bemm('content')">
         <!-- Quick Filters -->
         <div v-if="items.length > 0" :class="bemm('quick-filters')">
-          <TButton
-            :type="activeFilter === 'all' ? 'default' : 'ghost'"
-            size="small"
-            @click="activeFilter = 'all'"
-          >
+          <TButton :type="activeFilter === 'all' ? 'default' : 'ghost'" size="small" @click="activeFilter = 'all'">
             {{ t('radio.all') }} ({{ items.length }})
           </TButton>
 
-          <TButton
-            :type="activeFilter === 'favorites' ? 'default' : 'ghost'"
-            size="small"
-            @click="activeFilter = 'favorites'"
-          >
+          <TButton :type="activeFilter === 'favorites' ? 'default' : 'ghost'" size="small"
+            @click="activeFilter = 'favorites'">
             {{ t('radio.favorites') }} ({{ favoriteItems.length }})
           </TButton>
 
-          <TButton
-            :type="activeFilter === 'recent' ? 'default' : 'ghost'"
-            size="small"
-            @click="activeFilter = 'recent'"
-          >
+          <TButton :type="activeFilter === 'recent' ? 'default' : 'ghost'" size="small"
+            @click="activeFilter = 'recent'">
             {{ t('radio.recent') }} ({{ recentItems.length }})
           </TButton>
         </div>
@@ -105,12 +69,7 @@
           <p :class="bemm('empty-description')">
             {{ t('radio.startBuildingCollection') }}
           </p>
-          <TButton
-            v-if="parentMode.canManageContent.value"
-            color="primary"
-            icon="plus"
-            @click="handleAddClick"
-          >
+          <TButton v-if="parentMode.canManageContent.value" color="primary" icon="plus" @click="handleAddClick">
             {{ t('radio.addYourFirstAudio') }}
           </TButton>
         </div>
@@ -127,18 +86,9 @@
 
         <!-- Audio Grid -->
         <div v-else :class="bemm('grid')">
-          <RadioCard
-            v-for="item in filteredItems"
-            :key="item.id"
-            :item="item"
-            :is-currently-playing="currentItem?.id === item.id && isPlaying"
-            @play="playItem"
-            @pause="pauseItem"
-            @edit="editItem"
-            @delete="deleteItem"
-            @toggle-favorite="toggleFavorite"
-            :class="bemm('grid-item')"
-          />
+          <RadioCard v-for="item in filteredItems" :key="item.id" :item="item"
+            :is-currently-playing="currentItem?.id === item.id && isPlaying" @play="playItem" @pause="pauseItem"
+            @edit="editItem" @delete="deleteItem" @toggle-favorite="toggleFavorite" :class="bemm('grid-item')" />
         </div>
       </div>
 
@@ -147,52 +97,25 @@
         <div :class="bemm('mini-content')">
           <img
             :src="currentItem.customThumbnailUrl || currentItem.thumbnailUrl || '/assets/default-radio-thumbnail.svg'"
-            :alt="currentItem.title"
-            :class="bemm('mini-thumbnail')"
-          />
+            :alt="currentItem.title" :class="bemm('mini-thumbnail')" />
 
           <div :class="bemm('mini-info')">
             <h4 :class="bemm('mini-title')">{{ currentItem.title }}</h4>
             <div :class="bemm('mini-progress')">
-              <div
-                :class="bemm('mini-progress-bar')"
-                :style="{ width: progressPercentage + '%' }"
-              />
+              <div :class="bemm('mini-progress-bar')" :style="{ width: progressPercentage + '%' }" />
             </div>
           </div>
         </div>
 
         <div :class="bemm('mini-controls')">
-          <TButton
-            type="ghost"
-            size="medium"
-            icon="skip-back"
-            :disabled="!hasPrevious"
-            @click="previousTrack"
-          />
+          <TButton type="ghost" size="medium" icon="skip-back" :disabled="!hasPrevious" @click="previousTrack" />
 
-          <TButton
-            type="default"
-            color="primary"
-            size="medium"
-            :icon="isPlaying ? 'pause' : 'play'"
-            @click="togglePlay"
-          />
+          <TButton type="default" color="primary" size="medium" :icon="isPlaying ? 'pause' : 'play'"
+            @click="togglePlay" />
 
-          <TButton
-            type="ghost"
-            size="medium"
-            icon="skip-forward"
-            :disabled="!hasNext"
-            @click="nextTrack"
-          />
+          <TButton type="ghost" size="medium" icon="skip-forward" :disabled="!hasNext" @click="nextTrack" />
 
-          <TButton
-            type="ghost"
-            size="medium"
-            icon="maximize-2"
-            @click="playerMode = 'fullscreen'"
-          />
+          <TButton type="ghost" size="medium" icon="maximize-2" @click="playerMode = 'fullscreen'" />
         </div>
       </div>
     </div>
@@ -206,14 +129,13 @@ import { ref, computed, onMounted, watch, inject } from 'vue'
 import { useBemm } from 'bemm'
 import {
   TButton,
-  TInputText,
   TIcon,
   useParentMode,
-  useEventBus,
-  useI18n,
-  type PopupService,
-  type ToastService
 } from '@tiko/ui'
+import {
+  useI18n,
+  useEventBus
+} from "@tiko/core";
 import RadioCard from '../components/RadioCard.vue'
 import RadioPlayer from '../components/RadioPlayer.vue'
 import AddItemModal from '../components/AddItemModal.vue'
@@ -468,7 +390,7 @@ watch(filteredItems, (newItems) => {
 // Listen to events from App.vue topbar
 onMounted(async () => {
   console.log('Radio app mounting...')
-  
+
   // Set up event listeners
   eventBus.on('radio:search', (data: { query: string }) => {
     searchQuery.value = data.query
@@ -476,15 +398,15 @@ onMounted(async () => {
       openSearchModal()
     }
   })
-  
+
   eventBus.on('radio:add-item', () => {
     handleAddClick()
   })
-  
+
   eventBus.on('radio:show-settings', () => {
     handleSettingsClick()
   })
-  
+
   try {
     console.log('Fetching radio items...')
     await fetchItems()
@@ -722,7 +644,12 @@ onMounted(async () => {
 
 // Spin animation for the loading spinner
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

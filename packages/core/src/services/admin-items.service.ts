@@ -23,7 +23,7 @@ export interface AdminItem {
   title: string;
   type: string;
   app_name: string;
-  parent_id?: string;
+  parent_id?: string | null;
   icon?: string;
   color?: string;
   image?: string;

@@ -36,7 +36,7 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { useI18n } from '../../../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 import InputBase from '../../InputBase.vue'
 import type { TInputNumberProps, TInputNumberEmits } from './TInputNumber.model'
 import { parseNumericValue, formatNumericValue } from './TInputNumber.model'
@@ -61,7 +61,7 @@ const errors = ref<string[]>([]);
 
 const parseValue = (value: string): number | undefined => {
 	const parsed = parseNumericValue(value, props.decimals)
-	
+
 	// Check for multiple numbers in input
 	const matches = value.replace(/[^\d.-]/g, '').match(/-?\d+\.?\d*/g)
 	if (matches && matches.length > 1) {
@@ -69,7 +69,7 @@ const parseValue = (value: string): number | undefined => {
 	} else {
 		errors.value = []
 	}
-	
+
 	return parsed
 }
 

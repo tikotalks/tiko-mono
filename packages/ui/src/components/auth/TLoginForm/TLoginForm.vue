@@ -164,7 +164,7 @@
 <script setup lang="ts">
 import { ref, computed, onUnmounted } from 'vue';
 import { useBemm } from 'bemm';
-import { useI18n } from '../../../composables/useI18n';
+import { useI18n } from '@tiko/core';
 import TButton from '../../ui-elements/TButton/TButton.vue';
 import TButtonGroup from '../../ui-elements/TButton/TButtonGroup.vue';
 import TIcon from '../../ui-elements/TIcon/TIcon.vue';

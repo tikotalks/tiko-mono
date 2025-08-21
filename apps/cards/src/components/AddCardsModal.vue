@@ -31,7 +31,7 @@
         @submit="handleSingleSave"
         @cancel="handleCancel"
       />
-      
+
       <BulkCardCreator
         v-if="mode === 'bulk'"
         :on-create="handleBulkCreate"
@@ -43,7 +43,8 @@
 <script setup lang="ts">
 import { ref, computed, inject } from 'vue';
 import { useBemm } from 'bemm';
-import { TButton, TButtonGroup, useI18n } from '@tiko/ui';
+import { useI18n } from '@tiko/core';
+import { TButton, TButtonGroup } from '@tiko/ui';
 import CardForm from './CardForm.vue';
 import BulkCardCreator from './BulkCardCreator.vue';
 import type { TCardTile as CardTile } from '@tiko/ui';
@@ -102,12 +103,12 @@ const handleCancel = () => {
   display: flex;
   flex-direction: column;
   gap: var(--space);
-  
+
   &__mode-selector {
     padding: 0 var(--space);
     padding-top: var(--space);
   }
-  
+
   &__content {
     flex: 1;
     overflow: auto;

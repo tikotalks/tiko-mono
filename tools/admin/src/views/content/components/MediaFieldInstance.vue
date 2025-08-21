@@ -89,10 +89,9 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, useI18n } from '@tiko/ui'
+import { TButton } from '@tiko/ui'
 import { Icons } from 'open-icon'
-import type { MediaItem } from '@tiko/core'
-import { useImageUrl, useImages } from '@tiko/core'
+import  { type MediaItem, useI18n,  useImageUrl, useImages  } from '@tiko/core'
 import { useMediaSelector } from '@/composables/useMediaSelector'
 
 interface Props {

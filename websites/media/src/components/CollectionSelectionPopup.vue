@@ -44,8 +44,8 @@ import { computed, inject } from 'vue'
 import { useBemm } from 'bemm'
 import { Icons } from 'open-icon'
 import { useImageUrl, useImages } from '@tiko/core'
-import type { MediaItem, PopupService } from '@tiko/ui'
-import { TButton, TIcon, TGrid, TMediaTile, useI18n } from '@tiko/ui'
+import  {type MediaItem, useI18n } from '@tiko/core'
+import { TButton, TIcon, TGrid, TMediaTile,PopupService  } from '@tiko/ui'
 
 interface Collection {
   id: string
@@ -103,7 +103,7 @@ const handleCollectionClick = async (collection: CollectionWithInfo) => {
       cancelText: 'Cancel',
       confirmColor: 'error'
     })
-    
+
     if (confirmed) {
       props.onRemoveFromCollection?.(collection.id)
     }

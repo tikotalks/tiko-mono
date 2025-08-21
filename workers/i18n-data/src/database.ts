@@ -100,7 +100,7 @@ export async function fetchAllKeys(supabaseUrl: string, supabaseKey: string): Pr
       throw new Error(`Failed to fetch keys: ${response.status} ${response.statusText}`)
     }
 
-    const batch = await response.json()
+    const batch = await response.json() as any[]
     allKeys.push(...batch)
     
     // If we got less than the limit, we're done
@@ -141,7 +141,7 @@ async function fetchAppKeys(appName: string, supabaseUrl: string, supabaseKey: s
       throw new Error(`Failed to fetch app keys: ${response.status} ${response.statusText}`)
     }
 
-    const batch = await response.json()
+    const batch = await response.json() as any[]
     allKeys.push(...batch)
     
     // If we got less than the limit, we're done
@@ -179,7 +179,7 @@ async function fetchAllTranslations(supabaseUrl: string, supabaseKey: string): P
       throw new Error(`Failed to fetch translations: ${response.status} ${response.statusText}`)
     }
 
-    const batch = await response.json()
+    const batch = await response.json() as any[]
     allTranslations.push(...batch)
     
     // If we got less than the limit, we're done
@@ -224,7 +224,7 @@ async function fetchAppTranslations(appName: string, supabaseUrl: string, supaba
     throw new Error(`Failed to fetch app translations: ${response.status} ${response.statusText}`)
   }
 
-  const rawTranslations = await response.json()
+  const rawTranslations = await response.json() as any[]
   
   // Transform the response to include the key field from the join
   return rawTranslations.map((translation: any) => ({
@@ -255,7 +255,7 @@ export async function fetchAllTranslationsRaw(supabaseUrl: string, supabaseKey: 
       throw new Error(`Failed to fetch translations: ${response.status} ${response.statusText}`)
     }
 
-    const batch = await response.json()
+    const batch = await response.json() as any[]
     allTranslations.push(...batch)
     
     // If we got less than the limit, we're done
@@ -297,7 +297,7 @@ export async function fetchTranslationsForLanguage(languageCode: string, supabas
       throw new Error(`Failed to fetch translations for ${languageCode}: ${response.status} ${response.statusText}`)
     }
 
-    const batch = await response.json()
+    const batch = await response.json() as any[]
     allTranslations.push(...batch)
     
     // If we got less than the limit, we're done

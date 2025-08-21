@@ -80,8 +80,7 @@ export function useDeviceTilt(opts: TiltOpts = {}) {
   // iOS permission helper (call from a click if you want sensors)
   async function requestPermission(): Promise<"granted"|"denied"|"not-needed"> {
     // @ts-expect-error iOS-only API
-    const need = typeof DeviceOrientationEvent !== "undefined" &&
-                 typeof DeviceOrientationEvent.requestPermission === "function";
+    const need = typeof DeviceOrientationEvent !== "undefined" &&  typeof DeviceOrientationEvent.requestPermission === "function";
     if (!need) return "not-needed";
     try {
       // @ts-expect-error

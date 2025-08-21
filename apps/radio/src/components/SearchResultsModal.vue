@@ -1,7 +1,7 @@
 <template>
   <div :class="bemm()">
     <h2 :class="bemm('title')">{{ t('radio.searchAudio') }}</h2>
-    
+
     <!-- Search Input -->
     <div :class="bemm('search-header')">
       <TInputText
@@ -54,13 +54,13 @@
             :class="bemm('result-thumbnail')"
             @error="handleThumbnailError"
           />
-          
+
           <div :class="bemm('result-info')">
             <h4 :class="bemm('result-title')">{{ item.title }}</h4>
             <p v-if="item.description" :class="bemm('result-description')">
               {{ item.description }}
             </p>
-            
+
             <div :class="bemm('result-meta')">
               <div v-if="item.tags.length > 0" :class="bemm('result-tags')">
                 <span
@@ -74,7 +74,7 @@
                   +{{ item.tags.length - 3 }} {{ t('common.more') }}
                 </span>
               </div>
-              
+
               <div :class="bemm('result-stats')">
                 <span v-if="item.durationSeconds" :class="bemm('result-duration')">
                   {{ formatDuration(item.durationSeconds) }}
@@ -99,7 +99,7 @@
               @click.stop="togglePlay(item)"
               :class="bemm('play-button')"
             />
-            
+
             <TButton
               v-if="canManageContent"
               type="ghost"
@@ -121,7 +121,7 @@
       >
         {{ t('common.close') }}
       </TButton>
-      
+
       <TButton
         v-if="results.length > 0"
         color="primary"
@@ -136,8 +136,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TIcon, TInputText, useI18n } from '@tiko/ui'
+import { TButton, TIcon, TInputText } from '@tiko/ui'
 import type { RadioItem } from '../types/radio.types'
+import { useI18n } from '@tiko/core';
 
 interface Props {
   searchQuery?: string
@@ -180,7 +181,7 @@ const formatDuration = (seconds: number): string => {
   const hours = Math.floor(seconds / 3600)
   const minutes = Math.floor((seconds % 3600) / 60)
   const secs = Math.floor(seconds % 60)
-  
+
   if (hours > 0) {
     return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }
@@ -202,11 +203,11 @@ const performSearch = async (query: string = localSearchQuery.value) => {
   }
 
   loading.value = true
-  
+
   try {
     // Simulate async search with slight delay for UX
     await new Promise(resolve => setTimeout(resolve, 200))
-    
+
     const searchQuery = query.toLowerCase()
     const searchResults = props.allItems.filter(item => {
       return (
@@ -215,7 +216,7 @@ const performSearch = async (query: string = localSearchQuery.value) => {
         item.tags.some(tag => tag.toLowerCase().includes(searchQuery))
       )
     })
-    
+
     results.value = searchResults
   } catch (error) {
     console.error('Search error:', error)
@@ -230,7 +231,7 @@ const handleSearchInput = () => {
   if (searchTimeout) {
     clearTimeout(searchTimeout)
   }
-  
+
   searchTimeout = setTimeout(() => {
     performSearch()
   }, 300)
@@ -278,7 +279,7 @@ onMounted(async () => {
       inputElement.focus()
     }
   }
-  
+
   // Perform initial search if query was provided
   if (localSearchQuery.value.trim()) {
     performSearch()

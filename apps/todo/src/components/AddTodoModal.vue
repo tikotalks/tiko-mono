@@ -72,7 +72,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TIcon, TInputText, useI18n } from '@tiko/ui'
+import { useI18n } from '@tiko/core';
+import { TButton, TIcon, TInputText } from '@tiko/ui'
 import { useTodoStore } from '../stores/todo'
 import type { TodoItem } from '../types/todo.types'
 
@@ -102,7 +103,7 @@ const formData = ref({
 const handleImageUpload = (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
-  
+
   if (file) {
     // In a real app, you would upload to a service
     // For demo, we'll use a data URL

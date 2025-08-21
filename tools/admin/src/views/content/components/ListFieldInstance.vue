@@ -2,7 +2,7 @@
   <div :class="bemm()">
     <label :class="bemm('label')">{{ label }}</label>
     <p v-if="helpText" :class="bemm('help')">{{ helpText }}</p>
-    
+
     <TTextArea
       :modelValue="modelValue"
       :placeholder="placeholder"
@@ -10,14 +10,14 @@
       :required="required"
       @update:modelValue="emit('update:modelValue', $event)"
     />
-    
+
     <div :class="bemm('preview')" v-if="parsedItems.length > 0">
       <div :class="bemm('preview-header')">
         <span>{{ t('admin.content.field.listPreview', 'Preview') }} ({{ parsedItems.length }} items)</span>
       </div>
       <div :class="bemm('preview-items')">
-        <div 
-          v-for="(item, index) in previewItems" 
+        <div
+          v-for="(item, index) in previewItems"
           :key="index"
           :class="bemm('preview-item')"
         >
@@ -39,10 +39,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { computed } from 'vue'
 import { useBemm } from 'bemm'
-import { TTextArea, useI18n } from '@tiko/ui'
-import { processListFieldValue } from '@tiko/core'
+import { TTextArea, } from "@tiko/ui";
+import { processListFieldValue, useI18n } from '@tiko/core'
 
 interface Props {
   modelValue: string | null

@@ -105,8 +105,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useBemm } from 'bemm'
+import { useI18n } from '@tiko/core'
 import { TButton, TInput } from '@tiko/ui'
-import { useI18n } from '@tiko/ui/src/composables/useI18n'
 
 interface Props {
   targetTime: number

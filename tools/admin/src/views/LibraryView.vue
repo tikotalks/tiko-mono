@@ -204,7 +204,6 @@ import { useBemm } from 'bemm';
 import { useImageUrl, useImages, useUserSettings } from '@tiko/core';
 import type { MediaItem, ToastService, PopupService } from '@tiko/ui';
 import {
-  useI18n,
   TCard,
   TButton,
   TIcon,
@@ -224,6 +223,7 @@ import {
   TStatusBar,
   TButtonGroup,
 } from '@tiko/ui';
+import { useI18n } from '@tiko/core';
 import AdminPageHeader from '../components/AdminPageHeader.vue';
 import { useMediaSelector } from '@/composables/useMediaSelector';
 

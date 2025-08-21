@@ -197,11 +197,12 @@ import {
   TEmptyState,
   TChip,
   ConfirmDialog,
-  useI18n,
   listActions,
   type ToastService,
   type PopupService
 } from '@tiko/ui'
+import {
+  useI18n } from "@tiko/core";
 import { Icons } from 'open-icon'
 import { contentService, translationService } from '@tiko/core'
 import type { SectionTemplate, ContentSection, Language } from '@tiko/core'

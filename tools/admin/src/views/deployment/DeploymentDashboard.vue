@@ -105,7 +105,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive, inject } from 'vue';
 import { useBemm } from 'bemm';
-import { TList, TListItem, TListCell, TChip, useI18n, listActions } from '@tiko/ui';
+import { TList, TListItem, TListCell, TChip, listActions } from '@tiko/ui';
 import { Icons } from 'open-icon';
 import {
   deploymentService,

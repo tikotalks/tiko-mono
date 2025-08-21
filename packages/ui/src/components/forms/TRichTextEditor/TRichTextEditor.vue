@@ -152,7 +152,7 @@
       </div>
 
       <!-- Editor -->
-      <div 
+      <div
         :class="bemm('editor')"
         :style="{
           height: height,
@@ -177,7 +177,7 @@ import Link from '@tiptap/extension-link'
 import Underline from '@tiptap/extension-underline'
 import { Icons } from 'open-icon'
 import TIcon from '../../ui-elements/TIcon/TIcon.vue'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 import type { TRichTextEditorProps } from './TRichTextEditor.model'
 import { DEFAULT_FEATURES } from './TRichTextEditor.model'
 
@@ -237,7 +237,7 @@ function hasFeature(feature: string): boolean {
 
 function setLink() {
   if (!editor.value) return
-  
+
   const previousUrl = editor.value.getAttributes('link').href
   const url = window.prompt('URL', previousUrl)
 

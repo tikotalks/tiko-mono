@@ -36,8 +36,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useBemm } from 'bemm'
-import { useAuthStore, useCollectionsStore } from '@tiko/core'
-import { useI18n } from '@tiko/ui'
+import { useI18n, useAuthStore, useCollectionsStore } from '@tiko/core'
 import MyCollections from '@/components/MyCollections.vue'
 import SignupInspiration from '@/components/SignupInspiration.vue'
 import CuratedCollections from '@/components/CuratedCollections.vue'

@@ -102,7 +102,7 @@
 <script setup lang="ts">
 import { ref, inject, onMounted, computed } from 'vue'
 import { useBemm } from 'bemm'
-import { useI18n } from '@tiko/ui'
+import { useI18n } from '@tiko/core'
 import { TCard, TButton, TIcon, TActionIcon, TSpinner } from '@tiko/ui'
 import { Icons } from 'open-icon'
 import { useImages, useUpload } from '@tiko/core'

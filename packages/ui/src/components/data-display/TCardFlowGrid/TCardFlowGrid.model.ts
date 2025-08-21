@@ -1,5 +1,5 @@
 import type { TCardTile } from '../TCardTile/TCardTile.model'
-import type { MenuItem } from '../../navigation/TContextMenu/TContextMenu.model'
+import type { ContextMenuItem } from '../../navigation/TContextMenu/ContextMenu.model'
 import { GRID_SPACING } from '../../../utils'
 
 export interface TCardFlowGridProps {
@@ -13,7 +13,7 @@ export interface TCardFlowGridProps {
   maxTileSize?: number
   gap?: number
   centerItems?: boolean
-  getContextMenu?: (card: TCardTile, index: number) => MenuItem[]
+  getContextMenu?: (card: TCardTile, index: number) => ContextMenuItem[]
 }
 
 export interface TCardFlowGridEmits {
@@ -33,10 +33,10 @@ export const SCREEN_BREAKPOINTS = {
 } as const
 
 // Layout mappings: [columns, rows]
-export const LAYOUT_MAPPINGS: Record<number, { 
-  large: [number, number], 
-  medium: [number, number], 
-  small: [number, number] 
+export const LAYOUT_MAPPINGS: Record<number, {
+  large: [number, number],
+  medium: [number, number],
+  small: [number, number]
 }> = {
   1: { large: [1, 1], medium: [1, 1], small: [1, 1] },
   2: { large: [2, 1], medium: [2, 1], small: [1, 2] },
@@ -58,14 +58,14 @@ export const getPreferredLayout = (itemCount: number, screenWidth: number): [num
   const isLarge = screenWidth >= SCREEN_BREAKPOINTS.LARGE
   const isMedium = screenWidth >= SCREEN_BREAKPOINTS.MEDIUM && screenWidth < SCREEN_BREAKPOINTS.LARGE
   const isSmall = screenWidth < SCREEN_BREAKPOINTS.MEDIUM
-  
+
   // Get the appropriate layout or calculate for larger numbers
   if (LAYOUT_MAPPINGS[itemCount]) {
     if (isLarge) return LAYOUT_MAPPINGS[itemCount].large
     if (isMedium) return LAYOUT_MAPPINGS[itemCount].medium
     return LAYOUT_MAPPINGS[itemCount].small
   }
-  
+
   // For larger numbers, calculate based on screen size
   if (isLarge) {
     const cols = Math.min(8, Math.ceil(Math.sqrt(itemCount * 1.5)))

@@ -3,7 +3,7 @@
     <div v-if="loading" :class="bemm('loading')">
       <TSpinner />
     </div>
-    
+
     <div v-else-if="error" :class="bemm('error')">
       <TEmptyState
         :icon="Icons.ALERT_CIRCLE"
@@ -11,7 +11,7 @@
         :description="error"
       />
     </div>
-    
+
     <div v-else-if="pageContent" :class="bemm('content')">
       <TSectionRenderer
         v-for="(sectionData, index) in pageContent.sections"
@@ -21,7 +21,7 @@
         :show-debug="showDebug"
       />
     </div>
-    
+
     <div v-else :class="bemm('no-content')">
       <TEmptyState
         :icon="Icons.FILE_OFF"
@@ -29,13 +29,13 @@
         :description="t('errors.noContentDescription')"
       />
     </div>
-    
+
     <!-- Debug info -->
     <div v-if="showDebug && pageContent" :class="bemm('debug')">
       <h3>Page Debug Info</h3>
       <pre>{{ JSON.stringify(pageContent.page, null, 2) }}</pre>
       <h4>Sections:</h4>
-      <pre>{{ JSON.stringify(pageContent.sections.map(s => ({ 
+      <pre>{{ JSON.stringify(pageContent.sections.map(s => ({
         id: s.section.id,
         type: s.section.section_template_id,
         name: s.section.name
@@ -48,7 +48,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useBemm } from 'bemm'
 import { Icons } from 'open-icon'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 import { useContent } from '@tiko/core'
 import type { PageContent } from '@tiko/core'
 import TSectionRenderer from '../TSectionRenderer/TSectionRenderer.vue'
@@ -91,19 +91,19 @@ const pageContent = ref<PageContent | null>(null)
 const loadPageContent = async () => {
   loading.value = true
   error.value = null
-  
+
   try {
     // Use provided language code or extract from locale
     const langCode = props.languageCode || locale.value.split('-')[0]
-    
+
     const pageData = await content.getPage(props.pageSlug, langCode)
-    
+
     if (!pageData || !pageData.page) {
       error.value = t('errors.pageNotFound')
       emit('page-not-found')
       return
     }
-    
+
     pageContent.value = pageData
     emit('page-loaded', pageData)
   } catch (err) {

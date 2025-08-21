@@ -119,7 +119,7 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, watch } from 'vue';
 import { useBemm } from 'bemm';
-import { useI18n } from '../../../composables/useI18n';
+import { useI18n } from '@tiko/core';
 import TButton from '../../ui-elements/TButton/TButton.vue';
 import TIcon from '../../ui-elements/TIcon/TIcon.vue';
 import TPinInput from '../../forms/TPinInput/TPinInput.vue';

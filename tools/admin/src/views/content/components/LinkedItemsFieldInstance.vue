@@ -47,7 +47,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, inject, watch } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TIcon, useI18n, type PopupService } from '@tiko/ui'
+import { TButton, TIcon, type PopupService } from '@tiko/ui'
 import { Icons } from 'open-icon'
 import { contentService, type Item } from '@tiko/core'
 import ItemSelector from './ItemSelector.vue'

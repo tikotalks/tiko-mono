@@ -44,7 +44,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TTextArea, TInputSelect, useI18n } from '@tiko/ui'
+import { useI18n } from "@tiko/core";
+import { TButton, TTextArea, TInputSelect } from '@tiko/ui'
 import { Icons } from 'open-icon'
 
 interface Props {

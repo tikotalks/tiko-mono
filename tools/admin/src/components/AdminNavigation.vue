@@ -90,8 +90,9 @@ import { inject, computed, ref, onMounted } from 'vue';
 
 import { useBemm } from 'bemm';
 import { Icons } from 'open-icon';
-import { TIcon, useI18n } from '@tiko/ui';
+import { TIcon } from '@tiko/ui';
 import {
+  useI18n,
   useI18nDatabaseService,
   useUserPreferences,
   USER_PREFERENCE_KEYS,

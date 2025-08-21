@@ -170,11 +170,11 @@ import {
   TInputCheckbox,
   TInputSelect,
   TDraggableList,
-  useI18n,
   Colors
 } from '@tiko/ui'
 import { Icons } from 'open-icon'
-import type { ContentField } from '@tiko/core'
+import { type ContentField ,
+  useI18n,} from '@tiko/core'
 import MediaFieldInstance from './MediaFieldInstance.vue'
 
 interface RepeaterField {

@@ -53,7 +53,7 @@
 
 <script setup lang="ts">
 import { useBemm } from 'bemm'
-import { useI18n } from '@tiko/ui'
+import { useI18n } from '@tiko/core'
 import { Icons } from 'open-icon'
 import { TIcon, TButton } from '@tiko/ui'
 import type { DeploymentHistory } from '@tiko/core/services/deployment.service'

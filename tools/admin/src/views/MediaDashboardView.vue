@@ -55,7 +55,7 @@
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
-import { useI18n } from '@tiko/ui'
+import { useI18n } from '@tiko/core'
 import { authService, useImages, formatBytes, formatDate } from '@tiko/core'
 import {  TCard,  TIcon, TKeyValue } from '@tiko/ui'
 import { Icons } from 'open-icon'

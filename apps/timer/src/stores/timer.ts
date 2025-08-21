@@ -62,7 +62,7 @@ export const useTimerStore = defineStore('timer', () => {
   })
 
   const formattedTime = computed(() => {
-    const time = displayTime.value
+    const time = mode.value === 'down' ? Math.max(0, targetTime.value - currentTime.value) : currentTime.value
     const minutes = Math.floor(time / 60)
     const seconds = time % 60
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`

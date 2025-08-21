@@ -263,10 +263,10 @@
 import { ref, computed, onMounted, inject, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
-import { TPopupWrapper, useI18n, TButton, TList, TListCell, TListItem, TChip, TInputText, TInputSelect, TButtonGroup, TStatusBar, TIcon, TInputCheckbox, TKeyValue, i18nService, Colors } from '@tiko/ui'
+import { TPopupWrapper, TButton, TList, TListCell, TListItem, TChip, TInputText, TInputSelect, TButtonGroup, TStatusBar, TIcon, TInputCheckbox, TKeyValue, Colors, TProgressBar, TSpinner } from '@tiko/ui'
 import type { ToastService, PopupService } from '@tiko/ui'
 import { Icons } from 'open-icon'
-import { useI18nDatabaseService, gptTranslationService } from '@tiko/core'
+import { useI18nDatabaseService, gptTranslationService, useI18n } from '@tiko/core'
 import type { Language, TranslationKey, Translation } from '@tiko/core'
 import AdminPageHeader from '@/components/AdminPageHeader.vue'
 
@@ -871,7 +871,7 @@ async function generateAITranslations() {
 
     // Only refresh from database if we had successful translations
     if (successCount > 0) {
-      progressDialog = popupService?.open({
+      const progressDialog = popupService?.open({
         component: 'ProgressDialog',
         props: {
           title: t('admin.i18n.language.updatingList'),
@@ -879,7 +879,11 @@ async function generateAITranslations() {
           statusText: t('admin.i18n.language.refreshingData'),
           indeterminate: true
         },
-        closable: false
+        config: {
+          canClose: false,
+          background: true,
+          position: 'center'
+        }
       })
 
       // Reload data from database to get real IDs and ensure consistency
@@ -888,11 +892,15 @@ async function generateAITranslations() {
       // Refresh the global i18n cache so new translations are available immediately
       await refreshTranslations()
 
-      progressDialog?.close()
+      if (progressDialog) {
+        popupService?.close({ id: progressDialog })
+      }
     }
   } catch (error) {
     console.error('Failed to generate AI translations:', error)
-    progressDialog?.close()
+    if (progressDialogId) {
+      popupService?.close({ id: progressDialogId })
+    }
 
     const toastService = inject<ToastService>('toastService')
     toastService?.show({

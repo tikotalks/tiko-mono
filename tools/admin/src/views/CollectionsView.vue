@@ -201,15 +201,15 @@ import { ref, computed, onMounted, inject } from 'vue';
 import { useRouter } from 'vue-router';
 import { Icons } from 'open-icon';
 import { useBemm } from 'bemm';
-import { 
+import {
   useCollectionsStore,
   useAuthStore,
   useImageUrl,
+  useI18n,
   type MediaCollection
 } from '@tiko/core';
 import type { ToastService, PopupService } from '@tiko/ui';
 import {
-  useI18n,
   TCard,
   TButton,
   TIcon,
@@ -283,7 +283,7 @@ const filteredCollections = computed(() => {
   // Apply search
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
-    collections = collections.filter(c => 
+    collections = collections.filter(c =>
       c.name.toLowerCase().includes(query) ||
       c.description?.toLowerCase().includes(query) ||
       c.owner?.username?.toLowerCase().includes(query)
@@ -512,8 +512,8 @@ const togglePublic = async (collection: MediaCollection) => {
       is_public: !collection.is_public
     });
     toastService?.show({
-      message: collection.is_public 
-        ? t('admin.collections.madePrivate') 
+      message: collection.is_public
+        ? t('admin.collections.madePrivate')
         : t('admin.collections.madePublic'),
       type: 'success'
     });
@@ -532,8 +532,8 @@ const toggleCurated = async (collection: MediaCollection) => {
       is_curated: !collection.is_curated
     });
     toastService?.show({
-      message: collection.is_curated 
-        ? t('admin.collections.removedCurated') 
+      message: collection.is_curated
+        ? t('admin.collections.removedCurated')
         : t('admin.collections.madeCurated'),
       type: 'success'
     });
@@ -631,11 +631,11 @@ onMounted(async () => {
 :global(.t-virtual-grid__item) {
   position: relative;
   z-index: 1;
-  
+
   &:hover {
     z-index: 100;
   }
-  
+
   // When context menu is active
   &:has(.context-panel--active) {
     z-index: 200;
@@ -646,7 +646,7 @@ onMounted(async () => {
 :global(.t-media-tile) {
   position: relative;
   transition: transform 0.2s ease, z-index 0s;
-  
+
   &:hover {
     z-index: 50;
   }

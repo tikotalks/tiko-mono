@@ -29,7 +29,7 @@ const WORKER_URLS = {
   production: 'https://i18n-data-production.silvandiepen.workers.dev' // Production worker URL
 }
 
-const OUTPUT_DIR = path.join(__dirname, '../packages/ui/src/i18n/generated')
+const OUTPUT_DIR = path.join(__dirname, '../packages/core/src/i18n/generated')
 
 // Parse command line arguments
 const args = process.argv.slice(2)
@@ -287,7 +287,7 @@ function generateTranslationTypes(structure, keys, level = 0) {
  */
 
 // All available translation keys as union type
-export type TranslationKey = ${keys.map(k => `"${k.key}"`).join(' |\\n  ')}\n\n`
+export type TranslationKey = ${keys.map(k => `"${k.key}"`).join(' |\n  ')}\n\n`
 
     result += `// Nested key structure for auto-completion\nexport interface TranslationKeyPath {\n`
   }

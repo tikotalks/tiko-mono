@@ -38,7 +38,7 @@ import { useBemm } from 'bemm';
 import { Icons } from 'open-icon';
 import { ref, watch, onMounted } from 'vue';
 import { useContent } from '@tiko/core';
-import { useI18n } from '@tiko/ui';
+import { useI18n } from '@tiko/core';
 const bemm = useBemm('navigation');
 
 import { useRoute, useRouter } from 'vue-router';

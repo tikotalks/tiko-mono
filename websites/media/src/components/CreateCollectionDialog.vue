@@ -1,48 +1,26 @@
 <template>
-  <TPopup
-    :title="t('media.collections.createCollection')"
-    @close="$emit('close')"
-  >
+  <TPopup :title="t('media.collections.createCollection')" @close="$emit('close')">
     <form @submit.prevent="handleSubmit" :class="bemm()">
       <div :class="bemm('field')">
-        <TInputText
-          v-model="form.name"
-          :label="t('media.collections.name')"
-          :placeholder="t('media.collections.namePlaceholder')"
-          :required="true"
-          :error="errors.name"
-        />
+        <TInputText v-model="form.name" :label="t('media.collections.name')"
+          :placeholder="t('media.collections.namePlaceholder')" :required="true" :error="errors.name" />
       </div>
 
       <div :class="bemm('field')">
-        <TInputTextArea
-          v-model="form.description"
-          :label="t('media.collections.description')"
-          :placeholder="t('media.collections.descriptionPlaceholder')"
-          :rows="3"
-          :error="errors.description"
-        />
+        <TInputTextArea v-model="form.description" :label="t('media.collections.description')"
+          :placeholder="t('media.collections.descriptionPlaceholder')" :rows="3" :error="errors.description" />
       </div>
 
       <div :class="bemm('field')">
-        <TInputCheckbox
-          v-model="form.is_public"
-          :label="t('media.collections.makePublic')"
-          :description="t('media.collections.makePublicDescription')"
-        />
+        <TInputCheckbox v-model="form.is_public" :label="t('media.collections.makePublic')"
+          :description="t('media.collections.makePublicDescription')" />
       </div>
 
       <div :class="bemm('actions')">
-        <TButton
-          type="outline"
-          @click="$emit('close')"
-        >
+        <TButton type="outline" @click="$emit('close')">
           {{ t('common.cancel') }}
         </TButton>
-        <TButton
-          html-button-type="submit"
-          :loading="isLoading"
-        >
+        <TButton html-button-type="submit" :loading="isLoading">
           {{ t('media.collections.create') }}
         </TButton>
       </div>
@@ -53,15 +31,18 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useBemm } from 'bemm'
-import { useCollectionsStore } from '@tiko/core'
 import {
-  useI18n,
+  useCollectionsStore,
+  useI18n
+} from '@tiko/core'
+import {
   TPopup,
   TInputText,
   TInputTextArea,
   TInputCheckbox,
   TButton
 } from '@tiko/ui'
+
 
 // Emits
 const emit = defineEmits<{
@@ -118,7 +99,7 @@ const handleSubmit = async () => {
       description: form.description.trim() || null,
       is_public: form.is_public
     })
-    
+
     emit('success')
   } catch (error) {
     console.error('Failed to create collection:', error)

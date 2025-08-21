@@ -49,7 +49,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useBemm } from 'bemm'
-import { useI18n } from '@tiko/ui'
+import { useI18n } from '@tiko/core'
 import { Icons } from 'open-icon'
 import { TButton } from '@tiko/ui'
 

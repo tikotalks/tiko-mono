@@ -53,8 +53,8 @@ export class CanvasAnimation {
   private backgroundColor: string
 
   // Viewport-relative units (0-100)
-  public vw: number
-  public vh: number
+  public vw: number = 0
+  public vh: number = 0
   // Logical dimensions (CSS pixels, not physical pixels)
   public logicalWidth: number = 0
   public logicalHeight: number = 0

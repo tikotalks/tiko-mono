@@ -41,7 +41,7 @@
 <script setup lang="ts">
 import { useBemm } from 'bemm';
 import { useContent, type PageContent } from '@tiko/core';
-import { useI18n } from '@tiko/ui';
+import { useI18n } from '@tiko/core';
 import { ref, onMounted, watch, toRefs } from 'vue';
 import SectionRenderer from './SectionRenderer.vue';
 

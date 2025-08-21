@@ -45,7 +45,7 @@
 <script setup lang="ts">
 import { ref, computed, inject, watch } from 'vue'
 import { useBemm } from 'bemm'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 import { useAuthStore } from '@tiko/core'
 import { storeToRefs } from 'pinia'
 import TButton from '../../ui-elements/TButton/TButton.vue'
@@ -151,7 +151,7 @@ const handleSave = async () => {
       const html = document.documentElement
       html.classList.remove('theme-light', 'theme-dark', 'theme-auto')
       html.classList.add(`theme-${formData.value.theme}`)
-      
+
       // Also handle auto theme
       if (formData.value.theme === 'auto') {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -184,7 +184,7 @@ const handleSave = async () => {
 
     // Close the modal
     handleCancel()
-    
+
     // Reload the page after a short delay to apply language changes
     if (languageChanged) {
       setTimeout(() => {

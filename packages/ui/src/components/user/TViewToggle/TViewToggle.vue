@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 import { useBemm } from 'bemm'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 import TButton from '../../ui-elements/TButton/TButton.vue'
 import { Icons } from 'open-icon'
 import type { TViewToggleProps } from './TViewToggle.model'

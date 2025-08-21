@@ -89,7 +89,8 @@
 
 <script setup lang="ts">
 import { useBemm } from 'bemm';
-import { TButton, TChip, TIcon, useI18n } from '@tiko/ui';
+import { useI18n } from '@tiko/core';
+import { TButton, TChip, TIcon } from '@tiko/ui';
 import { Icons } from 'open-icon';
 import type { DatabaseBackup } from '@tiko/core';
 

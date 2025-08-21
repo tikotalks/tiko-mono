@@ -49,8 +49,8 @@
           <TListCell type="custom">
             <span :class="bemm('key-text')">{{ key }}</span>
           </TListCell>
-          <TListCell 
-            type="actions" 
+          <TListCell
+            type="actions"
             :actions="[
               listActions.copy((e) => copyKey(key), {
                 tooltip: t('admin.i18n.keys.actions.copyKey', 'Copy key')
@@ -81,6 +81,8 @@ import { useBemm } from 'bemm';
 import { Icons } from 'open-icon';
 import type { ToastService } from '@tiko/ui';
 import {
+  useI18n } from "@tiko/core";
+import {
   TButton,
   TInput,
   TIcon,
@@ -88,7 +90,6 @@ import {
   TList,
   TListItem,
   TListCell,
-  useI18n,
   TKeyValue,
   listActions,
 } from '@tiko/ui';

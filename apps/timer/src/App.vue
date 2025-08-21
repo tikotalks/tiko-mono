@@ -65,13 +65,13 @@
 
 <script setup lang="ts">
 import { computed, inject, ref, onMounted } from 'vue'
-import { TFramework, TButton, type FrameworkConfig, popupService as importedPopupService, useI18n, ToolTipPosition} from '@tiko/ui'
+import { TFramework, TButton, type FrameworkConfig, popupService as importedPopupService, ToolTipPosition} from '@tiko/ui'
 import { useTimer } from './composables/useTimer'
 import { useTimerStore } from './stores/timer'
 import TimerSettingsForm from './components/TimerSettingsForm.vue'
 import tikoConfig from '../tiko.config'
 import backgroundImage from './assets/app-icon-timer.png'
-import { initializeTranslations } from '@tiko/core'
+import { initializeTranslations, useI18n } from '@tiko/core'
 
 // Get timer state
 const {

@@ -1,6 +1,6 @@
 <template>
-  <TFramework 
-    :config="frameworkConfig" 
+  <TFramework
+    :config="frameworkConfig"
     :loading="loading"
   >
     <router-view />
@@ -9,7 +9,8 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
-import { TFramework, type FrameworkConfig, useI18n } from '@tiko/ui'
+import { useI18n } from '@tiko/core';
+import { TFramework, type FrameworkConfig } from '@tiko/ui'
 import tikoConfig from '../tiko.config'
 import { initializeTranslations } from '@tiko/core'
 

@@ -333,7 +333,6 @@ import {
   TInput,
   TInputSelect,
   TIcon,
-  useI18n,
   TSpinner,
   TList,
   TListItem,
@@ -344,6 +343,7 @@ import {
   TKeyValue,
   listActions,
 } from '@tiko/ui';
+import { useI18n } from '@tiko/core';
 import AdminPageHeader from '@/components/AdminPageHeader.vue';
 
 interface TranslationRow {

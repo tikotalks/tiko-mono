@@ -129,14 +129,14 @@ import {
   TListCell,
   TIcon,
   ConfirmDialog,
-  useI18n,
   listActions,
   type PopupService,
   type ToastService,
   TChip
 } from '@tiko/ui'
 import { Icons } from 'open-icon'
-import { contentService } from '@tiko/core'
+import { contentService,
+  useI18n } from '@tiko/core'
 import type { SectionTemplate, ContentField } from '@tiko/core'
 import AdminPageHeader from '@/components/AdminPageHeader.vue'
 import FieldEditor from './components/FieldEditor.vue'

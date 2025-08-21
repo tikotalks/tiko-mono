@@ -124,12 +124,11 @@
 import { useBemm } from 'bemm';
 import { ref, computed, watch } from 'vue';
 import { Icons } from 'open-icon';
-import { useImageUrl } from '@tiko/core';
+import { useImageUrl, useI18n } from '@tiko/core';
 
 import type { TCardTile, TCardTileProps } from './TCardTile.model';
 import { TIcon } from '../../ui-elements/TIcon';
 import { TContextMenu } from '../../navigation/TContextMenu';
-import { useI18n } from '../../../composables/useI18n'
 
 
 const { t } = useI18n()

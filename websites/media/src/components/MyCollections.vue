@@ -67,9 +67,8 @@
 import { computed, onMounted } from 'vue'
 import { useBemm } from 'bemm'
 import { Icons } from 'open-icon'
-import { useAuthStore, useCollectionsStore, useImageUrl } from '@tiko/core'
+import { useAuthStore, useCollectionsStore, useImageUrl, useI18n } from '@tiko/core'
 import {
-  useI18n,
   TEmptyState,
   TButton,
   TGrid,

@@ -33,7 +33,7 @@ export interface UseItemsReturn {
   stats: Ref<ItemStats | null>
   
   // Computed
-  itemsByParent: ComputedRef<Map<string | undefined, BaseItem[]>>
+  itemsByParent: ComputedRef<Map<string | null | undefined, BaseItem[]>>
   favoriteItems: ComputedRef<BaseItem[]>
   completedItems: ComputedRef<BaseItem[]>
   publicItems: ComputedRef<BaseItem[]>
@@ -93,7 +93,7 @@ export function useItems(options: UseItemsOptions): UseItemsReturn {
   
   // Computed
   const itemsByParent = computed(() => {
-    const map = new Map<string | undefined, BaseItem[]>()
+    const map = new Map<string | null | undefined, BaseItem[]>()
     
     items.value.forEach(item => {
       const parentId = item.parent_id
@@ -136,7 +136,12 @@ export function useItems(options: UseItemsOptions): UseItemsReturn {
         ...options.filters,
         ...filters
       })
-      items.value = result
+      
+      if (result.success && result.data) {
+        items.value = result.data
+      } else {
+        error.value = result.error || 'Failed to load items'
+      }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load items'
       console.error('Failed to load items:', err)
@@ -149,18 +154,14 @@ export function useItems(options: UseItemsOptions): UseItemsReturn {
     if (!authStore.user) return null
     
     try {
-      const result = await itemService.createItem(authStore.user.id, {
+      const result = await itemService.createItem({
         ...payload,
-        app_name: options.appName
+        app_name: options.appName,
+        user_id: authStore.user.id
       })
       
-      if (result.success && result.data) {
-        items.value.push(result.data)
-        return result.data
-      }
-      
-      error.value = result.error || 'Failed to create item'
-      return null
+      items.value.push(result)
+      return result
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to create item'
       return null
@@ -171,16 +172,11 @@ export function useItems(options: UseItemsOptions): UseItemsReturn {
     try {
       const result = await itemService.updateItem(itemId, payload)
       
-      if (result.success && result.data) {
-        const index = items.value.findIndex(i => i.id === itemId)
-        if (index !== -1) {
-          items.value[index] = result.data
-        }
-        return result.data
+      const index = items.value.findIndex(i => i.id === itemId)
+      if (index !== -1) {
+        items.value[index] = result
       }
-      
-      error.value = result.error || 'Failed to update item'
-      return null
+      return result
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to update item'
       return null
@@ -189,29 +185,24 @@ export function useItems(options: UseItemsOptions): UseItemsReturn {
   
   const deleteItem = async (itemId: string): Promise<boolean> => {
     try {
-      const result = await itemService.deleteItem(itemId)
+      await itemService.deleteItem(itemId)
       
-      if (result.success) {
-        // Remove item and its children from local state
-        const idsToRemove = new Set([itemId])
-        let hasNewIds = true
-        
-        while (hasNewIds) {
-          const currentSize = idsToRemove.size
-          items.value.forEach(item => {
-            if (item.parent_id && idsToRemove.has(item.parent_id)) {
-              idsToRemove.add(item.id)
-            }
-          })
-          hasNewIds = idsToRemove.size > currentSize
-        }
-        
-        items.value = items.value.filter(item => !idsToRemove.has(item.id))
-        return true
+      // Remove item and its children from local state
+      const idsToRemove = new Set([itemId])
+      let hasNewIds = true
+      
+      while (hasNewIds) {
+        const currentSize = idsToRemove.size
+        items.value.forEach(item => {
+          if (item.parent_id && idsToRemove.has(item.parent_id)) {
+            idsToRemove.add(item.id)
+          }
+        })
+        hasNewIds = idsToRemove.size > currentSize
       }
       
-      error.value = result.error || 'Failed to delete item'
-      return false
+      items.value = items.value.filter(item => !idsToRemove.has(item.id))
+      return true
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to delete item'
       return false
@@ -295,11 +286,17 @@ export function useItems(options: UseItemsOptions): UseItemsReturn {
     error.value = null
     
     try {
-      const result = await itemService.searchItems(authStore.user.id, query, {
+      const result = await itemService.getItems(authStore.user.id, {
         app_name: options.appName,
+        search: query,
         ...options.filters
       })
-      items.value = result
+      
+      if (result.success && result.data) {
+        items.value = result.data
+      } else {
+        error.value = result.error || 'Failed to search items'
+      }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to search items'
     } finally {

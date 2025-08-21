@@ -134,7 +134,6 @@ import {
   TInputSelect,
   TSpinner,
   TEmptyState,
-  useI18n,
   listActions,
   type ToastService,
   type PopupService
@@ -145,7 +144,9 @@ import {
   type Item,
   type ItemTemplate,
   type ContentField,
-  type ItemData
+  type ItemData,
+
+  useI18n,
 } from '@tiko/core'
 import FieldRenderer from './components/FieldRenderer.vue'
 import AdminPageHeader from '@/components/AdminPageHeader.vue'

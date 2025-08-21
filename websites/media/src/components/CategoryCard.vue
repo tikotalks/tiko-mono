@@ -50,7 +50,7 @@ import { useBemm } from 'bemm'
 import { Icons } from 'open-icon'
 import { useImageUrl } from '@tiko/core'
 import type { MediaItem } from '@tiko/ui'
-import { useI18n, TIcon } from '@tiko/ui'
+import { TIcon } from '@tiko/ui'
 
 interface CategoryInfo {
   name: string

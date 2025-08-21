@@ -220,9 +220,9 @@ import {
   TInputSelect,
   TIcon,
   TCardTile,
-  useI18n,
   type ToastService
 } from '@tiko/ui';
+import { useI18n } from "@tiko/core";
 import { Icons } from 'open-icon';
 import { debounce } from 'lodash-es';
 import { adminItemsService } from '../../services/admin-items.service';
@@ -283,7 +283,7 @@ const loadItems = async () => {
       ...filters,
       page: currentPage.value
     });
-    
+
     items.value = response.items;
     total.value = response.total;
     totalPages.value = response.totalPages;
@@ -320,20 +320,20 @@ const clearSelection = () => {
 const toggleCurated = async (itemId: string, isCurated: boolean) => {
   try {
     await adminItemsService.toggleCuratedStatus(itemId, isCurated);
-    
+
     // Update local state
     const item = items.value.find(i => i.id === itemId);
     if (item) {
       item.isCurated = isCurated;
     }
-    
-    toast?.show({ 
-      message: isCurated 
-        ? t('admin.itemMarkedAsCurated') 
+
+    toast?.show({
+      message: isCurated
+        ? t('admin.itemMarkedAsCurated')
         : t('admin.itemRemovedFromCurated'),
       type: 'success'
     });
-    
+
     // Reload stats
     await loadStats();
   } catch (error) {
@@ -344,29 +344,29 @@ const toggleCurated = async (itemId: string, isCurated: boolean) => {
 
 const bulkSetCurated = async (isCurated: boolean) => {
   if (selectedIds.value.size === 0) return;
-  
+
   try {
     await adminItemsService.bulkToggleCurated(
       Array.from(selectedIds.value),
       isCurated
     );
-    
+
     // Update local state
     items.value.forEach(item => {
       if (selectedIds.value.has(item.id)) {
         item.isCurated = isCurated;
       }
     });
-    
+
     clearSelection();
-    
-    toast?.show({ 
-      message: isCurated 
-        ? t('admin.itemsMarkedAsCurated', { count: selectedIds.value.size }) 
+
+    toast?.show({
+      message: isCurated
+        ? t('admin.itemsMarkedAsCurated', { count: selectedIds.value.size })
         : t('admin.itemsRemovedFromCurated', { count: selectedIds.value.size }),
       type: 'success'
     });
-    
+
     // Reload stats
     await loadStats();
   } catch (error) {
@@ -398,7 +398,7 @@ onMounted(async () => {
       // Redirect to home or show error
       return;
     }
-    
+
     await Promise.all([
       loadItems(),
       loadStats()

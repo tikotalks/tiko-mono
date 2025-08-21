@@ -5,9 +5,9 @@
       <h2 :class="bemm('subtitle')">{{ t('notFound.title') || 'Page Not Found' }}</h2>
       <p :class="bemm('description')">{{ t('notFound.description') || 'The page you are looking for doesn\'t exist or has been moved.' }}</p>
       <div :class="bemm('actions')">
-        <TButton 
-          color="primary" 
-          size="large" 
+        <TButton
+          color="primary"
+          size="large"
           @click="goHome"
         >
           {{ t('notFound.backToHome') || 'Back to Home' }}
@@ -20,7 +20,8 @@
 <script setup lang="ts">
 import { useBemm } from 'bemm';
 import { useRouter } from 'vue-router';
-import { TButton, useI18n } from '@tiko/ui';
+import { useI18n  } from "@tiko/core";
+import { TButton} from '@tiko/ui';
 
 const bemm = useBemm('not-found');
 const router = useRouter();

@@ -84,10 +84,10 @@ import {
   TButton,
   TSpinner,
   TEmptyState,
-  useI18n
 } from '@tiko/ui'
 import { Icons } from 'open-icon'
-import { contentService, type Item, type ItemTemplate } from '@tiko/core'
+import { contentService, type Item, type ItemTemplate,
+  useI18n } from '@tiko/core'
 
 interface Props {
   selectedIds: string[]

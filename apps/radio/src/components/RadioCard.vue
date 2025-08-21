@@ -101,8 +101,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TIcon, useParentMode, useI18n } from '@tiko/ui'
+import { TButton, TIcon, useParentMode } from '@tiko/ui'
 import { formatDuration } from '@tiko/ui'
+import { useI18n } from '@tiko/core';
 import type { RadioItem } from '../types/radio.types'
 
 interface Props {

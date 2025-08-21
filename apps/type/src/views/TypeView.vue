@@ -346,7 +346,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, reactive, watch, toRefs } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TAppLayout, TAuthWrapper, TInputRange, TInputCheckbox, TInputSelect, useI18n } from '@tiko/ui'
+import { useI18n } from '@tiko/core';
+import { TButton, TAppLayout, TAuthWrapper, TInputRange, TInputCheckbox, TInputSelect } from '@tiko/ui'
 import { useTypeStore } from '../stores/type'
 import backgroundVideoUrl from '../assets/login-background.mp4'
 

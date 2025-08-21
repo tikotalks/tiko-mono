@@ -113,9 +113,10 @@ import {
   TInputSelect,
   TInputCheckbox,
   TInputNumber,
-  TFormGroup,
-  useI18n
+  TFormGroup
 } from '@tiko/ui'
+import {
+  useI18n} from "@tiko/core";
 import { Icons } from 'open-icon'
 import { kebabCase } from '@sil/case'
 
@@ -165,7 +166,7 @@ function addField() {
     type: 'text',
     required: false
   }
-  
+
   itemFields.value.push(newField)
   updateConfig()
 }
@@ -307,7 +308,7 @@ watch(() => props.modelValue, (newValue) => {
     padding: var(--space);
     border-radius: var(--border-radius);
     border: 1px solid var(--color-border);
-    
+
     &:hover {
       border-color: var(--color-primary-20);
     }

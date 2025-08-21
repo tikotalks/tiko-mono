@@ -4,7 +4,7 @@ import { useAppStore, useAuthStore, itemService } from '@tiko/core'
 import { sequenceService } from '../services/sequence.service'
 import { offlineStorageService } from '../services/sequence-offline-storage.service'
 import type { TCardTile as CardTile } from '@tiko/ui'
-import { useI18n } from '@tiko/ui'
+import { useI18n } from '@tiko/core'
 
 export interface SequenceSettings {
   autoSpeak: boolean

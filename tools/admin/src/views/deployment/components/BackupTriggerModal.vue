@@ -43,7 +43,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useBemm } from 'bemm';
-import { TInput, TInputTextArea, TButton, useI18n } from '@tiko/ui';
+import { useI18n } from '@tiko/core';
+import { TInput, TInputTextArea, TButton } from '@tiko/ui';
 import { Icons } from 'open-icon';
 
 const bemm = useBemm('backup-trigger-modal');

@@ -214,9 +214,9 @@ import {
   TEmptyState,
   TSpinner,
   TIcon,
-  useI18n,
   TVirtualGrid,
 } from '@tiko/ui'
+import { useI18n } from '@tiko/core'
 import { Icons } from 'open-icon'
 import { mediaService } from '@tiko/core'
 import type { MediaItem } from '@tiko/core'

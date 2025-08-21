@@ -76,7 +76,7 @@ import TIcon from '../TIcon/TIcon.vue';
 import TButton from '../TButton/TButton.vue';
 import type { TCardProps, TCardEmits, CardAction } from './TCard.model';
 import { Icons } from 'open-icon';
-import { useI18n } from '../../../composables/useI18n';
+import { useI18n } from '@tiko/core';
 
 const { t } = useI18n();
 

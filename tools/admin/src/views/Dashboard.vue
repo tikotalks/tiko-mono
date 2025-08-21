@@ -163,7 +163,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
-import { useI18n, TCard, TIcon, TProgressBar } from '@tiko/ui'
+import { TCard, TIcon, TProgressBar } from '@tiko/ui'
 import { userService, translationService, useImages, formatBytes, formatDate, logger } from '@tiko/core'
 import { Icons } from 'open-icon'
 import AdminPageHeader from '../components/AdminPageHeader.vue'

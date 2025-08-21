@@ -46,7 +46,8 @@
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TInputSelect, TInputCheckbox, useI18n } from '@tiko/ui'
+import { useI18n } from '@tiko/core'
+import { TButton, TInputSelect, TInputCheckbox } from '@tiko/ui'
 
 interface YesNoSettings {
   buttonSize: 'small' | 'medium' | 'large'

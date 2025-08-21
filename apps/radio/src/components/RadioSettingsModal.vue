@@ -211,7 +211,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TIcon, useI18n } from '@tiko/ui'
+import { TButton, TIcon } from '@tiko/ui'
+import { useI18n } from '@tiko/core';
 import type { RadioSettings } from '../types/radio.types'
 
 interface Props {

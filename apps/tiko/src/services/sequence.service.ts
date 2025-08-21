@@ -1,5 +1,5 @@
 import { useAuthStore } from '@tiko/core';
-import { useI18n } from '@tiko/ui';
+import { useI18n } from '@tiko/core';
 import type { TCardTile as CardTile } from '@tiko/ui';
 import { sequenceSupabaseService } from './supabase-sequence.service';
 import { ItemTranslationService } from './item-translation.service';

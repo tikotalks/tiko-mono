@@ -46,7 +46,8 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
 import { useBemm } from 'bemm'
-import { TButton, TIcon, useI18n } from '@tiko/ui'
+import { useI18n } from '@tiko/core';
+import { TButton, TIcon } from '@tiko/ui'
 import { useTimer } from '../composables/useTimer'
 import { useTimerStore } from '../stores/timer'
 import TimeDisplay from '../components/TimeDisplay.vue'
@@ -98,7 +99,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 onMounted(async () => {
   // Load timer state from storage
   await timerStore.loadState()
-  
+
   // Add keyboard event listener
   document.addEventListener('keydown', handleKeydown)
 })

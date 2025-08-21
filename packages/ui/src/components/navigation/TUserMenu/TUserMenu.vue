@@ -21,20 +21,20 @@
         :show-online-status="showOnlineStatus"
         :is-online="isOnline"
       />
-      
+
       <!-- User info (desktop only) -->
       <div v-if="showUserInfo && !isMobile" :class="bemm('info')">
         <span :class="bemm('name')">{{ displayName }}</span>
         <span v-if="userRole" :class="bemm('role')">{{ userRole }}</span>
       </div>
-      
+
       <TIcon
         v-if="showChevron"
         name="chevron-down"
         :class="bemm('chevron')"
       />
     </div>
-    
+
     <!-- Context menu when parent mode is disabled or unlocked -->
     <TContextMenu
       v-else
@@ -59,13 +59,13 @@
           :show-online-status="showOnlineStatus"
           :is-online="isOnline"
         />
-        
+
         <!-- User info (desktop only) -->
         <div v-if="showUserInfo && !isMobile" :class="bemm('info')">
           <span :class="bemm('name')">{{ displayName }}</span>
           <span v-if="userRole" :class="bemm('role')">{{ userRole }}</span>
         </div>
-        
+
         <TIcon
           v-if="showChevron"
           name="chevron-down"
@@ -88,7 +88,7 @@ import { ContextMenuConfigDefault } from '../TContextMenu/ContextMenu.model'
 import TProfile from '../../user/TProfile/TProfile.vue'
 import TUserSettings from '../../user/TUserSettings/TUserSettings.vue'
 import TParentModePinInput from '../../auth/TParentMode/TParentModePinInput.vue'
-import { useI18n } from '../../../composables/useI18n'
+import { useI18n } from '@tiko/core';
 import { useParentMode } from '../../../composables/useParentMode'
 import { toastService } from '../../feedback/TToast/TToast.service'
 import type { TUserMenuProps, TUserMenuEmits } from './TUserMenu.model'
@@ -123,7 +123,7 @@ const user = computed(() => props.user || authStore.user)
 const displayName = computed(() => {
   const currentUser = user.value
   if (!currentUser) return 'Guest'
-  
+
   return currentUser.user_metadata?.full_name ||
          currentUser.user_metadata?.name ||
          currentUser.email?.split('@')[0] ||
@@ -140,7 +140,7 @@ const ariaLabel = computed(() =>
 
 const defaultMenuItems = computed<Partial<ContextMenuItem>[]>(() => {
   const items: Partial<ContextMenuItem>[] = []
-  
+
   // Always add parent mode option if enabled (provides fallback)
   if (props.enableParentMode) {
     const isUnlocked = parentMode.isUnlocked?.value ?? false
@@ -170,7 +170,7 @@ const defaultMenuItems = computed<Partial<ContextMenuItem>[]>(() => {
       type: 'separator'
     })
   }
-  
+
   items.push(
     {
       id: 'profile',
@@ -198,7 +198,7 @@ const defaultMenuItems = computed<Partial<ContextMenuItem>[]>(() => {
       type: 'default'
     }
   )
-  
+
   return items
 })
 
@@ -249,11 +249,11 @@ const handleParentMode = () => {
     })
     return
   }
-  
+
   // Check if parentMode is properly initialized
   const isParentModeEnabled = parentMode.isEnabled?.value ?? false
   console.log('[TUserMenu] Opening parent mode dialog. Enabled:', isParentModeEnabled)
-  
+
   if (!isParentModeEnabled) {
     showParentModeSetup()
   } else {
@@ -333,7 +333,7 @@ const handleProfile = () => {
     console.error('Cannot open profile: user or popupService not available')
     return
   }
-  
+
   popupService.open({
     component: TProfile,
     title: t('profile.title'),
@@ -344,7 +344,7 @@ const handleProfile = () => {
       'close': () => popupService.close()
     }
   })
-  
+
   emit('profile')
 }
 
@@ -353,7 +353,7 @@ const handleSettings = () => {
     console.error('Cannot open settings: user or popupService not available')
     return
   }
-  
+
   popupService.open({
     component: TUserSettings,
     title: t('settings.userSettings'),
@@ -364,7 +364,7 @@ const handleSettings = () => {
       'close': () => popupService.close()
     }
   })
-  
+
   emit('settings')
 }
 
@@ -385,7 +385,7 @@ const updateIsMobile = () => {
 onMounted(async () => {
   updateIsMobile()
   window.addEventListener('resize', updateIsMobile)
-  
+
   // Initialize parent mode if available
   if (parentMode.initialize) {
     await parentMode.initialize()
@@ -400,7 +400,7 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 .user-menu {
   display: inline-flex;
-  
+
   &__trigger {
     display: flex;
     align-items: center;
@@ -410,24 +410,24 @@ onUnmounted(() => {
     cursor: pointer;
     transition: all 0.2s ease;
     user-select: none;
-    
+
     &:hover {
       background: var(--color-background-secondary, var(--color-background));
     }
-    
+
     &:focus-visible {
       outline: 2px solid var(--color-primary);
       outline-offset: 2px;
     }
   }
-  
+
   &__info {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     min-width: 0;
   }
-  
+
   &__name {
     font-size: 0.875rem;
     font-weight: 500;
@@ -437,7 +437,7 @@ onUnmounted(() => {
     white-space: nowrap;
     max-width: 120px;
   }
-  
+
   &__role {
     font-size: 0.75rem;
     color: var(--color-text-secondary);
@@ -446,13 +446,13 @@ onUnmounted(() => {
     white-space: nowrap;
     max-width: 120px;
   }
-  
+
   &__chevron {
     font-size: 0.875rem;
     color: var(--color-text-secondary);
     transition: transform 0.2s ease;
     flex-shrink: 0;
-    
+
     &--open {
       transform: rotate(180deg);
     }
@@ -473,7 +473,7 @@ onUnmounted(() => {
   .user-menu__trigger {
     transition: none;
   }
-  
+
   .user-menu__chevron {
     transition: none;
   }

@@ -71,11 +71,11 @@ import {
   TInputSelect,
   TInputCheckbox,
   TButton,
-  useI18n,
   type ToastService,
   TInputText
 } from '@tiko/ui'
-import { contentService, type ContentField } from '@tiko/core'
+import { contentService, type ContentField,
+  useI18n } from '@tiko/core'
 import { kebabCase } from '@sil/case'
 import FieldOptionsEditor from './FieldOptionsEditor.vue'
 import ItemsFieldConfig from './ItemsFieldConfig.vue'

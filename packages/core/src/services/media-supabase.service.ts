@@ -132,8 +132,12 @@ export class SupabaseMediaService implements MediaService {
         const data = await response.json()
         const contentRange = response.headers.get('content-range')
         
-        // Debug all response headers
-        logger.debug('[MediaService] Response headers:', Object.fromEntries(response.headers.entries()))
+        // Debug all response headers  
+        const headers: Record<string, string> = {}
+        response.headers.forEach((value, key) => {
+          headers[key] = value
+        })
+        logger.debug('[MediaService] Response headers:', headers)
         
         logger.debug(`[MediaService] Fetched ${data.length} items, content-range: ${contentRange}`)
         
