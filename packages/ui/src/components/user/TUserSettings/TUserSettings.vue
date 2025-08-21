@@ -89,7 +89,14 @@ const themeOptions = computed(() => [
 const currentLanguageDisplay = computed(() => {
   const currentLocale = formData.value?.language
   if (!currentLocale) return locale.value || 'en-US'
-  const localeInfo = availableLocales.value.find(l => l === currentLocale)
+  
+  // Safety check for availableLocales
+  const locales = availableLocales?.value
+  if (!locales || !Array.isArray(locales) || locales.length === 0) {
+    return currentLocale
+  }
+  
+  const localeInfo = locales.find(l => l === currentLocale)
   return localeInfo ? `${localeInfo} (${currentLocale})` : currentLocale
 })
 

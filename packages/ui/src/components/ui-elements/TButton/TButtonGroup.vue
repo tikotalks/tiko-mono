@@ -29,7 +29,7 @@ const modifiers = computed(() => ({
 .button-group {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-s);
+  gap: var(--button-group-gap, --space-s);
 
   &--row {
     flex-direction: row;
