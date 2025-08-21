@@ -102,9 +102,10 @@ export interface QueueItem {
  * Sleep timer configuration
  */
 export interface SleepTimer {
-  isActive: boolean
-  remainingMinutes: number
-  endTime: Date | null
+  enabled: boolean
+  minutes: number
+  startTime: number | null
+  endTime: number | null
 }
 
 /**

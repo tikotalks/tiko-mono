@@ -207,6 +207,23 @@ export function useRadioSettings() {
   }
 
   /**
+   * Toggle shuffle mode
+   */
+  const toggleShuffle = async (): Promise<void> => {
+    await updateSettings({ shuffleMode: !settings.value.shuffleMode })
+  }
+
+  /**
+   * Toggle repeat mode between none -> one -> all -> none
+   */
+  const toggleRepeat = async (): Promise<void> => {
+    const modes: RadioSettings['repeatMode'][] = ['none', 'one', 'all']
+    const currentIndex = modes.indexOf(settings.value.repeatMode)
+    const nextIndex = (currentIndex + 1) % modes.length
+    await updateSettings({ repeatMode: modes[nextIndex] })
+  }
+
+  /**
    * Transform database row to RadioSettings
    */
   const transformFromRow = (row: RadioSettingsRow): RadioSettings => ({
@@ -247,6 +264,8 @@ export function useRadioSettings() {
     resetSettings,
     setSleepTimer,
     cancelSleepTimer,
-    checkSleepTimer
+    checkSleepTimer,
+    toggleShuffle,
+    toggleRepeat
   }
 }
