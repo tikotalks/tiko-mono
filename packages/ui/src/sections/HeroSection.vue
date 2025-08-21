@@ -1,29 +1,29 @@
 <template>
   <section :class="bemm()">
     <div :class="bemm('background')" v-if="content?.backgroundImage">
-      <img 
-        :src="content.backgroundImage" 
+      <img
+        :src="content.backgroundImage"
         :alt="content.title || ''"
         :class="bemm('background-image')"
       />
     </div>
-    
+
     <div :class="bemm('container')">
       <div :class="bemm('content')">
         <h1 v-if="content?.title" :class="bemm('title')">
           {{ content.title }}
         </h1>
-        
+
         <p v-if="content?.subtitle" :class="bemm('subtitle')">
           {{ content.subtitle }}
         </p>
-        
-        <TMarkdownRenderer 
-          v-if="content?.content" 
+
+        <TMarkdownRenderer
+          v-if="content?.content"
           :content="content.content"
           :class="bemm('description')"
         />
-        
+
         <div v-if="content?.buttons?.length" :class="bemm('actions')">
           <TButton
             v-for="(button, index) in content.buttons"
@@ -67,7 +67,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const bemm = useBemm('hero-section')
+const bemm = useBemm('t-hero-section')
 const router = useRouter()
 
 const handleButtonClick = (button: HeroButton) => {
@@ -82,13 +82,15 @@ const handleButtonClick = (button: HeroButton) => {
 </script>
 
 <style lang="scss">
-.hero-section {
+.t-hero-section {
   position: relative;
   padding: var(--space-4xl) 0;
   min-height: 60vh;
   display: flex;
   align-items: center;
   overflow: hidden;
+
+  border: 1px solid red;
 
   &__background {
     position: absolute;
@@ -131,7 +133,7 @@ const handleButtonClick = (button: HeroButton) => {
     margin: 0 auto;
     text-align: center;
     color: white;
-    
+
     .hero-section__background + .hero-section__container & {
       // When there's a background image, ensure text is white
       color: white;
@@ -155,7 +157,7 @@ const handleButtonClick = (button: HeroButton) => {
     font-size: var(--font-size-lg);
     margin: 0 0 var(--space-xl) 0;
     opacity: 0.9;
-    
+
     p {
       margin-bottom: var(--space);
     }
@@ -169,15 +171,15 @@ const handleButtonClick = (button: HeroButton) => {
   }
 
   // When no background image
-  &:not(:has(.hero-section__background)) {
+  &:not(:has(.t-hero-section__background)) {
     color: var(--color-text);
     background: var(--color-background);
-    
-    .hero-section__content {
+
+    .t-hero-section__content {
       color: inherit;
     }
-    
-    .hero-section__title {
+
+    .t-hero-section__title {
       color: var(--color-primary);
     }
   }
