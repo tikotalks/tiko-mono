@@ -51,6 +51,12 @@
 }
 
 @function textColorShade($color-value, $color-name) {
+	// Guard against null color values
+	@if $color-value == null {
+		@warn "Color value for '#{$color-name}' is null. Using fallback color.";
+		$color-value: #000000; // fallback to black
+	}
+	
 	$lightness: perceived-lightness($color-value);
 
 	@if $lightness > 60 {
