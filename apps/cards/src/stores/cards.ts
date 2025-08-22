@@ -22,7 +22,7 @@ interface CardCacheEntry {
   locale: string
 }
 
-export const useCardStore = defineStore('yesno', () => {
+export const useCardStore = defineStore('cards', () => {
   const appStore = useAppStore()
   const authStore = useAuthStore()
   
@@ -147,6 +147,43 @@ export const useCardStore = defineStore('yesno', () => {
       }
     }
     
+    // If loadAllCards is in progress, wait for it to complete
+    if (isLoadingCards.value && !forceRefresh) {
+      console.log(`[CardsStore] Waiting for loadAllCards to complete for ${cacheKey}...`)
+      // Wait for loadAllCards to complete with a reasonable timeout
+      let waitCount = 0
+      const maxWaitTime = 100 // 5 seconds max wait (100 * 50ms)
+      while (isLoadingCards.value && waitCount < maxWaitTime) {
+        await new Promise(resolve => setTimeout(resolve, 50))
+        waitCount++
+      }
+      
+      // After waiting, check cache again
+      if (cache.has(cacheKey)) {
+        const entry = cache.get(cacheKey)!
+        if (isCacheValid(entry, locale || 'default')) {
+          console.log(`[CardsStore] Found cached entry after waiting for ${cacheKey}`)
+          // Apply same filtering logic as above
+          if (!parentId) {
+            const hiddenItems = settings.value.hiddenItems || []
+            const showHidden = settings.value.showHiddenItems
+            
+            if (showHidden) {
+              return entry.cards.map(item => ({
+                ...item,
+                isHidden: hiddenItems.includes(item.id)
+              }))
+            } else {
+              const filteredCards = entry.cards.filter(item => !hiddenItems.includes(item.id))
+              return filteredCards
+            }
+          } else {
+            return entry.cards
+          }
+        }
+      }
+    }
+    
     // If all cards are loaded, we should have the data in cache
     if (allCardsLoaded.value && !forceRefresh) {
       console.log(`[CardsStore] All cards loaded, but cache miss for ${cacheKey}. Returning empty array.`)
@@ -162,43 +199,6 @@ export const useCardStore = defineStore('yesno', () => {
       return []
     }
     
-    // Prevent concurrent loads of the same data
-    if (isLoadingCards.value) {
-      console.log('[CardsStore] Already loading cards, waiting...')
-      // Wait for the current load to complete
-      let waitCount = 0
-      while (isLoadingCards.value && waitCount < 100) {
-        await new Promise(resolve => setTimeout(resolve, 50))
-        waitCount++
-      }
-      
-      // Check cache again after waiting
-      if (cache.has(cacheKey)) {
-        const entry = cache.get(cacheKey)!
-        if (isCacheValid(entry, locale || 'default')) {
-          // Only filter out hidden items for ROOT level, not for children
-          if (!parentId) {
-            const hiddenItems = settings.value.hiddenItems || []
-            const showHidden = settings.value.showHiddenItems
-            
-            if (showHidden) {
-              // Show all cards, but mark hidden ones
-              return entry.cards.map(item => ({
-                ...item,
-                isHidden: hiddenItems.includes(item.id)
-              }))
-            } else {
-              // Filter out hidden items completely
-              const filteredCards = entry.cards.filter(item => !hiddenItems.includes(item.id))
-              return filteredCards
-            }
-          } else {
-            // For children, return all items (don't filter)
-            return entry.cards
-          }
-        }
-      }
-    }
     
     isLoadingCards.value = true
     
@@ -300,6 +300,10 @@ export const useCardStore = defineStore('yesno', () => {
       // Build cache structure from all cards
       const cardsByParent = new Map<string, CardTile[]>()
       
+      // Debug: Check has_children flags
+      const cardsWithHasChildren = allCards.filter(c => c.has_children === true)
+      console.log(`[CardsStore] Cards with has_children=true: ${cardsWithHasChildren.length} out of ${allCards.length}`)
+      
       // Group cards by parent
       for (const card of allCards) {
         const parentKey = card.parentId || 'root'
@@ -316,6 +320,8 @@ export const useCardStore = defineStore('yesno', () => {
       
       // Update cache with all data
       const newCache = new Map(cardCache.value)
+      
+      // First, add all parent entries from cardsByParent
       for (const [parentKey, cards] of cardsByParent) {
         const parentId = parentKey === 'root' ? undefined : parentKey
         const cacheKey = getCacheKey(parentId, locale)
@@ -326,6 +332,25 @@ export const useCardStore = defineStore('yesno', () => {
           locale: locale || 'default'
         })
       }
+      
+      // Also create empty cache entries for all cards that could be parents (has_children = true)
+      // This ensures cache lookups won't fail for cards that have no children yet
+      let emptyEntriesCreated = 0
+      for (const card of allCards) {
+        if (card.has_children) {
+          const cacheKey = getCacheKey(card.id, locale)
+          if (!newCache.has(cacheKey)) {
+            newCache.set(cacheKey, {
+              parentId: card.id,
+              cards: [],
+              timestamp: Date.now(),
+              locale: locale || 'default'
+            })
+            emptyEntriesCreated++
+          }
+        }
+      }
+      console.log(`[CardsStore] Created ${emptyEntriesCreated} empty cache entries for cards with has_children=true`)
       
       cardCache.value = newCache
       allCardsLoaded.value = true
@@ -598,6 +623,33 @@ export const useCardStore = defineStore('yesno', () => {
     await clearCache()
   }
   
+  // Verify and fix has_children flags for all user's cards
+  const verifyHasChildrenFlags = async () => {
+    const userId = authStore.user?.id
+    if (!userId) {
+      console.error('[CardsStore] No user ID available for verification')
+      return null
+    }
+    
+    console.log('[CardsStore] Starting has_children verification...')
+    
+    try {
+      const result = await itemService.verifyAndFixHasChildrenFlags(userId, 'cards')
+      console.log(`[CardsStore] Verification complete:`, result)
+      
+      // Clear cache to ensure fresh data
+      if (result.fixed > 0) {
+        console.log('[CardsStore] Clearing cache after fixing has_children flags')
+        await clearCache()
+      }
+      
+      return result
+    } catch (error) {
+      console.error('[CardsStore] Failed to verify has_children flags:', error)
+      return null
+    }
+  }
+  
   return {
     // Getters
     settings,
@@ -628,5 +680,8 @@ export const useCardStore = defineStore('yesno', () => {
     showItem,
     toggleItemVisibility,
     toggleShowHiddenItems,
+    
+    // Maintenance functions
+    verifyHasChildrenFlags,
    }
 })

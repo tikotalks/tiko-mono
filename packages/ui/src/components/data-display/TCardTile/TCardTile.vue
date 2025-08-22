@@ -1,6 +1,6 @@
 <template>
   <TContextMenu v-if="contextMenu && contextMenu.length > 0 && !isEmpty"
-    :config="{ menu: contextMenu, position: 'bottom-right' }" @menu-open="$emit('menu-open')"
+    :config="{ menu: contextMenu, position: contextMenuPosition }" @menu-open="$emit('menu-open')"
     @menu-close="$emit('menu-close')">
     <div ref="wrapperEl" :class="bemm('wrapper', ['',
       isDragging ? 'dragging' : '',
@@ -16,9 +16,11 @@
       @dragend.stop="handleDragEnd" @dragover.stop="handleDragOver" @dragleave.stop="handleDragLeave"
       @drop.stop="handleDrop">
 
-      <article :class="tileClasses" :style="!isEmpty && card?.color ? {
+      <article :class="tileClasses" @pointermove="setPointerPosition" :style="!isEmpty && card?.color ? {
         '--card-color': `var(--color-${card.color})`,
         '--card-text': `var(--color-${card.color}-text)`,
+        '--x': `${pointer.x}`,
+        '--y': `${pointer.y}`
       } : undefined" tabindex="0">
         <div v-if="isEmpty && editMode" :class="bemm('empty-state')">
           <TIcon name="plus" size="large" />
@@ -37,7 +39,7 @@
 
             <!-- Mini tiles -->
             <div :class="bemm('mini-tiles')">
-              <div v-for="(child, idx) in children.slice(0, 9)" :key="child.id + idx" :class="bemm('mini-tile')"
+              <div v-for="(child, idx) in children.slice(0, 9)" :key="`mini-${child.id}-${idx}`" :class="bemm('mini-tile')"
                 :style="child.color ? { backgroundColor: `var(--color-${child.color})` } : undefined">
                 <img v-if="child.image" :src="getThumbnailUrl(child.image)" :alt="child.title" />
               </div>
@@ -77,9 +79,11 @@
     @touchcancel.stop="handleTouchEnd" :draggable="canDrag" @dragstart.stop="handleDragStart"
     @dragend.stop="handleDragEnd" @dragover.stop="handleDragOver" @dragleave.stop="handleDragLeave"
     @drop.stop="handleDrop">
-    <article :class="tileClasses"
-      :style="!isEmpty && card?.color ? { '--card-color': `var(--color-${card.color})`, '--card-text': `var(--color-${card.color}-text)`, } : undefined"
-      tabindex="0">
+    <article :class="tileClasses" @pointermove="setPointerPosition" :style="!isEmpty && card?.color ? {
+      '--card-color': `var(--color-${card.color})`, '--card-text': `var(--color-${card.color}-text)`,
+      '--x': `${pointer.x}`,
+      '--y': `${pointer.y}`
+    } : undefined" tabindex="0">
       <div v-if="isEmpty && editMode" :class="bemm('empty-state')">
         <TIcon name="plus" size="large" />
       </div>
@@ -96,7 +100,7 @@
 
           <!-- Mini tiles -->
           <div :class="bemm('mini-tiles')">
-            <div v-for="(child, index) in children.slice(0, 9)" :key="child.id + index" :class="bemm('mini-tile')"
+            <div v-for="(child, index) in children.slice(0, 9)" :key="`mini2-${child.id}-${index}`" :class="bemm('mini-tile')"
               :style="child.color ? { backgroundColor: `var(--color-${child.color})` } : undefined">
               <img v-if="child.image" :src="getThumbnailUrl(child.image)" :alt="child.title" />
             </div>
@@ -168,6 +172,26 @@ const DRAG_THRESHOLD = 10; // pixels of movement to cancel long press
 // Computed properties for display flags
 const displayImage = computed(() => props.showImage !== false);
 const displayTitle = computed(() => props.showTitle !== false);
+
+// Computed property for context menu position based on grid position
+const contextMenuPosition = computed(() => {
+  if (!props.gridPosition) {
+    return 'bottom-right'; // Default position
+  }
+
+  const { isRight, isBottom } = props.gridPosition;
+
+  // Determine the best position based on card's grid position
+  if (isBottom && isRight) {
+    return 'top-left';
+  } else if (isBottom) {
+    return 'top-right';
+  } else if (isRight) {
+    return 'bottom-left';
+  } else {
+    return 'bottom-right'; // Default for cards not on edges
+  }
+});
 
 // Computed property to get the correct image URL
 const imageUrl = computed(() => {
@@ -336,30 +360,68 @@ const tileClasses = computed(() => {
     props.card?.isHidden ? 'hidden' : ''
   ])
 });
+
+
+const pointer = ref({
+  x: 0,
+  y: 0
+})
+
+const setPointerPosition = (e: PointerEvent) => {
+  const target = e.currentTarget as HTMLElement
+  if (!target) return
+
+  const rect = target.getBoundingClientRect()
+  const x = ((e.clientX - rect.left) / rect.width) * 100
+  const y = ((e.clientY - rect.top) / rect.height) * 100
+
+  pointer.value = {
+    x: Math.round(Math.max(0, Math.min(100, x)) * 100) / 100,
+    y: Math.round(Math.max(0, Math.min(100, y)) * 100) / 100
+  }
+}
 </script>
 
 <style lang="scss">
 .t-card-tile {
   width: 100%;
   height: 100%;
-  background-image: radial-gradient(circle at center, var(--card-color) 0%, color-mix(in srgb, var(--card-color), var(--color-background) 25%) 100%);
   border-radius: var(--border-radius);
+  position: relative;
   // transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
   color: var(--card-text);
   transition: all .2s ease-in-out;
   transform: scale(1);
   animation: tile-no-hover 0.2s ease-in-out forwards;
+  z-index: 1;
+
+  &::before {
+    --shine-color: color-mix(in srgb, var(--card-color), white 50%);
+    --shine-size: 1px;
+    content: "";
+    display: block;
+    position: absolute;
+    left: calc(var(--shine-size) * -1);
+    top: calc(var(--shine-size) * -1);
+    width: calc(100% + (var(--shine-size) * 2));
+    height: calc(100% + (var(--shine-size) * 2));
+
+    border-radius: var(--border-radius);
+    z-index: -2;
+    background-image: radial-gradient(circle at calc(var(--x) * 1%) calc(var(--y) * 1%), var(--shine-color) 0%, rgba(0, 0, 0, 0) 50%);
+  }
 
 
   &:hover {
     animation: tile-hover 0.2s ease-in-out forwards;
 
-    .t-card-tile__image{
+    .t-card-tile__image {
       transform: scale(1.1);
 
     }
-      .t-card-tile__mini-grid {
+
+    .t-card-tile__mini-grid {
       transform: scale(1.05);
     }
   }
@@ -463,7 +525,10 @@ const tileClasses = computed(() => {
     padding: clamp(0.25rem, 1vw, var(--space-s));
     width: 100%;
     height: 100%;
+    border-radius: inherit;
     position: relative;
+    background-image: radial-gradient(circle at calc(var(--x) * 1%) calc(var(--y) * 1%), var(--card-color) 0%, color-mix(in srgb, var(--card-color), var(--color-background) 25%) 100%);
+
   }
 
   &__mini-grid {

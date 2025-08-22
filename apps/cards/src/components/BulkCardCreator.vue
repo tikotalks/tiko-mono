@@ -2,21 +2,23 @@
   <div :class="bemm()">
     <div :class="bemm('header')">
       <h3>{{ t('cards.bulkAddTitle', 'Bulk Add Cards') }}</h3>
-      <p>{{ t('cards.bulkAddDescription', 'Enter titles one per line. We\'ll automatically generate speech, find matching images, and select appropriate colors.') }}</p>
+      <p>{{ t('cards.bulkAddDescription') }}</p>
     </div>
 
     <div :class="bemm('input-section')">
-      <TFormField
-        label="Card Titles"
-        name="titles"
-        help="Enter one title per line"
-      >
-        <TTextarea
-          v-model="titlesInput"
-          placeholder="Apple&#10;Banana&#10;Car&#10;Dog"
-          rows="10"
-          @input="handleTitlesChange"
+      <TFormField label="Parent Card" name="parent" help="Select a parent card for all bulk created cards (optional)">
+        <TInputSelect
+          v-model="selectedParentId"
+          :options="parentOptions"
+          :allow-null="true"
+          :null-label="'No parent (top level cards)'"
+          :disabled="isLoadingParents"
         />
+      </TFormField>
+
+      <TFormField label="Card Titles" name="titles" help="Enter one title per line">
+        <TTextarea v-model="titlesInput" placeholder="Apple&#10;Banana&#10;Car&#10;Dog" rows="10"
+          @input="handleTitlesChange" />
       </TFormField>
 
       <div :class="bemm('stats')">
@@ -28,18 +30,9 @@
     <div v-if="cardPreviews.length > 0" :class="bemm('preview-section')">
       <h4>Preview</h4>
       <div :class="bemm('preview-grid')">
-        <div
-          v-for="(preview, index) in cardPreviews"
-          :key="index"
-          :class="bemm('preview-tile')"
-          @click="openEditPreview(preview, index)"
-        >
-          <TCardTile
-            :card="getPreviewCard(preview, index)"
-            :edit-mode="false"
-            :show-image="true"
-            :show-title="true"
-          />
+        <div v-for="(preview, index) in cardPreviews" :key="index" :class="bemm('preview-tile')"
+          @click="openEditPreview(preview, index)">
+          <TCardTile :card="getPreviewCard(preview, index)" :edit-mode="false" :show-image="true" :show-title="true" />
           <div v-if="preview.loading" :class="bemm('preview-overlay')">
             <TSpinner size="small" />
           </div>
@@ -49,19 +42,11 @@
 
     <!-- Actions -->
     <TFormActions>
-      <TButton
-        type="outline"
-        color="secondary"
-        @click="handleCancel"
-      >
+      <TButton type="outline" color="secondary" @click="handleCancel">
         Cancel
       </TButton>
-      <TButton
-        type="default"
-        color="primary"
-        :disabled="cardPreviews.length === 0 || isProcessing"
-        @click="handleCreateAll"
-      >
+      <TButton type="default" color="primary" :disabled="cardPreviews.length === 0 || isProcessing"
+        @click="handleCreateAll">
         <TSpinner v-if="isProcessing" size="small" />
         <span v-else>Create {{ cardPreviews.length }} Cards</span>
       </TButton>
@@ -82,8 +67,10 @@ import {
   BaseColors,
   debounce,
 } from '@tiko/ui';
+import { TInputSelect } from '@tiko/ui';
 import {
-  useI18n, useImages, useImageUrl } from '@tiko/core';
+  useI18n, useImages, useImageUrl, itemService, useAuthStore
+} from '@tiko/core';
 import type { TCardTile as CardTileType } from '@tiko/ui';
 import { TCardTile } from '@tiko/ui';
 import CardForm from './CardForm.vue';
@@ -93,6 +80,7 @@ const { t } = useI18n();
 const { imageList, filteredImages, searchImages, loadImages } = useImages();
 const { getImageVariants } = useImageUrl();
 const popupService = inject<any>('popupService');
+const authStore = useAuthStore();
 
 const emit = defineEmits<{
   create: [cards: Partial<CardTileType>[]];
@@ -108,9 +96,17 @@ interface CardPreview {
   editing?: boolean;
 }
 
+interface ParentOption {
+  value: string;
+  label: string;
+}
+
 const titlesInput = ref('');
 const cardPreviews = ref<CardPreview[]>([]);
 const isProcessing = ref(false);
+const selectedParentId = ref<string>('');
+const parentOptions = ref<ParentOption[]>([]);
+const isLoadingParents = ref(false);
 
 // Cache for images to avoid repeated searches
 const imageCache = new Map<string, string>();
@@ -271,7 +267,8 @@ const handleCreateAll = async () => {
       image: preview.image,
       icon: 'square',
       type: 'card' as any,
-      index
+      index,
+      parentId: selectedParentId.value || undefined
     }));
 
     emit('create', cards);
@@ -333,9 +330,51 @@ const openEditPreview = (preview: CardPreview, index: number) => {
   });
 };
 
-// Load images when component mounts
+// Load parent cards
+const loadParentCards = async () => {
+  isLoadingParents.value = true;
+  try {
+    console.log('[BulkCardCreator] Loading parent cards...');
+    const userId = authStore.user?.id;
+    if (!userId) {
+      console.warn('[BulkCardCreator] No user ID available');
+      parentOptions.value = [];
+      return;
+    }
+    
+    const items = await itemService.loadItemsByUserAndApp(userId, 'cards', {
+      includeChildren: false,
+      includeCurated: false
+    });
+    
+    console.log('[BulkCardCreator] Total items loaded:', items.length);
+
+    // Filter only top-level cards (no parent_id)
+    const topLevelCards = items.filter(item => !item.parent_id);
+    
+    console.log('[BulkCardCreator] Top-level cards found:', topLevelCards.length);
+
+    // Convert to options
+    parentOptions.value = topLevelCards.map(card => ({
+      value: card.id,
+      label: card.name || card.title || 'Untitled'
+    }));
+    
+    console.log('[BulkCardCreator] Parent options:', parentOptions.value);
+  } catch (error) {
+    console.error('Failed to load parent cards:', error);
+    parentOptions.value = [];
+  } finally {
+    isLoadingParents.value = false;
+  }
+};
+
+// Load images and parent cards when component mounts
 onMounted(async () => {
-  await loadImages();
+  await Promise.all([
+    loadImages(),
+    loadParentCards()
+  ]);
 });
 </script>
 

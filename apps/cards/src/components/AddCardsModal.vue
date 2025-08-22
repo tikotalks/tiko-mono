@@ -34,7 +34,8 @@
 
       <BulkCardCreator
         v-if="mode === 'bulk'"
-        :on-create="handleBulkCreate"
+        @create="handleBulkCreate"
+        @cancel="handleCancel"
       />
     </div>
   </div>

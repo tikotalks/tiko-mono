@@ -72,6 +72,17 @@
         @click="handleAppSettings"
         :aria-label="t('cards.cardsSettings')"
       />
+      
+      <!-- Dev only: Clear cache button -->
+      <TButton
+        v-if="isParentModeUnlocked && isDev"
+        :icon="Icons.REFRESH"
+        type="outline"
+        color="warning"
+        @click="handleClearCacheAndReload"
+        :aria-label="'Clear cache and reload (Dev only)'"
+        :tooltip="'Clear cache and reload all cards'"
+      />
     </template>
 
     <div :class="bemm('container')">
@@ -195,6 +206,7 @@ import { ItemTranslationService } from '../services/item-translation.service';
 import type { ItemTranslation } from '../models/ItemTranslation.model';
 import { Icons } from 'open-icon';
 import type { TCardTile } from '@tiko/ui';
+import { itemService } from '@tiko/core';
 
 // Extend TCardTile interface to include additional properties
 interface CardTile extends TCardTile {
@@ -342,6 +354,9 @@ const generateGhostCards = (): CardTile[] => {
   return ghostCards;
 };
 
+// Track if initial load is complete - declare early to avoid reference errors
+const isInitialLoadComplete = ref(false);
+
 const loadCards = async () => {
   try {
     isLoading.value = true;
@@ -363,26 +378,86 @@ const loadCards = async () => {
         preloadAudio(textsToPreload);
       }
 
-      // Check which tiles have children - use cached data if available
+      // Check which tiles have children - use has_children flag for optimization
       const newTilesWithChildren = new Set<string>();
       const newTileChildrenMap = new Map<string, CardTile[]>();
 
-      for (const card of savedCards) {
-        if (!card.id.startsWith('empty-')) {
-          // Try to get from cache first, otherwise load
-          let children = yesNoStore.getCardsForParent(card.id, currentLocale.value);
-          if (!children) {
-            children = await yesNoStore.loadCards(card.id, currentLocale.value);
+      // Debug: Log all cards and their has_children status
+      console.log('[CardsView] All loaded cards:', savedCards.map(c => ({ 
+        id: c.id, 
+        title: c.title, 
+        has_children: c.has_children,
+        parentId: c.parentId 
+      })));
+      
+      // Only check cards that are marked as having children
+      const cardsWithChildren = savedCards.filter(card => 
+        !card.id.startsWith('empty-') && card.has_children === true
+      );
+      
+      console.log(`[CardsView] Loading children for ${cardsWithChildren.length} cards marked with has_children`);
+      console.log('[CardsView] Cards with has_children flag:', cardsWithChildren.map(c => ({ id: c.id, title: c.title, has_children: c.has_children })));
+
+      // Load children in parallel with a limit to avoid overwhelming the API
+      const BATCH_SIZE = 5;
+      
+      for (let i = 0; i < cardsWithChildren.length; i += BATCH_SIZE) {
+        const batch = cardsWithChildren.slice(i, i + BATCH_SIZE);
+        const batchNumber = Math.floor(i / BATCH_SIZE) + 1;
+        const totalBatches = Math.ceil(cardsWithChildren.length / BATCH_SIZE);
+        
+        console.log(`[CardsView] Processing batch ${batchNumber} of ${totalBatches} (${batch.length} cards)`);
+        
+        await Promise.all(batch.map(async (card) => {
+          try {
+            // Always load children to ensure fresh data
+            // The store will handle caching internally
+            const children = await yesNoStore.loadCards(card.id, currentLocale.value);
+            if (children.length > 0) {
+              newTilesWithChildren.add(card.id);
+              newTileChildrenMap.set(card.id, children);
+              console.log(`[CardsView] Loaded ${children.length} children for card ${card.id} (${card.title})`);
+            } else {
+              // If has_children is true but no children found, it might need fixing
+              console.warn(`[CardsView] Card ${card.id} (${card.title}) marked as has_children but no children found`);
+            }
+          } catch (error) {
+            console.warn(`Failed to load children for card ${card.id}:`, error);
+            // Continue with other cards even if one fails
           }
-          if (children.length > 0) {
-            newTilesWithChildren.add(card.id);
-            newTileChildrenMap.set(card.id, children);
+        }));
+        
+        console.log(`[CardsView] Completed batch ${batchNumber} of ${totalBatches}`);
+      }
+      
+      // Additionally, for cards not marked with has_children but that might be new groups,
+      // we can check a small subset (like recently modified cards) to catch any missed updates
+      const recentlyModified = savedCards
+        .filter(card => !card.id.startsWith('empty-') && !card.has_children)
+        .sort((a, b) => new Date(b.updated_at || 0).getTime() - new Date(a.updated_at || 0).getTime())
+        .slice(0, 3); // Only check the 3 most recently modified cards
+        
+      if (recentlyModified.length > 0) {
+        console.log(`[CardsView] Checking ${recentlyModified.length} recently modified cards for children`);
+        await Promise.all(recentlyModified.map(async (card) => {
+          try {
+            const children = await yesNoStore.loadCards(card.id, currentLocale.value);
+            if (children.length > 0) {
+              newTilesWithChildren.add(card.id);
+              newTileChildrenMap.set(card.id, children);
+              console.log(`Found children for card ${card.id} - has_children flag may need updating`);
+            }
+          } catch (error) {
+            // Ignore errors for this verification check
           }
-        }
+        }));
       }
 
       tilesWithChildren.value = newTilesWithChildren;
       tileChildrenMap.value = newTileChildrenMap;
+      
+      console.log(`[CardsView] Final state: ${tilesWithChildren.value.size} cards have children`);
+      console.log('[CardsView] tileChildrenMap:', Array.from(tileChildrenMap.value.entries()).map(([id, children]) => ({ id, childCount: children.length })));
     } else {
       // Start with empty board - no mock data
       cards.value = [];
@@ -960,6 +1035,11 @@ const tilesWithChildren = ref<Set<string>>(new Set());
 // Store actual children data for preview
 const tileChildrenMap = ref<Map<string, CardTile[]>>(new Map());
 
+// Dev mode check
+const isDev = computed(() => {
+  return import.meta.env.DEV || window.location.hostname === 'localhost';
+});
+
 // Track if any tile is being dragged
 const isTileDragging = ref(false);
 
@@ -1289,17 +1369,24 @@ const moveSelectedToGroup = async () => {
         selectedCount: selectedCards.length,
       onSelect: async (group: CardTile) => {
         try {
+          console.log(`[CardsView] Moving ${selectedCards.length} cards to group ${group.id} (${group.title})`);
+          
           // Get existing children to find the next available index
           const existingChildren = await cardsService.loadCards(group.id);
           let nextIndex = existingChildren.length;
+          console.log(`[CardsView] Target group has ${existingChildren.length} existing children`);
 
           // Move all selected cards to the target group with sequential indices
           for (const card of selectedCards) {
-            await cardsService.saveCard({
+            console.log(`[CardsView] Moving card ${card.id} (${card.title}) to parent ${group.id} at index ${nextIndex}`);
+            
+            const result = await cardsService.saveCard({
               ...card,
               parentId: group.id,  // Set the new parent
               index: nextIndex     // Set the sequential index
             }, group.id, nextIndex);  // Pass both parentId and index parameters
+            
+            console.log(`[CardsView] Save result for ${card.id}:`, result);
 
             nextIndex++; // Increment for next card
           }
@@ -1442,6 +1529,46 @@ const findFirstEmptyPosition = (): number => {
 // We'll just ensure the card is visible by reloading if needed
 // The CardGrid component will handle pagination internally
 
+// Clear cache and reload all cards (dev only)
+const handleClearCacheAndReload = async () => {
+  console.log('[CardsView] Clearing cache and reloading all cards...');
+  
+  // Show loading state
+  isLoading.value = true;
+  
+  try {
+    // Clear the cache
+    await yesNoStore.clearCache();
+    
+    // Also run has_children verification
+    console.log('[CardsView] Running has_children verification...');
+    const verifyResult = await yesNoStore.verifyHasChildrenFlags();
+    if (verifyResult) {
+      console.log('[CardsView] Verification result:', verifyResult);
+      toastService?.show({
+        message: `Cache cleared. Fixed ${verifyResult.fixed} has_children flags out of ${verifyResult.total} items.`,
+        type: 'success'
+      });
+    }
+    
+    // Force reload all cards
+    await yesNoStore.loadAllCards(currentLocale.value);
+    
+    // Reload current view
+    await loadCards();
+    
+    console.log('[CardsView] Cache cleared and cards reloaded');
+  } catch (error) {
+    console.error('[CardsView] Failed to clear cache and reload:', error);
+    toastService?.show({
+      message: 'Failed to clear cache and reload',
+      type: 'error'
+    });
+  } finally {
+    isLoading.value = false;
+  }
+};
+
 // Add cards modal (unified single/bulk)
 const openBulkAddMode = () => {
   popupService.open({
@@ -1494,6 +1621,9 @@ const openBulkAddMode = () => {
         try {
           let firstNewCardIndex = -1;
 
+          console.log('[CardsView] Creating bulk cards:', newCards);
+          console.log('[CardsView] Current group ID:', currentGroupId.value);
+
           // Create all cards
           for (const cardData of newCards) {
             const targetIndex = findFirstEmptyPosition();
@@ -1502,9 +1632,12 @@ const openBulkAddMode = () => {
               firstNewCardIndex = targetIndex;
             }
 
+            const parentIdToUse = cardData.parentId || currentGroupId.value;
+            console.log(`[CardsView] Creating card "${cardData.title}" with parent:`, parentIdToUse);
+
             const savedId = await cardsService.saveCard(
               { ...cardData, index: targetIndex },
-              currentGroupId.value,
+              parentIdToUse,
               targetIndex
             );
 
@@ -1579,17 +1712,26 @@ const buildBreadcrumbs = async (cardId: string | undefined) => {
   }
 };
 
-// Watch for route changes
+// Watch for route changes (not immediate - initial load handled in onMounted)
 watch(() => route.params.cardId as string | undefined, async (cardId) => {
-  // If we're not already loading (ghost cards not shown), show them now
-  if (!isLoading.value) {
-    cards.value = generateGhostCards();
-    isLoading.value = true;
-  }
+  try {
+    console.log('[CardsView] Route changed to:', cardId);
+    
+    // Show loading state
+    if (!isLoading.value) {
+      cards.value = generateGhostCards();
+      isLoading.value = true;
+    }
 
-  await buildBreadcrumbs(cardId);
-  await loadCards();
-}, { immediate: true });
+    await buildBreadcrumbs(cardId);
+    await loadCards();
+  } catch (error) {
+    console.error('[CardsView] Error in route watcher:', error);
+    // Still try to load cards even if there's an error
+    isLoading.value = false;
+    cards.value = [];
+  }
+});
 
 // Watch edit mode changes - clear selection when edit mode is disabled
 watch(() => isEditMode.value, (newEditMode) => {
@@ -1666,14 +1808,25 @@ onMounted(async () => {
     console.log('[CardsView] Loading all cards on app initialization...');
     await yesNoStore.loadAllCards(currentLocale.value);
     console.log('[CardsView] All cards loaded into cache');
+    
+    // Mark initial load as complete
+    isInitialLoadComplete.value = true;
 
     // Listen for edit mode keyboard shortcuts
     eventBus.on('app:editModeShortcut', handleEditModeShortcut);
 
-    // Don't load cards here - the route watcher with immediate: true will handle it
+    // Now trigger the initial load if route watcher hasn't run yet
+    if (cards.value.length === 0 || cards.value.every(c => c.id.startsWith('ghost-'))) {
+      console.log('[CardsView] Triggering initial card load...');
+      await buildBreadcrumbs(route.params.cardId as string | undefined);
+      await loadCards();
+    }
+    
     console.log('[CardsView] Initialization complete');
   } catch (error) {
     console.error('[CardsView] Failed to initialize:', error);
+    // Even on error, mark as complete to prevent hanging
+    isInitialLoadComplete.value = true;
   }
 });
 

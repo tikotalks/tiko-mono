@@ -21,7 +21,7 @@ class CardsOfflineStorageService {
   constructor() {
     this.storage = createOfflineStorage({
       dbName: 'tiko-cards-offline',
-      dbVersion: 1,
+      dbVersion: 2, // Increment version to force rebuild
       stores: [
         {
           name: CARDS_STORE,
@@ -53,14 +53,19 @@ class CardsOfflineStorageService {
     parentId?: string, 
     locale: string = 'en'
   ): Promise<void> {
-    const key = this.getCardsKey(userId, parentId, locale)
-    
-    // Store the cards with metadata
-    await this.storage.store(CARDS_STORE, key, cards, {
-      parentId,
-      locale,
-      userId
-    })
+    try {
+      const key = this.getCardsKey(userId, parentId, locale)
+      
+      // Store the cards with metadata
+      await this.storage.store(CARDS_STORE, key, cards, {
+        parentId,
+        locale,
+        userId
+      })
+    } catch (error) {
+      console.error('[CardsOfflineStorage] Failed to store cards:', error)
+      // Don't throw - offline storage errors shouldn't break the app
+    }
   }
 
   /**
@@ -81,20 +86,33 @@ class CardsOfflineStorageService {
    * Store sync metadata
    */
   async updateSyncMetadata(userId: string, totalCards: number): Promise<void> {
-    const metadata: CardSyncMetadata = {
-      userId,
-      lastSync: Date.now(),
-      totalCards
+    try {
+      const metadataKey = `metadata_${userId}`
+      const metadata = {
+        userId,
+        lastSync: Date.now(),
+        totalCards
+      }
+      
+      await this.storage.store(METADATA_STORE, metadataKey, metadata)
+    } catch (error) {
+      console.error('[CardsOfflineStorage] Failed to update sync metadata:', error)
+      // Don't throw - offline storage errors shouldn't break the app
     }
-    await this.storage.store(METADATA_STORE, userId, metadata)
   }
 
   /**
    * Get sync metadata
    */
   async getSyncMetadata(userId: string): Promise<CardSyncMetadata | null> {
-    const result = await this.storage.retrieve<CardSyncMetadata>(METADATA_STORE, userId)
-    return result?.data || null
+    try {
+      const metadataKey = `metadata_${userId}`
+      const result = await this.storage.retrieve<CardSyncMetadata>(METADATA_STORE, metadataKey)
+      return result?.data || null
+    } catch (error) {
+      console.error('[CardsOfflineStorage] Failed to get sync metadata:', error)
+      return null
+    }
   }
 
   /**
@@ -120,7 +138,8 @@ class CardsOfflineStorageService {
     }
     
     // Delete metadata
-    await this.storage.delete(METADATA_STORE, userId)
+    const metadataKey = `metadata_${userId}`
+    await this.storage.delete(METADATA_STORE, metadataKey)
   }
 
   /**

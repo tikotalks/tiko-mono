@@ -36,7 +36,9 @@ function baseItemToCardTile(item: BaseItem): CardTile {
     isPublic: item.is_public || false,
     isCurated: item.is_curated || false,
     ownerId: item.user_id,
-    user_id: item.user_id
+    user_id: item.user_id,
+    has_children: item.has_children || false,
+    updated_at: item.updated_at
   };
 }
 
@@ -143,7 +145,22 @@ export const cardsService = {
         return false;
       }
       
-      // Use getCardsWithCurated if includeCurated is true
+      // First try to get the item and check has_children flag
+      try {
+        const item = await unifiedItemService.loadItemById(parentId, { includeChildren: false });
+        if (item && item.has_children !== undefined) {
+          // For performance, trust the has_children flag
+          // Only do the full check if includeCurated is true and has_children is true
+          if (!includeCurated || !item.has_children) {
+            childrenCache.set(cacheKey, item.has_children);
+            return item.has_children;
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to check has_children flag:', error);
+      }
+      
+      // Fallback to loading children (or if we need to check curated items)
       const children = includeCurated 
         ? await cardsSupabaseService.getCardsWithCurated(userId, parentId)
         : await cardsSupabaseService.getCards(userId, parentId);
