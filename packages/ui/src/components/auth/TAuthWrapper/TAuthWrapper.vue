@@ -20,7 +20,7 @@
       :loading-text="splashConfig.loadingText"
       :version="splashConfig.version"
       :enable-transitions="true"
-      :background-color="splashConfig.backgroundColor"
+      :color="splashConfig.backgroundColor"
       @complete="handleSplashComplete"
     />
 

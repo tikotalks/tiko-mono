@@ -4,6 +4,7 @@
       :type="'icon-only'"
       :icon="tilesIcon"
       :size="size"
+      :tooltip="t('common.cardView')"
       @click="emit('update:modelValue', 'tiles')"
     >
       {{ tilesLabel }}
@@ -12,6 +13,7 @@
       :type="'icon-only'"
       :icon="listIcon"
       :size="size"
+      :tooltip="t('common.listView')"
       @click="emit('update:modelValue', 'list')"
     >
       {{ listLabel }}
@@ -30,8 +32,8 @@ import TButtonGroup from '../../ui-elements/TButton/TButtonGroup.vue'
 const props = withDefaults(defineProps<TViewToggleProps>(), {
   tilesLabel: '',
   listLabel: '',
-  tilesIcon: Icons.FILE_COLUMNS,
-  listIcon: Icons.CHECK_LIST,
+  tilesIcon: Icons.BOARD_MULTI,
+  listIcon: Icons.TEXT_ALIGN_JUSTIFY,
   size: 'small'
 })
 

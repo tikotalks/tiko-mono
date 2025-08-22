@@ -20,7 +20,7 @@ export default defineConfig({
   },
   splash: {
     appName: 'Media',
-    backgroundColor: ColorValue.RED,
+    color: BaseColors.RED,
     themeColor: ColorValue.RED,
     loadingText: 'Loading Media...'
   }

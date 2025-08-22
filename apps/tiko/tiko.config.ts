@@ -19,7 +19,7 @@ export default defineConfig({
   },
   splash: {
     appName: 'Tiko',
-    backgroundColor: ColorValue.ORANGE,
+    color: BaseColors.ORANGE,
     themeColor: ColorValue.BLACK,
     loadingText: 'Loading Tiko...'
   }

@@ -41,8 +41,7 @@
         <TInputSelect v-model="sortBy" :options="sortOptions" :placeholder="t('common.sortByLabel')"
           @update:model-value="loadMedia" />
 
-        <TViewToggle v-model="viewMode" :tiles-label="t('common.tiles')" :list-label="t('common.list')"
-          :tiles-icon="Icons.BOARD_MULTI" :list-icon="Icons.CHECK_LIST" />
+        <TViewToggle v-model="viewMode" :tiles-label="t('common.tiles')" :list-label="t('common.list')"/>
       </div>
     </div>
 

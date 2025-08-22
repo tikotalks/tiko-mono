@@ -15,7 +15,7 @@
       </template>
 
       <template #inputs>
-        <TInput
+        <TInputText
           v-model="searchQuery"
           :placeholder="t('admin.users.searchPlaceholder')"
           :icon="Icons.SEARCH_L"
@@ -128,10 +128,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, inject } from 'vue'
 import { useBemm } from 'bemm'
-import { TCard, TButton, TIcon, TSpinner, TInput, TChip } from '@tiko/ui'
+import { TCard, TButton, TIcon, TSpinner, TChip, TInputText } from '@tiko/ui'
 import { Icons } from 'open-icon'
 import { useI18n, userService } from '@tiko/core'
-import type { PopupService, ToastService, UserProfile } from '@tiko/core'
+import type { PopupService, ToastService, UserProfile } from '@tiko/ui'
 import UserEditModal from '../components/UserEditModal.vue'
 import AdminPageHeader from '../components/AdminPageHeader.vue'
 import ConfirmDialog from '../components/dialogs/ConfirmDialog.vue'

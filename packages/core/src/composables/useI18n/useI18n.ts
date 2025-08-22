@@ -17,6 +17,7 @@ interface I18nOptions {
   fallbackLocale?: string
   persistLocale?: boolean
   storageKey?: string
+  categories?: string[]
 }
 
 /**

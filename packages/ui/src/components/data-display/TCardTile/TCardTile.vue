@@ -630,12 +630,12 @@ const setPointerPosition = (e: PointerEvent) => {
   }
 
   &--empty {
+    --card-color: transparent;
     background-color: transparent;
     border: 2px dashed transparent;
     // pointer-events: none;
 
     &.t-card-tile--edit-mode {
-      background-color: var(--color-gray-light);
       border-color: color-mix(in srgb, var(--color-foreground), transparent 75%);
       pointer-events: auto;
 

@@ -42,8 +42,6 @@
           v-model="viewMode"
           :tiles-label="t('common.views.tiles')"
           :list-label="t('common.views.list')"
-          :tiles-icon="Icons.BLOCK_PARTIALS"
-          :list-icon="Icons.CHECK_LIST"
         />
 
         <div :class="bemm('sorting')">
@@ -149,10 +147,10 @@
         >
           <template #content>
             <div v-if="isMultiSelectMode" :class="bemm('selection-indicator')">
-              <TIcon 
-                v-if="selectedMediaIds.has(item.id)" 
-                :name="Icons.CHECK" 
-                color="primary" 
+              <TIcon
+                v-if="selectedMediaIds.has(item.id)"
+                :name="Icons.CHECK"
+                color="primary"
               />
             </div>
           </template>
@@ -339,9 +337,9 @@ const sortedImages = computed(() => {
 // Handle media click with multi-select support
 const handleMediaClick = (e: MouseEvent, media: MediaItem) => {
   e.preventDefault();
-  
+
   const currentIndex = sortedImages.value.findIndex(item => item.id === media.id);
-  
+
   // If in multi-select mode or holding modifier keys
   if (isMultiSelectMode.value || e.shiftKey || e.metaKey || e.ctrlKey) {
     // Cmd/Ctrl + Click: Toggle individual selection
@@ -353,7 +351,7 @@ const handleMediaClick = (e: MouseEvent, media: MediaItem) => {
     else if (e.shiftKey && lastSelectedIndex.value !== null) {
       const start = Math.min(lastSelectedIndex.value, currentIndex);
       const end = Math.max(lastSelectedIndex.value, currentIndex);
-      
+
       // Select all items in the range
       for (let i = start; i <= end; i++) {
         const item = sortedImages.value[i];
@@ -420,7 +418,7 @@ const addSelectedToCollection = async () => {
       mediaItem: {
         id: selectedItems[0].id, // Use first item as primary
         type: 'media' as const,
-        name: selectedMediaIds.value.size > 1 
+        name: selectedMediaIds.value.size > 1
           ? t('admin.library.multipleItems', { count: selectedMediaIds.value.size })
           : selectedItems[0].title || selectedItems[0].original_filename,
         url: selectedItems[0].original_url
@@ -429,28 +427,28 @@ const addSelectedToCollection = async () => {
       onAdd: async (collectionId: string) => {
         try {
           const { collectionsSupabaseService } = await import('@tiko/core');
-          
+
           // Add all selected items to the collection
-          const promises = selectedItems.map(media => 
+          const promises = selectedItems.map(media =>
             collectionsSupabaseService.addItemToCollection(collectionId, {
               item_id: media.id,
               item_type: 'media'
             })
           );
-          
+
           await Promise.all(promises);
-          
+
           popupService.close({ id: popupId });
           toastService?.show({
             message: t('admin.library.addedToCollection'),
             type: 'success'
           });
-          
+
           // Clear selection after successful add
           clearSelection();
         } catch (error: any) {
           console.error('Failed to add to collection:', error);
-          
+
           if (error.code === '23505') {
             toastService?.show({
               message: t('admin.library.someAlreadyInCollection'),
@@ -614,15 +612,15 @@ const editMedia = (media: MediaItem) => {
 const togglePrivacy = async (media: MediaItem) => {
   try {
     const { mediaService } = await import('@tiko/core');
-    
+
     // Update the media privacy
     await mediaService.updateMedia(media.id, {
       is_private: !media.is_private
     });
 
     toastService?.show({
-      message: media.is_private 
-        ? t('admin.library.madePublic') 
+      message: media.is_private
+        ? t('admin.library.madePublic')
         : t('admin.library.madePrivate'),
       type: 'success'
     });
@@ -655,12 +653,12 @@ const deleteMedia = async (media: MediaItem) => {
       onConfirm: async () => {
         try {
           const { mediaService } = await import('@tiko/core');
-          
+
           // Delete the media
           await mediaService.deleteMedia(media.id);
-          
+
           popupService.close({ id: popupId });
-          
+
           toastService?.show({
             message: t('admin.library.deleteSuccess'),
             type: 'success'
@@ -692,7 +690,7 @@ const handleKeyDown = (e: KeyboardEvent) => {
   if (e.key === 'Shift' && !isMultiSelectMode.value) {
     isMultiSelectMode.value = true;
   }
-  
+
   // Escape key clears selection
   if (e.key === 'Escape' && selectedMediaIds.value.size > 0) {
     clearSelection();
@@ -710,7 +708,7 @@ onMounted(async () => {
   // Add keyboard event listeners
   window.addEventListener('keydown', handleKeyDown);
   window.addEventListener('keyup', handleKeyUp);
-  
+
   // Load user settings
   await loadSettings();
 
@@ -872,7 +870,7 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     gap: var(--space-s);
-    
+
     .t-icon {
       color: var(--color-primary);
     }

@@ -33,7 +33,7 @@ export interface TikoConfig {
   },
   splash?: {
     appName: string,
-    backgroundColor: string,
+    color: string,
     themeColor: string,
     loadingText: string
   },
@@ -42,6 +42,9 @@ export interface TikoConfig {
     providers?: ('email' | 'apple')[]
     skipAuth?: boolean,
     canRegister?: boolean
+  }
+  i18n?: {
+    categories?: string[]
   }
 }
 
@@ -73,7 +76,7 @@ export const defaultTikoConfig: Required<TikoConfig> = {
   settings: {},
   splash: {
     appName: 'Tiko',
-    backgroundColor: '#f8f9fa',
+    color: 'purple',
     themeColor: '#007bff',
     loadingText: 'Loading Tiko...'
   },
@@ -82,6 +85,9 @@ export const defaultTikoConfig: Required<TikoConfig> = {
     providers: ['email'],
     skipAuth: false,
     canRegister: true
+  },
+  i18n: {
+    categories: []
   }
 }
 

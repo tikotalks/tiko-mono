@@ -1,5 +1,5 @@
 <template>
-  <div :class="bemm('', ['', isApp ? 'is-app' : 'is-website'])" :style="frameworkStyles">
+  <div :class="bemm('', ['', isApp ? 'is-app' : 'is-website'])" :style="deviceTiltStyles">
     <TAuthWrapper :background-image="backgroundImage" :title="tikoConfig?.name" :is-app="isApp"
       :app-name="tikoConfig?.id" :require-auth="computedRequireAuth" :show-splash-screen="showSplashScreen"
       :allow-skip-auth="props.config?.auth?.skipAuth">
@@ -25,7 +25,7 @@
         <!-- Login button when in skip auth mode -->
         <TButton v-if="isSkipAuthMode" :class="bemm('login-button')" type="ghost" :icon="Icons.USER"
           @click="handleSkipAuthLogin">
-          {{ t.value ? t.value(keys.value?.auth?.login || 'Login') : 'Login' }}
+          {{ t('auth.login') }}
         </TButton>
 
       </TAppLayout>
@@ -132,11 +132,22 @@ const { themeStyles, config: tikoConfig } = useTikoConfig(props.config)
 const deviceTilt = useDeviceTilt({ source: 'pointer', maxDeg: 10, smooth: .1, liftPx: 30 });
 
 const frameworkStyles = computed(() => ({
-  ...(themeStyles?.value ?? {}),
+  ...(themeStyles?.value ?? {})
+}));
+
+const deviceTiltStyles = computed(()=>({
   '--rx': deviceTilt.tilt.rx + 'deg',
   '--ry': deviceTilt.tilt.ry + 'deg',
   '--tz': deviceTilt.tilt.tz + 'px'
-}));
+}))
+
+const toStyleString = (styleObj) => {
+  return Object.entries(styleObj)
+    .map(([key, value]) => `${key}:${value}`)
+    .join(';');
+};
+
+document.body.setAttribute('style', toStyleString(frameworkStyles.value))
 
 document.documentElement.setAttribute('data-app', tikoConfig.isApp ? 'true' : 'false')
 

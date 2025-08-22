@@ -21,6 +21,7 @@ interface I18nOptions {
   fallbackLocale?: string
   persistLocale?: boolean
   storageKey?: string
+  categories?: string[]
 }
 
 // Storage key for persistence
@@ -39,6 +40,7 @@ export const useI18nStore = defineStore('i18n', () => {
   const fallbackLocale = ref('en')
   const persistLocale = ref(true)
   const storageKey = ref(LOCALE_STORAGE_KEY)
+  const categories = ref<string[]>([])
 
   // Track initialization
   let isInitialized = false
@@ -78,6 +80,34 @@ export const useI18nStore = defineStore('i18n', () => {
   const availableLanguages = computed(() => {
     return lazyGetAvailableLanguages()
   })
+
+  /**
+   * Filter translations by categories
+   */
+  function filterTranslationsByCategories(translations: any, categoriesToInclude: string[]): any {
+    // If no categories specified, return all translations
+    if (!categoriesToInclude || categoriesToInclude.length === 0) {
+      return translations
+    }
+
+    const filtered: any = {}
+    
+    // Filter translations to only include keys that start with specified categories
+    for (const key in translations) {
+      // Check if the key starts with any of the specified categories
+      const shouldInclude = categoriesToInclude.some(category => {
+        // Support wildcard patterns like "common.*"
+        const pattern = category.endsWith('.*') ? category.slice(0, -2) : category
+        return key.startsWith(pattern + '.')
+      })
+      
+      if (shouldInclude) {
+        filtered[key] = translations[key]
+      }
+    }
+    
+    return filtered
+  }
 
   /**
    * Find the best regional variant for a base language
@@ -129,9 +159,12 @@ export const useI18nStore = defineStore('i18n', () => {
       const translations = await lazyLoadLanguageWithBase(locale)
 
       if (translations) {
-        loadedTranslations.value[locale] = translations
-        keysCache.value[locale] = buildKeysStructure(translations)
-        console.log(`[i18n-store] Successfully loaded locale: ${locale} with ${Object.keys(translations).length} keys`)
+        // Filter translations by categories if specified
+        const filteredTranslations = filterTranslationsByCategories(translations, categories.value)
+        
+        loadedTranslations.value[locale] = filteredTranslations
+        keysCache.value[locale] = buildKeysStructure(filteredTranslations)
+        console.log(`[i18n-store] Successfully loaded locale: ${locale} with ${Object.keys(filteredTranslations).length} keys (filtered from ${Object.keys(translations).length} total)`)
         return true
       } else {
         console.error(`[i18n-store] loadLanguageWithBase returned null/undefined for ${locale}`)
@@ -160,6 +193,7 @@ export const useI18nStore = defineStore('i18n', () => {
     fallbackLocale.value = options.fallbackLocale || 'en'
     persistLocale.value = options.persistLocale !== false
     storageKey.value = options.storageKey || LOCALE_STORAGE_KEY
+    categories.value = options.categories || []
 
     // Initialize locale from storage or browser
     let initialLocale = 'en'

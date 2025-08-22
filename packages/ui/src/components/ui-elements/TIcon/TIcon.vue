@@ -2,7 +2,7 @@
 	<!-- eslint-disable vue/no-v-html -->
 	<div v-if="iconData || isRegistered" :class="[bemm(), bemm('', [props.name, props.animation ? 'animated' : ''])]">
 		<span v-html="iconData" :class="bemm('data')"></span>
-		<TToolTip :v-if="tooltip">{{ tooltip }}</TToolTip>
+		<TToolTip v-if="tooltip">{{ tooltip }}</TToolTip>
 	</div>
 	<div v-else :class="[bemm(), bemm('', ['placeholder'])]">
 		<span :class="bemm('placeholder-text')">{{ props.name }}</span>
@@ -12,7 +12,7 @@
 
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
-import { ref, watch, computed, type PropType, onMounted } from 'vue';
+import { ref, watch, computed, type PropType } from 'vue';
 import { getIcon, type Icons } from 'open-icon';
 import TToolTip from '../../feedback/TToolTip/TToolTip.vue';
 import { useIconRegistry } from '../../../icons';
@@ -36,6 +36,8 @@ const props = defineProps({
 const iconData = ref<string>('');
 const iconRegistry = useIconRegistry();
 const isRegistered = ref(false);
+
+
 
 // Legacy name mappings for backward compatibility
 const iconName = computed(() => {

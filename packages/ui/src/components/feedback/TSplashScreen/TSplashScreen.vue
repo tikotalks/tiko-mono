@@ -52,10 +52,10 @@ const splashStyles = computed(() => {
   const styles: Record<string, string> = {}
 
   // Use custom background color if provided, otherwise fallback to primary color
-  styles.backgroundColor = props.backgroundColor || 'var(--color-primary)'
+  styles.backgroundColor =`var(--color-${props.color}-text, var(--color-primary-text))`;
 
-  // Use custom text color if provided, otherwise fallback to primary text color  
-  styles.color = props.textColor || 'var(--color-primary-text)'
+  // Use custom text color if provided, otherwise fallback to primary text color
+  styles.color = `var(--color-${props.color}-text, var(--color-primary-text))`;
 
   return styles
 })

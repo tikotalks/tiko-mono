@@ -16,9 +16,7 @@ export interface TSplashScreenProps {
   /** Enable fade transitions */
   enableTransitions?: boolean
   /** Custom background color (overrides theme) */
-  backgroundColor?: string
-  /** Custom text color (overrides theme) */
-  textColor?: string
+  color?: string
 }
 
 export interface TSplashScreenEmits {

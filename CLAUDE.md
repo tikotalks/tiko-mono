@@ -4,6 +4,11 @@
 
 **NEVER include "Co-Authored-By: Claude" in commit messages.** The user does not want Claude credited as a co-author in commits.
 
+**DO NOT COMMIT CHANGES WITHOUT EXPLICIT USER PERMISSION.** Only commit when:
+- The user explicitly tells you to "commit" 
+- The user asks you to "deploy" (which requires a commit)
+- Otherwise, make all changes but DO NOT run git commit or git push
+
 ## Commands to Run After Code Changes
 
 When making changes to the Cards app:

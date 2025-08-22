@@ -8,7 +8,7 @@
 		// @include functions.rgbColors($color-name, $color-value);
 		--color-#{$color-name}-text: #{functions.textColorShade($color-value, $color-name)};
 	}
-	@each $color-name, $color-value in variables.$base-colors {
+	@each $color-name, $color-value in variables.$extended-colors {
 		--color-#{$color-name}: #{$color-value};
 		// @include functions.hslColors($color-name, $color-value);
 		// @include functions.rgbColors($color-name, $color-value);

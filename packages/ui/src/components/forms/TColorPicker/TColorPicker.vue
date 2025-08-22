@@ -58,7 +58,7 @@ const emit = defineEmits<{
 const bemm = useBemm(props.block);
 
 // Use provided colors or default to BaseColors
-const colors = props.colors || Object.values(BaseColors);
+const colors = (props.colors || Object.values(BaseColors));
 
 const selectColor = (color: string) => {
   if (!props.disabled) {
@@ -96,7 +96,7 @@ const selectColor = (color: string) => {
 
   &__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(var(--color-size), 1fr));
+    grid-template-columns: repeat(6, minmax(var(--color-size), 1fr));
     gap: var(--space-xs);
     max-width: 100%;
   }

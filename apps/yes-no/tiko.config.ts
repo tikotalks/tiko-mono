@@ -22,5 +22,8 @@ export default defineConfig({
     backgroundColor: ColorValue.DARK_BLUE,
     themeColor: ColorValue.PURPLE,
     loadingText: 'Loading Yes-No...'
+  },
+  i18n: {
+    categories: ['common', 'yesno']
   }
 })

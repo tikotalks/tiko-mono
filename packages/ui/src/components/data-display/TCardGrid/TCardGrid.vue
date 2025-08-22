@@ -42,6 +42,7 @@
                   :is-selected="selectedTileIds?.has(card.id) || (card as any).isSelected || false"
                   :custom-state="(card as any).customState"
                   :context-menu="!selectionMode && getContextMenu ? getContextMenu(card, pageIndex * cardsPerPage + index) : undefined"
+                  :grid-position="getGridPosition(index)"
                   :class="{
                     'is-being-dragged': draggedCard?.id === card.id,
                     'is-drop-target': dropTarget === card.id,
@@ -508,6 +509,33 @@ const handleMouseMove = (e: MouseEvent) => {
 const handleMouseUp = () => {
   if (props.isTileDragging) return;
   handleEnd();
+};
+
+// Calculate grid position for context menu
+const getGridPosition = (index: number) => {
+  const cols = grid.value.cols;
+  const rows = grid.value.rows;
+  
+  // Calculate row and column position
+  const row = Math.floor(index / cols);
+  const col = index % cols;
+  
+  // Determine if card is on edges
+  const isRight = col === cols - 1;
+  const isLeft = col === 0;
+  const isBottom = row === rows - 1;
+  const isTop = row === 0;
+  
+  return {
+    row,
+    col,
+    isRight,
+    isLeft,
+    isBottom,
+    isTop,
+    totalRows: rows,
+    totalCols: cols
+  };
 };
 
 // Handle card clicks

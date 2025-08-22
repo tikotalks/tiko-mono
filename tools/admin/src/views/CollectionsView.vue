@@ -41,8 +41,6 @@
           v-model="viewMode"
           :tiles-label="t('common.views.tiles')"
           :list-label="t('common.views.list')"
-          :tiles-icon="Icons.BLOCK_PARTIALS"
-          :list-icon="Icons.CHECK_LIST"
         />
       </template>
 

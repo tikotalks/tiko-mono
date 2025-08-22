@@ -16,7 +16,7 @@ export default defineConfig({
   },
   splash: {
     appName: 'Radio',
-    backgroundColor: ColorValue.YELLOW,
+    color: BaseColors.YELLOW,
     themeColor: ColorValue.ORANGE,
     loadingText: 'Loading Radio...'
   }

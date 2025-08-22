@@ -19,7 +19,7 @@ export default defineConfig({
   },
   splash: {
     appName: 'Cards',
-    backgroundColor: ColorValue.BLUE,
+    color: BaseColors.BLUE,
     themeColor: ColorValue.BLACK,
     loadingText: 'Loading Cards...'
   }

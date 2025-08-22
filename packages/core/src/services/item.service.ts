@@ -31,6 +31,9 @@ export interface BaseItem {
 
   // Children loaded automatically
   children?: BaseItem[]
+  
+  // Performance optimization: tracks if this item has children
+  has_children?: boolean
 }
 
 export interface ItemFilters {
@@ -286,6 +289,18 @@ class ItemServiceImpl {
 
       const createdItem = response[0];
       console.log('[ItemService] Item created:', createdItem.name, 'ID:', createdItem.id);
+      
+      // If this item has a parent, ensure the parent's has_children flag is set to true
+      if (createdItem.parent_id) {
+        console.log('[ItemService] Updating parent has_children flag for:', createdItem.parent_id);
+        try {
+          await this.updateItem(createdItem.parent_id, { has_children: true });
+        } catch (error) {
+          console.warn('[ItemService] Failed to update parent has_children flag:', error);
+          // Don't fail the create operation if updating parent fails
+        }
+      }
+      
       return createdItem;
     } catch (error) {
       console.error('[ItemService] Error creating item:', error);
@@ -299,6 +314,16 @@ class ItemServiceImpl {
   async updateItem(itemId: string, updates: Partial<BaseItem>): Promise<BaseItem> {
     try {
       console.log('[ItemService] Updating item:', itemId, updates);
+
+      // If parent_id is being changed, we need to update has_children flags
+      let oldParentId: string | null = null;
+      if ('parent_id' in updates) {
+        // Get the current item to check its current parent
+        const currentItem = await this.loadItemById(itemId, { includeChildren: false });
+        if (currentItem && currentItem.parent_id !== updates.parent_id) {
+          oldParentId = currentItem.parent_id;
+        }
+      }
 
       const params = new URLSearchParams();
       params.append('id', `eq.${itemId}`);
@@ -314,6 +339,27 @@ class ItemServiceImpl {
 
       const updatedItem = response[0];
       console.log('[ItemService] Item updated:', updatedItem.name);
+      
+      // Handle parent_id changes
+      if (oldParentId !== null) {
+        // Update old parent's has_children flag
+        try {
+          const oldParentChildren = await this.loadItemChildren(oldParentId, { includeChildren: false });
+          await this.updateItem(oldParentId, { has_children: oldParentChildren.length > 0 });
+        } catch (error) {
+          console.warn('[ItemService] Failed to update old parent has_children flag:', error);
+        }
+      }
+      
+      // If parent_id was set (not null), update new parent's has_children flag
+      if ('parent_id' in updates && updates.parent_id) {
+        try {
+          await this.updateItem(updates.parent_id, { has_children: true });
+        } catch (error) {
+          console.warn('[ItemService] Failed to update new parent has_children flag:', error);
+        }
+      }
+      
       return updatedItem;
     } catch (error) {
       console.error('[ItemService] Error updating item:', error);
@@ -328,6 +374,13 @@ class ItemServiceImpl {
     try {
       console.log('[ItemService] Deleting item:', itemId);
 
+      // First, get the item to check if it has a parent
+      const item = await this.loadItemById(itemId, { includeChildren: false });
+      if (!item) {
+        console.warn('[ItemService] Item not found for deletion:', itemId);
+        return;
+      }
+
       const params = new URLSearchParams();
       params.append('id', `eq.${itemId}`);
 
@@ -336,6 +389,22 @@ class ItemServiceImpl {
       });
 
       console.log('[ItemService] Item deleted:', itemId);
+      
+      // If the deleted item had a parent, check if parent still has other children
+      if (item.parent_id) {
+        console.log('[ItemService] Checking if parent still has children:', item.parent_id);
+        try {
+          const remainingChildren = await this.loadItemChildren(item.parent_id, { includeChildren: false });
+          const hasChildren = remainingChildren.length > 0;
+          
+          // Update parent's has_children flag
+          await this.updateItem(item.parent_id, { has_children: hasChildren });
+          console.log('[ItemService] Updated parent has_children flag to:', hasChildren);
+        } catch (error) {
+          console.warn('[ItemService] Failed to update parent has_children flag after delete:', error);
+          // Don't fail the delete operation if updating parent fails
+        }
+      }
     } catch (error) {
       console.error('[ItemService] Error deleting item:', error);
       throw error;
@@ -636,6 +705,60 @@ class ItemServiceImpl {
         completed: 0,
         public: 0
       };
+    }
+  }
+
+  /**
+   * Verify and fix has_children flags for all items
+   * This is useful for data migration and integrity checks
+   */
+  async verifyAndFixHasChildrenFlags(userId: string, appName: string): Promise<{
+    fixed: number;
+    total: number;
+    errors: string[];
+  }> {
+    const errors: string[] = [];
+    let fixed = 0;
+    let total = 0;
+
+    try {
+      console.log('[ItemService] Starting has_children verification for user:', userId, 'app:', appName);
+
+      // Load all items for the user and app
+      const items = await this.loadItemsByUserAndApp(userId, appName, { 
+        includeChildren: false,
+        includeCurated: false 
+      });
+      
+      total = items.length;
+      console.log('[ItemService] Checking', total, 'items');
+
+      // Check each item
+      for (const item of items) {
+        try {
+          // Check if item actually has children
+          const children = await this.loadItemChildren(item.id, { includeChildren: false });
+          const actualHasChildren = children.length > 0;
+          
+          // If the flag doesn't match reality, fix it
+          if (item.has_children !== actualHasChildren) {
+            console.log(`[ItemService] Fixing has_children for "${item.name}" (${item.id}): ${item.has_children} -> ${actualHasChildren}`);
+            await this.updateItem(item.id, { has_children: actualHasChildren });
+            fixed++;
+          }
+        } catch (error) {
+          const errorMsg = `Failed to check/fix item ${item.id} (${item.name}): ${error}`;
+          console.error('[ItemService]', errorMsg);
+          errors.push(errorMsg);
+        }
+      }
+
+      console.log(`[ItemService] Verification complete. Fixed ${fixed} out of ${total} items. Errors: ${errors.length}`);
+      
+      return { fixed, total, errors };
+    } catch (error) {
+      console.error('[ItemService] Error during verification:', error);
+      throw error;
     }
   }
 }

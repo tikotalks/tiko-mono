@@ -1,61 +1,71 @@
 @use 'sass:map';
 @use 'sass:list';
+@use 'sass:color';
+
+
+@function extend-colors($colors, $lighten: 33.33%, $darken: 33.33%) {
+	$out: $colors;
+
+	@each $name, $value in $colors {
+		// Prefer color.scale for balanced adjustment
+		$light: color.scale($value, $lightness: $lighten);
+		$dark: color.scale($value, $lightness: -$darken);
+
+		$out: map.set($out, #{$name}-light, $light);
+		$out: map.set($out, #{$name}-dark, $dark);
+	}
+
+	@return $out;
+}
+
 
 // Base Colors
 $base-colors: (
-	'purple': #9049ce,
-	'blue': #7bcdff,
-	'navy': #2217bc,
-	'royal-blue': #146bee,
-	'dark-blue': #220d5c,
-	'green': #4fcf4f,
-	'lime': #8aff84,
-	'yellow': #ffc94b,
-	'orange': #f6883a,
-	'maroon': #b04f4f,
-	'olive': #b0b04f,
-	'sand': #e2d699,
-	'charcoal': #333333,
-	'peach': #ffb3a7,
-	'teal': #4fb0b0,
-	'blue-gray': #4f4fb0,
-	'blue-green': #4fb04f,
-	'red': #ff4d5e,
-	'pink': #ea7f9a,
-	'brown': #4f332d,
-	'gray': #b0b0b0,
-	'black': #111111,
-	'white': #ffffff,
-	'turquoise': #63d4c7,
-	'cyan': #baf0ff,
-	'indigo': #571ab4,
-	'violet': #dfbaff,
-	'magenta': #e524b5,
-	'rose': #ff7dff,
-	'coral': #ff7d7d,
-	'gold': #ffd700,
-	'silver': #c0c0c0,
-	'bronze': #cd7f32,
+	red: #f40935,
+	pink: #e23ea9,
+	purple: #b214c0,
+	violet: #7f23d3,
+	blue: #2923d3,
+	cobalt: #2376d3,
+	skyblue: #3bb6f1,
+	cyan: #2dcfdc,
+	teal: #49dba3,
+	green: #55c267,
+	lime: #a9e14b,
+	apple: #e7ed3f,
+	yellow: #fde824,
+	gold: #ffb647,
+	orange: #ff8d22,
+	brown: #806755,
+	coral: #f96459,
+	beige: #dabd9f,
+	lavender: #bface1,
+	gray: #989499,
+	white: #ffffff,
+	black: #000000
 );
+$extended-colors: extend-colors($base-colors);
 
 $base-color-names: map.keys($base-colors);
+
+$extend-color-names: map.keys($extended-colors);
 
 // Project Colors
 $colors: (
 	'dark': #18032a,
 	'light': #ffffff,
 	'accent-dark': #000000,
-	'accent-light': #edf2f5,
-	'primary': map.get($base-colors, 'indigo'),
-	'secondary': map.get($base-colors, 'gold'),
-	'tertiary': map.get($base-colors, 'blue'),
-	'quaternary': map.get($base-colors, 'lime'),
-	'quinary': map.get($base-colors, 'rose'),
+	'accent-light': map.get($extended-colors, 'beige-light'),
+	'primary': map.get($extended-colors, 'dark-violet'),
+	'secondary': map.get($extended-colors, 'gold'),
+	'tertiary': map.get($extended-colors, 'blue'),
+	'quaternary': map.get($extended-colors, 'lime'),
+	'quinary': map.get($extended-colors, 'coral'),
 	//
-	'success': map.get($base-colors, 'green'),
-	'warning': map.get($base-colors, 'orange'),
-	'error': map.get($base-colors, 'red'),
-	'info': map.get($base-colors, 'blue'),
+	'success': map.get($extended-colors, 'green'),
+	'warning': map.get($extended-colors, 'orange'),
+	'error': map.get($extended-colors, 'red'),
+	'info': map.get($extended-colors, 'skyblue'),
 );
 
 $color-names: map.keys($colors);

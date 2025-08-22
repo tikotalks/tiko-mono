@@ -51,8 +51,6 @@
           v-model="viewMode"
           :tiles-label="t('common.tiles')"
           :list-label="t('common.list')"
-          :tiles-icon="Icons.GRID_M"
-          :list-icon="Icons.LIST_M"
         />
       </div>
     </div>

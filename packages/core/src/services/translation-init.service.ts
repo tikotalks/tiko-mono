@@ -56,19 +56,24 @@ function getUserLocale(): string {
   return DEFAULT_LOCALE;
 }
 
+interface TranslationInitOptions {
+  categories?: string[]
+}
+
 /**
  * Initialize the translation system
  * This should be called once on app startup
+ * @param options Configuration options including categories to load
  */
-export async function initializeTranslations(): Promise<void> {
+export async function initializeTranslations(options: TranslationInitOptions = {}): Promise<void> {
   try {
     console.log('Initializing translation system...');
 
     // REMOVED: Database keys initialization - not needed for production apps
     // This was loading ALL translation keys metadata which is only useful for admin tools
 
-    // Get the i18n composable
-    const { setLocale } = useI18n();
+    // Get the i18n composable with categories option
+    const { setLocale } = useI18n({ categories: options.categories });
 
     // Determine user locale
     const userLocale = getUserLocale();
@@ -92,7 +97,7 @@ export async function initializeTranslations(): Promise<void> {
     console.error('Failed to initialize translations:', error);
     // Fallback to default locale on error
     try {
-      const { setLocale } = useI18n();
+      const { setLocale } = useI18n({ categories: options.categories });
       await setLocale(DEFAULT_LOCALE);
       console.log(`Fallback: Loaded default locale ${DEFAULT_LOCALE}`);
     } catch (fallbackError) {

@@ -19,7 +19,7 @@ export default defineConfig({
   },
   splash: {
     appName: 'Timer',
-    backgroundColor: ColorValue.ORANGE,
+    color: BaseColors.ORANGE,
     themeColor: ColorValue.ORANGE,
     loadingText: 'Loading Timer...'
   }

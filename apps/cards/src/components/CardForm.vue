@@ -164,7 +164,7 @@ const emit = defineEmits<{
 
 const isEditing = computed(() => !!props.card && !props.card.id.startsWith('empty-'));
 
-const availableColors = Object.values(BaseColors);
+const availableColors = Object.values(BaseColors).sort();
 
 // Image suggestions state
 const imageSuggestions = ref<any[]>([]);

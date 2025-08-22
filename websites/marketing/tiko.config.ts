@@ -19,7 +19,7 @@ export default defineConfig({
   },
   splash: {
     appName: 'Media',
-    backgroundColor: ColorValue.PURPLE,
+    color: BaseColors.PURPLE,
     themeColor: ColorValue.PURPLE,
     loadingText: 'Loading Tiko...'
   }

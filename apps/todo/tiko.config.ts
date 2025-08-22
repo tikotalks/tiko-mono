@@ -19,7 +19,7 @@ export default defineConfig({
   },
   splash: {
     appName: 'To Do',
-    backgroundColor: ColorValue.SAND,
+    color: BaseColors.SAND,
     themeColor: ColorValue.BLACK,
     loadingText: 'Loading To do\'s...'
   }

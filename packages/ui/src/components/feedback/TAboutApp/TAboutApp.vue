@@ -1,7 +1,7 @@
 <template>
   <div :class="bemm()">
     <div :class="bemm('header')">
-      <h2 :class="bemm('title')">{{ title || appName }}</h2>
+      <!-- <h2 :class="bemm('title')">{{ title || appName }}</h2> -->
     </div>
 
     <div v-if="appInfo?.content?.description || appInfo?.description" :class="bemm('description')">

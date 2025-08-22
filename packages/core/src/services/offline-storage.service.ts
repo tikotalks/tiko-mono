@@ -94,6 +94,12 @@ export class OfflineStorageService {
    */
   async store<T>(storeName: string, key: string, data: T, metadata?: Record<string, any>): Promise<void> {
     const db = await this.initDB()
+    
+    // Validate inputs
+    if (!key || typeof key !== 'string') {
+      throw new Error('Invalid key provided for storage')
+    }
+    
     const transaction = db.transaction([storeName], 'readwrite')
     const store = transaction.objectStore(storeName)
 
@@ -107,7 +113,10 @@ export class OfflineStorageService {
     return new Promise((resolve, reject) => {
       const request = store.put(storedData)
       request.onsuccess = () => resolve()
-      request.onerror = () => reject(request.error)
+      request.onerror = () => {
+        console.error(`Failed to store data in ${storeName}:`, request.error)
+        reject(request.error)
+      }
     })
   }
 
