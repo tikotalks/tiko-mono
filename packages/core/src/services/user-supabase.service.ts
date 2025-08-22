@@ -14,11 +14,11 @@ export class SupabaseUserService implements UserService {
       throw new Error('VITE_SUPABASE_URL environment variable is required')
     }
     this.API_URL = `${supabaseUrl}/rest/v1`
-    
+
     // Use public key for browser compatibility
-    this.apiKey = import.meta.env?.VITE_SUPABASE_PUBLIC
+    this.apiKey = import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY
     if (!this.apiKey) {
-      throw new Error('VITE_SUPABASE_PUBLIC environment variable is required')
+      throw new Error('VITE_SUPABASE_PUBLISHABLE_KEY environment variable is required')
     }
   }
 
@@ -53,7 +53,7 @@ export class SupabaseUserService implements UserService {
       })
 
       console.log('[UserService] Response status:', response.status)
-      
+
       if (!response.ok) {
         const errorText = await response.text()
         console.error('[UserService] Error response:', errorText)
@@ -63,7 +63,7 @@ export class SupabaseUserService implements UserService {
       }
 
       const profiles = await response.json()
-      
+
       // Map database fields to UserProfile interface
       return profiles.map((profile: any) => ({
         id: profile.user_id, // Map user_id to id
@@ -108,7 +108,7 @@ export class SupabaseUserService implements UserService {
       const data = await response.json()
       const profile = data[0]
       if (!profile) return null
-      
+
       // Map database fields to UserProfile interface
       return {
         id: profile.user_id,
@@ -165,7 +165,7 @@ export class SupabaseUserService implements UserService {
       const data = await response.json()
       const profile = data[0]
       if (!profile) throw new Error('User not found')
-      
+
       // Map database fields to UserProfile interface
       return {
         id: profile.user_id,
@@ -242,7 +242,7 @@ export class SupabaseUserService implements UserService {
       // Check if current user is admin first
       console.log('[UserService] Checking if current user is admin for stats...')
       const isAdmin = await this.isCurrentUserAdmin()
-      
+
       if (!isAdmin) {
         console.warn('[UserService] Non-admin user attempted to access user stats')
         // Return empty stats for non-admin users
@@ -320,7 +320,7 @@ export class SupabaseUserService implements UserService {
       }
 
       const profiles = await response.json()
-      
+
       // Map database fields to UserProfile interface
       return profiles.map((profile: any) => ({
         id: profile.user_id,
@@ -363,7 +363,7 @@ export class SupabaseUserService implements UserService {
       }
 
       const profiles = await response.json()
-      
+
       // Map database fields to UserProfile interface
       return profiles.map((profile: any) => ({
         id: profile.user_id,
@@ -406,7 +406,7 @@ export class SupabaseUserService implements UserService {
       // Handle different session structures
       const userId = session.user?.id || session.user_id
       const email = session.user?.email
-      
+
       if (!userId) {
         console.error('[UserService] No user ID found in session')
         return false
@@ -414,8 +414,8 @@ export class SupabaseUserService implements UserService {
 
       // Check admin by email domain first (fallback check)
       if (email && (
-        email.endsWith('@admin.tiko.app') || 
-        email.endsWith('@tiko.com') || 
+        email.endsWith('@admin.tiko.app') ||
+        email.endsWith('@tiko.com') ||
         email.endsWith('@admin.com')
       )) {
         console.log('[UserService] Admin detected by email domain:', email)
@@ -433,51 +433,51 @@ export class SupabaseUserService implements UserService {
       if (!response.ok) {
         const errorText = await response.text()
         console.error('[UserService] Failed to check admin status:', response.statusText, errorText)
-        
+
         // If profile lookup fails, fall back to email domain check
         if (email && (
-          email.endsWith('@admin.tiko.app') || 
-          email.endsWith('@tiko.com') || 
+          email.endsWith('@admin.tiko.app') ||
+          email.endsWith('@tiko.com') ||
           email.endsWith('@admin.com')
         )) {
           console.log('[UserService] Fallback admin check by email domain:', email)
           return true
         }
-        
+
         return false
       }
 
       const profiles = await response.json()
       const profile = profiles[0]
-      
+
       console.log('[UserService] Admin check result:', profile)
-      
+
       // Check if admin role is set in profile
       if (profile?.role === 'admin') {
         return true
       }
-      
+
       // Final fallback: check if profile email has admin domain
       if (profile?.email && (
-        profile.email.endsWith('@admin.tiko.app') || 
-        profile.email.endsWith('@tiko.com') || 
+        profile.email.endsWith('@admin.tiko.app') ||
+        profile.email.endsWith('@tiko.com') ||
         profile.email.endsWith('@admin.com')
       )) {
         console.log('[UserService] Admin detected by profile email domain:', profile.email)
         return true
       }
-      
+
       return false
     } catch (error) {
       console.error('Failed to check admin status:', error)
-      
+
       // Final fallback: check session email
       try {
         const session = this.getSession()
         const email = session?.user?.email
         if (email && (
-          email.endsWith('@admin.tiko.app') || 
-          email.endsWith('@tiko.com') || 
+          email.endsWith('@admin.tiko.app') ||
+          email.endsWith('@tiko.com') ||
           email.endsWith('@admin.com')
         )) {
           console.log('[UserService] Emergency fallback admin check by session email:', email)
@@ -486,7 +486,7 @@ export class SupabaseUserService implements UserService {
       } catch (fallbackError) {
         console.error('[UserService] Fallback admin check also failed:', fallbackError)
       }
-      
+
       return false
     }
   }

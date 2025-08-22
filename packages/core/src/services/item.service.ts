@@ -17,18 +17,18 @@ export interface BaseItem {
   effective_locale?: string
   created_at: string
   updated_at: string
-  
+
   // Public item fields
   owner_id?: string
   is_public?: boolean
   is_curated?: boolean
   custom_index?: number
-  
+
   // Additional item properties
   is_favorite?: boolean
   is_completed?: boolean
   tags?: string[]
-  
+
   // Children loaded automatically
   children?: BaseItem[]
 }
@@ -88,7 +88,7 @@ class ItemServiceImpl {
   private async getAuthToken(): Promise<string | null> {
     const sessionData = localStorage.getItem('tiko_auth_session');
     if (!sessionData) return null;
-    
+
     try {
       const session = JSON.parse(sessionData);
       return session.access_token;
@@ -99,13 +99,13 @@ class ItemServiceImpl {
 
   private async apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLIC;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
     const token = await this.getAuthToken();
-    
+
     if (!supabaseUrl || !supabaseKey) {
       throw new Error('Supabase credentials missing');
     }
-    
+
     const response = await fetch(`${supabaseUrl}/rest/v1/${endpoint}`, {
       ...options,
       headers: {
@@ -140,9 +140,9 @@ class ItemServiceImpl {
       // Load the main item
       const params = new URLSearchParams();
       params.append('id', `eq.${itemId}`);
-      
+
       const items = await this.apiRequest<BaseItem[]>(`items?${params.toString()}`);
-      
+
       if (items.length === 0) {
         console.log('[ItemService] Item not found:', itemId);
         return null;
@@ -169,8 +169,8 @@ class ItemServiceImpl {
    * Load items by user and app with automatic children loading
    */
   async loadItemsByUserAndApp(
-    userId: string, 
-    appName: string, 
+    userId: string,
+    appName: string,
     options: ItemLoadOptions = {}
   ): Promise<BaseItem[]> {
     const {
@@ -189,7 +189,7 @@ class ItemServiceImpl {
         userParams.append('user_id', `eq.${userId}`);
         userParams.append('app_name', `eq.${appName}`);
         userParams.append('order', 'order_index.asc,created_at.asc');
-        
+
         userItems = await this.apiRequest<BaseItem[]>(`items?${userParams.toString()}`);
         console.log('[ItemService] Loaded', userItems.length, 'user items');
       }
@@ -202,14 +202,14 @@ class ItemServiceImpl {
         curatedParams.append('is_curated', 'eq.true');
         curatedParams.append('is_public', 'eq.true');
         curatedParams.append('order', 'order_index.asc,created_at.asc');
-        
+
         curatedItems = await this.apiRequest<BaseItem[]>(`items?${curatedParams.toString()}`);
         console.log('[ItemService] Loaded', curatedItems.length, 'curated items');
       }
 
       // Combine and deduplicate items
       const allItems = [...userItems, ...curatedItems];
-      const deduplicatedItems = allItems.filter((item, index, arr) => 
+      const deduplicatedItems = allItems.filter((item, index, arr) =>
         arr.findIndex(i => i.id === item.id) === index
       );
 
@@ -218,7 +218,7 @@ class ItemServiceImpl {
       // Load children for all items if requested
       if (includeChildren) {
         console.log('[ItemService] Loading children for all items...');
-        
+
         await Promise.all(
           deduplicatedItems.map(async (item) => {
             const children = await this.loadItemChildren(item.id, options);
@@ -245,9 +245,9 @@ class ItemServiceImpl {
       const params = new URLSearchParams();
       params.append('parent_id', `eq.${parentId}`);
       params.append('order', 'order_index.asc,created_at.asc');
-      
+
       const children = await this.apiRequest<BaseItem[]>(`items?${params.toString()}`);
-      
+
       // Recursively load children of children if they exist
       if (options.includeChildren !== false) {
         await Promise.all(
@@ -351,7 +351,7 @@ class ItemServiceImpl {
 
       // Update each item's order_index
       await Promise.all(
-        itemUpdates.map(update => 
+        itemUpdates.map(update =>
           this.updateItem(update.id, { order_index: update.order_index })
         )
       );
@@ -413,9 +413,9 @@ class ItemServiceImpl {
    * Search items by name or content
    */
   async searchItems(
-    userId: string, 
-    appName: string, 
-    searchQuery: string, 
+    userId: string,
+    appName: string,
+    searchQuery: string,
     options: ItemLoadOptions = {}
   ): Promise<BaseItem[]> {
     try {
@@ -468,7 +468,7 @@ class ItemServiceImpl {
         userParams.append('app_name', `eq.${appName}`);
         userParams.append('parent_id', 'is.null');
         userParams.append('order', 'order_index.asc,created_at.asc');
-        
+
         userItems = await this.apiRequest<BaseItem[]>(`items?${userParams.toString()}`);
       }
 
@@ -481,13 +481,13 @@ class ItemServiceImpl {
         curatedParams.append('is_public', 'eq.true');
         curatedParams.append('parent_id', 'is.null');
         curatedParams.append('order', 'order_index.asc,created_at.asc');
-        
+
         curatedItems = await this.apiRequest<BaseItem[]>(`items?${curatedParams.toString()}`);
       }
 
       // Combine and deduplicate
       const allItems = [...userItems, ...curatedItems];
-      const deduplicatedItems = allItems.filter((item, index, arr) => 
+      const deduplicatedItems = allItems.filter((item, index, arr) =>
         arr.findIndex(i => i.id === item.id) === index
       );
 
@@ -516,11 +516,11 @@ class ItemServiceImpl {
     try {
       const params = new URLSearchParams();
       params.append('user_id', `eq.${userId}`);
-      
+
       if (filters.type) {
         params.append('type', `eq.${filters.type}`);
       }
-      
+
       if (filters.parent_id !== undefined) {
         if (filters.parent_id === null) {
           params.append('parent_id', 'is.null');
@@ -528,23 +528,23 @@ class ItemServiceImpl {
           params.append('parent_id', `eq.${filters.parent_id}`);
         }
       }
-      
+
       if (filters.is_favorite !== undefined) {
         params.append('is_favorite', `eq.${filters.is_favorite}`);
       }
-      
+
       if (filters.is_completed !== undefined) {
         params.append('is_completed', `eq.${filters.is_completed}`);
       }
-      
+
       if (filters.is_public !== undefined) {
         params.append('is_public', `eq.${filters.is_public}`);
       }
-      
+
       params.append('order', 'order_index.asc,created_at.asc');
-      
+
       const items = await this.apiRequest<BaseItem[]>(`items?${params.toString()}`);
-      
+
       return {
         success: true,
         data: items
@@ -564,7 +564,7 @@ class ItemServiceImpl {
     try {
       const updates = itemIds.map((id, index) => ({ id, order_index: index }));
       await this.updateItemOrder(updates);
-      
+
       return { success: true };
     } catch (error) {
       return {
@@ -580,13 +580,13 @@ class ItemServiceImpl {
   async moveItem(itemId: string, newParentId: string | null, newIndex?: number): Promise<ItemResult<BaseItem>> {
     try {
       const updates: Partial<BaseItem> = { parent_id: newParentId };
-      
+
       if (newIndex !== undefined) {
         updates.order_index = newIndex;
       }
-      
+
       const item = await this.updateItem(itemId, updates);
-      
+
       return {
         success: true,
         data: item
@@ -607,9 +607,9 @@ class ItemServiceImpl {
       const params = new URLSearchParams();
       params.append('user_id', `eq.${userId}`);
       params.append('app_name', `eq.${appName}`);
-      
+
       const items = await this.apiRequest<BaseItem[]>(`items?${params.toString()}`);
-      
+
       const stats: ItemStats = {
         total: items.length,
         by_type: {},
@@ -618,13 +618,13 @@ class ItemServiceImpl {
         completed: items.filter(i => i.is_completed).length,
         public: items.filter(i => i.is_public).length
       };
-      
+
       // Count by type
       items.forEach(item => {
         stats.by_type[item.type] = (stats.by_type[item.type] || 0) + 1;
         stats.by_app[item.app_name] = (stats.by_app[item.app_name] || 0) + 1;
       });
-      
+
       return stats;
     } catch (error) {
       console.error('[ItemService] Error getting stats:', error);

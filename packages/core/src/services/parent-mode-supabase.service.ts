@@ -1,11 +1,11 @@
 /**
  * Supabase Parent Mode Service Implementation
- * 
+ *
  * @module services/parent-mode-supabase
  * @description
  * Parent mode service that stores data in Supabase database.
  * This implementation makes direct API calls to bypass the broken SDK.
- * 
+ *
  * @example
  * ```typescript
  * // To use this instead of localStorage implementation:
@@ -30,11 +30,11 @@ export class SupabaseParentModeService implements ParentModeService {
       throw new Error('VITE_SUPABASE_URL environment variable is required')
     }
     this.API_URL = `${supabaseUrl}/rest/v1`
-    
+
     // Use public key for browser compatibility
-    this.apiKey = import.meta.env?.VITE_SUPABASE_PUBLIC
+    this.apiKey = import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY
     if (!this.apiKey) {
-      throw new Error('VITE_SUPABASE_PUBLIC environment variable is required')
+      throw new Error('VITE_SUPABASE_PUBLISHABLE_KEY environment variable is required')
     }
   }
 
@@ -45,7 +45,7 @@ export class SupabaseParentModeService implements ParentModeService {
     try {
       const sessionStr = localStorage.getItem('tiko_auth_session')
       if (!sessionStr) return null
-      
+
       const session = JSON.parse(sessionStr)
       return session.access_token
     } catch {
@@ -62,13 +62,13 @@ export class SupabaseParentModeService implements ParentModeService {
     body?: any
   ): Promise<Response> {
     const token = await this.getAuthToken()
-    
+
     const headers: HeadersInit = {
       'apikey': this.apiKey,
       'Content-Type': 'application/json',
       'Prefer': 'return=representation'
     }
-    
+
     if (token) {
       headers['Authorization'] = `Bearer ${token}`
     }
@@ -92,7 +92,7 @@ export class SupabaseParentModeService implements ParentModeService {
       }
 
       const pinHash = await this.hashPin(pin)
-      
+
       const response = await this.makeRequest('/user_profiles', 'POST', {
         user_id: userId,
         parent_pin_hash: pinHash,
@@ -127,7 +127,7 @@ export class SupabaseParentModeService implements ParentModeService {
 
       // Also store in localStorage as backup
       localStorage.setItem('tiko_parent_mode_data', JSON.stringify(data))
-      
+
       console.log('[Parent Mode Service] Enabled parent mode for user:', userId)
       return { success: true, data }
     } catch (error) {
@@ -154,7 +154,7 @@ export class SupabaseParentModeService implements ParentModeService {
 
       // Clear localStorage backup
       localStorage.removeItem('tiko_parent_mode_data')
-      
+
       console.log('[Parent Mode Service] Disabled parent mode for user:', userId)
       return { success: true }
     } catch (error) {
@@ -171,7 +171,7 @@ export class SupabaseParentModeService implements ParentModeService {
 
       if (!response.ok) {
         console.error('[Parent Mode Service] Failed to get data:', await response.text())
-        
+
         // Fall back to localStorage
         const localData = localStorage.getItem('tiko_parent_mode_data')
         if (localData) {
@@ -204,7 +204,7 @@ export class SupabaseParentModeService implements ParentModeService {
       return data
     } catch (error) {
       console.error('[Parent Mode Service] Error getting data:', error)
-      
+
       // Fall back to localStorage
       const localData = localStorage.getItem('tiko_parent_mode_data')
       if (localData) {
@@ -215,7 +215,7 @@ export class SupabaseParentModeService implements ParentModeService {
           }
         } catch {}
       }
-      
+
       return null
     }
   }
@@ -252,7 +252,7 @@ export class SupabaseParentModeService implements ParentModeService {
 
       // Update localStorage backup
       localStorage.setItem('tiko_parent_mode_data', JSON.stringify(updatedData))
-      
+
       console.log('[Parent Mode Service] Updated settings for user:', userId)
       return { success: true, data: updatedData }
     } catch (error) {
@@ -292,7 +292,7 @@ export class SupabaseParentModeService implements ParentModeService {
       }
 
       const newPinHash = await this.hashPin(newPin)
-      
+
       const response = await this.makeRequest(
         `/user_profiles?user_id=eq.${userId}`,
         'PATCH',
@@ -312,10 +312,10 @@ export class SupabaseParentModeService implements ParentModeService {
           ...existingData,
           parent_pin_hash: newPinHash
         }
-        
+
         // Update localStorage backup
         localStorage.setItem('tiko_parent_mode_data', JSON.stringify(updatedData))
-        
+
         console.log('[Parent Mode Service] Changed PIN for user:', userId)
         return { success: true, data: updatedData }
       }

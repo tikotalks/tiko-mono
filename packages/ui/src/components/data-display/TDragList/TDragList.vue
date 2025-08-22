@@ -186,7 +186,7 @@ function onDrop(dropIndex: number, event: DragEvent) {
 .drag-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-s);
+  gap: 1px;
 
   &__item {
     display: flex;

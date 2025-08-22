@@ -1,14 +1,14 @@
-import type { 
-  TTSConfig, 
-  TTSRequest, 
-  TTSResponse, 
+import type {
+  TTSConfig,
+  TTSRequest,
+  TTSResponse,
   AudioMetadata,
-  OpenAIVoice 
+  OpenAIVoice
 } from './types';
-import { 
-  OPENAI_SUPPORTED_LANGUAGES, 
+import {
+  OPENAI_SUPPORTED_LANGUAGES,
   LANGUAGE_FALLBACKS,
-  OPENAI_VOICES 
+  OPENAI_VOICES
 } from './types';
 
 class TTSService {
@@ -23,9 +23,9 @@ class TTSService {
     this.workerUrl = import.meta.env.VITE_TTS_WORKER_URL || 'https://tts.tikoapi.org';
     this.cdnUrl = import.meta.env.VITE_TTS_CDN_URL || 'https://tts.tikocdn.org';
     this.supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-    this.supabaseKey = import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLIC || '';
+    this.supabaseKey = import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || '';
     this.loadBrowserVoices();
-    
+
     if (!import.meta.env.VITE_TTS_WORKER_URL) {
       console.warn('[TTSService] VITE_TTS_WORKER_URL not set, using default worker URL');
     }
@@ -36,7 +36,7 @@ class TTSService {
       const loadVoices = () => {
         this.browserVoicesCache = window.speechSynthesis.getVoices();
       };
-      
+
       loadVoices();
       if (speechSynthesis.onvoiceschanged !== undefined) {
         speechSynthesis.onvoiceschanged = loadVoices;
@@ -47,7 +47,7 @@ class TTSService {
   private getAuthToken(): string | null {
     const sessionData = localStorage.getItem('tiko_auth_session');
     if (!sessionData) return null;
-    
+
     try {
       const session = JSON.parse(sessionData);
       return session.access_token;
@@ -58,7 +58,7 @@ class TTSService {
 
   private async apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const token = this.getAuthToken();
-    
+
     const response = await fetch(`${this.supabaseUrl}/rest/v1/${endpoint}`, {
       ...options,
       headers: {
@@ -156,7 +156,7 @@ class TTSService {
     try {
       const params = new URLSearchParams();
       params.append('text_hash', `eq.${textHash}`);
-      
+
       const response = await this.apiRequest<any[]>(`tts_audio?${params.toString()}`);
       const data = response[0];
 
@@ -210,12 +210,12 @@ class TTSService {
       }
 
       const data = await response.json();
-      
+
       // Convert the worker URL to CDN URL if successful
       if (data.success && data.audioUrl) {
         data.audioUrl = this.convertToCdnUrl(data.audioUrl);
       }
-      
+
       return data;
     } catch (error) {
       console.error('Error generating OpenAI audio:', error);
@@ -233,10 +233,10 @@ class TTSService {
     try {
       // Get TTS configuration
       const config = this.getTTSConfig(request.text, request.language);
-      
+
       // Generate text hash for deduplication
       const textHash = this.generateTextHash(request.text, config.language, config.voice || 'nova', config.model || 'tts-1');
-      
+
       // Check if audio already exists
       const existingAudio = await this.checkExistingAudio(textHash);
       if (existingAudio) {
@@ -314,7 +314,7 @@ class TTSService {
     const browserVoices = this.browserVoicesCache.filter(
       voice => voice.lang.toLowerCase().startsWith(language.toLowerCase())
     );
-    
+
     browserVoices.forEach(voice => {
       voices.push({
         value: voice.name,

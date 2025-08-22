@@ -53,7 +53,7 @@ class DeploymentService {
 
   constructor() {
     this.supabaseUrl = import.meta.env['VITE_SUPABASE_URL'] || ''
-    this.supabaseKey = import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLIC || ''
+    this.supabaseKey = import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || ''
   }
 
   /**
@@ -174,7 +174,7 @@ class DeploymentService {
         'Accept': 'application/vnd.github+json',
         'X-GitHub-Api-Version': '2022-11-28'
       }
-      
+
       // Add auth header if token is available
       if (githubToken) {
         headers['Authorization'] = `Bearer ${githubToken}`
@@ -221,10 +221,10 @@ class DeploymentService {
       }
 
       const deploymentMessage = message || `Deploy ${target.name} via admin dashboard`
-      
+
       // Try method 1: Workflow dispatch (if we have a GitHub token)
       const githubToken = import.meta.env.VITE_GITHUB_TOKEN
-      
+
       if (githubToken) {
         // First test if the token is valid
         console.log(`🔐 Testing GitHub token validity...`)
@@ -283,7 +283,7 @@ class DeploymentService {
       if (!response.ok) {
         const errorText = await response.text()
         console.error(`Token test failed: ${response.status} ${response.statusText}`)
-        
+
         if (response.status === 401) {
           console.error('❌ Token is invalid or expired')
         } else if (response.status === 403) {
@@ -326,7 +326,7 @@ class DeploymentService {
       }
 
       console.log(`Triggering workflow: ${workflowId} for target: ${target.id}`)
-      
+
       const response = await fetch(
         `${this.GITHUB_API_BASE}/repos/${this.GITHUB_OWNER}/${this.GITHUB_REPO}/actions/workflows/${workflowId}/dispatches`,
         {
@@ -350,7 +350,7 @@ class DeploymentService {
       if (!response.ok) {
         const errorText = await response.text()
         console.error(`Workflow dispatch failed: ${response.status} ${response.statusText}`, errorText)
-        
+
         // Check for rate limiting
         if (response.status === 403) {
           try {
@@ -402,7 +402,7 @@ class DeploymentService {
       if (!response.ok) {
         const errorText = await response.text()
         console.error(`Repository dispatch failed: ${response.status} ${response.statusText}`, errorText)
-        
+
         // Check for rate limiting
         if (response.status === 403) {
           try {
@@ -432,7 +432,7 @@ class DeploymentService {
       // This would require Git API access to create commits
       // For now, log that we'd need to create a commit
       console.warn(`Fallback: Would create empty commit with message: "${message} ${target.trigger}"`)
-      
+
       // Return false since we can't actually create commits from the browser
       // This would need to be handled server-side or via GitHub App
       return false
@@ -450,19 +450,19 @@ class DeploymentService {
     const workflowMap: Record<string, string> = {
       // Apps
       'timer': 'deploy-apps.yml',
-      'cards': 'deploy-apps.yml', 
+      'cards': 'deploy-apps.yml',
       'radio': 'deploy-apps.yml',
       'todo': 'deploy-apps.yml',
       'yes-no': 'deploy-apps.yml',
-      
+
       // Tools
       'admin': 'deploy-tools.yml',
       'ui-docs': 'deploy-tools.yml',
-      
+
       // Websites
       'marketing': 'deploy-websites.yml',
       'media': 'deploy-websites.yml',
-      
+
       // Workers
       'i18n-translator': 'deploy-workers.yml',
       'media-upload': 'deploy-workers.yml',
@@ -477,7 +477,7 @@ class DeploymentService {
    */
   async getDeploymentStatus(): Promise<DeploymentTarget[]> {
     const targets = this.getDeploymentTargets()
-    
+
     try {
       const workflowRuns = await this.getWorkflowRuns()
 
@@ -485,7 +485,7 @@ class DeploymentService {
       if (workflowRuns.length > 0) {
         // Map workflow runs to targets based on triggers found in commit messages
         for (const target of targets) {
-          const relevantRuns = workflowRuns.filter(run => 
+          const relevantRuns = workflowRuns.filter(run =>
             run.head_commit.message.includes(target.trigger) ||
             this.getWorkflowNameForTarget(target.type) === run.name
           )
@@ -494,7 +494,7 @@ class DeploymentService {
             const latestRun = relevantRuns[0]
             target.status = this.mapWorkflowStatus(latestRun.status, latestRun.conclusion)
             target.lastDeployed = new Date(latestRun.updated_at)
-            
+
             if (latestRun.conclusion) {
               const started = new Date(latestRun.created_at)
               const completed = new Date(latestRun.updated_at)
@@ -504,7 +504,7 @@ class DeploymentService {
             // Extract version info from workflow run
             target.commit = latestRun.head_commit.id.substring(0, 7)
             target.buildNumber = latestRun.id
-            
+
             // Extract version from commit message or use date-based version
             const commitMessage = latestRun.head_commit.message
             const versionMatch = commitMessage.match(/v?(\d+\.\d+\.\d+)/)
@@ -549,7 +549,7 @@ class DeploymentService {
     if (!target) return []
 
     const workflowRuns = await this.getWorkflowRuns()
-    
+
     return workflowRuns
       .filter(run => run.head_commit.message.includes(target.trigger))
       .slice(0, limit)
@@ -560,8 +560,8 @@ class DeploymentService {
         status: this.mapWorkflowStatus(run.status, run.conclusion) as 'running' | 'success' | 'failed',
         startedAt: new Date(run.created_at),
         completedAt: run.conclusion ? new Date(run.updated_at) : undefined,
-        duration: run.conclusion ? 
-          new Date(run.updated_at).getTime() - new Date(run.created_at).getTime() : 
+        duration: run.conclusion ?
+          new Date(run.updated_at).getTime() - new Date(run.created_at).getTime() :
           undefined,
         logUrl: run.html_url,
         triggeredBy: run.actor.login
@@ -613,7 +613,7 @@ class DeploymentService {
 
     try {
       let url = `${this.supabaseUrl}/rest/v1/deployment_events?select=*&order=created_at.desc&limit=${limit}`
-      
+
       if (targetId) {
         url += `&target_id=eq.${targetId}`
       }
@@ -654,15 +654,15 @@ class DeploymentService {
     if (status === 'in_progress' || status === 'queued') {
       return 'building'
     }
-    
+
     if (conclusion === 'success') {
       return 'success'
     }
-    
+
     if (conclusion === 'failure' || conclusion === 'cancelled') {
       return 'failed'
     }
-    
+
     return 'idle'
   }
 }

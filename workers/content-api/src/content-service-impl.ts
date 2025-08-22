@@ -218,7 +218,7 @@ class ContentService {
         ...options,
         headers: {
           'Content-Type': 'application/json',
-          'apikey': import.meta.env.VITE_SUPABASE_PUBLIC,
+          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
           'Authorization': token ? `Bearer ${token}` : '',
           'Prefer': 'return=representation',
           ...options.headers,
@@ -538,7 +538,7 @@ class ContentService {
         order_index: sectionData.order_index ?? index,
         override_name: sectionData.override_name || null,
       }
-      
+
       // Validate that we have a section_id
       if (!result.section_id) {
         console.error('❌ Missing section_id for section:', sectionData)
@@ -551,14 +551,14 @@ class ContentService {
 
     // For reordering, we should update existing records instead of delete/insert
     // This preserves the section_id values
-    
+
     // First, let's handle any truly new sections (that don't exist yet)
     // Use section_id to determine what exists, not section_template_id
     const existingSectionIds = new Set(existingSections.map(s => s.section_id))
-    
+
     const newSections = sectionsWithPageId.filter(s => !existingSectionIds.has(s.section_id))
     const existingSectionsToUpdate = sectionsWithPageId.filter(s => existingSectionIds.has(s.section_id))
-    
+
     // Update order_index for existing sections
     for (const section of existingSectionsToUpdate) {
       await this.makeRequest(
@@ -572,7 +572,7 @@ class ContentService {
         }
       )
     }
-    
+
     // Insert only truly new sections
     if (newSections.length > 0) {
       await this.makeRequest('/content_page_sections', {
@@ -580,13 +580,13 @@ class ContentService {
         body: JSON.stringify(newSections),
       })
     }
-    
+
     // Delete sections that were removed
     const currentSectionIds = new Set(sectionsWithPageId.map(s => s.section_id))
     const sectionsToDelete = existingSections.filter(
       existing => !currentSectionIds.has(existing.section_id)
     )
-    
+
     if (sectionsToDelete.length > 0) {
       for (const sectionToDelete of sectionsToDelete) {
         await this.makeRequest(
@@ -671,7 +671,7 @@ class ContentService {
   async getSectionData(sectionId: string, languageCode?: string | null): Promise<Record<string, any>> {
     try {
       let query = `/content_section_data?section_id=eq.${sectionId}`
-      
+
       // Handle language code properly
       if (languageCode !== undefined) {
         if (languageCode === null) {
@@ -696,10 +696,10 @@ class ContentService {
         // Try to parse JSON strings for arrays and objects
         let value = item.value
         console.log(`[ContentService] Processing field ${item.field_key}, raw value:`, value, 'type:', typeof value)
-        
+
         if (typeof value === 'string') {
           // Check if it looks like JSON
-          if ((value.startsWith('[') && value.endsWith(']')) || 
+          if ((value.startsWith('[') && value.endsWith(']')) ||
               (value.startsWith('{') && value.endsWith('}'))) {
             try {
               const parsed = JSON.parse(value)
@@ -799,7 +799,7 @@ class ContentService {
       // Get all pages that use this section
       const query = `/content_page_sections?section_id=eq.${sectionId}&select=page_id,content_pages(id,title)`
       const results = await this.makeRequest(query)
-      
+
       return results.map((r: any) => ({
         page_id: r.page_id,
         page_title: r.content_pages?.title || 'Unknown Page'
@@ -1015,16 +1015,16 @@ class ContentService {
   async getItems(templateId?: string, languageCode?: string): Promise<Item[]> {
     try {
       let query = '/content_items?order=name'
-      
+
       if (templateId) {
         query += `&item_template_id=eq.${templateId}`
       }
-      
+
       if (languageCode !== undefined) {
         // null language_code means base items
         query += languageCode ? `&language_code=eq.${languageCode}` : '&language_code=is.null'
       }
-      
+
       return await this.makeRequest(query)
     } catch (error) {
       console.error('Error getting items:', error)
@@ -1045,11 +1045,11 @@ class ContentService {
   async getItemBySlug(slug: string, languageCode?: string): Promise<Item | null> {
     try {
       let query = `/content_items?slug=eq.${slug}`
-      
+
       if (languageCode !== undefined) {
         query += languageCode ? `&language_code=eq.${languageCode}` : '&language_code=is.null'
       }
-      
+
       const items = await this.makeRequest(query)
       return items[0] || null
     } catch (error) {
@@ -1121,7 +1121,7 @@ class ContentService {
   async getRawItemData(itemId: string): Promise<Record<string, any>> {
     try {
       const data = await this.makeRequest(`/content_item_data?item_id=eq.${itemId}`)
-      
+
       // Convert array of field values to object
       const dataMap: Record<string, any> = {}
       for (const row of data) {
@@ -1130,7 +1130,7 @@ class ContentService {
           dataMap[field.field_key] = row.value
         }
       }
-      
+
       return dataMap
     } catch (error) {
       console.error('Error getting raw item data:', error)
@@ -1142,21 +1142,21 @@ class ContentService {
     try {
       const item = await this.getItem(itemId)
       if (!item) return {}
-      
+
       // Get own data
       const ownData = await this.getRawItemData(itemId)
-      
+
       if (!includeInherited || !item.base_item_id) {
         return ownData
       }
-      
+
       // Get base item data for non-translatable fields
       const baseData = await this.getRawItemData(item.base_item_id)
       const fields = await this.getFieldsByItemTemplate(item.item_template_id)
-      
+
       // Merge: base data for non-translatable, own data for translatable
       const mergedData: Record<string, any> = {}
-      
+
       for (const field of fields) {
         if (field.is_translatable && ownData.hasOwnProperty(field.field_key)) {
           mergedData[field.field_key] = ownData[field.field_key]
@@ -1164,7 +1164,7 @@ class ContentService {
           mergedData[field.field_key] = baseData[field.field_key]
         }
       }
-      
+
       return mergedData
     } catch (error) {
       console.error('Error getting item data:', error)
@@ -1176,15 +1176,15 @@ class ContentService {
     try {
       const item = await this.getItem(itemId)
       if (!item) throw new Error('Item not found')
-      
+
       const fields = await this.getFieldsByItemTemplate(item.item_template_id)
-      
+
       // Only save data for fields that should be saved
       // For translations, only save translatable fields
-      const fieldsToSave = item.base_item_id 
+      const fieldsToSave = item.base_item_id
         ? fields.filter(f => f.is_translatable)
         : fields
-      
+
       for (const field of fieldsToSave) {
         if (data.hasOwnProperty(field.field_key)) {
           await this.setItemFieldValue(itemId, field.id, data[field.field_key])
@@ -1202,7 +1202,7 @@ class ContentService {
       const existing = await this.makeRequest(
         `/content_item_data?item_id=eq.${itemId}&field_id=eq.${fieldId}`
       )
-      
+
       if (existing.length > 0) {
         // Update existing
         await this.makeRequest(
@@ -1254,11 +1254,11 @@ class ContentService {
     try {
       const item = await this.getItem(itemId)
       if (!item) throw new Error('Item not found')
-      
+
       // Get fields for this item template
       const fields = await this.getFieldsByItemTemplate(item.item_template_id)
       const fieldMap = new Map(fields.map(f => [f.field_key, f]))
-      
+
       // Update each field value
       for (const [fieldKey, value] of Object.entries(data)) {
         const field = fieldMap.get(fieldKey)
@@ -1293,7 +1293,7 @@ class ContentService {
         `/content_section_linked_items?section_id=eq.${sectionId}&field_id=eq.${fieldId}`,
         { method: 'DELETE' }
       )
-      
+
       // Create new links
       const links = itemIds.map((itemId, index) => ({
         section_id: sectionId,
@@ -1301,7 +1301,7 @@ class ContentService {
         item_id: itemId,
         sort_order: index
       }))
-      
+
       if (links.length > 0) {
         await this.makeRequest('/content_section_linked_items', {
           method: 'POST',
@@ -1322,7 +1322,7 @@ class ContentService {
       // Get base item
       let item = await this.getItem(itemId)
       if (!item) return null
-      
+
       // Try to get translation if needed
       if (!item.language_code && language) {
         const translation = await this.getItemTranslation(item.id, language)
@@ -1330,10 +1330,10 @@ class ContentService {
           item = translation
         }
       }
-      
+
       // Get merged data
       const data = await this.getItemData(item.id, true)
-      
+
       return { item, data }
     } catch (error) {
       console.error('Error resolving linked item:', error)
@@ -1344,13 +1344,13 @@ class ContentService {
   async updatePagesOrder(pages: Array<{ id: string; navigation_order: number }>): Promise<void> {
     try {
       // Update each page with its new order
-      const updates = pages.map(page => 
+      const updates = pages.map(page =>
         this.makeRequest(`/content_pages?id=eq.${page.id}`, {
           method: 'PATCH',
           body: JSON.stringify({ navigation_order: page.navigation_order })
         })
       )
-      
+
       await Promise.all(updates)
     } catch (error) {
       console.error('Failed to update pages order:', error)

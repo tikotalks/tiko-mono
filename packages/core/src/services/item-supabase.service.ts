@@ -1,21 +1,21 @@
 /**
  * Supabase Item Service Implementation
- * 
+ *
  * @module services/item-supabase.service
  * @description
  * Supabase implementation of the ItemService interface.
  * Uses direct API calls to bypass SDK issues.
  */
 
-import type { 
-  ItemService, 
-  BaseItem, 
-  ItemFilters, 
-  CreateItemPayload, 
+import type {
+  ItemService,
+  BaseItem,
+  ItemFilters,
+  CreateItemPayload,
   UpdateItemPayload,
   BulkUpdatePayload,
   ItemResult,
-  ItemStats 
+  ItemStats
 } from './item.service'
 
 /**
@@ -27,8 +27,8 @@ export class SupabaseItemService implements ItemService {
 
   constructor() {
     this.supabaseUrl = import.meta.env['VITE_SUPABASE_URL']
-    this.supabaseKey = import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLIC
-    
+    this.supabaseKey = import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY
+
     if (!this.supabaseUrl || !this.supabaseKey) {
       throw new Error('Supabase URL and secret/publishable key are required')
     }
@@ -40,7 +40,7 @@ export class SupabaseItemService implements ItemService {
   private getAuthToken(): string | null {
     const sessionData = localStorage.getItem('tiko_auth_session')
     if (!sessionData) return null
-    
+
     try {
       const session = JSON.parse(sessionData)
       return session.access_token
@@ -57,7 +57,7 @@ export class SupabaseItemService implements ItemService {
     options: RequestInit = {}
   ): Promise<T> {
     const token = this.getAuthToken()
-    
+
     const response = await fetch(`${this.supabaseUrl}/rest/v1/${endpoint}`, {
       ...options,
       headers: {
@@ -68,12 +68,12 @@ export class SupabaseItemService implements ItemService {
         ...options.headers
       }
     })
-    
+
     if (!response.ok) {
       const error = await response.text()
       throw new Error(`API request failed: ${error}`)
     }
-    
+
     return response.json()
   }
 
@@ -82,15 +82,15 @@ export class SupabaseItemService implements ItemService {
    */
   private applyFiltersToQuery(filters?: ItemFilters): string {
     const params = new URLSearchParams()
-    
+
     if (filters?.app_name) {
       params.append('app_name', `eq.${filters.app_name}`)
     }
-    
+
     if (filters?.type) {
       params.append('type', `eq.${filters.type}`)
     }
-    
+
     if (filters?.parent_id !== undefined) {
       if (filters.parent_id === null) {
         params.append('parent_id', 'is.null')
@@ -98,27 +98,27 @@ export class SupabaseItemService implements ItemService {
         params.append('parent_id', `eq.${filters.parent_id}`)
       }
     }
-    
+
     if (filters?.is_favorite !== undefined) {
       params.append('is_favorite', `eq.${filters.is_favorite}`)
     }
-    
+
     if (filters?.is_completed !== undefined) {
       params.append('is_completed', `eq.${filters.is_completed}`)
     }
-    
+
     if (filters?.is_public !== undefined) {
       params.append('is_public', `eq.${filters.is_public}`)
     }
-    
+
     if (filters?.tags && filters.tags.length > 0) {
       params.append('tags', `cs.{${filters.tags.join(',')}}`)
     }
-    
+
     if (filters?.search) {
       params.append('or', `(name.ilike.%${filters.search}%,content.ilike.%${filters.search}%)`)
     }
-    
+
     return params.toString()
   }
 
@@ -129,7 +129,7 @@ export class SupabaseItemService implements ItemService {
       const userFilter = `user_id=eq.${userId}`
       const orderBy = 'order_index=asc'
       const fullQuery = queryParams ? `${userFilter}&${queryParams}&${orderBy}` : `${userFilter}&${orderBy}`
-      
+
       const data = await this.apiRequest<BaseItem[]>(`items?${fullQuery}`)
       return { success: true, data }
     } catch (error) {
@@ -172,7 +172,7 @@ export class SupabaseItemService implements ItemService {
     if (payload.is_public === false) {
       updatePayload.is_curated = false
     }
-    
+
     const result = await this.apiRequest<BaseItem[]>(`items?id=eq.${itemId}`, {
       method: 'PATCH',
       body: JSON.stringify({
@@ -192,7 +192,7 @@ export class SupabaseItemService implements ItemService {
     // First get all children
     const children = await this.getItemChildren(itemId)
     const idsToDelete = [itemId, ...children.map(c => c.id)]
-    
+
     // Delete all items
     await this.apiRequest(`items?id=in.(${idsToDelete.join(',')})`, {
       method: 'DELETE'
@@ -203,12 +203,12 @@ export class SupabaseItemService implements ItemService {
   private async getItemChildren(parentId: string): Promise<BaseItem[]> {
     const directChildren = await this.apiRequest<BaseItem[]>(`items?parent_id=eq.${parentId}`)
     const allChildren = [...directChildren]
-    
+
     for (const child of directChildren) {
       const grandChildren = await this.getItemChildren(child.id)
       allChildren.push(...grandChildren)
     }
-    
+
     return allChildren
   }
 
@@ -248,9 +248,9 @@ export class SupabaseItemService implements ItemService {
 
       return { success: true, data: result }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to create items' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create items'
       }
     }
   }
@@ -262,9 +262,9 @@ export class SupabaseItemService implements ItemService {
       if (payload.updates.is_public === false) {
         updatePayload.is_curated = false
       }
-      
+
       const result = await this.apiRequest<BaseItem[]>(
-        `items?id=in.(${payload.ids.join(',')})`, 
+        `items?id=in.(${payload.ids.join(',')})`,
         {
           method: 'PATCH',
           body: JSON.stringify({
@@ -276,9 +276,9 @@ export class SupabaseItemService implements ItemService {
 
       return { success: true, data: result }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to update items' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to update items'
       }
     }
   }
@@ -287,21 +287,21 @@ export class SupabaseItemService implements ItemService {
     try {
       // Get all items including children
       const allIdsToDelete = new Set(itemIds)
-      
+
       for (const id of itemIds) {
         const children = await this.getItemChildren(id)
         children.forEach(child => allIdsToDelete.add(child.id))
       }
-      
+
       await this.apiRequest(`items?id=in.(${Array.from(allIdsToDelete).join(',')})`, {
         method: 'DELETE'
       })
 
       return { success: true }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to delete items' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to delete items'
       }
     }
   }
@@ -328,7 +328,7 @@ export class SupabaseItemService implements ItemService {
 
       // Update each item's order
       await Promise.all(
-        updates.map(update => 
+        updates.map(update =>
           this.apiRequest(`items?id=eq.${update.id}`, {
             method: 'PATCH',
             body: JSON.stringify({
@@ -341,9 +341,9 @@ export class SupabaseItemService implements ItemService {
 
       return { success: true }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to reorder items' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to reorder items'
       }
     }
   }
@@ -375,9 +375,9 @@ export class SupabaseItemService implements ItemService {
 
       return { success: true, data: result[0] }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to move item' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to move item'
       }
     }
   }
@@ -386,7 +386,7 @@ export class SupabaseItemService implements ItemService {
   async getStats(userId: string, appName?: string): Promise<ItemStats> {
     const filters: ItemFilters = appName ? { app_name: appName } : {}
     const result = await this.getItems(userId, filters)
-    
+
     if (!result.success || !result.data) {
       return {
         total: 0,
@@ -397,7 +397,7 @@ export class SupabaseItemService implements ItemService {
         public: 0
       }
     }
-    
+
     const items = result.data
     const stats: ItemStats = {
       total: items.length,
@@ -407,12 +407,12 @@ export class SupabaseItemService implements ItemService {
       completed: items.filter((i: BaseItem) => i.is_completed).length,
       public: items.filter((i: BaseItem) => i.is_public).length
     }
-    
+
     items.forEach((item: BaseItem) => {
       stats.by_app[item.app_name] = (stats.by_app[item.app_name] || 0) + 1
       stats.by_type[item.type] = (stats.by_type[item.type] || 0) + 1
     })
-    
+
     return stats
   }
 
@@ -438,36 +438,36 @@ export class SupabaseItemService implements ItemService {
       icon: item.icon,
       color: item.color
     }))
-    
+
     return this.createItems(userId, payloads)
   }
 
   // Admin methods for managing public items
   async getPublicItems(filters?: ItemFilters & { is_curated?: boolean }): Promise<BaseItem[]> {
     const params = new URLSearchParams()
-    
+
     // Always filter for public items
     params.append('is_public', 'eq.true')
-    
+
     if (filters?.app_name) {
       params.append('app_name', `eq.${filters.app_name}`)
     }
-    
+
     if (filters?.type) {
       params.append('type', `eq.${filters.type}`)
     }
-    
+
     if (filters?.is_curated !== undefined) {
       params.append('is_curated', `eq.${filters.is_curated}`)
     }
-    
+
     if (filters?.search) {
       params.append('name', `ilike.*${filters.search}*`)
     }
-    
+
     // Order by created date descending
     params.append('order', 'created_at.desc')
-    
+
     const items = await this.apiRequest<BaseItem[]>(`items?${params.toString()}`)
     return items
   }
@@ -484,9 +484,9 @@ export class SupabaseItemService implements ItemService {
 
       return { success: true, data: result[0] }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to toggle curated status' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to toggle curated status'
       }
     }
   }
@@ -501,12 +501,12 @@ export class SupabaseItemService implements ItemService {
           batch.map(id => this.toggleItemCurated(id, isCurated))
         )
       }
-      
+
       return { success: true }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to bulk toggle curated status' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to bulk toggle curated status'
       }
     }
   }

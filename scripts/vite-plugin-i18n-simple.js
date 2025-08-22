@@ -1,6 +1,6 @@
 /**
  * Simple Vite Plugin for I18n Generation
- * 
+ *
  * This plugin automatically generates translation files during the build process
  * for specific apps.
  */
@@ -321,16 +321,16 @@ function createNestedStructure(translations) {
 function generateTypeScriptContent(language, translations, app) {
   const timestamp = new Date().toISOString()
   const appSuffix = app ? ` for app: ${app}` : ''
-  
+
   return `/**
  * Generated translation file for ${language}${appSuffix}
- * 
+ *
  * Generated on: ${timestamp}
  * Source: Tiko translation database
- * 
+ *
  * ⚠️  DO NOT EDIT MANUALLY - This file is auto-generated
  * ⚠️  Changes will be overwritten on next generation
- * 
+ *
  * To update translations:
  * 1. Edit translations in the admin dashboard
  * 2. Run: pnpm run generate:i18n
@@ -357,9 +357,9 @@ function generateInterfaces(keys) {
 
   return `/**
  * TypeScript interfaces for translation files
- * 
+ *
  * Generated on: ${new Date().toISOString()}
- * 
+ *
  * ⚠️  DO NOT EDIT MANUALLY - This file is auto-generated
  */
 
@@ -400,18 +400,18 @@ function generateInterfaceContent(obj, indent = '  ') {
 function generateIndexFile(languages) {
   return `/**
  * Generated translation index file
- * 
+ *
  * This file provides easy access to all generated translation files
- * 
+ *
  * Generated on: ${new Date().toISOString()}
- * 
+ *
  * ⚠️  DO NOT EDIT MANUALLY - This file is auto-generated
  */
 
 import type { Translations } from './types'
 
 // Import all language files
-${languages.map((lang) => 
+${languages.map((lang) =>
   `import ${lang.replace('-', '_')} from './${lang}'`
 ).join('\n')}
 
@@ -452,7 +452,7 @@ export function isLanguageSupported(language: string): language is AvailableLang
 async function generateI18nFiles(options = {}) {
   // Try to use database generator first, fallback to mock data
   try {
-    if (DatabaseI18nGenerator && process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_PUBLIC) {
+    if (DatabaseI18nGenerator && process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_PUBLISHABLE_KEY) {
       const generator = new DatabaseI18nGenerator({
         ...options,
         verbose: options.verbose !== false
@@ -463,33 +463,33 @@ async function generateI18nFiles(options = {}) {
   } catch (error) {
     console.warn('❌ Database generation failed, falling back to mock data:', error.message)
   }
-  
+
   // Fallback to mock data generation
   const baseOutputDir = path.join(process.cwd(), 'packages/ui/src/i18n/generated')
-  
+
   // Get languages
   const languages = options.languages || MOCK_LANGUAGES
-  
+
   // Get all keys
   const allKeys = Object.keys(MOCK_TRANSLATIONS)
-  
+
   // Filter keys based on app configuration
   let filteredKeys = allKeys
-  
+
   if (options.app && APP_SECTION_CONFIG[options.app]) {
     const config = APP_SECTION_CONFIG[options.app]
     if (config.excluded) {
-      filteredKeys = allKeys.filter(key => 
+      filteredKeys = allKeys.filter(key =>
         !config.excluded.some(section => key.startsWith(`${section}.`))
       )
     }
   }
-  
+
   // Ensure output directory exists
   if (!fs.existsSync(baseOutputDir)) {
     fs.mkdirSync(baseOutputDir, { recursive: true })
   }
-  
+
   // Generate files for each language
   for (const language of languages) {
     const filteredTranslations = {}
@@ -498,24 +498,24 @@ async function generateI18nFiles(options = {}) {
         filteredTranslations[key] = MOCK_TRANSLATIONS[key][language]
       }
     }
-    
+
     const nestedTranslations = createNestedStructure(filteredTranslations)
     const content = generateTypeScriptContent(language, nestedTranslations, options.app)
-    
+
     const outputPath = path.join(baseOutputDir, `${language}.ts`)
     fs.writeFileSync(outputPath, content, 'utf-8')
   }
-  
+
   // Generate types
   const typesContent = generateInterfaces(filteredKeys)
   const typesPath = path.join(baseOutputDir, 'types.ts')
   fs.writeFileSync(typesPath, typesContent, 'utf-8')
-  
+
   // Generate index
   const indexContent = generateIndexFile(languages)
   const indexPath = path.join(baseOutputDir, 'index.ts')
   fs.writeFileSync(indexPath, indexContent, 'utf-8')
-  
+
   // Generate .gitignore
   const gitignorePath = path.join(baseOutputDir, '.gitignore')
   const gitignoreContent = `# Auto-generated translation files
@@ -529,7 +529,7 @@ async function generateI18nFiles(options = {}) {
 # Keep this directory but ignore all generated content
 `
   fs.writeFileSync(gitignorePath, gitignoreContent, 'utf-8')
-  
+
   if (options.verbose !== false) {
     console.log(`🌍 Generated i18n files for ${options.app || 'app'} with ${filteredKeys.length} keys (using mock data)`)
   }
@@ -541,10 +541,10 @@ async function generateI18nFiles(options = {}) {
  */
 export function i18nGeneration(options = {}) {
   let hasGenerated = false
-  
+
   return {
     name: 'i18n-generation',
-    
+
     async configResolved() {
       // Generate files once during config resolution
       if (!hasGenerated) {
@@ -565,9 +565,9 @@ export function i18nGeneration(options = {}) {
  * @returns {import('vite').Plugin}
  */
 export function createAppI18nPlugin(appNameOrOptions) {
-  const options = typeof appNameOrOptions === 'string' 
+  const options = typeof appNameOrOptions === 'string'
     ? { app: appNameOrOptions, verbose: false }
     : { verbose: false, ...appNameOrOptions }
-  
+
   return i18nGeneration(options)
 }

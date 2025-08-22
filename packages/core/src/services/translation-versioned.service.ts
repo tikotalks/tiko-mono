@@ -40,11 +40,11 @@ class TranslationVersionedService {
       throw new Error('VITE_SUPABASE_URL environment variable is required');
     }
     this.API_URL = `${supabaseUrl}/rest/v1`;
-    
+
     // Use public key for browser compatibility
-    this.apiKey = import.meta.env?.VITE_SUPABASE_PUBLIC;
+    this.apiKey = import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY;
     if (!this.apiKey) {
-      throw new Error('VITE_SUPABASE_PUBLIC environment variable is required');
+      throw new Error('VITE_SUPABASE_PUBLISHABLE_KEY environment variable is required');
     }
   }
 
@@ -59,14 +59,14 @@ class TranslationVersionedService {
         const parsed = JSON.parse(authData);
         return parsed?.access_token || null;
       }
-      
+
       // Fallback to Supabase format
       const supabaseData = localStorage.getItem('supabase.auth.token');
       if (supabaseData) {
         const parsed = JSON.parse(supabaseData);
         return parsed?.access_token || null;
       }
-      
+
       return null;
     } catch {
       return null;
@@ -78,7 +78,7 @@ class TranslationVersionedService {
    */
   private async makeRequest(path: string, options: RequestInit = {}) {
     const token = this.getSession();
-    
+
     const response = await fetch(`${this.API_URL}${path}`, {
       ...options,
       headers: {
@@ -126,7 +126,7 @@ class TranslationVersionedService {
         const data = await this.makeRequest(
           `/i18n_translations?locale=eq.${locale}&order=key&limit=${BATCH_SIZE}&offset=${offset}`
         );
-        
+
         if (!data || data.length === 0) {
           hasMore = false;
           break;
@@ -165,7 +165,7 @@ class TranslationVersionedService {
       if (locale.includes('-')) {
         const parentLanguage = locale.split('-')[0];
         const parentTranslations = await this.getTranslations(parentLanguage);
-        
+
         // Add parent translations for missing keys
         for (const translation of parentTranslations) {
           if (!translationMap.has(translation.key)) {
@@ -177,7 +177,7 @@ class TranslationVersionedService {
       // Final fallback to English if not already English
       if (!locale.startsWith('en')) {
         const englishTranslations = await this.getTranslations('en');
-        
+
         for (const translation of englishTranslations) {
           if (!translationMap.has(translation.key)) {
             translationMap.set(translation.key, { ...translation, source_locale: 'en' });
@@ -209,9 +209,9 @@ class TranslationVersionedService {
         if (locale) {
           url += `&locale=eq.${locale}`;
         }
-        
+
         const data = await this.makeRequest(url);
-        
+
         if (!data || data.length === 0) {
           hasMore = false;
           break;
@@ -267,7 +267,7 @@ class TranslationVersionedService {
         p_value: value,
         p_auto_translated: autoTranslated,
       });
-      
+
       return result;
     } catch (error) {
       console.error('Error saving translation:', error);
@@ -284,7 +284,7 @@ class TranslationVersionedService {
         p_version_id: versionId,
         p_notes: notes,
       });
-      
+
       return result;
     } catch (error) {
       console.error('Error approving translation:', error);
@@ -301,7 +301,7 @@ class TranslationVersionedService {
         p_version_id: versionId,
         p_notes: notes,
       });
-      
+
       return result;
     } catch (error) {
       console.error('Error rejecting translation:', error);
@@ -323,7 +323,7 @@ class TranslationVersionedService {
         p_locale: locale,
         p_target_version: targetVersion,
       });
-      
+
       return result;
     } catch (error) {
       console.error('Error rolling back translation:', error);
@@ -353,7 +353,7 @@ class TranslationVersionedService {
       if (unreadOnly) {
         url += '&read=eq.false';
       }
-      
+
       const data = await this.makeRequest(url);
       return data || [];
     } catch (error) {
@@ -387,16 +387,16 @@ class TranslationVersionedService {
     try {
       const translations = await this.getTranslations(locale);
       const result: Record<string, string> = {};
-      
+
       for (const { key, value } of translations) {
         result[key] = value;
       }
-      
+
       // Apply fallback logic if needed
       if (locale.includes('-')) {
         const parentLocale = locale.split('-')[0];
         const parentTranslations = await this.getTranslations(parentLocale);
-        
+
         // Add parent translations that don't exist in specific locale
         for (const { key, value } of parentTranslations) {
           if (!result[key]) {
@@ -404,18 +404,18 @@ class TranslationVersionedService {
           }
         }
       }
-      
+
       // Final fallback to English
       if (locale !== 'en') {
         const englishTranslations = await this.getTranslations('en');
-        
+
         for (const { key, value } of englishTranslations) {
           if (!result[key]) {
             result[key] = value;
           }
         }
       }
-      
+
       return result;
     } catch (error) {
       console.error('Error generating JSON:', error);
@@ -429,7 +429,7 @@ class TranslationVersionedService {
   async getStatistics(): Promise<any> {
     try {
       const localeDetails = await this.makeRequest('/i18n_locale_details');
-      
+
       const stats = {
         totalKeys: localeDetails[0]?.total_keys || 0,
         locales: localeDetails.map((l: any) => l.code),
@@ -437,7 +437,7 @@ class TranslationVersionedService {
         pending: {} as Record<string, number>,
         autoTranslated: {} as Record<string, number>,
       };
-      
+
       for (const locale of localeDetails) {
         stats.completeness[locale.code] = {
           translated: locale.translation_count,
@@ -446,7 +446,7 @@ class TranslationVersionedService {
         };
         stats.pending[locale.code] = locale.pending_count;
       }
-      
+
       return stats;
     } catch (error) {
       console.error('Error getting statistics:', error);
@@ -460,12 +460,12 @@ class TranslationVersionedService {
   async batchApprove(versionIds: string[], notes?: string): Promise<number> {
     try {
       let approved = 0;
-      
+
       for (const id of versionIds) {
         const result = await this.approveTranslation(id, notes);
         if (result) approved++;
       }
-      
+
       return approved;
     } catch (error) {
       console.error('Error batch approving:', error);
@@ -490,7 +490,7 @@ class TranslationVersionedService {
         const data = await this.makeRequest(
           `/i18n_translation_versions?select=key&order=key&limit=${BATCH_SIZE}&offset=${offset}`
         );
-        
+
         if (data.length === 0) {
           hasMore = false;
           break;
@@ -509,15 +509,15 @@ class TranslationVersionedService {
           offset += BATCH_SIZE;
         }
       }
-      
+
       // Extract unique keys and filter out corrupted ones
       const uniqueKeys = [...new Set(allKeys)];
       const cleanKeys = uniqueKeys.filter(key => !key.includes('[object Object]'));
-      
+
       console.log('Total keys fetched:', allKeys.length);
       console.log('Unique keys:', uniqueKeys.length);
       console.log('Clean keys (no corruption):', cleanKeys.length);
-      
+
       return cleanKeys.sort();
     } catch (error) {
       console.error('Error fetching all keys:', error);
@@ -646,20 +646,20 @@ class TranslationVersionedService {
       // Get all keys
       const allKeys = await this.getAllKeys();
       const corruptedKeys = allKeys.filter(key => key.includes('[object Object]'));
-      
+
       let cleaned = 0;
       let failed = 0;
-      
+
       for (const corruptedKey of corruptedKeys) {
         try {
           // Extract the real key by removing [object Object]
           const cleanKey = corruptedKey.replace('[object Object]', '');
-          
+
           // Get all translations for the corrupted key
           const translations = await this.makeRequest(
             `/i18n_translation_versions?key=eq.${encodeURIComponent(corruptedKey)}`
           );
-          
+
           // Update each translation to use the clean key
           for (const translation of translations) {
             try {
@@ -675,14 +675,14 @@ class TranslationVersionedService {
               failed++;
             }
           }
-          
+
           cleaned++;
         } catch (error) {
           console.error(`Failed to clean key ${corruptedKey}:`, error);
           failed++;
         }
       }
-      
+
       return { cleaned, failed };
     } catch (error) {
       console.error('Error cleaning corrupted keys:', error);
@@ -698,9 +698,9 @@ class TranslationVersionedService {
       // Get all keys
       const allKeys = await this.getAllKeys();
       const corruptedKeys = allKeys.filter(key => key.includes('[object Object]'));
-      
+
       let deleted = 0;
-      
+
       for (const key of corruptedKeys) {
         try {
           await this.deleteTranslationKey(key);
@@ -709,7 +709,7 @@ class TranslationVersionedService {
           console.error(`Failed to delete key ${key}:`, error);
         }
       }
-      
+
       return deleted;
     } catch (error) {
       console.error('Error deleting corrupted keys:', error);
@@ -734,7 +734,7 @@ class TranslationVersionedService {
         const data = await this.makeRequest(
           `/i18n_translation_versions?select=key&order=key&limit=${BATCH_SIZE}&offset=${offset}`
         );
-        
+
         if (data.length === 0) {
           hasMore = false;
           break;
@@ -753,17 +753,17 @@ class TranslationVersionedService {
           offset += BATCH_SIZE;
         }
       }
-      
+
       // Extract unique keys
       const uniqueKeys = [...new Set(allKeys)];
-      
+
       // Filter out corrupted keys
       const cleanKeys = uniqueKeys.filter(key => !key.includes('[object Object]'));
-      
+
       console.log('Total keys fetched:', allKeys.length);
       console.log('Unique keys:', uniqueKeys.length);
       console.log('Clean keys (no corruption):', cleanKeys.length);
-      
+
       return cleanKeys.sort();
     } catch (error) {
       console.error('Error fetching all unique keys:', error);

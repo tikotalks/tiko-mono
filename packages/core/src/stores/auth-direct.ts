@@ -4,7 +4,7 @@ import type { User, Session } from '@supabase/supabase-js'
 
 // Direct API implementation bypassing Supabase SDK
 const SUPABASE_URL = 'https://kejvhvszhevfwgsztedf.supabase.co'
-const ANON_KEY = import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLIC || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlanZodnN6aGV2Zndnc3p0ZWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4ODg2MTIsImV4cCI6MjA2NzQ2NDYxMn0.xUYXxNodJTpTwChlKbuBSojVJqX9CDW87aVISEUc2rE'
+const ANON_KEY = import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlanZodnN6aGV2Zndnc3p0ZWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4ODg2MTIsImV4cCI6MjA2NzQ2NDYxMn0.xUYXxNodJTpTwChlKbuBSojVJqX9CDW87aVISEUc2rE'
 
 export const useAuthStoreDirect = defineStore('auth-direct', () => {
   // State
@@ -25,7 +25,7 @@ export const useAuthStoreDirect = defineStore('auth-direct', () => {
           'apikey': ANON_KEY
         }
       })
-      
+
       if (response.ok) {
         const userData = await response.json()
         return userData
@@ -40,7 +40,7 @@ export const useAuthStoreDirect = defineStore('auth-direct', () => {
   // Initialize from localStorage
   const initializeFromStorage = async () => {
     console.log('[AuthStoreDirect] Initializing from storage...')
-    
+
     try {
       // Check localStorage for Supabase session
       const storedAuth = localStorage.getItem('supabase.auth.token')
@@ -48,15 +48,15 @@ export const useAuthStoreDirect = defineStore('auth-direct', () => {
         console.log('[AuthStoreDirect] No stored auth found')
         return
       }
-      
+
       const parsed = JSON.parse(storedAuth)
       if (!parsed.currentSession || !parsed.currentSession.access_token) {
         console.log('[AuthStoreDirect] Invalid stored auth')
         return
       }
-      
+
       const storedSession = parsed.currentSession
-      
+
       // Check if expired
       const now = Math.floor(Date.now() / 1000)
       if (storedSession.expires_at && storedSession.expires_at < now) {
@@ -64,7 +64,7 @@ export const useAuthStoreDirect = defineStore('auth-direct', () => {
         localStorage.removeItem('supabase.auth.token')
         return
       }
-      
+
       // Get user data
       const userData = await getUserFromToken(storedSession.access_token)
       if (userData) {
@@ -136,10 +136,10 @@ export const useAuthStoreDirect = defineStore('auth-direct', () => {
     session,
     isLoading,
     error,
-    
+
     // Getters
     isAuthenticated,
-    
+
     // Actions
     signInWithPasswordlessEmail,
     logout,

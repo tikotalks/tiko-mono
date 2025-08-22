@@ -1,28 +1,28 @@
 /**
  * Authentication Service
- * 
+ *
  * @module services/auth
  * @description
  * Provides a clean abstraction layer for all authentication operations.
  * This service handles user authentication, session management, and user profile updates.
- * 
+ *
  * The current implementation bypasses the Supabase SDK and uses direct API calls
  * to avoid SDK hanging issues. It can be easily replaced with any other backend
  * by implementing the AuthService interface.
- * 
+ *
  * @example
  * ```typescript
  * import { authService } from '@tiko/core'
- * 
+ *
  * // Sign in with email
  * const result = await authService.signInWithEmail('user@example.com', 'password')
  * if (result.success) {
  *   console.log('Logged in:', result.user)
  * }
- * 
+ *
  * // Send magic link
  * const magicResult = await authService.signInWithMagicLink('user@example.com')
- * 
+ *
  * // Get current session
  * const session = await authService.getSession()
  * ```
@@ -30,7 +30,7 @@
 
 /**
  * User object returned from authentication operations
- * 
+ *
  * @interface AuthUser
  * @property {string} id - Unique user identifier
  * @property {string} email - User's email address
@@ -60,7 +60,7 @@ export interface AuthUser {
 
 /**
  * Authentication session object
- * 
+ *
  * @interface AuthSession
  * @property {string} access_token - JWT access token for API requests
  * @property {string} refresh_token - Token used to refresh the session
@@ -80,7 +80,7 @@ export interface AuthSession {
 
 /**
  * Result object returned from authentication operations
- * 
+ *
  * @interface AuthResult
  * @property {boolean} success - Whether the operation succeeded
  * @property {AuthSession} [session] - Session object if authentication succeeded
@@ -96,7 +96,7 @@ export interface AuthResult {
 
 /**
  * Authentication service interface
- * 
+ *
  * @interface AuthService
  * @description
  * Defines the contract for authentication operations.
@@ -105,11 +105,11 @@ export interface AuthResult {
 export interface AuthService {
   /**
    * Sign in with email and password
-   * 
+   *
    * @param {string} email - User's email address
    * @param {string} password - User's password
    * @returns {Promise<AuthResult>} Authentication result with session if successful
-   * 
+   *
    * @example
    * ```typescript
    * const result = await authService.signInWithEmail('user@example.com', 'password')
@@ -121,15 +121,15 @@ export interface AuthService {
    * ```
    */
   signInWithEmail(email: string, password: string): Promise<AuthResult>
-  
+
   /**
    * Create a new account with email and password
-   * 
+   *
    * @param {string} email - User's email address
    * @param {string} password - User's password (min 6 characters)
    * @param {string} [fullName] - User's full name (optional)
    * @returns {Promise<AuthResult>} Result with user object (may require email confirmation)
-   * 
+   *
    * @example
    * ```typescript
    * const result = await authService.signUpWithEmail('new@example.com', 'password', 'John Doe')
@@ -139,14 +139,14 @@ export interface AuthService {
    * ```
    */
   signUpWithEmail(email: string, password: string, fullName?: string): Promise<AuthResult>
-  
+
   /**
    * Send a magic link for passwordless authentication
-   * 
+   *
    * @param {string} email - User's email address
    * @param {string} [fullName] - Full name for new users (optional)
    * @returns {Promise<AuthResult>} Success result if email sent
-   * 
+   *
    * @example
    * ```typescript
    * const result = await authService.signInWithMagicLink('user@example.com')
@@ -156,14 +156,14 @@ export interface AuthService {
    * ```
    */
   signInWithMagicLink(email: string, fullName?: string): Promise<AuthResult>
-  
+
   /**
    * Verify OTP code from email
-   * 
+   *
    * @param {string} email - User's email address
    * @param {string} token - 6-digit verification code
    * @returns {Promise<AuthResult>} Authentication result with session if successful
-   * 
+   *
    * @example
    * ```typescript
    * const result = await authService.verifyOtp('user@example.com', '123456')
@@ -173,27 +173,27 @@ export interface AuthService {
    * ```
    */
   verifyOtp(email: string, token: string): Promise<AuthResult>
-  
+
   /**
    * Resend OTP verification code
-   * 
+   *
    * @param {string} email - User's email address
    * @returns {Promise<AuthResult>} Success result if email sent
    */
   resendOtp(email: string): Promise<AuthResult>
-  
+
   /**
    * Sign out the current user
-   * 
+   *
    * @returns {Promise<{success: boolean; error?: string}>} Result of sign out operation
    */
   signOut(): Promise<{ success: boolean; error?: string }>
-  
+
   /**
    * Get the current session
-   * 
+   *
    * @returns {Promise<AuthSession | null>} Current session or null if not authenticated
-   * 
+   *
    * @example
    * ```typescript
    * const session = await authService.getSession()
@@ -205,28 +205,28 @@ export interface AuthService {
    * ```
    */
   getSession(): Promise<AuthSession | null>
-  
+
   /**
    * Handle magic link callback from URL
-   * 
+   *
    * @returns {Promise<AuthResult>} Session if tokens are valid
    */
   handleMagicLinkCallback(): Promise<AuthResult>
-  
+
   /**
    * Refresh an expired session
-   * 
+   *
    * @param {string} refreshToken - The refresh token from the expired session
    * @returns {Promise<AuthResult>} New session if refresh successful
    */
   refreshSession(refreshToken: string): Promise<AuthResult>
-  
+
   /**
    * Update user profile information
-   * 
+   *
    * @param {Partial<AuthUser>} updates - Fields to update
    * @returns {Promise<AuthResult>} Updated user object if successful
-   * 
+   *
    * @example
    * ```typescript
    * const result = await authService.updateUser({
@@ -236,40 +236,40 @@ export interface AuthService {
    * ```
    */
   updateUser(updates: Partial<AuthUser>): Promise<AuthResult>
-  
+
   /**
    * Update user metadata
-   * 
+   *
    * @param {Record<string, any>} metadata - Metadata to merge with existing
    * @returns {Promise<AuthResult>} Updated user object if successful
    */
   updateUserMetadata(metadata: Record<string, any>): Promise<AuthResult>
-  
+
   /**
    * Get the role of the current user
-   * 
+   *
    * @returns {Promise<'user' | 'editor' | 'admin' | null>} User role or null if not authenticated
    */
   getUserRole(): Promise<'user' | 'editor' | 'admin' | null>
-  
+
   /**
    * Check if current user has a specific role
-   * 
+   *
    * @param {string} requiredRole - Role to check for ('editor' or 'admin')
    * @returns {Promise<boolean>} True if user has the role (or higher)
    */
   hasRole(requiredRole: 'editor' | 'admin'): Promise<boolean>
-  
+
   /**
    * Get fresh user data from the API
-   * 
+   *
    * @returns {Promise<AuthResult>} Current user data if authenticated
    */
   getCurrentUser(): Promise<AuthResult>
-  
+
   /**
    * Clean up data URL avatar from user metadata
-   * 
+   *
    * @returns {Promise<AuthResult>} Result with updated user data
    */
   cleanupDataUrlAvatar(): Promise<AuthResult>
@@ -286,7 +286,7 @@ export class ManualAuthService implements AuthService {
   constructor() {
     const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL
     const supabaseSecretKey = import.meta.env?.VITE_SUPABASE_SECRET
-    const supabasePublishableKey = import.meta.env?.VITE_SUPABASE_PUBLIC
+    const supabasePublishableKey = import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY
 
     if (!supabaseUrl) {
       throw new Error('Missing required Supabase environment variable: VITE_SUPABASE_URL')
@@ -295,7 +295,7 @@ export class ManualAuthService implements AuthService {
     // Use only publishable key for browser environment
     const apiKey = supabasePublishableKey
     if (!apiKey) {
-      throw new Error('Missing required Supabase environment variable: VITE_SUPABASE_PUBLIC')
+      throw new Error('Missing required Supabase environment variable: VITE_SUPABASE_PUBLISHABLE_KEY')
     }
 
     this.API_URL = `${supabaseUrl}/auth/v1`
@@ -370,10 +370,10 @@ export class ManualAuthService implements AuthService {
         data: fullName ? { full_name: fullName } : undefined,
         emailRedirectTo: this.getAuthRedirectUrl()
       }
-      
+
       console.log('[AuthService] Sending POST request to:', url)
       console.log('[AuthService] Request body:', body)
-      
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -407,10 +407,10 @@ export class ManualAuthService implements AuthService {
         email,
         token
       }
-      
+
       console.log('[AuthService] Sending POST request to:', url)
       console.log('[AuthService] Request body:', body)
-      
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -422,10 +422,10 @@ export class ManualAuthService implements AuthService {
 
       console.log('[AuthService] Response status:', response.status)
       console.log('[AuthService] Response headers:', response.headers)
-      
+
       let data
       const contentType = response.headers.get('content-type')
-      
+
       if (contentType && contentType.includes('application/json')) {
         try {
           data = await response.json()
@@ -462,14 +462,14 @@ export class ManualAuthService implements AuthService {
       }
     } catch (error) {
       console.error('[AuthService] Network error in verifyOtp:', error)
-      
+
       // More specific error handling
       if (error instanceof TypeError) {
         if (error.message.includes('Failed to fetch')) {
           return { success: false, error: 'Cannot connect to authentication service. Please check your internet connection.' }
         }
       }
-      
+
       // Return the actual error message for debugging
       return { success: false, error: error instanceof Error ? error.message : 'Network error occurred' }
     }
@@ -507,7 +507,7 @@ export class ManualAuthService implements AuthService {
       localStorage.removeItem('tiko_auth_session')
       localStorage.removeItem('supabase.auth.token')
       localStorage.removeItem('tiko_pending_auth_email')
-      
+
       return { success: true }
     } catch (error) {
       return { success: false, error: 'Sign out failed' }
@@ -521,7 +521,7 @@ export class ManualAuthService implements AuthService {
       if (!sessionStr) return null
 
       const session = JSON.parse(sessionStr)
-      
+
       // Check if session is expired
       if (session.expires_at && Date.now() / 1000 > session.expires_at) {
         // Try to refresh if we have a refresh token
@@ -531,7 +531,7 @@ export class ManualAuthService implements AuthService {
             return refreshResult.session
           }
         }
-        
+
         // Session expired and couldn't refresh
         localStorage.removeItem('tiko_auth_session')
         return null
@@ -543,21 +543,21 @@ export class ManualAuthService implements AuthService {
       return null
     }
   }
-  
+
   async handleMagicLinkCallback(): Promise<AuthResult> {
     try {
       const hashParams = new URLSearchParams(window.location.hash.substring(1))
       const accessToken = hashParams.get('access_token')
       const refreshToken = hashParams.get('refresh_token')
       const expiresIn = hashParams.get('expires_in')
-      
+
       if (!accessToken || !refreshToken) {
         return { success: false, error: 'No tokens found in URL' }
       }
-      
+
       // Decode the JWT to get user info
       const user = this.decodeJwtUser(accessToken)
-      
+
       // Create session object
       const expiresInSeconds = expiresIn ? parseInt(expiresIn) : 3600
       const session: AuthSession = {
@@ -568,13 +568,13 @@ export class ManualAuthService implements AuthService {
         token_type: 'bearer',
         user
       }
-      
+
       // Store the session
       this.storeSession(session)
-      
+
       // Clear the URL hash to prevent reprocessing
       window.history.replaceState(null, '', window.location.pathname + window.location.search)
-      
+
       return { success: true, session, user }
     } catch (error) {
       console.error('[AuthService] Error processing magic link:', error)
@@ -670,7 +670,7 @@ export class ManualAuthService implements AuthService {
         ...session,
         user: updatedUser
       }
-      
+
       // Store the updated session
       this.storeSession(updatedSession)
 
@@ -693,13 +693,13 @@ export class ManualAuthService implements AuthService {
       // Check if avatar_url is a data URL
       if (session.user?.user_metadata?.avatar_url?.startsWith('data:')) {
         console.log('[AuthService] Cleaning up data URL avatar')
-        
+
         // Update user metadata to remove the data URL
         const cleanMetadata = {
           ...session.user.user_metadata,
           avatar_url: '' // Clear the data URL
         }
-        
+
         const response = await fetch(`${this.API_URL}/user`, {
           method: 'PUT',
           headers: {
@@ -734,13 +734,13 @@ export class ManualAuthService implements AuthService {
    */
   private formatSession(data: any): AuthSession {
     let user: AuthUser
-    
+
     if (data.user) {
       // Convert Supabase user format to our AuthUser format
       const supabaseUser = data.user
       // Get avatar_url from user_metadata
       let avatarUrl = supabaseUser.user_metadata?.avatar_url || ''
-      
+
       user = {
         id: supabaseUser.id,
         email: supabaseUser.email || '',
@@ -758,7 +758,7 @@ export class ManualAuthService implements AuthService {
       // Fallback to decoding from JWT if no user object provided
       user = this.decodeJwtUser(data.access_token)
     }
-    
+
     return {
       access_token: data.access_token,
       refresh_token: data.refresh_token || '',
@@ -775,7 +775,7 @@ export class ManualAuthService implements AuthService {
   private decodeJwtUser(token: string): AuthUser {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]))
-      
+
       return {
         id: payload.sub,
         email: payload.email || '',
@@ -798,7 +798,7 @@ export class ManualAuthService implements AuthService {
     try {
       const session = await this.getSession()
       if (!session) return null
-      
+
       // Use RPC function to get current user's role
       const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL
       const response = await fetch(
@@ -814,7 +814,7 @@ export class ManualAuthService implements AuthService {
           body: '{}'
         }
       )
-      
+
       if (!response.ok) {
         console.error('[AuthService] Failed to fetch user role:', response.status, response.statusText)
         try {
@@ -823,28 +823,28 @@ export class ManualAuthService implements AuthService {
         } catch {}
         return 'user'
       }
-      
+
       const role = await response.json()
       console.log('[AuthService] User role:', role)
-      
+
       return role as 'user' | 'editor' | 'admin'
     } catch (error) {
       console.error('[AuthService] Error getting user role:', error)
       return 'user'
     }
   }
-  
+
   async hasRole(requiredRole: 'editor' | 'admin'): Promise<boolean> {
     const userRole = await this.getUserRole()
-    
+
     if (!userRole) return false
-    
+
     // Admin has all permissions
     if (userRole === 'admin') return true
-    
+
     // Editor has editor permissions
     if (userRole === 'editor' && requiredRole === 'editor') return true
-    
+
     return false
   }
 
@@ -877,7 +877,7 @@ export class ManualAuthService implements AuthService {
         ...session,
         user: this.formatUserFromSupabase(userData)
       }
-      
+
       this.storeSession(updatedSession)
 
       return { success: true, user: updatedSession.user, session: updatedSession }
@@ -890,9 +890,9 @@ export class ManualAuthService implements AuthService {
    * Format user data from Supabase response
    */
   private formatUserFromSupabase(supabaseUser: any): AuthUser {
-    let avatarUrl = supabaseUser.user_metadata?.avatar_url || 
+    let avatarUrl = supabaseUser.user_metadata?.avatar_url ||
                     supabaseUser.user_metadata?.picture || ''
-    
+
     return {
       id: supabaseUser.id,
       email: supabaseUser.email || '',
@@ -923,7 +923,7 @@ export class ManualAuthService implements AuthService {
   private storeSession(session: AuthSession): void {
     // Clean up any large data URLs before storing to avoid localStorage limits
     const cleanSession = { ...session }
-    
+
     // Clean avatar_url if it's a data URL
     if (cleanSession.user?.avatar_url?.startsWith('data:')) {
       cleanSession.user = {
@@ -931,7 +931,7 @@ export class ManualAuthService implements AuthService {
         avatar_url: ''
       }
     }
-    
+
     // Also clean it from user_metadata if present
     if (cleanSession.user?.user_metadata?.avatar_url?.startsWith('data:')) {
       cleanSession.user = {
@@ -942,10 +942,10 @@ export class ManualAuthService implements AuthService {
         }
       }
     }
-    
+
     try {
       localStorage.setItem('tiko_auth_session', JSON.stringify(cleanSession))
-      
+
       // Also store in the format Supabase expects for compatibility
       localStorage.setItem('supabase.auth.token', JSON.stringify(cleanSession))
     } catch (error) {

@@ -1,1 +1,1 @@
-console.log('VITE_SUPABASE_SECRET:', import.meta.env?.VITE_SUPABASE_SECRET); console.log('VITE_SUPABASE_PUBLIC:', import.meta.env?.VITE_SUPABASE_PUBLIC);
+console.log('VITE_SUPABASE_SECRET:', import.meta.env?.VITE_SUPABASE_SECRET); console.log('VITE_SUPABASE_PUBLISHABLE_KEY:', import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY);

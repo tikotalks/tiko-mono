@@ -1,6 +1,6 @@
 // Direct Supabase Auth API implementation
 const SUPABASE_URL = 'https://kejvhvszhevfwgsztedf.supabase.co'
-const ANON_KEY = import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLIC || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlanZodnN6aGV2Zndnc3p0ZWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4ODg2MTIsImV4cCI6MjA2NzQ2NDYxMn0.xUYXxNodJTpTwChlKbuBSojVJqX9CDW87aVISEUc2rE'
+const ANON_KEY = import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlanZodnN6aGV2Zndnc3p0ZWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4ODg2MTIsImV4cCI6MjA2NzQ2NDYxMn0.xUYXxNodJTpTwChlKbuBSojVJqX9CDW87aVISEUc2rE'
 
 export interface AuthSession {
   access_token: string
@@ -29,19 +29,19 @@ class AuthAPI {
         ...options.headers
       }
     })
-    
+
     const data = await response.json()
-    
+
     if (!response.ok) {
       throw new Error(data.msg || data.error || 'API call failed')
     }
-    
+
     return data
   }
 
   async sendMagicLink(email: string): Promise<void> {
     console.log('[AuthAPI] Sending magic link to:', email)
-    
+
     const response = await this.apiCall('/auth/v1/otp', {
       method: 'POST',
       body: JSON.stringify({
@@ -53,26 +53,26 @@ class AuthAPI {
         }
       })
     })
-    
+
     console.log('[AuthAPI] Magic link sent, response:', response)
   }
 
   async getUser(accessToken: string): Promise<AuthUser> {
     console.log('[AuthAPI] Getting user data')
-    
+
     const data = await this.apiCall('/auth/v1/user', {
       headers: {
         'Authorization': `Bearer ${accessToken}`
       }
     })
-    
+
     return data
   }
 
   getStoredSession(): AuthSession | null {
     const stored = localStorage.getItem('tiko_auth_session')
     if (!stored) return null
-    
+
     try {
       const session = JSON.parse(stored)
       // Check if expired

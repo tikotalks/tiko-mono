@@ -2,7 +2,7 @@ import { useAuthStore } from '@tiko/core';
 import type { ItemTranslation } from '../models/ItemTranslation.model';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLIC;
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 interface CardItem {
   id: string;
@@ -73,7 +73,7 @@ class SequenceSupabaseService {
 
   async getSequence(userId: string, parentId?: string): Promise<CardItem[]> {
     const params = new URLSearchParams();
-    
+
     // Try with app_name filter first
     params.append('app_name', 'eq.sequence');
 
@@ -98,18 +98,18 @@ class SequenceSupabaseService {
     try {
       let result = await this.apiRequest<CardItem[]>(url);
       console.log('[getSequence] Result with app_name filter:', result.length, 'items found');
-      
+
       // Debug: Log details about what we found when loading children
       if (parentId && result.length === 0) {
         console.warn(`[getSequence] WARNING: No children found for parentId ${parentId}`);
         console.log('[getSequence] Query URL was:', url);
-        
+
         // Try a more permissive query to see if items exist but aren't being returned
         const debugParams = new URLSearchParams();
         debugParams.append('parent_id', `eq.${parentId}`);
         const debugUrl = `items?${debugParams.toString()}`;
         console.log('[getSequence] Trying debug query without filters:', debugUrl);
-        
+
         try {
           const debugResult = await this.apiRequest<CardItem[]>(debugUrl);
           console.log('[getSequence] Debug query found:', debugResult.length, 'items');
@@ -165,13 +165,13 @@ class SequenceSupabaseService {
     // If includeCurated is true, we need to fetch both user's items and curated public items
     if (includeCurated) {
       console.log('[getAllSequence] Fetching user sequences AND curated public sequences');
-      
+
       // Fetch user's own sequences
       const userParams = new URLSearchParams();
       userParams.append('user_id', `eq.${userId}`);
       userParams.append('app_name', 'eq.sequence');
       userParams.append('order', 'order_index.asc');
-      
+
       // Fetch curated public sequences (not owned by user)
       const curatedParams = new URLSearchParams();
       curatedParams.append('app_name', 'eq.sequence');
@@ -179,21 +179,21 @@ class SequenceSupabaseService {
       curatedParams.append('is_curated', 'eq.true');
       curatedParams.append('user_id', `neq.${userId}`); // Exclude user's own items
       curatedParams.append('order', 'order_index.asc');
-      
+
       try {
         // Fetch both in parallel
         const [userSequences, curatedSequences] = await Promise.all([
           this.apiRequest<CardItem[]>(`items?${userParams.toString()}`),
           this.apiRequest<CardItem[]>(`items?${curatedParams.toString()}`)
         ]);
-        
+
         console.log('[getAllSequence] Found', userSequences.length, 'user sequences');
         console.log('[getAllSequence] Found', curatedSequences.length, 'curated public sequences');
-        
+
         // Combine and return all sequences
         const allSequences = [...userSequences, ...curatedSequences];
         console.log('[getAllSequence] Total sequences:', allSequences.length);
-        
+
         return allSequences;
       } catch (error) {
         console.error('[getAllSequence] Error fetching sequences:', error);
@@ -369,7 +369,7 @@ class SequenceSupabaseService {
 
     // Complex case: user items + curated items + ALL their children
     console.log('[getAllSequence] Loading with curated items...');
-    
+
     try {
       // Step 1: Get user's own root sequences
       const userParams = new URLSearchParams();
@@ -396,10 +396,10 @@ class SequenceSupabaseService {
 
       // Step 3: For each curated sequence, get ALL its children (regardless of owner)
       const allCuratedChildren: CardItem[] = [];
-      
+
       for (const curatedSeq of curatedSequences) {
         console.log(`[getAllSequence] Step 3: Loading children for curated sequence "${curatedSeq.name}" (${curatedSeq.id})`);
-        
+
         const childParams = new URLSearchParams();
         childParams.append('app_name', 'eq.sequence');
         childParams.append('parent_id', `eq.${curatedSeq.id}`);
@@ -408,7 +408,7 @@ class SequenceSupabaseService {
 
         const children = await this.apiRequest<CardItem[]>(`items?${childParams.toString()}`);
         console.log(`[getAllSequence] Step 3: Found ${children.length} children for "${curatedSeq.name}"`);
-        
+
         allCuratedChildren.push(...children);
       }
 
@@ -573,7 +573,7 @@ class SequenceSupabaseService {
     try {
       const params = new URLSearchParams();
       params.append('app_name', 'eq.sequence');
-      
+
       // Build the OR clause based on includeCurated
       if (includeCurated) {
         params.append('or', `(is_public.eq.true,is_curated.eq.true,user_id.eq.${userId})`);
@@ -581,17 +581,17 @@ class SequenceSupabaseService {
         params.append('or', `(is_public.eq.true,user_id.eq.${userId})`);
         params.append('is_curated', 'eq.false');
       }
-      
+
       // Filter by type if specified
       if (type && type !== 'all') {
         params.append('type', `eq.${type}`);
       }
-      
+
       params.append('select', '*,user_item_order!left(custom_index)');
       params.append('order', 'user_item_order(custom_index).asc.nullsfirst,order_index.asc');
 
       const response = await this.apiRequest<any[]>(`items?${params.toString()}`);
-      
+
       // Map the response to include custom_index from the join
       return response.map(item => ({
         ...item,
@@ -608,7 +608,7 @@ class SequenceSupabaseService {
     try {
       const params = new URLSearchParams();
       params.append('app_name', 'eq.sequence');
-      
+
       // Build the OR clause based on includeCurated
       if (includeCurated) {
         params.append('or', `(is_public.eq.true,is_curated.eq.true)`);
@@ -616,19 +616,19 @@ class SequenceSupabaseService {
         params.append('is_public', 'eq.true');
         params.append('is_curated', 'eq.false');
       }
-      
+
       params.append('name', `ilike.%${query}%`);
-      
+
       // Filter by type if specified
       if (type && type !== 'all') {
         params.append('type', `eq.${type}`);
       }
-      
+
       params.append('select', '*,user_item_order!left(custom_index)');
       params.append('order', 'is_curated.desc,name.asc');
 
       const response = await this.apiRequest<any[]>(`items?${params.toString()}`);
-      
+
       return response.map(item => ({
         ...item,
         custom_index: item.user_item_order?.[0]?.custom_index || null,
@@ -652,7 +652,7 @@ class SequenceSupabaseService {
       params.append('order', 'user_sequence_order(custom_index).asc.nullsfirst,order_index.asc');
 
       const response = await this.apiRequest<any[]>(`items?${params.toString()}`);
-      
+
       // Map the response to include custom_index from the join
       return response.map(item => ({
         ...item,
@@ -675,7 +675,7 @@ class SequenceSupabaseService {
       params.append('order', 'is_curated.desc,name.asc');
 
       const response = await this.apiRequest<any[]>(`items?${params.toString()}`);
-      
+
       return response.map(item => ({
         ...item,
         custom_index: item.user_item_order?.[0]?.custom_index || null,
@@ -713,7 +713,7 @@ class SequenceSupabaseService {
       if (!isPublic) {
         updateData.is_curated = false;
       }
-      
+
       await this.apiRequest(`items?parent_id=eq.${sequenceId}&user_id=eq.${userId}`, {
         method: 'PATCH',
         body: JSON.stringify(updateData)
@@ -732,9 +732,9 @@ class SequenceSupabaseService {
       const existingParams = new URLSearchParams();
       existingParams.append('user_id', `eq.${userId}`);
       existingParams.append('sequence_id', `eq.${sequenceId}`);
-      
+
       const existing = await this.apiRequest<UserSequenceOrder[]>(`user_sequence_order?${existingParams.toString()}`);
-      
+
       if (existing.length > 0) {
         // Update existing order
         await this.apiRequest(`user_item_order?id=eq.${existing[0].id}`, {
@@ -770,7 +770,7 @@ class SequenceSupabaseService {
     try {
       const params = new URLSearchParams();
       params.append('app_name', `eq.${filter.app}`);
-      
+
       // ALWAYS filter by public items only - no access to private items
       if (filter.visibility === 'public-only') {
         // Public but not curated
@@ -783,22 +783,22 @@ class SequenceSupabaseService {
         // 'all' means all public items (including curated)
         params.append('is_public', 'eq.true');
       }
-      
+
       // Filter by type
       if (filter.type !== 'all') {
         params.append('type', `eq.${filter.type}`);
       }
-      
+
       // Search
       if (filter.search) {
         params.append('name', `ilike.%${filter.search}%`);
       }
-      
+
       // Order and pagination
       params.append('order', 'is_curated.desc,created_at.desc');
       params.append('limit', filter.limit.toString());
       params.append('offset', ((filter.page - 1) * filter.limit).toString());
-      
+
       const response = await this.apiRequest<CardItem[]>(`items?${params.toString()}`);
       return response;
     } catch (error) {
@@ -812,12 +812,12 @@ class SequenceSupabaseService {
       // When making an item curated, it must be public
       // When removing curated status, public status remains unchanged
       const updateData: any = { is_curated: isCurated };
-      
+
       if (isCurated) {
         // Ensure item is public when making it curated
         updateData.is_public = true;
       }
-      
+
       await this.apiRequest(`items?id=eq.${itemId}&is_public=eq.true`, {
         method: 'PATCH',
         body: JSON.stringify(updateData)
@@ -835,7 +835,7 @@ class SequenceSupabaseService {
       if (itemData.is_public === false) {
         updateData.is_curated = false
       }
-      
+
       await this.apiRequest(`items?id=eq.${cardId}`, {
         method: 'PATCH',
         body: JSON.stringify({

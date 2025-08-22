@@ -2,7 +2,7 @@ import { useAuthStore } from '@tiko/core';
 import type { ItemTranslation } from '../models/ItemTranslation.model';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLIC;
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 interface CardItem {
   id: string;
@@ -31,7 +31,7 @@ class CardsSupabaseService {
   private getAuthToken(): string | null {
     const sessionData = localStorage.getItem('tiko_auth_session');
     if (!sessionData) return null;
-    
+
     try {
       const session = JSON.parse(sessionData);
       return session.access_token;
@@ -42,7 +42,7 @@ class CardsSupabaseService {
 
   private async apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const token = this.getAuthToken();
-    
+
     const response = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, {
       ...options,
       headers: {
@@ -65,42 +65,42 @@ class CardsSupabaseService {
   async getCards(userId: string, parentId?: string): Promise<CardItem[]> {
     const params = new URLSearchParams();
     params.append('user_id', `eq.${userId}`);
-    
+
     // Try with app_name filter first
     params.append('app_name', 'eq.cards');
-    
+
     if (parentId === undefined || parentId === null) {
       params.append('parent_id', 'is.null');
     } else {
       params.append('parent_id', `eq.${parentId}`);
     }
-    
+
     // Use correct PostgREST syntax for ordering
     params.append('order', 'order_index.asc');
-    
+
     const url = `items?${params.toString()}`;
     console.log('[getCards] Fetching from:', url);
-    
+
     try {
       let result = await this.apiRequest<CardItem[]>(url);
       console.log('[getCards] Result with app_name filter:', result.length, 'cards found');
-      
+
       // If no results with app_name filter, try without it (backwards compatibility)
       if (result.length === 0 && parentId) {
         console.log('[getCards] No cards found with app_name filter, trying without...');
-        
+
         const fallbackParams = new URLSearchParams();
         fallbackParams.append('user_id', `eq.${userId}`);
         fallbackParams.append('parent_id', `eq.${parentId}`);
         fallbackParams.append('order', 'order_index.asc');
-        
+
         const fallbackUrl = `items?${fallbackParams.toString()}`;
         console.log('[getCards] Fallback fetch from:', fallbackUrl);
-        
+
         result = await this.apiRequest<CardItem[]>(fallbackUrl);
         console.log('[getCards] Fallback result:', result.length, 'cards found');
       }
-      
+
       return result;
     } catch (error) {
       console.error('[getCards] Error fetching cards:', error);
@@ -110,47 +110,47 @@ class CardsSupabaseService {
 
   async getCardsWithCurated(userId: string, parentId?: string): Promise<CardItem[]> {
     console.log('[getCardsWithCurated] Called with:', { userId, parentId });
-    
+
     // Fetch user's own cards
     const userParams = new URLSearchParams();
     userParams.append('user_id', `eq.${userId}`);
     userParams.append('app_name', 'eq.cards');
-    
+
     if (parentId === undefined || parentId === null) {
       userParams.append('parent_id', 'is.null');
     } else {
       userParams.append('parent_id', `eq.${parentId}`);
     }
     userParams.append('order', 'order_index.asc');
-    
+
     // Fetch curated public cards for the same parent
     const curatedParams = new URLSearchParams();
     curatedParams.append('app_name', 'eq.cards');
     curatedParams.append('is_public', 'eq.true');
     curatedParams.append('is_curated', 'eq.true');
     curatedParams.append('user_id', `neq.${userId}`); // Exclude user's own items
-    
+
     if (parentId === undefined || parentId === null) {
       curatedParams.append('parent_id', 'is.null');
     } else {
       curatedParams.append('parent_id', `eq.${parentId}`);
     }
     curatedParams.append('order', 'order_index.asc');
-    
+
     try {
       // Fetch both in parallel
       const [userCards, curatedCards] = await Promise.all([
         this.apiRequest<CardItem[]>(`items?${userParams.toString()}`),
         this.apiRequest<CardItem[]>(`items?${curatedParams.toString()}`)
       ]);
-      
+
       console.log('[getCardsWithCurated] Found', userCards.length, 'user cards');
       console.log('[getCardsWithCurated] Found', curatedCards.length, 'curated cards');
-      
+
       // Combine and return all cards
       const allCards = [...userCards, ...curatedCards];
       console.log('[getCardsWithCurated] Total cards:', allCards.length);
-      
+
       return allCards;
     } catch (error) {
       console.error('[getCardsWithCurated] Error fetching cards:', error);
@@ -162,13 +162,13 @@ class CardsSupabaseService {
     // If includeCurated is true, we need to fetch both user's items and curated public items
     if (includeCurated) {
       console.log('[getAllCards] Fetching user cards AND curated public cards');
-      
+
       // Fetch user's own cards
       const userParams = new URLSearchParams();
       userParams.append('user_id', `eq.${userId}`);
       userParams.append('app_name', 'eq.cards');
       userParams.append('order', 'order_index.asc');
-      
+
       // Fetch curated public cards (not owned by user)
       const curatedParams = new URLSearchParams();
       curatedParams.append('app_name', 'eq.cards');
@@ -176,21 +176,21 @@ class CardsSupabaseService {
       curatedParams.append('is_curated', 'eq.true');
       curatedParams.append('user_id', `neq.${userId}`); // Exclude user's own items
       curatedParams.append('order', 'order_index.asc');
-      
+
       try {
         // Fetch both in parallel
         const [userCards, curatedCards] = await Promise.all([
           this.apiRequest<CardItem[]>(`items?${userParams.toString()}`),
           this.apiRequest<CardItem[]>(`items?${curatedParams.toString()}`)
         ]);
-        
+
         console.log('[getAllCards] Found', userCards.length, 'user cards');
         console.log('[getAllCards] Found', curatedCards.length, 'curated public cards');
-        
+
         // Combine and return all cards
         const allCards = [...userCards, ...curatedCards];
         console.log('[getAllCards] Total cards:', allCards.length);
-        
+
         return allCards;
       } catch (error) {
         console.error('[getAllCards] Error fetching cards:', error);
@@ -202,10 +202,10 @@ class CardsSupabaseService {
       params.append('user_id', `eq.${userId}`);
       params.append('app_name', 'eq.cards');
       params.append('order', 'order_index.asc');
-      
+
       const url = `items?${params.toString()}`;
       console.log('[getAllCards] Fetching ALL cards from:', url);
-      
+
       try {
         const result = await this.apiRequest<CardItem[]>(url);
         console.log('[getAllCards] Found', result.length, 'total cards');
@@ -242,7 +242,7 @@ class CardsSupabaseService {
   async getCard(id: string): Promise<CardItem | null> {
     const params = new URLSearchParams();
     params.append('id', `eq.${id}`);
-    
+
     const response = await this.apiRequest<CardItem[]>(`items?${params.toString()}`);
     return response[0] || null;
   }
@@ -250,30 +250,30 @@ class CardsSupabaseService {
   // Get cards with translations for the current locale
   async getCardsWithTranslations(userId: string, parentId?: string, locale?: string): Promise<CardItem[]> {
     console.log('[getCardsWithTranslations] Called with:', { userId, parentId, locale });
-    
+
     // First get the cards
     const cards = await this.getCards(userId, parentId);
     console.log('[getCardsWithTranslations] Found cards:', cards.length, cards.map(c => ({ id: c.id, name: c.name })));
-    
+
     if (cards.length === 0) return cards;
-    
+
     // Get translations for all cards
     const cardIds = cards.map(c => c.id);
     let translations: ItemTranslation[] = [];
-    
+
     if (locale) {
       // First try exact locale match (e.g., nl-nl)
       const exactParams = new URLSearchParams();
       exactParams.append('item_id', `in.(${cardIds.join(',')})`);
       exactParams.append('locale', `eq.${locale}`);
       console.log('[getCardsWithTranslations] Looking for exact locale match:', locale);
-      
+
       const exactUrl = `item_translations?${exactParams.toString()}`;
       console.log('[getCardsWithTranslations] Exact translation request URL:', exactUrl);
-      
+
       translations = await this.apiRequest<ItemTranslation[]>(exactUrl);
       console.log('[getCardsWithTranslations] Found exact locale translations:', translations.length, translations);
-      
+
       // If no exact match and locale has region (e.g., nl-nl), try base language (e.g., nl)
       if (translations.length === 0 && locale.includes('-')) {
         const baseLanguage = locale.split('-')[0];
@@ -281,13 +281,13 @@ class CardsSupabaseService {
         baseParams.append('item_id', `in.(${cardIds.join(',')})`);
         baseParams.append('locale', `eq.${baseLanguage}`);
         console.log('[getCardsWithTranslations] No exact match, trying base language:', baseLanguage);
-        
+
         const baseUrl = `item_translations?${baseParams.toString()}`;
         console.log('[getCardsWithTranslations] Base language request URL:', baseUrl);
-        
+
         translations = await this.apiRequest<ItemTranslation[]>(baseUrl);
         console.log('[getCardsWithTranslations] Found base language translations:', translations.length, translations);
-        
+
         // If still no match, try with lowercase locale (e.g., nl-NL -> nl-nl)
         if (translations.length === 0) {
           const lowercaseLocale = locale.toLowerCase();
@@ -295,10 +295,10 @@ class CardsSupabaseService {
           lowercaseParams.append('item_id', `in.(${cardIds.join(',')})`);
           lowercaseParams.append('locale', `eq.${lowercaseLocale}`);
           console.log('[getCardsWithTranslations] No base language match, trying lowercase locale:', lowercaseLocale);
-          
+
           const lowercaseUrl = `item_translations?${lowercaseParams.toString()}`;
           console.log('[getCardsWithTranslations] Lowercase locale request URL:', lowercaseUrl);
-          
+
           translations = await this.apiRequest<ItemTranslation[]>(lowercaseUrl);
           console.log('[getCardsWithTranslations] Found lowercase locale translations:', translations.length, translations);
         }
@@ -310,14 +310,14 @@ class CardsSupabaseService {
       translations = await this.apiRequest<ItemTranslation[]>(`item_translations?${allParams.toString()}`);
       console.log('[getCardsWithTranslations] Found all translations (no locale specified):', translations.length);
     }
-    
+
     // Map translations to cards
     const translationMap = new Map<string, ItemTranslation>();
     translations.forEach(t => {
       translationMap.set(t.item_id, t);
       console.log('[getCardsWithTranslations] Mapping translation for item:', t.item_id, { name: t.name, content: t.content, locale: t.locale });
     });
-    
+
     // Apply translations to cards
     const result = cards.map(card => {
       const translation = translationMap.get(card.id);
@@ -337,49 +337,49 @@ class CardsSupabaseService {
       console.log('[getCardsWithTranslations] No translation found for card:', card.id, card.name);
       return card;
     });
-    
+
     console.log('[getCardsWithTranslations] Final result:', result.map(c => ({ id: c.id, name: c.name, effective_locale: c.effective_locale })));
     return result;
   }
 
   async getCardsWithCuratedAndTranslations(userId: string, parentId?: string, locale?: string): Promise<CardItem[]> {
     console.log('[getCardsWithCuratedAndTranslations] Called with:', { userId, parentId, locale });
-    
+
     // First get ALL cards (user + curated) for this parent
     const cards = await this.getCardsWithCurated(userId, parentId);
     console.log('[getCardsWithCuratedAndTranslations] Found cards:', cards.length);
-    
+
     if (cards.length === 0) return cards;
-    
+
     // Get translations for all cards
     const cardIds = cards.map(c => c.id);
     let translations: ItemTranslation[] = [];
-    
+
     if (locale) {
       // Try to get translations for the locale with fallback logic
       const exactParams = new URLSearchParams();
       exactParams.append('item_id', `in.(${cardIds.join(',')})`);
       exactParams.append('locale', `eq.${locale}`);
-      
+
       translations = await this.apiRequest<ItemTranslation[]>(`item_translations?${exactParams.toString()}`);
-      
+
       // Try base language if no exact match
       if (translations.length === 0 && locale.includes('-')) {
         const baseLanguage = locale.split('-')[0];
         const baseParams = new URLSearchParams();
         baseParams.append('item_id', `in.(${cardIds.join(',')})`);
         baseParams.append('locale', `eq.${baseLanguage}`);
-        
+
         translations = await this.apiRequest<ItemTranslation[]>(`item_translations?${baseParams.toString()}`);
       }
     }
-    
+
     // Map translations to cards
     const translationMap = new Map<string, ItemTranslation>();
     translations.forEach(t => {
       translationMap.set(t.item_id, t);
     });
-    
+
     // Apply translations to cards
     const result = cards.map(card => {
       const translation = translationMap.get(card.id);
@@ -393,7 +393,7 @@ class CardsSupabaseService {
       }
       return card;
     });
-    
+
     console.log('[getCardsWithCuratedAndTranslations] Returning', result.length, 'cards with translations');
     return result;
   }
@@ -401,42 +401,42 @@ class CardsSupabaseService {
   // Get ALL cards with translations for the current locale
   async getAllCardsWithTranslations(userId: string, locale?: string, includeCurated = false): Promise<CardItem[]> {
     console.log('[getAllCardsWithTranslations] Called with:', { userId, locale, includeCurated });
-    
+
     // First get ALL cards
     const cards = await this.getAllCards(userId, includeCurated);
     console.log('[getAllCardsWithTranslations] Found total cards:', cards.length);
-    
+
     if (cards.length === 0) return cards;
-    
+
     // Get translations for all cards
     const cardIds = cards.map(c => c.id);
     let translations: ItemTranslation[] = [];
-    
+
     if (locale) {
       // Try to get translations for the locale with fallback logic
       const exactParams = new URLSearchParams();
       exactParams.append('item_id', `in.(${cardIds.join(',')})`);
       exactParams.append('locale', `eq.${locale}`);
-      
+
       translations = await this.apiRequest<ItemTranslation[]>(`item_translations?${exactParams.toString()}`);
-      
+
       // Try base language if no exact match
       if (translations.length === 0 && locale.includes('-')) {
         const baseLanguage = locale.split('-')[0];
         const baseParams = new URLSearchParams();
         baseParams.append('item_id', `in.(${cardIds.join(',')})`);
         baseParams.append('locale', `eq.${baseLanguage}`);
-        
+
         translations = await this.apiRequest<ItemTranslation[]>(`item_translations?${baseParams.toString()}`);
       }
     }
-    
+
     // Map translations to cards
     const translationMap = new Map<string, ItemTranslation>();
     translations.forEach(t => {
       translationMap.set(t.item_id, t);
     });
-    
+
     // Apply translations to cards
     const result = cards.map(card => {
       const translation = translationMap.get(card.id);
@@ -450,7 +450,7 @@ class CardsSupabaseService {
       }
       return card;
     });
-    
+
     console.log('[getAllCardsWithTranslations] Returning', result.length, 'cards with translations');
     return result;
   }
@@ -460,7 +460,7 @@ class CardsSupabaseService {
     const params = new URLSearchParams();
     params.append('item_id', `eq.${itemId}`);
     params.append('order', 'locale.asc');
-    
+
     return this.apiRequest<ItemTranslation[]>(`item_translations?${params.toString()}`);
   }
 
@@ -468,14 +468,14 @@ class CardsSupabaseService {
     const params = new URLSearchParams();
     params.append('item_id', `eq.${itemId}`);
     params.append('locale', `eq.${locale}`);
-    
+
     const response = await this.apiRequest<ItemTranslation[]>(`item_translations?${params.toString()}`);
     return response[0] || null;
   }
 
   async saveItemTranslation(translation: ItemTranslation): Promise<ItemTranslation> {
     const { id, ...data } = translation;
-    
+
     if (id) {
       // Update existing
       const response = await this.apiRequest<ItemTranslation[]>(`item_translations?id=eq.${id}`, {
@@ -505,7 +505,7 @@ class CardsSupabaseService {
       const params = new URLSearchParams();
       params.append('item_id', `eq.${translation.item_id}`);
       params.append('locale', `eq.${translation.locale}`);
-      
+
       // First try to update existing translation
       const existingResponse = await this.apiRequest<ItemTranslation[]>(`item_translations?${params.toString()}`, {
         method: 'PATCH',
@@ -517,7 +517,7 @@ class CardsSupabaseService {
           content: translation.content
         })
       });
-      
+
       // If no existing translation found, create new one
       if (existingResponse.length === 0) {
         const newResponse = await this.apiRequest<ItemTranslation[]>('item_translations', {
@@ -529,13 +529,13 @@ class CardsSupabaseService {
         });
         return newResponse[0];
       }
-      
+
       return existingResponse[0];
     });
-    
+
     return Promise.all(promises);
   }
-  
+
   async upsertSingleTranslation(translation: Omit<ItemTranslation, 'id'>): Promise<ItemTranslation> {
     const response = await this.apiRequest<ItemTranslation[]>('item_translations', {
       method: 'POST',
@@ -551,7 +551,7 @@ class CardsSupabaseService {
   async getTTSAudio(textHash: string): Promise<any | null> {
     const params = new URLSearchParams();
     params.append('text_hash', `eq.${textHash}`);
-    
+
     const response = await this.apiRequest<any[]>(`tts_audio?${params.toString()}`);
     return response[0] || null;
   }

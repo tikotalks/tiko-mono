@@ -1,6 +1,6 @@
 /**
  * Translation Service
- * 
+ *
  * Handles all translation-related operations including:
  * - Managing translation keys
  * - Managing translations with versioning
@@ -76,11 +76,11 @@ class TranslationService {
       // Get the current session from auth service
       const session = await authService.getSession()
       const token = session?.access_token || null
-      
-      const apiKey = import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLIC
-      
+
+      const apiKey = import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY
+
       const url = `${this.baseUrl}${endpoint}`
-      
+
       const response = await fetch(url, {
         ...options,
         headers: {
@@ -162,7 +162,7 @@ class TranslationService {
 
       while (hasMore) {
         const data = await this.makeRequest(`/i18n_keys?order=key.asc&limit=${BATCH_SIZE}&offset=${offset}`);
-        
+
         if (!data || data.length === 0) {
           hasMore = false;
           break;
@@ -206,7 +206,7 @@ class TranslationService {
    */
   async getTranslationKeysByNames(keyNames: string[]): Promise<TranslationKey[]> {
     if (keyNames.length === 0) return []
-    
+
     // Escape and quote each key name for the query
     const keyList = keyNames.map(k => `"${k.replace(/"/g, '""')}"`).join(',')
     return this.makeRequest(`/i18n_keys?key=in.(${keyList})&order=key.asc`)
@@ -280,9 +280,9 @@ class TranslationService {
    */
   async getTranslationsForLanguage(languageCode: string): Promise<Record<string, string>> {
     logger.info('TranslationService', `Fetching translations for language: ${languageCode}`)
-    
+
     let baseQuery = `/i18n_translations?select=i18n_keys(key),value,language_code&is_published=eq.true`
-    
+
     // If locale has a region, fetch both base and specific in one query
     if (languageCode.includes('-')) {
       const baseLocale = languageCode.split('-')[0]
@@ -303,7 +303,7 @@ class TranslationService {
     while (hasMore) {
       const query = `${baseQuery}&limit=${BATCH_SIZE}&offset=${offset}`;
       const translations = await this.makeRequest(query);
-      
+
       if (!translations || translations.length === 0) {
         hasMore = false;
         break;
@@ -319,12 +319,12 @@ class TranslationService {
         offset += BATCH_SIZE;
       }
     }
-    
+
     const translations = allTranslations;
-    
+
     logger.info('TranslationService', `Fetched total ${translations.length} translations for ${languageCode}`)
     logger.debug('TranslationService', `Raw response (${translations.length} items):`, translations.slice(0, 3))
-    
+
     // Debug: Log full response structure of first item
     if (translations.length > 0) {
       logger.info('TranslationService', 'First translation structure:', JSON.stringify(translations[0], null, 2))
@@ -333,18 +333,18 @@ class TranslationService {
     // Process translations, merging base and specific locales
     const translationsByKey: Record<string, { base?: string; specific?: string }> = {}
     const baseLocale = languageCode.includes('-') ? languageCode.split('-')[0] : null
-    
+
     let baseCount = 0
     let specificCount = 0
-    
+
     for (const translation of translations) {
       if (translation.i18n_keys && translation.i18n_keys.key) {
         const key = translation.i18n_keys.key
-        
+
         if (!translationsByKey[key]) {
           translationsByKey[key] = {}
         }
-        
+
         if (translation.language_code === baseLocale) {
           translationsByKey[key].base = translation.value
           baseCount++
@@ -356,19 +356,19 @@ class TranslationService {
         logger.warning('TranslationService', 'Translation missing key structure:', translation)
       }
     }
-    
+
     if (baseLocale) {
       logger.debug('TranslationService', `Breakdown: ${baseCount} from ${baseLocale}, ${specificCount} from ${languageCode}`)
     }
-    
+
     // Merge translations: specific locale overrides base
     const mergedTranslations: Record<string, string> = {}
     for (const [key, values] of Object.entries(translationsByKey)) {
       mergedTranslations[key] = values.specific || values.base || ''
     }
-    
+
     logger.info('TranslationService', `Processed ${Object.keys(mergedTranslations).length} translations for ${languageCode}`)
-    
+
     // Log sample of processed translations
     const sampleKeys = Object.keys(mergedTranslations).filter(k => k.includes('admin.i18n')).slice(0, 5)
     if (sampleKeys.length > 0) {
@@ -396,18 +396,18 @@ class TranslationService {
       const keys = await this.makeRequest(
         `/i18n_keys?key=eq.${encodeURIComponent(key)}&select=id`
       )
-      
+
       if (!keys || keys.length === 0) {
         return []
       }
-      
+
       const keyId = keys[0].id
-      
+
       // Get published translations for this key across all languages
       const translations = await this.makeRequest(
         `/i18n_translations?select=*,locale_code:language_code&key_id=eq.${keyId}&is_published=eq.true&order=language_code.asc`
       )
-      
+
       return translations
     } catch (error) {
       logger.error('translation-service', `Error getting translations for key: ${key}`, error)
@@ -466,26 +466,26 @@ class TranslationService {
     notes?: string
   }>): Promise<Translation[]> {
     const allResults: Translation[] = []
-    
+
     // Process in very small batches to avoid PostgREST query parsing errors
     const BATCH_SIZE = 10 // Smaller batch size for better reliability
-    
+
     for (let i = 0; i < translations.length; i += BATCH_SIZE) {
       const batch = translations.slice(i, i + BATCH_SIZE)
-      
+
       // Get current versions for this batch - use simpler approach per key/language pair
       const versionMap = new Map<string, number>()
-      
+
       // Get all unique key IDs in this batch
       const uniqueKeyIds = [...new Set(batch.map(t => t.key_id))]
-      
+
       // Fetch all existing translations for these keys in one query
       try {
         const keyIdList = uniqueKeyIds.join(',')
         const existingTranslations = await this.makeRequest(
           `/i18n_translations?key_id=in.(${keyIdList})&select=key_id,language_code,version&order=key_id,language_code,version.desc`
         )
-        
+
         // Build version map from results
         const latestVersions = new Map<string, number>()
         for (const trans of existingTranslations) {
@@ -495,7 +495,7 @@ class TranslationService {
             latestVersions.set(mapKey, trans.version)
           }
         }
-        
+
         // Set the versions in our map
         for (const [key, version] of latestVersions) {
           versionMap.set(key, version)
@@ -519,7 +519,7 @@ class TranslationService {
             'Prefer': 'return=representation'
           }
         })
-        
+
         const batchResults = Array.isArray(result) ? result : [result]
         allResults.push(...batchResults)
       } catch (error) {
@@ -542,7 +542,7 @@ class TranslationService {
         }
       }
     }
-    
+
     return allResults
   }
 
@@ -596,7 +596,7 @@ class TranslationService {
         }
 
         const data = await this.makeRequest(endpoint);
-        
+
         if (!data || data.length === 0) {
           hasMore = false;
           break;
@@ -637,16 +637,16 @@ class TranslationService {
   async getKeysWithTranslationCounts(): Promise<Array<TranslationKey & { translation_count: number }>> {
     try {
       console.log('Fetching keys with translation counts...');
-      
+
       // Get all keys first
       const allKeys = await this.getTranslationKeys();
       console.log(`Fetched ${allKeys.length} keys`);
-      
+
       // For debugging, let's check a specific key we know has translations
       const testKey = allKeys.find(k => k.key === 'admin.navigation.data');
       if (testKey) {
         console.log('Test key found:', testKey);
-        
+
         // Try to get translations for this specific key
         try {
           const testTranslations = await this.makeRequest(
@@ -657,32 +657,32 @@ class TranslationService {
           console.error('Error fetching test translations:', e);
         }
       }
-      
+
       // Get all translations in one go to see what we're working with
       try {
         const sampleTranslations = await this.makeRequest(
           `/i18n_translations?is_published=eq.true&select=key_id&limit=100`
         );
         console.log('Sample translations:', sampleTranslations.length);
-        
+
         // Count unique key_ids to see how many keys have translations
         const uniqueKeyIds = new Set(sampleTranslations.map((t: any) => t.key_id));
         console.log('Unique keys with translations:', uniqueKeyIds.size);
       } catch (e) {
         console.error('Error fetching sample translations:', e);
       }
-      
+
       // For now, return a reasonable default count
       // Get actual language count to use as estimate
       const languages = await this.getActiveLanguages();
       const estimatedCount = languages.length;
       console.log(`Using ${estimatedCount} active languages as estimated count`);
-      
+
       const keysWithCounts = allKeys.map(key => ({
         ...key,
         translation_count: estimatedCount // Temporary: assume all keys are fully translated
       }));
-      
+
       console.log(`Returning ${keysWithCounts.length} keys with estimated counts`);
       return keysWithCounts;
     } catch (error) {
@@ -703,14 +703,14 @@ class TranslationService {
       // Get all active languages
       const languages = await this.getActiveLanguages()
       const locales = languages.map(lang => lang.code)
-      
+
       // Get all keys
       const keys = await this.getTranslationKeys()
       const totalKeys = keys.length
-      
+
       // Get language details with completion stats
       const languageDetails = await this.getLanguageDetails()
-      
+
       // Build completeness object
       const completeness: Record<string, { percentage: number; missing: number }> = {}
       for (const detail of languageDetails) {
@@ -721,7 +721,7 @@ class TranslationService {
           }
         }
       }
-      
+
       return {
         locales,
         totalKeys,
@@ -748,13 +748,13 @@ class TranslationService {
       this.getActiveLanguages(),
       this.makeRequest('/i18n_translations?select=count&is_published=eq.true')
     ])
-    
+
     // Build key counts map
     const keyCounts: Record<number, number> = {}
     keysWithCounts.forEach(key => {
       keyCounts[key.id] = key.translation_count
     })
-    
+
     return {
       totalTranslations: totalTranslations[0]?.count || 0,
       keyCounts,
@@ -841,7 +841,7 @@ class TranslationService {
   ): Promise<{ importedCount: number; errors: string[] }> {
     const { publishImmediately = true, onProgress } = options
     const result = await this.importFromJSON(languageCode, jsonData, publishImmediately, onProgress)
-    
+
     return {
       importedCount: result.keys_created + result.translations_created + result.translations_updated,
       errors: result.errors
@@ -922,7 +922,7 @@ class TranslationService {
         } catch (error) {
           result.errors.push(`Error processing ${key}: ${error instanceof Error ? error.message : String(error)}`)
         }
-        
+
         // Update progress
         processedKeys++
         if (onProgress) {
@@ -969,7 +969,7 @@ class TranslationService {
       targetLocale: targetLanguage,
       context: sourceTranslation.key_description
     })
-    
+
     return aiTranslation
   }
 
@@ -992,11 +992,11 @@ class TranslationService {
     try {
       // Get source translations for all keys
       const keysToTranslate: Array<{ key: TranslationKey; sourceTranslation: Translation }> = []
-      
+
       for (const keyId of keyIds) {
         const key = await this.makeRequest(`/i18n_keys?id=eq.${keyId}`)
         if (!key[0]) continue
-        
+
         const sourceTranslation = await this.getLatestTranslation(keyId, sourceLanguage)
         if (sourceTranslation) {
           keysToTranslate.push({ key: key[0], sourceTranslation })
@@ -1064,7 +1064,7 @@ class TranslationService {
     try {
       // Get all keys
       const keys = await this.getTranslationKeys()
-      
+
       for (const key of keys) {
         try {
           // Check if translation already exists for target language

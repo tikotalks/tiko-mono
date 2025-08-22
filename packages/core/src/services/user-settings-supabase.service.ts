@@ -1,11 +1,11 @@
 /**
  * Supabase User Settings Service Implementation
- * 
+ *
  * @module services/user-settings-supabase
  * @description
  * User settings service that stores data in Supabase database.
  * This implementation makes direct API calls to bypass the broken SDK.
- * 
+ *
  * @example
  * ```typescript
  * // To use this instead of localStorage implementation:
@@ -30,11 +30,11 @@ export class SupabaseUserSettingsService implements UserSettingsService {
       throw new Error('VITE_SUPABASE_URL environment variable is required')
     }
     this.API_URL = `${supabaseUrl}/rest/v1`
-    
+
     // Use public key for browser compatibility
-    this.apiKey = import.meta.env?.VITE_SUPABASE_PUBLIC
+    this.apiKey = import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY
     if (!this.apiKey) {
-      throw new Error('VITE_SUPABASE_PUBLIC environment variable is required')
+      throw new Error('VITE_SUPABASE_PUBLISHABLE_KEY environment variable is required')
     }
   }
 
@@ -45,7 +45,7 @@ export class SupabaseUserSettingsService implements UserSettingsService {
     try {
       const sessionStr = localStorage.getItem('tiko_auth_session')
       if (!sessionStr) return null
-      
+
       const session = JSON.parse(sessionStr)
       return session.access_token
     } catch {
@@ -62,13 +62,13 @@ export class SupabaseUserSettingsService implements UserSettingsService {
     body?: any
   ): Promise<Response> {
     const token = await this.getAuthToken()
-    
+
     const headers: HeadersInit = {
       'apikey': this.apiKey,
       'Content-Type': 'application/json',
       'Prefer': 'return=representation'
     }
-    
+
     if (token) {
       headers['Authorization'] = `Bearer ${token}`
     }
@@ -93,7 +93,7 @@ export class SupabaseUserSettingsService implements UserSettingsService {
 
       if (!response.ok) {
         console.error(`[User Settings Service] Failed to get settings for ${appName}:`, await response.text())
-        
+
         // Fall back to localStorage
         const storageKey = `tiko_user_settings_${userId}_${appName}`
         const localData = localStorage.getItem(storageKey)
@@ -110,15 +110,15 @@ export class SupabaseUserSettingsService implements UserSettingsService {
 
       const data = results[0] as UserSettings
       console.log(`[User Settings Service] Retrieved settings for ${appName}:`, data)
-      
+
       // Cache in localStorage
       const storageKey = `tiko_user_settings_${userId}_${appName}`
       localStorage.setItem(storageKey, JSON.stringify(data))
-      
+
       return data
     } catch (error) {
       console.error(`[User Settings Service] Error getting settings for ${appName}:`, error)
-      
+
       // Fall back to localStorage
       const storageKey = `tiko_user_settings_${userId}_${appName}`
       const localData = localStorage.getItem(storageKey)
@@ -127,7 +127,7 @@ export class SupabaseUserSettingsService implements UserSettingsService {
           return JSON.parse(localData)
         } catch {}
       }
-      
+
       return null
     }
   }
@@ -135,7 +135,7 @@ export class SupabaseUserSettingsService implements UserSettingsService {
   async saveSettings(userId: string, appName: string, settings: Record<string, any>): Promise<UserSettingsResult> {
     try {
       const now = new Date().toISOString()
-      
+
       // First try to update existing
       const existingResponse = await this.makeRequest(
         `/user_settings?user_id=eq.${userId}&app_name=eq.${appName}`,
@@ -176,12 +176,12 @@ export class SupabaseUserSettingsService implements UserSettingsService {
       // Cache in localStorage
       const storageKey = `tiko_user_settings_${userId}_${appName}`
       localStorage.setItem(storageKey, JSON.stringify(data))
-      
+
       console.log(`[User Settings Service] Saved settings for ${appName}:`, data)
       return { success: true, data }
     } catch (error) {
       console.error(`[User Settings Service] Error saving settings for ${appName}:`, error)
-      
+
       // Fall back to localStorage only
       const now = new Date().toISOString()
       const data: UserSettings = {
@@ -192,10 +192,10 @@ export class SupabaseUserSettingsService implements UserSettingsService {
         created_at: now,
         updated_at: now
       }
-      
+
       const storageKey = `tiko_user_settings_${userId}_${appName}`
       localStorage.setItem(storageKey, JSON.stringify(data))
-      
+
       return { success: true, data }
     }
   }
@@ -203,7 +203,7 @@ export class SupabaseUserSettingsService implements UserSettingsService {
   async updateSettings(userId: string, appName: string, settings: Partial<Record<string, any>>): Promise<UserSettingsResult> {
     try {
       const existingData = await this.getSettings(userId, appName)
-      
+
       const updatedSettings = existingData ? {
         ...existingData.settings,
         ...settings
@@ -231,7 +231,7 @@ export class SupabaseUserSettingsService implements UserSettingsService {
       // Remove from localStorage
       const storageKey = `tiko_user_settings_${userId}_${appName}`
       localStorage.removeItem(storageKey)
-      
+
       console.log(`[User Settings Service] Deleted settings for ${appName}`)
       return { success: true }
     } catch (error) {
@@ -248,20 +248,20 @@ export class SupabaseUserSettingsService implements UserSettingsService {
 
       if (!response.ok) {
         console.error(`[User Settings Service] Failed to get all settings for user:`, await response.text())
-        
+
         // Fall back to localStorage
         return this.getAllFromLocalStorage(userId)
       }
 
       const results = await response.json() as UserSettings[]
       console.log(`[User Settings Service] Retrieved all settings for user ${userId}:`, results)
-      
+
       // Cache each in localStorage
       results.forEach(settings => {
         const storageKey = `tiko_user_settings_${userId}_${settings.app_name}`
         localStorage.setItem(storageKey, JSON.stringify(settings))
       })
-      
+
       return results
     } catch (error) {
       console.error(`[User Settings Service] Error getting all settings for user ${userId}:`, error)
@@ -284,16 +284,16 @@ export class SupabaseUserSettingsService implements UserSettingsService {
       // Clear all from localStorage
       const prefix = `tiko_user_settings_${userId}_`
       const keysToRemove: string[] = []
-      
+
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i)
         if (key && key.startsWith(prefix)) {
           keysToRemove.push(key)
         }
       }
-      
+
       keysToRemove.forEach(key => localStorage.removeItem(key))
-      
+
       console.log(`[User Settings Service] Deleted all settings for user ${userId}`)
       return { success: true }
     } catch (error) {
@@ -308,7 +308,7 @@ export class SupabaseUserSettingsService implements UserSettingsService {
   private getAllFromLocalStorage(userId: string): UserSettings[] {
     const prefix = `tiko_user_settings_${userId}_`
     const settingsArray: UserSettings[] = []
-    
+
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i)
       if (key && key.startsWith(prefix)) {
@@ -323,7 +323,7 @@ export class SupabaseUserSettingsService implements UserSettingsService {
         }
       }
     }
-    
+
     return settingsArray
   }
 }

@@ -1,6 +1,6 @@
 /**
  * Database-connected I18n Generator
- * 
+ *
  * Generates static TypeScript translation files from the actual Supabase database.
  * This version works in Node.js environment using node-fetch.
  */
@@ -44,24 +44,24 @@ class DatabaseI18nGenerator {
   constructor(options = {}) {
     this.options = options
     this.baseOutputDir = options.outputDir || path.join(process.cwd(), 'packages/ui/src/i18n/generated')
-    
+
     // Get environment variables
     this.supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL
-    this.supabaseKey = process.env.VITE_SUPABASE_PUBLIC || process.env.SUPABASE_ANON_KEY
-    
+    this.supabaseKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY
+
     if (!this.supabaseUrl || !this.supabaseKey) {
-      console.warn('⚠️  Missing Supabase configuration. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLIC environment variables.')
+      console.warn('⚠️  Missing Supabase configuration. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY environment variables.')
       console.warn('💡 Falling back to mock data generation...')
       throw new Error('NO_SUPABASE_CONFIG')
     }
-    
+
     this.baseUrl = this.supabaseUrl + '/rest/v1'
-    
+
     // Import node-fetch dynamically to handle both CommonJS and ESM
     this.fetch = null
     this.initializeFetch()
   }
-  
+
   async initializeFetch() {
     try {
       // Try to use global fetch (Node.js 18+)
@@ -82,9 +82,9 @@ class DatabaseI18nGenerator {
     if (!this.fetch) {
       await this.initializeFetch()
     }
-    
+
     const url = `${this.baseUrl}${endpoint}`
-    
+
     const response = await this.fetch(url, {
       ...options,
       headers: {
@@ -123,12 +123,12 @@ class DatabaseI18nGenerator {
 
     while (hasMore) {
       this.log(`📦 Fetching batch ${Math.floor(offset / limit) + 1} (offset: ${offset}, limit: ${limit})`)
-      
+
       const keys = await this.makeRequest(`/i18n_keys?order=key.asc&limit=${limit}&offset=${offset}`)
       allKeys.push(...keys)
-      
+
       this.log(`📦 Received ${keys.length} keys in this batch (total so far: ${allKeys.length})`)
-      
+
       // If we got less than the limit, we're done
       hasMore = keys.length === limit
       offset += limit
@@ -146,9 +146,9 @@ class DatabaseI18nGenerator {
 
   async getTranslationsForLanguage(languageCode) {
     this.log(`Fetching translations for language: ${languageCode}`)
-    
+
     let query = `/i18n_translations?select=i18n_keys(key),value,language_code&is_published=eq.true`
-    
+
     // If locale has a region, fetch both base and specific in one query
     if (languageCode.includes('-')) {
       const baseLocale = languageCode.split('-')[0]
@@ -156,21 +156,21 @@ class DatabaseI18nGenerator {
     } else {
       query += `&language_code=eq.${languageCode}`
     }
-    
+
     const translations = await this.makeRequest(query)
-    
+
     // Process translations, merging base and specific locales
     const translationsByKey = {}
     const baseLocale = languageCode.includes('-') ? languageCode.split('-')[0] : null
-    
+
     for (const translation of translations) {
       if (translation.i18n_keys && translation.i18n_keys.key) {
         const key = translation.i18n_keys.key
-        
+
         if (!translationsByKey[key]) {
           translationsByKey[key] = {}
         }
-        
+
         if (translation.language_code === baseLocale) {
           translationsByKey[key].base = translation.value
         } else {
@@ -178,13 +178,13 @@ class DatabaseI18nGenerator {
         }
       }
     }
-    
+
     // Merge translations: specific locale overrides base
     const mergedTranslations = {}
     for (const [key, values] of Object.entries(translationsByKey)) {
       mergedTranslations[key] = values.specific || values.base || ''
     }
-    
+
     this.log(`Processed ${Object.keys(mergedTranslations).length} translations for ${languageCode}`)
     return mergedTranslations
   }
@@ -232,7 +232,7 @@ class DatabaseI18nGenerator {
     if (this.options.languages) {
       return this.options.languages
     }
-    
+
     const activeLanguages = await this.getActiveLanguages()
     return activeLanguages.map(lang => lang.code)
   }
@@ -265,7 +265,7 @@ class DatabaseI18nGenerator {
 
     if (includeSections) {
       // Only include specified sections
-      filteredKeys = keyStrings.filter(key => 
+      filteredKeys = keyStrings.filter(key =>
         includeSections.some(section => key.startsWith(`${section}.`))
       )
       this.log(`📦 Including sections: ${includeSections.join(', ')}`)
@@ -273,7 +273,7 @@ class DatabaseI18nGenerator {
 
     if (excludeSections) {
       // Exclude specified sections
-      filteredKeys = filteredKeys.filter(key => 
+      filteredKeys = filteredKeys.filter(key =>
         !excludeSections.some(section => key.startsWith(`${section}.`))
       )
       this.log(`🚫 Excluding sections: ${excludeSections.join(', ')}`)
@@ -290,7 +290,7 @@ class DatabaseI18nGenerator {
     try {
       // Get translations for this language
       const allTranslations = await this.getTranslationsForLanguage(language)
-      
+
       // Filter to only include our target keys
       const filteredTranslations = {}
       for (const key of keys) {
@@ -346,16 +346,16 @@ class DatabaseI18nGenerator {
   generateTypeScriptContent(language, translations) {
     const timestamp = new Date().toISOString()
     const app = this.options.app ? ` for app: ${this.options.app}` : ''
-    
+
     return `/**
  * Generated translation file for ${language}${app}
- * 
+ *
  * Generated on: ${timestamp}
  * Source: Tiko translation database
- * 
+ *
  * ⚠️  DO NOT EDIT MANUALLY - This file is auto-generated
  * ⚠️  Changes will be overwritten on next generation
- * 
+ *
  * To update translations:
  * 1. Edit translations in the admin dashboard
  * 2. Run: pnpm run generate:i18n
@@ -377,7 +377,7 @@ export type { Translations } from './types'
       // Get actual translations from a reference language (en-GB) to derive the real structure
       const referenceLanguage = 'en-GB'
       const actualTranslations = await this.getTranslationsForLanguage(referenceLanguage)
-      
+
       // Filter to only include our target keys
       const filteredTranslations = {}
       for (const key of keys) {
@@ -392,9 +392,9 @@ export type { Translations } from './types'
 
       const content = `/**
  * TypeScript interfaces for translation files
- * 
+ *
  * Generated on: ${new Date().toISOString()}
- * 
+ *
  * ⚠️  DO NOT EDIT MANUALLY - This file is auto-generated
  */
 
@@ -432,9 +432,9 @@ export type TranslationKeyPath = NestedKeyOf<Translations>
 
       const content = `/**
  * TypeScript interfaces for translation files
- * 
+ *
  * Generated on: ${new Date().toISOString()}
- * 
+ *
  * ⚠️  DO NOT EDIT MANUALLY - This file is auto-generated
  */
 
@@ -483,18 +483,18 @@ export type TranslationKeyPath = NestedKeyOf<Translations>
 
     const content = `/**
  * Generated translation index file
- * 
+ *
  * This file provides easy access to all generated translation files
- * 
+ *
  * Generated on: ${new Date().toISOString()}
- * 
+ *
  * ⚠️  DO NOT EDIT MANUALLY - This file is auto-generated
  */
 
 import type { Translations } from './types'
 
 // Import all language files
-${languages.map((lang) => 
+${languages.map((lang) =>
   `import ${lang.replace('-', '_')} from './${lang}'`
 ).join('\n')}
 
@@ -542,27 +542,27 @@ export function isLanguageSupported(language: string): language is AvailableLang
 
     const content = `/**
  * App-specific translations export for ${app}
- * 
+ *
  * This file is optimized for the ${app} app and only contains
  * relevant translation sections.
- * 
+ *
  * Generated on: ${new Date().toISOString()}
- * 
+ *
  * ⚠️  DO NOT EDIT MANUALLY - This file is auto-generated
  */
 
-export { 
+export {
   translations,
   getTranslations,
   isLanguageSupported,
   AVAILABLE_LANGUAGES
 } from './index'
 
-export type { 
-  Translations, 
-  TranslationKey, 
+export type {
+  Translations,
+  TranslationKey,
   TranslationKeyPath,
-  AvailableLanguage 
+  AvailableLanguage
 } from './index'
 
 // App-specific re-exports for convenience
