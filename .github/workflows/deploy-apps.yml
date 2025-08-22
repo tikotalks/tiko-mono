@@ -238,7 +238,6 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
           VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
           VITE_SITE_URL: https://timer.tikoapps.org
@@ -288,7 +287,6 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
           VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
@@ -340,7 +338,6 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
           VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
           VITE_SITE_URL: https://cards.tikoapps.org
@@ -390,7 +387,6 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
           VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
@@ -442,7 +438,6 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
           VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
           VITE_SITE_URL: https://todo.tikoapps.org
@@ -493,7 +488,6 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
           VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
           VITE_SITE_URL: https://type.tikoapps.org
@@ -543,7 +537,6 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
           VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
