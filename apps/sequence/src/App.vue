@@ -24,7 +24,7 @@ import { useRoute } from 'vue-router'
 import { TFramework, type FrameworkConfig, TOfflineIndicator } from '@tiko/ui'
 import { useEventBus, useAppStore } from '@tiko/core'
 import tikoConfig from '../tiko.config'
-import { initializeTranslations } from '@tiko/core'
+import { initializeTranslations, useI18n } from '@tiko/core'
 
 const route = useRoute()
 const loading = ref(true)
