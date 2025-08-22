@@ -25,7 +25,7 @@
         <!-- Login button when in skip auth mode -->
         <TButton v-if="isSkipAuthMode" :class="bemm('login-button')" type="ghost" :icon="Icons.USER"
           @click="handleSkipAuthLogin">
-          {{ t(keys.auth.login) }}
+          {{ t.value ? t.value(keys.value?.auth?.login || 'Login') : 'Login' }}
         </TButton>
 
       </TAppLayout>
@@ -103,7 +103,28 @@ const initializeStores = () => {
 // Try to initialize stores immediately
 initializeStores()
 
-const { setLocale, t, keys, locale } = useI18n()
+// Initialize i18n after stores are available
+const i18nRef = ref(null)
+const setLocale = ref(null)
+const t = ref((key) => key)
+const keys = ref({ auth: { login: 'Login' } })
+const locale = ref('en')
+
+// Initialize i18n when stores are available
+const initializeI18n = () => {
+  try {
+    const i18n = useI18n()
+    i18nRef.value = i18n
+    setLocale.value = i18n.setLocale
+    t.value = i18n.t
+    keys.value = i18n.keys
+    locale.value = i18n.locale
+    return true
+  } catch (error) {
+    console.warn('[TFramework] i18n not available yet, will retry...', error)
+    return false
+  }
+}
 
 // Set config and get theme styles
 const { themeStyles, config: tikoConfig } = useTikoConfig(props.config)
@@ -325,7 +346,9 @@ watch(currentLanguage, (newLanguage, oldLanguage) => {
   if (newLanguage && newLanguage !== locale.value && newLanguage !== oldLanguage) {
     console.log('[TFramework] Language changed in settings:', newLanguage, 'current locale:', locale.value)
     isSettingLocale = true
-    setLocale(newLanguage as Locale)
+    if (setLocale.value) {
+      setLocale.value(newLanguage as Locale)
+    }
 
     // Reset flag after a short delay
     setTimeout(() => {
@@ -374,8 +397,18 @@ onMounted(async () => {
         const retrySuccess = initializeStores()
         if (!retrySuccess) {
           console.error('[TFramework] Failed to initialize stores after retry!')
+        } else {
+          // Initialize i18n after stores are ready
+          initializeI18n()
         }
       }, 100)
+    } else {
+      // Initialize i18n after stores are ready
+      initializeI18n()
+    }
+  } else {
+    // Initialize i18n if stores are already available
+    initializeI18n()
     }
   }
 
