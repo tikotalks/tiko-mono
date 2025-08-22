@@ -4,7 +4,7 @@
       <img
         v-if="props.backgroundImage"
         :src="props.backgroundImage"
-        :alt="keys?.common?.backgroundImage ? t(keys.common.backgroundImage) : 'Background Image'"
+        :alt="t('common.backgroundImage')"
         :class="bemm('image')"
       />
     </div>
@@ -27,8 +27,8 @@
     <!-- Login Form within App Layout -->
     <TAppLayout
       v-else-if="requireAuth && !isAuthenticated && !isAuthCallbackRoute && !isInitializing"
-      :title="t(keys.auth.welcomeToTiko)"
-      :subtitle="t(keys.auth.signInToAccess)"
+      :title="t('auth.welcomeToTiko')"
+      :subtitle="t('auth.signInToAccess')"
       :showHeader="false"
       data-cy="auth-app-layout"
     >
@@ -87,7 +87,7 @@ const bemm = useBemm('auth-wrapper')
 const route = useRoute()
 
 // i18n
-const { t, keys } = useI18n()
+const { t } = useI18n()
 
 // Get Tiko config for theme
 const { config: tikoConfig } = useTikoConfig()
@@ -163,7 +163,7 @@ const handleAppleSignIn = async () => {
     await authStore.signInWithApple();
   } catch (error) {
     authError.value =
-      error instanceof Error ? error.message : t(keys?.auth?.appleSignInFailed || 'auth.appleSignInFailed');
+      error instanceof Error ? error.message : t('auth.appleSignInFailed');
   } finally {
     authLoading.value = false;
   }
@@ -180,7 +180,7 @@ const handleEmailSubmit = async (email: string, fullName?: string) => {
     authError.value =
       error instanceof Error
         ? error.message
-        : t(keys.auth.failedToSendCode);
+        : t('auth.failedToSendCode');
   } finally {
     authLoading.value = false;
   }
@@ -195,7 +195,7 @@ const handleVerificationSubmit = async (email: string, code: string) => {
     await authStore.verifyEmailOtp(email, code);
   } catch (error) {
     authError.value =
-      error instanceof Error ? error.message : t(keys.auth.invalidVerificationCode);
+      error instanceof Error ? error.message : t('auth.invalidVerificationCode');
   } finally {
     authLoading.value = false;
   }
@@ -209,7 +209,7 @@ const handleResendCode = async (email: string) => {
     await authStore.resendEmailOtp(email);
   } catch (error) {
     authError.value =
-      error instanceof Error ? error.message : t(keys.auth.failedToResendCode);
+      error instanceof Error ? error.message : t('auth.failedToResendCode');
   }
 };
 
