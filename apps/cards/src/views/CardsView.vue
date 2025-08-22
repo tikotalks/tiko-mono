@@ -25,6 +25,7 @@
         :color="isEditMode ? 'primary' : 'secondary'"
         @click="toggleEditMode"
         :tooltip="isEditMode ? t('common.exitEditMode') : t('common.enterEditMode')"
+        :tooltip-settings="{delay: 0.5, position: ToolTipPosition.BOTTOM}"
         :aria-label="isEditMode ? t('common.exitEditMode') : t('common.enterEditMode')"
       />
 
@@ -72,7 +73,7 @@
         @click="handleAppSettings"
         :aria-label="t('cards.cardsSettings')"
       />
-      
+
       <!-- Dev only: Clear cache button -->
       <TButton
         v-if="isParentModeUnlocked && isDev"
@@ -190,6 +191,8 @@ import {
   TContextMenu,
   BaseColors,
   useParentMode,
+  ToolTipPosition,
+  ConfirmDialog,
 } from '@tiko/ui';
 import { useI18n } from '@tiko/core';
 import { useCardStore } from '../stores/cards';
@@ -383,31 +386,31 @@ const loadCards = async () => {
       const newTileChildrenMap = new Map<string, CardTile[]>();
 
       // Debug: Log all cards and their has_children status
-      console.log('[CardsView] All loaded cards:', savedCards.map(c => ({ 
-        id: c.id, 
-        title: c.title, 
+      console.log('[CardsView] All loaded cards:', savedCards.map(c => ({
+        id: c.id,
+        title: c.title,
         has_children: c.has_children,
-        parentId: c.parentId 
+        parentId: c.parentId
       })));
-      
+
       // Only check cards that are marked as having children
-      const cardsWithChildren = savedCards.filter(card => 
+      const cardsWithChildren = savedCards.filter(card =>
         !card.id.startsWith('empty-') && card.has_children === true
       );
-      
+
       console.log(`[CardsView] Loading children for ${cardsWithChildren.length} cards marked with has_children`);
       console.log('[CardsView] Cards with has_children flag:', cardsWithChildren.map(c => ({ id: c.id, title: c.title, has_children: c.has_children })));
 
       // Load children in parallel with a limit to avoid overwhelming the API
       const BATCH_SIZE = 5;
-      
+
       for (let i = 0; i < cardsWithChildren.length; i += BATCH_SIZE) {
         const batch = cardsWithChildren.slice(i, i + BATCH_SIZE);
         const batchNumber = Math.floor(i / BATCH_SIZE) + 1;
         const totalBatches = Math.ceil(cardsWithChildren.length / BATCH_SIZE);
-        
+
         console.log(`[CardsView] Processing batch ${batchNumber} of ${totalBatches} (${batch.length} cards)`);
-        
+
         await Promise.all(batch.map(async (card) => {
           try {
             // Always load children to ensure fresh data
@@ -415,8 +418,12 @@ const loadCards = async () => {
             const children = await yesNoStore.loadCards(card.id, currentLocale.value);
             if (children.length > 0) {
               newTilesWithChildren.add(card.id);
-              newTileChildrenMap.set(card.id, children);
-              console.log(`[CardsView] Loaded ${children.length} children for card ${card.id} (${card.title})`);
+              // Ensure we have unique children by filtering out duplicates based on ID
+              const uniqueChildren = children.filter((child, index, self) => 
+                index === self.findIndex(c => c.id === child.id)
+              );
+              newTileChildrenMap.set(card.id, uniqueChildren);
+              console.log(`[CardsView] Loaded ${uniqueChildren.length} unique children for card ${card.id} (${card.title})`);
             } else {
               // If has_children is true but no children found, it might need fixing
               console.warn(`[CardsView] Card ${card.id} (${card.title}) marked as has_children but no children found`);
@@ -426,17 +433,17 @@ const loadCards = async () => {
             // Continue with other cards even if one fails
           }
         }));
-        
+
         console.log(`[CardsView] Completed batch ${batchNumber} of ${totalBatches}`);
       }
-      
+
       // Additionally, for cards not marked with has_children but that might be new groups,
       // we can check a small subset (like recently modified cards) to catch any missed updates
       const recentlyModified = savedCards
         .filter(card => !card.id.startsWith('empty-') && !card.has_children)
         .sort((a, b) => new Date(b.updated_at || 0).getTime() - new Date(a.updated_at || 0).getTime())
         .slice(0, 3); // Only check the 3 most recently modified cards
-        
+
       if (recentlyModified.length > 0) {
         console.log(`[CardsView] Checking ${recentlyModified.length} recently modified cards for children`);
         await Promise.all(recentlyModified.map(async (card) => {
@@ -444,8 +451,15 @@ const loadCards = async () => {
             const children = await yesNoStore.loadCards(card.id, currentLocale.value);
             if (children.length > 0) {
               newTilesWithChildren.add(card.id);
-              newTileChildrenMap.set(card.id, children);
-              console.log(`Found children for card ${card.id} - has_children flag may need updating`);
+              // Only add if not already in the map to avoid duplicates
+              if (!newTileChildrenMap.has(card.id)) {
+                // Ensure we have unique children by filtering out duplicates based on ID
+                const uniqueChildren = children.filter((child, index, self) => 
+                  index === self.findIndex(c => c.id === child.id)
+                );
+                newTileChildrenMap.set(card.id, uniqueChildren);
+                console.log(`Found ${uniqueChildren.length} unique children for card ${card.id} - has_children flag may need updating`);
+              }
             }
           } catch (error) {
             // Ignore errors for this verification check
@@ -455,7 +469,7 @@ const loadCards = async () => {
 
       tilesWithChildren.value = newTilesWithChildren;
       tileChildrenMap.value = newTileChildrenMap;
-      
+
       console.log(`[CardsView] Final state: ${tilesWithChildren.value.size} cards have children`);
       console.log('[CardsView] tileChildrenMap:', Array.from(tileChildrenMap.value.entries()).map(([id, children]) => ({ id, childCount: children.length })));
     } else {
@@ -589,7 +603,7 @@ const getCardContextMenu = (card: CardTile, index: number) => {
 
   // Show hide/show options based on item state
   const isHidden = yesNoStore.settings.hiddenItems.includes(card.id);
-  
+
   if (isHidden) {
     // Show option for hidden items
     items.push({
@@ -721,8 +735,8 @@ const openCardEditForm = async (card: CardTile, index: number) => {
             // For existing cards, use optimistic update
             const originalCard = { ...card };
             const originalCardsArray = [...cards.value];
-            const originalChildrenMap = card.parentId && tileChildrenMap.value.has(card.parentId) 
-              ? [...tileChildrenMap.value.get(card.parentId)!] 
+            const originalChildrenMap = card.parentId && tileChildrenMap.value.has(card.parentId)
+              ? [...tileChildrenMap.value.get(card.parentId)!]
               : null;
 
             try {
@@ -771,7 +785,7 @@ const openCardEditForm = async (card: CardTile, index: number) => {
               // Rollback on failure
               cards.value = originalCardsArray;
               await yesNoStore.updateCardInCache(originalCard, currentGroupId.value, currentLocale.value);
-              
+
               // Rollback children map if needed
               if (originalChildrenMap && originalCard.parentId) {
                 tileChildrenMap.value.set(originalCard.parentId, originalChildrenMap);
@@ -798,56 +812,72 @@ const openCardEditForm = async (card: CardTile, index: number) => {
 const confirmDeleteCard = async (card: CardTile) => {
   const hasChildren = tilesWithChildren.value.has(card.id);
   const message = hasChildren
-    ? t('cards.deleteThisCard') + ' ' + 'This will also delete all contents in this group.'
+    ? t('cards.deleteThisCard') + ' ' + t('cards.deleteGroupWarning')
     : t('cards.deleteThisCard');
 
-  if (confirm(message)) {
-    // Store original state for rollback
-    const originalCards = [...cards.value];
-    const originalHasChildren = tilesWithChildren.value.has(card.id);
-    const originalChildren = tileChildrenMap.value.get(card.id);
+  popupService.open({
+    component: ConfirmDialog,
+    props: {
+      title: t('cards.deleteCard'),
+      message: message,
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
+      confirmColor: 'error',
+      onConfirm: async () => {
+        // Store original state for rollback
+        const originalCards = [...cards.value];
+        const originalHasChildren = tilesWithChildren.value.has(card.id);
+        const originalChildren = tileChildrenMap.value.get(card.id);
 
-    try {
-      // Optimistic update - remove from UI immediately
-      cards.value = cards.value.filter(c => c.id !== card.id);
-      tilesWithChildren.value.delete(card.id);
-      tileChildrenMap.value.delete(card.id);
+        try {
+          // Optimistic update - remove from UI immediately
+          cards.value = cards.value.filter(c => c.id !== card.id);
+          tilesWithChildren.value.delete(card.id);
+          tileChildrenMap.value.delete(card.id);
 
-      // Remove from store cache
-      await yesNoStore.removeCardFromCache(card.id, currentGroupId.value, currentLocale.value);
+          // Remove from store cache
+          await yesNoStore.removeCardFromCache(card.id, currentGroupId.value, currentLocale.value);
 
-      // Delete from database in background
-      const success = await cardsService.deleteCard(card.id);
+          // Delete from database in background
+          const success = await cardsService.deleteCard(card.id);
 
-      if (!success) {
-        throw new Error('Failed to delete card');
+          if (!success) {
+            throw new Error('Failed to delete card');
+          }
+
+          // Success - no need to do anything, UI is already updated
+          console.log('Card deleted successfully:', card.id);
+
+          popupService.close();
+        } catch (error) {
+          console.error('Failed to delete card:', error);
+
+          // Rollback on failure
+          cards.value = originalCards;
+          if (originalHasChildren) {
+            tilesWithChildren.value.add(card.id);
+          }
+          if (originalChildren) {
+            tileChildrenMap.value.set(card.id, originalChildren);
+          }
+
+          // Re-add to cache
+          await yesNoStore.updateCardInCache(card, currentGroupId.value, currentLocale.value);
+
+          // Show error toast
+          toastService?.show({
+            message: t('cards.failedToDeleteCard'),
+            type: 'error'
+          });
+
+          popupService.close();
+        }
+      },
+      onCancel: () => {
+        popupService.close();
       }
-
-      // Success - no need to do anything, UI is already updated
-      console.log('Card deleted successfully:', card.id);
-
-    } catch (error) {
-      console.error('Failed to delete card:', error);
-
-      // Rollback on failure
-      cards.value = originalCards;
-      if (originalHasChildren) {
-        tilesWithChildren.value.add(card.id);
-      }
-      if (originalChildren) {
-        tileChildrenMap.value.set(card.id, originalChildren);
-      }
-
-      // Re-add to cache
-      await yesNoStore.updateCardInCache(card, currentGroupId.value, currentLocale.value);
-
-      // Show error toast
-      toastService?.show({
-        message: t('cards.failedToDeleteCard'),
-        type: 'error'
-      });
     }
-  }
+  });
 };
 
 // Hide item from user's view
@@ -1108,7 +1138,10 @@ const handleCardDrop = async (droppedCard: CardTile, targetCard: CardTile) => {
     await cardsService.saveCard(updatedCard, targetCard.id, nextIndex);
 
     // Update the children map after successful save
-    const allChildren = [...existingChildren, droppedCard];
+    // Ensure no duplicates by filtering based on ID
+    const allChildren = [...existingChildren, droppedCard].filter((child, index, self) => 
+      index === self.findIndex(c => c.id === child.id)
+    );
     tileChildrenMap.value.set(targetCard.id, allChildren);
 
     console.log(`Moved "${droppedCard.title}" into group "${targetCard.title}" at index ${nextIndex}`);
@@ -1193,7 +1226,10 @@ const handleMultiCardDrop = async (droppedCards: CardTile[], targetCard: CardTil
     tilesWithChildren.value.add(targetCard.id);
 
     // Update the children preview for the target tile
-    const allChildren = [...existingChildren, ...sortedDroppedCards];
+    // Ensure no duplicates by filtering based on ID
+    const allChildren = [...existingChildren, ...sortedDroppedCards].filter((child, index, self) => 
+      index === self.findIndex(c => c.id === child.id)
+    );
     tileChildrenMap.value.set(targetCard.id, allChildren);
 
     // Clear selection after successful drop
@@ -1392,7 +1428,7 @@ const moveSelectedToGroup = async () => {
       onSelect: async (group: CardTile) => {
         try {
           console.log(`[CardsView] Moving ${selectedCards.length} cards to group ${group.id} (${group.title})`);
-          
+
           // Get existing children to find the next available index
           const existingChildren = await cardsService.loadCards(group.id);
           let nextIndex = existingChildren.length;
@@ -1401,13 +1437,13 @@ const moveSelectedToGroup = async () => {
           // Move all selected cards to the target group with sequential indices
           for (const card of selectedCards) {
             console.log(`[CardsView] Moving card ${card.id} (${card.title}) to parent ${group.id} at index ${nextIndex}`);
-            
+
             const result = await cardsService.saveCard({
               ...card,
               parentId: group.id,  // Set the new parent
               index: nextIndex     // Set the sequential index
             }, group.id, nextIndex);  // Pass both parentId and index parameters
-            
+
             console.log(`[CardsView] Save result for ${card.id}:`, result);
 
             nextIndex++; // Increment for next card
@@ -1493,12 +1529,26 @@ const deleteSelected = () => {
   const hasGroups = Array.from(selectedTileIds.value).some(id => tilesWithChildren.value.has(id));
 
   const message = hasGroups
-    ? `Are you sure you want to delete ${selectedCount} card(s)? Some are groups and will delete all their contents.`
-    : `Are you sure you want to delete ${selectedCount} card(s)?`;
+    ? t('cards.confirmDeleteMultiple', { count: selectedCount }) + ' ' + t('cards.deleteGroupsWarning')
+    : t('cards.confirmDeleteMultiple', { count: selectedCount });
 
-  if (confirm(message)) {
-    deleteSelectedCards();
-  }
+  popupService.open({
+    component: ConfirmDialog,
+    props: {
+      title: t('cards.deleteSelectedCards'),
+      message: message,
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
+      confirmColor: 'error',
+      onConfirm: async () => {
+        await deleteSelectedCards();
+        popupService.close();
+      },
+      onCancel: () => {
+        popupService.close();
+      }
+    }
+  });
 };
 
 const deleteSelectedCards = async () => {
@@ -1554,14 +1604,14 @@ const findFirstEmptyPosition = (): number => {
 // Clear cache and reload all cards (dev only)
 const handleClearCacheAndReload = async () => {
   console.log('[CardsView] Clearing cache and reloading all cards...');
-  
+
   // Show loading state
   isLoading.value = true;
-  
+
   try {
     // Clear the cache
     await yesNoStore.clearCache();
-    
+
     // Also run has_children verification
     console.log('[CardsView] Running has_children verification...');
     const verifyResult = await yesNoStore.verifyHasChildrenFlags();
@@ -1572,13 +1622,13 @@ const handleClearCacheAndReload = async () => {
         type: 'success'
       });
     }
-    
+
     // Force reload all cards
     await yesNoStore.loadAllCards(currentLocale.value);
-    
+
     // Reload current view
     await loadCards();
-    
+
     console.log('[CardsView] Cache cleared and cards reloaded');
   } catch (error) {
     console.error('[CardsView] Failed to clear cache and reload:', error);
@@ -1738,7 +1788,7 @@ const buildBreadcrumbs = async (cardId: string | undefined) => {
 watch(() => route.params.cardId as string | undefined, async (cardId) => {
   try {
     console.log('[CardsView] Route changed to:', cardId);
-    
+
     // Show loading state
     if (!isLoading.value) {
       cards.value = generateGhostCards();
@@ -1830,7 +1880,7 @@ onMounted(async () => {
     console.log('[CardsView] Loading all cards on app initialization...');
     await yesNoStore.loadAllCards(currentLocale.value);
     console.log('[CardsView] All cards loaded into cache');
-    
+
     // Mark initial load as complete
     isInitialLoadComplete.value = true;
 
@@ -1843,7 +1893,7 @@ onMounted(async () => {
       await buildBreadcrumbs(route.params.cardId as string | undefined);
       await loadCards();
     }
-    
+
     console.log('[CardsView] Initialization complete');
   } catch (error) {
     console.error('[CardsView] Failed to initialize:', error);

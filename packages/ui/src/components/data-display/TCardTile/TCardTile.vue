@@ -1,7 +1,13 @@
 <template>
-  <TContextMenu v-if="contextMenu && contextMenu.length > 0 && !isEmpty"
-    :config="{ menu: contextMenu, position: contextMenuPosition }" @menu-open="$emit('menu-open')"
-    @menu-close="$emit('menu-close')">
+  <component
+    :is="contextMenu && contextMenu.length > 0 && !isEmpty ? TContextMenu : 'div'"
+    :class="bemm('container')"
+    v-bind="contextMenu && contextMenu.length > 0 && !isEmpty ? {
+      config: { menu: contextMenu, position: contextMenuPosition }
+    } : {}"
+    @menu-open="$emit('menu-open')"
+    @menu-close="$emit('menu-close')"
+  >
     <div ref="wrapperEl" :class="bemm('wrapper', ['',
       isDragging ? 'dragging' : '',
       canDrag ? 'can-drag' : '',
@@ -62,71 +68,11 @@
         </div>
       </article>
     </div>
-  </TContextMenu>
-
-  <!-- Fallback when no context menu -->
-  <div v-else ref="wrapperEl" :class="bemm('wrapper',
-    ['',
-      isDragging ? 'dragging' : '',
-      canDrag ? 'can-drag' : '',
-      isDragReady ? 'drag-ready' : '',
-      isSelected ? 'selected' : '',
-      selectionMode ? 'selection-mode' : '',
-      isImageLoaded && displayImage && imageUrl ? 'image-loaded' : '',
-      props.customState || ''
-    ])" @click.stop="handleClick" @mousedown.stop="handleMouseDown" @mouseup.stop="handleMouseUp"
-    @touchstart.stop="handleTouchStart" @touchend.stop="handleTouchEnd" @touchmove.stop="handleTouchMove"
-    @touchcancel.stop="handleTouchEnd" :draggable="canDrag" @dragstart.stop="handleDragStart"
-    @dragend.stop="handleDragEnd" @dragover.stop="handleDragOver" @dragleave.stop="handleDragLeave"
-    @drop.stop="handleDrop">
-    <article :class="tileClasses" @pointermove="setPointerPosition" :style="!isEmpty && card?.color ? {
-      '--card-color': `var(--color-${card.color})`, '--card-text': `var(--color-${card.color}-text)`,
-      '--x': `${pointer.x}`,
-      '--y': `${pointer.y}`
-    } : undefined" tabindex="0">
-      <div v-if="isEmpty && editMode" :class="bemm('empty-state')">
-        <TIcon name="plus" size="large" />
-      </div>
-      <div v-else :class="bemm('container')">
-        <div :class="bemm('status')" v-if="isPublic || isCurated">
-          <TIcon v-if="isCurated" :name="Icons.STAR_M" :tooltip="t('common.curated')"></TIcon>
-          <TIcon v-else-if="isPublic" :name="Icons.ACCESSIBILITY_PERSON" :tooltip="t('common.public')"></TIcon>
-        </div>
-        <!-- Show mini grid for groups with children -->
-        <div v-if="hasChildren && children?.length" :class="bemm('mini-grid')">
-          <!-- Background image -->
-          <div v-if="displayImage && imageUrl" :class="bemm('mini-grid-bg')"
-            :style="{ backgroundImage: `url(${imageUrl})` }" />
-
-          <!-- Mini tiles -->
-          <div :class="bemm('mini-tiles')">
-            <div v-for="(child, index) in children.slice(0, 9)" :key="`mini2-${child.id}-${index}`" :class="bemm('mini-tile')"
-              :style="child.color ? { backgroundColor: `var(--color-${child.color})` } : undefined">
-              <img v-if="child.image" :src="getThumbnailUrl(child.image)" :alt="child.title" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Regular tile content for non-groups -->
-        <template v-else>
-          <figure v-if="displayImage && imageUrl && isImageLoaded" :class="bemm('figure')">
-            <img :src="imageUrl" :alt="card.title" :class="bemm('image')" draggable="false" />
-          </figure>
-        </template>
-
-        <h3 v-if="displayTitle && card?.title" :class="bemm('title')">{{ card.title }}</h3>
-      </div>
-
-      <!-- Selection indicator -->
-      <div v-if="isSelected && selectionMode" :class="bemm('selection-indicator')">
-        <TIcon name="check" size="small" />
-      </div>
-    </article>
-  </div>
+  </component>
 </template>
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { Icons } from 'open-icon';
 import { useImageUrl, useI18n } from '@tiko/core';
 
