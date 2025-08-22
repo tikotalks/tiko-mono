@@ -58,19 +58,29 @@ const { buildInfo, versionString, deploymentString, loading, loadBuildInfo } = u
 onMounted(async () => {
   contentLoading.value = true
   try {
-    const { getContentItem } = useContent()
+    const { getItem } = useContent()
     // Use appName as the slug to fetch content
-    const contentItem = await getContentItem(props.appName)
-    console.log(`[TAboutApp] Fetched content for app '${props.appName}':`, contentItem)
-    appInfo.value = contentItem
+    const result = await getItem(props.appName)
+    console.log(`[TAboutApp] Fetched content for app '${props.appName}':`, result)
+    if (result) {
+      appInfo.value = {
+        ...result.item,
+        content: result.data
+      }
+    }
   } catch (error) {
     console.error(`[TAboutApp] Failed to load app info for '${props.appName}':`, error)
     // Try with lowercase if the first attempt fails
     try {
-      const { getContentItem } = useContent()
-      const contentItem = await getContentItem(props.appName.toLowerCase())
-      console.log(`[TAboutApp] Fetched content with lowercase slug '${props.appName.toLowerCase()}':`, contentItem)
-      appInfo.value = contentItem
+      const { getItem } = useContent()
+      const result = await getItem(props.appName.toLowerCase())
+      console.log(`[TAboutApp] Fetched content with lowercase slug '${props.appName.toLowerCase()}':`, result)
+      if (result) {
+        appInfo.value = {
+          ...result.item,
+          content: result.data
+        }
+      }
     } catch (retryError) {
       console.error(`[TAboutApp] Failed to load app info with lowercase slug:`, retryError)
     }
