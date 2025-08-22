@@ -721,6 +721,9 @@ const openCardEditForm = async (card: CardTile, index: number) => {
             // For existing cards, use optimistic update
             const originalCard = { ...card };
             const originalCardsArray = [...cards.value];
+            const originalChildrenMap = card.parentId && tileChildrenMap.value.has(card.parentId) 
+              ? [...tileChildrenMap.value.get(card.parentId)!] 
+              : null;
 
             try {
               // Optimistic update - update UI immediately
@@ -734,6 +737,20 @@ const openCardEditForm = async (card: CardTile, index: number) => {
 
               // Update store cache optimistically
               await yesNoStore.updateCardInCache(updatedCard, currentGroupId.value, currentLocale.value);
+
+              // If this card has a parent, also update it in the parent's children map
+              if (updatedCard.parentId && tileChildrenMap.value.has(updatedCard.parentId)) {
+                const parentChildren = tileChildrenMap.value.get(updatedCard.parentId);
+                if (parentChildren) {
+                  const childIndex = parentChildren.findIndex(c => c.id === updatedCard.id);
+                  if (childIndex >= 0) {
+                    const updatedChildren = [...parentChildren];
+                    updatedChildren[childIndex] = updatedCard;
+                    tileChildrenMap.value.set(updatedCard.parentId, updatedChildren);
+                    console.log(`Updated child card ${updatedCard.id} in parent ${updatedCard.parentId} children map`);
+                  }
+                }
+              }
 
               // Close popup immediately for better UX
               popupService.close();
@@ -754,6 +771,11 @@ const openCardEditForm = async (card: CardTile, index: number) => {
               // Rollback on failure
               cards.value = originalCardsArray;
               await yesNoStore.updateCardInCache(originalCard, currentGroupId.value, currentLocale.value);
+              
+              // Rollback children map if needed
+              if (originalChildrenMap && originalCard.parentId) {
+                tileChildrenMap.value.set(originalCard.parentId, originalChildrenMap);
+              }
 
               // Show error toast
               toastService?.show({
