@@ -320,6 +320,10 @@ const handleTouchEnd = (_event: TouchEvent) => {
 const handleClick = (_event: MouseEvent) => {
   // Only emit click if not drag ready
   if (!isDragReady.value) {
+    // Add haptic feedback on click
+    if ('vibrate' in navigator) {
+      navigator.vibrate(10);
+    }
     emit('click');
   }
 };

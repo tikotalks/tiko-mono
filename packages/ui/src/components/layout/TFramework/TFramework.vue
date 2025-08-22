@@ -129,7 +129,24 @@ const initializeI18n = () => {
 // Set config and get theme styles
 const { themeStyles, config: tikoConfig } = useTikoConfig(props.config)
 
-const deviceTilt = useDeviceTilt({ source: 'pointer', maxDeg: 10, smooth: .1, liftPx: 30 });
+const deviceTilt = useDeviceTilt({ source: 'auto', maxDeg: 10, smooth: .1, liftPx: 30 });
+
+// Request device motion permission on iOS when needed
+onMounted(async () => {
+  // Add a small delay to allow user interaction first
+  setTimeout(async () => {
+    try {
+      const result = await deviceTilt.requestPermission();
+      if (result === 'denied') {
+        console.log('[TFramework] Device motion permission denied, using pointer mode only');
+      } else if (result === 'granted') {
+        console.log('[TFramework] Device motion permission granted');
+      }
+    } catch (error) {
+      console.warn('[TFramework] Could not request device motion permission:', error);
+    }
+  }, 1000);
+});
 
 const frameworkStyles = computed(() => ({
   ...(themeStyles?.value ?? {})
