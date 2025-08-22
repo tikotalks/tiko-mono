@@ -409,7 +409,6 @@ onMounted(async () => {
   } else {
     // Initialize i18n if stores are already available
     initializeI18n()
-    }
   }
 
   // Initialize only if stores are available
