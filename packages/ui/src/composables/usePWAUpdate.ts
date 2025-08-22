@@ -1,4 +1,5 @@
 import { toastService } from '../components/feedback/TToast/TToast.service'
+import { checkForUpdate } from '../utils/force-update'
 
 export interface RegisterSWOptions {
   immediate?: boolean
@@ -110,6 +111,48 @@ export function usePWAUpdate(options: PWAUpdateOptions) {
   
   // Initialize immediately
   initializePWA()
+  
+  // Also check for updates periodically (every 30 seconds in production)
+  if (process.env.NODE_ENV === 'production') {
+    // Initial check after 5 seconds
+    setTimeout(async () => {
+      const hasUpdate = await checkForUpdate()
+      if (hasUpdate && showPrompt) {
+        toastService.show({
+          id: 'pwa-version-update',
+          type: 'warning',
+          title: 'New Version Available',
+          message: 'A new version is available. Please refresh to update.',
+          duration: 0,
+          dismissible: true,
+          position: 'top',
+          action: {
+            label: 'Refresh Now',
+            handler: () => {
+              window.location.reload()
+            }
+          }
+        })
+      }
+    }, 5000)
+    
+    // Then check every 30 seconds
+    setInterval(async () => {
+      const hasUpdate = await checkForUpdate()
+      if (hasUpdate) {
+        // If update is available, refresh automatically after showing notification
+        toastService.show({
+          type: 'info',
+          message: 'Updating to the latest version...',
+          duration: 2000
+        })
+        
+        setTimeout(() => {
+          window.location.reload()
+        }, 2000)
+      }
+    }, 30000)
+  }
   
   return {
     updateServiceWorker

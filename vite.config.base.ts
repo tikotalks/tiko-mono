@@ -96,6 +96,9 @@ export const createViteConfig = (args: {
   }
 
   if (pwaConfig) {
+    // Generate a unique version based on timestamp
+    const buildVersion = new Date().toISOString()
+    
     // Enhance PWA config with better caching and update strategies
     const enhancedPwaConfig = {
       ...pwaConfig,
@@ -104,7 +107,10 @@ export const createViteConfig = (args: {
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
+        navigateFallbackDenylist: [/^\/__/], // Don't cache vite dev server routes
         ...pwaConfig.workbox,
+        // Add version to cache names to force updates
+        cacheId: `${appName}-v${buildVersion}`,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
@@ -184,7 +190,11 @@ export const createViteConfig = (args: {
           manualChunks: {
             'vue-vendor': ['vue', 'vue-router', 'pinia'],
             'tiko-vendor': ['@tiko/ui', '@tiko/core']
-          }
+          },
+          // Add content hash to filenames for cache busting
+          entryFileNames: `assets/[name].[hash].js`,
+          chunkFileNames: `assets/[name].[hash].js`,
+          assetFileNames: `assets/[name].[hash].[ext]`
         }
       }
     },

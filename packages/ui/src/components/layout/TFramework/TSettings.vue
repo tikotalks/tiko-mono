@@ -149,6 +149,24 @@
               {{ isRefreshing ? t('settings.refreshing') : t('settings.refreshApp') }}
             </TButton>
           </div>
+          
+          <!-- Force Update button (dev only) -->
+          <div v-if="isDev || isForceUpdateAvailable" :class="bemm('setting-row')">
+            <div :class="bemm('setting-info')">
+              <label :class="bemm('setting-label')">{{ t('settings.forceUpdate') || 'Force Update' }}</label>
+              <p :class="bemm('setting-description')">{{ t('settings.forceUpdateDescription') || 'Clear all caches and force update (may lose offline data)' }}</p>
+            </div>
+            <TButton
+              type="outline"
+              size="small"
+              color="warning"
+              :icon="isForceUpdating ? 'spinner' : 'trash'"
+              :disabled="isForceUpdating"
+              @click="handleForceUpdate"
+            >
+              {{ isForceUpdating ? t('settings.updating') || 'Updating...' : t('settings.forceUpdate') || 'Force Update' }}
+            </TButton>
+          </div>
         </div>
       </div>
 
@@ -204,6 +222,7 @@ import { toastService } from '../../feedback/TToast/TToast.service'
 import { useLocalStorage } from '../../../composables/useLocalStorage'
 import { useI18n } from '@tiko/core';
 import { groupDatabaseLanguages, findLanguageGroupByLocale, getBaseLanguageCode } from '../../../utils/languageGroups'
+import { forceUpdatePWA } from '../../../utils/force-update'
 import type { FrameworkConfig, SettingsSection } from './TFramework.model'
 import type { Locale } from '../../i18n/types'
 
@@ -236,6 +255,18 @@ const availableVoices = ref<SpeechSynthesisVoice[]>([])
 
 // Refresh state
 const isRefreshing = ref(false)
+const isForceUpdating = ref(false)
+
+// Check if in development mode
+const isDev = computed(() => {
+  return import.meta.env.DEV || window.location.hostname === 'localhost'
+})
+
+// Check if force update is available (e.g., via URL parameter)
+const isForceUpdateAvailable = computed(() => {
+  const urlParams = new URLSearchParams(window.location.search)
+  return urlParams.has('forceUpdate') || urlParams.has('force-update')
+})
 
 // Language data
 const databaseLanguages = ref<Array<{ code: string; name: string; native_name?: string }>>([])
@@ -429,6 +460,27 @@ const handleHardRefresh = async () => {
     console.error('Failed to refresh app:', error)
     toastService.error(t('settings.refreshError'))
     isRefreshing.value = false
+  }
+}
+
+const handleForceUpdate = async () => {
+  isForceUpdating.value = true
+  
+  try {
+    toastService.show({
+      type: 'warning',
+      message: t('settings.clearingCaches') || 'Clearing all caches...',
+      duration: 0 // Keep showing
+    })
+    
+    // Call the force update function
+    await forceUpdatePWA()
+    
+    // The page will reload automatically
+  } catch (error) {
+    console.error('Force update failed:', error)
+    toastService.error(t('settings.forceUpdateError') || 'Force update failed')
+    isForceUpdating.value = false
   }
 }
 
