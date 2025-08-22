@@ -126,13 +126,24 @@ const handleClickOutside = (event: MouseEvent) => {
     }
 };
 
+const handleResize = () => {
+    // Close context menu on resize/rotation to force recalculation
+    if (activePanel.value) {
+        closePanel();
+    }
+};
+
 onMounted(() => {
     if (disabled) return;
     window.addEventListener('click', handleClickOutside);
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
 });
 
 onUnmounted(() => {
     window.removeEventListener('click', handleClickOutside);
+    window.removeEventListener('resize', handleResize);
+    window.removeEventListener('orientationchange', handleResize);
 });
 
 const closePanel = () => (activePanel.value = false);

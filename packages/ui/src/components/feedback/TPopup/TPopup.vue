@@ -139,8 +139,10 @@ const hasSlot = (name: string) => {
 	left: 0;
 	inset: 0;
 	background-color: transparent;
-	height: calc(100vh + 2em);
-	width: calc(100vw + 2em);
+	height: calc(100vh + 2em); // Fallback for browsers without svh support
+	height: calc(100svh + 2em);
+	width: calc(100vw + 2em); // Fallback for browsers without svw support
+	width: calc(100svw + 2em);
 	border: none;
 
 	display: flex;
@@ -158,25 +160,35 @@ const hasSlot = (name: string) => {
 		background-color: color-mix(in srgb, var(--color-accent-dark), transparent 80%);
 		backdrop-filter: blur(5px);
 		animation: backgroundFadeIn 0.3s var(--bezier) forwards;
-		height: 100vh;
-		width: 100vw;
+		height: 100vh; // Fallback
+		height: 100svh;
+		width: 100vw; // Fallback
+		width: 100svw;
 	}
 
 	&__wrapper {
-		width: 100vw;
+		width: 100vw; // Fallback
+		width: 100svw;
 		margin: auto;
 		overflow: scroll;
-		height: fit-content;
+		height: 100vh; // Fallback
+		height: 100svh;
+		max-height: 100vh; // Fallback
+		max-height: 100svh;
 		display: flex;
-		align-items: flex-end;
-		justify-content: flex-end;
-		// margin: var(--spacing);
-		overflow: visible;
+		align-items: center;
+		justify-content: center;
+		padding: var(--space);
 
 		@include g.mobile-only() {
 			width: 100%;
 			padding: var(--space-xs);
 			padding-bottom: calc(var(--spacing) * 2 + var(--space));
+		}
+
+		// iPad specific constraints
+		@media (max-width: 1024px) and (orientation: landscape) {
+			padding: var(--space-s);
 		}
 	}
 
@@ -187,21 +199,44 @@ const hasSlot = (name: string) => {
 		background: var(--popup-container-background, var(--color-background));
 		border-radius: var(--popup-border-radius, var(--border-radius));
 		height: fit-content;
+		max-height: calc(100vh - var(--space-xl) * 2); // Fallback
+		max-height: calc(100svh - var(--space-xl) * 2);
 		color: var(--popup-container-color, var(--color-foreground));
-		max-width: min(960px, calc(100vw - var(--spacing)));
+		max-width: min(960px, calc(100vw - var(--spacing))); // Fallback
+		max-width: min(960px, calc(100svw - var(--spacing)));
 		width: fit-content;
 		animation: containerComeIn 0.3s var(--bezier) forwards;
 		transform: scale(0.75) translateY(var(--spacing));
 		opacity: 0;
+		overflow: auto;
+		display: flex;
+		flex-direction: column;
 
 		@include g.mobile-only() {
 			max-width: 100%;
+			max-height: calc(100vh - var(--space-l) * 2); // Fallback
+			max-height: calc(100svh - var(--space-l) * 2);
+		}
+
+		// iPad specific
+		@media (max-width: 1024px) {
+			max-height: calc(100vh - var(--space-l) * 2); // Fallback
+			max-height: calc(100svh - var(--space-l) * 2);
+		}
+
+		// iPad landscape
+		@media (max-width: 1024px) and (orientation: landscape) {
+			max-height: calc(100vh - var(--space) * 2); // Fallback
+			max-height: calc(100svh - var(--space) * 2);
 		}
 	}
 
 	&__content {
 		padding: var(--popup-padding, var(--space));
 		margin: auto;
+		overflow-y: auto;
+		flex: 1;
+		min-height: 0;
 
 		@include g.desktop-up() {
 			width: var(--popup-width, fit-content);
@@ -271,7 +306,8 @@ const hasSlot = (name: string) => {
 		background-color: color-mix(in srgb, var(--color-tertiary), var(--color-background) 90%);
 		z-index: 10;
 		position: sticky;
-		bottom: 1em;
+		bottom: 0;
+		flex-shrink: 0;
 
 		display: flex;
 		gap: var(--space);

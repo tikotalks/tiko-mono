@@ -4,7 +4,8 @@
       :app-name="tikoConfig?.id" :require-auth="computedRequireAuth" :show-splash-screen="showSplashScreen"
       :allow-skip-auth="props.config?.auth?.skipAuth">
       <TAppLayout :title="displayTitle" :subtitle="displaySubtitle" :show-header="showTopBar"
-        :show-back="showBackButton" :is-loading="loading" :is-app="isApp" :config="tikoConfig" @profile="handleProfile"
+        :show-back="showBackButton" :is-loading="loading" :is-app="isApp" :config="tikoConfig" 
+        :app-name="tikoConfig.id || tikoConfig.name" @profile="handleProfile"
         @settings="handleSettings" @logout="handleLogout" @back="handleBack">
         <!-- TopBar middle content (for route display) -->
         <template v-if="topBar.showCurrentRoute && topBar.routeDisplay === 'middle'" #top-bar-middle>
