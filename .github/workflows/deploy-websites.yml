@@ -146,6 +146,10 @@ jobs:
         
       - name: Generate i18n translations
         run: pnpm generate:i18n:worker:prod
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
         
       - name: Build Marketing website
         run: |
@@ -155,6 +159,7 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_USE_CONTENT_WORKER: "true"
           VITE_CONTENT_API_URL: "https://content.tikoapi.org"
           VITE_DEPLOYED_VERSION_ID: "v1.0.1"
@@ -191,6 +196,10 @@ jobs:
         
       - name: Generate i18n translations
         run: pnpm generate:i18n:worker:prod
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
         
       - name: Build Media website
         run: |
@@ -200,6 +209,7 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_USE_CONTENT_WORKER: "true"
           VITE_CONTENT_API_URL: "https://content.tikoapi.org"
           VITE_DEPLOYED_VERSION_ID: "v1.0.1"
