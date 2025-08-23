@@ -268,10 +268,10 @@ const loadSequence = async () => {
     if (sequencesWithSpeech.length > 0) {
       console.log(`[SequenceView] Pre-generating speech for ${sequencesWithSpeech.length} sequences`);
       const language = currentLocale.value.split('-')[0];
-      
+
       await Promise.all(
-        sequencesWithSpeech.map(card => 
-          preloadAudio(card.speech || '', language).catch(err => 
+        sequencesWithSpeech.map(card =>
+          preloadAudio(card.speech || '', language).catch(err =>
             console.warn(`[SequenceView] Failed to pre-generate speech for sequence ${card.id}:`, err)
           )
         )
@@ -289,22 +289,22 @@ const loadSequence = async () => {
         sequenceTiles.map(async card => {
           try {
             const children = await sequenceStore.loadSequence(card.id, currentLocale.value);
-            
+
             // Pre-generate speech for children with speech content
             const childrenWithSpeech = children.filter(child => child.speech);
             if (childrenWithSpeech.length > 0) {
               console.log(`[SequenceView] Pre-generating speech for ${childrenWithSpeech.length} items in sequence ${card.id}`);
               const language = currentLocale.value.split('-')[0];
-              
+
               await Promise.all(
-                childrenWithSpeech.map(child => 
-                  preloadAudio(child.speech, language).catch(err => 
+                childrenWithSpeech.map(child =>
+                  preloadAudio(child.speech, language).catch(err =>
                     console.warn(`[SequenceView] Failed to pre-generate speech for child ${child.id}:`, err)
                   )
                 )
               );
             }
-            
+
             return children;
           } catch (err) {
             console.error(`[SequenceView] Failed to load children for ${card.id}:`, err);
@@ -454,7 +454,7 @@ const getCardContextMenu = (card: SequenceTile, index: number) => {
 
   // Show hide/show options based on item state
   const isHidden = sequenceStore.settings.hiddenItems.includes(card.id);
-  
+
   if (isHidden) {
     // Show option for hidden items
     items.push({
@@ -542,17 +542,17 @@ const handleSaveSequence = async (formData: any, card: SequenceTile, isNewCard: 
 
           tileChildrenMap.value.set(sequenceId, childrenTiles);
           tilesWithChildren.value.add(sequenceId);
-          
+
           // Pre-generate speech for all items with speech content
           const itemsWithSpeech = childrenTiles.filter(item => item.speech);
           if (itemsWithSpeech.length > 0) {
             console.log(`[SequenceView] Pre-generating speech for ${itemsWithSpeech.length} new items`);
             const language = currentLocale.value.split('-')[0];
-            
+
             // Pre-generate speech for each item in parallel
             await Promise.all(
-              itemsWithSpeech.map(item => 
-                preloadAudio(item.speech, language).catch(err => 
+              itemsWithSpeech.map(item =>
+                preloadAudio(item.speech, language).catch(err =>
                   console.warn(`[SequenceView] Failed to pre-generate speech for item ${item.id}:`, err)
                 )
               )
@@ -610,30 +610,30 @@ const handleSaveSequence = async (formData: any, card: SequenceTile, isNewCard: 
 
         // Replace the entire cache for this sequence's children
         await sequenceStore.replaceCacheForParent(childrenTiles, card.id, currentLocale.value);
-        
+
         // Also update the local tileChildrenMap for immediate playback
         tileChildrenMap.value.set(card.id, childrenTiles);
-        
+
         // Pre-generate speech for all items with speech content
         const itemsWithSpeech = childrenTiles.filter(item => item.speech);
         if (itemsWithSpeech.length > 0) {
           console.log(`[SequenceView] Pre-generating speech for ${itemsWithSpeech.length} items`);
           const language = currentLocale.value.split('-')[0];
-          
+
           // Pre-generate speech for each item in parallel
           await Promise.all(
-            itemsWithSpeech.map(item => 
-              preloadAudio(item.speech, language).catch(err => 
+            itemsWithSpeech.map(item =>
+              preloadAudio(item.speech, language).catch(err =>
                 console.warn(`[SequenceView] Failed to pre-generate speech for item ${item.id}:`, err)
               )
             )
           );
         }
-        
+
       } else if (formData.items && formData.items.length === 0) {
         // Clear the cache for this sequence's children
         await sequenceStore.replaceCacheForParent([], card.id, currentLocale.value);
-        
+
         // Also clear the local tileChildrenMap
         tileChildrenMap.value.delete(card.id);
         tilesWithChildren.value.delete(card.id);
@@ -1807,7 +1807,7 @@ onUnmounted(() => {
 });
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 // Override TAppLayout's problematic styles
 :deep(.app-layout) {
   width: 100%;

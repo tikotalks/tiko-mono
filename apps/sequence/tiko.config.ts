@@ -10,14 +10,18 @@ export default defineConfig({
   },
   description: 'Sequence App',
   theme: {
-    primary: BaseColors.TURQUOISE,
+    primary: BaseColors.TEAL,
     secondary: BaseColors.ORANGE,
     tertiary: BaseColors.BLUE,
   },
   auth: {
     skipAuth: true // Allow using the app without login
   },
+  topBar: {
+    show: true,
+  },
   splash: {
+    show: true,
     appName: 'Sequence',
     color: BaseColors.ORANGE,
     themeColor: ColorValue.BLACK,
