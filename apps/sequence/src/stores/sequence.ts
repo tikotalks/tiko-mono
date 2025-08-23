@@ -282,7 +282,7 @@ export const useSequenceStore = defineStore('sequence', () => {
         }
       }
 
-      // Update memory cache
+      // Update memory cache - trigger reactivity
       const newCache = new Map(cache)
       newCache.set(cacheKey, {
         parentId,
@@ -290,6 +290,7 @@ export const useSequenceStore = defineStore('sequence', () => {
         timestamp: Date.now(),
         locale: locale || 'default'
       })
+      // Important: assign new Map to trigger reactivity in computed properties
       cardCache.value = newCache
 
       console.log(`[SequenceStore] Cached ${sequence.length} sequence for ${cacheKey}`)
@@ -427,10 +428,30 @@ export const useSequenceStore = defineStore('sequence', () => {
 
   const getSequenceForParent = (parentId?: string, locale?: string): CardTile[] | undefined => {
     const cacheKey = getCacheKey(parentId, locale)
-    const entry = cardCache.value.get(cacheKey)
+    // Access cardCache.value to ensure reactivity
+    const cache = cardCache.value
+    const entry = cache.get(cacheKey)
 
     if (entry && isCacheValid(entry, locale || 'default')) {
-      return entry.sequence
+      // Only filter out hidden items for ROOT level, not for children
+      if (!parentId) {
+        const hiddenItems = settings.value.hiddenItems || []
+        const showHidden = settings.value.showHiddenItems
+        
+        if (showHidden) {
+          // Show all sequence items, but mark hidden ones
+          return entry.sequence.map(item => ({
+            ...item,
+            isHidden: hiddenItems.includes(item.id)
+          }))
+        } else {
+          // Filter out hidden items completely
+          return entry.sequence.filter(item => !hiddenItems.includes(item.id))
+        }
+      } else {
+        // For children, return all items (don't filter)
+        return entry.sequence
+      }
     }
 
     return undefined

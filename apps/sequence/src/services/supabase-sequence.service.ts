@@ -74,11 +74,9 @@ class SequenceSupabaseService {
   async getSequence(userId: string, parentId?: string): Promise<CardItem[]> {
     const params = new URLSearchParams();
 
-    // Try with app_name filter first
-    params.append('app_name', 'eq.sequence');
-
     if (parentId === undefined || parentId === null) {
-      // For top level, get user's own sequences AND curated public sequences
+      // For top level, apply app_name filter and get user's own sequences AND curated public sequences
+      params.append('app_name', 'eq.sequence');
       params.append('parent_id', 'is.null');
       params.append('type', 'eq.sequence');
       params.append('or', `(user_id.eq.${userId},and(is_curated.eq.true,is_public.eq.true,user_id.neq.${userId}))`);
@@ -97,7 +95,16 @@ class SequenceSupabaseService {
         return [];
       }
 
-      // Parent is accessible, so load all its children without filters
+      // Parent is accessible, so load all its children
+      // For curated sequences, don't apply app_name filter as children might not have it set
+      if (parentCard.is_curated) {
+        console.log(`[getSequence] Loading children of curated sequence ${parentId} without app_name filter`);
+        // Don't add app_name filter for curated sequence children
+      } else {
+        // For user's own sequences, apply app_name filter
+        params.append('app_name', 'eq.sequence');
+      }
+      
       params.append('parent_id', `eq.${parentId}`);
       // Don't filter by ownership or public status for children
       // If the parent is accessible (curated or owned), all its children should be accessible
@@ -111,7 +118,7 @@ class SequenceSupabaseService {
 
     try {
       let result = await this.apiRequest<CardItem[]>(url);
-      console.log('[getSequence] Result with app_name filter:', result.length, 'items found');
+      console.log('[getSequence] Result:', result.length, 'items found');
 
       // Debug: Log details about what we found when loading children
       if (parentId && result.length === 0) {
@@ -156,7 +163,14 @@ class SequenceSupabaseService {
         console.log('[getSequence] No sequence found with app_name filter, trying without...');
 
         const fallbackParams = new URLSearchParams();
-        fallbackParams.append('user_id', `eq.${userId}`);
+        
+        // For curated sequences, don't filter by user_id since children might be owned by the curator
+        const parentCard = await this.getCard(parentId);
+        if (parentCard && !parentCard.is_curated) {
+          // Only add user_id filter for non-curated sequences
+          fallbackParams.append('user_id', `eq.${userId}`);
+        }
+        
         fallbackParams.append('parent_id', `eq.${parentId}`);
         // fallbackParams.append('type', 'eq.sequence-item');
         fallbackParams.append('order', 'order_index.asc');

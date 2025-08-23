@@ -1084,29 +1084,43 @@ const handleBack = async () => {
 // Use computed properties to get children data from the store's cache
 const tilesWithChildren = computed(() => {
   const hasChildren = new Set<string>();
-  sequence.value.forEach(card => {
+  
+  // Trigger reactivity on sequence changes
+  const currentSequence = sequence.value;
+  
+  currentSequence.forEach(card => {
     if (card.type === 'sequence' && !card.id.startsWith('empty-')) {
       // Check if this sequence has children in the store cache
+      // This will be reactive to cache updates
       const children = sequenceStore.getSequenceForParent(card.id, currentLocale.value);
       if (children && children.length > 0) {
         hasChildren.add(card.id);
       }
     }
   });
+  
+  console.log('[SequenceView] tilesWithChildren computed:', hasChildren.size, 'tiles have children');
   return hasChildren;
 });
 
 // Store actual children data for preview - computed from store cache
 const tileChildrenMap = computed(() => {
   const childrenMap = new Map<string, SequenceTile[]>();
-  sequence.value.forEach(card => {
+  
+  // Trigger reactivity on sequence changes
+  const currentSequence = sequence.value;
+  
+  currentSequence.forEach(card => {
     if (card.type === 'sequence' && !card.id.startsWith('empty-')) {
+      // This will be reactive to cache updates
       const children = sequenceStore.getSequenceForParent(card.id, currentLocale.value);
       if (children && children.length > 0) {
         childrenMap.set(card.id, children);
       }
     }
   });
+  
+  console.log('[SequenceView] tileChildrenMap computed:', childrenMap.size, 'tiles mapped');
   return childrenMap;
 });
 

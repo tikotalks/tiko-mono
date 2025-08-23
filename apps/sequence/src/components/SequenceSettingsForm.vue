@@ -45,15 +45,31 @@
         />
         <p :class="bemm('description')">{{ t('sequence.showHiddenItemsDescription') }}</p>
       </div>
+      
+      <!-- Hidden Sequences Button -->
+      <div v-if="hiddenItemsCount > 0" :class="bemm('item')">
+        <TButton
+          type="outline"
+          color="secondary"
+          :icon="Icons.EYE_OFF"
+          @click="openHiddenSequencesList"
+          :class="bemm('hidden-button')"
+        >
+          {{ t('sequence.hiddenSequences') }} ({{ hiddenItemsCount }})
+        </TButton>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed, inject } from 'vue'
 import { useI18n } from '@tiko/core';
-import { TInputCheckbox, TInputSwitch } from '@tiko/ui'
+import { TInputCheckbox, TInputSwitch, TButton } from '@tiko/ui'
 import { useBemm } from 'bemm'
+import { Icons } from 'open-icon'
+import { useSequenceStore } from '../stores/sequence'
+import HiddenSequencesList from './HiddenSequencesList.vue'
 
 interface SequenceSettings {
   autoSpeak: boolean
@@ -61,6 +77,7 @@ interface SequenceSettings {
   hapticFeedback: boolean
   showCuratedItems: boolean
   showHiddenItems: boolean
+  hiddenItems?: string[]
 }
 
 const props = defineProps<{
@@ -70,14 +87,48 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const bemm = useBemm('sequence-settings-form')
+const sequenceStore = useSequenceStore()
+const popupService = inject<any>('popupService')
 
 const form = ref<SequenceSettings>({
   autoSpeak: props.settings?.autoSpeak ?? true,
   showHints: props.settings?.showHints ?? false,
   hapticFeedback: props.settings?.hapticFeedback ?? true,
   showCuratedItems: props.settings?.showCuratedItems ?? true,
-  showHiddenItems: props.settings?.showHiddenItems ?? false
+  showHiddenItems: props.settings?.showHiddenItems ?? false,
+  hiddenItems: props.settings?.hiddenItems ?? []
 })
+
+// Computed property for hidden items count
+const hiddenItemsCount = computed(() => {
+  return form.value.hiddenItems?.length || 0
+})
+
+// Function to open hidden sequences list
+const openHiddenSequencesList = () => {
+  popupService.open({
+    component: HiddenSequencesList,
+    title: t('sequence.manageHiddenSequences'),
+    size: 'medium',
+    props: {
+      hiddenItemIds: form.value.hiddenItems || [],
+      onItemShown: (itemId: string) => {
+        // Update the form's hidden items
+        form.value.hiddenItems = form.value.hiddenItems?.filter(id => id !== itemId) || []
+        // This will trigger the watcher and update the parent
+      }
+    },
+    actions: [
+      {
+        id: 'close',
+        label: t('common.close'),
+        type: 'default',
+        color: 'primary',
+        action: () => popupService.close()
+      }
+    ]
+  })
+}
 
 // Watch for changes and emit them without closing the popup
 watch(form, () => {
@@ -134,6 +185,12 @@ watch(form, () => {
     .sequence-settings-form__item:hover & {
       opacity: 1;
     }
+  }
+  
+  &__hidden-button {
+    width: 100%;
+    justify-content: center;
+    margin-top: var(--space-m);
   }
 
   // Add responsive adjustments
