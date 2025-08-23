@@ -16,6 +16,7 @@ export default defineConfig({
     tertiary: BaseColors.PURPLE,
   },
   auth: {
+    show: false,
     skipAuth: true
   },
   splash: {
