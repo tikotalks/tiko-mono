@@ -130,6 +130,7 @@ import {
   debounce,
   ButtonType,
   TFormGroup,
+  ConfirmDialog,
 } from '@tiko/ui';
 import { useI18n } from '@tiko/core';
 import type { TCardTile as CardTile } from '@tiko/ui';
@@ -314,12 +315,26 @@ const handleCancel = () => {
 
 const handleDelete = () => {
   const message = props.hasChildren
-    ? 'Are you sure you want to delete this group? This will also delete all cards inside it.'
-    : 'Are you sure you want to delete this card?';
+    ? t('cards.confirmDeleteGroup')
+    : t('cards.confirmDeleteCard');
 
-  if (confirm(message)) {
-    emit('delete');
-  }
+  popupService.open({
+    component: ConfirmDialog,
+    props: {
+      title: t('cards.deleteCard'),
+      message: message,
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
+      confirmColor: 'error',
+      onConfirm: () => {
+        emit('delete');
+        popupService.close();
+      },
+      onCancel: () => {
+        popupService.close();
+      }
+    }
+  });
 };
 
 // Load images when component mounts

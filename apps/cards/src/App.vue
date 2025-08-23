@@ -27,7 +27,7 @@ import tikoConfig from '../tiko.config'
 
 const route = useRoute()
 const loading = ref(true)
-const { t, keys } = useI18n({
+const { t } = useI18n({
   fallbackLocale: 'en-GB'
 })
 const eventBus = useEventBus()
@@ -133,7 +133,7 @@ const isAuthCallbackRoute = computed(() => {
 // Framework configuration - use computed to ensure translations are reactive
 const frameworkConfig = computed<FrameworkConfig>(() => {
   // Safely access the cards settings key
-  const cardsSettingsKey = keys.value?.cards?.cardsSettings || 'cards.cardsSettings'
+  const cardsSettingsKey =  'cards.cardsSettings'
 
   return {
     ...tikoConfig,

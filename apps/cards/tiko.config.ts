@@ -12,7 +12,7 @@ export default defineConfig({
   theme: {
     primary: BaseColors.GREEN,
     secondary: BaseColors.ORANGE,
-    tertiary: BaseColors.BLUE,
+    tertiary: BaseColors.PURPLE,
   },
   auth: {
     skipAuth: true

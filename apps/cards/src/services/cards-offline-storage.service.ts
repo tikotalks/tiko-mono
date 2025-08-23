@@ -89,6 +89,7 @@ class CardsOfflineStorageService {
     try {
       const metadataKey = `metadata_${userId}`
       const metadata = {
+        key: metadataKey,  // Add the key field required by IndexedDB
         userId,
         lastSync: Date.now(),
         totalCards
