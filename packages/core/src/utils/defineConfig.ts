@@ -32,12 +32,15 @@ export interface TikoConfig {
     color: string
   },
   splash?: {
+    show: boolean,
     appName: string,
     color: string,
     themeColor: string,
     loadingText: string
   },
   auth?: {
+    show?: boolean
+    showLoginButton?: boolean
     required?: boolean
     providers?: ('email' | 'apple')[]
     skipAuth?: boolean,
@@ -45,6 +48,9 @@ export interface TikoConfig {
   }
   i18n?: {
     categories?: string[]
+  }
+  topBar?: {
+    show?: boolean
   }
 }
 
@@ -75,12 +81,15 @@ export const defaultTikoConfig: Required<TikoConfig> = {
   features: {},
   settings: {},
   splash: {
+    show: true,
     appName: 'Tiko',
     color: 'purple',
     themeColor: '#007bff',
     loadingText: 'Loading Tiko...'
   },
   auth: {
+    show: true,
+    showLoginButton: false,
     required: false,
     providers: ['email'],
     skipAuth: false,
@@ -88,6 +97,9 @@ export const defaultTikoConfig: Required<TikoConfig> = {
   },
   i18n: {
     categories: []
+  },
+  topBar: {
+    show: true
   }
 }
 

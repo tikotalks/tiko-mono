@@ -37,8 +37,6 @@ export enum ImageLibraryType {
 
 export interface UseImagesOptions {
   libraryType?: ImageLibraryType
-  publicMode?: boolean // Deprecated - use libraryType instead
-  userMode?: boolean   // Deprecated - use libraryType instead
 }
 
 // Global state for images - shared across all instances
@@ -53,26 +51,12 @@ let userLoadPromise: Promise<void> | null = null
  * Composable for managing images and media statistics
  * @param options - Configuration options
  * @param options.libraryType - Type of library to load (PUBLIC or USER)
- * @param options.publicMode - Deprecated: If true, uses public API that doesn't require authentication
- * @param options.userMode - Deprecated: If true, returns user's personal media instead of global media
  */
 export function useImages(options: UseImagesOptions = {}): UseImagesReturn {
-  const { libraryType, publicMode = false, userMode = false } = options
-  
-  // Determine the library type - prioritize new libraryType param, fall back to legacy boolean flags
-  let resolvedLibraryType: ImageLibraryType
-  if (libraryType) {
-    resolvedLibraryType = libraryType
-  } else if (userMode) {
-    resolvedLibraryType = ImageLibraryType.USER
-  } else {
-    resolvedLibraryType = ImageLibraryType.PUBLIC
-  }
-  
-  const isUserLibrary = resolvedLibraryType === ImageLibraryType.USER
-  
-  logger.debug('[useImages] Composable initialized with libraryType:', resolvedLibraryType)
-  
+  const { libraryType = ImageLibraryType.PUBLIC } = options
+
+  const isUserLibrary = libraryType === ImageLibraryType.USER
+
   // Instance-specific state
   const stats = ref<ImageStats>({
     totalImages: 0,
@@ -82,10 +66,10 @@ export function useImages(options: UseImagesOptions = {}): UseImagesReturn {
   const loading = ref(false)
   const error = ref<string | null>(null)
   const searchQuery = ref('')
-  
+
   // Event bus for listening to upload completion
   const eventBus = useEventBus()
-  
+
   // Lazy initialization for auth store to avoid Pinia initialization issues
   let authStore: ReturnType<typeof useAuthStore> | null = null
   const getAuthStore = () => {
@@ -94,7 +78,7 @@ export function useImages(options: UseImagesOptions = {}): UseImagesReturn {
     }
     return authStore
   }
-  
+
   // Computed property that returns the appropriate image list
   const imageList = computed(() => {
     const result = isUserLibrary ? userImages.value : publicImages.value
@@ -104,7 +88,7 @@ export function useImages(options: UseImagesOptions = {}): UseImagesReturn {
   // Computed values
   const filteredImages = computed(() => {
     const list = isUserLibrary ? userImages.value : publicImages.value
-    
+
     if (!searchQuery.value) {
       return list
     }
@@ -129,8 +113,6 @@ export function useImages(options: UseImagesOptions = {}): UseImagesReturn {
   })
 
   const loadImages = async () => {
-    logger.debug(`[useImages] loadImages called - libraryType: ${resolvedLibraryType}`)
-    
     if (isUserLibrary) {
       // Load user images
       if (userImagesLoaded.value && userImages.value.length > 0) {
@@ -185,11 +167,13 @@ export function useImages(options: UseImagesOptions = {}): UseImagesReturn {
         error.value = null
 
         try {
-          if (resolvedLibraryType === ImageLibraryType.PUBLIC) {
-            publicImages.value = await mediaService.getPublicMediaList()
-          } else {
-            logger.debug('[useImages] Loading images from authenticated service')
-            publicImages.value = await mediaService.getMediaList()
+          switch(libraryType){
+            case ImageLibraryType.PUBLIC:
+              publicImages.value = await mediaService.getPublicMediaList()
+              break;
+            default:
+              publicImages.value = await mediaService.getMediaList()
+              break;
           }
           publicImagesLoaded.value = true
           await refreshStats()
@@ -218,7 +202,7 @@ export function useImages(options: UseImagesOptions = {}): UseImagesReturn {
   const refreshStats = async () => {
     try {
       const list = isUserLibrary ? userImages.value : publicImages.value
-      
+
       if (list.length === 0) {
         stats.value = {
           totalImages: 0,
@@ -266,7 +250,7 @@ export function useImages(options: UseImagesOptions = {}): UseImagesReturn {
   const handleMediaRefresh = () => {
     refresh()
   }
-  
+
   const handleUserMediaRefresh = () => {
     if (isUserLibrary) {
       refresh()
