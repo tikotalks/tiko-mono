@@ -83,7 +83,7 @@ const currentPageKey = ref<string>('');
 async function loadContent() {
   try {
     // Get language code from locale (e.g., 'en-GB' -> 'en')
-    const languageCode = locale.value.split('-')[0];
+    const languageCode = locale.split('-')[0];
     const pageKey = `${pageSlug.value}-${languageCode}`;
 
     // Only show loading for initial page load (when no content exists)

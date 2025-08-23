@@ -3,24 +3,30 @@ import { BaseColors, ColorValue } from '@tiko/ui'
 
 export default defineConfig({
   id: 'marketing',
-  name: 'Tiko',
-  description: 'Marketing Website for Tiko',
+  name: 'Marketing',
+  description: 'Marketing App',
+  isApp: false,
   icon: {
-    mediaId:'eb3a81ba-f7e1-417f-bd41-8d69550475f4',
-    color: BaseColors.TURQUOISE,
+    mediaId:'e37943b4-582c-40ee-be3a-c47be7c6e658',
+    color: BaseColors.GREEN,
+  },
+  topBar: {
+    show: false
   },
   theme: {
-    primary: BaseColors.PURPLE,
-    secondary: BaseColors.BLUE,
-    tertiary: BaseColors.ORANGE,
+    primary: BaseColors.GREEN,
+    secondary: BaseColors.ORANGE,
+    tertiary: BaseColors.PURPLE,
   },
   auth: {
+    show: false,
     skipAuth: true
   },
   splash: {
-    appName: 'Media',
-    color: BaseColors.PURPLE,
-    themeColor: ColorValue.PURPLE,
+    show: false,
+    appName: 'Tiko',
+    color: BaseColors.BLUE,
+    themeColor: ColorValue.BLACK,
     loadingText: 'Loading Tiko...'
   }
 })

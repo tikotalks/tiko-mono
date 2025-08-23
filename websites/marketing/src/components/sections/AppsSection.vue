@@ -100,7 +100,7 @@ const goToApp = (app: any) => {
     display: flex;
     flex-direction: column;
     gap: var(--space-l);
-    background-color: color-mix(in srgb, var(--color-blue), transparent 75%);
+    background-color: color-mix(in srgb, var(--color-skyblue), transparent 75%);
     border-radius: var(--border-radius);
     padding: var(--spacing);
     transform: translateX(var(--spacing));
@@ -117,7 +117,7 @@ const goToApp = (app: any) => {
     font-size: clamp(3em, 4vw, 6em);
     line-height: 1;
     font-family: var(--header-font-family);
-    color: var(--color-blue);
+    color: var(--color-skyblue);
     position: absolute;
     left: 0;
     transform: translateX(-100%);

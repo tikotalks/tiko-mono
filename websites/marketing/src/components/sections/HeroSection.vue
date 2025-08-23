@@ -284,7 +284,7 @@ watch(
     font-family: var(--header-font-family);
     color: var(--color-light);
     .title-dot {
-      color: var(--color-blue);
+      color: var(--color-skyblue);
     }
   }
 
@@ -296,7 +296,7 @@ watch(
 
   &__content {
     margin-top: var(--space-l);
-    color: var(--color-blue);
+    color: var(--color-skyblue);
     font-size: var(--font-size-l);
   }
 
