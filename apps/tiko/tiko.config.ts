@@ -18,6 +18,7 @@ export default defineConfig({
     skipAuth: true // Allow using the app without login
   },
   splash: {
+    show: true,
     appName: 'Tiko',
     color: BaseColors.ORANGE,
     themeColor: ColorValue.BLACK,

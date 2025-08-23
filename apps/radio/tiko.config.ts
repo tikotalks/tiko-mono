@@ -15,6 +15,7 @@ export default defineConfig({
     tertiary: BaseColors.PURPLE
   },
   splash: {
+    show: true,
     appName: 'Radio',
     color: BaseColors.YELLOW,
     themeColor: ColorValue.ORANGE,

@@ -20,6 +20,7 @@ export default defineConfig({
     canRegister: false
   },
   splash: {
+    show: true,
     appName: 'Admin',
     color: BaseColors.SKYBLUE,
     themeColor: BaseColors.BLACK,

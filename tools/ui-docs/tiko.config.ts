@@ -10,8 +10,9 @@ export default defineConfig({
     color: BaseColors.NAVY,
   },
   splash: {
+    show: true,
     appName: 'UI Documentation',
-    color: BaseColors.DARK_BLUE,
+    color: BaseColors.BLUE_DARK,
     themeColor: ColorValue.PURPLE,
     loadingText: 'Loading UI Documentation...'
   }

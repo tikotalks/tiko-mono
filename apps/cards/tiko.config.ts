@@ -18,6 +18,7 @@ export default defineConfig({
     skipAuth: true
   },
   splash: {
+    show: true,
     appName: 'Cards',
     color: BaseColors.BLUE,
     themeColor: ColorValue.BLACK,

@@ -18,6 +18,7 @@ export default defineConfig({
     skipAuth: true
   },
   splash: {
+    show: true,
     appName: 'Timer',
     color: BaseColors.ORANGE,
     themeColor: ColorValue.ORANGE,

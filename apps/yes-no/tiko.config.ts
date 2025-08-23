@@ -18,8 +18,9 @@ export default defineConfig({
     skipAuth: true
   },
   splash: {
+    show: true,
     appName: 'Yes-No',
-    backgroundColor: ColorValue.DARK_BLUE,
+    backgroundColor: ColorValue.BLUE_DARK,
     themeColor: ColorValue.PURPLE,
     loadingText: 'Loading Yes-No...'
   },

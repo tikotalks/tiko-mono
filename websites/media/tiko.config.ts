@@ -20,6 +20,7 @@ export default defineConfig({
     skipAuth: true
   },
   splash: {
+    show: true,
     appName: 'Media',
     color: BaseColors.RED,
     themeColor: ColorValue.RED,

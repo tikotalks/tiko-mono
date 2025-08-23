@@ -18,8 +18,9 @@ export default defineConfig({
     tertiary: BaseColors.RED,
   },
   splash: {
+    show: true,
     appName: 'Type',
-    color: BaseColors.DARK_BLUE,
+    color: BaseColors.BLUE_DARK,
     themeColor: ColorValue.PURPLE,
     loadingText: 'Loading Type...'
   },

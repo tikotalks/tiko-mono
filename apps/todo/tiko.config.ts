@@ -18,6 +18,7 @@ export default defineConfig({
     skipAuth: true
   },
   splash: {
+    show: true,
     appName: 'To Do',
     color: BaseColors.SAND,
     themeColor: ColorValue.BLACK,
