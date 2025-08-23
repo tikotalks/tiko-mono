@@ -39,15 +39,8 @@ import { TMarkdownRenderer } from '@tiko/ui';
 import type { ContentSection } from '@tiko/core';
 import { processTitle } from '@/utils/processTitle';
 import AppIcon from '../blocks/AppIcon.vue';
+import { kebabCase } from '@sil/case';
 import { useRouter } from 'vue-router';
-
-// Simple kebab-case function
-const kebabCase = (str: string) => {
-  return str
-    .replace(/([a-z])([A-Z])/g, '$1-$2')
-    .replace(/[\s_]+/g, '-')
-    .toLowerCase();
-};
 
 const router = useRouter();
 
