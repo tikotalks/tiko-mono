@@ -345,6 +345,12 @@ const setPointerPosition = (e: PointerEvent) => {
   transform: scale(1);
   animation: tile-no-hover 0.2s ease-in-out forwards;
   z-index: 1;
+  transform-style: preserve-3d;
+  transform: 
+    rotateX(calc(var(--rx, 0deg) * 0.5))
+    rotateY(calc(var(--ry, 0deg) * 0.5))
+    translateZ(calc(var(--tz, 0px) * 0.5))
+    scale(1);
 
   &::before {
     --shine-color: color-mix(in srgb, var(--card-color), white 50%);

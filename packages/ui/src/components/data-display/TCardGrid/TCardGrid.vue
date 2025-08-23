@@ -24,33 +24,42 @@
             '--tile-size': `${tileSize}px`,
             '--tile-gap': `${TILE_CONFIG.tileGap}px`,
           }">
-            <template v-for="(card, index) in pageCards" :key="`slot-${pageIndex}-${index}`">
-              <div v-if="card" :class="bemm('tile-wrapper', ['', card.type !== CardTileTypes.GHOST && !card.id.startsWith('empty-') && !animatedTileIds.has(card.id) ? 'animating' : ''])
-                " :style="{
-                '--tile-index': index
-              }">
-                <div v-if="card.type === CardTileTypes.GHOST" :class="bemm('ghost-tile')" />
-                <TCardTileComponent v-else
-                  :card="card"
-                  :show-image="true"
-                  :show-title="true"
-                  :edit-mode="editMode"
-                  :selection-mode="selectionMode"
-                  :is-empty="card.id.startsWith('empty-')"
-                  :has-children="tilesWithChildren?.has(card.id) || false"
-                  :children="tileChildrenMap?.get(card.id)"
-                  :is-selected="selectedTileIds?.has(card.id) || (card as any).isSelected || false"
-                  :custom-state="(card as any).customState"
-                  :context-menu="!selectionMode && getContextMenu ? getContextMenu(card, pageIndex * cardsPerPage + index) : undefined"
-                  :grid-position="getGridPosition(index)"
-                  :class="{
-                    'is-being-dragged': draggedCard?.id === card.id,
-                    'is-drop-target': dropTarget === card.id,
-                    'is-selected': selectedTileIds?.has(card.id)
-                  }"
-                  @click="handleCardClick(card, pageIndex * cardsPerPage + index)"
-                  @dragstart="handleDragStart($event, card)" @dragend="handleDragEnd"
-                  @dragover="handleDragOver($event, card)" @dragleave="handleDragLeave" @drop="handleDrop($event, card)" />
+            <template v-for="(cardsAtPosition, index) in pageCards" :key="`slot-${pageIndex}-${index}`">
+              <div v-if="cardsAtPosition && cardsAtPosition.length > 0" :class="bemm('tile-position')">
+                <div v-for="(card, stackIndex) in cardsAtPosition" :key="`card-${card.id}`"
+                  :class="bemm('tile-wrapper', ['', card.type !== CardTileTypes.GHOST && card.id && !card.id.startsWith('empty-') && !animatedTileIds.has(card.id) ? 'animating' : '', cardsAtPosition.length > 1 ? 'stacked' : ''])
+                  " :style="{
+                  '--tile-index': index,
+                  '--stack-index': stackIndex,
+                  '--stack-count': cardsAtPosition.length,
+                  '--rotation': cardsAtPosition.length > 1 ? `${(stackIndex - (cardsAtPosition.length - 1) / 2) * 5}deg` : '0deg',
+                  '--offset-x': cardsAtPosition.length > 1 ? `${(stackIndex - (cardsAtPosition.length - 1) / 2) * 4}px` : '0px',
+                  '--offset-y': cardsAtPosition.length > 1 ? `${stackIndex * -4}px` : '0px',
+                  'z-index': stackIndex
+                }">
+                  <div v-if="card.type === CardTileTypes.GHOST" :class="bemm('ghost-tile')" />
+                  <TCardTileComponent v-else
+                    :card="card"
+                    :show-image="true"
+                    :show-title="true"
+                    :edit-mode="editMode"
+                    :selection-mode="selectionMode"
+                    :is-empty="card.id && card.id.startsWith('empty-')"
+                    :has-children="tilesWithChildren?.has(card.id) || false"
+                    :children="tileChildrenMap?.get(card.id)"
+                    :is-selected="selectedTileIds?.has(card.id) || (card as any).isSelected || false"
+                    :custom-state="(card as any).customState"
+                    :context-menu="!selectionMode && getContextMenu ? getContextMenu(card, pageIndex * cardsPerPage + index) : undefined"
+                    :grid-position="getGridPosition(index)"
+                    :class="{
+                      'is-being-dragged': draggedCard?.id === card.id,
+                      'is-drop-target': dropTarget === card.id,
+                      'is-selected': selectedTileIds?.has(card.id)
+                    }"
+                    @click="handleCardClick(card, pageIndex * cardsPerPage + index)"
+                    @dragstart="handleDragStart($event, card)" @dragend="handleDragEnd"
+                    @dragover="handleDragOver($event, card)" @dragleave="handleDragLeave" @drop="handleDrop($event, card)" />
+                </div>
               </div>
               <div v-else :class="bemm('empty-slot')" />
             </template>
@@ -333,9 +342,35 @@ const createEmptyCard = (index: number): TCardTile => ({
   index: index,
 });
 
+// Track cards at each position for overlap detection
+const positionMap = computed(() => {
+  const map = new Map<number, TCardTile[]>();
+  
+  props.cards.forEach(card => {
+    const cardIndex = card.index ?? props.cards.indexOf(card);
+    if (!map.has(cardIndex)) {
+      map.set(cardIndex, []);
+    }
+    map.get(cardIndex)!.push(card);
+  });
+  
+  return map;
+});
+
+// Get stack position for a card (0 for first card, 1 for second, etc.)
+const getStackPosition = (card: TCardTile, index: number): number => {
+  const cardsAtPosition = positionMap.value.get(index) || [];
+  return cardsAtPosition.findIndex(c => c.id === card.id);
+};
+
+// Check if a position has multiple cards
+const hasMultipleCards = (index: number): boolean => {
+  return (positionMap.value.get(index)?.length || 0) > 1;
+};
+
 // Paginate cards with proper positioning
 const paginatedCards = computed(() => {
-  const pages: Array<Array<TCardTile | null>> = [];
+  const pages: Array<Array<Array<TCardTile> | null>> = [];
 
   // Regular pagination logic
   // Find the highest index among all cards to determine pages needed
@@ -365,21 +400,30 @@ const paginatedCards = computed(() => {
   });
 
   // Create an array of all slots (filled with nulls initially)
-  const allSlots: (TCardTile | null)[] = new Array(totalSlots).fill(null);
+  const allSlots: (Array<TCardTile> | null)[] = new Array(totalSlots).fill(null);
 
-  // Place actual cards at their index positions
+  // Group cards by their index positions
+  const cardsByIndex = new Map<number, TCardTile[]>();
   props.cards.forEach(card => {
     const cardIndex = card.index ?? props.cards.indexOf(card);
     if (cardIndex < totalSlots) {
-      allSlots[cardIndex] = card;
+      if (!cardsByIndex.has(cardIndex)) {
+        cardsByIndex.set(cardIndex, []);
+      }
+      cardsByIndex.get(cardIndex)!.push(card);
     }
+  });
+
+  // Place cards at their positions
+  cardsByIndex.forEach((cards, index) => {
+    allSlots[index] = cards;
   });
 
   // In edit mode, fill empty slots with placeholder cards
   if (props.editMode) {
     for (let i = 0; i < allSlots.length; i++) {
       if (allSlots[i] === null) {
-        allSlots[i] = createEmptyCard(i);
+        allSlots[i] = [createEmptyCard(i)];
       }
     }
   }
@@ -390,7 +434,7 @@ const paginatedCards = computed(() => {
     pages.push(pageCards);
   }
 
-  console.log('[CardGrid] Pages created:', pages.length, 'Total cards distributed:', allSlots.filter(s => s && !s.id.startsWith('empty-')).length);
+  console.log('[CardGrid] Pages created:', pages.length, 'Total cards distributed:', allSlots.filter(s => s && s.length > 0).reduce((acc, cards) => acc + (cards?.filter(c => !c.id.startsWith('empty-')).length || 0), 0));
 
   return pages;
 });
@@ -965,12 +1009,6 @@ watch(() => props.cards, (newCards) => {
     grid-template-rows: repeat(var(--grid-rows), var(--tile-size));
     justify-content: center;
     align-content: center;
-
-    // Smooth transitions for card movements
-    >* {
-      transition: transform 0.3s ease, opacity 0.3s ease;
-    }
-
   }
 
   &__arrow {
@@ -1018,9 +1056,30 @@ watch(() => props.cards, (newCards) => {
     // Empty slots are invisible placeholders in view mode
   }
 
+  &__tile-position {
+    position: relative;
+    width: var(--tile-size);
+    height: var(--tile-size);
+  }
+
   &__tile-wrapper {
     width: var(--tile-size);
     height: var(--tile-size);
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: transform 0.3s ease;
+
+    &--stacked {
+      transform: rotate(var(--rotation, 0deg)) translate(var(--offset-x, 0px), var(--offset-y, 0px));
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      
+      &:hover {
+        transform: rotate(var(--rotation, 0deg)) translate(var(--offset-x, 0px), var(--offset-y, 0px)) scale(1.05);
+        z-index: calc(var(--stack-count, 1) + 10) !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      }
+    }
 
     &:hover {
       z-index: 2;
@@ -1040,6 +1099,7 @@ watch(() => props.cards, (newCards) => {
     .context-panel,
     .context-panel__trigger{
       height: 100%;
+      width: 100%;
     }
   }
 }

@@ -26,6 +26,27 @@
         </TButtonGroup>
       </div>
 
+      <!-- Device Motion Toggle -->
+      <div :class="bemm('section')">
+        <h3 :class="bemm('section-title')">{{ t(keys.value?.settings?.deviceMotion || 'Device Motion') }}</h3>
+        <div :class="bemm('toggle-container')">
+          <label :class="bemm('toggle-label')">
+            <input
+              type="checkbox"
+              v-model="formData.deviceMotion"
+              :class="bemm('toggle-input')"
+            />
+            <span :class="bemm('toggle-switch')"></span>
+            <span :class="bemm('toggle-text')">
+              {{ t(keys.value?.settings?.enableDeviceMotion || 'Enable tilt effects') }}
+            </span>
+          </label>
+          <p :class="bemm('toggle-description')">
+            {{ t(keys.value?.settings?.deviceMotionDescription || 'Use device motion to create a 3D tilt effect when moving your device') }}
+          </p>
+        </div>
+      </div>
+
       <!-- Actions -->
       <div :class="[bemm('actions'), 'popup-footer']">
         <TButtonGroup>
@@ -73,7 +94,8 @@ const toastService = inject<ToastService>('toastService')
 // Form data - initialize from store settings with proper defaults
 const formData = ref<UserSettings>({
   language: userSettings.value?.language || locale.value || 'en-US',
-  theme: userSettings.value?.theme || 'auto'
+  theme: userSettings.value?.theme || 'auto',
+  deviceMotion: userSettings.value?.deviceMotion ?? true // Default to true
 })
 
 const isSaving = ref(false)
@@ -105,7 +127,8 @@ watch(userSettings, (newSettings) => {
   if (newSettings) {
     formData.value = {
       language: newSettings.language || locale.value || 'en-US',
-      theme: newSettings.theme || 'auto'
+      theme: newSettings.theme || 'auto',
+      deviceMotion: newSettings.deviceMotion ?? true
     }
   }
 }, { immediate: true })
@@ -144,7 +167,8 @@ const handleSave = async () => {
     // 3. Sync to API
     await authStore.updateSettings({
       language: formData.value.language,
-      theme: formData.value.theme
+      theme: formData.value.theme,
+      deviceMotion: formData.value.deviceMotion
     })
 
     // Update the i18n locale if language changed
@@ -270,6 +294,69 @@ const handleCancel = () => {
     font-size: 1rem;
   }
 
+
+  &__toggle-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  &__toggle-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    cursor: pointer;
+  }
+
+  &__toggle-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+
+    &:checked + .user-settings__toggle-switch {
+      background-color: var(--color-primary);
+
+      &::before {
+        transform: translateX(1.5rem);
+      }
+    }
+  }
+
+  &__toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 3rem;
+    height: 1.5rem;
+    background-color: var(--color-border);
+    border-radius: 1.5rem;
+    transition: background-color 0.3s ease;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0.125rem;
+      left: 0.125rem;
+      width: 1.25rem;
+      height: 1.25rem;
+      background-color: white;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  &__toggle-text {
+    font-size: 0.925rem;
+    color: var(--color-foreground);
+  }
+
+  &__toggle-description {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    margin: 0;
+    padding-left: 3.5rem;
+  }
 
   &__actions {
     display: flex;

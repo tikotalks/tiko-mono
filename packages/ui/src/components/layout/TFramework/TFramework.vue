@@ -135,23 +135,92 @@ const initializeI18n = () => {
 // Set config and get theme styles
 const { themeStyles, config: tikoConfig } = useTikoConfig(props.config)
 
-const deviceTilt = useDeviceTilt({ source: 'auto', maxDeg: 10, smooth: .1, liftPx: 30 });
+// Initialize device tilt based on user settings
+const deviceMotionEnabled = computed(() => {
+  if (!authStore.value) return true; // Default to true if store not ready
+  const refs = storeToRefs(authStore.value);
+  return refs.userSettings?.value?.deviceMotion ?? true;
+});
 
-// Request device motion permission on iOS when needed
-onMounted(async () => {
-  // Add a small delay to allow user interaction first
-  setTimeout(async () => {
-    try {
-      const result = await deviceTilt.requestPermission();
-      if (result === 'denied') {
-        console.log('[TFramework] Device motion permission denied, using pointer mode only');
-      } else if (result === 'granted') {
-        console.log('[TFramework] Device motion permission granted');
-      }
-    } catch (error) {
-      console.warn('[TFramework] Could not request device motion permission:', error);
+// Initialize with 'none' source initially, will be updated based on user settings
+const deviceTilt = useDeviceTilt({ 
+  source: deviceMotionEnabled.value ? 'auto' : 'none', 
+  maxDeg: 10, 
+  smooth: .1, 
+  liftPx: 30 
+});
+
+// Store whether we've requested permission
+const hasRequestedMotionPermission = ref(false);
+
+// Function to request device motion permission on user interaction
+const requestDeviceMotionPermission = async () => {
+  if (hasRequestedMotionPermission.value || !deviceMotionEnabled.value) return;
+  
+  try {
+    const result = await deviceTilt.requestPermission();
+    hasRequestedMotionPermission.value = true;
+    
+    if (result === 'denied') {
+      console.log('[TFramework] Device motion permission denied, using pointer mode only');
+    } else if (result === 'granted') {
+      console.log('[TFramework] Device motion permission granted');
+      // Start the device motion tracking
+      deviceTilt.start();
     }
-  }, 1000);
+  } catch (error) {
+    console.warn('[TFramework] Could not request device motion permission:', error);
+  }
+};
+
+// Watch for device motion setting changes
+watch(deviceMotionEnabled, (enabled) => {
+  if (enabled) {
+    console.log('[TFramework] Device motion enabled');
+    // If on iOS and needs permission, wait for user interaction
+    if (typeof DeviceOrientationEvent !== 'undefined' && 
+        typeof DeviceOrientationEvent.requestPermission === 'function' &&
+        !hasRequestedMotionPermission.value) {
+      // Will be handled by the click/touch listeners
+      return;
+    }
+    // Otherwise start immediately
+    deviceTilt.start();
+  } else {
+    console.log('[TFramework] Device motion disabled');
+    deviceTilt.stop();
+    // Reset tilt values to neutral
+    deviceTilt.tilt.rx = 0;
+    deviceTilt.tilt.ry = 0;
+    deviceTilt.tilt.tz = 0;
+  }
+});
+
+// Request permission on first user interaction
+onMounted(() => {
+  // Only proceed if device motion is enabled
+  if (!deviceMotionEnabled.value) {
+    console.log('[TFramework] Device motion is disabled in user settings');
+    return;
+  }
+
+  // Check if we need permission (iOS 13+)
+  if (typeof DeviceOrientationEvent !== 'undefined' && 
+      typeof DeviceOrientationEvent.requestPermission === 'function') {
+    // Add listeners for first user interaction
+    const handleFirstInteraction = async () => {
+      await requestDeviceMotionPermission();
+      // Remove listeners after first interaction
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('touchstart', handleFirstInteraction);
+    };
+    
+    document.addEventListener('click', handleFirstInteraction, { once: true });
+    document.addEventListener('touchstart', handleFirstInteraction, { once: true });
+  } else {
+    // Not iOS or doesn't need permission, start immediately
+    deviceTilt.start();
+  }
 });
 
 const frameworkStyles = computed(() => ({

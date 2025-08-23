@@ -24,6 +24,7 @@ export interface TUserSettingsProps {
 export interface UserSettings {
   language: string
   theme: 'light' | 'dark' | 'auto'
+  deviceMotion?: boolean
 }
 
 export interface TUserSettingsEmits {

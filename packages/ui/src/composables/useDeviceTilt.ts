@@ -44,6 +44,12 @@ export function useDeviceTilt(opts: TiltOpts = {}) {
 
   // --- SENSOR (mobile tilt) ---
   function onOrientation(e: DeviceOrientationEvent) {
+    // Check if we actually have valid sensor data
+    if (e.beta === null || e.gamma === null) {
+      console.log('[useDeviceTilt] Device orientation event has null values');
+      return;
+    }
+    
     const beta  = e.beta  ?? 0;  // front/back
     const gamma = e.gamma ?? 0;  // left/right
     targetX = clamp((-beta / 45) * maxDeg,  -maxDeg, maxDeg); // rotateX
@@ -95,18 +101,28 @@ export function useDeviceTilt(opts: TiltOpts = {}) {
     globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true;
 
   function start() {
-    if (reduceMotion()) { tilt.source = "none"; return; }
+    console.log('[useDeviceTilt] Starting device tilt tracking');
+    
+    if (reduceMotion()) { 
+      console.log('[useDeviceTilt] Reduced motion preference detected, disabling tilt');
+      tilt.source = "none"; 
+      return; 
+    }
 
     const secure     = typeof window !== "undefined" && window.isSecureContext;
     const hasSensor  = typeof window !== "undefined" && "DeviceOrientationEvent" in window;
+
+    console.log('[useDeviceTilt] Environment check:', { secure, hasSensor, desired });
 
     const wantPointer = desired === "pointer" || desired === "auto";
     const wantSensor  = desired === "sensor"  || (desired === "auto" && hasSensor && secure);
 
     if (wantPointer) {
+      console.log('[useDeviceTilt] Adding pointer move listener');
       window.addEventListener("pointermove", onPointer, { passive: true });
     }
     if (wantSensor) {
+      console.log('[useDeviceTilt] Adding device orientation listener');
       window.addEventListener("deviceorientation", onOrientation, { passive: true });
     }
   }
