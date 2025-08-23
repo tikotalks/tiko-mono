@@ -79,7 +79,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive, watch, toRefs, inject } from 'vue';
 import { useBemm } from 'bemm';
-import { TButton, TIcon, TAppLayout, useParentMode } from '@tiko/ui';
+import { TButton, TIcon, TAppLayout, useParentMode, useDeviceTilt } from '@tiko/ui';
 import { useSpeak, useI18n, useTextToSpeech } from '@tiko/core';
 import { Icons } from 'open-icon';
 import { useYesNoStore } from '../stores/yesno';
@@ -110,10 +110,23 @@ const localSettings = reactive({
   autoSpeak: true,
   hapticFeedback: true,
   buttonStyle: 'icons' as 'hands' | 'icons' | 'text',
+  deviceMotion: true,
 });
 
 // Computed
 const { currentQuestion, isPlaying, settings } = toRefs(yesNoStore);
+
+// Device motion setup
+const { tilt, requestPermission } = useDeviceTilt({
+  maxDeg: 20,
+  smooth: 0.2,
+  source: 'sensor' // Only use sensor, not pointer
+});
+
+// Track if device motion is active and if we've triggered an answer
+const deviceMotionActive = ref(false);
+const motionAnswerTriggered = ref(false);
+const motionThreshold = 15; // degrees
 
 // Watch settings and update local copy
 watch(
@@ -129,6 +142,31 @@ watch(() => currentLocale.value, async (newLocale) => {
   console.log('[YesNoView] Locale changed to:', newLocale);
   await preloadAnswers();
 });
+
+// Watch device motion for triggering answers
+watch(() => tilt, (newTilt) => {
+  if (!localSettings.deviceMotion || !deviceMotionActive.value || showFeedback.value) return;
+  
+  // Only process if using sensor (not pointer)
+  if (newTilt.source !== 'sensor') return;
+  
+  // Check if device is tilted beyond threshold
+  if (newTilt.ry > motionThreshold && !motionAnswerTriggered.value) {
+    // Tilted right = Yes
+    motionAnswerTriggered.value = true;
+    handleAnswer('yes');
+    setTimeout(() => {
+      motionAnswerTriggered.value = false;
+    }, 2000); // Prevent repeated triggers for 2 seconds
+  } else if (newTilt.ry < -motionThreshold && !motionAnswerTriggered.value) {
+    // Tilted left = No
+    motionAnswerTriggered.value = true;
+    handleAnswer('no');
+    setTimeout(() => {
+      motionAnswerTriggered.value = false;
+    }, 2000); // Prevent repeated triggers for 2 seconds
+  }
+}, { deep: true });
 
 // Watch question changes and preload new question audio
 // Note: This handles cases where question changes programmatically,
