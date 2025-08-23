@@ -49,4 +49,3 @@ export const NotificationType = {
 };
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType];
 
-export type { TikoConfig, TikoThemeColors } from './tiko-config';

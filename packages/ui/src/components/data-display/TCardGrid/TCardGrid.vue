@@ -515,17 +515,17 @@ const handleMouseUp = () => {
 const getGridPosition = (index: number) => {
   const cols = grid.value.cols;
   const rows = grid.value.rows;
-  
+
   // Calculate row and column position
   const row = Math.floor(index / cols);
   const col = index % cols;
-  
+
   // Determine if card is on edges
   const isRight = col === cols - 1;
   const isLeft = col === 0;
   const isBottom = row === rows - 1;
   const isTop = row === 0;
-  
+
   return {
     row,
     col,
@@ -556,7 +556,7 @@ const handleDragStart = (event: DragEvent, card: TCardTile) => {
     // Multi-tile drag
     draggedCards.value = props.cards.filter(c =>
       props.selectedTileIds!.has(c.id)
-    ).sort((a, b) => a.index - b.index);
+    ).sort((a, b) => (a?.index || 0) - (b?.index || 0));
     draggedCard.value = null; // Clear single drag
   } else {
     // Single tile drag

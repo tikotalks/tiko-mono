@@ -3,7 +3,7 @@
     <!-- Top Bar -->
     <header :class="bemm('header')">
       <TTopBar
-        v-if="showHeader"
+        v-if="showTopBar"
         :title="title"
         :subtitle="subtitle"
         :show-back-button="showBackButton"
@@ -86,9 +86,17 @@ const computedEnableParentMode = computed(() => {
   // Default to true for apps, false for websites
   return props.config?.isApp ?? true;
 });
+
+const showTopBar = computed(()=>{
+  if(props.config?.topBar){
+    return props.config.topBar.show;
+  } else {
+    return true;
+  }
+})
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .app-layout {
   width: 100vw;
   display: flex;

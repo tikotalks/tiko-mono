@@ -1,12 +1,21 @@
 <template>
-  <div :class="bemm('', ['', isApp ? 'is-app' : 'is-website'])" :style="deviceTiltStyles">
-    <TAuthWrapper :background-image="backgroundImage" :title="tikoConfig?.name" :is-app="isApp"
-      :app-name="tikoConfig?.id" :require-auth="computedRequireAuth" :show-splash-screen="showSplashScreen"
-      :allow-skip-auth="props.config?.auth?.skipAuth">
-      <TAppLayout :title="displayTitle" :subtitle="displaySubtitle" :show-header="showTopBar"
-        :show-back="showBackButton" :is-loading="loading" :is-app="isApp" :config="tikoConfig" 
-        :app-name="tikoConfig.id || tikoConfig.name" @profile="handleProfile"
-        @settings="handleSettings" @logout="handleLogout" @back="handleBack">
+  <div :class="bemm('', ['', tikoConfig.isApp ? 'is-app' : 'is-website'])" :style="deviceTiltStyles">
+    <TAuthWrapper :background-image="backgroundImage"
+      v-if="tikoConfig"
+      :title="tikoConfig.name"
+      :app-name="tikoConfig.id"
+      :require-auth="tikoConfig.auth.show"
+      :show-splash-screen="tikoConfig.settings.show"
+      :allow-skip-auth="tikoConfig.auth.skipAuth">
+      <TAppLayout :title="displayTitle"
+        :subtitle="displaySubtitle"
+        :show-back="showBackButton"
+        :is-loading="loading"
+        :config="tikoConfig"
+        @profile="handleProfile"
+        @settings="handleSettings"
+        @logout="handleLogout"
+        @back="handleBack">
         <!-- TopBar middle content (for route display) -->
         <template v-if="topBar.showCurrentRoute && topBar.routeDisplay === 'middle'" #top-bar-middle>
           <div :class="bemm('route-display')">
@@ -24,7 +33,7 @@
         <slot />
 
         <!-- Login button when in skip auth mode -->
-        <TButton v-if="isSkipAuthMode" :class="bemm('login-button')" type="ghost" :icon="Icons.USER"
+        <TButton v-if="tikoConfig.auth.showLoginButton" :class="bemm('login-button')" type="ghost" :icon="Icons.USER"
           @click="handleSkipAuthLogin">
           {{ t('auth.login') }}
         </TButton>
@@ -44,7 +53,8 @@
 import { ref, computed, onMounted, provide, watch, getCurrentInstance } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
-import { useAuthStore, useAppStore } from '@tiko/core'
+import { Icons } from 'open-icon'
+import { useAuthStore, useAppStore, useTikoConfig, useI18n } from '@tiko/core'
 import { storeToRefs } from 'pinia'
 import TAuthWrapper from '../../auth/TAuthWrapper/TAuthWrapper.vue'
 import TAppLayout from '../TAppLayout/TAppLayout.vue'
@@ -53,15 +63,12 @@ import TToast from '../../feedback/TToast/TToast.vue'
 import TSettings from './/TSettings.vue'
 import TProfile from '../../user/TProfile/TProfile.vue'
 import TButton from '../../ui-elements/TButton/TButton.vue'
-import { Icons } from 'open-icon'
 import { popupService } from '../../feedback/TPopup/TPopup.service'
 import { toastService } from '../../feedback/TToast/TToast.service'
-import { useTikoConfig } from '../../../composables/useTikoConfig'
 import { createIconRegistry, iconRegistryKey } from '../../../icons/registry'
-import { useI18n } from '@tiko/core';
 import { usePWAUpdate } from '../../../composables/usePWAUpdate'
 import type { TFrameworkProps, TFrameworkEmits } from './TFramework.model'
-import type { Locale } from '../../i18n/types'
+
 import { useDeviceTilt } from '../../../composables/useDeviceTilt'
 
 const props = withDefaults(defineProps<TFrameworkProps>(), {
@@ -85,8 +92,8 @@ if (!pinia) {
 }
 
 // Initialize stores with error handling
-const authStore = ref(null)
-const appStore = ref(null)
+const authStore = ref()
+const appStore = ref()
 
 // Function to initialize stores
 const initializeStores = () => {
@@ -105,9 +112,8 @@ const initializeStores = () => {
 initializeStores()
 
 // Initialize i18n after stores are available
-const i18nRef = ref(null)
-const setLocale = ref(null)
-const t = ref((key) => key)
+const setLocale = ref<(locale: string) => Promise<void>>(() => Promise.resolve())
+const t = ref((key:string) => key)
 const keys = ref({ auth: { login: 'Login' } })
 const locale = ref('en')
 
@@ -115,7 +121,6 @@ const locale = ref('en')
 const initializeI18n = () => {
   try {
     const i18n = useI18n()
-    i18nRef.value = i18n
     setLocale.value = i18n.setLocale
     t.value = i18n.t
     keys.value = i18n.keys
@@ -159,7 +164,7 @@ const deviceTiltStyles = computed(()=>({
   '--tz': deviceTilt.tilt.tz + 'px'
 }))
 
-const toStyleString = (styleObj) => {
+const toStyleString = (styleObj: object) => {
   return Object.entries(styleObj)
     .map(([key, value]) => `${key}:${value}`)
     .join(';');
@@ -181,26 +186,6 @@ if (props.isApp && props.pwaRegisterSW) {
 // Flag to prevent locale sync loops
 let isSettingLocale = false
 
-// Compute whether auth is required based on config
-const computedRequireAuth = computed(() => {
-  // Always require auth initially, even if skipAuth is available
-  // The skip option will be shown on the login screen
-  return props.requireAuth
-})
-
-// Check if we're in skip auth mode
-const isSkipAuthMode = computed(() => {
-  return sessionStorage.getItem('tiko_skip_auth') === 'true'
-})
-
-// Show top bar only when authenticated or not in skip auth mode
-const showTopBar = computed(() => {
-  if (isSkipAuthMode.value) {
-    return false
-  }
-  return topBar.value.showTitle !== false
-})
-
 // Get user state and settings with computed refs
 const user = computed(() => {
   if (!authStore.value) return null
@@ -208,11 +193,6 @@ const user = computed(() => {
   return refs.user?.value || null
 })
 
-const userSettings = computed(() => {
-  if (!authStore.value) return {}
-  const refs = storeToRefs(authStore.value)
-  return refs.userSettings?.value || {}
-})
 
 const currentTheme = computed(() => {
   if (!authStore.value) {
@@ -239,15 +219,14 @@ const topBar = computed(() => ({
   showSubtitle: true,
   showCurrentRoute: false,
   routeDisplay: 'subtitle' as const,
-  showBack: true,
-  ...props.config.topBar
+  showBack: true
 }))
 
 // Settings configuration
 const settings = computed(() => ({
   enabled: true,
   sections: [],
-  ...props.config.settings
+  ...tikoConfig.settings
 }))
 
 // Current route information
@@ -257,7 +236,7 @@ const currentRouteName = computed(() => route?.name?.toString() || '')
 // Display properties
 const displayTitle = computed(() => {
   if (topBar.value.showTitle === false) return ''
-  return tikoConfig.name || tikoConfig.appName
+  return tikoConfig.name
 })
 
 const displaySubtitle = computed(() => {
@@ -291,7 +270,7 @@ const handleProfile = () => {
 
   popupService.open({
     component: TProfile,
-    title: t(keys.profile.editProfile),
+    title: t('profile.editProfile'),
     props: {
       user: user.value,
       onClose: () => popupService.close()
@@ -304,7 +283,7 @@ const handleSettings = () => {
 
   popupService.open({
     component: TSettings,
-    title: t(keys.settings.title),
+    title: t('settings.title'),
     props: {
       config: props.config,
       sections: settings.value.sections,
@@ -376,7 +355,7 @@ watch(currentLanguage, (newLanguage, oldLanguage) => {
     console.log('[TFramework] Language changed in settings:', newLanguage, 'current locale:', locale.value)
     isSettingLocale = true
     if (setLocale.value) {
-      setLocale.value(newLanguage as Locale)
+      setLocale.value(newLanguage as string)
     }
 
     // Reset flag after a short delay

@@ -285,9 +285,13 @@ const handleParentModeKeyDown = (event: KeyboardEvent) => {
 
 // Context menu handlers
 const handleAboutApp = async () => {
-  if (!popupService || !props.appName) {
-    console.error('PopupService or appName not available')
+  if (!popupService) {
+    console.warn('[TTopBar] PopupService not available - about dialog cannot be shown')
     return
+  }
+  
+  if (!props.appName) {
+    console.warn('[TTopBar] App name not provided - using default')
   }
 
   try {

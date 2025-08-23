@@ -1,4 +1,4 @@
-import type { TikoConfig } from '../../../types'
+import type { TikoConfig } from '@tiko/core'
 import type { RegisterSWFunc } from '../../../composables/usePWAUpdate'
 
 export interface SettingsSection {
@@ -19,23 +19,10 @@ export interface TopBarConfig {
   showBack?: boolean
 }
 
-export interface FrameworkConfig extends TikoConfig {
-  topBar?: TopBarConfig
-  settings?: {
-    enabled?: boolean
-    sections?: SettingsSection[]
-  }
-  auth?: {
-    skipAuth?: boolean
-    [key: string]: any
-  }
-}
-
 export interface TFrameworkProps {
-  config: FrameworkConfig
+  config: TikoConfig
   backgroundImage?: string
   loading?: boolean
-  isApp?: boolean
   requireAuth?: boolean
   showSplashScreen?: boolean
   pwaRegisterSW?: RegisterSWFunc

@@ -28,6 +28,6 @@
       "@tiko/core/*": ["../core/src/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "../core/src/stores/i18n.store.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "../core/src/stores/i18n.store.ts", "../core/src/composables/useTikoConfig.ts"],
   "exclude": ["node_modules", "dist", "coverage"]
 }

@@ -21,29 +21,30 @@
 
 // Base Colors
 $base-colors: (
-	red: #f40935,
-	pink: #e23ea9,
-	purple: #b214c0,
-	violet: #7f23d3,
-	blue: #2923d3,
-	cobalt: #2376d3,
-	skyblue: #3bb6f1,
-	cyan: #2dcfdc,
-	teal: #49dba3,
-	green: #55c267,
-	lime: #a9e14b,
-	apple: #e7ed3f,
-	yellow: #fde824,
-	gold: #ffb647,
-	orange: #ff8d22,
-	brown: #806755,
-	coral: #f96459,
-	beige: #dabd9f,
-	lavender: #bface1,
-	gray: #989499,
-	white: #ffffff,
-	black: #000000
+	"red": #f40935,
+	"pink": #e23ea9,
+	"purple": #b214c0,
+	"violet": #7f23d3,
+	"blue": #2923d3,
+	"cobalt": #2376d3,
+	"skyblue": #3bb6f1,
+	"cyan": #2dcfdc,
+	"teal": #49dba3,
+	"green": #55c267,
+	"lime": #a9e14b,
+	"apple": #e7ed3f,
+	"yellow": #fde824,
+	"gold": #ffb647,
+	"orange": #ff8d22,
+	"brown": #806755,
+	"coral": #f96459,
+	"beige": #dabd9f,
+	"lavender": #bface1,
+	"gray": #989499,
+	"white": #ffffff,
+	"black": #000000
 );
+
 $extended-colors: extend-colors($base-colors);
 
 $base-color-names: map.keys($base-colors);

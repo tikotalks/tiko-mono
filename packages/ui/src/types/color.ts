@@ -24,6 +24,8 @@ const BaseColorValues = {
   beige: "#dabd9f",
   lavender: "#bface1",
   gray: "#989499",
+  black: "#000000",
+  white: "#ffffff"
 } as const;
 
 // --- Use your manipulation lib ---

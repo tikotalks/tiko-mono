@@ -62,12 +62,11 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useBemm } from 'bemm'
-import { useAuthStore } from '@tiko/core'
-import { useI18n } from '@tiko/core';
+import { useAuthStore, useTikoConfig, useI18n } from '@tiko/core'
+import {  } from '@tiko/core';
 import TLoginForm from '../TLoginForm/TLoginForm.vue'
 import TAppLayout from '../../layout/TAppLayout/TAppLayout.vue'
 import TSplashScreen from '../../feedback/TSplashScreen/TSplashScreen.vue'
-import { useTikoConfig } from '../../../composables/useTikoConfig'
 import type { TAuthWrapperProps } from './TAuthWrapper.model'
 
 const props = withDefaults(defineProps<TAuthWrapperProps>(), {

@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { withDefaults, defineProps } from 'vue';
+import { defineProps } from 'vue';
 import { useBemm } from 'bemm';
 
 type Props = {
