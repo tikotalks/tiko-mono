@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useAppStore, useAuthStore, itemService } from '@tiko/core'
+import { useAppStore, useAuthStore, itemService, useHaptic } from '@tiko/core'
 
 export interface YesNoSettings {
   buttonSize: 'small' | 'medium' | 'large'
@@ -12,6 +12,7 @@ export interface YesNoSettings {
 export const useYesNoStore = defineStore('yesno', () => {
   const appStore = useAppStore()
   const authStore = useAuthStore()
+  const haptic = useHaptic()
 
   // State
   const currentQuestion = ref<string>('Do you want to play?')
@@ -111,8 +112,8 @@ export const useYesNoStore = defineStore('yesno', () => {
 
   const handleAnswer = async (answer: 'yes' | 'no', speakFn?: (text: string, options: any) => Promise<void>, translateFn?: (key: string) => string) => {
     // Haptic feedback if enabled
-    if (settings.value.hapticFeedback && 'vibrate' in navigator) {
-      navigator.vibrate(answer === 'yes' ? [50, 50, 50] : [100])
+    if (settings.value.hapticFeedback) {
+      answer === 'yes' ? haptic.success() : haptic.vibrate(100)
     }
 
     // Auto-speak the answer if enabled

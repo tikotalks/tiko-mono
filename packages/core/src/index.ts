@@ -68,5 +68,7 @@ export {
 export { createTikoApp } from './utils/createTikoApp'
 export type { TikoAppOptions } from './utils/createTikoApp'
 export { useTikoConfig } from './composables/useTikoConfig'
+export { useHaptic } from './composables/useHaptic'
+export type { HapticOptions } from './composables/useHaptic'
 export { defineConfig } from './utils/defineConfig'
 export type { TikoConfig, TikoThemeColors } from './utils/defineConfig'

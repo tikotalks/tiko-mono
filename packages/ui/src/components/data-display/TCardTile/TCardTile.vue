@@ -74,7 +74,7 @@
 import { useBemm } from 'bemm';
 import { ref, computed, watch, onMounted } from 'vue';
 import { Icons } from 'open-icon';
-import { useImageUrl, useI18n } from '@tiko/core';
+import { useImageUrl, useI18n, useHaptic } from '@tiko/core';
 
 import type { TCardTile, TCardTileProps } from './TCardTile.model';
 import { TIcon } from '../../ui-elements/TIcon';
@@ -82,7 +82,7 @@ import { TContextMenu } from '../../navigation/TContextMenu';
 
 
 const { t } = useI18n()
-
+const haptic = useHaptic()
 
 const bemm = useBemm('t-card-tile');
 const { getImageVariants } = useImageUrl();
@@ -211,9 +211,7 @@ const startLongPress = () => {
   longPressTimer.value = window.setTimeout(() => {
     isDragReady.value = true;
     // Add haptic feedback if available
-    if ('vibrate' in navigator) {
-      navigator.vibrate(50);
-    }
+    haptic.notification()
   }, LONG_PRESS_DURATION);
 };
 
@@ -267,9 +265,7 @@ const handleClick = (_event: MouseEvent) => {
   // Only emit click if not drag ready
   if (!isDragReady.value) {
     // Add haptic feedback on click
-    if ('vibrate' in navigator) {
-      navigator.vibrate(10);
-    }
+    haptic.tap()
     emit('click');
   }
 };
