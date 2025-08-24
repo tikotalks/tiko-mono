@@ -195,8 +195,9 @@ const renderLoop = () => {
   }
   
   const elapsed = currentTime - firstFrameTime
-  const width = canvas.width
-  const height = canvas.height
+  // Use logical dimensions, not physical canvas dimensions!
+  const width = canvasAnimation.logicalWidth
+  const height = canvasAnimation.logicalHeight
   
   // Clear canvas
   ctx.fillStyle = 'black'
@@ -208,11 +209,42 @@ const renderLoop = () => {
   ctx.fillText(`Time: ${(elapsed / 1000).toFixed(1)}s`, 10, 30)
   ctx.fillText(`Camera Z: ${cameraZ.value.toFixed(0)}`, 10, 60)
   ctx.fillText(`Images: ${imagesLoaded.value}/${totalImages.value}`, 10, 90)
+  ctx.fillText(`Canvas: ${width}x${height}`, 10, 120)
+  ctx.fillText(`Center: ${(width/2).toFixed(0)},${(height/2).toFixed(0)}`, 10, 150)
   
   // Draw a colorful test rectangle
   const hue = (elapsed / 100) % 360
   ctx.fillStyle = `hsl(${hue}, 100%, 50%)`
-  ctx.fillRect(10, 120, 100, 100)
+  ctx.fillRect(10, 180, 100, 100)
+  
+  // Debug: Draw center crosshair and test circle
+  if (showDebug.value) {
+    // Red crosshair at calculated center
+    ctx.strokeStyle = 'red'
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.moveTo(width / 2 - 20, height / 2)
+    ctx.lineTo(width / 2 + 20, height / 2)
+    ctx.moveTo(width / 2, height / 2 - 20)
+    ctx.lineTo(width / 2, height / 2 + 20)
+    ctx.stroke()
+    
+    // Green circle at center
+    ctx.fillStyle = 'lime'
+    ctx.beginPath()
+    ctx.arc(width / 2, height / 2, 50, 0, Math.PI * 2)
+    ctx.fill()
+    
+    // Test positions
+    ctx.fillStyle = 'yellow'
+    ctx.fillRect(0, 0, 50, 50) // Top left
+    ctx.fillStyle = 'cyan'
+    ctx.fillRect(width - 50, 0, 50, 50) // Top right
+    ctx.fillStyle = 'magenta'
+    ctx.fillRect(0, height - 50, 50, 50) // Bottom left
+    ctx.fillStyle = 'orange'
+    ctx.fillRect(width - 50, height - 50, 50, 50) // Bottom right
+  }
   
   // Draw background
   if (backgroundImage?.loaded) {
@@ -250,36 +282,46 @@ const renderLoop = () => {
   })
   ctx.globalAlpha = 1
   
-  // Draw planets
-  planets.forEach((planet, index) => {
+  // Draw planets - sort by distance so closer planets are drawn on top
+  const planetsWithDistance = planets.map((planet, index) => ({
+    planet,
+    index,
+    distanceFromCamera: planet.distance - cameraZ.value
+  }))
+  
+  // Sort by distance - furthest first
+  planetsWithDistance.sort((a, b) => b.distanceFromCamera - a.distanceFromCamera)
+  
+  planetsWithDistance.forEach(({ planet, index, distanceFromCamera }) => {
     const planetImage = loadedPlanetImages[index]
     if (!planetImage?.loaded) return
     
-    // Position planets with slight offset for visual interest
-    const offsetAngle = index * 0.7 // Slight spiral effect
-    const x = Math.sin(offsetAngle) * 50 // Small horizontal offset
-    const y = Math.cos(offsetAngle) * 30 // Small vertical offset
+    // Skip if planet is behind camera
+    if (distanceFromCamera < 0) return
+    
+    // Create fly-around effect: planets move from center outward as we approach
+    const approachFactor = Math.max(0, 1 - (distanceFromCamera / 1000))
+    const flyAroundRadius = approachFactor * 400 // How far planets move outward
+    
+    // Different angle for each planet for variety
+    const flyAngle = index * 1.2 + elapsed * 0.0001
+    const x = Math.cos(flyAngle) * flyAroundRadius
+    const y = Math.sin(flyAngle) * flyAroundRadius * 0.5 // Elliptical path
     const z = planet.distance
     
     // Project to 2D
     const projected = project3D(x, y, z, cameraZ.value)
     
-    // Only draw if in view and in front of camera
-    if (projected.scale > 0 && z > cameraZ.value - 500 && z < cameraZ.value + 2000) {
+    // Only draw if in reasonable view distance
+    if (projected.scale > 0.01 && distanceFromCamera < 3000) {
       const screenX = width / 2 + projected.x
       const screenY = height / 2 + projected.y
       const size = planet.size * projected.scale
       
-      // Fade out planets as they get too close or too far
-      const distanceFromCamera = z - cameraZ.value
-      let alpha = 1
-      if (distanceFromCamera < 300) {
-        alpha = Math.max(0, distanceFromCamera / 300)
-      } else if (distanceFromCamera > 1500) {
-        alpha = Math.max(0, (2000 - distanceFromCamera) / 500)
-      }
+      // No fade out - planets stay visible as they fly around us
+      ctx.globalAlpha = 1
       
-      ctx.globalAlpha = alpha
+      // Draw planet
       ctx.drawImage(
         planetImage.element,
         screenX - size / 2,
@@ -288,11 +330,11 @@ const renderLoop = () => {
         size
       )
       
-      // Debug: Draw planet name
+      // Debug: Draw planet name and distance
       if (showDebug.value) {
         ctx.fillStyle = 'white'
         ctx.font = '14px Arial'
-        ctx.fillText(planet.name, screenX - size / 2, screenY - size / 2 - 5)
+        ctx.fillText(`${planet.name} (${distanceFromCamera.toFixed(0)})`, screenX - size / 2, screenY - size / 2 - 5)
       }
     }
   })
@@ -372,6 +414,8 @@ onMounted(async () => {
 
   // Initialize stars based on canvas size
   const canvas = canvasAnimation.getCanvas()
+  console.log('[SolarSystemAnimation] Canvas dimensions:', canvas.width, 'x', canvas.height)
+  console.log('[SolarSystemAnimation] Window dimensions:', window.innerWidth, 'x', window.innerHeight)
   initializeStars(canvas.width, canvas.height)
   
   // Load all images first
