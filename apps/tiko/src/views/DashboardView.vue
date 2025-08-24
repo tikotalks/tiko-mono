@@ -44,6 +44,21 @@
         />
       </div>
 
+      <!-- Parent Mode Section for authenticated users -->
+      <div :class="bemm('parent-mode-section')" v-if="isAuthenticated && parentModeEnabled">
+        <h2 :class="bemm('section-title')">{{ t('dashboard.parentModeTitle') }}</h2>
+        <p :class="bemm('section-subtitle')">{{ t('dashboard.parentModeDescription') }}</p>
+        <div :class="bemm('parent-mode-actions')">
+          <TButton
+            type="outline"
+            color="primary"
+            @click="handleResetPincode"
+          >
+            {{ t('parentMode.resetPincode') }}
+          </TButton>
+        </div>
+      </div>
+
       <!-- SSO Section for authenticated users -->
       <div :class="bemm('sso-section')" v-if="isAuthenticated">
         <h2 :class="bemm('section-title')">{{ t('dashboard.ssoTitle') }}</h2>
@@ -64,7 +79,7 @@ import {
   type TCardTile
 } from '@tiko/ui';
 import { useI18n } from '@tiko/core';
-import { useAuthStore } from '@tiko/core';
+import { useAuthStore, parentModeService } from '@tiko/core';
 import { Icons } from 'open-icon';
 import { appsService } from '../services/apps.service';
 import { ssoService } from '../services/sso.service';
@@ -78,6 +93,7 @@ const { t } = useI18n();
 // Reactive state
 const isLoading = ref(false);
 const appCards = ref<TCardTile[]>([]);
+const parentModeEnabled = ref(false);
 
 // Computed properties
 const isAuthenticated = computed(() => authStore.isAuthenticated);
@@ -108,6 +124,10 @@ const handleLogout = () => {
 const handleLogin = () => {
   // Navigate to login or open login modal
   console.log('Login clicked');
+};
+
+const handleResetPincode = () => {
+  router.push('/reset-pincode');
 };
 
 const handleAppClick = async (card: TCardTile) => {
@@ -184,11 +204,32 @@ const handleSSORequest = async () => {
   }
 };
 
-// Watch for authentication changes to complete SSO flow
+
+// Check parent mode status
+const checkParentMode = async () => {
+  if (authStore.isAuthenticated && authStore.user) {
+    const parentModeData = await parentModeService.getData(authStore.user.id);
+    parentModeEnabled.value = parentModeData?.parent_mode_enabled || false;
+  }
+};
+
+// Initialize
+onMounted(async () => {
+  await loadApps();
+  await checkParentMode();
+  
+  // Handle SSO request if present
+  if (route.path === '/sso' || route.query.request_id) {
+    await handleSSORequest();
+  }
+});
+
+// Watch for authentication changes
 watch(
   () => authStore.isAuthenticated,
   async (isAuthenticated) => {
     if (isAuthenticated) {
+      await checkParentMode();
       // Try to complete any pending SSO flow
       const completed = await ssoService.completeSSOFlow();
       if (completed) {
@@ -198,16 +239,6 @@ watch(
     }
   }
 );
-
-// Initialize
-onMounted(async () => {
-  await loadApps();
-  
-  // Handle SSO request if present
-  if (route.path === '/sso' || route.query.request_id) {
-    await handleSSORequest();
-  }
-});
 </script>
 
 <style lang="scss" scoped>
@@ -241,6 +272,21 @@ onMounted(async () => {
 
   &__apps-section {
     width: 100%;
+  }
+
+  &__parent-mode-section {
+    background: var(--color-background-secondary);
+    border: 2px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: var(--space-xl);
+    text-align: center;
+  }
+
+  &__parent-mode-actions {
+    margin-top: var(--space);
+    display: flex;
+    justify-content: center;
+    gap: var(--space);
   }
 
   &__sso-section {

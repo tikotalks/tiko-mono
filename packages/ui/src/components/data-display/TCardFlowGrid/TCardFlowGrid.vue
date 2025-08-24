@@ -80,6 +80,14 @@ const tileSize = ref(props.minTileSize)
 const gridColumns = ref(1)
 const gridRows = ref(1)
 
+// Responsive gap based on screen size
+const responsiveGap = computed(() => {
+  if (!containerRef.value) return props.gap
+  const containerWidth = containerRef.value.clientWidth
+  // Use smaller gap on small screens (below 768px)
+  return containerWidth <= 768 ? 8 : props.gap
+})
+
 // Calculate optimal tile size based on container dimensions
 const calculateOptimalLayout = () => {
   if (!containerRef.value) return
@@ -92,16 +100,17 @@ const calculateOptimalLayout = () => {
   if (cardCount === 0) return
 
   // Calculate optimal layout to maximize tile size
-  const availableWidth = containerWidth - (props.gap * 2)
-  const availableHeight = containerHeight - (VERTICAL_PADDING * 2) - (props.gap * 2)
+  const gap = responsiveGap.value
+  const availableWidth = containerWidth - (gap * 2)
+  const availableHeight = containerHeight - (VERTICAL_PADDING * 2) - (gap * 2)
 
 
   // Get preferred layout based on item count and screen size
   const [preferredCols, preferredRows] = getPreferredLayout(cardCount, containerWidth)
 
   // Calculate tile size for preferred layout
-  const preferredTileSizeByWidth = (availableWidth - ((preferredCols - 1) * props.gap)) / preferredCols
-  const preferredTileSizeByHeight = (availableHeight - ((preferredRows - 1) * props.gap)) / preferredRows
+  const preferredTileSizeByWidth = (availableWidth - ((preferredCols - 1) * gap)) / preferredCols
+  const preferredTileSizeByHeight = (availableHeight - ((preferredRows - 1) * gap)) / preferredRows
   const preferredTileSize = Math.min(preferredTileSizeByWidth, preferredTileSizeByHeight)
 
 
@@ -118,15 +127,17 @@ const calculateOptimalLayout = () => {
 
     // Try different column counts to find best fit
     const maxCols = Math.min(cardCount, Math.ceil(availableWidth / props.minTileSize))
+    // Start from 3 columns minimum on small screens
+    const minCols = containerWidth <= 768 ? 3 : 1
 
-    for (let cols = 1; cols <= maxCols; cols++) {
+    for (let cols = minCols; cols <= maxCols; cols++) {
       const rows = Math.ceil(cardCount / cols)
 
       // Skip if too many rows for screen
       if (rows * props.minTileSize > availableHeight) continue
 
-      const tileSizeByWidth = (availableWidth - ((cols - 1) * props.gap)) / cols
-      const tileSizeByHeight = (availableHeight - ((rows - 1) * props.gap)) / rows
+      const tileSizeByWidth = (availableWidth - ((cols - 1) * gap)) / cols
+      const tileSizeByHeight = (availableHeight - ((rows - 1) * gap)) / rows
       const tileSize = Math.min(tileSizeByWidth, tileSizeByHeight)
 
       if (tileSize >= props.minTileSize && tileSize > bestTileSize) {
@@ -146,16 +157,22 @@ const calculateOptimalLayout = () => {
     // Fallback: If no valid layout found, use minimum tile size
     if (props.scrollDirection === 'horizontal') {
       // For horizontal scroll, maximize rows
-      const rows = Math.floor((availableHeight + props.gap) / (props.minTileSize + props.gap))
+      const rows = Math.floor((availableHeight + gap) / (props.minTileSize + gap))
       gridRows.value = Math.max(1, rows)
       gridColumns.value = Math.ceil(cardCount / gridRows.value)
       tileSize.value = props.minTileSize
     } else {
       // For vertical scroll, maximize columns
-      const cols = Math.floor((availableWidth + props.gap) / (props.minTileSize + props.gap))
-      gridColumns.value = Math.max(1, cols)
+      const cols = Math.floor((availableWidth + gap) / (props.minTileSize + gap))
+      // Ensure at least 3 columns on small screens
+      gridColumns.value = Math.max(3, cols)
       gridRows.value = Math.ceil(cardCount / gridColumns.value)
-      tileSize.value = props.minTileSize
+      // Adjust tile size if we're forcing 3 columns
+      if (cols < 3) {
+        tileSize.value = Math.floor((availableWidth - (2 * gap)) / 3)
+      } else {
+        tileSize.value = props.minTileSize
+      }
     }
   }
 }
@@ -170,6 +187,8 @@ const containerStyles = computed(() => {
     styles.minHeight = '100%'
   }
 
+  styles['--tile-size'] = `${tileSize.value}`
+
   return styles
 })
 
@@ -177,11 +196,12 @@ const containerStyles = computed(() => {
 const gridStyles = computed(() => {
   const styles: Record<string, string> = {}
   const cardCount = props.cards.length
+  const gap = responsiveGap.value
 
   styles.display = 'grid'
-  styles.gap = `${props.gap}px`
+  styles.gap = `${gap}px`
   // Add proper top and bottom spacing using shared constants
-  styles.padding = `${GRID_SPACING.MIN_TOP_SPACE}px ${props.gap}px ${GRID_SPACING.MIN_BOTTOM_SPACE}px ${props.gap}px`
+  styles.padding = `${GRID_SPACING.MIN_TOP_SPACE}px ${gap}px ${GRID_SPACING.MIN_BOTTOM_SPACE}px ${gap}px`
 
   if (props.scrollDirection === 'horizontal') {
     styles.gridTemplateRows = `repeat(${gridRows.value}, ${tileSize.value}px)`

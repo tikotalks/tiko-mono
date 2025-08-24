@@ -467,7 +467,7 @@ const setPointerPosition = (e: PointerEvent) => {
   // Remove debug borders
   &--no-image {
     --card-title-bottom: 50%;
-    --card-title-font-size: clamp(.75em, 3vw, 1.125em);
+    // --card-title-font-size: clamp(.75em, 3vw, 1.125em);
     --card-title-transform: translateY(50%);
   }
 
@@ -562,6 +562,8 @@ const setPointerPosition = (e: PointerEvent) => {
   }
 
   &__title {
+
+    --font-size: calc((var(--tile-size) / 10 * 1px));
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     font-size: clamp(0.75rem, 2vw, 1rem);
@@ -570,7 +572,7 @@ const setPointerPosition = (e: PointerEvent) => {
     text-overflow: ellipsis;
     display: -webkit-box;
     width: fit-content;
-    font-size: var(--card-title-font-size, clamp(0.75rem, 2vw, 1rem));
+    font-size: var(--card-title-font-size, var(--font-size));
     line-height: 1;
     z-index: 2;
     position: absolute;

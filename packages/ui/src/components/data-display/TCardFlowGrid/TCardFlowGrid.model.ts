@@ -29,7 +29,8 @@ export const VERTICAL_PADDING = GRID_SPACING.TOTAL_VERTICAL_PADDING
 // Screen size breakpoints
 export const SCREEN_BREAKPOINTS = {
   LARGE: 1200,
-  MEDIUM: 768
+  MEDIUM: 768,
+  SMALL: 424  // Added explicit small breakpoint
 } as const
 
 // Layout mappings: [columns, rows]
@@ -39,13 +40,13 @@ export const LAYOUT_MAPPINGS: Record<number, {
   small: [number, number]
 }> = {
   1: { large: [1, 1], medium: [1, 1], small: [1, 1] },
-  2: { large: [2, 1], medium: [2, 1], small: [1, 2] },
-  3: { large: [3, 1], medium: [3, 1], small: [2, 2] }, // 3 in a row on large screens
+  2: { large: [2, 1], medium: [2, 1], small: [2, 1] },
+  3: { large: [3, 1], medium: [3, 1], small: [3, 1] },
   4: { large: [2, 2], medium: [2, 2], small: [2, 2] },
-  5: { large: [3, 2], medium: [3, 2], small: [2, 3] },
-  6: { large: [3, 2], medium: [3, 2], small: [2, 3] },
-  7: { large: [4, 2], medium: [3, 3], small: [2, 4] },
-  8: { large: [4, 2], medium: [3, 3], small: [2, 4] },
+  5: { large: [3, 2], medium: [3, 2], small: [3, 2] },
+  6: { large: [3, 2], medium: [3, 2], small: [3, 2] },
+  7: { large: [4, 2], medium: [3, 3], small: [3, 3] },
+  8: { large: [4, 2], medium: [3, 3], small: [3, 3] },
   9: { large: [3, 3], medium: [3, 3], small: [3, 3] },
   10: { large: [5, 2], medium: [4, 3], small: [3, 4] },
   11: { large: [4, 3], medium: [4, 3], small: [3, 4] },
@@ -74,7 +75,8 @@ export const getPreferredLayout = (itemCount: number, screenWidth: number): [num
     const cols = Math.min(6, Math.ceil(Math.sqrt(itemCount * 1.2)))
     return [cols, Math.ceil(itemCount / cols)]
   } else {
-    const cols = Math.min(4, Math.ceil(Math.sqrt(itemCount)))
+    // For small screens, ensure at least 3 columns
+    const cols = Math.min(4, Math.max(3, Math.ceil(Math.sqrt(itemCount))))
     return [cols, Math.ceil(itemCount / cols)]
   }
 }

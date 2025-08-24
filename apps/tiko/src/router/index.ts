@@ -3,6 +3,7 @@ import DashboardView from '../views/DashboardView.vue'
 import AdminDashboard from '../views/admin/AdminDashboard.vue'
 import PublicItemsAdmin from '../views/admin/PublicItemsAdmin.vue'
 import ReportsView from '../views/admin/ReportsView.vue'
+import ResetPincodeView from '../views/ResetPincodeView.vue'
 
 const router = createAppRouter({
   routes: [
@@ -28,6 +29,12 @@ const router = createAppRouter({
       name: 'ReportsView',
       component: ReportsView,
       meta: { requiresAdmin: true }
+    },
+    {
+      path: '/reset-pincode',
+      name: 'ResetPincode',
+      component: ResetPincodeView,
+      meta: { requiresAuth: true }
     },
     {
       path: '/sso',

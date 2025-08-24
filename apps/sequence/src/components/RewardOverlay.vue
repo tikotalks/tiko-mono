@@ -38,6 +38,11 @@
         ref="animationRef"
         @completed="onAnimationCompleted"
       />
+      <SolarSystemCanvasAnimation
+        v-else-if="selectedAnimation === 'solarsystem'"
+        ref="animationRef"
+        @completed="onAnimationCompleted"
+      />
     </div>
 
     <!-- Content overlay (shows after animation) -->
@@ -81,7 +86,8 @@ import AliensCanvasAnimation from './animations/AliensCanvasAnimation.vue'
 import ReefCanvasAnimation from './animations/ReefCanvasAnimation.vue'
 import DeepSeaCanvasAnimation from './animations/DeepSeaCanvasAnimation.vue'
 import FruitCatcherCanvasAnimation from './animations/FruitCatcherCanvasAnimation.vue'
-import type { AnimationImage } from './animations/types'
+import SolarSystemCanvasAnimation from './animations/SolarSystemCanvasAnimation.vue'
+import type { AnimationImageConfig, AnimationImage } from './animations/types'
 import { Icons } from 'open-icon';
 
 const emit = defineEmits<{
@@ -94,7 +100,7 @@ const { t } = useI18n()
 const { preloadImages } = useImageResolver()
 
 // Animation types
-const animations = ['rocket', 'alien', 'reef', 'deepsea', 'fruitcatcher'] as const
+const animations = ['rocket', 'alien', 'reef', 'deepsea', 'fruitcatcher', 'solarsystem'] as const
 type AnimationType = typeof animations[number]
 // Select random animation
 const selectedAnimation = ref<AnimationType>(animations[Math.floor(Math.random() * animations.length)])
@@ -102,7 +108,7 @@ const selectedAnimation = ref<AnimationType>(animations[Math.floor(Math.random()
 // State
 const animationCompleted = ref(false)
 const showContent = ref(false)
-const animationRef = ref<InstanceType<typeof RocketCanvasAnimation> | InstanceType<typeof AliensCanvasAnimation> | InstanceType<typeof ReefCanvasAnimation> | InstanceType<typeof DeepSeaCanvasAnimation> | InstanceType<typeof FruitCatcherCanvasAnimation> | null>(null)
+const animationRef = ref<InstanceType<typeof RocketCanvasAnimation> | InstanceType<typeof AliensCanvasAnimation> | InstanceType<typeof ReefCanvasAnimation> | InstanceType<typeof DeepSeaCanvasAnimation> | InstanceType<typeof FruitCatcherCanvasAnimation> | InstanceType<typeof SolarSystemCanvasAnimation> | null>(null)
 
 const onAnimationCompleted = () => {
   animationCompleted.value = true
@@ -180,6 +186,18 @@ onBeforeMount(async () => {
           }))
         )
         console.log('Fruit Catcher animation images preloaded successfully')
+      }
+    } else if (selectedAnimation.value === 'solarsystem') {
+      const { animationImages } = await import('./animations/SolarSystemCanvasAnimation.vue')
+
+      if (animationImages && animationImages.length > 0) {
+        await preloadImages(
+          animationImages.map((img: AnimationImageConfig) => ({
+            src: img.id,
+            options: img.options
+          }))
+        )
+        console.log('Solar System animation images preloaded successfully')
       }
     }
   } catch (error) {
