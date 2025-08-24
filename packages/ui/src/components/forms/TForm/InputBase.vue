@@ -40,6 +40,7 @@
 					:pattern="pattern"
 					:maxlength="maxlength"
 					:autofocus="autofocus"
+					:autocomplete="autoComplete"
 					@input="handleInput"
 					@click="handleTouch"
 					@focus="handleFocus"
@@ -154,6 +155,7 @@ type Props = {
 	pattern?: string;
 	maxlength?: number;
 	minlength?: number;
+	autoComplete?: string;
 	autoFocusNext?: boolean;
 };
 
@@ -182,6 +184,7 @@ const props = withDefaults(defineProps<Props>(), {
 	pattern: undefined,
 	maxlength: undefined,
 	minlength: undefined,
+	autoComplete: undefined,
 	autoFocusNext: false,
 });
 

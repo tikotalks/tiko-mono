@@ -15,6 +15,7 @@
     :pattern="pattern"
     :maxlength="maxlength"
     :minlength="minlength"
+    :autoComplete="autoComplete"
     :autofocus="autofocus"
     :inputmode="inputmode"
     :reset="reset"

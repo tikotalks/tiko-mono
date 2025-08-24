@@ -25,6 +25,12 @@ import { useBemm } from 'bemm'
 import { CanvasAnimation, useImageResolver, usePlaySound, SOUNDS } from '@tiko/core'
 import type { AnimationImage, AnimationImageConfig } from '../types'
 
+// Type for loaded images with HTMLImageElement
+interface LoadedImage {
+  element: HTMLImageElement
+  loaded: boolean
+}
+
 interface Props {
   backgroundId?: string
   backgroundMediaType?: 'assets' | 'public' | 'user'
@@ -76,8 +82,8 @@ const cameraZ = ref(7000) // Start position beyond Pluto
 const cameraSpeed = ref(-6) // Negative speed to move toward the sun
 let animationStartTime = 0
 let firstFrameTime = 0
-let loadedPlanetImages: (AnimationImage | null)[] = []
-let backgroundImage: AnimationImage | null = null
+let loadedPlanetImages: (LoadedImage | null)[] = []
+let backgroundImage: LoadedImage | null = null
 let backgroundVideo: HTMLVideoElement | null = null
 let renderLoopStarted = false
 let sunZoomPhase = false // Track when we're in the final sun zoom phase
@@ -198,7 +204,7 @@ const loadImages = async () => {
           const img = new Image()
           img.src = url
           
-          return new Promise<AnimationImage>((resolve, reject) => {
+          return new Promise<LoadedImage>((resolve, reject) => {
             img.onload = () => {
               imagesLoaded.value++
               resolve({ element: img, loaded: true })
