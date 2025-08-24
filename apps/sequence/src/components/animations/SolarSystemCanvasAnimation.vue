@@ -377,11 +377,23 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
 })
+</script>
+
+<script lang="ts">
+import type { AnimationImageConfig } from './types'
 
 // Export animation images for preloading
 export const animationImages: AnimationImageConfig[] = [
-  { id: spaceBackgroundId },
-  ...planets.map(planet => ({ id: planet.assetId }))
+  { id: 'REPLACE_SPACE_BG_ID' },
+  { id: 'REPLACE_SUN_ID' },
+  { id: 'REPLACE_MERCURY_ID' },
+  { id: 'REPLACE_VENUS_ID' },
+  { id: 'REPLACE_EARTH_ID' },
+  { id: 'REPLACE_MARS_ID' },
+  { id: 'REPLACE_JUPITER_ID' },
+  { id: 'REPLACE_SATURN_ID' },
+  { id: 'REPLACE_URANUS_ID' },
+  { id: 'REPLACE_NEPTUNE_ID' }
 ]
 </script>
 

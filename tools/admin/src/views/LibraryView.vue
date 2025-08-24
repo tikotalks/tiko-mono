@@ -500,9 +500,18 @@ const getContextMenuItems = (media: MediaItem) => {
       type: 'separator' as const
     },
     {
+      id: 'get-media-id',
+      label: t('admin.library.mediaId'),
+      icon: Icons.CODE_BRACKETS,
+      action: () => {
+        navigator.clipboard.writeText(media.id)
+        // TODO: Show toast notification
+      }
+    },
+    {
       id: 'add-to-collection',
       label: t('admin.library.addToCollection'),
-      icon: Icons.FOLDER_PLUS,
+      icon: Icons.FOLDER_ADD,
       action: () => addToCollection(media)
     },
     {
@@ -512,13 +521,13 @@ const getContextMenuItems = (media: MediaItem) => {
     {
       id: 'edit',
       label: t('common.edit'),
-      icon: Icons.PENCIL,
+      icon: Icons.EDIT_M,
       action: () => editMedia(media)
     },
     {
       id: 'toggle-privacy',
       label: media.is_private ? t('admin.library.makePublic') : t('admin.library.makePrivate'),
-      icon: media.is_private ? Icons.GLOBE : Icons.LOCK,
+      icon: media.is_private ? Icons.GLOBE : Icons.LUGGAGE_LOCKER,
       action: () => togglePrivacy(media)
     },
     {
