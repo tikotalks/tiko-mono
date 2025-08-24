@@ -3,7 +3,15 @@
     <!-- Manual Canvas -->
     <canvas 
       ref="manualCanvas"
-      style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000;"
+      :style="{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        zIndex: 1000,
+        background: 'rgba(255, 0, 0, 0.1)' // Red tint to see if canvas is visible
+      }"
     ></canvas>
     
     <!-- Radial gradient overlay -->
@@ -180,16 +188,28 @@ const loadImages = async () => {
 
 // Animation loop
 const animate = (ctx: CanvasRenderingContext2D, width: number, height: number, currentTime: number) => {
-  if (animationState.value !== 'playing') return
+  if (animationState.value !== 'playing') {
+    console.log('[SolarSystemAnimation] Animation not playing, state:', animationState.value)
+    return
+  }
 
   const elapsed = currentTime - animationStartTime
   
   // Clear canvas
-  ctx.clearRect(0, 0, width, height)
+  ctx.fillStyle = 'black'
+  ctx.fillRect(0, 0, width, height)
   
-  // Debug: Draw a test rectangle to ensure canvas is working
-  ctx.fillStyle = 'purple'
-  ctx.fillRect(10, 10, 100, 100)
+  // Debug: Draw test elements to ensure canvas is working
+  ctx.fillStyle = 'white'
+  ctx.font = '20px Arial'
+  ctx.fillText(`Time: ${(elapsed / 1000).toFixed(1)}s`, 10, 30)
+  ctx.fillText(`Camera Z: ${cameraZ.value.toFixed(0)}`, 10, 60)
+  ctx.fillText(`Images: ${imagesLoaded.value}/${totalImages.value}`, 10, 90)
+  
+  // Draw a colorful test rectangle
+  const hue = (elapsed / 100) % 360
+  ctx.fillStyle = `hsl(${hue}, 100%, 50%)`
+  ctx.fillRect(10, 120, 100, 100)
   
   // Draw background
   if (backgroundImage?.loaded) {
@@ -282,15 +302,16 @@ const startAnimation = async () => {
   phase.value = 'entering'
   animationStartTime = performance.now()
   
-  // Play rocket sound for space ambiance (no ambient sound available)
-  // Commented out for now as there's no loop support
-  // playSound({
-  //   id: SOUNDS.ROCKET,
-  //   volume: 0.3
-  // })
+  // Play space ambient sound
+  playSound({
+    id: 'e45e9671-88e8-4c53-8938-039ac8f46bc7',
+    volume: 0.3,
+    media: 'assets'
+  })
   
   // Initialize canvas animation
   if (manualCanvas.value && !canvasAnimation) {
+    console.log('[SolarSystemAnimation] Initializing canvas...')
     animationCtx = manualCanvas.value.getContext('2d')
     animationCanvas = manualCanvas.value
     
@@ -298,13 +319,27 @@ const startAnimation = async () => {
       // Set canvas size
       animationCanvas.width = window.innerWidth
       animationCanvas.height = window.innerHeight
+      console.log('[SolarSystemAnimation] Canvas size:', animationCanvas.width, 'x', animationCanvas.height)
       
       // Initialize stars
       initializeStars(animationCanvas.width, animationCanvas.height)
+      console.log('[SolarSystemAnimation] Stars initialized:', stars.length)
+      
+      // Draw initial frame to test
+      animationCtx.fillStyle = 'red'
+      animationCtx.fillRect(0, 0, animationCanvas.width, animationCanvas.height)
+      animationCtx.fillStyle = 'white'
+      animationCtx.font = '40px Arial'
+      animationCtx.fillText('SOLAR SYSTEM ANIMATION', 50, 100)
       
       canvasAnimation = new CanvasAnimation(animationCanvas, animate)
       canvasAnimation.start()
+      console.log('[SolarSystemAnimation] Canvas animation started')
+    } else {
+      console.error('[SolarSystemAnimation] Failed to get canvas context')
     }
+  } else {
+    console.log('[SolarSystemAnimation] Canvas not ready or animation already initialized')
   }
 }
 
