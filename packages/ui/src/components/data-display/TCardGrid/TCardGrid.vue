@@ -35,7 +35,7 @@
                   '--rotation': cardsAtPosition.length > 1 ? `${(stackIndex - (cardsAtPosition.length - 1) / 2) * 5}deg` : '0deg',
                   '--offset-x': cardsAtPosition.length > 1 ? `${(stackIndex - (cardsAtPosition.length - 1) / 2) * 4}px` : '0px',
                   '--offset-y': cardsAtPosition.length > 1 ? `${stackIndex * -4}px` : '0px',
-                  'z-index': openMenuTileId === card.id ? 1000 : stackIndex
+                  'z-index': stackIndex
                 }">
                   <div v-if="card.type === CardTileTypes.GHOST" :class="bemm('ghost-tile')" />
                   <TCardTileComponent v-else
@@ -57,8 +57,6 @@
                       'is-selected': selectedTileIds?.has(card.id)
                     }"
                     @click="handleCardClick(card, pageIndex * cardsPerPage + index)"
-                    @menu-open="handleMenuOpen(card)"
-                    @menu-close="handleMenuClose"
                     @dragstart="handleDragStart($event, card)" @dragend="handleDragEnd"
                     @dragover="handleDragOver($event, card)" @dragleave="handleDragLeave" @drop="handleDrop($event, card)" />
                 </div>
@@ -326,9 +324,6 @@ const panelWidth = ref(0);
 // Animation state for tiles
 const animatingPages = ref<Set<number>>(new Set());
 
-// Track which tile has an open menu
-const openMenuTileId = ref<string | null>(null);
-
 // Calculate cards per page based on grid
 const cardsPerPage = computed(() => {
   return grid.value.cols * grid.value.rows;
@@ -590,15 +585,6 @@ const getGridPosition = (index: number) => {
 // Handle card clicks
 const handleCardClick = (card: TCardTile, index: number) => {
   emit('card-click', card, index);
-};
-
-// Handle context menu events
-const handleMenuOpen = (card: TCardTile) => {
-  openMenuTileId.value = card.id;
-};
-
-const handleMenuClose = () => {
-  openMenuTileId.value = null;
 };
 
 // Drag and Drop handlers
@@ -1101,6 +1087,11 @@ watch(() => props.cards, (newCards) => {
 
     // Ensure proper stacking context
     position: relative;
+    
+    // When context menu is open, increase z-index
+    &:has(.context-panel--active) {
+      z-index: 1000 !important;
+    }
 
     &--animating {
       animation: tile-pop-in 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) both;
