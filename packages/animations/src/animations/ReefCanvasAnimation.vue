@@ -21,7 +21,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useBemm } from 'bemm'
 import { CanvasAnimation, useImageResolver, usePlaySound } from '@tiko/core'
 import { Icons } from 'open-icon'
-import type { AnimationImage } from './types'
+import type { AnimationImage } from '../types'
 
 const emit = defineEmits<{
   completed: []

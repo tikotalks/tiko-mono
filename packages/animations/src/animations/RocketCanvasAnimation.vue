@@ -568,6 +568,32 @@ const skipAnimation = () => {
   emit('completed')
 }
 
+// Helper functions for loading assets
+const loadImage = (url: string): Promise<HTMLImageElement> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => resolve(img)
+    img.onerror = reject
+    img.src = url
+  })
+}
+
+const loadVideo = (url: string): Promise<HTMLVideoElement> => {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video')
+    video.autoplay = true
+    video.loop = true
+    video.muted = true
+    video.playsInline = true
+    
+    video.onloadeddata = () => {
+      video.play().then(() => resolve(video)).catch(reject)
+    }
+    video.onerror = reject
+    video.src = url
+  })
+}
+
 onMounted(async () => {
   console.log('[RocketCanvas] Component mounted - loading images')
 
@@ -629,7 +655,7 @@ onMounted(async () => {
     }
     
     const rocketImg = await loadImage(rocketUrl)
-    const fireImagesLoaded = await Promise.all(fireUrls.map(url => loadImage(url)))
+    const fireImagesLoaded = await Promise.all(fireUrls.map((url: string) => loadImage(url)))
     
     console.log('[RocketCanvas] All assets loaded successfully')
     imagesLoaded.value = 2 + fireImagesLoaded.length
@@ -648,94 +674,6 @@ onMounted(async () => {
     drawManualElements(ctx, canvas.width, canvas.height, 16/9)
   }
 })
-
-const loadImage = (src: string): Promise<HTMLImageElement> => {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    // Try different CORS settings
-    img.crossOrigin = 'use-credentials' // Try with credentials first
-    
-    img.onload = () => {
-      console.log('[RocketCanvas] ✅ Image loaded successfully:', src)
-      resolve(img)
-    }
-    
-    img.onerror = (error) => {
-      console.error('[RocketCanvas] ❌ First attempt failed, trying without CORS:', src)
-      
-      // Try again without crossOrigin
-      const img2 = new Image()
-      img2.onload = () => {
-        console.log('[RocketCanvas] ✅ Image loaded successfully (no CORS):', src)
-        resolve(img2)
-      }
-      img2.onerror = (error2) => {
-        console.error('[RocketCanvas] ❌ Second attempt also failed:', src, error2)
-        reject(new Error(`Failed to load image after 2 attempts: ${src}`))
-      }
-      img2.src = src
-    }
-    
-    console.log('[RocketCanvas] 🔄 Starting to load image:', src)
-    img.src = src
-  })
-}
-
-const loadVideo = (src: string): Promise<HTMLVideoElement> => {
-  return new Promise((resolve, reject) => {
-    const video = document.createElement('video')
-    
-    // Set up all event handlers before setting src
-    video.onloadeddata = () => {
-      console.log('[RocketCanvas] ✅ Video data loaded:', src)
-      console.log('[RocketCanvas] Video duration:', video.duration, 'seconds')
-      console.log('[RocketCanvas] Video dimensions:', video.videoWidth, 'x', video.videoHeight)
-      resolve(video)
-    }
-    
-    video.onerror = (error) => {
-      console.error('[RocketCanvas] ❌ First attempt failed with CORS, trying without:', src, error)
-      
-      // Try again without CORS (same pattern as images)
-      const video2 = document.createElement('video')
-      
-      video2.onloadeddata = () => {
-        console.log('[RocketCanvas] ✅ Video loaded successfully (no CORS):', src)
-        console.log('[RocketCanvas] Video duration:', video2.duration, 'seconds')
-        resolve(video2)
-      }
-      
-      video2.onerror = (error2) => {
-        console.error('[RocketCanvas] ❌ Second attempt also failed:', src, error2)
-        reject(new Error(`Failed to load video after 2 attempts: ${src}`))
-      }
-      
-      // Set video properties without CORS
-      video2.muted = true
-      video2.playsInline = true
-      // NO crossOrigin attribute this time
-      video2.loop = false
-      video2.preload = 'auto'
-      
-      console.log('[RocketCanvas] 🔄 Retrying video load without CORS:', src)
-      video2.src = src
-      video2.load()
-    }
-    
-    // Set video properties WITH CORS first attempt
-    video.muted = true // Mute to allow autoplay
-    video.playsInline = true // Important for mobile
-    video.crossOrigin = 'anonymous' // Try with CORS first
-    video.loop = false // We'll control looping manually
-    video.preload = 'auto' // Preload the video
-    
-    console.log('[RocketCanvas] 🔄 Starting to load video with CORS:', src)
-    
-    // Set src and explicitly load
-    video.src = src
-    video.load() // Explicitly start loading
-  })
-}
 
 const startRocketSequence = (ctx: CanvasRenderingContext2D, width: number, height: number, bgAsset: HTMLVideoElement | HTMLImageElement, isVideo: boolean, rocketImg: HTMLImageElement, fireImgs: HTMLImageElement[]) => {
   console.log('[RocketCanvas] Starting complete rocket sequence')
@@ -1131,7 +1069,7 @@ onUnmounted(() => {
 
 <script lang="ts">
 // AnimationImage type is already imported in the setup script
-import type { AnimationImage } from './types'
+import type { AnimationImage } from '../types'
 
 // Export required images for preloading
 export const animationImages: AnimationImage[] = [

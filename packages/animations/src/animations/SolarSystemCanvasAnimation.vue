@@ -23,7 +23,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useBemm } from 'bemm'
 import { CanvasAnimation, useImageResolver, usePlaySound, SOUNDS } from '@tiko/core'
-import type { AnimationImage, AnimationImageConfig } from './types'
+import type { AnimationImage, AnimationImageConfig } from '../types'
 
 interface Props {
   backgroundId?: string
@@ -693,7 +693,6 @@ onUnmounted(() => {
 </script>
 
 <script lang="ts">
-import type { AnimationImageConfig } from './types'
 
 // Export animation images for preloading
 export const animationImages: AnimationImageConfig[] = [

@@ -22,7 +22,7 @@
           :stroke-dasharray="`${2 * Math.PI * 45}`"
           :stroke-dashoffset="`${2 * Math.PI * 45 * (1 - timeRemaining / initialTime)}`"
           transform="rotate(-90 50 50)"
-          :class="[bemm('timer-progress'), { [bemm('timer-progress--warning')]: timeRemaining <= 5 }]"
+          :class="[bemm('timer-progress'), timeRemaining <= 5 ? bemm('timer-progress--warning') : '']"
         />
       </svg>
       <div :class="bemm('timer-content')">
@@ -36,7 +36,7 @@
       <h3>Fruit Catcher Debug</h3>
       <p>Phase: {{ phase }}</p>
       <p>Animation State: {{ animationState }}</p>
-      <p>Caught: {{ caughtFruits }}/{{ totalFruits }}</p>
+      <p>Caught: {{ caughtFruits }}</p>
       <p>Canvas size: {{ canvasSize }}</p>
       <button @click.stop="startAnimation">Start</button>
       <button @click.stop="skipAnimation">Skip</button>
@@ -48,7 +48,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useBemm } from 'bemm'
 import { CanvasAnimation, useImageResolver, usePlaySound } from '@tiko/core'
-import type { AnimationImage } from './types'
+import type { AnimationImage } from '../types'
 
 const emit = defineEmits<{
   completed: []

@@ -21,7 +21,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useBemm } from 'bemm'
 import { CanvasAnimation, useImageResolver, usePlaySound } from '@tiko/core'
 import { Icons } from 'open-icon'
-import type { AnimationImage } from './types'
+import type { AnimationImage } from '../types'
 
 const emit = defineEmits<{
   completed: []
@@ -86,28 +86,33 @@ const startAnimation = async () => {
 
   // Get background object and ensure it exists
   const bg = canvasAnimation.getObject('background')
-  if (bg) {
-    console.log('[DeepSeaCanvas] Starting background zoom animation')
-    // Make sure background starts at scale 1.0
-    bg.scaleX = 1.0
-    bg.scaleY = 1.0
-    
-    // Animate zoom over the full 12 seconds (slightly longer for deep sea feel)
-    canvasAnimation.animate('background', [
-      {
-        duration: 12000,
-        easing: CanvasAnimation.easings.easeInOutQuad,
-        properties: {
-          scaleX: 1.3, // 30% zoom for deep sea depth effect
-          scaleY: 1.3
-        }
-      }
-    ], () => {
-      console.log('[DeepSeaCanvas] Background zoom animation completed')
-    })
-  } else {
-    console.error('[DeepSeaCanvas] Background object not found!')
+  if (!bg) {
+    console.error('[DeepSeaCanvas] Background object not found! Cannot start animation.')
+    // Try to recover by completing the animation
+    setTimeout(() => {
+      skipAnimation()
+    }, 1000)
+    return
   }
+  
+  console.log('[DeepSeaCanvas] Starting background zoom animation')
+  // Make sure background starts at scale 1.0
+  bg.scaleX = 1.0
+  bg.scaleY = 1.0
+  
+  // Animate zoom over the full 12 seconds (slightly longer for deep sea feel)
+  canvasAnimation.animate('background', [
+    {
+      duration: 12000,
+      easing: CanvasAnimation.easings.easeInOutQuad,
+      properties: {
+        scaleX: 1.3, // 30% zoom for deep sea depth effect
+        scaleY: 1.3
+      }
+    }
+  ], () => {
+    console.log('[DeepSeaCanvas] Background zoom animation completed')
+  })
 
   // Calculate fish sizes based on viewport - bigger fish for deep sea
   const fishSizeMin = 180
@@ -280,6 +285,7 @@ onMounted(async () => {
 
     if (isVideo) {
       // Create video background object
+      console.log('[DeepSeaCanvas] Creating video background object')
       canvasAnimation.createVideoObject(
         'background',
         'background',
@@ -290,6 +296,7 @@ onMounted(async () => {
       )
     } else {
       // Create image background object
+      console.log('[DeepSeaCanvas] Creating image background object')
       canvasAnimation.createObject(
         'background',
         'background',
@@ -299,14 +306,24 @@ onMounted(async () => {
         bgSize
       )
     }
+    
+    // Log all objects to debug
+    console.log('[DeepSeaCanvas] All objects after creation:', canvasAnimation.getAllObjects())
 
     // Start rendering
     canvasAnimation.start()
+    
+    // Verify background object exists before starting
+    const bg = canvasAnimation.getObject('background')
+    if (!bg) {
+      console.error('[DeepSeaCanvas] Background object not created properly')
+      return
+    }
 
-    // Auto-start animation immediately
+    // Auto-start animation after ensuring everything is ready
     setTimeout(() => {
       startAnimation()
-    }, 100)
+    }, 500)
   } catch (error) {
     console.error('[DeepSeaCanvas] Error during initialization:', error)
   }

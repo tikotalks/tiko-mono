@@ -1,4 +1,4 @@
-import { defineAsyncComponent } from 'vue'
+import { defineAsyncComponent, type Component } from 'vue'
 import type { AnimationType, AnimationDefinition } from './types'
 
 // Export types
@@ -57,9 +57,9 @@ export const getRandomAnimation = () => {
 export const animationNames: AnimationType[] = animations.map(a => a.name)
 
 // Export individual components for direct import if needed
-export const RocketCanvasAnimation = defineAsyncComponent(() => import('./animations/RocketCanvasAnimation.vue'))
-export const AliensCanvasAnimation = defineAsyncComponent(() => import('./animations/AliensCanvasAnimation.vue'))
-export const ReefCanvasAnimation = defineAsyncComponent(() => import('./animations/ReefCanvasAnimation.vue'))
-export const DeepSeaCanvasAnimation = defineAsyncComponent(() => import('./animations/DeepSeaCanvasAnimation.vue'))
-export const FruitCatcherCanvasAnimation = defineAsyncComponent(() => import('./animations/FruitCatcherCanvasAnimation.vue'))
-export const SolarSystemCanvasAnimation = defineAsyncComponent(() => import('./animations/SolarSystemCanvasAnimation.vue'))
+export const RocketCanvasAnimation = defineAsyncComponent(() => import('./animations/RocketCanvasAnimation.vue')) as Component
+export const AliensCanvasAnimation = defineAsyncComponent(() => import('./animations/AliensCanvasAnimation.vue')) as Component
+export const ReefCanvasAnimation = defineAsyncComponent(() => import('./animations/ReefCanvasAnimation.vue')) as Component
+export const DeepSeaCanvasAnimation = defineAsyncComponent(() => import('./animations/DeepSeaCanvasAnimation.vue')) as Component
+export const FruitCatcherCanvasAnimation = defineAsyncComponent(() => import('./animations/FruitCatcherCanvasAnimation.vue')) as Component
+export const SolarSystemCanvasAnimation = defineAsyncComponent(() => import('./animations/SolarSystemCanvasAnimation.vue')) as Component
