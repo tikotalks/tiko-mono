@@ -88,7 +88,7 @@
             <TInputText v-model="verificationCode" type="text" inputmode="numeric" pattern="[0-9]*"
               :label="t('auth.verificationCode')" :placeholder="t('auth.enterDigitCode', { codeLength })"
               :error="verificationError ? [verificationError] : undefined" :disabled="isLoading" :maxlength="codeLength"
-              required :class="bemm('code-input')" data-cy="verification-code-input" autocomplete="one-time-code" />
+              required :class="bemm('code-input')" data-cy="verification-code-input" :autoComplete="'one-time-code'" />
 
             <TButton :label="t('auth.verifyCode')" color="primary" size="large" @click="handleVerificationSubmit"
               :disabled="!isVerificationValid || isLoading" :loading="isLoading" :class="bemm('submit-button')"
