@@ -19,7 +19,7 @@ bucket_name = "tiko-assets"
 [vars]
 # These should be set via wrangler secret put
 # SUPABASE_URL = ""
-# SUPABASE_SERVICE_KEY = ""
+# SUPABASE_SECRET = ""
 
 # Workers.dev subdomain (for testing before custom domain is ready)
 workers_dev = true

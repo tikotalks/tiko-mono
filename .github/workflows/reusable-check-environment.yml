@@ -1,0 +1,51 @@
+name: Check Environment Variables
+
+on:
+  workflow_call:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    name: Check Required Environment Variables
+    steps:
+      - name: Check Cloudflare API Token
+        run: |
+          if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
+            echo "❌ ERROR: Missing required secret CLOUDFLARE_API_TOKEN"
+            echo "Please add this secret in GitHub Settings > Secrets and variables > Actions"
+            exit 1
+          fi
+          echo "✅ CLOUDFLARE_API_TOKEN is configured"
+
+      - name: Check Supabase Environment Variables
+        run: |
+          MISSING_VARS=""
+          
+          if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ]; then
+            MISSING_VARS="$MISSING_VARS VITE_SUPABASE_URL"
+          fi
+          
+          if [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ]; then
+            MISSING_VARS="$MISSING_VARS VITE_SUPABASE_ANON_KEY"
+          fi
+          
+          if [ -n "$MISSING_VARS" ]; then
+            echo "❌ ERROR: Missing required Supabase secrets:"
+            for var in $MISSING_VARS; do
+              echo "  - $var"
+            done
+            echo ""
+            echo "Please add these secrets in GitHub Settings > Secrets and variables > Actions"
+            exit 1
+          fi
+          
+          echo "✅ Supabase environment variables are configured"
+
+      - name: Check Cloudflare Account ID
+        run: |
+          if [ -z "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" ]; then
+            echo "⚠️  WARNING: CLOUDFLARE_ACCOUNT_ID not set as secret"
+            echo "Using default account ID from workflow file"
+          else
+            echo "✅ CLOUDFLARE_ACCOUNT_ID is configured"
+          fi

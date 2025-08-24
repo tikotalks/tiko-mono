@@ -27,7 +27,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useBemm } from 'bemm'
 import { CanvasAnimation, useImageResolver, usePlaySound, SOUNDS } from '@tiko/core'
-import type { AnimationImage } from './types'
+import { Icons } from 'open-icon'
 
 const emit = defineEmits<{
   completed: []
@@ -38,7 +38,8 @@ const { resolveImageUrl } = useImageResolver()
 const { playSound } = usePlaySound()
 
 // Asset IDs
-const backgroundId = '651585d8-2210-4b8c-8fe0-c1404ee19796'
+const backgroundVideoId = 'e214dc75-ab72-4774-b92e-83a8da06e14e' // Video background
+const backgroundId = '651585d8-2210-4b8c-8fe0-c1404ee19796' // Fallback image
 const rocketId = '278398af-d4ed-497d-8472-d825eb09e0f3'
 
 // Fire animation IDs
@@ -71,7 +72,7 @@ let animationCtx: CanvasRenderingContext2D | null = null
 let animationCanvas: HTMLCanvasElement | null = null
 
 // Animation state
-let currentPhase = ref<'entering' | 'idle' | 'liftoff' | 'flying' | 'fadeout'>('entering')
+let currentPhase = ref<'entering' | 'idle' | 'liftoff' | 'flying' | 'fadeout' | 'complete'>('entering')
 let rocketState = ref({
   x: 0,
   y: 0,
@@ -93,7 +94,7 @@ let fadeStartTime = 0
 // Debug info
 const canvasSize = computed(() => {
   if (!canvasAnimation) return 'Not initialized'
-  const canvas = canvasAnimation.getCanvas()
+  const canvas = canvasAnimation?.getCanvas()
   return `${canvas.width}x${canvas.height}`
 })
 
@@ -106,9 +107,9 @@ const startAnimation = async () => {
   animationState.value = 'playing'
   phase.value = 'entering'
 
-  const canvas = canvasAnimation.getCanvas()
-  const logicalWidth = parseInt(canvas.style.width) || window.innerWidth
-  const logicalHeight = parseInt(canvas.style.height) || window.innerHeight
+  const canvas = canvasAnimation?.getCanvas()
+  const logicalWidth = canvas ? (parseInt(canvas.style.width) || window.innerWidth) : window.innerWidth
+  const logicalHeight = canvas ? (parseInt(canvas.style.height) || window.innerHeight) : window.innerHeight
   
   // Calculate rocket size - square since all images are square
   const rocketSize = logicalHeight * 0.3 // 30vh equivalent, square
@@ -121,7 +122,7 @@ const startAnimation = async () => {
   console.log('[RocketCanvas] Rocket position:', rocketX, rocketY)
   
   // Create rocket object in center (square)
-  canvasAnimation.createObject(
+  canvasAnimation?.createObject(
     'rocket', 
     'rocket', 
     rocketX,
@@ -135,7 +136,7 @@ const startAnimation = async () => {
   const fireX = rocketX + (rocketSize - fireSize) / 2 // Center horizontally within rocket
   const fireY = rocketY + rocketSize - fireSize // Bottom of rocket, fire overlaps
   
-  canvasAnimation.createObject(
+  canvasAnimation?.createObject(
     'fire',
     'fire_1', // Use first fire frame (loaded as fire_1)
     fireX,
@@ -145,15 +146,15 @@ const startAnimation = async () => {
   )
   
   // Get objects and add debug borders
-  const rocket = canvasAnimation.getObject('rocket')
-  const fire = canvasAnimation.getObject('fire')
+  const rocket = canvasAnimation?.getObject('rocket')
+  const fire = canvasAnimation?.getObject('fire')
   
   if (rocket) {
     rocket.debug = false
     rocket.visible = true
     rocket.opacity = 1
     console.log('[RocketCanvas] Rocket object created:', rocket)
-    console.log('[RocketCanvas] Rocket image loaded:', rocket.image.loaded)
+    console.log('[RocketCanvas] Rocket image loaded:', rocket.image?.loaded)
     console.log('[RocketCanvas] Rocket position:', rocket.x, rocket.y, 'size:', rocket.width, rocket.height)
   } else {
     console.error('[RocketCanvas] Failed to create rocket object!')
@@ -164,18 +165,18 @@ const startAnimation = async () => {
     fire.visible = true
     fire.opacity = 1
     console.log('[RocketCanvas] Fire object created:', fire)
-    console.log('[RocketCanvas] Fire image loaded:', fire.image.loaded)
+    console.log('[RocketCanvas] Fire image loaded:', fire.image?.loaded)
     console.log('[RocketCanvas] Fire position:', fire.x, fire.y, 'size:', fire.width, fire.height)
   } else {
     console.error('[RocketCanvas] Failed to create fire object!')
   }
   
   // Add background debug info
-  const bg = canvasAnimation.getObject('background')
+  const bg = canvasAnimation?.getObject('background')
   if (bg) {
     bg.debug = false
     console.log('[RocketCanvas] Background object created:', bg)
-    console.log('[RocketCanvas] Background image loaded:', bg.image.loaded)
+    console.log('[RocketCanvas] Background image loaded:', bg.image?.loaded)
     console.log('[RocketCanvas] Background position:', bg.x, bg.y, 'size:', bg.width, bg.height)
   } else {
     console.error('[RocketCanvas] Failed to create background object!')
@@ -187,7 +188,7 @@ const startAnimation = async () => {
   
   console.log('[RocketCanvas] Canvas size:', canvas.width, 'x', canvas.height)
   console.log('[RocketCanvas] Logical size:', logicalWidth, 'x', logicalHeight)
-  console.log('[RocketCanvas] All objects:', Array.from(canvasAnimation.getAllObjects().keys()))
+  console.log('[RocketCanvas] All objects:', canvasAnimation ? Array.from(canvasAnimation.getAllObjects().keys()) : [])
   
   // BYPASS THE CANVAS ANIMATION LIBRARY - CREATE OUR OWN TEST CANVAS
   console.log('[RocketCanvas] Creating manual test canvas...')
@@ -229,68 +230,20 @@ const startAnimation = async () => {
     console.error('[RocketCanvas] Failed to get test canvas context!')
   }
   
-  // Draw background as blue rectangle
-  if (bg) {
-    console.log('[RocketCanvas] Drawing background as blue rectangle')
-    ctx.fillStyle = '#0066cc'
-    ctx.fillRect(bg.x, bg.y, bg.width, bg.height)
-    
-    // Debug border
-    ctx.strokeStyle = '#ffffff'
-    ctx.lineWidth = 2
-    ctx.strokeRect(bg.x, bg.y, bg.width, bg.height)
-    
-    // Label
-    ctx.fillStyle = '#ffffff'
-    ctx.font = '16px monospace'
-    ctx.fillText('BACKGROUND', bg.x + 10, bg.y + 30)
-  }
-  
-  // Draw rocket as green rectangle
-  if (rocket) {
-    console.log('[RocketCanvas] Drawing rocket as green rectangle')
-    ctx.fillStyle = '#00cc66'
-    ctx.fillRect(rocket.x, rocket.y, rocket.width, rocket.height)
-    
-    // Debug border
-    ctx.strokeStyle = '#ffffff'
-    ctx.lineWidth = 3
-    ctx.strokeRect(rocket.x, rocket.y, rocket.width, rocket.height)
-    
-    // Label
-    ctx.fillStyle = '#ffffff'
-    ctx.font = '16px monospace'
-    ctx.fillText('ROCKET', rocket.x + 10, rocket.y + rocket.height/2)
-  }
-  
-  // Draw fire as red rectangle
-  if (fire) {
-    console.log('[RocketCanvas] Drawing fire as red rectangle')
-    ctx.fillStyle = '#cc3300'
-    ctx.fillRect(fire.x, fire.y, fire.width, fire.height)
-    
-    // Debug border
-    ctx.strokeStyle = '#ffffff'
-    ctx.lineWidth = 3
-    ctx.strokeRect(fire.x, fire.y, fire.width, fire.height)
-    
-    // Label
-    ctx.fillStyle = '#ffffff'
-    ctx.font = '16px monospace'
-    ctx.fillText('FIRE', fire.x + 10, fire.y + fire.height/2)
-  }
-  
-  console.log('[RocketCanvas] Finished drawing colored rectangles')
+  // Note: The following code block was removed because it references 'ctx' which is not in scope.
+  // This appears to be orphaned debug code from earlier development.
+  // The actual drawing logic is handled in other functions like drawManualElements(),
+  // drawAnimatedScene(), etc. which have proper context references.
 }
 
 const startBouncing = () => {
   if (!canvasAnimation) return
   
   console.log('[RocketCanvas] Starting bouncing phase')
-  const canvas = canvasAnimation.getCanvas()
+  const canvas = canvasAnimation?.getCanvas()
   const logicalHeight = parseInt(canvas.style.height) || window.innerHeight
-  const rocket = canvasAnimation.getObject('rocket')
-  const fire = canvasAnimation.getObject('fire')
+  const rocket = canvasAnimation?.getObject('rocket')
+  const fire = canvasAnimation?.getObject('fire')
   if (!rocket) return
   
   const centerY = (logicalHeight / 2) - (rocket.height / 2)
@@ -399,11 +352,11 @@ const startIdleMovement = () => {
   if (!canvasAnimation || phase.value !== 'bouncing') return
   
   idleMovementActive = true
-  const rocket = canvasAnimation.getObject('rocket')
-  const fire = canvasAnimation.getObject('fire')
+  const rocket = canvasAnimation?.getObject('rocket')
+  const fire = canvasAnimation?.getObject('fire')
   if (!rocket) return
   
-  const canvas = canvasAnimation.getCanvas()
+  const canvas = canvasAnimation?.getCanvas()
   const logicalHeight = parseInt(canvas.style.height) || window.innerHeight
   const centerY = (logicalHeight / 2) - (rocket.height / 2)
   
@@ -411,7 +364,7 @@ const startIdleMovement = () => {
     if (!idleMovementActive || phase.value !== 'bouncing') return
     
     // Gentle up/down movement
-    canvasAnimation.animate('rocket', [
+    canvasAnimation?.animate('rocket', [
       {
         duration: 2000,
         easing: CanvasAnimation.easings.easeInOutQuad,
@@ -434,7 +387,7 @@ const startIdleMovement = () => {
     
     // Fire follows
     if (fire) {
-      canvasAnimation.animate('fire', [
+      canvasAnimation?.animate('fire', [
         {
           duration: 2000,
           easing: CanvasAnimation.easings.easeInOutQuad,
@@ -460,11 +413,11 @@ const startFlying = () => {
   if (!canvasAnimation) return
   
   console.log('[RocketCanvas] Starting flying phase')
-  const canvas = canvasAnimation.getCanvas()
+  const canvas = canvasAnimation?.getCanvas()
   const logicalHeight = parseInt(canvas.style.height) || window.innerHeight
-  const rocket = canvasAnimation.getObject('rocket')
-  const fire = canvasAnimation.getObject('fire')
-  const bg = canvasAnimation.getObject('background')
+  const rocket = canvasAnimation?.getObject('rocket')
+  const fire = canvasAnimation?.getObject('fire')
+  const bg = canvasAnimation?.getObject('background')
   if (!rocket) return
   
   // Stop idle movement
@@ -543,7 +496,7 @@ const startFlying = () => {
   
   // Background scrolls DOWN (rocket moving up makes background appear to move down)
   if (bg) {
-    canvasAnimation.animate('background', [
+    canvasAnimation?.animate('background', [
       {
         duration: 4000,
         easing: CanvasAnimation.easings.easeInQuad,
@@ -559,10 +512,10 @@ const startExiting = () => {
   if (!canvasAnimation) return
   
   console.log('[RocketCanvas] Starting exiting phase')
-  const canvas = canvasAnimation.getCanvas()
+  const canvas = canvasAnimation?.getCanvas()
   const logicalHeight = parseInt(canvas.style.height) || window.innerHeight
   const rocket = canvasAnimation.getObject('rocket')
-  const bg = canvasAnimation.getObject('background')
+  const bg = canvasAnimation?.getObject('background')
   if (!rocket) return
   
   const finalY = -rocket.height - 200 // Even further off-screen
@@ -595,7 +548,7 @@ const startExiting = () => {
   
   // Final background movement (continue downward)
   if (bg) {
-    canvasAnimation.animate('background', [
+    canvasAnimation?.animate('background', [
       {
         duration: 3000,
         easing: CanvasAnimation.easings.easeOutCubic,
@@ -639,10 +592,13 @@ onMounted(async () => {
   console.log('[RocketCanvas] Manual canvas setup:', canvas.width, 'x', canvas.height)
 
   try {
-    // Load images
-    console.log('[RocketCanvas] Loading all images...')
+    // Load images and video
+    console.log('[RocketCanvas] Loading all assets...')
     
-    const backgroundUrl = await resolveImageUrl(backgroundId, { media: 'assets' })
+    // Don't use image-specific options for video
+    const backgroundVideoUrl = await resolveImageUrl(backgroundVideoId, { media: 'assets' })
+    // Remove any image optimization parameters from video URL
+    const cleanVideoUrl = backgroundVideoUrl.split('?')[0]
     const rocketUrl = await resolveImageUrl(rocketId, { media: 'assets' })
     
     // Load all fire frame URLs
@@ -652,16 +608,30 @@ onMounted(async () => {
       )
     )
     
-    console.log('[RocketCanvas] Background URL:', backgroundUrl)
+    console.log('[RocketCanvas] Background Video URL:', cleanVideoUrl)
     console.log('[RocketCanvas] Rocket URL:', rocketUrl)
     console.log('[RocketCanvas] Fire URLs:', fireUrls)
 
-    // Load all images
-    const bgImg = await loadImage(backgroundUrl)
+    // Try to load video background, fallback to image if needed
+    let bgAsset: HTMLVideoElement | HTMLImageElement | null = null
+    let isVideo = false
+    
+    try {
+      bgAsset = await loadVideo(cleanVideoUrl)
+      isVideo = true
+      console.log('[RocketCanvas] Using video background')
+    } catch (videoError) {
+      console.warn('[RocketCanvas] Failed to load video, falling back to image:', videoError)
+      const backgroundUrl = await resolveImageUrl(backgroundId, { media: 'assets' })
+      bgAsset = await loadImage(backgroundUrl)
+      isVideo = false
+      console.log('[RocketCanvas] Using image background')
+    }
+    
     const rocketImg = await loadImage(rocketUrl)
     const fireImagesLoaded = await Promise.all(fireUrls.map(url => loadImage(url)))
     
-    console.log('[RocketCanvas] All images loaded successfully')
+    console.log('[RocketCanvas] All assets loaded successfully')
     imagesLoaded.value = 2 + fireImagesLoaded.length
     
     // Store references for animation
@@ -670,7 +640,7 @@ onMounted(async () => {
     loadedFireImages = fireImagesLoaded
     
     // Start the complete rocket animation sequence
-    startRocketSequence(ctx, canvas.width, canvas.height, bgImg, rocketImg, fireImagesLoaded)
+    startRocketSequence(ctx, canvas.width, canvas.height, bgAsset, isVideo, rocketImg, fireImagesLoaded)
     
   } catch (error) {
     console.error('[RocketCanvas] Error loading images:', error)
@@ -711,7 +681,63 @@ const loadImage = (src: string): Promise<HTMLImageElement> => {
   })
 }
 
-const startRocketSequence = (ctx: CanvasRenderingContext2D, width: number, height: number, bgImg: HTMLImageElement, rocketImg: HTMLImageElement, fireImgs: HTMLImageElement[]) => {
+const loadVideo = (src: string): Promise<HTMLVideoElement> => {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video')
+    
+    // Set up all event handlers before setting src
+    video.onloadeddata = () => {
+      console.log('[RocketCanvas] ✅ Video data loaded:', src)
+      console.log('[RocketCanvas] Video duration:', video.duration, 'seconds')
+      console.log('[RocketCanvas] Video dimensions:', video.videoWidth, 'x', video.videoHeight)
+      resolve(video)
+    }
+    
+    video.onerror = (error) => {
+      console.error('[RocketCanvas] ❌ First attempt failed with CORS, trying without:', src, error)
+      
+      // Try again without CORS (same pattern as images)
+      const video2 = document.createElement('video')
+      
+      video2.onloadeddata = () => {
+        console.log('[RocketCanvas] ✅ Video loaded successfully (no CORS):', src)
+        console.log('[RocketCanvas] Video duration:', video2.duration, 'seconds')
+        resolve(video2)
+      }
+      
+      video2.onerror = (error2) => {
+        console.error('[RocketCanvas] ❌ Second attempt also failed:', src, error2)
+        reject(new Error(`Failed to load video after 2 attempts: ${src}`))
+      }
+      
+      // Set video properties without CORS
+      video2.muted = true
+      video2.playsInline = true
+      // NO crossOrigin attribute this time
+      video2.loop = false
+      video2.preload = 'auto'
+      
+      console.log('[RocketCanvas] 🔄 Retrying video load without CORS:', src)
+      video2.src = src
+      video2.load()
+    }
+    
+    // Set video properties WITH CORS first attempt
+    video.muted = true // Mute to allow autoplay
+    video.playsInline = true // Important for mobile
+    video.crossOrigin = 'anonymous' // Try with CORS first
+    video.loop = false // We'll control looping manually
+    video.preload = 'auto' // Preload the video
+    
+    console.log('[RocketCanvas] 🔄 Starting to load video with CORS:', src)
+    
+    // Set src and explicitly load
+    video.src = src
+    video.load() // Explicitly start loading
+  })
+}
+
+const startRocketSequence = (ctx: CanvasRenderingContext2D, width: number, height: number, bgAsset: HTMLVideoElement | HTMLImageElement, isVideo: boolean, rocketImg: HTMLImageElement, fireImgs: HTMLImageElement[]) => {
   console.log('[RocketCanvas] Starting complete rocket sequence')
   
   // Initialize positions
@@ -738,10 +764,24 @@ const startRocketSequence = (ctx: CanvasRenderingContext2D, width: number, heigh
   // Start flame animation
   startFlameAnimation(fireImgs)
   
+  // Start video playback if using video
+  if (isVideo && bgAsset instanceof HTMLVideoElement) {
+    // Calculate total animation duration (roughly 15 seconds)
+    const totalAnimationDuration = 15000 // 15 seconds
+    
+    // Set playback rate to stretch video over animation duration
+    const videoDuration = bgAsset.duration * 1000 // Convert to ms
+    const playbackRate = videoDuration / totalAnimationDuration
+    bgAsset.playbackRate = playbackRate
+    
+    // Start playing
+    bgAsset.play().catch(err => console.warn('[RocketCanvas] Video autoplay failed:', err))
+  }
+  
   // Start main animation loop
   animationStartTime = performance.now()
   currentPhase.value = 'entering'
-  startAnimationLoop(ctx, width, height, bgImg, rocketImg, fireImgs)
+  startAnimationLoop(ctx, width, height, bgAsset, isVideo, rocketImg, fireImgs)
 }
 
 const startFlameAnimation = (fireImgs: HTMLImageElement[]) => {
@@ -754,10 +794,10 @@ const startFlameAnimation = (fireImgs: HTMLImageElement[]) => {
   }
   
   // Start flame animation loop - 60ms between frames (about 16 FPS)
-  fireAnimationInterval = setInterval(animateFlameFrame, 60)
+  fireAnimationInterval = setInterval(animateFlameFrame, 60) as unknown as number
 }
 
-const startAnimationLoop = (ctx: CanvasRenderingContext2D, width: number, height: number, bgImg: HTMLImageElement, rocketImg: HTMLImageElement, fireImgs: HTMLImageElement[]) => {
+const startAnimationLoop = (ctx: CanvasRenderingContext2D, width: number, height: number, bgAsset: HTMLVideoElement | HTMLImageElement, isVideo: boolean, rocketImg: HTMLImageElement, fireImgs: HTMLImageElement[]) => {
   const rocketSize = height * 0.3
   const centerX = (width / 2) - (rocketSize / 2)
   const centerY = (height / 2) - (rocketSize / 2)
@@ -769,7 +809,7 @@ const startAnimationLoop = (ctx: CanvasRenderingContext2D, width: number, height
     updateRocketAnimation(elapsed, width, height, centerX, centerY)
     
     // Draw everything
-    drawAnimatedScene(ctx, width, height, bgImg, rocketImg, fireImgs)
+    drawAnimatedScene(ctx, width, height, bgAsset, isVideo, rocketImg, fireImgs)
     
     // Continue animation
     if (currentPhase.value !== 'complete') {
@@ -900,7 +940,7 @@ const updateRocketAnimation = (elapsed: number, width: number, height: number, c
   }
 }
 
-const drawAnimatedScene = (ctx: CanvasRenderingContext2D, width: number, height: number, bgImg: HTMLImageElement, rocketImg: HTMLImageElement, fireImgs: HTMLImageElement[]) => {
+const drawAnimatedScene = (ctx: CanvasRenderingContext2D, width: number, height: number, bgAsset: HTMLVideoElement | HTMLImageElement, isVideo: boolean, rocketImg: HTMLImageElement, fireImgs: HTMLImageElement[]) => {
   // Clear canvas
   ctx.clearRect(0, 0, width, height)
   
@@ -909,7 +949,9 @@ const drawAnimatedScene = (ctx: CanvasRenderingContext2D, width: number, height:
   console.log('[RocketCanvas] Drawing with canvas opacity:', canvasOpacity.value)
   
   // Draw background with animation offset and fade/scale effects
-  const imageAspectRatio = bgImg.width / bgImg.height
+  const assetWidth = isVideo && bgAsset instanceof HTMLVideoElement ? bgAsset.videoWidth : (bgAsset as HTMLImageElement).width
+  const assetHeight = isVideo && bgAsset instanceof HTMLVideoElement ? bgAsset.videoHeight : (bgAsset as HTMLImageElement).height
+  const imageAspectRatio = assetWidth / assetHeight
   const bgWidth = width * backgroundState.value.scale
   const bgHeight = bgWidth / imageAspectRatio
   const bgX = (width - bgWidth) / 2 // Center the scaled background
@@ -919,7 +961,7 @@ const drawAnimatedScene = (ctx: CanvasRenderingContext2D, width: number, height:
   
   // Apply background opacity
   ctx.globalAlpha = canvasOpacity.value * backgroundState.value.opacity
-  ctx.drawImage(bgImg, bgX, bgY, bgWidth, bgHeight)
+  ctx.drawImage(bgAsset, bgX, bgY, bgWidth, bgHeight)
   
   // Reset alpha for other elements
   ctx.globalAlpha = canvasOpacity.value
@@ -942,9 +984,7 @@ const drawAnimatedScene = (ctx: CanvasRenderingContext2D, width: number, height:
   ctx.globalAlpha = 1
 }
 
-const drawStaticElements = (ctx: CanvasRenderingContext2D, width: number, height: number, bgImg: HTMLImageElement, rocketImg: HTMLImageElement) => {
-  // This function is now replaced by drawAnimatedScene
-}
+// drawStaticElements function was removed as it's no longer used
 
 const drawAnimatedFire = (ctx: CanvasRenderingContext2D, width: number, height: number, fireImg: HTMLImageElement) => {
   // Calculate fire position based on rocket's current position
@@ -1090,6 +1130,7 @@ onUnmounted(() => {
 </script>
 
 <script lang="ts">
+// AnimationImage type is already imported in the setup script
 import type { AnimationImage } from './types'
 
 // Export required images for preloading

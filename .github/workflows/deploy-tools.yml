@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - develop
   workflow_dispatch:
     inputs:
       target:
@@ -21,6 +22,9 @@ on:
         default: 'Manual deployment from admin dashboard'
 
 jobs:
+  determine-environment:
+    uses: ./.github/workflows/reusable-determine-environment.yml
+
   check-triggers:
     runs-on: ubuntu-latest
     outputs:
@@ -59,7 +63,38 @@ jobs:
             exit 0
           fi
           
-          # Handle push trigger - check commit message
+          # For develop branch, check changed files instead of commit message
+          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "Develop branch detected - checking changed files..."
+            
+            # Get list of changed files
+            CHANGED_FILES=$(git diff --name-only HEAD^ HEAD || git diff --name-only HEAD)
+            echo "Changed files:"
+            echo "$CHANGED_FILES"
+            
+            # Check if UI or Core packages changed (deploy all tools)
+            if echo "$CHANGED_FILES" | grep -E "^packages/(ui|core)/" > /dev/null; then
+              echo "UI or Core package changed - deploying all tools"
+              echo "should-build=true" >> $GITHUB_OUTPUT
+              echo "build-admin=true" >> $GITHUB_OUTPUT
+              echo "build-ui-docs=true" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+            
+            # Check individual tools
+            if echo "$CHANGED_FILES" | grep -E "^tools/admin/" > /dev/null; then
+              echo "build-admin=true" >> $GITHUB_OUTPUT
+              echo "should-build=true" >> $GITHUB_OUTPUT
+            fi
+            if echo "$CHANGED_FILES" | grep -E "^tools/ui-docs/" > /dev/null; then
+              echo "build-ui-docs=true" >> $GITHUB_OUTPUT
+              echo "should-build=true" >> $GITHUB_OUTPUT
+            fi
+            
+            exit 0
+          fi
+
+          # For master branch, handle push trigger - check commit message
           COMMIT_MSG='${{ github.event.head_commit.message }}'
           echo "Commit message: $COMMIT_MSG"
           
@@ -84,47 +119,13 @@ jobs:
   check-environment:
     needs: check-triggers
     if: needs.check-triggers.outputs.should-build == 'true'
-    runs-on: ubuntu-latest
-    name: Check Required Environment Variables
-    steps:
-      - name: Check Cloudflare API Token
-        run: |
-          if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
-            echo "❌ ERROR: Missing required secret CLOUDFLARE_API_TOKEN"
-            echo "Please add this secret in GitHub Settings > Secrets and variables > Actions"
-            exit 1
-          fi
-          echo "✅ CLOUDFLARE_API_TOKEN is configured"
-      
-      - name: Check Supabase Environment Variables
-        run: |
-          MISSING_VARS=""
-          
-          if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ]; then
-            MISSING_VARS="$MISSING_VARS VITE_SUPABASE_URL"
-          fi
-          
-          if [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ]; then
-            MISSING_VARS="$MISSING_VARS VITE_SUPABASE_ANON_KEY"
-          fi
-          
-          if [ -n "$MISSING_VARS" ]; then
-            echo "❌ ERROR: Missing required Supabase secrets:"
-            for var in $MISSING_VARS; do
-              echo "  - $var"
-            done
-            echo ""
-            echo "Please add these secrets in GitHub Settings > Secrets and variables > Actions"
-            exit 1
-          fi
-          
-          echo "✅ Supabase environment variables are configured"
+    uses: ./.github/workflows/reusable-check-environment.yml
 
   deploy-admin:
-    needs: [check-triggers, check-environment]
+    needs: [determine-environment, check-triggers, check-environment]
     if: needs.check-triggers.outputs.build-admin == 'true'
     runs-on: ubuntu-latest
-    name: Deploy Admin Tool
+    name: Deploy Admin Tool (${{ needs.determine-environment.outputs.environment }})
     steps:
       - uses: actions/checkout@v4
       
@@ -161,16 +162,19 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: dc2b7d14a69351375cab6de9a13ddee9
           
       - name: Deploy to Cloudflare Pages
-        run: wrangler pages deploy ./tools/admin/dist --project-name=tiko-admin
+        run: |
+          PROJECT_NAME="tiko-admin${{ needs.determine-environment.outputs.branch-suffix }}"
+          wrangler pages project create $PROJECT_NAME --production-branch=${{ github.ref_name }} || echo "Project already exists"
+          wrangler pages deploy ./tools/admin/dist --project-name=$PROJECT_NAME --branch=${{ github.ref_name }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: dc2b7d14a69351375cab6de9a13ddee9
 
   deploy-ui-docs:
-    needs: [check-triggers, check-environment]
+    needs: [determine-environment, check-triggers, check-environment]
     if: needs.check-triggers.outputs.build-ui-docs == 'true'
     runs-on: ubuntu-latest
-    name: Deploy UI Docs
+    name: Deploy UI Docs (${{ needs.determine-environment.outputs.environment }})
     steps:
       - uses: actions/checkout@v4
       
@@ -196,4 +200,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: dc2b7d14a69351375cab6de9a13ddee9
-          command: pages deploy ./tools/ui-docs/dist --project-name=tiko-ui-docs --compatibility-date=2024-08-02
+          command: pages deploy ./tools/ui-docs/dist --project-name=tiko-ui-docs${{ needs.determine-environment.outputs.branch-suffix }} --compatibility-date=2024-08-02 --branch=${{ github.ref_name }}

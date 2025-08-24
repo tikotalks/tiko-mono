@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - develop
   workflow_dispatch:
     inputs:
       target:
@@ -24,6 +25,9 @@ on:
         default: 'Manual deployment from admin dashboard'
 
 jobs:
+  determine-environment:
+    uses: ./.github/workflows/reusable-determine-environment.yml
+
   check-triggers:
     runs-on: ubuntu-latest
     outputs:
@@ -80,7 +84,41 @@ jobs:
             exit 0
           fi
           
-          # Handle push trigger - check commit message
+          # For develop branch, check changed files instead of commit message
+          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "Develop branch detected - checking changed files..."
+            
+            # Get list of changed files
+            CHANGED_FILES=$(git diff --name-only HEAD^ HEAD || git diff --name-only HEAD)
+            echo "Changed files:"
+            echo "$CHANGED_FILES"
+            
+            # Check individual workers
+            if echo "$CHANGED_FILES" | grep -E "^workers/i18n-translator/" > /dev/null; then
+              echo "build-i18n=true" >> $GITHUB_OUTPUT
+              echo "should-build=true" >> $GITHUB_OUTPUT
+            fi
+            if echo "$CHANGED_FILES" | grep -E "^workers/media-upload/" > /dev/null; then
+              echo "build-media=true" >> $GITHUB_OUTPUT
+              echo "should-build=true" >> $GITHUB_OUTPUT
+            fi
+            if echo "$CHANGED_FILES" | grep -E "^workers/sentence-engine/" > /dev/null; then
+              echo "build-sentence=true" >> $GITHUB_OUTPUT
+              echo "should-build=true" >> $GITHUB_OUTPUT
+            fi
+            if echo "$CHANGED_FILES" | grep -E "^workers/report-issue/" > /dev/null; then
+              echo "build-report-issue=true" >> $GITHUB_OUTPUT
+              echo "should-build=true" >> $GITHUB_OUTPUT
+            fi
+            if echo "$CHANGED_FILES" | grep -E "^workers/user-removal/" > /dev/null; then
+              echo "build-user-removal=true" >> $GITHUB_OUTPUT
+              echo "should-build=true" >> $GITHUB_OUTPUT
+            fi
+            
+            exit 0
+          fi
+
+          # For master branch, handle push trigger - check commit message
           COMMIT_MSG='${{ github.event.head_commit.message }}'
           echo "Commit message: $COMMIT_MSG"
           
@@ -133,10 +171,10 @@ jobs:
           echo "✅ CLOUDFLARE_API_TOKEN is configured"
 
   deploy:
-    needs: [check-triggers, check-environment]
+    needs: [determine-environment, check-triggers, check-environment]
     if: needs.check-triggers.outputs.should-build == 'true'
     runs-on: ubuntu-latest
-    name: Deploy Workers
+    name: Deploy Workers (${{ needs.determine-environment.outputs.environment }})
     steps:
       - uses: actions/checkout@v4
       
@@ -166,7 +204,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: dc2b7d14a69351375cab6de9a13ddee9
           workingDirectory: 'workers/i18n-translator'
-          command: deploy --env production
+          command: deploy --env ${{ needs.determine-environment.outputs.environment }}
           wranglerVersion: 'latest'
           
       - name: Deploy media-upload worker
@@ -176,7 +214,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: dc2b7d14a69351375cab6de9a13ddee9
           workingDirectory: 'workers/media-upload'
-          command: deploy --env production
+          command: deploy --env ${{ needs.determine-environment.outputs.environment }}
           wranglerVersion: 'latest'
           
       - name: Deploy sentence-engine worker
@@ -186,7 +224,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: dc2b7d14a69351375cab6de9a13ddee9
           workingDirectory: 'workers/sentence-engine'
-          command: deploy --env production
+          command: deploy --env ${{ needs.determine-environment.outputs.environment }}
           wranglerVersion: 'latest'
           
       - name: Deploy report-issue worker
@@ -196,7 +234,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: dc2b7d14a69351375cab6de9a13ddee9
           workingDirectory: 'workers/report-issue'
-          command: deploy --env production
+          command: deploy --env ${{ needs.determine-environment.outputs.environment }}
           wranglerVersion: 'latest'
           secrets: |
             VITE_RESEND_KEY
@@ -210,7 +248,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: dc2b7d14a69351375cab6de9a13ddee9
           workingDirectory: 'workers/user-removal'
-          command: deploy --env production
+          command: deploy --env ${{ needs.determine-environment.outputs.environment }}
           wranglerVersion: 'latest'
           secrets: |
             VITE_SUPABASE_URL

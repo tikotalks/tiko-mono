@@ -457,6 +457,53 @@ export const useSequenceStore = defineStore('sequence', () => {
     return undefined
   }
 
+  const getCardById = async (cardId: string): Promise<CardTile | null> => {
+    // First check all cache entries
+    const cache = cardCache.value
+    for (const [key, entry] of cache) {
+      const card = entry.sequence.find(c => c.id === cardId)
+      if (card) {
+        return card
+      }
+    }
+
+    // If not found in cache, load from API
+    try {
+      const authStore = useAuthStore()
+      const userId = authStore.user?.id
+      if (!userId) {
+        console.warn('[SequenceStore] No user ID available')
+        return null
+      }
+
+      const cardData = await sequenceSupabaseService.getCard(cardId)
+      if (!cardData) {
+        return null
+      }
+
+      // Convert to CardTile format
+      const metadata = cardData.metadata as any
+      return {
+        id: cardData.id,
+        title: cardData.name,
+        type: cardData.type as any,
+        icon: metadata?.icon || cardData.icon || 'square',
+        color: metadata?.color || cardData.color || 'primary',
+        image: metadata?.image || '',
+        speech: metadata?.speech || cardData.content || '',
+        index: cardData.order_index ?? 0,
+        parentId: cardData.parent_id || undefined,
+        isPublic: cardData.is_public || false,
+        isCurated: cardData.is_curated || false,
+        ownerId: cardData.user_id,
+        user_id: cardData.user_id
+      }
+    } catch (error) {
+      console.error('[SequenceStore] Failed to get card by ID:', error)
+      return null
+    }
+  }
+
   // Check offline data availability
   const checkOfflineStatus = async () => {
     const userId = authStore.user?.id
@@ -890,6 +937,7 @@ export const useSequenceStore = defineStore('sequence', () => {
     clearCache,
     clearCacheForLocale,
     getSequenceForParent,
+    getCardById,
     checkOfflineStatus,
     syncOfflineData,
     initializeOfflineSupport,

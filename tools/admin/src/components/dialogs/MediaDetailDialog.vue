@@ -1,12 +1,12 @@
 <template>
   <div :class="bemm()">
     <div :class="bemm('content')">
-      <img 
-        :src="media.url" 
+      <img
+        :src="media.url"
         :alt="media.original_filename"
         :class="bemm('image')"
       />
-      
+
       <div :class="bemm('info')">
         <TKeyValue
           :items="[
@@ -16,7 +16,7 @@
             { key: t('common.uploadedAt'), value: formatDate(media.created_at) }
           ]"
         />
-        
+
         <!-- Generation info for AI-generated images -->
         <div v-if="media.generation_data" :class="bemm('generation-info')">
           <h4>{{ t('admin.personalLibrary.generationInfo') }}</h4>
@@ -27,7 +27,7 @@
         </div>
       </div>
     </div>
-    
+
     <div :class="bemm('actions')">
       <TButton
         v-if="media.usage_type !== 'profile_picture'"
@@ -36,7 +36,7 @@
       >
         {{ t('admin.personalLibrary.setAsProfile') }}
       </TButton>
-      
+
       <TButton
         type="outline"
         color="danger"
@@ -44,7 +44,7 @@
       >
         {{ t('common.delete') }}
       </TButton>
-      
+
       <TButton
         type="outline"
         @click="close"
@@ -58,7 +58,7 @@
 <script setup lang="ts">
 import { useBemm } from 'bemm';
 import { TButton, TKeyValue } from '@tiko/ui';
-import type { UserMedia } from '@tiko/core';
+import  { type UserMedia, useI18n } from '@tiko/core';
 
 const bemm = useBemm('media-detail-dialog');
 const { t } = useI18n();
@@ -114,7 +114,7 @@ const close = () => {
     grid-template-columns: 1fr 1fr;
     gap: var(--space-xl);
     margin-bottom: var(--space-xl);
-    
+
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
     }

@@ -235,7 +235,7 @@ import { Icons } from 'open-icon';
 import { useRoute, useRouter } from 'vue-router';
 import { useBemm } from 'bemm';
 import { TTextArea, TFormGroup, TChip,  TCard, TButton, TIcon, TSpinner, TInput, TInputCheckbox, TChipGroup, ConfirmDialog, ButtonType } from '@tiko/ui';
-import { useImageUrl, mediaService, mediaAnalysisService } from '@tiko/core';
+import { useImageUrl, mediaService, mediaAnalysisService, useI18n } from '@tiko/core';
 import { uploadService } from '../services/upload.service';
 import type { ToastService, PopupService, MediaItem  } from '@tiko/ui';
 

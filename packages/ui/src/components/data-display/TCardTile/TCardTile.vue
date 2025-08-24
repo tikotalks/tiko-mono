@@ -211,7 +211,7 @@ const startLongPress = () => {
   longPressTimer.value = window.setTimeout(() => {
     isDragReady.value = true;
     // Add haptic feedback if available
-    haptic.notification()
+    haptic.notification();
   }, LONG_PRESS_DURATION);
 };
 
@@ -264,9 +264,11 @@ const handleTouchEnd = (_event: TouchEvent) => {
 const handleClick = (_event: MouseEvent) => {
   // Only emit click if not drag ready
   if (!isDragReady.value) {
-    // Add haptic feedback on click
-    haptic.tap()
     emit('click');
+    // Add haptic feedback after emitting click to avoid any timing issues
+    setTimeout(() => {
+      haptic.tap();
+    }, 0);
   }
 };
 
@@ -342,7 +344,7 @@ const setPointerPosition = (e: PointerEvent) => {
   animation: tile-no-hover 0.2s ease-in-out forwards;
   z-index: 1;
   transform-style: preserve-3d;
-  transform: 
+  transform:
     rotateX(calc(var(--rx, 0deg) * 0.5))
     rotateY(calc(var(--ry, 0deg) * 0.5))
     translateZ(calc(var(--tz, 0px) * 0.5))
@@ -491,6 +493,7 @@ const setPointerPosition = (e: PointerEvent) => {
     border-radius: var(--border-radius);
     transform: scale(1);
     transition: .2s ease-in-out;
+    pointer-events: none;
   }
 
   &__mini-grid-bg {

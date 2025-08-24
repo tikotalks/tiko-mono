@@ -117,3 +117,13 @@ Deployments can also be triggered manually via GitHub Actions:
 After successful deployment:
 - **Apps**: Available at `https://tiko-{app-name}.pages.dev` (e.g., `https://tiko-cards.pages.dev`)
 - **Workers**: Available via their configured routes on `tikoapi.org`
+
+## Missing Translation Keys
+
+The following translation keys need to be added to the database:
+
+```
+sequence.play : Play
+sequence.playMode : Play Mode
+sequence.restart : Restart
+```

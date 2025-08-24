@@ -16,6 +16,8 @@ export interface MediaItem {
   type?: string
   width?: number
   height?: number
+  thumbnail_url?: string // For video thumbnails
+  duration?: number // For video/audio duration in seconds
 }
 
 

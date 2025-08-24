@@ -1,0 +1,42 @@
+name: Determine Environment
+
+on:
+  workflow_call:
+    outputs:
+      environment:
+        description: 'The deployment environment (production or development)'
+        value: ${{ jobs.determine.outputs.environment }}
+      url-suffix:
+        description: 'URL prefix for development environment (e.g., "develop.")'
+        value: ${{ jobs.determine.outputs.url-suffix }}
+      branch-suffix:
+        description: 'Project name suffix for development (e.g., "-develop")'
+        value: ${{ jobs.determine.outputs.branch-suffix }}
+
+jobs:
+  determine:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.determine.outputs.environment }}
+      url-suffix: ${{ steps.determine.outputs.url-suffix }}
+      branch-suffix: ${{ steps.determine.outputs.branch-suffix }}
+    steps:
+      - name: Determine deployment environment
+        id: determine
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "environment=development" >> $GITHUB_OUTPUT
+            echo "url-suffix=develop." >> $GITHUB_OUTPUT
+            echo "branch-suffix=-develop" >> $GITHUB_OUTPUT
+          else
+            echo "environment=production" >> $GITHUB_OUTPUT
+            echo "url-suffix=" >> $GITHUB_OUTPUT
+            echo "branch-suffix=" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "🚀 Deployment Configuration:"
+          echo "  Environment: $(grep ^environment= $GITHUB_OUTPUT | cut -d'=' -f2)"
+          echo "  URL suffix: $(grep ^url-suffix= $GITHUB_OUTPUT | cut -d'=' -f2)"
+          echo "  Branch suffix: $(grep ^branch-suffix= $GITHUB_OUTPUT | cut -d'=' -f2)"
+          echo "  Git ref: ${{ github.ref }}"
+          echo "  Branch name: ${{ github.ref_name }}"

@@ -17,6 +17,8 @@ class TTSService {
   private browserVoicesCache: SpeechSynthesisVoice[] = [];
   private supabaseUrl: string;
   private supabaseKey: string;
+  private audioMetadataCache: Map<string, { metadata: AudioMetadata | null; timestamp: number }>;
+  private CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
 
   constructor() {
     // Use the deployed worker URL as fallback
@@ -24,6 +26,7 @@ class TTSService {
     this.cdnUrl = import.meta.env.VITE_TTS_CDN_URL || 'https://tts.tikocdn.org';
     this.supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
     this.supabaseKey = import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || '';
+    this.audioMetadataCache = new Map();
     this.loadBrowserVoices();
 
     if (!import.meta.env.VITE_TTS_WORKER_URL) {
@@ -153,18 +156,22 @@ class TTSService {
    * Check if audio already exists in the database
    */
   async checkExistingAudio(textHash: string): Promise<AudioMetadata | null> {
+    // Check cache first
+    const cached = this.audioMetadataCache.get(textHash);
+    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
+      console.log('[TTSService] Audio metadata found in cache for hash:', textHash);
+      return cached.metadata;
+    }
+
     try {
       const params = new URLSearchParams();
       params.append('text_hash', `eq.${textHash}`);
 
+      console.log('[TTSService] Checking database for audio hash:', textHash);
       const response = await this.apiRequest<any[]>(`tts_audio?${params.toString()}`);
       const data = response[0];
 
-      if (!data) {
-        return null;
-      }
-
-      return {
+      const metadata = data ? {
         url: data.audio_url,
         provider: data.provider as 'openai' | 'browser',
         language: data.language,
@@ -173,9 +180,22 @@ class TTSService {
         generatedAt: data.created_at,
         size: data.file_size_bytes,
         duration: data.duration_seconds
-      };
+      } : null;
+
+      // Cache the result (even if null)
+      this.audioMetadataCache.set(textHash, {
+        metadata,
+        timestamp: Date.now()
+      });
+
+      return metadata;
     } catch (error) {
       console.error('Error checking existing audio:', error);
+      // Cache the null result to avoid repeated failing requests
+      this.audioMetadataCache.set(textHash, {
+        metadata: null,
+        timestamp: Date.now()
+      });
       return null;
     }
   }
@@ -280,6 +300,8 @@ class TTSService {
    * Preload audio for multiple texts (batch operation)
    */
   async preloadAudioForTexts(texts: Array<{ text: string; language: string }>): Promise<void> {
+    console.log(`[TTSService] Preloading audio for ${texts.length} texts`);
+    
     const requests = texts.map(item => ({
       text: item.text,
       language: item.language
@@ -291,6 +313,16 @@ class TTSService {
       const batch = requests.slice(i, i + concurrency);
       await Promise.all(batch.map(req => this.getAudioForText(req)));
     }
+    
+    console.log(`[TTSService] Preloading complete. Cache size: ${this.audioMetadataCache.size}`);
+  }
+
+  /**
+   * Clear the audio metadata cache
+   */
+  clearCache(): void {
+    console.log('[TTSService] Clearing audio metadata cache');
+    this.audioMetadataCache.clear();
   }
 
   /**

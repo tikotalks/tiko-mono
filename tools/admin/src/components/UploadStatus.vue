@@ -125,7 +125,7 @@
 <script setup lang="ts">
 import { ref, inject } from 'vue'
 import { useBemm } from 'bemm'
-import { useUpload } from '@tiko/core'
+import { useUpload, useI18n} from '@tiko/core'
 import { TButton, TIcon, TSpinner } from '@tiko/ui'
 import type { ToastService } from '@tiko/ui'
 import { Icons } from 'open-icon'

@@ -1,5 +1,16 @@
 <template>
   <div :class="bemm()">
+    <!-- Close button -->
+    <TButton 
+      v-if="!animationCompleted"
+      :class="bemm('close-button')" 
+      :icon="Icons.MULTIPLY_M" 
+      size="large"
+      type="ghost"
+      @click="skipAnimation" 
+      :aria-label="t('common.close')" 
+    />
+
     <!-- Animation Layer -->
     <div :class="bemm('animation')" v-if="!animationCompleted">
       <RocketCanvasAnimation
@@ -9,6 +20,21 @@
       />
       <AliensCanvasAnimation
         v-else-if="selectedAnimation === 'alien'"
+        ref="animationRef"
+        @completed="onAnimationCompleted"
+      />
+      <ReefCanvasAnimation
+        v-else-if="selectedAnimation === 'reef'"
+        ref="animationRef"
+        @completed="onAnimationCompleted"
+      />
+      <DeepSeaCanvasAnimation
+        v-else-if="selectedAnimation === 'deepsea'"
+        ref="animationRef"
+        @completed="onAnimationCompleted"
+      />
+      <FruitCatcherCanvasAnimation
+        v-else-if="selectedAnimation === 'fruitcatcher'"
         ref="animationRef"
         @completed="onAnimationCompleted"
       />
@@ -52,6 +78,9 @@ import { TButton } from '@tiko/ui'
 import { useImageResolver, useI18n } from '@tiko/core'
 import RocketCanvasAnimation from './animations/RocketCanvasAnimation.vue'
 import AliensCanvasAnimation from './animations/AliensCanvasAnimation.vue'
+import ReefCanvasAnimation from './animations/ReefCanvasAnimation.vue'
+import DeepSeaCanvasAnimation from './animations/DeepSeaCanvasAnimation.vue'
+import FruitCatcherCanvasAnimation from './animations/FruitCatcherCanvasAnimation.vue'
 import type { AnimationImage } from './animations/types'
 import { Icons } from 'open-icon';
 
@@ -64,22 +93,29 @@ const bemm = useBemm('reward-overlay')
 const { t } = useI18n()
 const { preloadImages } = useImageResolver()
 
-// Randomly select animation type
-const animations = ['rocket', 'alien'] as const
+// Animation types
+const animations = ['rocket', 'alien', 'reef', 'deepsea', 'fruitcatcher'] as const
 type AnimationType = typeof animations[number]
+// Select random animation
 const selectedAnimation = ref<AnimationType>(animations[Math.floor(Math.random() * animations.length)])
 
 // State
 const animationCompleted = ref(false)
 const showContent = ref(false)
-const animationRef = ref<InstanceType<typeof RocketCanvasAnimation> | InstanceType<typeof AliensCanvasAnimation> | null>(null)
+const animationRef = ref<InstanceType<typeof RocketCanvasAnimation> | InstanceType<typeof AliensCanvasAnimation> | InstanceType<typeof ReefCanvasAnimation> | InstanceType<typeof DeepSeaCanvasAnimation> | InstanceType<typeof FruitCatcherCanvasAnimation> | null>(null)
 
 const onAnimationCompleted = () => {
   animationCompleted.value = true
   // Show content after a brief delay
   setTimeout(() => {
     showContent.value = true
-  }, 500)
+  }, 200) // Reduced delay for snappier feel
+}
+
+const skipAnimation = () => {
+  // Skip the animation and show content immediately
+  animationCompleted.value = true
+  showContent.value = true
 }
 
 // Preload animation images before component mounts
@@ -108,6 +144,42 @@ onBeforeMount(async () => {
           }))
         )
         console.log('Aliens animation images preloaded successfully')
+      }
+    } else if (selectedAnimation.value === 'reef') {
+      const { animationImages } = await import('./animations/ReefCanvasAnimation.vue')
+
+      if (animationImages && animationImages.length > 0) {
+        await preloadImages(
+          animationImages.map((img: AnimationImage) => ({
+            src: img.id,
+            options: img.options
+          }))
+        )
+        console.log('Reef animation images preloaded successfully')
+      }
+    } else if (selectedAnimation.value === 'deepsea') {
+      const { animationImages } = await import('./animations/DeepSeaCanvasAnimation.vue')
+
+      if (animationImages && animationImages.length > 0) {
+        await preloadImages(
+          animationImages.map((img: AnimationImage) => ({
+            src: img.id,
+            options: img.options
+          }))
+        )
+        console.log('Deep Sea animation images preloaded successfully')
+      }
+    } else if (selectedAnimation.value === 'fruitcatcher') {
+      const { animationImages } = await import('./animations/FruitCatcherCanvasAnimation.vue')
+
+      if (animationImages && animationImages.length > 0) {
+        await preloadImages(
+          animationImages.map((img: AnimationImage) => ({
+            src: img.id,
+            options: img.options
+          }))
+        )
+        console.log('Fruit Catcher animation images preloaded successfully')
       }
     }
   } catch (error) {
@@ -180,6 +252,13 @@ onMounted(() => {
     gap: 1rem;
     justify-content: center;
     flex-wrap: wrap;
+  }
+
+  &__close-button {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 2010;
   }
 }
 

@@ -45,6 +45,9 @@ export function useSpeak() {
   const audioCache = new Map<string, HTMLAudioElement>();
 
   const speak = async (text: string, options: SpeakOptions = {}) => {
+    const startTime = Date.now();
+    console.log('[useSpeak] Starting speak for text:', text.substring(0, 50) + '...');
+    
     try {
       isLoading.value = true;
       error.value = null;
@@ -56,7 +59,9 @@ export function useSpeak() {
       const language = options.language || userLanguage.value;
 
       // Get TTS configuration
+      const configStart = Date.now();
       const config = ttsService.getTTSConfig(text, language);
+      console.log(`[useSpeak] getTTSConfig took ${Date.now() - configStart}ms`);
       
       // If browser provider or fallback is used and no OpenAI preference
       if (config.provider === 'browser' || config.fallbackUsed) {
@@ -74,12 +79,14 @@ export function useSpeak() {
       }
 
       // Try to get OpenAI audio
+      const audioStart = Date.now();
       const response = await ttsService.getAudioForText({
         text,
         language,
         voice: options.voice,
         model: options.model
       });
+      console.log(`[useSpeak] getAudioForText took ${Date.now() - audioStart}ms, cached: ${response.cached}`);
 
       if (!response.success || !response.audioUrl) {
         // Fallback to browser TTS
@@ -100,6 +107,7 @@ export function useSpeak() {
       let audio = audioCache.get(cacheKey);
 
       if (!audio) {
+        console.log('[useSpeak] Audio not in cache, creating new element for:', cacheKey);
         // Create new audio element
         audio = new Audio();
         audio.preload = 'auto';
@@ -111,6 +119,8 @@ export function useSpeak() {
         
         // Add to cache
         audioCache.set(cacheKey, audio);
+      } else {
+        console.log('[useSpeak] Audio found in cache for:', cacheKey);
         
         // Handle audio events
         audio.addEventListener('error', (e) => {
@@ -135,7 +145,9 @@ export function useSpeak() {
       
       // Play audio
       try {
+        const playStart = Date.now();
         await audio.play();
+        console.log(`[useSpeak] Audio play started in ${Date.now() - playStart}ms, total time: ${Date.now() - startTime}ms`);
       } catch (playError) {
         console.error('Failed to play audio:', playError);
         

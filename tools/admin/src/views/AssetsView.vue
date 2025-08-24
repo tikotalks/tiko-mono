@@ -116,6 +116,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, inject } from 'vue'
+import { useI18n } from "@tiko/core";
 import { TButton, TInput, TIcon, TSpinner, TInputText, TInputSelect, TMediaTile, type PopupService } from '@tiko/ui'
 import { Icons } from 'open-icon'
 import { assetsService, type Asset } from '../services/assets.service'

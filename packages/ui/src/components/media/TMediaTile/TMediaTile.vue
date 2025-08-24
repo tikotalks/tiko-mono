@@ -34,7 +34,7 @@
       <!-- Audio Player for Audio Files -->
       <template v-else-if="isAudioFile">
         <div :class="bemm('audio-player')">
-          <TIcon :name="Icons.MUSIC" size="large" :class="bemm('audio-icon')" />
+          <TIcon :name="Icons.VOLUME_III" size="large" :class="bemm('audio-icon')" />
           <audio
             v-if="isVisible"
             :src="media?.original_url"
@@ -43,6 +43,33 @@
             preload="metadata"
             @click.stop
           />
+        </div>
+      </template>
+
+      <!-- Video Thumbnail with Play Button -->
+      <template v-else-if="isVideoFile">
+        <div :class="bemm('video-container')" @click.stop="handleVideoClick">
+          <!-- Show thumbnail/poster -->
+          <img
+            v-if="media?.thumbnail_url && isVisible"
+            :src="media.thumbnail_url"
+            :alt="media.original_filename"
+            :class="bemm('video-poster')"
+            loading="lazy"
+          />
+          <div v-else :class="bemm('video-placeholder')">
+            <TIcon :name="Icons.VIDEOS" size="large" />
+          </div>
+          
+          <!-- Play button overlay -->
+          <div :class="bemm('video-overlay')">
+            <TIcon :name="Icons.CARET_RIGHT" size="large" />
+          </div>
+          
+          <!-- Duration badge -->
+          <div v-if="displayDuration" :class="bemm('video-duration')">
+            {{ displayDuration }}
+          </div>
         </div>
       </template>
 
@@ -85,12 +112,14 @@
 
     <!-- Content Section -->
     <div
-      v-if="displayTitle || description || meta || $slots.content"
+      v-if="displayTitle || description || meta || displayDuration || $slots.content"
       :class="bemm('content')"
     >
       <h4 v-if="displayTitle" :class="bemm('title')">{{ displayTitle }}</h4>
       <p v-if="description" :class="bemm('description')">{{ description }}</p>
-      <span v-if="meta" :class="bemm('meta')">{{ meta }}</span>
+      <span v-if="meta || displayDuration" :class="bemm('meta')">
+        {{ meta || displayDuration }}
+      </span>
       <slot name="content" />
     </div>
 
@@ -118,6 +147,7 @@ const props = withDefaults(defineProps<TMediaTileProps>(), {
 
 const emit = defineEmits<{
   click: [event: Event, media?: MediaItem];
+  'video-play': [media: MediaItem];
 }>();
 
 const bemm = useBemm('t-media-tile');
@@ -138,7 +168,7 @@ const displayImages = computed(() => {
   if (props.images && props.images.length > 0) {
     return props.images;
   }
-  if (props.media && !isAudioFile.value) {
+  if (props.media && !isAudioFile.value && !isVideoFile.value) {
     return [props.media];
   }
   return [];
@@ -146,7 +176,7 @@ const displayImages = computed(() => {
 
 const hasImages = computed(() => displayImages.value.length > 0);
 
-const hasMedia = computed(() => hasImages.value || isAudioFile.value);
+const hasMedia = computed(() => hasImages.value || isAudioFile.value || isVideoFile.value);
 
 const isAudioFile = computed(() => {
   if (!props.media) return false;
@@ -157,6 +187,19 @@ const isAudioFile = computed(() => {
          filename.toLowerCase().endsWith('.wav') ||
          filename.toLowerCase().endsWith('.ogg') ||
          filename.toLowerCase().endsWith('.m4a');
+});
+
+const isVideoFile = computed(() => {
+  if (!props.media) return false;
+  const mimeType = props.media.type || '';
+  const filename = props.media.original_filename || '';
+  return mimeType.startsWith('video/') ||
+         filename.toLowerCase().endsWith('.mp4') ||
+         filename.toLowerCase().endsWith('.webm') ||
+         filename.toLowerCase().endsWith('.ogg') ||
+         filename.toLowerCase().endsWith('.mov') ||
+         filename.toLowerCase().endsWith('.avi') ||
+         filename.toLowerCase().endsWith('.mkv');
 });
 
 const displayTitle = computed(() => {
@@ -182,6 +225,19 @@ const aspectRatioCss = computed(() => {
   return `${width} / ${height}`;
 });
 
+const displayDuration = computed(() => {
+  if (!props.media?.duration) return '';
+  
+  const duration = props.media.duration;
+  const minutes = Math.floor(duration / 60);
+  const seconds = Math.floor(duration % 60);
+  
+  if (minutes > 0) {
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+  return `0:${seconds.toString().padStart(2, '0')}`;
+});
+
 // Methods
 const getImageUrl = (
   image: MediaItem,
@@ -198,6 +254,14 @@ const handleClick = (event: Event) => {
     event.preventDefault();
   }
   emit('click', event, props.media);
+};
+
+const handleVideoClick = (event: Event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  if (props.media) {
+    emit('video-play', props.media);
+  }
 };
 
 // Intersection Observer for lazy loading
@@ -397,6 +461,84 @@ onUnmounted(() => {
       color: var(--color-foreground);
       font-size: 0.75rem;
     }
+  }
+
+  &__video-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    cursor: pointer;
+    overflow: hidden;
+    background: #000;
+    
+    &:hover {
+      .t-media-tile__video-overlay {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1);
+      }
+    }
+  }
+
+  &__video-poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &__video-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-background-secondary);
+    
+    .icon {
+      opacity: 0.5;
+      color: var(--color-foreground-secondary);
+    }
+  }
+
+  &__video-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    opacity: 0.7;
+    transition: all 0.2s;
+    width: 60px;
+    height: 60px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    
+    .icon {
+      font-size: 2em;
+      color: rgba(255, 255, 255, 0.95);
+      margin-left: 4px; // Center play icon visually
+    }
+  }
+
+  &__video-duration {
+    position: absolute;
+    bottom: var(--space-xs);
+    right: var(--space-xs);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 2px 6px;
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    backdrop-filter: blur(10px);
   }
 
   &__image {

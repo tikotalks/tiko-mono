@@ -2,9 +2,8 @@
   <TAppLayout :title="t('sequence.sequenceTitle')" :show-header="true" app-name="sequence" @profile="handleProfile"
     @settings="handleSettings" @logout="handleLogout">
     <template #app-controls>
-      <!-- Back button when in sub-level or play mode -->
-      <TButton v-if="currentGroupId || isPlayMode" :icon="Icons.CHEVRON_LEFT" type="outline" color="primary"
-        @click="handleBack" :aria-label="t('common.back')">{{ t('common.back') }}</TButton>
+      <!-- Remove back button since we only show root sequences -->
+
 
       <!-- Edit mode toggle (only visible in parent mode) -->
       <TButton v-if="isParentModeUnlocked" :icon="isEditMode ? Icons.EDIT_M : Icons.EDIT_LINE"
@@ -26,20 +25,11 @@
     </template>
 
     <div :class="bemm('container')">
-      <!-- Breadcrumb navigation -->
-      <nav v-if="breadcrumbs.length > 0" :class="bemm('breadcrumbs')">
-        <button v-for="(crumb, index) in breadcrumbs" :key="crumb.id || 'root'" :class="bemm('breadcrumb')"
-          @click="navigateToBreadcrumb(index)">
-          <TIcon v-if="index > 0" name="chevron-right" size="small" />
-          {{ crumb.title }}
-        </button>
-      </nav>
+      <!-- Remove breadcrumbs since we only show root sequences -->
 
-      <!-- Main display - either grid or play mode -->
+      <!-- Main display -->
       <div :class="bemm('main')">
-        <SequencePlay v-if="isPlayMode && currentSequenceId" :sequence-id="currentSequenceId" :edit-mode="isEditMode"
-          @restart="restartPlay" @close="exitPlayMode" />
-        <TCardGrid v-else :cards="sequence" :show-arrows="true" :edit-mode="isEditMode"
+        <TCardGrid :cards="sequence" :show-arrows="true" :edit-mode="isEditMode"
           :tiles-with-children="tilesWithChildren" :tile-children-map="tileChildrenMap"
           :is-tile-dragging="isTileDragging" :selection-mode="selectionMode" :selected-tile-ids="selectedTileIds"
           :is-loading="isLoading" :get-context-menu="isEditMode ? getCardContextMenu : undefined"
@@ -108,7 +98,6 @@ import SequenceForm from '../components/SequenceForm.vue';
 import CuratedItemActions from '../components/CuratedItemActions.vue';
 import GroupSelector from '../components/GroupSelector.vue';
 import AddSequenceModal from '../components/AddSequenceModal.vue';
-import SequencePlay from '../components/SequencePlay.vue';
 import type { TCardTile } from '@tiko/ui';
 import { useEditMode } from '../composables/useEditMode';
 import { useSpeak, useEventBus, useAuthStore, useTextToSpeech } from '@tiko/core';
@@ -143,7 +132,13 @@ const isAdmin = computed(() => {
 });
 
 const { hasPermission, requestPermission } = useTextToSpeech();
-const { speak, preloadAudio, clearCache: clearAudioCache } = useSpeak();
+const { speak, preloadAudio: originalPreloadAudio, clearCache: clearAudioCache } = useSpeak();
+
+// Wrapper for preloadAudio to handle single text strings
+const preloadAudio = async (text: string, language?: string) => {
+  if (!text) return;
+  await originalPreloadAudio([{ text, language }]);
+};
 const { isEditMode, toggleEditMode, disableEditMode, enableEditMode } = useEditMode();
 
 // Inject the popup service from TFramework
@@ -185,10 +180,6 @@ const selectedTileIds = ref<Set<string>>(new Set());
 
 // Loading state - use store's loading state instead of local state
 const isLoading = computed(() => sequenceStore.isLoadingSequence);
-
-// Play mode state
-const isPlayMode = ref(false);
-const currentSequenceId = ref<string | null>(null);
 
 
 // Toggle selection mode
@@ -249,9 +240,42 @@ const loadSequence = async () => {
   console.log('[SequenceView] Starting loadSequence for groupId:', currentGroupId.value);
 
   // Load from store (which handles caching and loading state)
-  const savedSequence = await sequenceStore.loadSequence(currentGroupId.value, currentLocale.value);
+  let savedSequence = await sequenceStore.loadSequence(currentGroupId.value, currentLocale.value);
 
   console.log('[SequenceView] Loaded sequence from store:', savedSequence.length, 'items');
+
+  // If we're navigating to a group but got no items, try forcing a refresh
+  if (currentGroupId.value && savedSequence.length === 0) {
+    console.log('[SequenceView] No items found for group, attempting force refresh...');
+    
+    // Get the parent card info to check if it's a curated sequence
+    const parentCard = await sequenceStore.getCardById(currentGroupId.value);
+    console.log('[SequenceView] Parent card info:', parentCard);
+    
+    // Force refresh by bypassing cache
+    savedSequence = await sequenceStore.loadSequence(currentGroupId.value, currentLocale.value, true);
+    console.log('[SequenceView] Force refresh result:', savedSequence.length, 'items');
+    
+    // If still no items, it might be a timing issue - try one more time after a delay
+    if (savedSequence.length === 0) {
+      console.log('[SequenceView] Still no items, waiting and trying again...');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      savedSequence = await sequenceStore.loadSequence(currentGroupId.value, currentLocale.value, true);
+      console.log('[SequenceView] Final attempt result:', savedSequence.length, 'items');
+      
+      // If still no items, check if it's an access issue
+      if (savedSequence.length === 0 && parentCard) {
+        console.warn('[SequenceView] No items found after multiple attempts. Parent card details:', {
+          id: parentCard.id,
+          type: parentCard.type,
+          isCurated: parentCard.isCurated,
+          isPublic: parentCard.isPublic,
+          ownerId: parentCard.ownerId,
+          currentUserId: authStore.user?.id
+        });
+      }
+    }
+  }
 
   // Only update if we got data or if we currently have ghost cards
   // This prevents clearing existing data with empty arrays
@@ -259,6 +283,10 @@ const loadSequence = async () => {
     sequence.value = savedSequence;
   } else if (savedSequence.length === 0 && sequence.value.length > 0) {
     console.warn('[SequenceView] Received empty array but have existing data, keeping current sequence');
+  } else if (currentGroupId.value && savedSequence.length === 0) {
+    // We're in a group but have no items - show empty state
+    console.warn('[SequenceView] No items found in sequence group:', currentGroupId.value);
+    sequence.value = [];
   }
 
   if (savedSequence.length > 0) {
@@ -359,30 +387,6 @@ const handleSettings = () => {
 const handleLogout = () => {
   console.log('User logged out');
   // The auth store handles the logout, this is just for any cleanup
-};
-
-
-// Play mode functions
-const startPlayMode = (sequenceId: string) => {
-  currentSequenceId.value = sequenceId;
-  isPlayMode.value = true;
-};
-
-const exitPlayMode = async () => {
-  isPlayMode.value = false;
-  currentSequenceId.value = null;
-  sequenceStore.resetPlay();
-
-  // Navigate back to home view
-  if (currentGroupId.value) {
-    await router.push('/');
-  }
-};
-
-const restartPlay = () => {
-  if (currentSequenceId.value) {
-    sequenceStore.restartPlay();
-  }
 };
 
 // Context menu configuration for sequence
@@ -681,7 +685,7 @@ const showItem = async (itemId: string) => {
     await sequenceStore.updateSettings({ hiddenItems });
 
     // Refresh the current view to show the item
-    await loadSequenceFromStore(currentSequenceId.value);
+    await loadSequence();
 
     toastService.success(t('sequence.itemShown'));
     popupService.close();
@@ -965,6 +969,14 @@ const confirmDeleteCard = async (card: SequenceTile) => {
 };
 
 const handleCardClick = async (card: SequenceTile, index: number) => {
+  console.log('[SequenceView] handleCardClick called:', {
+    card: { id: card.id, title: card.title, type: card.type },
+    index,
+    currentGroupId: currentGroupId.value,
+    isEditMode: isEditMode.value,
+    selectionMode: selectionMode.value
+  });
+
   // In selection mode, toggle selection instead of normal behavior
   if (selectionMode.value && !card.id.startsWith('empty-')) {
     toggleTileSelection(card.id);
@@ -983,28 +995,27 @@ const handleCardClick = async (card: SequenceTile, index: number) => {
     if (!card.id.startsWith('empty-')) {
       // Check if this is a sequence (has children) - check both the loaded children and card type
       const hasChildren = tilesWithChildren.value.has(card.id) || card.type === 'sequence';
+      
+      console.log('[SequenceView] Card type check:', {
+        hasChildren,
+        tilesWithChildren: Array.from(tilesWithChildren.value),
+        cardType: card.type
+      });
 
-      if (hasChildren && !currentGroupId.value) {
-        // We're at the home screen and clicked a sequence - start play mode
-        startPlayMode(card.id);
-      } else if (hasChildren) {
-        // We're already inside a group, navigate deeper
-        handleTileAction(card);
-      } else if (currentGroupId.value) {
-        // We're inside a sequence and clicked an item, just speak it
-        handleTileAction(card);
-      } else if (card.type === 'sequence') {
-        // Fallback: if it's a sequence type but children weren't loaded, try to navigate anyway
-        console.warn(`[SequenceView] Sequence ${card.id} clicked but children not loaded, attempting to start play mode`);
-        startPlayMode(card.id);
+      if (hasChildren || card.type === 'sequence') {
+        // Navigate to play mode to view the sequence
+        console.log(`[SequenceView] Navigating to play mode for sequence ${card.id} (${card.title})`);
+        await router.push(`/play/${card.id}`);
+      } else {
+        console.log(`[SequenceView] Card ${card.id} has no action (not a sequence)`);
       }
     }
   }
 };
 
 const handleTileAction = async (tile: SequenceTile) => {
-  // Check if this tile has children
-  const hasChildren = await sequenceService.hasChildren(tile.id);
+  // Quick check if it's a sequence type (no API call needed)
+  const hasChildren = tile.type === 'sequence' || tilesWithChildren.value.has(tile.id);
 
   if (hasChildren) {
     // Navigate to children
@@ -1027,56 +1038,29 @@ const handleTileAction = async (tile: SequenceTile) => {
     // Pass both the language code and the speech text
     // The TTS service will handle adding language hints if needed
     if (tile.speech) {
+      const startTime = Date.now();
       await speak(tile.speech, { language: speakLanguage });
+      console.log(`[TTS] Speech completed in ${Date.now() - startTime}ms`);
     }
   }
 };
 
 const navigateToTile = async (tile: SequenceTile) => {
-  // Show ghost sequence immediately
-  sequence.value = generateGhostSequence();
-  isLoading.value = true;
-
-  // Navigate immediately
-  await router.push(`/${tile.id}`);
-
-  // The watch on route params will trigger loadSequence automatically
+  console.log('[SequenceView] navigateToTile called for:', tile.id, tile.title);
+  
+  // Navigate to play mode
+  await router.push(`/play/${tile.id}`);
 };
 
+// Remove breadcrumb navigation since we're only showing root sequences
 const navigateToBreadcrumb = async (index: number) => {
-  const crumb = breadcrumbs.value[index];
-
-  // Show ghost sequence immediately
-  sequence.value = generateGhostSequence();
-  isLoading.value = true;
-
-  if (crumb.id) {
-    await router.push(`/${crumb.id}`);
-  } else {
-    // Navigate to home
-    await router.push('/');
-  }
+  // Always go back to root
+  await router.push('/');
 };
 
 const handleBack = async () => {
-  // If in play mode, exit play mode
-  if (isPlayMode.value) {
-    await exitPlayMode();
-    return;
-  }
-
-  // Show ghost sequence immediately
-  sequence.value = generateGhostSequence();
-  isLoading.value = true;
-
-  if (breadcrumbs.value.length > 1) {
-    // Go to the parent level (previous breadcrumb)
-    const parentIndex = breadcrumbs.value.length - 2;
-    await navigateToBreadcrumb(parentIndex);
-  } else {
-    // Go to root
-    await router.push('/');
-  }
+  // Always go back to root since we only show top-level sequences
+  await router.push('/');
 };
 
 // Text-to-Speech is already initialized above with other composables
@@ -1678,7 +1662,10 @@ const openBulkAddMode = () => {
 
 // Build breadcrumbs from current card
 const buildBreadcrumbs = async (cardId: string | undefined) => {
+  console.log('[SequenceView] buildBreadcrumbs called with cardId:', cardId);
+  
   if (!cardId) {
+    console.log('[SequenceView] No cardId provided, resetting to home');
     breadcrumbs.value = [];
     currentGroupId.value = undefined;
     return;
@@ -1687,6 +1674,7 @@ const buildBreadcrumbs = async (cardId: string | undefined) => {
   try {
     // Get the full path from root to current card
     const cardPath = await sequenceService.getCardPath(cardId);
+    console.log('[SequenceView] Card path:', cardPath);
 
     // Build breadcrumbs with Home as root
     const path: Array<{ id?: string; title: string }> = [
@@ -1698,6 +1686,9 @@ const buildBreadcrumbs = async (cardId: string | undefined) => {
 
     breadcrumbs.value = path;
     currentGroupId.value = cardId;
+    
+    console.log('[SequenceView] Breadcrumbs set:', breadcrumbs.value);
+    console.log('[SequenceView] currentGroupId set to:', currentGroupId.value);
   } catch (error) {
     console.error('Failed to build breadcrumbs:', error);
     // Fallback to just showing current card
@@ -1709,24 +1700,6 @@ const buildBreadcrumbs = async (cardId: string | undefined) => {
   }
 };
 
-// Watch for route changes
-watch(() => route.params.cardId as string | undefined, async (cardId) => {
-  console.log('[SequenceView] Route changed to cardId:', cardId);
-
-  // Show loading state while loading
-  if (!isLoading.value) {
-    console.log('[SequenceView] Setting ghost sequence while loading');
-    sequence.value = generateGhostSequence();
-  }
-
-  // Update breadcrumbs (this also sets currentGroupId)
-  await buildBreadcrumbs(cardId);
-
-  // Load the sequence
-  await loadSequence();
-
-  console.log('[SequenceView] Route change handling complete');
-}, { immediate: true });
 
 // Watch edit mode changes - clear selection when edit mode is disabled
 watch(() => isEditMode.value, (newEditMode) => {
@@ -1807,7 +1780,31 @@ onMounted(async () => {
     // Listen for edit mode keyboard shortcuts
     eventBus.on('app:editModeShortcut', handleEditModeShortcut);
 
-    // Don't load sequence here - the route watcher with immediate: true will handle it
+    // Set loading state
+    isLoading.value = true;
+    
+    // Show loading state while loading
+    console.log('[SequenceView] Setting ghost sequence while loading');
+    sequence.value = generateGhostSequence();
+
+    try {
+      // Reset to root (no group)
+      currentGroupId.value = undefined;
+      breadcrumbs.value = [];
+
+      // Load the root sequence
+      await loadSequence();
+
+      console.log('[SequenceView] Root sequence loaded');
+    } catch (error) {
+      console.error('[SequenceView] Error loading root sequence:', error);
+      // Show empty state on error
+      sequence.value = [];
+    } finally {
+      // Clear loading state
+      isLoading.value = false;
+    }
+
     console.log('[SequenceView] Initialization complete');
   } catch (error) {
     console.error('[SequenceView] Failed to initialize:', error);

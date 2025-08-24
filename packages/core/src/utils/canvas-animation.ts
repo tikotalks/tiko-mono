@@ -13,9 +13,20 @@ export interface ImageAsset {
   loaded?: boolean
 }
 
+export interface VideoAsset {
+  id: string
+  src: string
+  video?: HTMLVideoElement
+  loaded?: boolean
+  duration?: number
+  playbackMode?: 'once' | 'loop' | 'stretch'
+  stretchDuration?: number // Duration to stretch the video over (in ms)
+}
+
 export interface AnimationObject {
   id: string
-  image: ImageAsset
+  image?: ImageAsset
+  video?: VideoAsset
   x: number
   y: number
   width: number
@@ -48,9 +59,11 @@ export class CanvasAnimation {
   private objects: Map<string, AnimationObject> = new Map()
   private animations: Map<string, AnimationSequence> = new Map()
   private images: Map<string, ImageAsset> = new Map()
+  private videos: Map<string, VideoAsset> = new Map()
   private animationId: number | null = null
   private lastTime = 0
   private backgroundColor: string
+  private animationStartTime = 0
 
   // Viewport-relative units (0-100)
   public vw: number = 0
@@ -145,6 +158,95 @@ export class CanvasAnimation {
     return Promise.all(assets.map(asset => this.loadImage(asset.id, asset.src)))
   }
 
+  // Video loading methods
+  async loadVideo(id: string, src: string, playbackMode: 'once' | 'loop' | 'stretch' = 'loop', stretchDuration?: number): Promise<VideoAsset> {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement('video')
+      const asset: VideoAsset = { id, src, video, loaded: false, playbackMode, stretchDuration }
+      
+      video.onloadedmetadata = () => {
+        asset.duration = video.duration * 1000 // Convert to milliseconds
+        asset.loaded = true
+        this.videos.set(id, asset)
+        
+        // Set up video element for proper playback
+        video.style.display = 'none'
+        video.setAttribute('playsinline', 'true')
+        video.setAttribute('webkit-playsinline', 'true')
+        video.setAttribute('preload', 'auto')
+        
+        // Append to DOM for better compatibility
+        document.body.appendChild(video)
+        
+        // Set up video based on playback mode
+        if (playbackMode === 'loop') {
+          video.loop = true
+        } else if (playbackMode === 'stretch' && stretchDuration) {
+          // Calculate playback rate to stretch video over desired duration
+          // If video is 5 seconds and we want it to last 10 seconds, rate should be 0.5
+          const playbackRate = (video.duration * 1000) / stretchDuration
+          video.playbackRate = playbackRate
+          video.loop = false // Don't loop when stretching
+        }
+        
+        // Start playing the video
+        video.play().catch(err => console.warn('Video autoplay failed:', err))
+        
+        resolve(asset)
+      }
+      
+      video.onerror = () => {
+        // Try again without CORS
+        const video2 = document.createElement('video')
+        
+        video2.onloadedmetadata = () => {
+          const asset: VideoAsset = {
+            id,
+            src,
+            video: video2,
+            loaded: true,
+            duration: video2.duration,
+            playbackMode,
+            stretchDuration
+          }
+          
+          this.videos.set(id, asset)
+          
+          if (playbackMode === 'loop') {
+            video2.loop = true
+          }
+          
+          // Start playing the video
+          video2.play().catch(err => console.warn('Video autoplay failed:', err))
+          
+          resolve(asset)
+        }
+        
+        video2.onerror = () => {
+          reject(new Error(`Failed to load video: ${src}`))
+        }
+        
+        // Set video properties WITHOUT CORS this time
+        video2.src = src
+        video2.muted = true
+        video2.playsInline = true
+        // NO crossOrigin attribute
+      }
+      
+      // Set video properties WITH CORS for first attempt
+      video.src = src
+      video.muted = true // Mute to allow autoplay
+      video.playsInline = true // Important for mobile
+      video.crossOrigin = 'anonymous' // Allow cross-origin videos
+    })
+  }
+
+  async loadVideos(assets: Array<{id: string, src: string, playbackMode?: 'once' | 'loop' | 'stretch', stretchDuration?: number}>): Promise<VideoAsset[]> {
+    return Promise.all(assets.map(asset => 
+      this.loadVideo(asset.id, asset.src, asset.playbackMode || 'loop', asset.stretchDuration)
+    ))
+  }
+
   // Object creation and management
   createObject(id: string, imageId: string, x: number, y: number, width: number, height: number): AnimationObject {
     const image = this.images.get(imageId)
@@ -171,8 +273,52 @@ export class CanvasAnimation {
     return obj
   }
 
+  createVideoObject(id: string, videoId: string, x: number, y: number, width: number, height: number): AnimationObject {
+    const video = this.videos.get(videoId)
+    if (!video) {
+      throw new Error(`Video ${videoId} not found. Load it first with loadVideo()`)
+    }
+
+    const obj: AnimationObject = {
+      id,
+      video,
+      x,
+      y,
+      width,
+      height,
+      rotation: 0,
+      scaleX: 1,
+      scaleY: 1,
+      opacity: 1,
+      visible: true,
+      debug: false
+    }
+
+    this.objects.set(id, obj)
+    return obj
+  }
+
   getObject(id: string): AnimationObject | undefined {
     return this.objects.get(id)
+  }
+
+  getAllObjects(): AnimationObject[] {
+    return Array.from(this.objects.values())
+  }
+
+  getImage(id: string): ImageAsset | undefined {
+    return this.images.get(id)
+  }
+
+  // Register a custom image (e.g., from a canvas element)
+  registerCustomImage(id: string, imageSource: HTMLCanvasElement | HTMLImageElement): void {
+    const asset: ImageAsset = {
+      id,
+      src: 'custom',
+      image: imageSource as any, // Canvas elements can be drawn with drawImage too
+      loaded: true
+    }
+    this.images.set(id, asset)
   }
 
   removeObject(id: string): void {
@@ -196,6 +342,39 @@ export class CanvasAnimation {
     }
 
     this.animations.set(objectId, sequence)
+  }
+
+  // Video control methods
+  playVideo(videoId: string): void {
+    const asset = this.videos.get(videoId)
+    if (asset?.video) {
+      asset.video.play().catch(err => console.warn('Video play failed:', err))
+    }
+  }
+
+  pauseVideo(videoId: string): void {
+    const asset = this.videos.get(videoId)
+    if (asset?.video) {
+      asset.video.pause()
+    }
+  }
+
+  setVideoTime(videoId: string, time: number): void {
+    const asset = this.videos.get(videoId)
+    if (asset?.video) {
+      asset.video.currentTime = time / 1000 // Convert ms to seconds
+    }
+  }
+
+  setVideoPlaybackRate(videoId: string, rate: number): void {
+    const asset = this.videos.get(videoId)
+    if (asset?.video) {
+      asset.video.playbackRate = rate
+    }
+  }
+
+  getVideo(id: string): VideoAsset | undefined {
+    return this.videos.get(id)
   }
 
   // Easing functions
@@ -313,7 +492,14 @@ export class CanvasAnimation {
 
   private drawObject(obj: AnimationObject): void {
     if (!obj.visible || obj.opacity <= 0) return
-    if (!obj.image.loaded || !obj.image.image) return
+    
+    // Check if object has an image or video
+    const hasImage = obj.image && obj.image.loaded && obj.image.image
+    const hasVideo = obj.video && obj.video.loaded && obj.video.video
+    
+    if (!hasImage && !hasVideo) {
+      return
+    }
 
     this.ctx.save()
 
@@ -323,14 +509,29 @@ export class CanvasAnimation {
     this.ctx.rotate(obj.rotation * Math.PI / 180)
     this.ctx.scale(obj.scaleX, obj.scaleY)
 
-    // Draw image
-    this.ctx.drawImage(
-      obj.image.image,
-      -obj.width / 2,
-      -obj.height / 2,
-      obj.width,
-      obj.height
-    )
+    // Draw image or video
+    if (hasVideo && obj.video?.video) {
+      // Ensure video is playing
+      if (obj.video.video.paused) {
+        obj.video.video.play().catch(() => {})
+      }
+      
+      this.ctx.drawImage(
+        obj.video.video,
+        -obj.width / 2,
+        -obj.height / 2,
+        obj.width,
+        obj.height
+      )
+    } else if (hasImage && obj.image?.image) {
+      this.ctx.drawImage(
+        obj.image.image,
+        -obj.width / 2,
+        -obj.height / 2,
+        obj.width,
+        obj.height
+      )
+    }
 
     // Draw debug border if enabled
     if (obj.debug) {
@@ -362,9 +563,6 @@ export class CanvasAnimation {
 
     // Draw all objects
     for (const obj of this.objects.values()) {
-      if (obj.id === 'spaceship' && this.lastTime % 1000 < 16) { // Log once per second
-        console.log('[CanvasAnimation] Drawing spaceship at', obj.x, obj.y, 'visible:', obj.visible, 'opacity:', obj.opacity)
-      }
       this.drawObject(obj)
     }
 
@@ -374,6 +572,9 @@ export class CanvasAnimation {
   // Control methods
   start(): void {
     if (this.animationId !== null) return
+    
+    // Set animation start time for video stretching
+    this.animationStartTime = performance.now()
 
     const animate = (currentTime: number) => {
       this.render(currentTime)
@@ -381,6 +582,10 @@ export class CanvasAnimation {
     }
 
     this.animationId = requestAnimationFrame(animate)
+  }
+
+  setAnimationStartTime(time: number): void {
+    this.animationStartTime = time
   }
 
   stop(): void {
@@ -396,6 +601,15 @@ export class CanvasAnimation {
     this.objects.clear()
     this.animations.clear()
     this.images.clear()
+    
+    // Clean up video elements
+    for (const videoAsset of this.videos.values()) {
+      if (videoAsset.video) {
+        videoAsset.video.pause()
+        videoAsset.video.remove()
+      }
+    }
+    this.videos.clear()
   }
 
   // Getters
@@ -405,14 +619,5 @@ export class CanvasAnimation {
 
   getContext(): CanvasRenderingContext2D {
     return this.ctx
-  }
-  
-  getImage(id: string): ImageAsset | undefined {
-    return this.images.get(id)
-  }
-  
-  // Debug helper to get all objects
-  getAllObjects(): Map<string, AnimationObject> {
-    return this.objects
   }
 }

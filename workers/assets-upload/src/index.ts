@@ -139,7 +139,7 @@ async function handleUpload(request: Request, env: Env): Promise<Response> {
     })
 
     // Create Supabase client
-    const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY)
+    const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SECRET)
     
     // Save metadata to Supabase
     const assetData = {
@@ -217,7 +217,7 @@ async function handleUpload(request: Request, env: Env): Promise<Response> {
 // Get asset by ID
 async function handleGetAsset(request: Request, env: Env, assetId: string): Promise<Response> {
   try {
-    const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY)
+    const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SECRET)
     
     const { data, error } = await supabase
       .from('assets')
@@ -260,7 +260,7 @@ async function handleListAssets(request: Request, env: Env): Promise<Response> {
     const tag = url.searchParams.get('tag')
     const mimeType = url.searchParams.get('type')
     
-    const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY)
+    const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SECRET)
     
     let query = supabase.from('assets').select('*', { count: 'exact' })
     
@@ -323,7 +323,7 @@ async function handleUpdateAsset(request: Request, env: Env, assetId: string): P
   try {
     const updates: UpdateAssetRequest = await request.json()
     
-    const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY)
+    const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SECRET)
     
     const updateData: any = {}
     if (updates.title !== undefined) updateData.title = updates.title
@@ -365,7 +365,7 @@ async function handleUpdateAsset(request: Request, env: Env, assetId: string): P
 // Delete asset
 async function handleDeleteAsset(request: Request, env: Env, assetId: string): Promise<Response> {
   try {
-    const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY)
+    const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SECRET)
     
     // First get the asset to know the file path
     const { data: asset, error: getError } = await supabase

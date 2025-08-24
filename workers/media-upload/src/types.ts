@@ -17,6 +17,13 @@ export interface ImageMetadata {
   categories: string[]
 }
 
+export interface VideoMetadata {
+  duration?: number
+  width?: number
+  height?: number
+  thumbnailUrl?: string
+}
+
 export interface DebugInfo {
   hasOpenAIKey: boolean
   visionAttempted: boolean
@@ -56,10 +63,16 @@ export interface UploadResponse extends ImageMetadata {
   medium: string
   size: number
   type: string
+  // Video-specific fields
+  duration?: number
+  width?: number
+  height?: number
+  thumbnailUrl?: string
   _metadata: {
     timestamp: string
     hasOpenAIKey: boolean
     isImage: boolean
+    isVideo: boolean
     aiAnalysis: {
       attempted: boolean
       success: boolean

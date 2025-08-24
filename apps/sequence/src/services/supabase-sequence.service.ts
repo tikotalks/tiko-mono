@@ -271,11 +271,35 @@ class SequenceSupabaseService {
   }
 
   async getCard(id: string): Promise<CardItem | null> {
+    console.log(`[getCard] Fetching card with id: ${id}`);
     const params = new URLSearchParams();
     params.append('id', `eq.${id}`);
 
-    const response = await this.apiRequest<CardItem[]>(`items?${params.toString()}`);
-    return response[0] || null;
+    const url = `items?${params.toString()}`;
+    console.log(`[getCard] Request URL: ${url}`);
+    
+    try {
+      const response = await this.apiRequest<CardItem[]>(url);
+      const card = response[0] || null;
+      
+      if (card) {
+        console.log(`[getCard] Found card:`, {
+          id: card.id,
+          name: card.name,
+          type: card.type,
+          user_id: card.user_id,
+          is_curated: card.is_curated,
+          parent_id: card.parent_id
+        });
+      } else {
+        console.warn(`[getCard] No card found with id: ${id}`);
+      }
+      
+      return card;
+    } catch (error) {
+      console.error(`[getCard] Error fetching card ${id}:`, error);
+      return null;
+    }
   }
 
   // Get sequence with translations for the current locale

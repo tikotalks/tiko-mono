@@ -1,7 +1,7 @@
 export interface Env {
   ASSETS_R2_BUCKET: R2Bucket
   SUPABASE_URL: string
-  SUPABASE_SERVICE_KEY: string
+  SUPABASE_SECRET: string
 }
 
 export interface UploadRequest {

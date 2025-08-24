@@ -181,6 +181,10 @@ async function handleUpload(request: Request, env: Env): Promise<Response> {
   try {
     const formData = await request.formData()
     const file = formData.get('file') as File | null
+    const thumbnail = formData.get('thumbnail') as File | null // Video thumbnail
+    const duration = formData.get('duration') as string | null
+    const width = formData.get('width') as string | null
+    const height = formData.get('height') as string | null
     
     if (!file) {
       return new Response(JSON.stringify({ error: 'No file provided' }), {
@@ -210,6 +214,7 @@ async function handleUpload(request: Request, env: Env): Promise<Response> {
 
     const baseUrl = `https://data.tikocdn.org/${baseKey}`
     const isImage = file.type.startsWith('image/')
+    const isVideo = file.type.startsWith('video/')
     
     let metadata: ImageMetadata = {
       title: '',
@@ -218,18 +223,33 @@ async function handleUpload(request: Request, env: Env): Promise<Response> {
       categories: []
     }
     
+    let thumbnailUrl: string | undefined
+    
+    // Handle video thumbnail upload
+    if (isVideo && thumbnail) {
+      const thumbnailKey = `uploads/thumbnails/${timestamp}-${safeName}-thumb.jpg`
+      await env.R2_BUCKET.put(thumbnailKey, thumbnail.stream(), {
+        httpMetadata: {
+          contentType: 'image/jpeg'
+        }
+      })
+      thumbnailUrl = `https://data.tikocdn.org/${thumbnailKey}`
+    }
+    
     const debugInfo = {
       hasOpenAIKey: !!env.OPENAI_API_KEY,
       isImage,
+      isVideo,
       visionAttempted: false,
       visionError: null as string | null,
       visionResponseOk: false,
       model: 'gpt-4o'
     }
     
-    // Analyze image if applicable
-    if (isImage && env.OPENAI_API_KEY) {
-      const result = await analyzeWithOpenAI(baseUrl, nameWithoutExt, env.OPENAI_API_KEY)
+    // Analyze image or video thumbnail if applicable
+    if ((isImage || (isVideo && thumbnailUrl)) && env.OPENAI_API_KEY) {
+      const analyzeUrl = isVideo ? thumbnailUrl! : baseUrl
+      const result = await analyzeWithOpenAI(analyzeUrl, nameWithoutExt, env.OPENAI_API_KEY)
       metadata = { ...metadata, ...result.metadata }
       Object.assign(debugInfo, result.debugInfo)
     }
@@ -245,15 +265,23 @@ async function handleUpload(request: Request, env: Env): Promise<Response> {
       success: true,
       filename: baseKey,
       url: baseUrl,
-      thumbnail: isImage ? `${baseUrl}?width=200` : baseUrl,
+      thumbnail: isImage ? `${baseUrl}?width=200` : (thumbnailUrl || baseUrl),
       medium: isImage ? `${baseUrl}?width=800` : baseUrl,
       size: file.size,
       type: file.type,
       ...metadata,
+      // Add video-specific fields
+      ...(isVideo && {
+        thumbnailUrl,
+        duration: duration ? parseFloat(duration) : undefined,
+        width: width ? parseInt(width) : undefined,
+        height: height ? parseInt(height) : undefined
+      }),
       _metadata: {
         timestamp: new Date().toISOString(),
         hasOpenAIKey: !!env.OPENAI_API_KEY,
         isImage,
+        isVideo,
         aiAnalysis: {
           attempted: debugInfo.visionAttempted,
           success: debugInfo.visionAttempted && !debugInfo.visionError,

@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - develop
   workflow_dispatch:
     inputs:
       target:
@@ -21,6 +22,9 @@ on:
         default: 'Manual deployment from admin dashboard'
 
 jobs:
+  determine-environment:
+    uses: ./.github/workflows/reusable-determine-environment.yml
+
   check-triggers:
     runs-on: ubuntu-latest
     outputs:
@@ -59,7 +63,38 @@ jobs:
             exit 0
           fi
           
-          # Handle push trigger - check commit message
+          # For develop branch, check changed files instead of commit message
+          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "Develop branch detected - checking changed files..."
+            
+            # Get list of changed files
+            CHANGED_FILES=$(git diff --name-only HEAD^ HEAD || git diff --name-only HEAD)
+            echo "Changed files:"
+            echo "$CHANGED_FILES"
+            
+            # Check if UI or Core packages changed (deploy all websites)
+            if echo "$CHANGED_FILES" | grep -E "^packages/(ui|core)/" > /dev/null; then
+              echo "UI or Core package changed - deploying all websites"
+              echo "should-build=true" >> $GITHUB_OUTPUT
+              echo "build-marketing=true" >> $GITHUB_OUTPUT
+              echo "build-media=true" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+            
+            # Check individual websites
+            if echo "$CHANGED_FILES" | grep -E "^websites/marketing/" > /dev/null; then
+              echo "build-marketing=true" >> $GITHUB_OUTPUT
+              echo "should-build=true" >> $GITHUB_OUTPUT
+            fi
+            if echo "$CHANGED_FILES" | grep -E "^websites/media/" > /dev/null; then
+              echo "build-media=true" >> $GITHUB_OUTPUT
+              echo "should-build=true" >> $GITHUB_OUTPUT
+            fi
+            
+            exit 0
+          fi
+
+          # For master branch, handle push trigger - check commit message
           COMMIT_MSG='${{ github.event.head_commit.message }}'
           echo "Commit message: $COMMIT_MSG"
           
@@ -85,47 +120,13 @@ jobs:
   check-environment:
     needs: check-triggers
     if: needs.check-triggers.outputs.should-build == 'true'
-    runs-on: ubuntu-latest
-    name: Check Required Environment Variables
-    steps:
-      - name: Check Cloudflare API Token
-        run: |
-          if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
-            echo "❌ ERROR: Missing required secret CLOUDFLARE_API_TOKEN"
-            echo "Please add this secret in GitHub Settings > Secrets and variables > Actions"
-            exit 1
-          fi
-          echo "✅ CLOUDFLARE_API_TOKEN is configured"
-      
-      - name: Check Supabase Environment Variables
-        run: |
-          MISSING_VARS=""
-          
-          if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ]; then
-            MISSING_VARS="$MISSING_VARS VITE_SUPABASE_URL"
-          fi
-          
-          if [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ]; then
-            MISSING_VARS="$MISSING_VARS VITE_SUPABASE_ANON_KEY"
-          fi
-          
-          if [ -n "$MISSING_VARS" ]; then
-            echo "❌ ERROR: Missing required Supabase secrets:"
-            for var in $MISSING_VARS; do
-              echo "  - $var"
-            done
-            echo ""
-            echo "Please add these secrets in GitHub Settings > Secrets and variables > Actions"
-            exit 1
-          fi
-          
-          echo "✅ Supabase environment variables are configured"
+    uses: ./.github/workflows/reusable-check-environment.yml
 
   deploy-marketing:
-    needs: [check-triggers, check-environment]
+    needs: [determine-environment, check-triggers, check-environment]
     if: needs.check-triggers.outputs.build-marketing == 'true'
     runs-on: ubuntu-latest
-    name: Deploy Marketing Website
+    name: Deploy Marketing Website (${{ needs.determine-environment.outputs.environment }})
     steps:
       - uses: actions/checkout@v4
       
@@ -169,13 +170,13 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: dc2b7d14a69351375cab6de9a13ddee9
-          command: pages deploy ./websites/marketing/dist --project-name=tiko-marketing --commit-dirty=true
+          command: pages deploy ./websites/marketing/dist --project-name=tiko-marketing${{ needs.determine-environment.outputs.branch-suffix }} --commit-dirty=true --branch=${{ github.ref_name }}
 
   deploy-media:
-    needs: [check-triggers, check-environment]
+    needs: [determine-environment, check-triggers, check-environment]
     if: needs.check-triggers.outputs.build-media == 'true'
     runs-on: ubuntu-latest
-    name: Deploy Media Website
+    name: Deploy Media Website (${{ needs.determine-environment.outputs.environment }})
     steps:
       - uses: actions/checkout@v4
       
@@ -220,22 +221,22 @@ jobs:
         run: |
           # Check if project exists
           PROJECT_EXISTS=$(curl -s -X GET \
-            "https://api.cloudflare.com/client/v4/accounts/dc2b7d14a69351375cab6de9a13ddee9/pages/projects/tiko-media" \
+            "https://api.cloudflare.com/client/v4/accounts/dc2b7d14a69351375cab6de9a13ddee9/pages/projects/tiko-media${{ needs.determine-environment.outputs.branch-suffix }}" \
             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
             -H "Content-Type: application/json" | jq -r '.success')
           
           if [ "$PROJECT_EXISTS" != "true" ]; then
-            echo "Creating Cloudflare Pages project tiko-media..."
+            echo "Creating Cloudflare Pages project tiko-media${{ needs.determine-environment.outputs.branch-suffix }}..."
             curl -X POST \
               "https://api.cloudflare.com/client/v4/accounts/dc2b7d14a69351375cab6de9a13ddee9/pages/projects" \
               -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
               -H "Content-Type: application/json" \
               --data '{
-                "name": "tiko-media",
-                "production_branch": "master"
+                "name": "tiko-media${{ needs.determine-environment.outputs.branch-suffix }}",
+                "production_branch": "${{ github.ref_name }}"
               }'
           else
-            echo "Project tiko-media already exists"
+            echo "Project tiko-media${{ needs.determine-environment.outputs.branch-suffix }} already exists"
           fi
       
       - name: Deploy to Cloudflare Pages
@@ -243,4 +244,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: dc2b7d14a69351375cab6de9a13ddee9
-          command: pages deploy ./websites/media/dist --project-name=tiko-media --commit-dirty=true
+          command: pages deploy ./websites/media/dist --project-name=tiko-media${{ needs.determine-environment.outputs.branch-suffix }} --commit-dirty=true --branch=${{ github.ref_name }}
