@@ -33,9 +33,9 @@ export function useImageResolver() {
   }
 
   /**
-   * Resolve an image URL from various sources
+   * Resolve an asset URL from various sources (images, videos, audio, files)
    */
-  const resolveImageUrl = async (
+  const resolveAssetUrl = async (
     src: string,
     options: ResolveImageOptions = {}
   ): Promise<string> => {
@@ -56,7 +56,7 @@ export function useImageResolver() {
               return assetsStore.getAssetUrl(asset)
             }
           } catch (error) {
-            console.warn(`[ImageResolver] Failed to load from assets: ${error}`)
+            console.warn(`[AssetResolver] Failed to load from assets: ${error}`)
           }
           break
 
@@ -77,7 +77,7 @@ export function useImageResolver() {
               return `https://media.tikocdn.org/${src}`
             }
           } catch (error) {
-            console.warn(`[ImageResolver] Failed to fetch public media ${src}:`, error)
+            console.warn(`[AssetResolver] Failed to fetch public media ${src}:`, error)
             return `https://media.tikocdn.org/${src}`
           }
       }
@@ -102,7 +102,7 @@ export function useImageResolver() {
     }
 
     try {
-      result.originalUrl = await resolveImageUrl(src, options)
+      result.originalUrl = await resolveAssetUrl(src, options)
       result.optimizedUrl = result.originalUrl // Can be enhanced with optimization logic
       result.isLoading = false
     } catch (error) {
@@ -112,6 +112,12 @@ export function useImageResolver() {
 
     return result
   }
+  
+  /**
+   * Legacy alias for resolveAssetUrl - maintained for backward compatibility
+   * @deprecated Use resolveAssetUrl instead
+   */
+  const resolveImageUrl = resolveAssetUrl
 
   /**
    * Preload multiple images
@@ -120,7 +126,7 @@ export function useImageResolver() {
     images: Array<{ src: string; options?: ResolveImageOptions }>
   ): Promise<void> => {
     const urls = await Promise.all(
-      images.map(({ src, options }) => resolveImageUrl(src, options))
+      images.map(({ src, options }) => resolveAssetUrl(src, options))
     )
 
     // Preload all resolved URLs
@@ -138,7 +144,8 @@ export function useImageResolver() {
   }
 
   return {
-    resolveImageUrl,
+    resolveAssetUrl,
+    resolveImageUrl, // Legacy alias
     resolveImage,
     preloadImages,
     isUUID
