@@ -23,6 +23,7 @@
   "dependencies": {
     "@tiko/core": "workspace:*",
     "@tiko/ui": "workspace:*",
+    "@tiko/animations": "workspace:*",
     "bemm": "^1.0.0",
     "lodash-es": "^4.17.21",
     "open-icon": "^1.1.2",

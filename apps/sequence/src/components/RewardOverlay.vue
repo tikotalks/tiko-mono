@@ -54,11 +54,11 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, onBeforeMount, defineAsyncComponent, shallowRef, onBeforeUnmount } from 'vue'
+import { onMounted, ref, onBeforeMount, shallowRef, onBeforeUnmount } from 'vue'
 import { useBemm } from 'bemm'
 import { TButton } from '@tiko/ui'
 import { useImageResolver, useI18n } from '@tiko/core'
-import type { AnimationImageConfig, AnimationImage } from './animations/types'
+import { getAnimation, getRandomAnimation, type AnimationImage, type AnimationImageConfig } from '@tiko/animations'
 import { Icons } from 'open-icon';
 
 const emit = defineEmits<{
@@ -70,29 +70,17 @@ const bemm = useBemm('reward-overlay')
 const { t } = useI18n()
 const { preloadImages } = useImageResolver()
 
-// Animation types
-const animations = ['rocket', 'alien', 'reef', 'deepsea', 'fruitcatcher', 'solarsystem'] as const
-type AnimationType = typeof animations[number]
 // Select random animation
-const selectedAnimation = ref<AnimationType>(animations[Math.floor(Math.random() * animations.length)])
+const randomAnimation = getRandomAnimation()
+const selectedAnimation = ref(randomAnimation.name)
 
 // State
 const animationCompleted = ref(false)
 const showContent = ref(false)
 const animationRef = ref<any>(null)
 
-// Define lazy-loaded animation components
-const animationComponents = {
-  rocket: defineAsyncComponent(() => import('./animations/RocketCanvasAnimation.vue')),
-  alien: defineAsyncComponent(() => import('./animations/AliensCanvasAnimation.vue')),
-  reef: defineAsyncComponent(() => import('./animations/ReefCanvasAnimation.vue')),
-  deepsea: defineAsyncComponent(() => import('./animations/DeepSeaCanvasAnimation.vue')),
-  fruitcatcher: defineAsyncComponent(() => import('./animations/FruitCatcherCanvasAnimation.vue')),
-  solarsystem: defineAsyncComponent(() => import('./animations/SolarSystemCanvasAnimation.vue'))
-}
-
-// Current animation component
-const animationComponent = shallowRef(animationComponents[selectedAnimation.value])
+// Get the animation component
+const animationComponent = shallowRef(getAnimation(selectedAnimation.value))
 
 const onAnimationCompleted = () => {
   animationCompleted.value = true
@@ -127,24 +115,11 @@ const skipAnimation = () => {
   showContent.value = true
 }
 
-// Helper function to get the correct file name for each animation
-function getAnimationFileName(animation: AnimationType): string {
-  const fileNames: Record<AnimationType, string> = {
-    rocket: 'RocketCanvasAnimation',
-    alien: 'AliensCanvasAnimation',
-    reef: 'ReefCanvasAnimation',
-    deepsea: 'DeepSeaCanvasAnimation',
-    fruitcatcher: 'FruitCatcherCanvasAnimation',
-    solarsystem: 'SolarSystemCanvasAnimation'
-  }
-  return fileNames[animation]
-}
-
 // Preload animation images before component mounts
 onBeforeMount(async () => {
   try {
-    // Dynamically import only the selected animation module
-    const animationModule = await import(`./animations/${getAnimationFileName(selectedAnimation.value)}.vue`)
+    // Use the animation's component loader to get the module
+    const animationModule = await randomAnimation.component()
     const { animationImages } = animationModule
 
     if (animationImages && animationImages.length > 0) {

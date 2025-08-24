@@ -19,6 +19,9 @@ export default defineConfig({
   auth: {
     canRegister: false
   },
+  topBar:{
+    show: true,
+  },
   splash: {
     show: true,
     appName: 'Admin',
