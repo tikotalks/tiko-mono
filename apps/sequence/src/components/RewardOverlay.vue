@@ -1,45 +1,12 @@
 <template>
   <div :class="bemm()">
-    <!-- Close button -->
-    <TButton 
-      v-if="!animationCompleted"
-      :class="bemm('close-button')" 
-      :icon="Icons.MULTIPLY_M" 
-      size="large"
-      type="ghost"
-      @click="skipAnimation" 
-      :aria-label="t('common.close')" 
-    />
+
 
     <!-- Animation Layer -->
     <div :class="bemm('animation')" v-if="!animationCompleted">
-      <RocketCanvasAnimation
-        v-if="selectedAnimation === 'rocket'"
-        ref="animationRef"
-        @completed="onAnimationCompleted"
-      />
-      <AliensCanvasAnimation
-        v-else-if="selectedAnimation === 'alien'"
-        ref="animationRef"
-        @completed="onAnimationCompleted"
-      />
-      <ReefCanvasAnimation
-        v-else-if="selectedAnimation === 'reef'"
-        ref="animationRef"
-        @completed="onAnimationCompleted"
-      />
-      <DeepSeaCanvasAnimation
-        v-else-if="selectedAnimation === 'deepsea'"
-        ref="animationRef"
-        @completed="onAnimationCompleted"
-      />
-      <FruitCatcherCanvasAnimation
-        v-else-if="selectedAnimation === 'fruitcatcher'"
-        ref="animationRef"
-        @completed="onAnimationCompleted"
-      />
-      <SolarSystemCanvasAnimation
-        v-else-if="selectedAnimation === 'solarsystem'"
+      <component
+        :is="animationComponent"
+        v-if="animationComponent"
         ref="animationRef"
         @completed="onAnimationCompleted"
       />
@@ -73,20 +40,24 @@
         </div>
       </div>
     </div>
+      <!-- Close button -->
+      <TButton
+      v-if="!animationCompleted"
+      :class="bemm('close-button')"
+      :icon="Icons.MULTIPLY_M"
+      size="large"
+      type="ghost"
+      @click="skipAnimation"
+      :aria-label="t('common.close')"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, onBeforeMount } from 'vue'
+import { onMounted, ref, onBeforeMount, defineAsyncComponent, shallowRef, onBeforeUnmount } from 'vue'
 import { useBemm } from 'bemm'
 import { TButton } from '@tiko/ui'
 import { useImageResolver, useI18n } from '@tiko/core'
-import RocketCanvasAnimation from './animations/RocketCanvasAnimation.vue'
-import AliensCanvasAnimation from './animations/AliensCanvasAnimation.vue'
-import ReefCanvasAnimation from './animations/ReefCanvasAnimation.vue'
-import DeepSeaCanvasAnimation from './animations/DeepSeaCanvasAnimation.vue'
-import FruitCatcherCanvasAnimation from './animations/FruitCatcherCanvasAnimation.vue'
-import SolarSystemCanvasAnimation from './animations/SolarSystemCanvasAnimation.vue'
 import type { AnimationImageConfig, AnimationImage } from './animations/types'
 import { Icons } from 'open-icon';
 
@@ -108,7 +79,20 @@ const selectedAnimation = ref<AnimationType>(animations[Math.floor(Math.random()
 // State
 const animationCompleted = ref(false)
 const showContent = ref(false)
-const animationRef = ref<InstanceType<typeof RocketCanvasAnimation> | InstanceType<typeof AliensCanvasAnimation> | InstanceType<typeof ReefCanvasAnimation> | InstanceType<typeof DeepSeaCanvasAnimation> | InstanceType<typeof FruitCatcherCanvasAnimation> | InstanceType<typeof SolarSystemCanvasAnimation> | null>(null)
+const animationRef = ref<any>(null)
+
+// Define lazy-loaded animation components
+const animationComponents = {
+  rocket: defineAsyncComponent(() => import('./animations/RocketCanvasAnimation.vue')),
+  alien: defineAsyncComponent(() => import('./animations/AliensCanvasAnimation.vue')),
+  reef: defineAsyncComponent(() => import('./animations/ReefCanvasAnimation.vue')),
+  deepsea: defineAsyncComponent(() => import('./animations/DeepSeaCanvasAnimation.vue')),
+  fruitcatcher: defineAsyncComponent(() => import('./animations/FruitCatcherCanvasAnimation.vue')),
+  solarsystem: defineAsyncComponent(() => import('./animations/SolarSystemCanvasAnimation.vue'))
+}
+
+// Current animation component
+const animationComponent = shallowRef(animationComponents[selectedAnimation.value])
 
 const onAnimationCompleted = () => {
   animationCompleted.value = true
@@ -119,89 +103,61 @@ const onAnimationCompleted = () => {
 }
 
 const skipAnimation = () => {
+  // Stop the animation and any sounds it's playing
+  if (animationRef.value) {
+    // Call cleanup method if available
+    if (typeof animationRef.value.cleanup === 'function') {
+      animationRef.value.cleanup()
+    }
+    
+    // Stop any audio/sounds
+    if (animationRef.value.audio) {
+      animationRef.value.audio.pause()
+      animationRef.value.audio.currentTime = 0
+    }
+    
+    // Stop animation loop if available
+    if (typeof animationRef.value.stopAnimation === 'function') {
+      animationRef.value.stopAnimation()
+    }
+  }
+  
   // Skip the animation and show content immediately
   animationCompleted.value = true
   showContent.value = true
 }
 
+// Helper function to get the correct file name for each animation
+function getAnimationFileName(animation: AnimationType): string {
+  const fileNames: Record<AnimationType, string> = {
+    rocket: 'RocketCanvasAnimation',
+    alien: 'AliensCanvasAnimation',
+    reef: 'ReefCanvasAnimation',
+    deepsea: 'DeepSeaCanvasAnimation',
+    fruitcatcher: 'FruitCatcherCanvasAnimation',
+    solarsystem: 'SolarSystemCanvasAnimation'
+  }
+  return fileNames[animation]
+}
+
 // Preload animation images before component mounts
 onBeforeMount(async () => {
   try {
-    if (selectedAnimation.value === 'rocket') {
-      const { animationImages } = await import('./animations/RocketCanvasAnimation.vue')
+    // Dynamically import only the selected animation module
+    const animationModule = await import(`./animations/${getAnimationFileName(selectedAnimation.value)}.vue`)
+    const { animationImages } = animationModule
 
-      if (animationImages && animationImages.length > 0) {
-        await preloadImages(
-          animationImages.map((img: AnimationImage) => ({
-            src: img.id,
-            options: img.options
-          }))
-        )
-        console.log('Rocket animation images preloaded successfully')
-      }
-    } else if (selectedAnimation.value === 'alien') {
-      const { animationImages } = await import('./animations/AliensCanvasAnimation.vue')
-
-      if (animationImages && animationImages.length > 0) {
-        await preloadImages(
-          animationImages.map((img: AnimationImage) => ({
-            src: img.id,
-            options: img.options
-          }))
-        )
-        console.log('Aliens animation images preloaded successfully')
-      }
-    } else if (selectedAnimation.value === 'reef') {
-      const { animationImages } = await import('./animations/ReefCanvasAnimation.vue')
-
-      if (animationImages && animationImages.length > 0) {
-        await preloadImages(
-          animationImages.map((img: AnimationImage) => ({
-            src: img.id,
-            options: img.options
-          }))
-        )
-        console.log('Reef animation images preloaded successfully')
-      }
-    } else if (selectedAnimation.value === 'deepsea') {
-      const { animationImages } = await import('./animations/DeepSeaCanvasAnimation.vue')
-
-      if (animationImages && animationImages.length > 0) {
-        await preloadImages(
-          animationImages.map((img: AnimationImage) => ({
-            src: img.id,
-            options: img.options
-          }))
-        )
-        console.log('Deep Sea animation images preloaded successfully')
-      }
-    } else if (selectedAnimation.value === 'fruitcatcher') {
-      const { animationImages } = await import('./animations/FruitCatcherCanvasAnimation.vue')
-
-      if (animationImages && animationImages.length > 0) {
-        await preloadImages(
-          animationImages.map((img: AnimationImage) => ({
-            src: img.id,
-            options: img.options
-          }))
-        )
-        console.log('Fruit Catcher animation images preloaded successfully')
-      }
-    } else if (selectedAnimation.value === 'solarsystem') {
-      const { animationImages } = await import('./animations/SolarSystemCanvasAnimation.vue')
-
-      if (animationImages && animationImages.length > 0) {
-        await preloadImages(
-          animationImages.map((img: AnimationImageConfig) => ({
-            src: img.id,
-            options: img.options
-          }))
-        )
-        console.log('Solar System animation images preloaded successfully')
-      }
+    if (animationImages && animationImages.length > 0) {
+      await preloadImages(
+        animationImages.map((img: AnimationImage | AnimationImageConfig) => ({
+          src: img.id,
+          options: img.options
+        }))
+      )
+      console.log(`${selectedAnimation.value} animation images preloaded successfully`)
     }
   } catch (error) {
-    console.warn('Failed to preload some animation images:', error)
+    console.warn('Failed to preload animation images:', error)
   }
 })
 
@@ -210,6 +166,23 @@ onMounted(() => {
   // Trigger haptic feedback when overlay appears
   if ('vibrate' in navigator) {
     navigator.vibrate([100, 50, 100, 50, 200])
+  }
+})
+
+// Cleanup on unmount
+onBeforeUnmount(() => {
+  // Ensure animation is properly cleaned up
+  if (animationRef.value) {
+    if (typeof animationRef.value.cleanup === 'function') {
+      animationRef.value.cleanup()
+    }
+    if (animationRef.value.audio) {
+      animationRef.value.audio.pause()
+      animationRef.value.audio.currentTime = 0
+    }
+    if (typeof animationRef.value.stopAnimation === 'function') {
+      animationRef.value.stopAnimation()
+    }
   }
 })
 </script>
@@ -273,17 +246,18 @@ onMounted(() => {
   }
 
   &__close-button {
-    position: fixed;
-    top: 2rem;
-    right: 2rem;
+    position: fixed !important;
+    top: var(--space);
+    font-size: 1.5em;
+    right: var(--space);
     z-index: 3000; // Higher than any animation elements
     pointer-events: auto !important; // Ensure it's clickable
-    
+
     // Add background for better visibility
     background: rgba(0, 0, 0, 0.5);
     border-radius: 50%;
     backdrop-filter: blur(10px);
-    
+
     &:hover {
       background: rgba(0, 0, 0, 0.7);
     }
