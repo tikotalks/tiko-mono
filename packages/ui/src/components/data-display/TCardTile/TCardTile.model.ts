@@ -44,6 +44,7 @@ export interface TCardTileProps {
   card: TCardTile;
   showImage?: boolean;
   showTitle?: boolean;
+  showStatus?: boolean;
   editMode?: boolean;
   isEmpty?: boolean;
   hasChildren?: boolean;

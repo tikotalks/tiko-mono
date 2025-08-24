@@ -8,6 +8,7 @@ import type { AuthUser, AuthSession } from '../services/auth.service'
 export interface UserProfileSettings {
   theme?: 'light' | 'dark' | 'auto'
   language?: string
+  deviceMotion?: boolean
   [key: string]: any // Allow app-specific settings
 }
 

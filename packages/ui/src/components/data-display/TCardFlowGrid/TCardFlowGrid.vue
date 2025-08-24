@@ -14,6 +14,7 @@
         :card="card"
         :show-image="true"
         :show-title="true"
+        :show-status="showStatus"
         :edit-mode="editMode"
         :is-empty="false"
         :selection-mode="selectionMode"
@@ -51,6 +52,7 @@ export interface TCardFlowGridProps {
   maxTileSize?: number
   gap?: number
   centerItems?: boolean
+  showStatus?: boolean
   getContextMenu?: (card: CardTileType, index: number) => MenuItem[]
 }
 
@@ -62,7 +64,8 @@ const props = withDefaults(defineProps<TCardFlowGridProps>(), {
   minTileSize: 120,
   maxTileSize: 300,
   gap: 16,
-  centerItems: true
+  centerItems: true,
+  showStatus: true
 })
 
 const emit = defineEmits<{

@@ -4,7 +4,7 @@
     <div :class="bemm('items')" ref="itemsContainer">
       <TransitionGroup name="order-item">
         <div v-for="(item, index) in items" :key="item.id" :class="bemm('item')" :style="{ '--index': index }">
-          <div :class="bemm('item-number')">{{ index + 1 }}</div>
+          <!-- <div :class="bemm('item-number')">{{ index + 1 }}</div> -->
           <TCardTile :class="bemm('tile')" :card="item" :show-image="true" :show-title="!item.image" :edit-mode="false" />
         </div>
       </TransitionGroup>

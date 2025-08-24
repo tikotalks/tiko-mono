@@ -13,6 +13,7 @@
         :max-tile-size="400"
         :gap="16"
         :center-items="true"
+        :show-status="false"
         :get-context-menu="props.editMode ? getItemContextMenu : undefined"
         @card-click="handleCardClick"
       />

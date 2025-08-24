@@ -32,7 +32,7 @@
           <TIcon name="plus" size="large" />
         </div>
         <div v-else :class="bemm('container')">
-          <div :class="bemm('status')" v-if="isPublic || isCurated">
+          <div :class="bemm('status')" v-if="showStatus && (isPublic || isCurated)">
             <TIcon v-if="isCurated" :name="Icons.STAR_M" :tooltip="t('common.curated')"></TIcon>
             <TIcon v-else-if="isPublic" :name="Icons.ACCESSIBILITY_PERSON" :tooltip="t('common.public')"></TIcon>
           </div>
@@ -118,6 +118,7 @@ const DRAG_THRESHOLD = 10; // pixels of movement to cancel long press
 // Computed properties for display flags
 const displayImage = computed(() => props.showImage !== false);
 const displayTitle = computed(() => props.showTitle !== false);
+const showStatus = computed(() => props.showStatus !== false);
 
 // Computed property for context menu position based on grid position
 const contextMenuPosition = computed(() => {

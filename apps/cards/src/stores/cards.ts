@@ -13,6 +13,7 @@ export interface YesNoSettings {
   showCuratedItems: boolean
   showHiddenItems: boolean // Show hidden items with opacity
   hiddenItems: string[] // Array of item IDs that user has hidden
+  showHints: boolean
 }
 
 interface CardCacheEntry {
@@ -41,7 +42,8 @@ export const useCardStore = defineStore('cards', () => {
     hapticFeedback: true,
     showCuratedItems: true,
     showHiddenItems: false,
-    hiddenItems: []
+    hiddenItems: [],
+    showHints: false
   }
 
   // Getters
