@@ -127,7 +127,7 @@ const loadImages = async () => {
   try {
     // Load background
     try {
-      const bgUrl = await resolveImageUrl(spaceBackgroundId, { media: 'assets' })
+      const bgUrl = await resolveImageUrl(spaceBackgroundId, { media: 'public' })
       const bgImg = new Image()
       bgImg.src = bgUrl
       await new Promise((resolve, reject) => {
@@ -150,7 +150,7 @@ const loadImages = async () => {
     loadedPlanetImages = await Promise.all(
       planets.map(async (planet) => {
         try {
-          const url = await resolveImageUrl(planet.assetId, { media: 'assets' })
+          const url = await resolveImageUrl(planet.assetId, { media: 'public' })
           const img = new Image()
           img.src = url
           
@@ -186,6 +186,10 @@ const animate = (ctx: CanvasRenderingContext2D, width: number, height: number, c
   
   // Clear canvas
   ctx.clearRect(0, 0, width, height)
+  
+  // Debug: Draw a test rectangle to ensure canvas is working
+  ctx.fillStyle = 'purple'
+  ctx.fillRect(10, 10, 100, 100)
   
   // Draw background
   if (backgroundImage?.loaded) {
@@ -278,12 +282,12 @@ const startAnimation = async () => {
   phase.value = 'entering'
   animationStartTime = performance.now()
   
-  // Play space ambiance sound
-  playSound({
-    id: SOUNDS.AMBIENT,
-    volume: 0.3,
-    loop: true
-  })
+  // Play rocket sound for space ambiance (no ambient sound available)
+  // Commented out for now as there's no loop support
+  // playSound({
+  //   id: SOUNDS.ROCKET,
+  //   volume: 0.3
+  // })
   
   // Initialize canvas animation
   if (manualCanvas.value && !canvasAnimation) {
@@ -344,10 +348,13 @@ onMounted(async () => {
   console.log('[SolarSystemAnimation] Component mounted')
   
   // Load all images first
+  console.log('[SolarSystemAnimation] Starting to load images...')
   await loadImages()
+  console.log('[SolarSystemAnimation] Images loaded:', imagesLoaded.value, '/', totalImages.value)
   
   // Auto-start animation
   setTimeout(() => {
+    console.log('[SolarSystemAnimation] Auto-starting animation...')
     startAnimation()
   }, 500)
 })
@@ -385,17 +392,17 @@ import type { AnimationImageConfig } from './types'
 
 // Export animation images for preloading
 export const animationImages: AnimationImageConfig[] = [
-  { id: '07fbdb40-b767-4137-a29b-404467c10af8', options: { media: 'assets' } }, // Space background video
-  { id: 'fac2efd0-d918-47ae-bbb5-a395a728707e', options: { media: 'assets' } }, // Sun
-  { id: '0102496e-6465-400f-8d26-9fdf3460da0c', options: { media: 'assets' } }, // Mercury
-  { id: '12346ef6-21ac-40f0-8254-0de41281eb27', options: { media: 'assets' } }, // Venus
-  { id: '14232bae-ceb6-4878-91e0-1c61ee46587c', options: { media: 'assets' } }, // Earth
-  { id: '1b0b2153-1f2e-4a1e-a984-7e436de8a81a', options: { media: 'assets' } }, // Mars
-  { id: '906d3fba-1f0c-470c-acbb-64f45766150b', options: { media: 'assets' } }, // Jupiter
-  { id: '6dbfdb41-ab1b-4f02-bdab-9bdc9bed1a4e', options: { media: 'assets' } }, // Saturn
-  { id: '4d3ae6ed-039b-4377-b63f-20e4ab05d5f0', options: { media: 'assets' } }, // Uranus
-  { id: 'b28a568d-612c-447b-8119-b98c37fe3619', options: { media: 'assets' } }, // Neptune
-  { id: '226ca7a6-f1af-49cc-b1f1-e97765c83f94', options: { media: 'assets' } }  // Pluto
+  { id: '07fbdb40-b767-4137-a29b-404467c10af8', options: { media: 'public' } }, // Space background video
+  { id: 'fac2efd0-d918-47ae-bbb5-a395a728707e', options: { media: 'public' } }, // Sun
+  { id: '0102496e-6465-400f-8d26-9fdf3460da0c', options: { media: 'public' } }, // Mercury
+  { id: '12346ef6-21ac-40f0-8254-0de41281eb27', options: { media: 'public' } }, // Venus
+  { id: '14232bae-ceb6-4878-91e0-1c61ee46587c', options: { media: 'public' } }, // Earth
+  { id: '1b0b2153-1f2e-4a1e-a984-7e436de8a81a', options: { media: 'public' } }, // Mars
+  { id: '906d3fba-1f0c-470c-acbb-64f45766150b', options: { media: 'public' } }, // Jupiter
+  { id: '6dbfdb41-ab1b-4f02-bdab-9bdc9bed1a4e', options: { media: 'public' } }, // Saturn
+  { id: '4d3ae6ed-039b-4377-b63f-20e4ab05d5f0', options: { media: 'public' } }, // Uranus
+  { id: 'b28a568d-612c-447b-8119-b98c37fe3619', options: { media: 'public' } }, // Neptune
+  { id: '226ca7a6-f1af-49cc-b1f1-e97765c83f94', options: { media: 'public' } }  // Pluto
 ]
 </script>
 
