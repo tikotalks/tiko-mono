@@ -56,14 +56,6 @@
         :class="bemm('checkbox')"
       />
     </div>
-
-    <div :class="bemm('group')">
-      <TInputCheckbox
-        v-model="localSettings.showHints"
-        :label="t('cards.showHints')"
-        :class="bemm('checkbox')"
-      />
-    </div>
   </div>
 </template>
 
@@ -79,7 +71,6 @@ interface YesNoSettings {
   hapticFeedback: boolean
   showCuratedItems: boolean
   showHiddenItems: boolean
-  showHints: boolean
 }
 
 interface Props {

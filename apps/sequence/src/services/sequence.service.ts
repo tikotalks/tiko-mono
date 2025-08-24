@@ -44,7 +44,10 @@ export const sequenceService = {
         parent_id: i.parent_id,
         content: i.content,
         base_locale: i.base_locale,
-        effective_locale: i.effective_locale
+        effective_locale: i.effective_locale,
+        is_public: i.is_public,
+        is_curated: i.is_curated,
+        user_id: i.user_id
       })));
 
       return items.map(item => {
@@ -103,7 +106,10 @@ export const sequenceService = {
           title: result.title,
           speech: result.speech,
           base_locale: result.base_locale,
-          effective_locale: result.effective_locale
+          effective_locale: result.effective_locale,
+          isPublic: result.isPublic,
+          isCurated: result.isCurated,
+          ownerId: result.ownerId
         });
 
         return result;

@@ -32,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch, nextTick, ref } from 'vue'
+import { computed, watch, nextTick, ref, onUnmounted } from 'vue'
 import { useBemm } from 'bemm'
 import { useI18n } from '@tiko/core';
 import { TCardTile, TButton, TCardFlowGrid } from '@tiko/ui'
@@ -61,6 +61,11 @@ const { playSound } = usePlaySound()
 // State for error animation
 const wrongItemId = ref<string | null>(null)
 
+// State for hint animation
+const hintTimerRef = ref<number | null>(null)
+const showHintAnimation = ref(false)
+const lastActionTime = ref(Date.now())
+
 // Computed properties
 const playState = computed(() => {
   const state = sequenceStore.currentPlayState
@@ -71,12 +76,15 @@ const visibleItems = computed(() => {
   // Return all shuffled items with their custom state
   const items = playState.value.shuffledItems.map(item => {
     const isItemSelected = sequenceStore.currentPlayState.selectedItems.some(s => s.id === item.id)
+    const isNext = sequenceStore.isItemNext(item.id)
     let customState = undefined
 
     if (isItemSelected) {
       customState = 'sequence-selected'
     } else if (wrongItemId.value === item.id) {
       customState = 'sequence-wrong'
+    } else if (isNext && showHints.value && showHintAnimation.value) {
+      customState = 'sequence-hint'
     }
 
     return {
@@ -116,12 +124,50 @@ const isItemNext = (itemId: string) => {
   return sequenceStore.isItemNext(itemId)
 }
 
+// Hint timer management
+const resetHintTimer = () => {
+  if (hintTimerRef.value) {
+    clearTimeout(hintTimerRef.value)
+    hintTimerRef.value = null
+  }
+  showHintAnimation.value = false
+  lastActionTime.value = Date.now()
+}
+
+const startHintTimer = () => {
+  if (!showHints.value || playState.value.isComplete) return
+  
+  resetHintTimer()
+  
+  // Schedule hint every 5 seconds
+  const scheduleHint = () => {
+    hintTimerRef.value = window.setTimeout(() => {
+      if (!showHints.value || playState.value.isComplete) return
+      
+      showHintAnimation.value = true
+      
+      // Hide hint after 1 second (bump animation duration)
+      setTimeout(() => {
+        showHintAnimation.value = false
+        // Recursively schedule next hint
+        scheduleHint()
+      }, 1000)
+    }, 5000) // 5 seconds between hints
+  }
+  
+  // Start the first hint
+  scheduleHint()
+}
+
 // Handle card click from TCardGrid
 const handleCardClick = async (card: CardTileType, index: number) => {
   // In edit mode, don't play the game
   if (props.editMode) {
     return
   }
+
+  // Reset hint timer on any interaction
+  resetHintTimer()
 
   const isCorrect = await sequenceStore.selectItem(card.id)
 
@@ -168,6 +214,9 @@ const handleCardClick = async (card: CardTileType, index: number) => {
       }, 600)
     }
   }
+  
+  // Restart hint timer after action
+  startHintTimer()
 }
 
 // Context menu for editing items in play mode
@@ -203,8 +252,32 @@ watch(() => props.sequenceId, async (newId) => {
     console.log(`[SequencePlay] Starting play for sequence:`, newId)
     await sequenceStore.startPlay(newId)
     console.log(`[SequencePlay] Play started, current play state:`, sequenceStore.currentPlayState)
+    
+    // Start hint timer when play starts
+    startHintTimer()
   }
 }, { immediate: true })
+
+// Watch for showHints setting changes
+watch(showHints, (newValue) => {
+  if (newValue) {
+    startHintTimer()
+  } else {
+    resetHintTimer()
+  }
+})
+
+// Watch for game completion
+watch(() => playState.value.isComplete, (isComplete) => {
+  if (isComplete) {
+    resetHintTimer()
+  }
+})
+
+// Clean up on unmount
+onUnmounted(() => {
+  resetHintTimer()
+})
 </script>
 
 <style lang="scss">
@@ -234,6 +307,15 @@ watch(() => props.sequenceId, async (newId) => {
     .t-card-tile {
       background-color: rgba(255, 0, 0, 0.2) !important;
       border: 2px solid var(--color-error) !important;
+    }
+  }
+
+  // Style for hint animation with bump effect
+  .t-card-tile__wrapper--sequence-hint {
+    animation: bump-hint 1s ease-in-out !important;
+
+    .t-card-tile {
+      box-shadow: 0 0 20px rgba(var(--color-primary-rgb), 0.5) !important;
     }
   }
 
@@ -329,6 +411,21 @@ watch(() => props.sequenceId, async (newId) => {
   }
   90% {
     transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes bump-hint {
+  0%, 100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  75% {
+    transform: scale(1.05);
   }
 }
 </style>
