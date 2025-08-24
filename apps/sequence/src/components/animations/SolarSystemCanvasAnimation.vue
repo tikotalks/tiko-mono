@@ -38,21 +38,22 @@ const bemm = useBemm('solar-system-canvas-animation')
 const { resolveImageUrl } = useImageResolver()
 const { playSound } = usePlaySound()
 
-// Planet data with asset IDs (you'll need to replace these with actual asset IDs)
+// Planet data with asset IDs
 const planets = [
-  { name: 'Sun', assetId: 'REPLACE_SUN_ID', distance: 0, size: 200, orbitSpeed: 0 },
-  { name: 'Mercury', assetId: 'REPLACE_MERCURY_ID', distance: 400, size: 40, orbitSpeed: 4.74 },
-  { name: 'Venus', assetId: 'REPLACE_VENUS_ID', distance: 700, size: 80, orbitSpeed: 3.5 },
-  { name: 'Earth', assetId: 'REPLACE_EARTH_ID', distance: 1000, size: 85, orbitSpeed: 2.98 },
-  { name: 'Mars', assetId: 'REPLACE_MARS_ID', distance: 1500, size: 50, orbitSpeed: 2.41 },
-  { name: 'Jupiter', assetId: 'REPLACE_JUPITER_ID', distance: 2500, size: 180, orbitSpeed: 1.31 },
-  { name: 'Saturn', assetId: 'REPLACE_SATURN_ID', distance: 3500, size: 150, orbitSpeed: 0.97 },
-  { name: 'Uranus', assetId: 'REPLACE_URANUS_ID', distance: 4500, size: 100, orbitSpeed: 0.68 },
-  { name: 'Neptune', assetId: 'REPLACE_NEPTUNE_ID', distance: 5500, size: 95, orbitSpeed: 0.54 }
+  { name: 'Sun', assetId: 'fac2efd0-d918-47ae-bbb5-a395a728707e', distance: 0, size: 200, orbitSpeed: 0 },
+  { name: 'Mercury', assetId: '0102496e-6465-400f-8d26-9fdf3460da0c', distance: 400, size: 40, orbitSpeed: 4.74 },
+  { name: 'Venus', assetId: '12346ef6-21ac-40f0-8254-0de41281eb27', distance: 700, size: 80, orbitSpeed: 3.5 },
+  { name: 'Earth', assetId: '14232bae-ceb6-4878-91e0-1c61ee46587c', distance: 1000, size: 85, orbitSpeed: 2.98 },
+  { name: 'Mars', assetId: '1b0b2153-1f2e-4a1e-a984-7e436de8a81a', distance: 1500, size: 50, orbitSpeed: 2.41 },
+  { name: 'Jupiter', assetId: '906d3fba-1f0c-470c-acbb-64f45766150b', distance: 2500, size: 180, orbitSpeed: 1.31 },
+  { name: 'Saturn', assetId: '6dbfdb41-ab1b-4f02-bdab-9bdc9bed1a4e', distance: 3500, size: 150, orbitSpeed: 0.97 },
+  { name: 'Uranus', assetId: '4d3ae6ed-039b-4377-b63f-20e4ab05d5f0', distance: 4500, size: 100, orbitSpeed: 0.68 },
+  { name: 'Neptune', assetId: 'b28a568d-612c-447b-8119-b98c37fe3619', distance: 5500, size: 95, orbitSpeed: 0.54 },
+  { name: 'Pluto', assetId: '226ca7a6-f1af-49cc-b1f1-e97765c83f94', distance: 6500, size: 30, orbitSpeed: 0.47 }
 ]
 
-// Space background asset ID
-const spaceBackgroundId = 'REPLACE_SPACE_BG_ID' // Replace with actual asset ID
+// Space background video asset ID
+const spaceBackgroundId = '07fbdb40-b767-4137-a29b-404467c10af8'
 
 // Component state
 const containerRef = ref<HTMLElement>()
@@ -62,7 +63,7 @@ const animationState = ref<'idle' | 'playing' | 'complete'>('idle')
 const hideAnimation = ref(false)
 const showDebug = ref(false)
 const imagesLoaded = ref(0)
-const totalImages = ref(planets.length + 1) // All planets + background
+const totalImages = ref(11) // Sun + 9 planets + background
 
 // Canvas animation instance
 let canvasAnimation: CanvasAnimation | null = null
@@ -72,7 +73,7 @@ let animationCanvas: HTMLCanvasElement | null = null
 // Animation state
 const cameraZ = ref(-500) // Start position before the sun
 const cameraSpeed = ref(20) // Speed of camera movement
-const maxCameraZ = 6000 // End position past Neptune
+const maxCameraZ = 7000 // End position past Pluto
 let animationStartTime = 0
 let loadedPlanetImages: (AnimationImage | null)[] = []
 let backgroundImage: AnimationImage | null = null
@@ -384,16 +385,17 @@ import type { AnimationImageConfig } from './types'
 
 // Export animation images for preloading
 export const animationImages: AnimationImageConfig[] = [
-  { id: 'REPLACE_SPACE_BG_ID' },
-  { id: 'REPLACE_SUN_ID' },
-  { id: 'REPLACE_MERCURY_ID' },
-  { id: 'REPLACE_VENUS_ID' },
-  { id: 'REPLACE_EARTH_ID' },
-  { id: 'REPLACE_MARS_ID' },
-  { id: 'REPLACE_JUPITER_ID' },
-  { id: 'REPLACE_SATURN_ID' },
-  { id: 'REPLACE_URANUS_ID' },
-  { id: 'REPLACE_NEPTUNE_ID' }
+  { id: '07fbdb40-b767-4137-a29b-404467c10af8' }, // Space background video
+  { id: 'fac2efd0-d918-47ae-bbb5-a395a728707e' }, // Sun
+  { id: '0102496e-6465-400f-8d26-9fdf3460da0c' }, // Mercury
+  { id: '12346ef6-21ac-40f0-8254-0de41281eb27' }, // Venus
+  { id: '14232bae-ceb6-4878-91e0-1c61ee46587c' }, // Earth
+  { id: '1b0b2153-1f2e-4a1e-a984-7e436de8a81a' }, // Mars
+  { id: '906d3fba-1f0c-470c-acbb-64f45766150b' }, // Jupiter
+  { id: '6dbfdb41-ab1b-4f02-bdab-9bdc9bed1a4e' }, // Saturn
+  { id: '4d3ae6ed-039b-4377-b63f-20e4ab05d5f0' }, // Uranus
+  { id: 'b28a568d-612c-447b-8119-b98c37fe3619' }, // Neptune
+  { id: '226ca7a6-f1af-49cc-b1f1-e97765c83f94' }  // Pluto
 ]
 </script>
 
