@@ -1069,6 +1069,9 @@ watch(() => props.cards, (newCards) => {
     top: 0;
     left: 0;
     transition: transform 0.3s ease;
+    
+    // Ensure proper stacking context
+    position: relative;
 
     &--stacked {
       transform: rotate(var(--rotation, 0deg)) translate(var(--offset-x, 0px), var(--offset-y, 0px));
@@ -1084,9 +1087,6 @@ watch(() => props.cards, (newCards) => {
     &:hover {
       z-index: 2;
     }
-
-    // Ensure proper stacking context
-    position: relative;
     
     // When context menu is open, increase z-index
     &:has(.context-panel--active) {
