@@ -1757,7 +1757,7 @@ watch(() => currentLocale.value, async (newLocale, oldLocale) => {
 
 // Initialize
 onMounted(async () => {
-  console.log('[SequenceView] Component mounted, loading sequence...');
+  console.log('[SequenceView] Component mounted, loading root sequences...');
   try {
     // Initialize parent mode
     if (parentMode.initialize) {
