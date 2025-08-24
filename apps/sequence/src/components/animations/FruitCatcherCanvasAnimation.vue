@@ -16,13 +16,13 @@
           cy="50" 
           r="45" 
           fill="none" 
-          stroke="white" 
+          :stroke="timeRemaining <= 5 ? '#ff4444' : 'white'" 
           stroke-width="5"
           stroke-linecap="round"
           :stroke-dasharray="`${2 * Math.PI * 45}`"
           :stroke-dashoffset="`${2 * Math.PI * 45 * (1 - timeRemaining / initialTime)}`"
           transform="rotate(-90 50 50)"
-          :class="bemm('timer-progress')"
+          :class="[bemm('timer-progress'), { [bemm('timer-progress--warning')]: timeRemaining <= 5 }]"
         />
       </svg>
       <div :class="bemm('timer-content')">
@@ -73,9 +73,10 @@ const explosionColors = ['#ff6b6b', '#ffd93d', '#6bcf7f', '#4ecdc4', '#a8e6cf', 
 
 // Sound effects
 const soundEffects = {
-  CATCH: 'catch-sound-id', // Replace with actual sound ID
+  CATCH: '9b08235d-dc0e-4cb2-9e11-d06d53e9a7f8', // Fruit explosion sound
   MISS: 'miss-sound-id', // Replace with actual sound ID
-  BACKGROUND: 'background-music-id' // Replace with actual sound ID
+  BACKGROUND: 'background-music-id', // Replace with actual sound ID
+  BEEP: 'c9a2b696-e9ad-4cd0-b8f5-f518a56bee2e' // Timer warning beep
 }
 
 // Component state
@@ -124,6 +125,7 @@ let gameLoop: number | null = null
 let lastTimeUpdate = 0
 let spawnInterval: number | null = null
 let nextSpawnTime = 0
+let lastBeepTime = 0
 
 // Debug info
 const canvasSize = computed(() => {
@@ -192,8 +194,8 @@ const handlePointerDown = (event: MouseEvent | TouchEvent) => {
       // Remove fruit object
       canvasAnimation.removeObject(fruit.id)
       
-      // Play catch sound (commented out for now)
-      // playSound({ id: soundEffects.CATCH, volume: 0.3 })
+      // Play catch sound
+      playSound({ id: soundEffects.CATCH, volume: 0.3 })
       
       break // Only catch one fruit per click
     }
@@ -280,19 +282,27 @@ const createExplosion = (x: number, y: number, fruitType: number) => {
 
 // Calculate spawn rate based on game duration (fruits spawn faster over time)
 const getSpawnDelay = () => {
-  const baseDelay = 1500 // Start with 1.5 seconds between fruits
-  const minDelay = 200 // Minimum 0.2 seconds between fruits
-  const difficultyRamp = Math.floor(gameDuration.value / 20) // Increase difficulty every 20 seconds
-  const delay = Math.max(minDelay, baseDelay - (difficultyRamp * 200))
+  const baseDelay = 1800 // Start with 1.8 seconds between fruits
+  const minDelay = 600 // Minimum 0.6 seconds between fruits (cap it higher)
+  const difficultyRamp = Math.floor(gameDuration.value / 10) // Increase difficulty every 10 seconds
+  
+  // After 30 seconds, slow down the spawn rate increase
+  if (gameDuration.value > 30) {
+    const extraTime = gameDuration.value - 30
+    const slowRamp = Math.floor(extraTime / 20) // Much slower increase after 30s
+    return Math.max(minDelay, baseDelay - (3 * 150) - (slowRamp * 50))
+  }
+  
+  const delay = Math.max(minDelay, baseDelay - (difficultyRamp * 150))
   return delay
 }
 
 // Calculate fruit speed based on game duration
 const getFruitSpeed = () => {
   const baseSpeed = 1.2 // Much slower start speed
-  const maxSpeed = 5
-  const difficultyRamp = gameDuration.value / 25 // Increase speed every 25 seconds
-  return Math.min(maxSpeed, baseSpeed + (difficultyRamp * 0.8))
+  const maxSpeed = 4.5 // Lower max speed
+  const difficultyRamp = gameDuration.value / 10 // Increase speed every 10 seconds
+  return Math.min(maxSpeed, baseSpeed + (difficultyRamp * 0.3))
 }
 
 const spawnFruit = () => {
@@ -363,6 +373,15 @@ const updateGame = (currentTime: number) => {
     timeRemaining.value -= 1
     gameDuration.value += 1
     lastTimeUpdate = currentTime
+    
+    // Play beep sound when 5 seconds or less remaining
+    if (timeRemaining.value <= 5 && timeRemaining.value > 0) {
+      if (currentTime - lastBeepTime > 1000) {
+        // Play beep sound every second
+        playSound({ id: soundEffects.BEEP, volume: 0.5 })
+        lastBeepTime = currentTime
+      }
+    }
     
     // Check if time ran out
     if (timeRemaining.value <= 0) {
@@ -449,12 +468,10 @@ const startAnimation = async () => {
   // Set z-index to be behind everything
   canvasAnimation.setZIndex('bg-video', -10)
   
-  // Spawn a few initial fruits to get started
+  // Spawn one initial fruit to get started
   setTimeout(() => {
     if (animationState.value === 'playing') {
       spawnFruit()
-      setTimeout(() => spawnFruit(), 300)
-      setTimeout(() => spawnFruit(), 600)
     }
   }, 100)
   fallingFruits.length = 0
@@ -650,6 +667,10 @@ export const animationImages = [
 
   &__timer-progress {
     transition: stroke-dashoffset 0.5s linear;
+    
+    &--warning {
+      animation: pulse 1s ease-in-out infinite;
+    }
   }
 
   &__timer-content {
@@ -712,6 +733,17 @@ export const animationImages = [
         background: #444;
       }
     }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    stroke-width: 5;
+  }
+  50% {
+    opacity: 0.6;
+    stroke-width: 7;
   }
 }
 </style>

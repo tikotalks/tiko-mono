@@ -274,9 +274,19 @@ onMounted(() => {
 
   &__close-button {
     position: fixed;
-    top: 1rem;
-    right: 1rem;
-    z-index: 2010;
+    top: 2rem;
+    right: 2rem;
+    z-index: 3000; // Higher than any animation elements
+    pointer-events: auto !important; // Ensure it's clickable
+    
+    // Add background for better visibility
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    backdrop-filter: blur(10px);
+    
+    &:hover {
+      background: rgba(0, 0, 0, 0.7);
+    }
   }
 }
 
