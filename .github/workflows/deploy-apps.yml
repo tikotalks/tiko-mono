@@ -180,6 +180,7 @@ jobs:
     needs: check-triggers
     if: needs.check-triggers.outputs.build-timer == 'true' || needs.check-triggers.outputs.build-yes-no == 'true' || needs.check-triggers.outputs.build-cards == 'true' || needs.check-triggers.outputs.build-sequence == 'true' || needs.check-triggers.outputs.build-radio == 'true' || needs.check-triggers.outputs.build-todo == 'true' || needs.check-triggers.outputs.build-type == 'true'
     uses: ./.github/workflows/reusable-check-environment.yml
+    secrets: inherit
 
   generate-translations:
     needs: [check-triggers, check-environment]
