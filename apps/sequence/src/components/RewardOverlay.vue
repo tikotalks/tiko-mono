@@ -102,8 +102,8 @@ const { preloadImages } = useImageResolver()
 // Animation types
 const animations = ['rocket', 'alien', 'reef', 'deepsea', 'fruitcatcher', 'solarsystem'] as const
 type AnimationType = typeof animations[number]
-// Select random animation
-const selectedAnimation = ref<AnimationType>(animations[Math.floor(Math.random() * animations.length)])
+// Always use solar system animation for testing
+const selectedAnimation = ref<AnimationType>('solarsystem')
 
 // State
 const animationCompleted = ref(false)

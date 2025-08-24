@@ -61,7 +61,7 @@ const manualCanvas = ref<HTMLCanvasElement>()
 const phase = ref<'entering' | 'flying' | 'complete'>('entering')
 const animationState = ref<'idle' | 'playing' | 'complete'>('idle')
 const hideAnimation = ref(false)
-const showDebug = ref(false)
+const showDebug = ref(true) // Enable debug for testing
 const imagesLoaded = ref(0)
 const totalImages = ref(11) // Sun + 9 planets + background
 
@@ -127,7 +127,7 @@ const loadImages = async () => {
   try {
     // Load background
     try {
-      const bgUrl = await resolveImageUrl(spaceBackgroundId)
+      const bgUrl = await resolveImageUrl(spaceBackgroundId, { media: 'assets' })
       const bgImg = new Image()
       bgImg.src = bgUrl
       await new Promise((resolve, reject) => {
@@ -150,7 +150,7 @@ const loadImages = async () => {
     loadedPlanetImages = await Promise.all(
       planets.map(async (planet) => {
         try {
-          const url = await resolveImageUrl(planet.assetId)
+          const url = await resolveImageUrl(planet.assetId, { media: 'assets' })
           const img = new Image()
           img.src = url
           
@@ -385,17 +385,17 @@ import type { AnimationImageConfig } from './types'
 
 // Export animation images for preloading
 export const animationImages: AnimationImageConfig[] = [
-  { id: '07fbdb40-b767-4137-a29b-404467c10af8' }, // Space background video
-  { id: 'fac2efd0-d918-47ae-bbb5-a395a728707e' }, // Sun
-  { id: '0102496e-6465-400f-8d26-9fdf3460da0c' }, // Mercury
-  { id: '12346ef6-21ac-40f0-8254-0de41281eb27' }, // Venus
-  { id: '14232bae-ceb6-4878-91e0-1c61ee46587c' }, // Earth
-  { id: '1b0b2153-1f2e-4a1e-a984-7e436de8a81a' }, // Mars
-  { id: '906d3fba-1f0c-470c-acbb-64f45766150b' }, // Jupiter
-  { id: '6dbfdb41-ab1b-4f02-bdab-9bdc9bed1a4e' }, // Saturn
-  { id: '4d3ae6ed-039b-4377-b63f-20e4ab05d5f0' }, // Uranus
-  { id: 'b28a568d-612c-447b-8119-b98c37fe3619' }, // Neptune
-  { id: '226ca7a6-f1af-49cc-b1f1-e97765c83f94' }  // Pluto
+  { id: '07fbdb40-b767-4137-a29b-404467c10af8', options: { media: 'assets' } }, // Space background video
+  { id: 'fac2efd0-d918-47ae-bbb5-a395a728707e', options: { media: 'assets' } }, // Sun
+  { id: '0102496e-6465-400f-8d26-9fdf3460da0c', options: { media: 'assets' } }, // Mercury
+  { id: '12346ef6-21ac-40f0-8254-0de41281eb27', options: { media: 'assets' } }, // Venus
+  { id: '14232bae-ceb6-4878-91e0-1c61ee46587c', options: { media: 'assets' } }, // Earth
+  { id: '1b0b2153-1f2e-4a1e-a984-7e436de8a81a', options: { media: 'assets' } }, // Mars
+  { id: '906d3fba-1f0c-470c-acbb-64f45766150b', options: { media: 'assets' } }, // Jupiter
+  { id: '6dbfdb41-ab1b-4f02-bdab-9bdc9bed1a4e', options: { media: 'assets' } }, // Saturn
+  { id: '4d3ae6ed-039b-4377-b63f-20e4ab05d5f0', options: { media: 'assets' } }, // Uranus
+  { id: 'b28a568d-612c-447b-8119-b98c37fe3619', options: { media: 'assets' } }, // Neptune
+  { id: '226ca7a6-f1af-49cc-b1f1-e97765c83f94', options: { media: 'assets' } }  // Pluto
 ]
 </script>
 
