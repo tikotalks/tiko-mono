@@ -226,7 +226,7 @@ const memberSinceDate = computed(() => {
 
 const currentLanguageDisplay = computed(() => {
   const userLanguage = props.user.user_metadata?.settings?.language || locale.value
-  const localeInfo = availableLocales?.value?.find(l => l.code === userLanguage)
+  const localeInfo = availableLocales?.find(l => l.code === userLanguage)
   return localeInfo ? localeInfo.name : userLanguage
 })
 
