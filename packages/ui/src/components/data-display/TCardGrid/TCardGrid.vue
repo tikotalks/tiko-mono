@@ -345,7 +345,7 @@ const createEmptyCard = (index: number): TCardTile => ({
 // Track cards at each position for overlap detection
 const positionMap = computed(() => {
   const map = new Map<number, TCardTile[]>();
-  
+
   props.cards.forEach(card => {
     const cardIndex = card.index ?? props.cards.indexOf(card);
     if (!map.has(cardIndex)) {
@@ -353,7 +353,7 @@ const positionMap = computed(() => {
     }
     map.get(cardIndex)!.push(card);
   });
-  
+
   return map;
 });
 
@@ -1069,14 +1069,14 @@ watch(() => props.cards, (newCards) => {
     top: 0;
     left: 0;
     transition: transform 0.3s ease;
-    
+
     // Ensure proper stacking context
     position: relative;
 
     &--stacked {
       transform: rotate(var(--rotation, 0deg)) translate(var(--offset-x, 0px), var(--offset-y, 0px));
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-      
+
       &:hover {
         transform: rotate(var(--rotation, 0deg)) translate(var(--offset-x, 0px), var(--offset-y, 0px)) scale(1.05);
         z-index: calc(var(--stack-count, 1) + 10) !important;
@@ -1087,7 +1087,7 @@ watch(() => props.cards, (newCards) => {
     &:hover {
       z-index: 2;
     }
-    
+
     // When context menu is open, increase z-index
     &:has(.context-panel--active) {
       z-index: 1000 !important;
