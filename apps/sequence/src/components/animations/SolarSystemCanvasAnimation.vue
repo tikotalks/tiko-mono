@@ -1,18 +1,5 @@
 <template>
   <div ref="containerRef" :class="bemm()" v-if="!hideAnimation">
-    <!-- Manual Canvas -->
-    <canvas 
-      ref="manualCanvas"
-      :style="{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        zIndex: 1000,
-        background: 'rgba(255, 0, 0, 0.1)' // Red tint to see if canvas is visible
-      }"
-    ></canvas>
     
     <!-- Radial gradient overlay -->
     <div :class="bemm('gradient-overlay')"></div>
@@ -46,18 +33,18 @@ const bemm = useBemm('solar-system-canvas-animation')
 const { resolveImageUrl } = useImageResolver()
 const { playSound } = usePlaySound()
 
-// Planet data with asset IDs
+// Planet data with asset IDs - increased sizes for better visibility
 const planets = [
-  { name: 'Sun', assetId: 'fac2efd0-d918-47ae-bbb5-a395a728707e', distance: 0, size: 200, orbitSpeed: 0 },
-  { name: 'Mercury', assetId: '0102496e-6465-400f-8d26-9fdf3460da0c', distance: 400, size: 40, orbitSpeed: 4.74 },
-  { name: 'Venus', assetId: '12346ef6-21ac-40f0-8254-0de41281eb27', distance: 700, size: 80, orbitSpeed: 3.5 },
-  { name: 'Earth', assetId: '14232bae-ceb6-4878-91e0-1c61ee46587c', distance: 1000, size: 85, orbitSpeed: 2.98 },
-  { name: 'Mars', assetId: '1b0b2153-1f2e-4a1e-a984-7e436de8a81a', distance: 1500, size: 50, orbitSpeed: 2.41 },
-  { name: 'Jupiter', assetId: '906d3fba-1f0c-470c-acbb-64f45766150b', distance: 2500, size: 180, orbitSpeed: 1.31 },
-  { name: 'Saturn', assetId: '6dbfdb41-ab1b-4f02-bdab-9bdc9bed1a4e', distance: 3500, size: 150, orbitSpeed: 0.97 },
-  { name: 'Uranus', assetId: '4d3ae6ed-039b-4377-b63f-20e4ab05d5f0', distance: 4500, size: 100, orbitSpeed: 0.68 },
-  { name: 'Neptune', assetId: 'b28a568d-612c-447b-8119-b98c37fe3619', distance: 5500, size: 95, orbitSpeed: 0.54 },
-  { name: 'Pluto', assetId: '226ca7a6-f1af-49cc-b1f1-e97765c83f94', distance: 6500, size: 30, orbitSpeed: 0.47 }
+  { name: 'Sun', assetId: 'fac2efd0-d918-47ae-bbb5-a395a728707e', distance: 0, size: 400, orbitSpeed: 0 },
+  { name: 'Mercury', assetId: '0102496e-6465-400f-8d26-9fdf3460da0c', distance: 400, size: 80, orbitSpeed: 4.74 },
+  { name: 'Venus', assetId: '12346ef6-21ac-40f0-8254-0de41281eb27', distance: 700, size: 120, orbitSpeed: 3.5 },
+  { name: 'Earth', assetId: '14232bae-ceb6-4878-91e0-1c61ee46587c', distance: 1000, size: 130, orbitSpeed: 2.98 },
+  { name: 'Mars', assetId: '1b0b2153-1f2e-4a1e-a984-7e436de8a81a', distance: 1500, size: 100, orbitSpeed: 2.41 },
+  { name: 'Jupiter', assetId: '906d3fba-1f0c-470c-acbb-64f45766150b', distance: 2500, size: 300, orbitSpeed: 1.31 },
+  { name: 'Saturn', assetId: '6dbfdb41-ab1b-4f02-bdab-9bdc9bed1a4e', distance: 3500, size: 280, orbitSpeed: 0.97 },
+  { name: 'Uranus', assetId: '4d3ae6ed-039b-4377-b63f-20e4ab05d5f0', distance: 4500, size: 200, orbitSpeed: 0.68 },
+  { name: 'Neptune', assetId: 'b28a568d-612c-447b-8119-b98c37fe3619', distance: 5500, size: 190, orbitSpeed: 0.54 },
+  { name: 'Pluto', assetId: '226ca7a6-f1af-49cc-b1f1-e97765c83f94', distance: 6500, size: 60, orbitSpeed: 0.47 }
 ]
 
 // Space background video asset ID
@@ -65,7 +52,6 @@ const spaceBackgroundId = '07fbdb40-b767-4137-a29b-404467c10af8'
 
 // Component state
 const containerRef = ref<HTMLElement>()
-const manualCanvas = ref<HTMLCanvasElement>()
 const phase = ref<'entering' | 'flying' | 'complete'>('entering')
 const animationState = ref<'idle' | 'playing' | 'complete'>('idle')
 const hideAnimation = ref(false)
@@ -75,16 +61,16 @@ const totalImages = ref(11) // Sun + 9 planets + background
 
 // Canvas animation instance
 let canvasAnimation: CanvasAnimation | null = null
-let animationCtx: CanvasRenderingContext2D | null = null
-let animationCanvas: HTMLCanvasElement | null = null
 
 // Animation state
-const cameraZ = ref(-500) // Start position before the sun
-const cameraSpeed = ref(20) // Speed of camera movement
+const cameraZ = ref(-800) // Start position before the sun
+const cameraSpeed = ref(8) // Speed of camera movement (slower for better viewing)
 const maxCameraZ = 7000 // End position past Pluto
 let animationStartTime = 0
+let firstFrameTime = 0
 let loadedPlanetImages: (AnimationImage | null)[] = []
 let backgroundImage: AnimationImage | null = null
+let renderLoopStarted = false
 
 // Stars for background
 const stars: { x: number; y: number; z: number; size: number }[] = []
@@ -121,8 +107,12 @@ const initializeStars = (width: number, height: number) => {
 }
 
 // Project 3D coordinates to 2D screen
-const project3D = (x: number, y: number, z: number, cameraZ: number, fov: number = 800) => {
-  const scale = fov / (fov + z - cameraZ)
+const project3D = (x: number, y: number, z: number, cameraZ: number, fov: number = 1200) => {
+  const distance = z - cameraZ
+  if (distance <= 0) {
+    return { x: 0, y: 0, scale: 0 }
+  }
+  const scale = fov / distance
   return {
     x: x * scale,
     y: y * scale,
@@ -186,14 +176,27 @@ const loadImages = async () => {
   }
 }
 
-// Animation loop
-const animate = (ctx: CanvasRenderingContext2D, width: number, height: number, currentTime: number) => {
-  if (animationState.value !== 'playing') {
-    console.log('[SolarSystemAnimation] Animation not playing, state:', animationState.value)
+// Render loop
+const renderLoop = () => {
+  if (!canvasAnimation || animationState.value !== 'playing') {
+    if (animationState.value === 'playing') {
+      requestAnimationFrame(renderLoop)
+    }
     return
   }
 
-  const elapsed = currentTime - animationStartTime
+  const canvas = canvasAnimation.getCanvas()
+  const ctx = canvasAnimation.getContext()
+  const currentTime = performance.now()
+  
+  // Initialize first frame time
+  if (!firstFrameTime) {
+    firstFrameTime = currentTime
+  }
+  
+  const elapsed = currentTime - firstFrameTime
+  const width = canvas.width
+  const height = canvas.height
   
   // Clear canvas
   ctx.fillStyle = 'black'
@@ -252,26 +255,28 @@ const animate = (ctx: CanvasRenderingContext2D, width: number, height: number, c
     const planetImage = loadedPlanetImages[index]
     if (!planetImage?.loaded) return
     
-    // Calculate planet position
-    const orbitAngle = elapsed * 0.0001 * planet.orbitSpeed
-    const x = Math.cos(orbitAngle) * planet.distance * 0.3
-    const y = Math.sin(orbitAngle) * planet.distance * 0.1
+    // Position planets with slight offset for visual interest
+    const offsetAngle = index * 0.7 // Slight spiral effect
+    const x = Math.sin(offsetAngle) * 50 // Small horizontal offset
+    const y = Math.cos(offsetAngle) * 30 // Small vertical offset
     const z = planet.distance
     
     // Project to 2D
     const projected = project3D(x, y, z, cameraZ.value)
     
     // Only draw if in view and in front of camera
-    if (projected.scale > 0 && z > cameraZ.value - 1000) {
+    if (projected.scale > 0 && z > cameraZ.value - 500 && z < cameraZ.value + 2000) {
       const screenX = width / 2 + projected.x
       const screenY = height / 2 + projected.y
       const size = planet.size * projected.scale
       
-      // Fade out planets as they get too close
+      // Fade out planets as they get too close or too far
       const distanceFromCamera = z - cameraZ.value
       let alpha = 1
-      if (distanceFromCamera < 200) {
-        alpha = Math.max(0, distanceFromCamera / 200)
+      if (distanceFromCamera < 300) {
+        alpha = Math.max(0, distanceFromCamera / 300)
+      } else if (distanceFromCamera > 1500) {
+        alpha = Math.max(0, (2000 - distanceFromCamera) / 500)
       }
       
       ctx.globalAlpha = alpha
@@ -282,6 +287,13 @@ const animate = (ctx: CanvasRenderingContext2D, width: number, height: number, c
         size,
         size
       )
+      
+      // Debug: Draw planet name
+      if (showDebug.value) {
+        ctx.fillStyle = 'white'
+        ctx.font = '14px Arial'
+        ctx.fillText(planet.name, screenX - size / 2, screenY - size / 2 - 5)
+      }
     }
   })
   
@@ -290,6 +302,9 @@ const animate = (ctx: CanvasRenderingContext2D, width: number, height: number, c
   // Check if animation is complete
   if (cameraZ.value > maxCameraZ) {
     completeAnimation()
+  } else {
+    // Continue animation loop
+    requestAnimationFrame(renderLoop)
   }
 }
 
@@ -309,37 +324,10 @@ const startAnimation = async () => {
     media: 'assets'
   })
   
-  // Initialize canvas animation
-  if (manualCanvas.value && !canvasAnimation) {
-    console.log('[SolarSystemAnimation] Initializing canvas...')
-    animationCtx = manualCanvas.value.getContext('2d')
-    animationCanvas = manualCanvas.value
-    
-    if (animationCtx && animationCanvas) {
-      // Set canvas size
-      animationCanvas.width = window.innerWidth
-      animationCanvas.height = window.innerHeight
-      console.log('[SolarSystemAnimation] Canvas size:', animationCanvas.width, 'x', animationCanvas.height)
-      
-      // Initialize stars
-      initializeStars(animationCanvas.width, animationCanvas.height)
-      console.log('[SolarSystemAnimation] Stars initialized:', stars.length)
-      
-      // Draw initial frame to test
-      animationCtx.fillStyle = 'red'
-      animationCtx.fillRect(0, 0, animationCanvas.width, animationCanvas.height)
-      animationCtx.fillStyle = 'white'
-      animationCtx.font = '40px Arial'
-      animationCtx.fillText('SOLAR SYSTEM ANIMATION', 50, 100)
-      
-      canvasAnimation = new CanvasAnimation(animationCanvas, animate)
-      canvasAnimation.start()
-      console.log('[SolarSystemAnimation] Canvas animation started')
-    } else {
-      console.error('[SolarSystemAnimation] Failed to get canvas context')
-    }
-  } else {
-    console.log('[SolarSystemAnimation] Canvas not ready or animation already initialized')
+  // Start the render loop
+  if (!renderLoopStarted) {
+    renderLoopStarted = true
+    renderLoop()
   }
 }
 
@@ -359,28 +347,32 @@ const completeAnimation = () => {
     canvasAnimation.stop()
   }
   
-  // Fade out
-  let fadeOpacity = 1
-  const fadeInterval = setInterval(() => {
-    fadeOpacity -= 0.05
-    if (animationCanvas && animationCtx) {
-      animationCtx.clearRect(0, 0, animationCanvas.width, animationCanvas.height)
-      animationCtx.globalAlpha = fadeOpacity
-      // Redraw last frame with fade
-      animate(animationCtx, animationCanvas.width, animationCanvas.height, performance.now())
-    }
-    
-    if (fadeOpacity <= 0) {
-      clearInterval(fadeInterval)
-      hideAnimation.value = true
-      emit('completed')
-    }
-  }, 50)
+  // Simple fade out
+  setTimeout(() => {
+    hideAnimation.value = true
+    emit('completed')
+  }, 500)
 }
 
 // Initialize animation
 onMounted(async () => {
   console.log('[SolarSystemAnimation] Component mounted')
+  
+  if (!containerRef.value) {
+    console.error('[SolarSystemAnimation] Container ref not found')
+    return
+  }
+
+  // Create canvas animation instance
+  canvasAnimation = new CanvasAnimation({
+    container: containerRef.value,
+    fillViewport: true,
+    backgroundColor: '#000000'
+  })
+
+  // Initialize stars based on canvas size
+  const canvas = canvasAnimation.getCanvas()
+  initializeStars(canvas.width, canvas.height)
   
   // Load all images first
   console.log('[SolarSystemAnimation] Starting to load images...')
@@ -399,17 +391,19 @@ onUnmounted(() => {
   console.log('[SolarSystemAnimation] Component unmounting')
   
   if (canvasAnimation) {
-    canvasAnimation.stop()
+    canvasAnimation.destroy()
     canvasAnimation = null
   }
+  
+  animationState.value = 'complete'
+  renderLoopStarted = false
 })
 
 // Handle window resize
 const handleResize = () => {
-  if (animationCanvas && animationCtx) {
-    animationCanvas.width = window.innerWidth
-    animationCanvas.height = window.innerHeight
-    initializeStars(animationCanvas.width, animationCanvas.height)
+  if (canvasAnimation) {
+    const canvas = canvasAnimation.getCanvas()
+    initializeStars(canvas.width, canvas.height)
   }
 }
 
