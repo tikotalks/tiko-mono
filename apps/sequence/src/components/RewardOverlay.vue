@@ -102,7 +102,7 @@ const { preloadImages } = useImageResolver()
 // Animation types
 const animations = ['rocket', 'alien', 'reef', 'deepsea', 'fruitcatcher', 'solarsystem'] as const
 type AnimationType = typeof animations[number]
-// Randomly select animation
+// Select random animation
 const selectedAnimation = ref<AnimationType>(animations[Math.floor(Math.random() * animations.length)])
 
 // State

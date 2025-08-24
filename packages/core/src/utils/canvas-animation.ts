@@ -37,6 +37,7 @@ export interface AnimationObject {
   opacity: number
   visible: boolean
   debug?: boolean
+  zIndex?: number // Add z-index for layering
 }
 
 export interface AnimationStep {
@@ -266,7 +267,8 @@ export class CanvasAnimation {
       scaleY: 1,
       opacity: 1,
       visible: true,
-      debug: false
+      debug: false,
+      zIndex: 0
     }
 
     this.objects.set(id, obj)
@@ -291,7 +293,8 @@ export class CanvasAnimation {
       scaleY: 1,
       opacity: 1,
       visible: true,
-      debug: false
+      debug: false,
+      zIndex: 0
     }
 
     this.objects.set(id, obj)
@@ -324,6 +327,14 @@ export class CanvasAnimation {
   removeObject(id: string): void {
     this.objects.delete(id)
     this.animations.delete(id)
+  }
+
+  // Set z-index for an object
+  setZIndex(id: string, zIndex: number): void {
+    const obj = this.objects.get(id)
+    if (obj) {
+      obj.zIndex = zIndex
+    }
   }
 
   // Animation methods
@@ -561,8 +572,15 @@ export class CanvasAnimation {
     // Update animations
     this.updateAnimations(currentTime)
 
-    // Draw all objects
-    for (const obj of this.objects.values()) {
+    // Sort objects by z-index and draw them
+    const sortedObjects = Array.from(this.objects.values()).sort((a, b) => {
+      const aZ = a.zIndex ?? 0
+      const bZ = b.zIndex ?? 0
+      return aZ - bZ
+    })
+
+    // Draw all objects in z-index order
+    for (const obj of sortedObjects) {
       this.drawObject(obj)
     }
 
