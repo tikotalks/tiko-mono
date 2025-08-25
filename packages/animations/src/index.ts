@@ -35,6 +35,11 @@ export const animations: AnimationDefinition[] = [
     name: 'solarsystem',
     component: () => import('./animations/SolarSystemCanvasAnimation.vue'),
     displayName: 'Solar System'
+  },
+  {
+    name: 'seasons',
+    component: () => import('./animations/SeasonsAnimation.vue'),
+    displayName: 'Seasons'
   }
 ]
 
@@ -63,3 +68,4 @@ export const ReefCanvasAnimation = defineAsyncComponent(() => import('./animatio
 export const DeepSeaCanvasAnimation = defineAsyncComponent(() => import('./animations/DeepSeaCanvasAnimation.vue')) as Component
 export const FruitCatcherCanvasAnimation = defineAsyncComponent(() => import('./animations/FruitCatcherCanvasAnimation.vue')) as Component
 export const SolarSystemCanvasAnimation = defineAsyncComponent(() => import('./animations/SolarSystemCanvasAnimation.vue')) as Component
+export const SeasonsAnimation = defineAsyncComponent(() => import('./animations/SeasonsAnimation.vue')) as Component
