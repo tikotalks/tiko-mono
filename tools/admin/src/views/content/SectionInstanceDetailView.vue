@@ -73,12 +73,13 @@
             />
 
             <!-- Color Field -->
-            <TColorPickerPopup
-              v-else-if="field.field_type === 'color' || isColorField(field)"
-              v-model="fieldValues[field.field_key]"
-              :label="field.label"
-              :required="field.is_required"
-            />
+            <div v-else-if="field.field_type === 'color' || isColorField(field)">
+              <label :class="bemm('field-label')">{{ field.label }}<span v-if="field.is_required">*</span></label>
+              <TColorPickerPopup
+                v-model="fieldValues[field.field_key]"
+                :placeholder="`Select ${field.label.toLowerCase()}`"
+              />
+            </div>
 
             <!-- Select/Options Field -->
             <TInputSelect
@@ -625,6 +626,19 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     gap: var(--space-l);
+  }
+
+  &__field-label {
+    display: block;
+    margin-bottom: var(--space-xs);
+    font-weight: 500;
+    color: var(--color-foreground);
+    font-size: var(--font-size-sm);
+
+    span {
+      color: var(--color-error);
+      margin-left: var(--space-xs);
+    }
   }
 }
 </style>
