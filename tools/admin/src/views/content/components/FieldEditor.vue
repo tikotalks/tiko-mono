@@ -121,6 +121,7 @@ const fieldTypeOptions = computed(() => {
     { value: 'richtext', label: t('admin.content.field.types.richtext') },
     { value: 'number', label: t('admin.content.field.types.number') },
     { value: 'boolean', label: t('admin.content.field.types.boolean') },
+    { value: 'color', label: t('admin.content.field.types.color') },
     { value: 'select', label: t('admin.content.field.types.select') },
     { value: 'media', label: t('admin.content.field.types.media') },
     { value: 'list', label: t('admin.content.field.types.list') },
@@ -159,7 +160,7 @@ const configComponent = computed(() => {
 
 // Show default value for certain field types
 const showDefaultValue = computed(() => {
-  return ['text', 'textarea', 'number'].includes(form.value.field_type)
+  return ['text', 'textarea', 'number', 'color'].includes(form.value.field_type)
 })
 
 // Form validation

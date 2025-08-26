@@ -72,6 +72,14 @@
               :required="field.is_required"
             />
 
+            <!-- Color Field -->
+            <TColorPickerPopup
+              v-else-if="field.field_type === 'color' || isColorField(field)"
+              v-model="fieldValues[field.field_key]"
+              :label="field.label"
+              :required="field.is_required"
+            />
+
             <!-- Select/Options Field -->
             <TInputSelect
               v-else-if="field.field_type === 'select' || field.field_type === 'options'"
@@ -220,14 +228,14 @@ import {
   TInputNumber,
   TInputCheckbox,
   TInputSelect,
+  TColorPickerPopup,
   type ToastService,
 } from '@tiko/ui';
-import { contentService, translationService } from '@tiko/core';
+import { contentService, translationService, useI18n } from '@tiko/core';
 import type {
   SectionTemplate,
   ContentSection,
   Language,
-  useI18n,
   ContentField,
 } from '@tiko/core';
 import AdminPageHeader from '@/components/AdminPageHeader.vue';
@@ -457,9 +465,18 @@ function getDefaultValueForFieldType(fieldType: string): any {
       return [];
     case 'object':
       return {};
+    case 'color':
+      return 'primary'; // Default to primary color
     default:
       return '';
   }
+}
+
+function isColorField(field: ContentField): boolean {
+  // Check if field is a color field by field_key, label, or specific config
+  return field.field_key?.toLowerCase().includes('color') || 
+         field.label?.toLowerCase().includes('color') ||
+         field.config?.isColorField === true;
 }
 
 function getSelectOptions(
