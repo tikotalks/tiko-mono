@@ -19,13 +19,14 @@ import {
   TInputNumber,
   TInputCheckbox,
   TInputSelect,
-
+  TColorPickerPopup,
 } from '@tiko/ui'
 import  { type ContentField, useI18n } from '@tiko/core'
 import ItemsFieldEditor from './ItemsFieldEditor.vue'
 import ListFieldInstance from './ListFieldInstance.vue'
 import LinkedItemsFieldInstance from './LinkedItemsFieldInstance.vue'
 import MediaFieldInstance from './MediaFieldInstance.vue'
+import MediaFieldInstanceEnhanced from './MediaFieldInstanceEnhanced.vue'
 import RepeaterFieldInstance from './RepeaterFieldInstance.vue'
 
 interface Props {
@@ -72,7 +73,12 @@ const fieldComponent = computed(() => {
       return RepeaterFieldInstance
     case 'media':
     case 'image':
-      return MediaFieldInstance
+      // Use enhanced version if source selection is enabled
+      return props.field.config?.enableSourceSelection 
+        ? MediaFieldInstanceEnhanced 
+        : MediaFieldInstance
+    case 'color':
+      return TColorPickerPopup
     default:
       return TInputText
   }
@@ -116,6 +122,16 @@ const fieldProps = computed(() => {
     case 'repeater':
       // Pass the field itself for repeater to access schema from config
       baseProps.field = props.field
+      break
+      
+    case 'media':
+    case 'image':
+      // Pass config for media fields
+      if (props.field.config?.enableSourceSelection) {
+        baseProps.multiple = props.field.config?.multiple || false
+        baseProps.maxItems = props.field.config?.maxItems || 0
+        baseProps.allowedSources = props.field.config?.allowedSources || ['public', 'assets', 'personal']
+      }
       break
   }
 

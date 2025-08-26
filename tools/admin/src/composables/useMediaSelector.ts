@@ -2,11 +2,15 @@ import { inject } from 'vue'
 import type { PopupService } from '@tiko/ui'
 import type { MediaItem } from '@tiko/core'
 import MediaSelector from '@/components/MediaSelector.vue'
+import MediaSelectorEnhanced from '@/components/MediaSelectorEnhanced.vue'
+import type { MediaSourceType, MediaFieldValue } from '@/types/media-field'
 
 interface MediaSelectorOptions {
   multiple?: boolean
   selectedIds?: string[]
   title?: string
+  enhanced?: boolean
+  allowedSources?: MediaSourceType[]
 }
 
 export function useMediaSelector() {

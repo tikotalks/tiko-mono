@@ -1,0 +1,40 @@
+{
+  "contentType": "example_content",
+  "fields": [
+    {
+      "id": "featured_image",
+      "field_key": "featured_image",
+      "field_type": "media",
+      "label": "Featured Image",
+      "is_required": true,
+      "config": {
+        "enableSourceSelection": true,
+        "allowedSources": ["public", "assets", "personal"],
+        "multiple": false
+      }
+    },
+    {
+      "id": "gallery",
+      "field_key": "gallery",
+      "field_type": "media",
+      "label": "Image Gallery",
+      "is_required": false,
+      "config": {
+        "enableSourceSelection": true,
+        "allowedSources": ["public", "personal"],
+        "multiple": true,
+        "maxItems": 10
+      }
+    },
+    {
+      "id": "legacy_image",
+      "field_key": "legacy_image",
+      "field_type": "media",
+      "label": "Legacy Image (No source selection)",
+      "is_required": false,
+      "config": {
+        "multiple": false
+      }
+    }
+  ]
+}
