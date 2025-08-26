@@ -34,9 +34,10 @@
           />
           <TButton
             color="warning"
-                :type="ButtonType.ICON_ONLY"
+            :type="ButtonType.DEFAULT"
             @click="selectReplaceFile"
             :icon="Icons.ARROW_UPLOAD"
+            :iconOnly="true"
           >
             {{ t('admin.media.selectNewImage') }}
           </TButton>

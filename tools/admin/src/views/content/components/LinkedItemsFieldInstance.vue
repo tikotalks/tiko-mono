@@ -2,13 +2,13 @@
   <div :class="bemm()">
     <label :class="bemm('label')">{{ label }}</label>
     <p v-if="helpText" :class="bemm('help')">{{ helpText }}</p>
-    
+
     <!-- Selected Items -->
     <div v-if="selectedItems.length > 0" :class="bemm('selected')">
       <h4 :class="bemm('selected-header')">Selected Items ({{ selectedItems.length }})</h4>
       <div :class="bemm('selected-list')">
-        <div 
-          v-for="item in selectedItems" 
+        <div
+          v-for="item in selectedItems"
           :key="item.id"
           :class="bemm('selected-item')"
         >
@@ -30,7 +30,7 @@
     <div v-else :class="bemm('empty')">
       <p>{{ t('admin.content.field.noItemsSelected') }}</p>
     </div>
-    
+
     <!-- Add Items Button -->
     <div :class="bemm('actions')">
       <TButton
@@ -49,7 +49,7 @@ import { ref, computed, onMounted, inject, watch } from 'vue'
 import { useBemm } from 'bemm'
 import { TButton, TIcon, type PopupService } from '@tiko/ui'
 import { Icons } from 'open-icon'
-import { contentService, type Item } from '@tiko/core'
+import { contentService, type Item, useI18n } from '@tiko/core'
 import ItemSelector from './ItemSelector.vue'
 
 interface Props {
@@ -96,20 +96,20 @@ async function loadSelectedItems() {
     sectionId: props.sectionId,
     fieldId: props.fieldId
   })
-  
+
   if (!props.modelValue || props.modelValue.length === 0) {
     console.log('📝 No modelValue or empty array, setting selectedItems to empty')
     selectedItems.value = []
     return
   }
-  
+
   loading.value = true
   try {
     // For now, let's just use the modelValue directly as item IDs
     // Get linked items from database
     const linkedIds = props.modelValue || []
     console.log('🔗 Using linkedIds:', linkedIds)
-    
+
     // Load item details
     const items = await Promise.all(
       linkedIds.map(async (itemId, index) => {
@@ -119,10 +119,10 @@ async function loadSelectedItems() {
           console.warn('⚠️ Item not found:', itemId)
           return null
         }
-        
+
         const template = await contentService.getItemTemplate(item.item_template_id)
         console.log('📄 Loaded item and template:', { item: item.name, template: template?.name })
-        
+
         return {
           id: item.id,
           name: item.name,
@@ -131,7 +131,7 @@ async function loadSelectedItems() {
         }
       })
     )
-    
+
     selectedItems.value = items.filter(Boolean) as SelectedItem[]
     console.log('✅ Final selectedItems:', selectedItems.value)
   } catch (error) {
@@ -156,15 +156,15 @@ function openItemSelector() {
 
 async function handleItemsSelected(itemIds: string[]) {
   console.log('🎯 handleItemsSelected called with:', itemIds)
-  
+
   // Load details for all selected items (not just new ones)
   const allItems = await Promise.all(
     itemIds.map(async (itemId, index) => {
       const item = await contentService.getItem(itemId)
       if (!item) return null
-      
+
       const template = await contentService.getItemTemplate(item.item_template_id)
-      
+
       return {
         id: item.id,
         name: item.name,
@@ -173,16 +173,16 @@ async function handleItemsSelected(itemIds: string[]) {
       }
     })
   )
-  
+
   // Replace all selected items
   selectedItems.value = allItems.filter(Boolean) as SelectedItem[]
   console.log('📋 Updated selectedItems:', selectedItems.value)
-  
+
   // Emit the change immediately to the parent
   const itemIds_final = selectedItems.value.map(item => item.id)
   emit('update:modelValue', itemIds_final)
   console.log('📤 Emitted update:modelValue:', itemIds_final)
-  
+
   // Also save to database if we have section/field IDs
   if (props.sectionId && props.fieldId && props.sectionId !== 'temp') {
     await saveLinkedItems()
@@ -193,7 +193,7 @@ function removeItem(itemId: string) {
   console.log('🗑️ Removing item:', itemId)
   selectedItems.value = selectedItems.value.filter(item => item.id !== itemId)
   updateOrder()
-  
+
   // Emit the change immediately
   const itemIds = selectedItems.value.map(item => item.id)
   emit('update:modelValue', itemIds)
@@ -218,7 +218,7 @@ async function saveLinkedItems() {
   const itemIds = selectedItems.value
     .sort((a, b) => a.order - b.order)
     .map(item => item.id)
-  
+
   try {
     await contentService.setLinkedItems(props.sectionId, props.fieldId, itemIds)
     emit('update:modelValue', itemIds)

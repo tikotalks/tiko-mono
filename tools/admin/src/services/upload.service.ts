@@ -8,6 +8,7 @@ export class UploadService {
     success: boolean
     url?: string
     mediaId?: string
+    mediaData?: any
     error?: string
     aiAnalysisMessage?: string 
   }> {
@@ -80,6 +81,7 @@ export class UploadService {
         success: true,
         url: data.url,
         mediaId: media.id,
+        mediaData: media,
         aiAnalysisMessage
       }
     } catch (dbError) {

@@ -247,13 +247,42 @@ export function useImages(options: UseImagesOptions = {}): UseImagesReturn {
   }
 
   // Listen for media refresh events from uploads
-  const handleMediaRefresh = () => {
-    refresh()
+  const handleMediaRefresh = (eventData?: { action?: string; mediaId?: string; mediaData?: any }) => {
+    // Handle optimistic updates for single media additions
+    if (eventData?.action === 'add' && eventData.mediaData) {
+      // Add the new media to the appropriate list without refreshing everything
+      if (isUserLibrary) {
+        // For user library, we'd need to convert MediaItem to UserMedia format
+        // Since this is admin upload, it's likely public media
+        return
+      } else {
+        // Check if media already exists (avoid duplicates)
+        const exists = publicImages.value.some(img => img.id === eventData.mediaData.id)
+        if (!exists) {
+          publicImages.value.unshift(eventData.mediaData)
+          refreshStats()
+        }
+      }
+    } else {
+      // Fallback to full refresh for other cases
+      refresh()
+    }
   }
 
-  const handleUserMediaRefresh = () => {
+  const handleUserMediaRefresh = (eventData?: { action?: string; mediaId?: string; mediaData?: any }) => {
     if (isUserLibrary) {
-      refresh()
+      // Handle optimistic updates for single media additions
+      if (eventData?.action === 'add' && eventData.mediaData) {
+        // Check if media already exists (avoid duplicates)
+        const exists = userImages.value.some(img => img.id === eventData.mediaData.id)
+        if (!exists) {
+          userImages.value.unshift(eventData.mediaData)
+          refreshStats()
+        }
+      } else {
+        // Fallback to full refresh for other cases
+        refresh()
+      }
     }
   }
 

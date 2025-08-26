@@ -1,29 +1,15 @@
 <template>
-  <section
-    :id="section?.slug"
-    :class="bemm('', ['', sectionBlock])"
-    :style="`--section-image: url(${imageUrl}); --section-color: ${content.color ? `var(--color-${content.color})` : 'var(--color-primary)'};`"
-  >
+  <section :id="section?.slug" :class="bemm('', ['', sectionBlock])"
+    :style="`--section-image: url(${imageUrl}); --section-color: ${content.color ? `var(--color-${content.color})` : 'var(--color-primary)'};`">
     <div :class="bemm('container')">
-      <div :class="bemm('image')">
+      <div :class="bemm('image', ['', imageUrl ? 'has-image' : 'no-image'])">
         <img v-if="imageUrl" :src="imageUrl" alt="Section Image" />
       </div>
 
       <div :class="bemm('content')">
-        <h2
-          v-if="content?.title"
-          :class="bemm('title')"
-          v-html="processTitle(content.title)"
-        />
-        <TMarkdownRenderer
-          v-if="content?.content"
-          :class="bemm('markdown')"
-          :content="content.content"
-        />
-        <ContentCtas
-          :items="content.cta"
-          v-if="content.cta && content.cta.length"
-        />
+        <h2 v-if="content?.title" :class="bemm('title')" v-html="processTitle(content.title)" />
+        <TMarkdownRenderer v-if="content?.content" :class="bemm('markdown')" :content="content.content" />
+        <ContentCtas :items="content.cta" v-if="content.cta && content.cta.length" />
       </div>
     </div>
     <div :class="bemm('items')" v-if="content.items && content.items.length">
@@ -94,21 +80,22 @@ onMounted(async () => {
   color: var(--color-dark);
   position: relative;
 
-  position: relative;
-
   @media (max-width: 720px) {
     flex-direction: column-reverse;
     align-items: center;
   }
 
+  .column-left-section__container {
+    padding: var(--spacing);
+  }
+
+
+
   &--blocked {
     .column-left-section__container {
-      padding: var(--spacing);
-      background-color: color-mix(
-        in srgb,
-        var(--section-color),
-        transparent 75%
-      );
+      background-color: color-mix(in srgb,
+          var(--section-color),
+          transparent 75%);
     }
   }
 
@@ -118,8 +105,11 @@ onMounted(async () => {
 
   &__image {
     width: 50%;
-    aspect-ratio: 1/1;
     position: relative;
+
+    &--has-image {
+      aspect-ratio: 1/1;
+    }
 
     img {
       width: calc(50vw + var(--spacing));
@@ -131,6 +121,7 @@ onMounted(async () => {
 
     @media (max-width: 720px) {
       width: 100%;
+
       img {
         width: 110vw;
         position: relative;
@@ -146,6 +137,7 @@ onMounted(async () => {
     position: relative;
     border-radius: var(--border-radius);
     padding: var(--spacing);
+
     @media (max-width: 720px) {
 
       width: 100%;
@@ -170,6 +162,7 @@ onMounted(async () => {
     line-height: 1;
     font-family: var(--header-font-family);
     color: var(--section-color);
+
     .title-dot {
       color: var(--color-orange);
     }

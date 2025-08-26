@@ -14,7 +14,7 @@
         <TIcon :name="icon" />
         <TIcon v-if="hoverIcon" :name="hoverIcon" />
       </span>
-      <span v-if="hasSlot && type !== ButtonType.ICON_ONLY" :class="bemm('text')">
+      <span v-if="hasSlot && !props.iconOnly" :class="bemm('text')">
         <slot />
       </span>
     </div>
@@ -59,6 +59,7 @@ import { ToolTipPosition } from '../../feedback/TToolTip'
 
 const props = withDefaults(defineProps<TButtonProps>(), {
   icon: '',
+  iconOnly: false,
   hoverIcon: '',
   size: ButtonSize.MEDIUM,
   type: ButtonType.DEFAULT,
@@ -93,9 +94,8 @@ const blockClasses = computed(() => {
   classes.push(bemm('', props.size))
   classes.push(bemm('', props.type))
   classes.push(bemm('', props.color))
-  classes.push(bemm('', props.variant))
 
-  if (!hasSlot.value && props.icon) {
+  if (!hasSlot.value && props.icon || props.iconOnly) {
     classes.push(bemm('', 'icon-only'))
   }
 
@@ -279,9 +279,13 @@ const buttonStyles = computed(() => {
       padding: var(--space-s, 0.75em);
       aspect-ratio: 1;
     }
+    .button__text{
+      position: absolute;
+      visibility: hidden;
+    }
   }
 
-  &--text-icon{
+  &--text-icon:not(.button--icon-only){
     .button__container{
       padding-left: var(--space);
     }

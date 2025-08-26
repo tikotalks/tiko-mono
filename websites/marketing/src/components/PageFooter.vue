@@ -73,18 +73,20 @@ const navigation = computed<
     label: 'Tiko',
     items: [
       { text: 'About', url: '/about' },
+      { text: 'Team', url: '/team' },
       { text: 'Apps', url: '/apps' },
-      { text: 'Sponsors', url: '/sponsors' }
+      { text: 'Technology', url: '/technology' }
     ],
   },
-  // {
-  //   label: 'Support',
-  //   items: [
-  //     { text: 'Help Center', url: '/help' },
-  //     { text: 'Contact Support', url: '/support' },
-  //     { text: 'FAQ', url: '/faq' },
-  //   ],
-  // },
+  {
+    label: 'Support',
+    items: [
+      { text: 'Sponsors', url: '/sponsors' },
+      // { text: 'Help Center', url: '/help' },
+      // { text: 'Contact Support', url: '/support' },
+      { text: 'FAQ', url: '/faq' },
+    ],
+  },
 ]);
 </script>
 

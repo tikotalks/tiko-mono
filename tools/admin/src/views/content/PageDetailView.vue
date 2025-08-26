@@ -39,10 +39,10 @@
             { key: t('admin.content.page.fullPath'), value: page.full_path },
             { key: t('admin.content.page.language'), value: page.language_code },
             { key: t('admin.content.page.project'), value: getProjectName(page.project_id) },
-            { key: t('admin.content.page.status'), value: page.is_published ? t('common.published') : t('common.draft') },
+            { key: t('common.statusLabel'), value: page.is_published ? t('common.published') : t('common.draft') },
             { key: t('admin.content.page.isHome'), value: page.is_home ? t('common.yes') : t('common.no') },
-            { key: t('admin.content.page.createdAt'), value: formatDate(page.created_at) },
-            { key: t('admin.content.page.updatedAt'), value: formatDate(page.updated_at) }
+            { key: t('common.createdAt'), value: formatDate(page.created_at) },
+            { key: t('common.updatedAt'), value: formatDate(page.updated_at) }
           ]"
         />
       </TCard>

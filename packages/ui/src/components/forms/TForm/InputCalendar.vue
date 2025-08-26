@@ -29,7 +29,8 @@
 			<Button
 				:class="bemm('calendar-button')"
 				:icon="Icons.CALENDAR"
-				:type="ButtonSettings.Type.ICON_ONLY"
+				:iconOnly="true"
+				:type="ButtonSettings.Type.DEFAULT"
 				@click="openDatePicker"
 			/>
 		</div>

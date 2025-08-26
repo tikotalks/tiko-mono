@@ -10,7 +10,7 @@
         :placeholder="t('admin.content.items.selectTemplate')"
         required
       />
-      
+
       <!-- Show base item info for translations -->
       <div v-if="baseItem" :class="bemm('base-item-info')">
         <label>{{ t('admin.content.items.creatingTranslationFor') }}</label>
@@ -63,7 +63,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useBemm } from 'bemm'
 import { TFormGroup, TButton, TInputSelect, TInputText } from '@tiko/ui'
 import { translationService } from '@tiko/core'
-import type { Item, ItemTemplate, Language } from '@tiko/core'
+import  {type Item, type ItemTemplate, useI18n } from '@tiko/core'
 
 const bemm = useBemm('create-item-dialog')
 const { t } = useI18n()
@@ -84,7 +84,7 @@ const form = ref({
   baseItemId: props.baseItem?.id || ''
 })
 
-const languages = ref<Language[]>([])
+const languages = ref<[]>([])
 const loadingLanguages = ref(false)
 
 const templateOptions = computed(() =>
@@ -108,10 +108,10 @@ const existingTranslations = computed(() => {
 })
 
 const availableLanguageOptions = computed(() => {
-  const baseOptions = props.baseItem 
+  const baseOptions = props.baseItem
     ? [] // No default language option for translations
     : [{ value: '', label: t('admin.content.items.defaultLanguage') }]
-  
+
   const langOptions = languages.value
     .filter(lang => {
       // For translations, exclude languages that already exist
@@ -124,7 +124,7 @@ const availableLanguageOptions = computed(() => {
       value: lang.code,
       label: lang.native_name || lang.name
     }))
-  
+
   return [...baseOptions, ...langOptions]
 })
 

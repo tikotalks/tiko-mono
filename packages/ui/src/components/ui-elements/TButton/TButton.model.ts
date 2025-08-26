@@ -20,9 +20,7 @@ export type ButtonColor = (typeof ButtonColor)[keyof typeof ButtonColor];
 export const ButtonType = {
   DEFAULT: 'default',
   GHOST: 'ghost',
-  OUTLINE: 'outline',
-  ICON_ONLY: 'icon-only',
-  FANCY: 'fancy'
+  OUTLINE: 'outline'
 } as const;
 export type ButtonType = (typeof ButtonType)[keyof typeof ButtonType];
 
@@ -51,10 +49,12 @@ export type ButtonSettings = typeof ButtonSettings;
 export interface TButtonProps {
   /** Icon name to display */
   icon?: string;
+  iconOnly?: boolean;
   /** Hover state icon name */
   hoverIcon?: string;
   /** Button size variant */
   size?: ButtonSize;
+
   /** Button type variant */
   type?: ButtonType;
   /** Button color variant using semantic colors */

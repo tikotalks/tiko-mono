@@ -4,16 +4,18 @@
 			<Button
 				:class="bemm('nav-button')"
 				:icon="Icons.CHEVRON_LEFT"
+				:iconOnly="true"
 				:size="ButtonSettings.Size.SMALL"
-				:type="ButtonSettings.Type.ICON_ONLY"
+				:type="ButtonSettings.Type.DEFAULT"
 				@click="previousMonth"
 			/>
 			<span>{{ currentMonthYear }}</span>
 			<Button
 				:class="bemm('nav-button')"
 				:icon="Icons.CHEVRON_RIGHT"
+				:iconOnly="true"
 				:size="ButtonSettings.Size.SMALL"
-				:type="ButtonSettings.Type.ICON_ONLY"
+				:type="ButtonSettings.Type.DEFAULT"
 				@click="nextMonth"
 			/>
 		</div>

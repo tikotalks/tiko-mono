@@ -8,15 +8,15 @@
       <template #actions>
         <TButton
           v-if="!item?.base_item_id"
-          type="ghost"
-          :icon="Icons.TRANSLATE"
+          type="outline"
+          :icon="Icons.SPEECH_BALLOON"
           @click="openTranslateDialog"
         >
           {{ t('admin.content.items.addTranslation') }}
         </TButton>
         <TButton
-          type="ghost"
-          :icon="Icons.SAVE"
+          type="default"
+          :icon="Icons.ARROW_UPLOAD"
           @click="saveItem"
           :disabled="!hasChanges"
         >

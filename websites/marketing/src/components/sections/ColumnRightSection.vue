@@ -5,7 +5,7 @@
     :style="`--section-image: url(${imageUrl}); --section-color: ${content.color || 'var(--color-primary)'};`"
   >
     <div :class="bemm('container')">
-      <div :class="bemm('image')">
+      <div :class="bemm('image', ['',imageUrl ? 'has-image' : 'no-image'])">
         <img v-if="imageUrl" :src="imageUrl" alt="Section Image" />
       </div>
 
@@ -99,11 +99,10 @@ onMounted(async () => {
     align-items: center;
   }
 
-  &--default{
-    .column-right-section__container{
+  .column-right-section__container{
       padding: var(--spacing);
     }
-  }
+
 
   &--blocked {
     padding: var(--spacing);
@@ -124,8 +123,12 @@ onMounted(async () => {
 
   &__image {
     width: 50%;
-    aspect-ratio: 1/1;
     position: relative;
+
+    &--has-image{
+      aspect-ratio: 1/1;
+    }
+
 
     img {
       width: calc(50vw + var(--spacing));

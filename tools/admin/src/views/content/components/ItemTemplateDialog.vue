@@ -36,7 +36,7 @@
 import { ref, computed } from 'vue'
 import { useBemm } from 'bemm'
 import { TFormGroup, TInput, TTextArea, TButton, TInputText } from '@tiko/ui'
-import type { ItemTemplate } from '@tiko/core'
+import  { type ItemTemplate, useI18n } from '@tiko/core'
 
 interface Props {
   template?: ItemTemplate | null

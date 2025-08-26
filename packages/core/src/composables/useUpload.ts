@@ -27,6 +27,7 @@ interface UploadServiceInterface {
     success: boolean
     url?: string
     mediaId?: string
+    mediaData?: any
     error?: string
     aiAnalysisMessage?: string
   }>
@@ -199,8 +200,12 @@ export function useUpload(
             uploadedItem.mediaId = result.mediaId
           }
 
-          // Emit event to refresh media library
-          eventBus.emit('media:refresh', {})
+          // Emit event with the uploaded media data for optimistic update
+          eventBus.emit('media:refresh', { 
+            action: 'add',
+            mediaId: result.mediaId,
+            mediaData: result.mediaData 
+          })
 
           // Show success toast
           toastService?.show({
