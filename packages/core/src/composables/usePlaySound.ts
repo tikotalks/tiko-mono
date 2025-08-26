@@ -29,6 +29,7 @@ export interface UsePlaySoundReturn {
   stopAllSounds: () => void
   isPlaying: (id: string) => boolean
   setVolume: (volume: number, id?: string) => void
+  preloadSounds: (sounds: Array<{ id: string; media?: PlaySoundOptions['media'] }>) => Promise<void>
 }
 
 /**
@@ -38,6 +39,9 @@ export interface UsePlaySoundReturn {
 export function usePlaySound(): UsePlaySoundReturn {
   // Track active audio elements
   const audioElements = ref<Map<string, HTMLAudioElement>>(new Map())
+  
+  // Cache for preloaded audio elements
+  const preloadedAudio = ref<Map<string, HTMLAudioElement>>(new Map())
 
   // Use assets store for caching
   const assetsStore = useAssetsStore()
@@ -87,8 +91,20 @@ export function usePlaySound(): UsePlaySoundReturn {
         stopSound(id)
       }
 
-      // Create new audio element
-      const audio = new Audio()
+      // Check if we have a preloaded audio element
+      let audio: HTMLAudioElement
+      const cacheKey = `${id}_${media}`
+      
+      if (preloadedAudio.value.has(cacheKey)) {
+        // Clone the preloaded audio element for simultaneous playback
+        audio = preloadedAudio.value.get(cacheKey)!.cloneNode() as HTMLAudioElement
+        console.log('[usePlaySound] Using preloaded audio for:', cacheKey)
+      } else {
+        // Create new audio element
+        audio = new Audio()
+        console.log('[usePlaySound] Creating new audio element for:', cacheKey)
+      }
+      
       audio.volume = Math.max(0, Math.min(1, volume))
 
       // Set up event handlers
@@ -107,16 +123,18 @@ export function usePlaySound(): UsePlaySoundReturn {
       // Store the audio element
       audioElements.value.set(id, audio)
 
-      // Set source and play
-      const url = await getAudioUrl(id, media)
-      audio.src = url
+      // If not preloaded, set source and load
+      if (!preloadedAudio.value.has(cacheKey)) {
+        const url = await getAudioUrl(id, media)
+        audio.src = url
 
-      // Load and play
-      await new Promise<void>((resolve, reject) => {
-        audio.addEventListener('canplaythrough', () => resolve(), { once: true })
-        audio.addEventListener('error', reject, { once: true })
-        audio.load()
-      })
+        // Load and play
+        await new Promise<void>((resolve, reject) => {
+          audio.addEventListener('canplaythrough', () => resolve(), { once: true })
+          audio.addEventListener('error', reject, { once: true })
+          audio.load()
+        })
+      }
 
       await audio.play()
     } catch (error) {
@@ -186,12 +204,71 @@ export function usePlaySound(): UsePlaySoundReturn {
     }
   }
 
+  /**
+   * Preload multiple sounds for instant playback
+   */
+  const preloadSounds = async (sounds: Array<{ id: string; media?: PlaySoundOptions['media'] }>): Promise<void> => {
+    if (sounds.length === 0) {
+      return
+    }
+
+    console.log(`[usePlaySound] Preloading ${sounds.length} sound files...`)
+
+    const preloadPromises = sounds.map(async ({ id, media = 'assets' }) => {
+      const cacheKey = `${id}_${media}`
+      
+      // Skip if already preloaded
+      if (preloadedAudio.value.has(cacheKey)) {
+        console.log('[usePlaySound] Sound already preloaded, skipping:', cacheKey)
+        return
+      }
+
+      try {
+        // Get URL
+        const url = await getAudioUrl(id, media)
+        
+        // Create audio element
+        const audio = new Audio()
+        audio.preload = 'auto'
+        audio.src = url
+        
+        // Wait for audio to load
+        await new Promise<void>((resolve, reject) => {
+          audio.addEventListener('canplaythrough', () => resolve(), { once: true })
+          audio.addEventListener('error', reject, { once: true })
+          
+          // Start loading
+          audio.load()
+          
+          // Timeout after 10 seconds
+          setTimeout(() => reject(new Error('Audio load timeout')), 10000)
+        })
+        
+        // Add to cache
+        preloadedAudio.value.set(cacheKey, audio)
+        console.log('[usePlaySound] Preloaded sound:', cacheKey)
+      } catch (err) {
+        console.error(`Failed to preload sound "${id}":`, err)
+      }
+    })
+
+    // Process in batches to avoid overwhelming the browser
+    const batchSize = 3
+    for (let i = 0; i < preloadPromises.length; i += batchSize) {
+      const batch = preloadPromises.slice(i, i + batchSize)
+      await Promise.all(batch)
+    }
+
+    console.log('[usePlaySound] Sound preloading complete')
+  }
+
   // Return the API
   return {
     playSound,
     stopSound,
     stopAllSounds,
     isPlaying,
-    setVolume
+    setVolume,
+    preloadSounds
   }
 }

@@ -2,23 +2,13 @@ import { ref, onUnmounted, computed } from 'vue';
 import { useTextToSpeech } from './useTextToSpeech';
 import { ttsService } from '../services/tts/tts.service';
 import { useAuthStore } from '../stores/auth';
+import { useSpeechStore } from '../stores/speech';
 import type { AudioMetadata } from '../services/tts/types';
 
 export interface SpeakOptions {
   voice?: string;
   model?: 'tts-1' | 'tts-1-hd';
   language?: string;
-}
-
-// Simple hash function for generating cache keys
-function hashText(text: string): string {
-  let hash = 0;
-  for (let i = 0; i < text.length; i++) {
-    const char = text.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return Math.abs(hash).toString(36);
 }
 
 /**
@@ -31,6 +21,13 @@ function hashText(text: string): string {
 export function useSpeak() {
   const { speak: browserSpeak, stop: browserStop, pause: browserPause, resume: browserResume } = useTextToSpeech();
   const authStore = useAuthStore();
+  const speechStore = useSpeechStore();
+  
+  // Log to verify store is created
+  console.log('[useSpeak] Speech store initialized:', {
+    cacheSize: speechStore.cacheSize,
+    cachedKeys: speechStore.cachedKeys
+  });
   
   // Get user's language, convert from 'en-GB' format to 'en' for TTS
   const userLanguage = computed(() => {
@@ -42,7 +39,6 @@ export function useSpeak() {
   const error = ref<string | null>(null);
   const currentAudio = ref<HTMLAudioElement | null>(null);
   const currentMetadata = ref<AudioMetadata | null>(null);
-  const audioCache = new Map<string, HTMLAudioElement>();
 
   const speak = async (text: string, options: SpeakOptions = {}) => {
     const startTime = Date.now();
@@ -78,19 +74,15 @@ export function useSpeak() {
         return;
       }
 
-      // Try to get OpenAI audio
-      const audioStart = Date.now();
-      const response = await ttsService.getAudioForText({
-        text,
-        language,
-        voice: options.voice,
-        model: options.model
-      });
-      console.log(`[useSpeak] getAudioForText took ${Date.now() - audioStart}ms, cached: ${response.cached}`);
-
-      if (!response.success || !response.audioUrl) {
-        // Fallback to browser TTS
-        console.warn('Failed to get OpenAI audio, falling back to browser TTS:', response.error);
+      // Use speech store to get or create audio
+      // This handles all caching, preloading, and audio element creation
+      const { audio, metadata } = await speechStore.getOrCreateAudio(text, language);
+      
+      // Store metadata
+      currentMetadata.value = metadata || null;
+      
+      if (!audio) {
+        console.warn('Failed to get audio from speech store, falling back to browser TTS');
         browserSpeak(text, { 
           rate: 1.1,
           volume: 1.0,
@@ -98,47 +90,23 @@ export function useSpeak() {
         });
         return;
       }
-
-      // Store metadata
-      currentMetadata.value = response.metadata || null;
-
-      // Check cache first
-      const cacheKey = `${hashText(text)}_${language}`;
-      let audio = audioCache.get(cacheKey);
-
-      if (!audio) {
-        console.log('[useSpeak] Audio not in cache, creating new element for:', cacheKey);
-        // Create new audio element
-        audio = new Audio();
-        audio.preload = 'auto';
+      
+      // Handle audio events
+      audio.addEventListener('error', (e) => {
+        console.error('Audio playback error:', e);
+        error.value = 'Failed to play audio';
         
-        // The TTS service now returns the full CDN URL
-        audio.src = response.audioUrl;
-        
-        console.log('[useSpeak] Audio URL:', audio.src);
-        
-        // Add to cache
-        audioCache.set(cacheKey, audio);
-      } else {
-        console.log('[useSpeak] Audio found in cache for:', cacheKey);
-        
-        // Handle audio events
-        audio.addEventListener('error', (e) => {
-          console.error('Audio playback error:', e);
-          error.value = 'Failed to play audio';
-          
-          // Fallback to browser TTS
-          browserSpeak(text, { 
-            rate: 1.1,
-            volume: 1.0,
-            pitch: 1.0 
-          });
+        // Fallback to browser TTS
+        browserSpeak(text, { 
+          rate: 1.1,
+          volume: 1.0,
+          pitch: 1.0 
         });
+      }, { once: true });
 
-        audio.addEventListener('loadeddata', () => {
-          isLoading.value = false;
-        });
-      }
+      audio.addEventListener('loadeddata', () => {
+        isLoading.value = false;
+      }, { once: true });
 
       // Store current audio reference
       currentAudio.value = audio;
@@ -211,24 +179,21 @@ export function useSpeak() {
       return;
     }
 
-    try {
-      const textsWithLanguage = texts.map(item => ({
-        text: item.text,
-        language: item.language || userLanguage.value
-      }));
-      
-      await ttsService.preloadAudioForTexts(textsWithLanguage);
-    } catch (err) {
-      console.error('Failed to preload audio:', err);
-    }
+    console.log(`[useSpeak] preloadAudio called with ${texts.length} texts`);
+    
+    const textsWithLanguage = texts.map(item => ({
+      text: item.text,
+      language: item.language || userLanguage.value
+    }));
+    
+    // Use speech store to preload
+    await speechStore.preloadMultiple(textsWithLanguage);
+    
+    console.log('[useSpeak] preloadAudio completed');
   };
 
   const clearCache = () => {
-    audioCache.forEach(audio => {
-      audio.pause();
-      audio.src = '';
-    });
-    audioCache.clear();
+    speechStore.clearCache();
   };
 
   // Cleanup on unmount

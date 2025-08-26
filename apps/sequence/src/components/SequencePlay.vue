@@ -27,7 +27,12 @@
     />
 
     <!-- Complete overlay -->
-    <RewardOverlay v-if="showRewardOverlay" @restart="$emit('restart')" @close="$emit('close')" />
+    <RewardOverlay 
+      v-if="showRewardOverlay" 
+      :animation="rewardAnimation"
+      @restart="$emit('restart')" 
+      @close="$emit('close')" 
+    />
   </div>
 </template>
 
@@ -103,6 +108,11 @@ const showRewardOverlay = computed(() => {
   const shouldShow = playState.value.isComplete && !props.editMode
   console.log('[SequencePlay] showRewardOverlay:', shouldShow, 'isComplete:', playState.value.isComplete, 'editMode:', props.editMode)
   return shouldShow
+})
+const rewardAnimation = computed(() => {
+  // Get the reward animation from sequence metadata, if available
+  const metadata = playState.value.currentSequenceMetadata
+  return metadata?.rewardAnimation || metadata?.reward_animation
 })
 const showHints = computed(() => sequenceStore.settings.showHints)
 

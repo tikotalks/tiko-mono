@@ -32,7 +32,7 @@ const { resolveImageUrl } = useImageResolver()
 const { playSound } = usePlaySound()
 
 // Asset IDs
-const backgroundVideoId = 'a5fcf581-d5fc-48d6-a312-11ae57ee94ab' // Underwater video background
+const backgroundVideoId = '1fad965b-21b4-4406-a55a-330ef37a42a3' // Updated underwater video background
 const backgroundId = 'fd203d8b-c163-46d5-b7fe-b7901609ec76' // Fallback image
 
 // Fish assets with their swimming directions
@@ -260,17 +260,32 @@ onMounted(async () => {
     // Create background object IN THE CENTER
     const canvas = canvasAnimation.getCanvas()
 
-    // Use the larger viewport dimension to ensure the video covers the screen
+    // Fill the screen with the video/image using cover mode
     const viewportWidth = window.innerWidth
     const viewportHeight = window.innerHeight
-    const largerDimension = Math.max(viewportWidth, viewportHeight)
-    const bgSize = largerDimension * 1.1 // Start smaller so zoom is more noticeable
+    
+    // For cover mode: scale to fill the entire viewport
+    let bgWidth, bgHeight
+    
+    // We'll use 16:9 aspect ratio as default for video (most common)
+    // The CanvasAnimation will handle the actual aspect ratio when rendering
+    const assumedAspectRatio = 16 / 9
+    
+    if (viewportWidth / viewportHeight > assumedAspectRatio) {
+      // Viewport is wider - fit by width
+      bgWidth = viewportWidth * 1.1 // Add 10% for zoom effect
+      bgHeight = bgWidth / assumedAspectRatio
+    } else {
+      // Viewport is taller - fit by height
+      bgHeight = viewportHeight * 1.1 // Add 10% for zoom effect
+      bgWidth = bgHeight * assumedAspectRatio
+    }
 
-    // EXACT CENTER
-    const bgX = canvasAnimation.centerX(bgSize)
-    const bgY = canvasAnimation.centerY(bgSize)
+    // Center the background
+    const bgX = canvasAnimation.centerX(bgWidth)
+    const bgY = canvasAnimation.centerY(bgHeight)
 
-    console.log('[ReefCanvas] Background CENTERED:', bgX, bgY, 'size:', bgSize)
+    console.log('[ReefCanvas] Background positioned:', bgX, bgY, 'size:', bgWidth, 'x', bgHeight)
 
     if (isVideo) {
       // Create video background object
@@ -279,8 +294,8 @@ onMounted(async () => {
         'background',
         bgX,
         bgY,
-        bgSize,
-        bgSize
+        bgWidth,
+        bgHeight
       )
     } else {
       // Create image background object
@@ -289,8 +304,8 @@ onMounted(async () => {
         'background',
         bgX,
         bgY,
-        bgSize,
-        bgSize
+        bgWidth,
+        bgHeight
       )
     }
 

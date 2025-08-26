@@ -118,49 +118,49 @@ class SequenceSupabaseService {
 
     try {
       let result = await this.apiRequest<CardItem[]>(url);
-      console.log('[getSequence] Result:', result.length, 'items found');
+      // console.log('[getSequence] Result:', result.length, 'items found');
 
       // Debug: Log details about what we found when loading children
       if (parentId && result.length === 0) {
         console.warn(`[getSequence] WARNING: No children found for parentId ${parentId}`);
-        console.log('[getSequence] Query URL was:', url);
+        // console.log('[getSequence] Query URL was:', url);
 
         // Try a more permissive query to see if items exist but aren't being returned
         const debugParams = new URLSearchParams();
         debugParams.append('parent_id', `eq.${parentId}`);
         const debugUrl = `items?${debugParams.toString()}`;
-        console.log('[getSequence] Trying debug query without filters:', debugUrl);
+        // console.log('[getSequence] Trying debug query without filters:', debugUrl);
 
         try {
           const debugResult = await this.apiRequest<CardItem[]>(debugUrl);
-          console.log('[getSequence] Debug query found:', debugResult.length, 'items');
+          // console.log('[getSequence] Debug query found:', debugResult.length, 'items');
           if (debugResult.length > 0) {
-            console.log('[getSequence] Debug items:', debugResult.map(r => ({
-              id: r.id,
-              name: r.name,
-              user_id: r.user_id,
-              app_name: r.app_name,
-              type: r.type,
-              parent_id: r.parent_id
-            })));
+            // console.log('[getSequence] Debug items:', debugResult.map(r => ({
+            //   id: r.id,
+            //   name: r.name,
+            //   user_id: r.user_id,
+            //   app_name: r.app_name,
+            //   type: r.type,
+            //   parent_id: r.parent_id
+            // })));
           }
         } catch (debugError) {
           console.error('[getSequence] Debug query failed:', debugError);
         }
       }
       if (result.length > 0) {
-        console.log('[getSequence] First few results:', result.slice(0, 3).map(r => ({
-          id: r.id,
-          name: r.name,
-          type: r.type,
-          parent_id: r.parent_id,
-          app_name: r.app_name
-        })));
+        // console.log('[getSequence] First few results:', result.slice(0, 3).map(r => ({
+        //   id: r.id,
+        //   name: r.name,
+        //   type: r.type,
+        //   parent_id: r.parent_id,
+        //   app_name: r.app_name
+        // })));
       }
 
       // If no results with app_name filter, try without it (backwards compatibility)
       if (result.length === 0 && parentId) {
-        console.log('[getSequence] No sequence found with app_name filter, trying without...');
+        // console.log('[getSequence] No sequence found with app_name filter, trying without...');
 
         const fallbackParams = new URLSearchParams();
         
@@ -176,10 +176,10 @@ class SequenceSupabaseService {
         fallbackParams.append('order', 'order_index.asc');
 
         const fallbackUrl = `items?${fallbackParams.toString()}`;
-        console.log('[getSequence] Fallback fetch from:', fallbackUrl);
+        // console.log('[getSequence] Fallback fetch from:', fallbackUrl);
 
         result = await this.apiRequest<CardItem[]>(fallbackUrl);
-        console.log('[getSequence] Fallback result:', result.length, 'sequence found');
+        // console.log('[getSequence] Fallback result:', result.length, 'sequence found');
       }
 
       return result;
@@ -199,6 +199,7 @@ class SequenceSupabaseService {
       userParams.append('user_id', `eq.${userId}`);
       userParams.append('app_name', 'eq.sequence');
       userParams.append('order', 'order_index.asc');
+      userParams.append('select', '*'); // Ensure all fields including metadata are returned
 
       // Fetch curated public sequences (not owned by user)
       const curatedParams = new URLSearchParams();
@@ -207,6 +208,7 @@ class SequenceSupabaseService {
       curatedParams.append('is_curated', 'eq.true');
       curatedParams.append('user_id', `neq.${userId}`); // Exclude user's own items
       curatedParams.append('order', 'order_index.asc');
+      curatedParams.append('select', '*'); // Ensure all fields including metadata are returned
 
       try {
         // Fetch both in parallel
@@ -215,12 +217,8 @@ class SequenceSupabaseService {
           this.apiRequest<CardItem[]>(`items?${curatedParams.toString()}`)
         ]);
 
-        console.log('[getAllSequence] Found', userSequences.length, 'user sequences');
-        console.log('[getAllSequence] Found', curatedSequences.length, 'curated public sequences');
-
         // Combine and return all sequences
         const allSequences = [...userSequences, ...curatedSequences];
-        console.log('[getAllSequence] Total sequences:', allSequences.length);
 
         return allSequences;
       } catch (error) {
@@ -233,6 +231,7 @@ class SequenceSupabaseService {
       params.append('user_id', `eq.${userId}`);
       params.append('app_name', 'eq.sequence');
       params.append('order', 'order_index.asc');
+      params.append('select', '*'); // Ensure all fields including metadata are returned
 
       const url = `items?${params.toString()}`;
       console.log('[getAllSequence] Fetching ALL sequence from:', url);
@@ -261,6 +260,7 @@ class SequenceSupabaseService {
       method: 'PATCH',
       body: JSON.stringify(data)
     });
+    
     return response[0];
   }
 
@@ -304,11 +304,8 @@ class SequenceSupabaseService {
 
   // Get sequence with translations for the current locale
   async getSequenceWithTranslations(userId: string, parentId?: string, locale?: string): Promise<CardItem[]> {
-    console.log('[getSequenceWithTranslations] Called with:', { userId, parentId, locale });
-
     // First get the sequence
     const sequence = await this.getSequence(userId, parentId);
-    console.log('[getSequenceWithTranslations] Found sequence:', sequence.length, sequence.map(c => ({ id: c.id, name: c.name })));
 
     if (sequence.length === 0) return sequence;
 
@@ -321,13 +318,13 @@ class SequenceSupabaseService {
       const exactParams = new URLSearchParams();
       exactParams.append('item_id', `in.(${cardIds.join(',')})`);
       exactParams.append('locale', `eq.${locale}`);
-      console.log('[getSequenceWithTranslations] Looking for exact locale match:', locale);
+      // console.log('[getSequenceWithTranslations] Looking for exact locale match:', locale);
 
       const exactUrl = `item_translations?${exactParams.toString()}`;
-      console.log('[getSequenceWithTranslations] Exact translation request URL:', exactUrl);
+      // console.log('[getSequenceWithTranslations] Exact translation request URL:', exactUrl);
 
       translations = await this.apiRequest<ItemTranslation[]>(exactUrl);
-      console.log('[getSequenceWithTranslations] Found exact locale translations:', translations.length, translations);
+      // console.log('[getSequenceWithTranslations] Found exact locale translations:', translations.length, translations);
 
       // If no exact match and locale has region (e.g., nl-nl), try base language (e.g., nl)
       if (translations.length === 0 && locale.includes('-')) {
@@ -335,13 +332,13 @@ class SequenceSupabaseService {
         const baseParams = new URLSearchParams();
         baseParams.append('item_id', `in.(${cardIds.join(',')})`);
         baseParams.append('locale', `eq.${baseLanguage}`);
-        console.log('[getSequenceWithTranslations] No exact match, trying base language:', baseLanguage);
+        // console.log('[getSequenceWithTranslations] No exact match, trying base language:', baseLanguage);
 
         const baseUrl = `item_translations?${baseParams.toString()}`;
-        console.log('[getSequenceWithTranslations] Base language request URL:', baseUrl);
+        // console.log('[getSequenceWithTranslations] Base language request URL:', baseUrl);
 
         translations = await this.apiRequest<ItemTranslation[]>(baseUrl);
-        console.log('[getSequenceWithTranslations] Found base language translations:', translations.length, translations);
+        // console.log('[getSequenceWithTranslations] Found base language translations:', translations.length, translations);
 
         // If still no match, try with lowercase locale (e.g., nl-NL -> nl-nl)
         if (translations.length === 0) {
@@ -349,13 +346,13 @@ class SequenceSupabaseService {
           const lowercaseParams = new URLSearchParams();
           lowercaseParams.append('item_id', `in.(${cardIds.join(',')})`);
           lowercaseParams.append('locale', `eq.${lowercaseLocale}`);
-          console.log('[getSequenceWithTranslations] No base language match, trying lowercase locale:', lowercaseLocale);
+          // console.log('[getSequenceWithTranslations] No base language match, trying lowercase locale:', lowercaseLocale);
 
           const lowercaseUrl = `item_translations?${lowercaseParams.toString()}`;
-          console.log('[getSequenceWithTranslations] Lowercase locale request URL:', lowercaseUrl);
+          // console.log('[getSequenceWithTranslations] Lowercase locale request URL:', lowercaseUrl);
 
           translations = await this.apiRequest<ItemTranslation[]>(lowercaseUrl);
-          console.log('[getSequenceWithTranslations] Found lowercase locale translations:', translations.length, translations);
+          // console.log('[getSequenceWithTranslations] Found lowercase locale translations:', translations.length, translations);
         }
       }
     } else {
@@ -363,24 +360,24 @@ class SequenceSupabaseService {
       const allParams = new URLSearchParams();
       allParams.append('item_id', `in.(${cardIds.join(',')})`);
       translations = await this.apiRequest<ItemTranslation[]>(`item_translations?${allParams.toString()}`);
-      console.log('[getSequenceWithTranslations] Found all translations (no locale specified):', translations.length);
+      // console.log('[getSequenceWithTranslations] Found all translations (no locale specified):', translations.length);
     }
 
     // Map translations to sequence
     const translationMap = new Map<string, ItemTranslation>();
     translations.forEach(t => {
       translationMap.set(t.item_id, t);
-      console.log('[getSequenceWithTranslations] Mapping translation for item:', t.item_id, { name: t.name, content: t.content, locale: t.locale });
+      // console.log('[getSequenceWithTranslations] Mapping translation for item:', t.item_id, { name: t.name, content: t.content, locale: t.locale });
     });
 
     // Apply translations to sequence
     const result = sequence.map(card => {
       const translation = translationMap.get(card.id);
       if (translation) {
-        console.log('[getSequenceWithTranslations] Applying translation to card:', card.id, {
-          original: { name: card.name, content: card.content },
-          translation: { name: translation.name, content: translation.content, locale: translation.locale }
-        });
+        // console.log('[getSequenceWithTranslations] Applying translation to card:', card.id, {
+        //   original: { name: card.name, content: card.content },
+        //   translation: { name: translation.name, content: translation.content, locale: translation.locale }
+        // });
         return {
           ...card,
           name: translation.name || card.name,
@@ -389,22 +386,18 @@ class SequenceSupabaseService {
           effective_locale: translation.locale
         };
       }
-      console.log('[getSequenceWithTranslations] No translation found for card:', card.id, card.name);
+      // console.log('[getSequenceWithTranslations] No translation found for card:', card.id, card.name);
       return card;
     });
 
-    console.log('[getSequenceWithTranslations] Final result:', result.map(c => ({ id: c.id, name: c.name, effective_locale: c.effective_locale })));
     return result;
   }
 
 
   // Get ALL sequence with translations for the current locale
   async getAllSequenceWithTranslations(userId: string, locale?: string, includeCurated = false): Promise<CardItem[]> {
-    console.log('[getAllSequenceWithTranslations] Called with:', { userId, locale, includeCurated });
-
     // First get ALL sequence
     const sequence = await this.getAllSequence(userId, includeCurated);
-    console.log('[getAllSequenceWithTranslations] Found total sequence:', sequence.length);
 
     if (sequence.length === 0) return sequence;
 

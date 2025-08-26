@@ -3,7 +3,13 @@ import { computed, ref, shallowRef } from 'vue'
 import { useAppStore, useAuthStore, itemService } from '@tiko/core'
 import { sequenceService } from '../services/sequence.service'
 import { offlineStorageService } from '../services/sequence-offline-storage.service'
-import type { TCardTile as CardTile } from '@tiko/ui'
+import type { TCardTile as BaseCardTile } from '@tiko/ui'
+
+// Extend CardTile to include sequence-specific fields
+type CardTile = BaseCardTile & {
+  rewardAnimation?: string;
+  speak?: string;
+}
 import { useI18n } from '@tiko/core'
 
 export interface SequenceSettings {
@@ -24,6 +30,7 @@ interface CardCacheEntry {
 
 interface PlayState {
   currentSequenceId: string | null
+  currentSequenceMetadata?: any
   shuffledItems: CardTile[]
   selectedItems: CardTile[]
   correctOrder: string[]
@@ -46,6 +53,7 @@ export const useSequenceStore = defineStore('sequence', () => {
   // Play state
   const playState = ref<PlayState>({
     currentSequenceId: null,
+    currentSequenceMetadata: undefined,
     shuffledItems: [],
     selectedItems: [],
     correctOrder: [],
@@ -76,16 +84,38 @@ export const useSequenceStore = defineStore('sequence', () => {
     return playState.value.correctOrder[nextIndex] === itemId
   })
 
+  // Audio state management
+  let audioQueue: Promise<void> = Promise.resolve()
+  let currentSpeakInstance: any = null
+  
   const speakText = async (text: string, language?: string) => {
-    try {
-      // Import useSpeak dynamically for enhanced TTS with OpenAI support
-      const { useSpeak } = await import('@tiko/core')
-      const { speak } = useSpeak()
+    // Queue audio to prevent overlaps
+    audioQueue = audioQueue.then(async () => {
+      try {
+        // Import useSpeak dynamically for enhanced TTS with OpenAI support
+        const { useSpeak } = await import('@tiko/core')
+        const speakInstance = useSpeak()
+        currentSpeakInstance = speakInstance
+        
+        // Stop any currently playing audio first
+        speakInstance.stop()
+        
+        // Wait a small delay to ensure previous audio is fully stopped
+        await new Promise(resolve => setTimeout(resolve, 100))
 
-      // Speak with language-aware voice using enhanced TTS
-      await speak(text, { language })
-    } catch (error) {
-      console.error('Failed to speak text:', error)
+        // Speak with language-aware voice using enhanced TTS
+        await speakInstance.speak(text, { language })
+      } catch (error) {
+        console.error('Failed to speak text:', error)
+      }
+    })
+    
+    return audioQueue
+  }
+  
+  const stopCurrentAudio = () => {
+    if (currentSpeakInstance) {
+      currentSpeakInstance.stop()
     }
   }
 
@@ -145,7 +175,6 @@ export const useSequenceStore = defineStore('sequence', () => {
     if (!forceRefresh && cache.has(cacheKey)) {
       const entry = cache.get(cacheKey)!
       if (isCacheValid(entry, locale || 'default')) {
-        console.log(`[SequenceStore] Returning cached sequence for ${cacheKey}`)
         // Only filter out hidden items for ROOT level, not for children
         if (!parentId) {
           const hiddenItems = settings.value.hiddenItems || []
@@ -363,6 +392,7 @@ export const useSequenceStore = defineStore('sequence', () => {
           sequenceByParent.set(parentKey, [])
         }
         sequenceByParent.get(parentKey)!.push(card)
+        
       }
 
       // Sort sequence by index within each parent group
@@ -496,8 +526,9 @@ export const useSequenceStore = defineStore('sequence', () => {
         isPublic: cardData.is_public || false,
         isCurated: cardData.is_curated || false,
         ownerId: cardData.user_id,
-        user_id: cardData.user_id
-      }
+        user_id: cardData.user_id,
+        rewardAnimation: metadata?.rewardAnimation
+      } as CardTile & { rewardAnimation?: string }
     } catch (error) {
       console.error('[SequenceStore] Failed to get card by ID:', error)
       return null
@@ -572,7 +603,10 @@ export const useSequenceStore = defineStore('sequence', () => {
         })
         cardCache.value = newCache
 
-        console.log(`[SequenceStore] Updated card ${updatedCard.id} in memory cache`)
+        console.log(`[SequenceStore] Updated card ${updatedCard.id} in memory cache`, {
+          rewardAnimation: updatedCard.rewardAnimation,
+          card: updatedCard
+        })
       }
     }
 
@@ -685,6 +719,10 @@ export const useSequenceStore = defineStore('sequence', () => {
       // Get current locale
       const { currentLocale } = useI18n()
       
+      // Load the sequence card itself to get metadata
+      const sequenceCard = await getCardById(sequenceId)
+      console.log(`[SequenceStore] Loaded sequence card:`, sequenceCard)
+      
       // Load the items that belong to this sequence (children)
       console.log(`[SequenceStore] Loading sequence items for ${sequenceId} with locale ${currentLocale.value}`)
       const sequence = await loadSequence(sequenceId, currentLocale.value)
@@ -743,6 +781,7 @@ export const useSequenceStore = defineStore('sequence', () => {
       
       playState.value = {
         currentSequenceId: sequenceId,
+        currentSequenceMetadata: sequenceCard,
         shuffledItems: shuffled,
         selectedItems: [],
         correctOrder: sortedItems.map(item => item.id),
@@ -755,6 +794,48 @@ export const useSequenceStore = defineStore('sequence', () => {
         shuffledItemsCount: playState.value.shuffledItems.length,
         isPlaying: playState.value.isPlaying
       })
+      
+      // Preload audio for all items if autoSpeak is enabled
+      if (settings.value.autoSpeak) {
+        console.log('[SequenceStore] Preloading audio for sequence items...')
+        const { useSpeak } = await import('@tiko/core')
+        const { preloadAudio } = useSpeak()
+        
+        // Get current language
+        const language = currentLocale.value.split('-')[0]
+        
+        // Prepare texts to preload
+        const textsToPreload = sortedItems
+          .filter(item => item.speak)
+          .map(item => ({
+            text: item.speak!,
+            language
+          }))
+        
+        if (textsToPreload.length > 0) {
+          console.log(`[SequenceStore] Preloading ${textsToPreload.length} audio files...`)
+          await preloadAudio(textsToPreload)
+          console.log('[SequenceStore] Audio preloading complete')
+        }
+      }
+      
+      // Also preload sound effects
+      console.log('[SequenceStore] Preloading sound effects...')
+      const { usePlaySound, SOUNDS } = await import('@tiko/core')
+      const playSound = usePlaySound()
+      
+      console.log('[SequenceStore] playSound object:', playSound)
+      console.log('[SequenceStore] playSound methods:', Object.keys(playSound))
+      
+      if (playSound.preloadSounds) {
+        await playSound.preloadSounds([
+          { id: SOUNDS.WIN },
+          { id: SOUNDS.WRONG_ITEM }
+        ])
+        console.log('[SequenceStore] Sound effects preloading complete')
+      } else {
+        console.warn('[SequenceStore] preloadSounds method not found on playSound')
+      }
     } catch (error) {
       console.error(`[SequenceStore] Error starting play:`, error)
     }
@@ -801,6 +882,13 @@ export const useSequenceStore = defineStore('sequence', () => {
       // Check if sequence is complete
       if (playState.value.selectedItems.length === playState.value.correctOrder.length) {
         console.log('[SequenceStore] Sequence complete! Setting isComplete to true')
+        
+        // Wait for current audio to finish before marking complete
+        await audioQueue
+        
+        // Stop any audio that might still be playing
+        stopCurrentAudio()
+        
         playState.value.isComplete = true
         playState.value.isPlaying = false
         console.log('[SequenceStore] Play state after completion:', playState.value)
@@ -813,8 +901,12 @@ export const useSequenceStore = defineStore('sequence', () => {
   }
 
   const resetPlay = () => {
+    // Stop any playing audio
+    stopCurrentAudio()
+    
     playState.value = {
       currentSequenceId: null,
+      currentSequenceMetadata: undefined,
       shuffledItems: [],
       selectedItems: [],
       correctOrder: [],
@@ -951,6 +1043,7 @@ export const useSequenceStore = defineStore('sequence', () => {
     selectItem,
     resetPlay,
     restartPlay,
+    stopCurrentAudio,
     
     // Hidden items functions
     hideItem,

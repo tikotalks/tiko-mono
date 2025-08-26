@@ -206,7 +206,8 @@ export class CanvasAnimation {
             src,
             video: video2,
             loaded: true,
-            duration: video2.duration,
+            // Ensure duration is stored in milliseconds (match primary branch)
+            duration: video2.duration * 1000,
             playbackMode,
             stretchDuration
           }
@@ -522,18 +523,16 @@ export class CanvasAnimation {
 
     // Draw image or video
     if (hasVideo && obj.video?.video) {
-      // Ensure video is playing
-      if (obj.video.video.paused) {
-        obj.video.video.play().catch(() => {})
+      // Draw only when the video has enough data to present a frame
+      if (obj.video.video.readyState >= 2) {
+        this.ctx.drawImage(
+          obj.video.video,
+          -obj.width / 2,
+          -obj.height / 2,
+          obj.width,
+          obj.height
+        )
       }
-      
-      this.ctx.drawImage(
-        obj.video.video,
-        -obj.width / 2,
-        -obj.height / 2,
-        obj.width,
-        obj.height
-      )
     } else if (hasImage && obj.image?.image) {
       this.ctx.drawImage(
         obj.image.image,

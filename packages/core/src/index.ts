@@ -10,6 +10,7 @@ export { useEditModeStore } from './stores/editMode'
 export { useAssetsStore, type AssetRecord } from './stores/assets.store'
 export { useMediaStore } from './stores/media.store'
 export { useI18nStore } from './stores/i18n'
+export { useSpeechStore } from './stores/speech'
 
 // Auth API (excluding types that are already exported from services)
 export { authAPI } from './lib/auth-api'

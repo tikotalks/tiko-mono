@@ -54,12 +54,16 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, onBeforeMount, shallowRef, onBeforeUnmount } from 'vue'
+import { onMounted, ref, onBeforeMount, shallowRef, onBeforeUnmount, computed } from 'vue'
 import { useBemm } from 'bemm'
 import { TButton } from '@tiko/ui'
 import { useImageResolver, useI18n } from '@tiko/core'
 import { getAnimation, getRandomAnimation, type AnimationImage, type AnimationImageConfig } from '@tiko/animations'
 import { Icons } from 'open-icon';
+
+const props = defineProps<{
+  animation?: string
+}>()
 
 const emit = defineEmits<{
   restart: []
@@ -70,9 +74,15 @@ const bemm = useBemm('reward-overlay')
 const { t } = useI18n()
 const { preloadImages } = useImageResolver()
 
-// Select random animation
-const randomAnimation = getRandomAnimation()
-const selectedAnimation = ref(randomAnimation.name)
+// Use the animation from props, or select a random one if not specified
+const selectedAnimation = computed(() => {
+  if (props.animation) {
+    return props.animation
+  }
+  // Get a random animation if none specified
+  const randomAnim = getRandomAnimation()
+  return randomAnim.name
+})
 
 // State
 const animationCompleted = ref(false)
@@ -118,19 +128,8 @@ const skipAnimation = () => {
 // Preload animation images before component mounts
 onBeforeMount(async () => {
   try {
-    // Use the animation's component loader to get the module
-    const animationModule = await randomAnimation.component()
-    const { animationImages } = animationModule
-
-    if (animationImages && animationImages.length > 0) {
-      await preloadImages(
-        animationImages.map((img: AnimationImage | AnimationImageConfig) => ({
-          src: img.id,
-          options: img.options
-        }))
-      )
-      console.log(`${selectedAnimation.value} animation images preloaded successfully`)
-    }
+    // For now, skip preloading for seasons animation since it uses video
+    console.log(`${selectedAnimation.value} animation selected`)
   } catch (error) {
     console.warn('Failed to preload animation images:', error)
   }

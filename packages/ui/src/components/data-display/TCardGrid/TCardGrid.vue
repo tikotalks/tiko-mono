@@ -42,6 +42,7 @@
                     :card="card"
                     :show-image="true"
                     :show-title="true"
+                    :show-status="true"
                     :edit-mode="editMode"
                     :selection-mode="selectionMode"
                     :is-empty="card.id && card.id.startsWith('empty-')"

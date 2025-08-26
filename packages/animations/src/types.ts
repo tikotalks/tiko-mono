@@ -16,7 +16,7 @@ export interface AnimationProps {
   onCompleted?: () => void
 }
 
-export type AnimationType = 'rocket' | 'alien' | 'reef' | 'deepsea' | 'fruitcatcher' | 'solarsystem' | 'seasons'
+export type AnimationType = 'rocket' | 'alien' | 'reef' | 'deepsea' | 'fruitcatcher' | 'solarsystem' | 'seasons' | 'savannah' | 'savannah-three'
 
 export interface AnimationDefinition {
   name: AnimationType

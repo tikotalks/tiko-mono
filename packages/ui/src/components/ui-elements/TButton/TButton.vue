@@ -242,7 +242,7 @@ const buttonStyles = computed(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--space-xs, 0.5em);
+    gap: var(--space-s, 0.5em);
     border-radius: inherit;
     box-shadow: 0 0 0 var(--button-border-width, 0) var(--button-border-color, transparent) inset;
     width: 100%;
@@ -278,6 +278,12 @@ const buttonStyles = computed(() => {
     .button__container {
       padding: var(--space-s, 0.75em);
       aspect-ratio: 1;
+    }
+  }
+
+  &--text-icon{
+    .button__container{
+      padding-left: var(--space);
     }
   }
 

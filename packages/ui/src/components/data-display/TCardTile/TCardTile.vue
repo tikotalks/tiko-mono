@@ -421,6 +421,7 @@ const setPointerPosition = (e: PointerEvent) => {
     border-radius: var(--border-radius);
     opacity: .5;
     transition: .3s ease-in-out;
+    z-index: 2; // Ensure status appears above mini-grid
 
     &:hover {
       z-index: 100;

@@ -156,7 +156,10 @@ const localSettings = reactive({
   buttonStyle: 'icons' as 'hands' | 'icons' | 'text',
 });
 
-type SequenceTile = TCardTile;
+type SequenceTile = TCardTile & {
+  rewardAnimation?: string;
+  speak?: string;
+};
 
 const sequence = ref<SequenceTile[]>([]);
 
@@ -492,7 +495,7 @@ const getCardContextMenu = (card: SequenceTile, index: number) => {
 
 // Handle save sequence logic
 const handleSaveSequence = async (formData: any, card: SequenceTile, isNewCard: boolean, index: number) => {
-  console.log('[SequenceView] Saving sequence with formData:', formData);
+  console.log('[SequenceView] Saving sequence:', formData.title, 'with reward animation:', formData.rewardAnimation);
   try {
     if (isNewCard) {
       // Create new sequence at the specified position
@@ -501,6 +504,7 @@ const handleSaveSequence = async (formData: any, card: SequenceTile, isNewCard: 
         color: formData.color,
         image: formData.image,
         isPublic: formData.isPublic || false,
+        rewardAnimation: formData.rewardAnimation,
         items: formData.items
       }, currentGroupId.value, index);
       if (sequenceId) {
@@ -515,7 +519,8 @@ const handleSaveSequence = async (formData: any, card: SequenceTile, isNewCard: 
           speech: '',
           icon: 'square',
           parentId: currentGroupId.value,
-          isPublic: formData.isPublic || false
+          isPublic: formData.isPublic || false,
+          rewardAnimation: formData.rewardAnimation
         };
 
         await sequenceStore.addCardToCache(newSequence, currentGroupId.value, currentLocale.value);
@@ -576,27 +581,11 @@ const handleSaveSequence = async (formData: any, card: SequenceTile, isNewCard: 
         color: formData.color,
         image: formData.image,
         isPublic: formData.isPublic || false,
+        rewardAnimation: formData.rewardAnimation,
         items: formData.items
       });
 
-      // Optimistically update cache and UI
-      const updatedSequence: SequenceTile = {
-        ...card,
-        title: formData.title,
-        color: formData.color,
-        image: formData.image?.url || null,
-        isPublic: formData.isPublic || false
-      };
-
-      await sequenceStore.updateCardInCache(updatedSequence, currentGroupId.value, currentLocale.value);
-
-      // Update local sequence array immediately
-      const updatedSequenceArray = [...sequence.value];
-      const existingIndex = updatedSequenceArray.findIndex(c => c.id === card.id);
-      if (existingIndex >= 0) {
-        updatedSequenceArray[existingIndex] = updatedSequence;
-        sequence.value = updatedSequenceArray;
-      }
+      // Don't update cache with partial data - we'll fetch fresh data later
 
       // Update the children map with the new items
       if (formData.items && formData.items.length > 0) {
@@ -649,6 +638,20 @@ const handleSaveSequence = async (formData: any, card: SequenceTile, isNewCard: 
       popupService.close();
 
       // Force reload to ensure images are displayed correctly
+      // Instead of updating with local data, fetch fresh data from server
+      const freshCard = await sequenceStore.getCardById(card.id);
+      if (freshCard) {
+        await sequenceStore.updateCardInCache(freshCard, currentGroupId.value, currentLocale.value);
+        
+        // Update local sequence array with fresh data
+        const updatedSequenceArray = [...sequence.value];
+        const existingIndex = updatedSequenceArray.findIndex(c => c.id === card.id);
+        if (existingIndex >= 0) {
+          updatedSequenceArray[existingIndex] = freshCard;
+          sequence.value = updatedSequenceArray;
+        }
+      }
+      
       await loadSequence();
     }
   } catch (error) {
@@ -822,8 +825,6 @@ const duplicateItem = async (originalCard: SequenceTile) => {
 const openCardEditForm = async (card: SequenceTile, index: number) => {
   const isNewCard = card.id.startsWith('empty-');
 
-  console.log('[SequenceView] openCardEditForm - isNewCard:', isNewCard, 'card:', card);
-  console.log('[SequenceView] authStore.user?.id:', authStore.user?.id);
 
   // Load translations if editing existing card (for potential future use)
   if (!isNewCard) {

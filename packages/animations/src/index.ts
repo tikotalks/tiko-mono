@@ -40,6 +40,16 @@ export const animations: AnimationDefinition[] = [
     name: 'seasons',
     component: () => import('./animations/SeasonsAnimation.vue'),
     displayName: 'Seasons'
+  },
+  {
+    name: 'savannah',
+    component: () => import('./animations/SavannahAnimation.vue'),
+    displayName: 'Savannah'
+  },
+  {
+    name: 'savannah-three',
+    component: () => import('./animations/SavannahThreeAnimation.vue'),
+    displayName: 'Savannah (Three.js)'
   }
 ]
 
@@ -54,8 +64,12 @@ export const getAnimation = (name: AnimationType) => {
 
 // Helper to get random animation
 export const getRandomAnimation = () => {
-  const randomIndex = Math.floor(Math.random() * animations.length)
-  return animations[randomIndex]
+  // Temporarily exclude savannah animations from random selection
+  const availableAnimations = animations.filter(a => 
+    a.name !== 'savannah' && a.name !== 'savannah-three'
+  )
+  const randomIndex = Math.floor(Math.random() * availableAnimations.length)
+  return availableAnimations[randomIndex]
 }
 
 // Helper to get animation list (just names)

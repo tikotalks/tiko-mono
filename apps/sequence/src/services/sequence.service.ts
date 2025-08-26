@@ -1,6 +1,11 @@
 import { useAuthStore } from '@tiko/core';
 import { useI18n } from '@tiko/core';
-import type { TCardTile as CardTile } from '@tiko/ui';
+import type { TCardTile as BaseCardTile } from '@tiko/ui';
+
+// Extend CardTile to include sequence-specific fields
+type CardTile = BaseCardTile & {
+  rewardAnimation?: string;
+};
 import { sequenceSupabaseService } from './supabase-sequence.service';
 import { ItemTranslationService } from './item-translation.service';
 import type { ItemTranslation } from '../models/ItemTranslation.model';
@@ -13,6 +18,7 @@ interface CardMetadata {
   color?: string;
   image?: string;
   speech?: string;
+  rewardAnimation?: string;
 }
 
 // Cache for hasChildren checks
@@ -31,54 +37,19 @@ export const sequenceService = {
       // Get current locale from i18n
       const { currentLocale } = useI18n();
       const locale = currentLocale.value;
-      console.log('[loadSequence] Current locale from useI18n:', locale, typeof locale);
-      console.log('[loadSequence] Raw currentLocale object:', currentLocale);
-
       // Load sequence with translations for current locale
-      console.log(`[loadSequence] Calling getSequenceWithTranslations with parentId: ${parentId}, locale: ${locale}`);
       const items = await sequenceSupabaseService.getSequenceWithTranslations(userId, parentId, locale);
-      console.log('[loadSequence] Items returned from getSequenceWithTranslations:', items.length, items.map(i => ({
-        id: i.id,
-        name: i.name,
-        type: i.type,
-        parent_id: i.parent_id,
-        content: i.content,
-        base_locale: i.base_locale,
-        effective_locale: i.effective_locale
-      })));
 
       return items.map(item => {
         const metadata = item.metadata as CardMetadata;
         
-        console.log('[loadSequence] Processing item:', {
-          id: item.id,
-          name: item.name,
-          metadata: metadata,
-          rawMetadata: item.metadata
-        });
 
         // If we have a translation (effective_locale is set), use the translated content for speech
         const speech = item.effective_locale && item.effective_locale !== item.base_locale
           ? item.content || metadata?.speech || ''  // Use translated content if available
           : metadata?.speech || item.content || ''; // Otherwise use metadata speech or base content
 
-        console.log('[loadSequence] Speech determination for card:', {
-          id: item.id,
-          name: item.name,
-          effective_locale: item.effective_locale,
-          base_locale: item.base_locale,
-          item_content: item.content,
-          metadata_speech: metadata?.speech,
-          final_speech: speech,
-          is_translated: item.effective_locale && item.effective_locale !== item.base_locale
-        });
-
         const image = metadata?.image || '';
-        console.log('[loadSequence] Image for card:', {
-          id: item.id,
-          metadataImage: metadata?.image,
-          finalImage: image
-        });
         
         const result = {
           id: item.id,
@@ -95,16 +66,10 @@ export const sequenceService = {
           isPublic: item.is_public || false,
           isCurated: item.is_curated || false,
           ownerId: item.user_id, // Add ownerId for ownership checks
-          user_id: item.user_id // Add user_id for ownership checks
-        };
+          user_id: item.user_id, // Add user_id for ownership checks
+          rewardAnimation: metadata?.rewardAnimation
+        } as CardTile;
 
-        console.log('[loadSequence] Card tile created:', {
-          id: result.id,
-          title: result.title,
-          speech: result.speech,
-          base_locale: result.base_locale,
-          effective_locale: result.effective_locale
-        });
 
         return result;
       });
@@ -155,7 +120,8 @@ export const sequenceService = {
           isPublic: item.is_public || false,
           isCurated: item.is_curated || false,
           ownerId: item.user_id, // Add ownerId for ownership checks
-          user_id: item.user_id // Add user_id for ownership checks
+          user_id: item.user_id, // Add user_id for ownership checks
+          rewardAnimation: metadata?.rewardAnimation
         };
       });
     } catch (error) {
@@ -204,12 +170,16 @@ export const sequenceService = {
         color: card.color,
         image: card.image,
         speech: card.speech,
+        rewardAnimation: card.rewardAnimation === '' ? undefined : card.rewardAnimation,
       };
       
       console.log('[saveCard] Saving card with metadata:', {
         cardId: card.id,
+        cardType: card.type,
         image: card.image,
-        metadata: metadata
+        rewardAnimation: card.rewardAnimation,
+        metadata: metadata,
+        metadataString: JSON.stringify(metadata)
       });
 
       const isPublic = card.isPublic || false;
@@ -319,17 +289,23 @@ export const sequenceService = {
       const item = await sequenceSupabaseService.getCard(cardId);
       if (!item) return null;
 
+      const metadata = item.metadata as CardMetadata;
       return {
         id: item.id,
         title: item.name,
         type: item.type as any,
-        icon: (item.metadata as CardMetadata)?.icon || item.icon || 'square',
-        color: (item.metadata as CardMetadata)?.color || item.color || 'primary',
-        image: (item.metadata as CardMetadata)?.image || '',
-        speak: (item.metadata as CardMetadata)?.speech || '', // Changed from 'speech' to 'speak'
+        icon: metadata?.icon || item.icon || 'square',
+        color: metadata?.color || item.color || 'primary',
+        image: metadata?.image || '',
+        speak: metadata?.speech || '', // Changed from 'speech' to 'speak'
         index: item.order_index ?? 0,
         parentId: item.parent_id || undefined,
-      };
+        isPublic: item.is_public || false,
+        isCurated: item.is_curated || false,
+        ownerId: item.user_id,
+        user_id: item.user_id,
+        rewardAnimation: metadata?.rewardAnimation,
+      } as CardTile;
     } catch (error) {
       console.error('Failed to get card:', error);
       return null;
@@ -356,6 +332,7 @@ export const sequenceService = {
     color: string;
     image?: { url: string; alt: string } | null;
     isPublic?: boolean;
+    rewardAnimation?: string;
     items: Array<{
       title: string;
       color: string;
@@ -379,7 +356,8 @@ export const sequenceService = {
         image: sequenceData.image?.url || '',
         type: 'sequence',
         index: index || 0,
-        isPublic: sequenceData.isPublic || false
+        isPublic: sequenceData.isPublic || false,
+        rewardAnimation: sequenceData.rewardAnimation === '' ? undefined : sequenceData.rewardAnimation
       };
 
       const sequenceId = await this.saveCard(sequenceCard, parentId, index);
@@ -418,6 +396,7 @@ export const sequenceService = {
     color: string;
     image?: { url: string; alt: string } | null;
     isPublic?: boolean;
+    rewardAnimation?: string;
     items: Array<{
       id?: string;
       title: string;
@@ -446,42 +425,77 @@ export const sequenceService = {
         type: 'sequence',
         index: existingSequence?.order_index, // Preserve existing index
         parentId: existingSequence?.parent_id, // Preserve existing parent
-        isPublic: sequenceData.isPublic ?? existingSequence?.is_public ?? false
+        isPublic: sequenceData.isPublic ?? existingSequence?.is_public ?? false,
+        rewardAnimation: sequenceData.rewardAnimation === '' ? undefined : sequenceData.rewardAnimation
       };
 
       await this.saveCard(sequenceCard, existingSequence?.parent_id, existingSequence?.order_index);
 
       // Get existing items
       const existingItems = await this.loadSequence(sequenceId);
-      const existingIds = new Set(existingItems.map(item => item.id));
+      const existingItemsMap = new Map(existingItems.map(item => [item.id, item]));
+      const newItemIds = new Set(sequenceData.items.filter(item => item.id && !item.id.startsWith('temp-')).map(item => item.id));
 
       // Update or create items - inherit public status from parent sequence
       const parentIsPublic = sequenceData.isPublic ?? existingSequence?.is_public ?? false;
       
       for (const item of sequenceData.items) {
-        const itemCard: Partial<CardTile> = {
-          id: item.id,
-          title: item.title,
-          color: item.color,
-          image: item.image?.url || '',
-          speak: item.speak,
-          speech: item.speak,
-          type: 'sequence-item',
-          parentId: sequenceId,
-          index: item.orderIndex,
-          isPublic: parentIsPublic // Inherit public status from parent sequence
-        };
-
-        await this.saveCard(itemCard, sequenceId, item.orderIndex);
-        
-        // Only remove from existing IDs if this is a real existing item (not temp)
-        if (item.id && !item.id.startsWith('temp-')) {
-          existingIds.delete(item.id);
+        // Check if this is a new item
+        if (!item.id || item.id.startsWith('temp-')) {
+          // Create new item
+          const itemCard: Partial<CardTile> = {
+            title: item.title,
+            color: item.color,
+            image: item.image?.url || '',
+            speak: item.speak,
+            speech: item.speak,
+            type: 'sequence-item',
+            parentId: sequenceId,
+            index: item.orderIndex,
+            isPublic: parentIsPublic
+          };
+          
+          console.log('[updateSequence] Creating new item:', item.title);
+          await this.saveCard(itemCard, sequenceId, item.orderIndex);
+        } else {
+          // Check if existing item has changed
+          const existingItem = existingItemsMap.get(item.id);
+          
+          const hasChanged = !existingItem || 
+            existingItem.title !== item.title ||
+            existingItem.color !== item.color ||
+            existingItem.image !== (item.image?.url || '') ||
+            existingItem.speak !== item.speak ||
+            existingItem.index !== item.orderIndex ||
+            existingItem.isPublic !== parentIsPublic;
+          
+          if (hasChanged) {
+            // Update existing item only if it changed
+            const itemCard: Partial<CardTile> = {
+              id: item.id,
+              title: item.title,
+              color: item.color,
+              image: item.image?.url || '',
+              speak: item.speak,
+              speech: item.speak,
+              type: 'sequence-item',
+              parentId: sequenceId,
+              index: item.orderIndex,
+              isPublic: parentIsPublic
+            };
+            
+            console.log('[updateSequence] Updating changed item:', item.id, item.title);
+            await this.saveCard(itemCard, sequenceId, item.orderIndex);
+          } else {
+            console.log('[updateSequence] Skipping unchanged item:', item.id, item.title);
+          }
         }
       }
 
       // Delete removed items
-      for (const deletedId of existingIds) {
+      const deletedIds = [...existingItemsMap.keys()].filter(id => !newItemIds.has(id));
+      for (const deletedId of deletedIds) {
+        console.log('[updateSequence] Deleting removed item:', deletedId);
         await this.deleteCard(deletedId);
       }
     } catch (error) {
@@ -528,6 +542,7 @@ export const sequenceService = {
           isOwner: item.owner_id === userId,
           isPublic: item.is_public,
           isCurated: item.is_curated,
+          rewardAnimation: metadata?.rewardAnimation,
         };
       });
     } catch (error) {
@@ -599,6 +614,7 @@ export const sequenceService = {
           isOwner: item.owner_id === userId,
           isPublic: item.is_public,
           isCurated: item.is_curated,
+          rewardAnimation: metadata?.rewardAnimation,
         };
       });
     } catch (error) {

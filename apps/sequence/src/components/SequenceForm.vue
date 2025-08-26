@@ -9,6 +9,15 @@
         <TColorPicker :inline="true" :label="t('common.color')" v-model="form.color" :colors="availableColors" />
         <TImageInput :inline="true" :label="t('common.image')" v-model="form.image" :color="form.color"
           :placeholder="t('sequence.uploadSequenceImage')" :title="t('sequence.selectSequenceImage')" />
+        
+        <!-- Reward Animation Selector -->
+        <TInputSelect 
+          :inline="true"
+          :label="t('sequence.rewardAnimation')"
+          v-model="form.rewardAnimation"
+          :options="availableAnimations"
+          :placeholder="t('sequence.selectRewardAnimation')"
+        />
 
 
         <!-- Visibility toggle -->
@@ -96,6 +105,7 @@ import {
   BaseColors,
   TInputText,
   TInputCheckbox,
+  TInputSelect,
   type TCardTile,
   TFormGroup,
   Colors
@@ -106,6 +116,7 @@ import {
   useAuthStore,
   useI18n
 } from '@tiko/core'
+import { animations, type AnimationType } from '@tiko/animations'
 
 interface SequenceItem {
   id: string
@@ -123,6 +134,7 @@ interface SequenceForm {
   items: SequenceItem[]
   isPublic?: boolean
   isCurated?: boolean // Read-only, shown for info
+  rewardAnimation?: string
 }
 
 const props = defineProps<{
@@ -165,7 +177,19 @@ const form = ref<SequenceForm>({
   image: null,
   items: [],
   isPublic: false,
-  isCurated: false
+  isCurated: false,
+  rewardAnimation: ''
+})
+
+// Available animations
+const availableAnimations = computed(() => {
+  return [
+    { value: '', label: t('sequence.randomAnimation') },
+    ...animations.map(anim => ({
+      value: anim.name,
+      label: anim.displayName
+    }))
+  ]
 })
 
 // Load sequence data when editing
@@ -177,7 +201,8 @@ watch(() => props.sequence, async (newSequence) => {
       image: null,
       items: [],
       isPublic: false,
-      isCurated: false
+      isCurated: false,
+      rewardAnimation: ''
     }
     return
   }
@@ -189,7 +214,8 @@ watch(() => props.sequence, async (newSequence) => {
       image: newSequence.image ? { url: newSequence.image, alt: newSequence.title } : null,
       items: [],
       isPublic: false,
-      isCurated: false
+      isCurated: false,
+      rewardAnimation: ''
     }
   } else {
     // Load existing sequence items
@@ -207,14 +233,28 @@ watch(() => props.sequence, async (newSequence) => {
         orderIndex: item.index || index
       }))
 
+      // Get the sequence metadata - only if rewardAnimation is not already present
+      let rewardAnimation = (newSequence as any).rewardAnimation
+      
+      if (rewardAnimation === undefined || rewardAnimation === null) {
+        const sequenceMetadata = await sequenceStore.getCardById(newSequence.id)
+        console.log('[SequenceForm] Loaded sequence metadata:', sequenceMetadata)
+        rewardAnimation = (sequenceMetadata as any)?.rewardAnimation || ''
+      } else {
+        console.log('[SequenceForm] Using rewardAnimation from passed sequence:', rewardAnimation)
+      }
+      
       form.value = {
         title: newSequence.title,
         color: newSequence.color || BaseColors.BLUE,
         image: newSequence.image ? { url: newSequence.image, alt: newSequence.title } : null,
         items: formattedItems,
         isPublic: newSequence.isPublic || false,
-        isCurated: newSequence.isCurated || false
+        isCurated: newSequence.isCurated || false,
+        rewardAnimation: rewardAnimation || ''
       }
+      
+      console.log('[SequenceForm] Form value after loading:', form.value)
 
       console.log(`[SequenceForm] Set form data:`, form.value)
     } catch (error) {
@@ -225,7 +265,8 @@ watch(() => props.sequence, async (newSequence) => {
         image: null,
         items: [],
         isPublic: newSequence.isPublic || false,
-        isCurated: newSequence.isCurated || false
+        isCurated: newSequence.isCurated || false,
+        rewardAnimation: ''
       }
     }
   }
