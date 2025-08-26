@@ -17,6 +17,12 @@
           :label="t('filter.filterByLanguage')"
           :options="languageFilterOptions"
         />
+
+        <TInputSelect
+          v-model="filterPage"
+          :label="t('filter.filterByPage')"
+          :options="pageFilterOptions"
+        />
       </template>
     </AdminPageHeader>
 
@@ -44,10 +50,11 @@
           v-if="filteredSections.length > 0"
           :columns="[
             { key: 'name', label: t('common.name'), width: '20%' },
-            { key: 'template', label: t('common.template'), width: '20%' },
-            { key: 'language', label: t('common.language'), width: '15%' },
-            { key: 'type', label: t('common.type'), width: '15%' },
-            { key: 'metadata', label: t('common.properties'), width: '15%' },
+            { key: 'template', label: t('common.template'), width: '15%' },
+            { key: 'language', label: t('common.language'), width: '10%' },
+            { key: 'type', label: t('common.type'), width: '10%' },
+            { key: 'pages', label: t('common.pages'), width: '20%' },
+            { key: 'metadata', label: t('common.properties'), width: '10%' },
             { key: 'actions', label: t('common.actions'), width: '15%' }
           ]"
           :striped="true"
@@ -65,6 +72,26 @@
             <TListCell type="badge" :content="getTemplateName(section.section_template_id)" />
             <TListCell type="badge" :content="section.language_code || t('common.global')" />
             <TListCell type="badge" :content="getSectionTypeLabel(section.component_type)" />
+            <TListCell type="custom">
+              <div :class="bemm('pages')">
+                <TChip
+                  v-for="ps in (section.page_sections || []).slice(0, 3)"
+                  :key="ps.page_id"
+                  size="small"
+                  type="outline"
+                  :title="ps.content_pages?.title"
+                >
+                  {{ ps.content_pages?.title || 'Unknown' }}
+                </TChip>
+                <TChip
+                  v-if="section.page_sections && section.page_sections.length > 3"
+                  size="small"
+                  type="outline"
+                >
+                  +{{ section.page_sections.length - 3 }}
+                </TChip>
+              </div>
+            </TListCell>
             <TListCell type="custom">
               <div :class="bemm('metadata')">
                 <TChip
@@ -205,10 +232,20 @@ import {
   useI18n } from "@tiko/core";
 import { Icons } from 'open-icon'
 import { contentService, translationService } from '@tiko/core'
-import type { SectionTemplate, ContentSection, Language } from '@tiko/core'
+import type { SectionTemplate, ContentSection, Language, ContentPage } from '@tiko/core'
 import CreateSectionDialog from './components/CreateSectionDialog.vue'
 import CreateSectionInstanceDialog from './components/CreateSectionInstanceDialog.vue'
 import AdminPageHeader from '@/components/AdminPageHeader.vue'
+
+interface ContentSectionWithPages extends ContentSection {
+  page_sections?: Array<{
+    page_id: string;
+    content_pages: {
+      id: string;
+      title: string;
+    };
+  }>;
+}
 
 const bemm = useBemm('content-sections-view')
 const { t } = useI18n()
@@ -220,9 +257,11 @@ const popupService = inject<PopupService>('popupService')
 const sections = ref<ContentSection[]>([])
 const sectionTemplates = ref<SectionTemplate[]>([])
 const languages = ref<Language[]>([])
+const pages = ref<ContentPage[]>([])
 const loading = ref(false)
 const searchQuery = ref('')
 const filterLanguage = ref<string>('all')
+const filterPage = ref<string>('all')
 
 // Computed
 const languageFilterOptions = computed(() => {
@@ -237,6 +276,39 @@ const languageFilterOptions = computed(() => {
       label: `${lang.name} (${lang.code})`
     })
   })
+
+  return options
+})
+
+const pageFilterOptions = computed(() => {
+  const options = [
+    { value: 'all', label: t('common.all') }
+  ]
+
+  // Get unique pages that have sections
+  const pagesWithSections = new Set<string>()
+  const pageMap = new Map<string, ContentPage>()
+  
+  sections.value.forEach(section => {
+    if (section.page_sections && section.page_sections.length > 0) {
+      section.page_sections.forEach((ps: any) => {
+        if (ps.page_id && ps.content_pages) {
+          pagesWithSections.add(ps.page_id)
+          pageMap.set(ps.page_id, ps.content_pages)
+        }
+      })
+    }
+  })
+
+  // Add pages to options
+  Array.from(pageMap.values())
+    .sort((a, b) => a.title.localeCompare(b.title))
+    .forEach(page => {
+      options.push({
+        value: page.id,
+        label: page.title
+      })
+    })
 
   return options
 })
@@ -263,6 +335,14 @@ const filteredSections = computed(() => {
     }
   }
 
+  // Filter by page
+  if (filterPage.value && filterPage.value !== 'all') {
+    filtered = filtered.filter(section => {
+      if (!section.page_sections) return false
+      return section.page_sections.some((ps: any) => ps.page_id === filterPage.value)
+    })
+  }
+
   return filtered
 })
 
@@ -284,10 +364,26 @@ const filteredTemplates = computed(() => {
 
 // Methods
 async function loadSections() {
-  // Load actual sections (instances)
+  // Load actual sections (instances) with their page relationships
   try {
-    sections.value = await contentService.getSections()
-    console.log('Loaded sections:', sections.value)
+    const sectionsData = await contentService.getSections()
+    
+    // For each section, get its usage
+    const sectionsWithPages = await Promise.all(
+      sectionsData.map(async (section) => {
+        const usage = await contentService.getSectionUsage(section.id)
+        return {
+          ...section,
+          page_sections: usage.map(u => ({
+            page_id: u.page_id,
+            content_pages: { id: u.page_id, title: u.page_title }
+          }))
+        }
+      })
+    )
+    
+    sections.value = sectionsWithPages
+    console.log('Loaded sections with pages:', sections.value)
   } catch (error) {
     // Handle gracefully if table doesn't exist yet
     if (error?.message?.includes('does not exist') || error?.message?.includes('42P01')) {
@@ -323,7 +419,8 @@ async function loadAll() {
     await Promise.all([
       loadSections(),
       loadSectionTemplates(),
-      loadLanguages()
+      loadLanguages(),
+      loadPages()
     ])
   } catch (error) {
     console.error('Failed to load data:', error)
@@ -340,6 +437,14 @@ async function loadLanguages() {
   }
 }
 
+async function loadPages() {
+  try {
+    pages.value = await contentService.getPages()
+  } catch (error) {
+    console.error('Failed to load pages:', error)
+  }
+}
+
 function getSectionTypeLabel(type: string): string {
   const typeKey = `admin.content.sections.types.${type}`
   const translated = t(typeKey)
@@ -351,7 +456,7 @@ function getTemplateName(templateId: string): string {
   return template?.name || 'Unknown Template'
 }
 
-function getSectionMetadata(section: ContentSection): string[] {
+function getSectionMetadata(section: ContentSectionWithPages): string[] {
   const metadata = []
 
   if (section.is_reusable) {
@@ -384,11 +489,11 @@ function openCreateSectionDialog() {
   router.push('/content/sections/create')
 }
 
-async function openEditSectionDialog(section: ContentSection) {
+async function openEditSectionDialog(section: ContentSectionWithPages) {
   router.push(`/content/sections/${section.id}`)
 }
 
-async function handleDeleteSection(section: ContentSection) {
+async function handleDeleteSection(section: ContentSectionWithPages) {
   // First check if section is in use
   const usage = await contentService.getSectionUsage(section.id)
 
@@ -442,7 +547,7 @@ async function handleDeleteSection(section: ContentSection) {
   })
 }
 
-function handleSectionClick(section: ContentSection) {
+function handleSectionClick(section: ContentSectionWithPages) {
   router.push(`/content/sections/${section.id}`)
 }
 
@@ -581,6 +686,12 @@ onMounted(() => {
 
 
   &__metadata {
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+  }
+
+  &__pages {
     display: flex;
     gap: var(--space-xs);
     flex-wrap: wrap;
