@@ -4,19 +4,15 @@
     <router-view v-if="isAuthCallbackRoute" />
 
     <!-- All other routes use secure admin framework -->
-    <AdminAuthWrapper
+    <TFramework
       v-else
-      :background-image="backgroundImage"
+      :config="frameworkConfig"
+      :loading="loading"
+      :is-app="false"
+      :require-auth="true"
     >
-      <TFramework
-        :config="frameworkConfig"
-        :loading="loading"
-        :is-app="false"
-        :require-auth="false"
-      >
-        <router-view />
-      </TFramework>
-    </AdminAuthWrapper>
+      <router-view />
+    </TFramework>
   </div>
 </template>
 
@@ -24,7 +20,6 @@
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { TFramework } from '@tiko/ui'
-import AdminAuthWrapper from './components/AdminAuthWrapper.vue'
 import type { TikoConfig } from '@tiko/core'
 import tikoConfig from '../tiko.config'
 // import backgroundImage from './assets/app-icon-admin.png'

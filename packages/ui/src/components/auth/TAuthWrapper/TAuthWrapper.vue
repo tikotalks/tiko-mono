@@ -1,5 +1,5 @@
 <template>
-  <div :class="bemm('',['', (props.isApp ?? tikoConfig?.isApp) ? 'is-app' : 'is-website'])" data-cy="auth-wrapper">
+  <div :class="bemm('',['', tikoConfig?.isApp ? 'is-app' : 'is-website'])" data-cy="auth-wrapper">
     <div :class="bemm('background')" v-if="!isAuthenticated && requireAuth">
       <img
         v-if="props.backgroundImage"
