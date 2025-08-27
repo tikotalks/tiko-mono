@@ -370,6 +370,7 @@ onUnmounted(() => {
   &__word-list {
     display: flex;
     gap: var(--space-s);
+    flex-wrap: wrap;
   }
 
   &__word-item {

@@ -399,7 +399,6 @@ const navigationItems = computed<NavigationItem[]>(() => [
   display: flex;
   flex-direction: column;
   width: 250px;
-  border-right: 1px solid var(--color-accent);
   padding: var(--space);
 
   container-type: inline-size;

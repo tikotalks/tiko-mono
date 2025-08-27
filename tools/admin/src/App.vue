@@ -19,7 +19,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { TFramework, type FrameworkConfig } from '@tiko/ui'
+import { TFramework } from '@tiko/ui'
+import type { TikoConfig } from '@tiko/core'
 import tikoConfig from '../tiko.config'
 // import backgroundImage from './assets/app-icon-admin.png'
 const backgroundImage = ''
@@ -36,24 +37,10 @@ const isAuthCallbackRoute = computed(() => {
 })
 
 // Framework configuration - use translation keys
-const frameworkConfig: FrameworkConfig = {
+const frameworkConfig = {
   ...tikoConfig,
   topBar: {
-    showUser: true,
-    showTitle: true,
-    showSubtitle: false,
-    showCurrentRoute: false
-  },
-  settings: {
-    enabled: true,
-    sections: [
-      {
-        id: 'admin-settings',
-        title: 'common.settings', // Translation key - component will translate
-        icon: 'settings',
-        order: 10
-      }
-    ]
+    show: true  // Ensure topbar is shown
   }
 };
 </script>

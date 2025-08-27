@@ -2,7 +2,7 @@
   <div :class="bemm()">
 
     <div :class="bemm('container')">
-      
+
       <!-- Preloading indicator -->
       <div v-if="isPreloading && props.speakOnType" :class="bemm('preload-indicator')">
         Loading audio...
@@ -104,15 +104,15 @@ const getKeyDisplay = (key: KeyboardKey): string => {
 // Preload audio for all keys in the current layout
 const preloadLayoutAudio = async () => {
   if (!props.speakOnType) return
-  
+
   console.log('[VirtualKeyboard] Starting audio preload for layout:', props.layout)
   isPreloading.value = true
   preloadedKeys.value.clear()
-  
+
   try {
     // Collect all unique keys from the layout
     const keysToPreload: Array<{ text: string; language?: string }> = []
-    
+
     // Add regular keys
     currentLayout.value.rows.forEach(row => {
       row.forEach(key => {
@@ -126,19 +126,19 @@ const preloadLayoutAudio = async () => {
         }
       })
     })
-    
+
     // Add special keys that might be spoken
     keysToPreload.push({ text: 'Space' })
     keysToPreload.push({ text: 'Backspace' })
-    
+
     // Preload all audio
     await preloadAudio(keysToPreload)
-    
+
     // Mark all keys as preloaded
     keysToPreload.forEach(item => {
       preloadedKeys.value.add(item.text)
     })
-    
+
     console.log('[VirtualKeyboard] Audio preload complete. Preloaded', keysToPreload.length, 'items')
   } catch (error) {
     console.error('[VirtualKeyboard] Error preloading audio:', error)
@@ -251,7 +251,7 @@ const handleKeyPress = (key: KeyboardKey | { key: string; display: string }) => 
     padding: var(--space-xs) var(--space-s);
     border-radius: var(--border-radius);
     animation: pulse 1.5s ease-in-out infinite;
-    
+
     @keyframes pulse {
       0%, 100% { opacity: 0.6; }
       50% { opacity: 1; }
@@ -316,11 +316,11 @@ const handleKeyPress = (key: KeyboardKey | { key: string; display: string }) => 
     }
 
     &--space {
+      --keyboard-key-color: var(--color-primary);
       width: calc(var(--key-size) * 5 + 8%); // 5 keys wide + 4 gaps
       aspect-ratio: 5 / 1;
       border-radius: var(--keyboard-radius);
       border: none;
-
     }
 
     &--backspace {
@@ -371,7 +371,7 @@ const handleKeyPress = (key: KeyboardKey | { key: string; display: string }) => 
       }
     }
   }
-  
+
   // Preload indicator
   &__preload-indicator {
     position: absolute;
@@ -384,7 +384,7 @@ const handleKeyPress = (key: KeyboardKey | { key: string; display: string }) => 
     font-size: 0.875rem;
     animation: pulse 1.5s ease-in-out infinite;
     z-index: 10;
-    
+
     @keyframes pulse {
       0%, 100% {
         opacity: 0.8;

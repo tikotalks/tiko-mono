@@ -284,11 +284,12 @@ const currentLanguage = computed(() => {
 const topBar = computed(() => ({
   showUser: true,
   showParentMode: true,
-  showTitle: true,
+  showTitle: true,  
   showSubtitle: true,
   showCurrentRoute: false,
   routeDisplay: 'subtitle' as const,
-  showBack: true
+  showBack: true,
+  ...tikoConfig.topBar  // Merge config topBar settings
 }))
 
 // Settings configuration

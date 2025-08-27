@@ -110,7 +110,7 @@ const getSortIcon = (column: string) => {
   }
 
   .t-list-item:hover {
-    background: var(--color-secondary);
+    background: color-mix(in srgb, var(--color-primary), transparent 50%);
   }
 
   .t-list-item {

@@ -72,7 +72,7 @@ const handleClick = (event: Event) => {
     cursor: pointer;
 
     &:hover {
-      background: var(--color-background-secondary);
+      background: var(--color-secondary);
     }
   }
 

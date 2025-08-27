@@ -10,6 +10,7 @@ export interface SettingsSection {
 }
 
 export interface TopBarConfig {
+  show?: boolean
   showUser?: boolean
   showParentMode?: boolean
   showTitle?: boolean
