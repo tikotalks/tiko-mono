@@ -47,7 +47,6 @@ const router = createAppRouter({
     {
       path: '/',
       component: AdminLayout,
-      beforeEnter: adminAuthGuard,
       children: [
         {
           path: '',

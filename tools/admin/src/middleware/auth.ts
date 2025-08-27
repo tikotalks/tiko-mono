@@ -5,19 +5,22 @@ import { useAuthStore } from '@tiko/core'
  * Admin authentication middleware
  * Validates JWT tokens and admin permissions for all routes
  */
-export const adminAuthGuard = (
+export const adminAuthGuard = async (
   to: RouteLocationNormalized,
   from: RouteLocationNormalized,
   next: NavigationGuardNext
 ) => {
-  // Skip auth guard for auth callback route
-  if (to.path === '/auth/callback') {
+  // Skip auth guard for auth callback route and not-authorized page
+  if (to.path === '/auth/callback' || to.path === '/not-authorized') {
     next()
     return
   }
 
   try {
     const authStore = useAuthStore()
+    
+    // Wait a bit for auth store to initialize properly
+    await new Promise(resolve => setTimeout(resolve, 100))
 
     // Check if user is authenticated
     if (!authStore.isAuthenticated) {
