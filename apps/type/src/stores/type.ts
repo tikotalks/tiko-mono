@@ -43,7 +43,7 @@ export const useTypeStore = defineStore('type', () => {
     autoSave: true,
     historyLimit: 50,
     hapticFeedback: true,
-    speakOnType: false,
+    speakOnType: true,
     keyboardTheme: 'default',
     keyboardLayout: 'qwerty',
     funLetters: false

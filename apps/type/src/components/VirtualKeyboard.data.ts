@@ -44,11 +44,12 @@ export const keyboardLayouts: Record<string, KeyboardLayout> = {
         { key: 'v', display: 'v' },
         { key: 'b', display: 'b' },
         { key: 'n', display: 'n' },
-        { key: 'm', display: 'm' }
+        { key: 'm', display: 'm' },
+        { key: '?', display: '?' },
       ]
     ]
   },
-  
+
   numbers: {
     name: 'Numbers',
     rows: [
@@ -104,7 +105,8 @@ export const keyboardLayouts: Record<string, KeyboardLayout> = {
         { key: 'c', display: 'c' },
         { key: 'v', display: 'v' },
         { key: 'b', display: 'b' },
-        { key: 'n', display: 'n' }
+        { key: 'n', display: 'n' },
+        { key: '?', display: '?' },
       ]
     ]
   },
@@ -142,7 +144,8 @@ export const keyboardLayouts: Record<string, KeyboardLayout> = {
         { key: 'v', display: 'v' },
         { key: 'b', display: 'b' },
         { key: 'n', display: 'n' },
-        { key: 'm', display: 'm' }
+        { key: 'm', display: 'm' },
+        { key: '?', display: '?' },
       ]
     ]
   },

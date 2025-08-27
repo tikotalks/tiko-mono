@@ -2,6 +2,17 @@
   <TAuthWrapper :backgroundVideo="backgroundVideoUrl" :title="t(keys.type.typeAndSpeak)">
     <TAppLayout :title="t('type.typeAndSpeak')" :show-header="true" @profile="handleProfile" @settings="handleSettings"
       @logout="handleLogout">
+      <template #app-controls>
+        <!-- App settings button (only visible in parent mode) -->
+        <TButton
+          v-if="isParentModeUnlocked"
+          :icon="Icons.SETTINGS"
+          type="outline"
+          color="secondary"
+          @click="handleSettings"
+          :aria-label="t('type.typeSettings')"
+        />
+      </template>
       <div :class="bemm()">
         <!-- Text Display Area -->
         <div :class="bemm('display-area')">
@@ -43,91 +54,19 @@
             @backspace="handleBackspace" @space="handleSpace" />
         </div>
       </div>
-
-      <!-- Settings Panel -->
-      <div v-if="showSettings" class="type-settings">
-        <div class="type-settings__backdrop" @click="hideSettings" />
-        <div class="type-settings__panel">
-          <h3 class="type-settings__title">App Settings</h3>
-
-          <!-- Voice Settings Section -->
-          <h4 class="type-settings__subtitle">Voice & Speech</h4>
-
-          <!-- Rate -->
-          <div class="type-settings__group">
-            <TInputRange v-model.number="localSettings.rate" :label="t(keys.type.speechRate)" :min="0.1" :max="3"
-              :step="0.1" @input="updateSettings" />
-          </div>
-
-          <!-- Pitch -->
-          <div class="type-settings__group">
-            <TInputRange v-model.number="localSettings.pitch" :label="t(keys.type.pitch)" :min="0" :max="2" :step="0.1"
-              @input="updateSettings" />
-          </div>
-
-          <!-- Volume -->
-          <div class="type-settings__group">
-            <TInputRange v-model.number="localSettings.volume" :label="t(keys.type.volume)" :min="0" :max="1"
-              :step="0.1" @input="updateSettings" />
-          </div>
-
-          <!-- Auto Save -->
-          <div class="type-settings__group">
-            <TInputCheckbox v-model="localSettings.autoSave" :label="t(keys.type.saveToHistoryAutomatically)"
-              @change="updateSettings" />
-          </div>
-
-          <!-- Keyboard Settings Section -->
-          <h4 class="type-settings__subtitle">Keyboard</h4>
-
-          <!-- Haptic Feedback -->
-          <div class="type-settings__group">
-            <TInputCheckbox v-model="localSettings.hapticFeedback" label="Haptic Feedback" @change="updateSettings" />
-          </div>
-
-          <!-- Speak on Type -->
-          <div class="type-settings__group">
-            <TInputCheckbox v-model="localSettings.speakOnType" label="Speak Letters When Typing"
-              @change="updateSettings" />
-          </div>
-
-          <!-- Keyboard Layout -->
-          <div class="type-settings__group">
-            <TInputSelect v-model="localSettings.keyboardLayout" label="Keyboard Layout" :options="availableLayouts"
-              @update:model-value="updateSettings" />
-          </div>
-
-          <!-- Keyboard Theme -->
-          <div class="type-settings__group">
-            <TInputSelect v-model="localSettings.keyboardTheme" label="Keyboard Theme" :options="[
-              { value: 'default', label: 'Default' },
-              { value: 'dark', label: 'Dark' },
-              { value: 'colorful', label: 'Colorful' }
-            ]" @update:model-value="updateSettings" />
-          </div>
-
-          <!-- Fun Letters -->
-          <div class="type-settings__group">
-            <TInputCheckbox v-model="localSettings.funLetters" label="Fun Letters (Images)" @change="updateSettings" />
-          </div>
-
-          <div class="type-settings__actions">
-            <TButton :label="t(keys.common.close)" type="default" color="primary" :action="hideSettings"
-              size="medium" />
-          </div>
-        </div>
-      </div>
     </TAppLayout>
   </TAuthWrapper>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, reactive, watch, toRefs } from 'vue'
+import { ref, computed, onMounted, onUnmounted, reactive, watch, toRefs, inject } from 'vue'
 import { useBemm } from 'bemm'
 import { useI18n, useSpeak } from '@tiko/core';
-import { TButton, TAppLayout, TAuthWrapper, TInputRange, TInputCheckbox, TInputSelect } from '@tiko/ui'
+import { TButton, TAppLayout, TAuthWrapper, TInputRange, TInputCheckbox, TInputSelect, PopupService, useParentMode } from '@tiko/ui'
+import { Icons } from 'open-icon'
 import { useTypeStore } from '../stores/type'
 import VirtualKeyboard from '../components/VirtualKeyboard.vue'
+import TypeSettingsForm from '../components/TypeSettingsForm.vue'
 import { availableLayouts } from '../components/VirtualKeyboard.data'
 import backgroundVideoUrl from '../assets/login-background.mp4'
 
@@ -137,6 +76,13 @@ const bemm = useBemm('type-view')
 const typeStore = useTypeStore()
 const { t, keys } = useI18n()
 const { speak } = useSpeak();
+const popupService = inject<PopupService>('popupService')
+const parentMode = useParentMode()
+
+// Parent mode computed state
+const isParentModeUnlocked = computed(() => {
+  return parentMode?.isUnlocked.value ?? false
+})
 
 const speakWord = (word:string)=>{
   speak(word)
@@ -224,7 +170,15 @@ const handleBackspace = () => {
 }
 
 const handleSpace = () => {
+
+
   typeStore.appendText(' ')
+
+  if(currentWords.value.length){
+    const lastWord = currentWords.value[currentWords.value.length - 2];
+    console.log(lastWord, currentWords.value)
+    if(lastWord)    speak(lastWord)
+  }
 }
 
 const onVoiceChange = () => {
@@ -234,16 +188,31 @@ const onVoiceChange = () => {
   }
 }
 
-const toggleSettings = () => {
-  showSettings.value = !showSettings.value
-}
+const showAppSettingsPopup = () => {
+  popupService?.open({
+    component: TypeSettingsForm,
+    title: t('type.typeSettings'),
+    props: {
+      settings: settings.value,
+      availableVoices: availableVoices.value,
+      selectedVoice: selectedVoice.value,
+      onApply: async (newSettings: any) => {
+        // Update local settings
+        Object.assign(localSettings, newSettings)
 
-const hideSettings = () => {
-  showSettings.value = false
-}
+        // Update voice if changed
+        if (newSettings.voice !== settings.value.voice && availableVoices.value.length > 0) {
+          const voice = availableVoices.value.find(v => v.name === newSettings.voice)
+          if (voice) {
+            typeStore.setVoice(voice)
+          }
+        }
 
-const updateSettings = async () => {
-  await typeStore.updateSettings(localSettings)
+        // Save settings
+        await typeStore.updateSettings(newSettings)
+      }
+    }
+  })
 }
 
 const speakFromHistory = (item: any) => {
@@ -265,9 +234,7 @@ const handleProfile = () => {
 }
 
 const handleSettings = () => {
-  console.log('Settings clicked')
-  // Use the existing settings panel
-  toggleSettings()
+  showAppSettingsPopup()
 }
 
 const handleLogout = () => {
@@ -311,9 +278,7 @@ const handleGlobalKeydown = (event: KeyboardEvent) => {
       }
       break
     case 'Escape':
-      if (showSettings.value) {
-        hideSettings()
-      } else if (isSpeaking.value) {
+      if (isSpeaking.value) {
         typeStore.stop()
       }
       break
@@ -361,18 +326,19 @@ onUnmounted(() => {
   }
 
   &__text-content {
-    min-height: 60px;
-    padding: var(--space);
+    padding: var(--space-s);
     border: 2px solid var(--color-accent);
     border-radius: var(--border-radius);
     background: var(--color-background);
-    font-size: 1.25rem;
-    line-height: 1.4;
+    font-size: 1.75em;
+    line-height: 1.5;
     color: var(--color-foreground);
     display: flex;
     align-items: center;
     word-wrap: break-word;
     overflow-wrap: break-word;
+    transform: scale(1,1);
+    transition: transform .3s ease-in-out;
 
     &:empty::before {
       content: attr(placeholder);
@@ -380,6 +346,9 @@ onUnmounted(() => {
     }
 
     &--has-text {}
+    &--no-text{
+      transform: scale(.75,0);
+    }
   }
 
   &__text-actions {
@@ -409,6 +378,7 @@ onUnmounted(() => {
     border: 1px solid color-mix(in srgb, var(--color-primary), transparent 50%);
     border-radius: calc(var(--border-radius) / 2);
     padding: var(--space-xs) var(--space-s);
+    position: relative;
 
     &:empty {
       display: none;
@@ -420,6 +390,10 @@ onUnmounted(() => {
         content: "";
         height: 1em;
         width: 2px;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        right: var(--space-xs);
         background-color: color-mix(in srgb, var(--color-primary), transparent 50%);
         animation: blink 1s infinite;
         margin-left: .125em;
@@ -628,77 +602,6 @@ onUnmounted(() => {
     text-align: center;
   }
 }
-
-// Settings panel
-.type-settings {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1000;
-
-  &__backdrop {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-  }
-
-  &__panel {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    border-radius: 1rem;
-    padding: 2rem;
-    min-width: 350px;
-    max-width: 90vw;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-
-  &__title {
-    margin: 0 0 1.5rem;
-    font-size: 1.25rem;
-    font-weight: 600;
-    text-align: center;
-  }
-
-  &__subtitle {
-    margin: 1.5rem 0 1rem;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--color-primary);
-    border-bottom: 1px solid var(--color-accent);
-    padding-bottom: 0.5rem;
-
-    &:first-of-type {
-      margin-top: 0;
-    }
-  }
-
-  &__group {
-    margin-bottom: 1.5rem;
-  }
-
-  &__label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: var(--text-primary);
-  }
-
-  &__actions {
-    display: flex;
-    justify-content: center;
-    margin-top: 2rem;
-  }
-}
-
 
 // Reduced motion support
 @media (prefers-reduced-motion: reduce) {
