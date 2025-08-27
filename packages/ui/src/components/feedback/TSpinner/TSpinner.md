@@ -83,7 +83,7 @@ import { TSpinner } from '@tiko/ui'
       <TSpinner size="large" />
       <p>Loading data...</p>
     </div>
-    
+
     <div class="content">
       <!-- Your content here -->
     </div>
@@ -194,7 +194,7 @@ onMounted(async () => {
 
 <style>
 .card {
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-accent);
   border-radius: var(--radius);
   padding: var(--space);
   min-height: 150px;

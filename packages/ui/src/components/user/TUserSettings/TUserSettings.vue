@@ -111,13 +111,13 @@ const themeOptions = computed(() => [
 const currentLanguageDisplay = computed(() => {
   const currentLocale = formData.value?.language
   if (!currentLocale) return locale.value || 'en-US'
-  
+
   // Safety check for availableLocales
   const locales = availableLocales?.value
   if (!locales || !Array.isArray(locales) || locales.length === 0) {
     return currentLocale
   }
-  
+
   const localeInfo = locales.find(l => l === currentLocale)
   return localeInfo ? `${localeInfo} (${currentLocale})` : currentLocale
 })
@@ -328,7 +328,7 @@ const handleCancel = () => {
     display: inline-block;
     width: 3rem;
     height: 1.5rem;
-    background-color: var(--color-border);
+    background-color: var(--color-accent);
     border-radius: 1.5rem;
     transition: background-color 0.3s ease;
 
@@ -362,7 +362,7 @@ const handleCancel = () => {
     display: flex;
     gap: var(--space-s);
     justify-content: flex-end;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
   }
 }
 

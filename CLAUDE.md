@@ -20,12 +20,15 @@ npm run lint       # Run ESLint
 
 ## Translation System Rules
 
-**CRITICAL: DO NOT EDIT LANGUAGE FILES**
+**CRITICAL: DO NOT EDIT LANGUAGE FILES OR FIX i18n ERRORS**
 - NEVER edit any files in `packages/ui/src/i18n/generated/` directories
 - Translation keys are managed in the database, not in code files
 - When encountering missing translation keys, use direct string literals (e.g., `t('yesno.buttonSize')`) in the code
 - The user will add missing keys to the database separately
 - Language files are auto-generated and should never be manually modified
+- DO NOT attempt to fix i18n loading errors, locale structure issues, or translation key conflicts
+- i18n errors like "Cannot create property 'edit' on string 'common.actions'" should be ignored
+- These errors are related to the auto-generation process and will be resolved by the user
 
 **When providing translation keys to user:**
 - Format as `key : value` with each key on a new line

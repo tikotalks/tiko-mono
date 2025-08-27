@@ -248,7 +248,7 @@ onMounted(() => {
 
   &__header {
     padding: var(--space-lg);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
 
     h2 {
       font-size: var(--font-size-lg);
@@ -303,7 +303,7 @@ onMounted(() => {
 
     &:hover {
       background: var(--color-background-secondary);
-      border-radius: var(--radius-sm);
+      border-radius: var(--border-radius);
     }
   }
 
@@ -318,7 +318,7 @@ onMounted(() => {
     justify-content: flex-end;
     gap: var(--space);
     padding: var(--space-lg);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
   }
 }
 </style>

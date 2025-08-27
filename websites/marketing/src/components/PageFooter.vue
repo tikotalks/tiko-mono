@@ -8,21 +8,13 @@
 
         <div :class="bemm('column', ['', 'right'])">
           <ul :class="bemm('nav-columns')">
-            <li
-              v-for="nav in navigation"
-              :key="nav.label"
-              :class="bemm('nav-item', ['', 'main'])"
-            >
+            <li v-for="nav in navigation" :key="nav.label" :class="bemm('nav-item', ['', 'main'])">
               <h4 :class="bemm('nav-label')">{{ nav.label }}</h4>
               <ul :class="bemm('nav-list')">
-                <li
-                  :class="bemm('nav-item')"
-                  v-for="item in nav.items"
-                  :key="item.text"
-                >
-                  <a :class="bemm('nav-link')" :href="item.url">
-                    <span :class="bemm('nav-text')">{{ item.text }}</span></a
-                  >
+                <li :class="bemm('nav-item')" v-for="item in nav.items" :key="item.text">
+                  <RouterLink :to="item.to" :class="bemm('nav-link')">
+                    <span :class="bemm('nav-text')">{{ item.text }}</span>
+                  </RouterLink>
                 </li>
               </ul>
             </li>
@@ -35,16 +27,9 @@
           &copy; {{ new Date().getFullYear() }} Tiko. All rights reserved.
         </p>
         <div :class="bemm('links')">
-          <a
-            v-for="link in links"
-            :key="link.text"
-            :href="link.url"
-            :class="bemm('link')"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <RouterLink v-for="link in links" :key="link.text" :to="link.to" :class="bemm('link')">
             {{ link.text }}
-          </a>
+          </RouterLink>
         </div>
       </div>
     </div>
@@ -55,36 +40,65 @@
 import { TLogo } from '@tiko/ui';
 import { useBemm } from 'bemm';
 import { computed } from 'vue';
+import { RouterLinkProps } from 'vue-router';
 const bemm = useBemm('footer');
 
 const links = computed(() => [
-  { text: 'Privacy Policy', url: '/privacy' },
-  { text: 'Terms of Service', url: '/terms' },
-  { text: 'Contact Us', url: '/contact' },
+  { text: 'Privacy Policy', to: { name: 'content', params: { view: 'privacy' } } },
+  { text: 'Terms of Service', to: { name: 'content', params: { view: 'terms' } } },
+  { text: 'Contact Us', to: { name: 'content', params: { view: 'contact' } } },
 ]);
 
 const navigation = computed<
   Array<{
     label: string;
-    items: Array<{ text: string; url: string }>;
+    items: Array<{ text: string; url: string; to: { name: string; params: { view: string } } }>;
   }>
 >(() => [
   {
     label: 'Tiko',
     items: [
-      { text: 'About', url: '/about' },
-      { text: 'Team', url: '/team' },
-      { text: 'Apps', url: '/apps' },
-      { text: 'Technology', url: '/technology' }
+      {
+        text: 'About', url: '/about', to: {
+          name: 'content',
+          params: {   view: 'about'}
+        }
+      },
+      {
+        text: 'Team', url: '/team', to: {
+          name: 'content',
+          params: {  view: 'team'}
+        }
+      },
+      {
+        text: 'Apps', url: '/apps', to: {
+          name: 'content',
+          params: {  view: 'apps'}
+        }
+      },
+      {
+        text: 'Technology', url: '/technology', to: {
+          name: 'content',
+          params: { view: 'technology' }
+        }
+      }
     ],
   },
   {
     label: 'Support',
     items: [
-      { text: 'Sponsors', url: '/sponsors' },
+      {
+        text: 'Sponsors',
+        url: '/sponsors',
+        to: { name: 'content', params: { view: 'sponsors' } }
+      },
       // { text: 'Help Center', url: '/help' },
       // { text: 'Contact Support', url: '/support' },
-      { text: 'FAQ', url: '/faq' },
+      {
+        text: 'FAQ',
+        url: '/faq',
+        to: { name: 'content', params: { view: 'faq' } }
+      },
     ],
   },
 ]);
@@ -95,11 +109,9 @@ const navigation = computed<
   background-color: var(--color-background);
   color: var(--color-foreground);
   padding: var(--space);
-  background-image: linear-gradient(
-    to top,
-    var(--color-dark) 10%,
-    var(--color-light)
-  );
+  background-image: linear-gradient(to top,
+      var(--color-dark) 10%,
+      var(--color-light));
 
   &__container {
     background-color: var(--color-foreground);
@@ -110,14 +122,17 @@ const navigation = computed<
 
   &__column {
     width: 50%;
+
     &--left {
       text-align: left;
+
       @media screen and (max-width: 768px) {
         display: flex;
         justify-content: center;
         align-items: center;
       }
     }
+
     &--right {
       display: flex;
       justify-content: flex-end;
@@ -135,6 +150,7 @@ const navigation = computed<
     margin: 0;
     padding: 0;
     list-style: none;
+
     &--main {
       padding: var(--space);
     }
@@ -144,6 +160,7 @@ const navigation = computed<
     font-weight: bold;
     color: var(--color-primary);
   }
+
   &__nav-list {
     margin: 0;
     padding: 0;
@@ -164,17 +181,20 @@ const navigation = computed<
       color: var(--color-primary);
     }
   }
+
   &__nav-text {
     color: var(--color-background);
   }
 
   &__top {
     display: flex;
+
     @media screen and (max-width: 768px) {
       flex-direction: column;
       align-items: center;
     }
   }
+
   &__content {
     margin-bottom: var(--space-md);
   }
@@ -186,6 +206,7 @@ const navigation = computed<
     gap: var(--space);
     opacity: 0.5;
     font-size: var(--font-size-s);
+
     @media screen and (max-width: 768px) {
       flex-direction: column;
       align-items: center;

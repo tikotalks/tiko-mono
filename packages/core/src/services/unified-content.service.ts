@@ -1,6 +1,6 @@
 /**
  * Unified Content Service
- * 
+ *
  * Single source of truth for content operations with:
  * - Deep resolution via database joins
  * - Multi-level caching
@@ -78,6 +78,7 @@ export interface ContentField {
   field_key: string
   field_type: string
   is_translatable: boolean
+  label?:string;
   config?: Record<string, any>
 }
 
@@ -99,12 +100,12 @@ class ContentCacheManager {
   get<T>(key: string): T | null {
     const entry = this.memoryCache.get(key)
     if (!entry) return null
-    
+
     if (Date.now() > entry.expires) {
       this.memoryCache.delete(key)
       return null
     }
-    
+
     console.log(`📦 [Cache] HIT: ${key}`)
     return entry.data
   }
@@ -116,7 +117,7 @@ class ContentCacheManager {
       language: 'en', // TODO: extract from key
       created_at: Date.now()
     }
-    
+
     this.memoryCache.set(key, entry)
     console.log(`💾 [Cache] SET: ${key} (TTL: ${ttl}ms)`)
   }
@@ -129,14 +130,14 @@ class ContentCacheManager {
   invalidatePattern(pattern: string): void {
     const regex = new RegExp(pattern.replace('*', '.*'))
     let count = 0
-    
+
     for (const key of this.memoryCache.keys()) {
       if (regex.test(key)) {
         this.memoryCache.delete(key)
         count++
       }
     }
-    
+
     console.log(`🗑️ [Cache] INVALIDATED ${count} keys matching pattern: ${pattern}`)
   }
 
@@ -178,7 +179,7 @@ export class UnifiedContentService {
    */
   async getProjects(options: QueryOptions = {}): Promise<any[]> {
     const cacheKey = `projects:all:${options.language || this.defaultLanguage}`
-    
+
     if (options.cache !== false) {
       const cached = this.cache.get<any[]>(cacheKey)
       if (cached) return cached
@@ -212,7 +213,7 @@ export class UnifiedContentService {
    */
   async getProject(projectId: string, options: QueryOptions = {}): Promise<any> {
     const cacheKey = `project:${projectId}:${options.language || this.defaultLanguage}:deep:${!!options.deep}`
-    
+
     if (options.cache !== false) {
       const cached = this.cache.get(cacheKey)
       if (cached) return cached
@@ -246,7 +247,7 @@ export class UnifiedContentService {
   }
 
   // ========================================================================
-  // PAGE ENDPOINTS  
+  // PAGE ENDPOINTS
   // ========================================================================
 
   /**
@@ -255,7 +256,7 @@ export class UnifiedContentService {
    */
   async getPages(options: QueryOptions = {}): Promise<any[]> {
     const cacheKey = `pages:all:${options.language || this.defaultLanguage}`
-    
+
     if (options.cache !== false) {
       const cached = this.cache.get<any[]>(cacheKey)
       if (cached) return cached
@@ -289,7 +290,7 @@ export class UnifiedContentService {
    */
   async getPagesByProject(projectId: string, options: QueryOptions = {}): Promise<any[]> {
     const cacheKey = `pages:project:${projectId}:${options.language || this.defaultLanguage}`
-    
+
     if (options.cache !== false) {
       const cached = this.cache.get<any[]>(cacheKey)
       if (cached) return cached
@@ -325,7 +326,7 @@ export class UnifiedContentService {
   async getPage(pageId: string, options: QueryOptions = {}): Promise<FullPageContent | any> {
     const language = options.language || this.defaultLanguage
     const cacheKey = `page:${pageId}:${language}:deep:${!!options.deep}`
-    
+
     if (options.cache !== false) {
       const cached = this.cache.get(cacheKey)
       if (cached) return cached
@@ -368,7 +369,7 @@ export class UnifiedContentService {
    */
   async getSections(options: QueryOptions = {}): Promise<any[]> {
     const cacheKey = `sections:all:${options.language || this.defaultLanguage}`
-    
+
     if (options.cache !== false) {
       const cached = this.cache.get<any[]>(cacheKey)
       if (cached) return cached
@@ -408,7 +409,7 @@ export class UnifiedContentService {
    */
   async getSectionsByPage(pageId: string, options: QueryOptions = {}): Promise<any[]> {
     const cacheKey = `sections:page:${pageId}:${options.language || this.defaultLanguage}`
-    
+
     if (options.cache !== false) {
       const cached = this.cache.get<any[]>(cacheKey)
       if (cached) return cached
@@ -454,7 +455,7 @@ export class UnifiedContentService {
   async getSection(sectionId: string, options: QueryOptions = {}): Promise<FullSectionContent | any> {
     const language = options.language || this.defaultLanguage
     const cacheKey = `section:${sectionId}:${language}:deep:${!!options.deep}`
-    
+
     if (options.cache !== false) {
       const cached = this.cache.get(cacheKey)
       if (cached) return cached
@@ -503,7 +504,7 @@ export class UnifiedContentService {
    */
   async getItems(options: QueryOptions = {}): Promise<any[]> {
     const cacheKey = `items:all:${options.language || this.defaultLanguage}`
-    
+
     if (options.cache !== false) {
       const cached = this.cache.get<any[]>(cacheKey)
       if (cached) return cached
@@ -538,7 +539,7 @@ export class UnifiedContentService {
   async getItemsBySection(sectionId: string, options: QueryOptions = {}): Promise<any[]> {
     const language = options.language || this.defaultLanguage
     const cacheKey = `items:section:${sectionId}:${language}`
-    
+
     if (options.cache !== false) {
       const cached = this.cache.get<any[]>(cacheKey)
       if (cached) return cached
@@ -577,7 +578,7 @@ export class UnifiedContentService {
   async getItem(itemId: string, options: QueryOptions = {}): Promise<FullItemContent | any> {
     const language = options.language || this.defaultLanguage
     const cacheKey = `item:${itemId}:${language}:deep:${!!options.deep}`
-    
+
     if (options.cache !== false) {
       const cached = this.cache.get(cacheKey)
       if (cached) return cached
@@ -642,7 +643,7 @@ export class UnifiedContentService {
 
     // Process the data
     const processedSection = await this.processSectionDataFromRPC(data, language)
-    
+
     const queryTime = Date.now() - startTime
     console.log(`✅ [UnifiedContent] Deep fetched section in ${queryTime}ms`)
 
@@ -672,7 +673,7 @@ export class UnifiedContentService {
 
     // Process the data
     const processedItem = await this.processItemDataFromRPC(data, language)
-    
+
     const queryTime = Date.now() - startTime
     console.log(`✅ [UnifiedContent] Deep fetched item in ${queryTime}ms`)
 
@@ -685,7 +686,7 @@ export class UnifiedContentService {
     }
 
     const firstRow = rawData[0]
-    
+
     // Extract section info
     const section = {
       id: firstRow.section_id,
@@ -724,7 +725,7 @@ export class UnifiedContentService {
 
     // Process field values using existing logic
     const processedContent = await processContentFields(
-      rawContent, 
+      rawContent,
       fields,
       undefined, // No linked items resolution yet
       language
@@ -761,7 +762,7 @@ export class UnifiedContentService {
     }
 
     const firstRow = rawData[0]
-    
+
     // Extract item info
     const item = {
       id: firstRow.item_id,
@@ -798,7 +799,7 @@ export class UnifiedContentService {
 
     // Process field values using existing logic
     const processedContent = await processContentFields(
-      rawContent, 
+      rawContent,
       fields,
       undefined, // No nested linked items for now
       language
@@ -831,7 +832,7 @@ export class UnifiedContentService {
       }
 
       const item = itemsMap.get(row.item_id)!
-      
+
       if (row.field_key) {
         // Add content
         item.content[row.field_key] = row.field_value
@@ -873,7 +874,7 @@ export class UnifiedContentService {
 
     // Step 2: Process the joined data
     const processedPage = await this.processPageData(pageData, language)
-    
+
     const queryTime = Date.now() - startTime
     processedPage.metadata = {
       ...processedPage.metadata,
@@ -910,10 +911,10 @@ export class UnifiedContentService {
 
     // Group sections
     const sectionMap = new Map<string, any>()
-    
+
     rawData.forEach(row => {
       if (!row.section_id) return // Page has no sections
-      
+
       if (!sectionMap.has(row.section_id)) {
         sectionMap.set(row.section_id, {
           section: {
@@ -955,7 +956,7 @@ export class UnifiedContentService {
 
   private async processSectionContent(sectionData: any, language: string): Promise<FullSectionContent> {
     const sectionId = sectionData.section.id
-    
+
     // Get section content data using working function
     const { data: contentData, error: contentError } = await this.supabase
       .rpc('get_section_content_working', {
@@ -969,14 +970,14 @@ export class UnifiedContentService {
     // Process field values
     const fields: ContentField[] = []
     const rawContent: Record<string, any> = {}
-    
+
     if (contentData) {
       contentData.forEach((item: any) => {
         // Prefer translated content over default
         if (item.language_code === language || (!rawContent[item.field_key] && !item.language_code)) {
           rawContent[item.field_key] = item.value
         }
-        
+
         // Collect unique fields
         if (item.content_fields && !fields.find(f => f.id === item.content_fields.id)) {
           fields.push({
@@ -992,7 +993,7 @@ export class UnifiedContentService {
 
     // Process fields using existing field processing logic
     const processedContent = await processContentFields(
-      rawContent, 
+      rawContent,
       fields,
       undefined, // No linked items resolution for now
       language

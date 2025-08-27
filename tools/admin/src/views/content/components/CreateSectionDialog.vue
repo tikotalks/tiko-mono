@@ -519,7 +519,7 @@ onMounted(() => {
 
   &__header {
     padding: var(--space-lg);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
 
     h2 {
       font-size: var(--font-size-lg);
@@ -543,7 +543,7 @@ onMounted(() => {
   &__fields-section {
     margin-top: var(--space-xl);
     padding-top: var(--space-xl);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
 
     h3 {
       font-size: var(--font-size-md);
@@ -561,7 +561,7 @@ onMounted(() => {
 
   &__field-item {
     background: var(--color-background-secondary);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius-md);
     padding: var(--space);
   }
@@ -586,7 +586,7 @@ onMounted(() => {
   &__field-config {
     margin-top: var(--space);
     padding-top: var(--space);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
   }
 
   &__add-field-button {
@@ -599,7 +599,7 @@ onMounted(() => {
     justify-content: flex-end;
     gap: var(--space);
     padding: var(--space-lg);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
   }
 }
 </style>

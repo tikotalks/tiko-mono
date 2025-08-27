@@ -149,7 +149,7 @@ watch(() => locale.value, () => {
 
   &__debug {
     background: var(--color-background-secondary);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--border-radius);
     padding: var(--space);
     margin: var(--space-xl) 0;

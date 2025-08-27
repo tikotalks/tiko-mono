@@ -9,7 +9,7 @@
     <section :class="bemm('section')">
       <h2>Button Types</h2>
       <p>Different visual styles for various use cases</p>
-      
+
       <div :class="bemm('demo')">
         <TButton type="default">Default</TButton>
         <TButton type="ghost">Ghost</TButton>
@@ -28,7 +28,7 @@
     <section :class="bemm('section')">
       <h2>Button Sizes</h2>
       <p>Different sizes for various contexts</p>
-      
+
       <div :class="bemm('demo')">
         <TButton size="small">Small</TButton>
         <TButton size="medium">Medium</TButton>
@@ -47,7 +47,7 @@
     <section :class="bemm('section')">
       <h2>Button Colors</h2>
       <p>Semantic color variants for different actions</p>
-      
+
       <div :class="bemm('demo')">
         <TButton color="primary">Primary</TButton>
         <TButton color="secondary">Secondary</TButton>
@@ -70,7 +70,7 @@
     <section :class="bemm('section')">
       <h2>Buttons with Icons</h2>
       <p>Add icons to provide visual context</p>
-      
+
       <div :class="bemm('demo')">
         <TButton icon="add">Add Item</TButton>
         <TButton icon="edit">Edit</TButton>
@@ -91,7 +91,7 @@
     <section :class="bemm('section')">
       <h2>Button States</h2>
       <p>Different states for user interaction feedback</p>
-      
+
       <div :class="bemm('demo')">
         <TButton>Normal</TButton>
         <TButton disabled>Disabled</TButton>
@@ -110,7 +110,7 @@
     <section :class="bemm('section')">
       <h2>Combined Examples</h2>
       <p>Real-world button combinations</p>
-      
+
       <div :class="bemm('demo', 'vertical')">
         <div :class="bemm('demo-group')">
           <h4>Action Group</h4>
@@ -202,7 +202,7 @@ const bemm = useBemm('buttons-view')
 
   &__header {
     margin-bottom: var(--space-xl);
-    
+
     h1 {
       font-size: 2.5rem;
       font-weight: 700;
@@ -219,7 +219,7 @@ const bemm = useBemm('buttons-view')
 
   &__section {
     margin-bottom: var(--space-xl);
-    
+
     h2 {
       font-size: 1.5rem;
       font-weight: 600;
@@ -243,7 +243,7 @@ const bemm = useBemm('buttons-view')
     padding: var(--space-lg);
     background: var(--color-background-secondary);
     border-radius: var(--radius);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
 
     &--vertical {
       flex-direction: column;
@@ -255,7 +255,7 @@ const bemm = useBemm('buttons-view')
     display: flex;
     flex-direction: column;
     gap: var(--space-s);
-    
+
     h4 {
       margin: 0;
       font-size: 0.875rem;
@@ -272,7 +272,7 @@ const bemm = useBemm('buttons-view')
 
   &__code {
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius);
     padding: var(--space);
 
@@ -287,7 +287,7 @@ const bemm = useBemm('buttons-view')
       margin: 0;
       padding: 0;
       overflow-x: auto;
-      
+
       code {
         font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
         font-size: 0.875rem;
@@ -300,31 +300,31 @@ const bemm = useBemm('buttons-view')
 
   &__props-table {
     overflow-x: auto;
-    
+
     table {
       width: 100%;
       border-collapse: collapse;
       background: var(--color-background);
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--color-accent);
       border-radius: var(--radius);
-      
+
       th, td {
         padding: var(--space-s) var(--space);
         text-align: left;
-        border-bottom: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-accent);
       }
-      
+
       th {
         background: var(--color-background-secondary);
         font-weight: 600;
         color: var(--color-foreground);
         font-size: 0.875rem;
       }
-      
+
       td {
         color: var(--color-foreground-secondary);
         font-size: 0.875rem;
-        
+
         code {
           background: var(--color-background-secondary);
           padding: 0.125rem 0.25rem;
@@ -334,7 +334,7 @@ const bemm = useBemm('buttons-view')
           color: var(--color-foreground);
         }
       }
-      
+
       tbody tr:last-child {
         th, td {
           border-bottom: none;
@@ -347,11 +347,11 @@ const bemm = useBemm('buttons-view')
 @media (max-width: 768px) {
   .buttons-view {
     padding: var(--space);
-    
+
     &__header h1 {
       font-size: 2rem;
     }
-    
+
     &__demo {
       flex-direction: column;
       align-items: stretch;

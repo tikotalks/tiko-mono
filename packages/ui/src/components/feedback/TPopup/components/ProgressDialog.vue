@@ -170,7 +170,7 @@ const handleCancel = () => {
     padding: var(--space-s);
     background: var(--color-background-secondary);
     border-radius: var(--border-radius);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
   }
 
   &__current-label {
@@ -186,7 +186,7 @@ const handleCancel = () => {
     background: var(--color-background);
     padding: var(--space-xs);
     border-radius: var(--border-radius-sm);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     word-break: break-all;
   }
 
@@ -238,7 +238,7 @@ const handleCancel = () => {
     display: flex;
     justify-content: center;
     padding-top: var(--space-s);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
   }
 }
 

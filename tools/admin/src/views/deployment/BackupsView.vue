@@ -119,7 +119,7 @@ import { useBemm } from 'bemm';
 import { TList, TListItem, TListCell, TChip, TSpinner, listActions, Size } from '@tiko/ui';
 import { Icons } from 'open-icon';
 import { THeader, TButton, TIcon, type PopupService, type ToastService } from '@tiko/ui';
-import { backupService, type DatabaseBackup } from '@tiko/core';
+import { backupService, type DatabaseBackup, formatDate, useI18n } from '@tiko/core';
 
 const bemm = useBemm('deployment-backups');
 const { t } = useI18n();
@@ -302,31 +302,14 @@ const confirmDeleteBackup = (backup: DatabaseBackup) => {
 const getStatusIcon = (status: string) => {
   switch (status) {
     case 'creating':
-      return Icons.LOADING;
+      return Icons.THREE_DOTS_HORIZONTAL;
     case 'success':
-      return Icons.CHECK;
+      return Icons.CHECK_M;
     case 'failed':
       return Icons.X;
     default:
-      return Icons.CIRCLE;
+      return Icons.CIRCLED;
   }
-};
-
-const formatDate = (date: Date) => {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(date);
-};
-
-const formatFileSize = (bytes: number) => {
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-  if (bytes === 0) return '0 Bytes';
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
 };
 
 onMounted(async () => {

@@ -195,7 +195,7 @@ onMounted(() => {
     flex: 1;
     overflow: auto;
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--border-radius);
   }
 

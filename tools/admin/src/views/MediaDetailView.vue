@@ -236,7 +236,7 @@ import { Icons } from 'open-icon';
 import { useRoute, useRouter } from 'vue-router';
 import { useBemm } from 'bemm';
 import { TTextArea, TFormGroup, TChip,  TCard, TButton, TIcon, TSpinner, TInput, TInputCheckbox, TChipGroup, ConfirmDialog, ButtonType } from '@tiko/ui';
-import { useImageUrl, mediaService, mediaAnalysisService, useI18n } from '@tiko/core';
+import { useImageUrl, mediaService, mediaAnalysisService, useI18n, formatBytes, formatDate } from '@tiko/core';
 import { uploadService } from '../services/upload.service';
 import type { ToastService, PopupService, MediaItem  } from '@tiko/ui';
 
@@ -274,18 +274,6 @@ const imageUrls = computed(() => {
     thumbnail: variants.thumbnail,
   };
 });
-
-const formatBytes = (bytes: number): string => {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-};
-
-const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString();
-};
 
 const fileName = (filename: string): string => {
   return filename ? filename.split('/').pop() || filename : '';

@@ -87,13 +87,13 @@ async function loadFields() {
   try {
     // Load fields for this section template
     fields.value = await contentService.getFieldsBySectionTemplate(props.section.section_template_id)
-    
+
     // Load existing data
     const existingData = await contentService.getSectionData(
       props.section.id,
       props.languageCode
     )
-    
+
     // Initialize field values
     fields.value.forEach(field => {
       if (existingData[field.field_key] !== undefined) {
@@ -191,7 +191,7 @@ onMounted(() => {
     justify-content: flex-end;
     gap: var(--space);
     padding-top: var(--space-lg);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
   }
 }
 </style>

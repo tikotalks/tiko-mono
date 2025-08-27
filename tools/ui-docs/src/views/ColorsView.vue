@@ -9,15 +9,15 @@
     <section :class="bemm('section')">
       <h2>Colors (Design Tokens)</h2>
       <p>Semantic color tokens that adapt to themes and provide consistent meaning across the UI. These are the primary colors you should use in components.</p>
-      
+
       <div :class="bemm('color-grid')">
         <div v-for="color in semanticColors" :key="color.name" :class="bemm('color-item')">
-          <div 
-            :class="bemm('color-swatch')" 
+          <div
+            :class="bemm('color-swatch')"
             :style="{ backgroundColor: `var(--color-${color.name})` }"
             @click="copyColor(`var(--color-${color.name})`)"
           >
-            <span 
+            <span
               :class="bemm('color-text', 'light')"
               :style="{ color: color.hasTextColor ? `var(--color-${color.name}-text)` : 'white' }"
             >
@@ -28,8 +28,8 @@
             <h4>{{ color.displayName }}</h4>
             <div :class="bemm('color-tokens')">
               <code @click="copyColor(`var(--color-${color.name})`)">var(--color-{{ color.name }})</code>
-              <code 
-                v-if="color.hasTextColor" 
+              <code
+                v-if="color.hasTextColor"
                 @click="copyColor(`var(--color-${color.name}-text)`)"
                 :class="bemm('text-token')"
               >
@@ -37,12 +37,12 @@
               </code>
             </div>
             <p>{{ color.usage }}</p>
-            
+
             <!-- Text color demo -->
             <div v-if="color.hasTextColor" :class="bemm('text-demo')">
-              <span 
-                :style="{ 
-                  backgroundColor: `var(--color-${color.name})`, 
+              <span
+                :style="{
+                  backgroundColor: `var(--color-${color.name})`,
                   color: `var(--color-${color.name}-text)`,
                   padding: 'var(--space-xs) var(--space-s)',
                   borderRadius: 'var(--radius)',
@@ -61,15 +61,15 @@
     <section :class="bemm('section')">
       <h2>Base Colors</h2>
       <p>Hardcoded color values that serve as the foundation for the design tokens above. These colors are used internally by the design system to generate theme variations.</p>
-      
+
       <div :class="bemm('color-grid')">
         <div v-for="color in baseColors" :key="color.name" :class="bemm('color-item')">
-          <div 
-            :class="bemm('color-swatch')" 
+          <div
+            :class="bemm('color-swatch')"
             :style="{ backgroundColor: `var(--color-${color.name})` }"
             @click="copyColor(`var(--color-${color.name})`)"
           >
-            <span 
+            <span
               :class="bemm('color-text', isLightBaseColor(color.name) ? 'dark' : 'light')"
             >
               {{ color.name }}
@@ -79,8 +79,8 @@
             <h4>{{ color.displayName }}</h4>
             <div :class="bemm('color-tokens')">
               <code @click="copyColor(`var(--color-${color.name})`)">var(--color-{{ color.name }})</code>
-              <code 
-                v-if="color.hasTextColor" 
+              <code
+                v-if="color.hasTextColor"
                 @click="copyColor(`var(--color-${color.name}-text)`)"
                 :class="bemm('text-token')"
               >
@@ -88,12 +88,12 @@
               </code>
             </div>
             <p>{{ color.usage }}</p>
-            
+
             <!-- Text color demo -->
             <div v-if="color.hasTextColor" :class="bemm('text-demo')">
-              <span 
-                :style="{ 
-                  backgroundColor: `var(--color-${color.name})`, 
+              <span
+                :style="{
+                  backgroundColor: `var(--color-${color.name})`,
                   color: `var(--color-${color.name}-text)`,
                   padding: 'var(--space-xs) var(--space-s)',
                   borderRadius: 'var(--radius)',
@@ -112,7 +112,7 @@
     <section :class="bemm('section')">
       <h2>Usage Guidelines</h2>
       <p>Understanding when to use Colors vs BaseColors</p>
-      
+
       <div :class="bemm('guidelines')">
         <div :class="bemm('guideline-card', 'recommended')">
           <h4>✅ Recommended: Use Colors (Design Tokens)</h4>
@@ -137,7 +137,7 @@
       <div :class="bemm('demo')">
         <div :class="bemm('usage-example')">
           <h4>Proper Component Styling</h4>
-          <div :class="bemm('example-card')" style="background: var(--color-background); border: 1px solid var(--color-border); color: var(--color-foreground);">
+          <div :class="bemm('example-card')" style="background: var(--color-background); border: 1px solid var(--color-accent); color: var(--color-foreground);">
             <h3 style="color: var(--color-primary);">Primary Heading</h3>
             <p style="color: var(--color-foreground-secondary);">Secondary text content</p>
             <TButton color="primary">Primary Action</TButton>
@@ -166,7 +166,7 @@
         <pre><code>/* ✅ Good: Use semantic color tokens */
 .component {
   background-color: var(--color-background);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-accent);
   color: var(--color-foreground);
 }
 
@@ -192,7 +192,7 @@
     <section :class="bemm('section')">
       <h2>Accessibility</h2>
       <p>Color contrast and accessibility considerations</p>
-      
+
       <div :class="bemm('accessibility-grid')">
         <div :class="bemm('contrast-example')">
           <h4>Good Contrast</h4>
@@ -204,7 +204,7 @@
 
         <div :class="bemm('contrast-example')">
           <h4>Text Hierarchy</h4>
-          <div style="background: var(--color-background); padding: var(--space); border: 1px solid var(--color-border); border-radius: var(--radius);">
+          <div style="background: var(--color-background); padding: var(--space); border: 1px solid var(--color-accent); border-radius: var(--radius);">
             <h3 style="color: var(--color-foreground); margin: 0 0 var(--space-s);">Primary text</h3>
             <p style="color: var(--color-foreground-secondary); margin: 0;">Secondary text with appropriate contrast</p>
           </div>
@@ -229,7 +229,7 @@ const bemm = useBemm('colors-view')
 const showCopyNotification = ref(false)
 
 // Create color objects from the actual types
-const semanticColors = computed(() => 
+const semanticColors = computed(() =>
   Object.values(Colors).map(color => ({
     name: color,
     displayName: color.charAt(0).toUpperCase() + color.slice(1),
@@ -238,7 +238,7 @@ const semanticColors = computed(() =>
   }))
 )
 
-const baseColors = computed(() => 
+const baseColors = computed(() =>
   Object.values(BaseColors).map(color => ({
     name: color,
     displayName: color.charAt(0).toUpperCase() + color.slice(1),
@@ -309,7 +309,7 @@ const copyColor = async (colorValue: string) => {
 
   &__header {
     margin-bottom: var(--space-xl);
-    
+
     h1 {
       font-size: 2.5rem;
       font-weight: 700;
@@ -326,7 +326,7 @@ const copyColor = async (colorValue: string) => {
 
   &__section {
     margin-bottom: var(--space-xl);
-    
+
     h2 {
       font-size: 1.5rem;
       font-weight: 600;
@@ -350,7 +350,7 @@ const copyColor = async (colorValue: string) => {
 
   &__color-item {
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius);
     overflow: hidden;
     transition: transform 0.2s ease;
@@ -430,7 +430,7 @@ const copyColor = async (colorValue: string) => {
       transition: background-color 0.2s ease;
 
       &:hover {
-        background: var(--color-border);
+        background: var(--color-accent);
       }
     }
   }
@@ -442,7 +442,7 @@ const copyColor = async (colorValue: string) => {
 
   &__text-demo {
     margin-top: var(--space-xs);
-    
+
     span {
       display: inline-block;
       font-weight: 500;
@@ -464,7 +464,7 @@ const copyColor = async (colorValue: string) => {
     &--recommended {
       background: rgba(var(--color-success-rgb, 34, 197, 94), 0.05);
       border-color: var(--color-success);
-      
+
       h4 {
         color: var(--color-success);
         margin: 0 0 var(--space-s);
@@ -474,7 +474,7 @@ const copyColor = async (colorValue: string) => {
     &--avoid {
       background: rgba(var(--color-warning-rgb, 251, 191, 36), 0.05);
       border-color: var(--color-warning);
-      
+
       h4 {
         color: var(--color-warning);
         margin: 0 0 var(--space-s);
@@ -494,7 +494,7 @@ const copyColor = async (colorValue: string) => {
 
     code {
       background: var(--color-background);
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--color-accent);
       padding: var(--space-xs) var(--space-s);
       border-radius: var(--radius);
       font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
@@ -511,7 +511,7 @@ const copyColor = async (colorValue: string) => {
     padding: var(--space-lg);
     background: var(--color-background-secondary);
     border-radius: var(--radius);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
   }
 
   &__usage-example {
@@ -555,7 +555,7 @@ const copyColor = async (colorValue: string) => {
 
   &__code {
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius);
     padding: var(--space);
 
@@ -570,7 +570,7 @@ const copyColor = async (colorValue: string) => {
       margin: 0;
       padding: 0;
       overflow-x: auto;
-      
+
       code {
         font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
         font-size: 0.875rem;
@@ -610,19 +610,19 @@ const copyColor = async (colorValue: string) => {
 @media (max-width: 768px) {
   .colors-view {
     padding: var(--space);
-    
+
     &__header h1 {
       font-size: 2rem;
     }
-    
+
     &__color-grid {
       grid-template-columns: 1fr;
     }
-    
+
     &__demo {
       grid-template-columns: 1fr;
     }
-    
+
     &__accessibility-grid {
       grid-template-columns: 1fr;
     }

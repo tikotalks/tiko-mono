@@ -342,7 +342,7 @@ The component uses BEM classes for styling:
 .app-layout__footer {
   /* Optional footer */
   flex-shrink: 0;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--color-accent);
   background: var(--color-accent);
 }
 ```

@@ -98,7 +98,7 @@ onMounted(async () => {
     overflow-x: auto;
     white-space: nowrap;
     padding-bottom: var(--spacing-sm);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
   }
 
 

@@ -1,3 +1,4 @@
+import { TikoConfig } from '@tiko/core'
 import type { ContextMenuItem } from '../../navigation/TContextMenu/ContextMenu.model'
 
 export interface TTopBarProps {
@@ -67,6 +68,11 @@ export interface TTopBarProps {
    * @default true for apps, false for websites
    */
   enableParentMode?: boolean
+
+  /*
+  **
+  */
+  config?: TikoConfig
 }
 
 export interface TTopBarEmits {

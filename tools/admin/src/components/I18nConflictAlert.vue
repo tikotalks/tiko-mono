@@ -230,7 +230,7 @@ const conflicts = computed(() => {
 
   &__conflict {
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--border-radius-sm);
     padding: var(--space-s);
 

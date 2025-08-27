@@ -113,7 +113,7 @@ const large = ref('')
       placeholder="Search..."
       prefix-icon="search"
     />
-    
+
     <TInput
       v-model="email"
       type="email"
@@ -121,7 +121,7 @@ const large = ref('')
       prefix-icon="mail"
       suffix-icon="check"
     />
-    
+
     <TInput
       v-model="password"
       type="password"
@@ -152,7 +152,7 @@ const password = ref('')
       description="Choose a unique username"
       required
     />
-    
+
     <TInput
       v-model="email"
       type="email"
@@ -191,7 +191,7 @@ const emailError = computed(() => {
       :max="100"
       :step="1"
     />
-    
+
     <TInput
       v-model="price"
       type="number"
@@ -223,7 +223,7 @@ const price = ref(9.99)
       label="Disabled Input"
       disabled
     />
-    
+
     <TInput
       v-model="readonly"
       label="Readonly Input"
@@ -255,7 +255,7 @@ const readonly = ref('Read only value')
       required
       :error="errors.email"
     />
-    
+
     <TInput
       v-model="formData.password"
       type="password"
@@ -265,7 +265,7 @@ const readonly = ref('Read only value')
       :error="errors.password"
       @enter="handleSubmit"
     />
-    
+
     <button type="submit">Login</button>
   </form>
 </template>
@@ -288,7 +288,7 @@ const handleSubmit = () => {
   // Validate
   errors.email = !formData.email ? 'Email is required' : ''
   errors.password = !formData.password ? 'Password is required' : ''
-  
+
   if (!errors.email && !errors.password) {
     console.log('Form submitted:', formData)
   }
@@ -305,9 +305,9 @@ The component uses BEM methodology with customizable CSS variables:
   /* Size-based spacing */
   --input-padding: var(--space-s) var(--space);
   --input-font-size: 1rem;
-  
+
   /* Colors */
-  --input-border-color: var(--color-border);
+  --input-border-color: var(--color-accent);
   --input-focus-color: var(--color-primary);
   --input-error-color: var(--color-error);
 }
@@ -328,7 +328,7 @@ The component uses BEM methodology with customizable CSS variables:
 .custom-input {
   --input-border-color: #8b5cf6;
   --input-focus-color: #7c3aed;
-  
+
   .t-input__field {
     border-radius: 9999px;
     padding-left: 1.5rem;

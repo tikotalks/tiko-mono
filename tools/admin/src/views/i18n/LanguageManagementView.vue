@@ -152,8 +152,8 @@ const statistics = ref<any>({});
 
 // Tabs
 const tabs = [
-  { value: 'languages', label: t('admin.languages.languagesTab) },
-  { value: 'locales', label: t('admin.languages.localesTab) },
+  { value: 'languages', label: t('admin.languages.languagesTab') },
+  { value: 'locales', label: t('admin.languages.localesTab') },
 ];
 
 // Columns
@@ -303,7 +303,7 @@ onMounted(() => {
   &__tabs {
     display: flex;
     gap: var(--space-xs);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
   }
 
   &__tab {
@@ -355,7 +355,7 @@ onMounted(() => {
       content: '';
       position: absolute;
       inset: 0;
-      background: var(--color-border);
+      background: var(--color-accent);
       z-index: -1;
     }
   }

@@ -2,15 +2,15 @@
   <div :class="bemm()" @click="$emit('click')">
     <!-- Cover Image -->
     <div :class="bemm('cover')">
-      <img 
-        v-if="collection.cover_image_url" 
-        :src="collection.cover_image_url" 
+      <img
+        v-if="collection.cover_image_url"
+        :src="collection.cover_image_url"
         :alt="collection.name"
       />
       <div v-else :class="bemm('cover-placeholder')">
         <TIcon :name="Icons.FOLDER" size="large" />
       </div>
-      
+
       <!-- Badges -->
       <div :class="bemm('badges')">
         <TChip v-if="collection.is_public" type="info" size="small">
@@ -20,27 +20,27 @@
           <TIcon :name="Icons.STAR_FULL" size="small" />
         </TChip>
       </div>
-      
+
       <!-- Actions Menu -->
       <div :class="bemm('menu')">
         <TContextMenu
-          :config="{ 
-            position: 'bottom-right', 
-            menu: getMenuItems() 
+          :config="{
+            position: 'bottom-right',
+            menu: getMenuItems()
           }"
         >
           <TButton type="ghost" size="small" :icon="Icons.THREE_DOTS_VERTICAL" />
         </TContextMenu>
       </div>
     </div>
-    
+
     <!-- Content -->
     <div :class="bemm('content')">
       <h3 :class="bemm('title')">{{ collection.name }}</h3>
       <p v-if="collection.description" :class="bemm('description')">
         {{ collection.description }}
       </p>
-      
+
       <!-- Stats -->
       <div :class="bemm('stats')">
         <span :class="bemm('stat')">
@@ -56,11 +56,11 @@
           {{ collection.like_count }}
         </span>
       </div>
-      
+
       <!-- Owner -->
       <div v-if="collection.owner" :class="bemm('owner')">
-        <TAvatar 
-          :src="collection.owner.avatar_url" 
+        <TAvatar
+          :src="collection.owner.avatar_url"
           :name="collection.owner.username"
           size="xs"
         />
@@ -73,13 +73,13 @@
 <script setup lang="ts">
 import { useBemm } from 'bemm';
 import { Icons } from 'open-icon';
-import { 
-  TIcon, 
-  TChip, 
-  TButton, 
+import {
+  TIcon,
+  TChip,
+  TButton,
   TContextMenu,
   TAvatar,
-  useI18n 
+  useI18n
 } from '@tiko/ui';
 import type { MediaCollection } from '@tiko/core';
 
@@ -108,16 +108,16 @@ const getMenuItems = () => {
     },
     {
       id: 'toggle-public',
-      label: props.collection.is_public 
-        ? t('admin.collections.makePrivate') 
+      label: props.collection.is_public
+        ? t('admin.collections.makePrivate')
         : t('admin.collections.makePublic'),
       icon: props.collection.is_public ? Icons.EYE_OFF : Icons.EYE,
       action: () => emit('toggle-public')
     },
     {
       id: 'toggle-curated',
-      label: props.collection.is_curated 
-        ? t('admin.collections.removeCurated') 
+      label: props.collection.is_curated
+        ? t('admin.collections.removeCurated')
         : t('admin.collections.makeCurated'),
       icon: props.collection.is_curated ? Icons.STAR : Icons.STAR_FULL,
       action: () => emit('toggle-curated')
@@ -140,7 +140,7 @@ const getMenuItems = () => {
 .collection-tile {
   position: relative;
   background: var(--color-background);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-accent);
   border-radius: var(--border-radius);
   overflow: hidden;
   cursor: pointer;
@@ -187,12 +187,12 @@ const getMenuItems = () => {
     right: var(--space-s);
     opacity: 0;
     transition: opacity 0.2s;
-    
+
     .t-button {
       background: rgba(255, 255, 255, 0.9);
       backdrop-filter: blur(10px);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      
+
       &:hover {
         background: rgba(255, 255, 255, 1);
       }

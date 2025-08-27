@@ -170,6 +170,7 @@ import { ref, onMounted } from 'vue'
 import { TButton, TInput, TIcon, TSpinner, TInputText, TInputTextArea, TInputCheckbox } from '@tiko/ui'
 import { Icons } from 'open-icon'
 import { assetsService, type Asset } from '../services/assets.service'
+import { formatDate, formatDuration, formatFileSize } from '@tiko/core';
 
 const props = defineProps<{
   asset: Asset
@@ -210,23 +211,6 @@ const getFileTypeIcon = (mimeType: string): string => {
   return Icons.FILE
 }
 
-const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
-}
-
-const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleString()
-}
-
-const formatDuration = (seconds: number): string => {
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
-  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
-}
 
 const updateCategories = () => {
   form.value.categories = categoriesInput.value

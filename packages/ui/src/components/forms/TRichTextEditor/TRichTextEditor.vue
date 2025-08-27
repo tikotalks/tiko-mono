@@ -18,7 +18,7 @@
             :disabled="!editor.can().chain().focus().toggleBold().run()"
             :title="t('richtext.bold')"
           >
-            <TIcon :name="Icons.BOLD" size="small" />
+            <TIcon :name="Icons.TEXT_BOLD" size="small" />
           </button>
 
           <button
@@ -29,7 +29,7 @@
             :disabled="!editor.can().chain().focus().toggleItalic().run()"
             :title="t('richtext.italic')"
           >
-            <TIcon :name="Icons.ITALIC" size="small" />
+            <TIcon :name="Icons.TEXT_ITALIC" size="small" />
           </button>
 
           <button
@@ -40,7 +40,7 @@
             :disabled="!editor.can().chain().focus().toggleUnderline().run()"
             :title="t('richtext.underline')"
           >
-            <TIcon :name="Icons.UNDERLINE" size="small" />
+            <TIcon :name="Icons.TEXT_UNDERLINE" size="small" />
           </button>
 
           <button
@@ -51,7 +51,7 @@
             :disabled="!editor.can().chain().focus().toggleStrike().run()"
             :title="t('richtext.strike')"
           >
-            <TIcon :name="Icons.STRIKETHROUGH" size="small" />
+            <TIcon :name="Icons.TEXT_LINE_THROUGH" size="small" />
           </button>
 
           <button
@@ -62,7 +62,7 @@
             :disabled="!editor.can().chain().focus().toggleCode().run()"
             :title="t('richtext.code')"
           >
-            <TIcon :name="Icons.CODE" size="small" />
+            <TIcon :name="Icons.CODE_BRACKETS" size="small" />
           </button>
         </div>
 
@@ -99,7 +99,7 @@
             @click="editor.chain().focus().toggleOrderedList().run()"
             :title="t('richtext.orderedList')"
           >
-            <TIcon :name="Icons.LIST_ORDERED" size="small" />
+            <TIcon :name="Icons.CHECK_LIST" size="small" />
           </button>
 
           <button
@@ -135,7 +135,7 @@
             :disabled="!editor.can().chain().focus().undo().run()"
             :title="t('richtext.undo')"
           >
-            <TIcon :name="Icons.UNDO" size="small" />
+            <TIcon :name="Icons.ARROW_RETURN_LEFT" size="small" />
           </button>
 
           <button
@@ -146,7 +146,7 @@
             :disabled="!editor.can().chain().focus().redo().run()"
             :title="t('richtext.redo')"
           >
-            <TIcon :name="Icons.REDO" size="small" />
+            <TIcon :name="Icons.ARROW_RETURN_RIGHT" size="small" />
           </button>
         </div>
       </div>
@@ -180,6 +180,7 @@ import TIcon from '../../ui-elements/TIcon/TIcon.vue'
 import { useI18n } from '@tiko/core';
 import type { TRichTextEditorProps } from './TRichTextEditor.model'
 import { DEFAULT_FEATURES } from './TRichTextEditor.model'
+import { markdownToHtml, htmlToMarkdown, isMarkdown } from './markdown-utils'
 
 const props = withDefaults(defineProps<TRichTextEditorProps>(), {
   modelValue: '',
@@ -197,9 +198,18 @@ const emit = defineEmits<{
 const bemm = useBemm('tiko-rich-text-editor')
 const { t } = useI18n()
 
+// Convert initial markdown content to HTML for the editor
+const initialContent = computed(() => {
+  if (!props.modelValue) return ''
+
+  // Always treat content as markdown and convert to HTML for the editor
+  // This ensures proper rendering of markdown content in the rich text editor
+  return markdownToHtml(props.modelValue)
+})
+
 // Editor setup
 const editor = useEditor({
-  content: props.modelValue,
+  content: initialContent.value,
   editable: !props.disabled && !props.readonly,
   extensions: [
     StarterKit.configure({
@@ -220,7 +230,10 @@ const editor = useEditor({
     })
   ],
   onUpdate: ({ editor }) => {
-    emit('update:modelValue', editor.getHTML())
+    // Convert HTML content to markdown when emitting
+    const html = editor.getHTML()
+    const markdown = htmlToMarkdown(html)
+    emit('update:modelValue', markdown)
   },
   onFocus: () => {
     emit('focus')
@@ -268,8 +281,17 @@ function setLink() {
 
 // Watchers
 watch(() => props.modelValue, (value) => {
-  if (editor.value && editor.value.getHTML() !== value) {
-    editor.value.commands.setContent(value)
+  if (editor.value) {
+    // Convert current editor content to markdown to compare
+    const currentHtml = editor.value.getHTML()
+    const currentMarkdown = htmlToMarkdown(currentHtml)
+
+    // Only update if the markdown content is actually different
+    if (currentMarkdown.trim() !== value?.trim()) {
+      // Always convert incoming content as markdown to HTML
+      const htmlContent = markdownToHtml(value || '')
+      editor.value.commands.setContent(htmlContent)
+    }
   }
 })
 
@@ -305,15 +327,15 @@ onBeforeUnmount(() => {
 
   &__required {
     color: var(--color-error);
-    margin-left: var(--space-2xs);
+    margin-left: var(--space-xs);
   }
 
   &__container {
     display: flex;
     flex-direction: column;
     background: var(--color-background);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border: 1px solid var(--color-accent);
+    border-radius: var(--border-radius);
     overflow: hidden;
     transition: all 0.2s ease;
 
@@ -345,16 +367,16 @@ onBeforeUnmount(() => {
     display: flex;
     gap: var(--space-xs);
     padding: var(--space-xs);
-    background: var(--color-background-secondary);
-    border-bottom: 1px solid var(--color-border);
+    background: color-mix(in srgb, var(--color-primary), transparent 75%);
+    border-bottom: 1px solid var(--color-accent);
     flex-wrap: wrap;
   }
 
   &__toolbar-group {
     display: flex;
-    gap: var(--space-2xs);
+    gap: var(--space-xs);
     padding: 0 var(--space-xs);
-    border-right: 1px solid var(--color-border);
+    border-right: 1px solid var(--color-accent);
 
     &:last-child {
       border-right: none;
@@ -370,14 +392,15 @@ onBeforeUnmount(() => {
     padding: 0;
     background: transparent;
     border: 1px solid transparent;
-    border-radius: var(--radius-sm);
+    border-radius: calc(var(--border-radius) / 3);
     color: var(--color-foreground);
     cursor: pointer;
     transition: all 0.2s ease;
 
     &:hover:not(:disabled) {
-      background: var(--color-background);
-      border-color: var(--color-border);
+      background: var(--color-primary);
+      color: var(--color-primary-text);
+      border-color: var(--color-accent);
     }
 
     &:disabled {
@@ -386,9 +409,9 @@ onBeforeUnmount(() => {
     }
 
     &--active {
-      background: var(--color-primary-10);
+      background: var(--color-primary);
       color: var(--color-primary);
-      border-color: var(--color-primary-20);
+      border-color: var(--color-primary);
     }
   }
 
@@ -399,59 +422,148 @@ onBeforeUnmount(() => {
     .ProseMirror {
       min-height: 100px;
       outline: none;
+      line-height: 1.6;
+      font-size: 14px;
 
       > * + * {
         margin-top: 0.75em;
       }
 
+      // Paragraphs
       p {
         margin: 0;
+        line-height: 1.6;
+
+        &:not(:last-child) {
+          margin-bottom: 1em;
+        }
       }
 
-      h1, h2, h3 {
-        line-height: 1.1;
-        margin-top: 1em;
+      // Headings
+      h1, h2, h3, h4, h5, h6 {
+        line-height: 1.2;
+        margin-top: 1.5em;
         margin-bottom: 0.5em;
+        font-weight: 600;
+        color: var(--color-foreground);
+
+        &:first-child {
+          margin-top: 0;
+        }
       }
 
-      h1 { font-size: 2em; }
-      h2 { font-size: 1.5em; }
-      h3 { font-size: 1.25em; }
+      h1 {
+        font-size: 2em;
+        border-bottom: 2px solid var(--color-accent);
+        padding-bottom: 0.3em;
+      }
+      h2 {
+        font-size: 1.6em;
+        border-bottom: 1px solid var(--color-accent);
+        padding-bottom: 0.2em;
+      }
+      h3 {
+        font-size: 1.3em;
+      }
+      h4 {
+        font-size: 1.1em;
+      }
+      h5, h6 {
+        font-size: 1em;
+        color: var(--color-foreground-secondary);
+      }
 
+      // Lists
       ul, ol {
-        padding-left: var(--space-lg);
+        padding-left: 1.5em;
+        margin: 1em 0;
+
+        li {
+          margin: 0.25em 0;
+          line-height: 1.5;
+
+          p {
+            margin: 0;
+          }
+
+          // Nested lists
+          ul, ol {
+            margin: 0.25em 0;
+          }
+        }
       }
 
+      ul {
+        list-style-type: disc;
+
+        ul {
+          list-style-type: circle;
+
+          ul {
+            list-style-type: square;
+          }
+        }
+      }
+
+      ol {
+        list-style-type: decimal;
+
+        ol {
+          list-style-type: lower-alpha;
+
+          ol {
+            list-style-type: lower-roman;
+          }
+        }
+      }
+
+      // Blockquotes
       blockquote {
-        padding-left: var(--space);
-        border-left: 3px solid var(--color-border);
+        padding: 0.5em var(--space);
+        margin: 1.5em 0;
+        border-left: 4px solid var(--color-primary-20);
+        background: var(--color-background-secondary);
         color: var(--color-foreground-secondary);
         font-style: italic;
+        border-radius: 0 var(--border-radius) var(--border-radius) 0;
+
+        p:last-child {
+          margin-bottom: 0;
+        }
       }
 
+      // Code
       code {
         background: var(--color-background-secondary);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-sm);
-        padding: 0.1em 0.3em;
-        font-family: var(--font-mono);
-        font-size: 0.9em;
+        border: 1px solid var(--color-accent);
+        border-radius: var(--border-radius);
+        padding: 0.2em 0.4em;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 0.85em;
+        color: var(--color-primary);
       }
 
+      // Code blocks
       pre {
         background: var(--color-background-secondary);
-        border: 1px solid var(--color-border);
+        border: 1px solid var(--color-accent);
         border-radius: var(--radius-md);
         padding: var(--space);
         overflow-x: auto;
+        margin: 1.5em 0;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 0.85em;
+        line-height: 1.4;
 
         code {
           background: none;
           border: none;
           padding: 0;
+          color: inherit;
         }
       }
 
+      // Links
       a {
         color: var(--color-primary);
         text-decoration: underline;
@@ -459,21 +571,59 @@ onBeforeUnmount(() => {
 
         &:hover {
           color: var(--color-primary-dark);
+          text-decoration-style: dotted;
         }
       }
 
-      hr {
-        border: none;
-        border-top: 1px solid var(--color-border);
-        margin: var(--space-lg) 0;
+      // Text formatting
+      strong, b {
+        font-weight: 600;
       }
 
+      em, i {
+        font-style: italic;
+      }
+
+      u {
+        text-decoration: underline;
+      }
+
+      s, del {
+        text-decoration: line-through;
+        opacity: 0.8;
+      }
+
+      // Horizontal rule
+      hr {
+        border: none;
+        border-top: 2px solid var(--color-accent);
+        margin: 2em 0;
+        background: none;
+      }
+
+      // Hard breaks
+      br {
+        line-height: 1;
+      }
+
+      // Placeholder
       .is-empty::before {
         content: attr(data-placeholder);
         float: left;
         color: var(--color-foreground-tertiary);
         pointer-events: none;
         height: 0;
+        font-style: italic;
+      }
+
+      // Selection
+      ::selection {
+        background: var(--color-primary-20);
+      }
+
+      // Focus styles for better editing experience
+      &:focus {
+        outline: none;
       }
     }
   }

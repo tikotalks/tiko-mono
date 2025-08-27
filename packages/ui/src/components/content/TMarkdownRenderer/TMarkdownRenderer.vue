@@ -6,68 +6,109 @@
 import { useBemm } from 'bemm'
 import { computed } from 'vue'
 import type { TMarkdownRendererProps } from './TMarkdownRenderer.model'
+import MarkdownIt from 'markdown-it'
+// @ts-ignore
+import markdownItAnchor from 'markdown-it-anchor'
+// @ts-ignore
+import markdownItEmoji from 'markdown-it-emoji/dist/markdown-it-emoji.js'
+// @ts-ignore
+import markdownItMark from 'markdown-it-mark'
+// @ts-ignore
+import markdownItFootnote from 'markdown-it-footnote'
 
-const props = defineProps<TMarkdownRendererProps>()
+const props = withDefaults(defineProps<TMarkdownRendererProps>(), {
+  sanitize: true,
+  breaks: true,
+  linkify: true,
+  typographer: true
+})
 const bemm = useBemm('t-markdown-renderer')
 
-// Simple markdown parser without external dependencies
-function parseMarkdown(markdown: string): string {
-  if (!markdown) return ''
+// Initialize Markdown-it instance with enhanced features
+const md = new MarkdownIt({
+  html: props.html ?? !props.sanitize,
+  breaks: props.breaks,
+  linkify: props.linkify,
+  typographer: props.typographer
+})
 
-  let html = markdown
+// Add plugins for enhanced functionality
+md.use(markdownItAnchor, {
+  permalink: markdownItAnchor.permalink.headerLink({
+    symbol: '#',
+    placement: 'before'
+  })
+})
 
-  // Escape HTML
-  html = html.replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
+// Use plugins
+md.use(markdownItEmoji)
+md.use(markdownItMark)
+md.use(markdownItFootnote)
 
-  // Headers
-  html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>')
-  html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>')
-  html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>')
+// Configure link rendering to open in new tabs
+md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
+  const token = tokens[idx]
+  const hrefIndex = token.attrIndex('href')
 
-  // Bold
-  html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
-  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-  html = html.replace(/__(.+?)__/g, '<strong>$1</strong>')
-
-  // Italic
-  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>')
-  html = html.replace(/_(.+?)_/g, '<em>$1</em>')
-
-  // Links
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-
-  // Line breaks
-  html = html.replace(/  \n/g, '<br>')
-
-  // Paragraphs
-  html = html.split('\n\n').map(para => {
-    if (para.trim() && !para.trim().startsWith('<h') && !para.trim().startsWith('<ul') && !para.trim().startsWith('<ol')) {
-      return `<p>${para.trim()}</p>`
+  if (hrefIndex >= 0) {
+    const href = token.attrs![hrefIndex][1]
+    // Only add target="_blank" for external links
+    if (href.startsWith('http://') || href.startsWith('https://')) {
+      token.attrPush(['target', '_blank'])
+      token.attrPush(['rel', 'noopener noreferrer'])
     }
-    return para
-  }).join('\n')
+  }
 
-  // Lists
-  html = html.replace(/^\* (.+)/gm, '<li>$1</li>')
-  html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
-  html = html.replace(/^\d+\. (.+)/gm, '<li>$1</li>')
-
-  // Code blocks
-  html = html.replace(/```([^`]+)```/g, '<pre><code>$1</code></pre>')
-  html = html.replace(/`([^`]+)`/g, '<code>$1</code>')
-
-  // Blockquotes
-  html = html.replace(/^> (.+)/gm, '<blockquote>$1</blockquote>')
-
-  // Horizontal rules
-  html = html.replace(/^---$/gm, '<hr>')
-
-  return html
+  return self.renderToken(tokens, idx, options)
 }
 
-const renderedMarkdown = computed(() => parseMarkdown(props.content))
+// Enhanced HTML sanitization function
+function sanitizeHtml(html: string): string {
+  if (!props.sanitize) return html
+
+  // Allow basic HTML tags and attributes that are safe for content
+  const allowedTags = [
+    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+    'p', 'br', 'strong', 'em', 'b', 'i', 'u',
+    'ul', 'ol', 'li',
+    'a', 'img',
+    'blockquote', 'code', 'pre',
+    'table', 'thead', 'tbody', 'tr', 'th', 'td',
+    'hr', 'del', 'ins',
+    'div', 'span'
+  ]
+
+  const allowedAttributes = {
+    'a': ['href', 'title', 'target', 'rel'],
+    'img': ['src', 'alt', 'title', 'width', 'height'],
+    '*': ['id', 'class']
+  }
+
+  // Basic HTML sanitization - remove dangerous elements
+  let sanitized = html
+    // Remove script tags and their content
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    // Remove style tags and their content
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    // Remove on* event handlers
+    .replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '')
+    // Remove javascript: links
+    .replace(/href\s*=\s*["']javascript:[^"']*["']/gi, '')
+
+  return sanitized
+}
+
+const renderedMarkdown = computed(() => {
+  if (!props.content) return ''
+
+  try {
+    const html = md.render(props.content)
+    return sanitizeHtml(html)
+  } catch (error) {
+    console.error('Error rendering markdown:', error)
+    return `<p>Error rendering markdown content</p>`
+  }
+})
 </script>
 
 <style lang="scss">
@@ -79,6 +120,26 @@ const renderedMarkdown = computed(() => parseMarkdown(props.content))
     margin-top: var(--space-l);
     margin-bottom: var(--space);
     line-height: 1.2;
+    position: relative;
+
+    // Anchor link styling
+    .header-anchor {
+      color: var(--color-primary);
+      text-decoration: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      margin-right: var(--space-xs);
+      font-weight: normal;
+
+      &:hover {
+        opacity: 1;
+        text-decoration: none;
+      }
+    }
+
+    &:hover .header-anchor {
+      opacity: 0.7;
+    }
   }
 
   h1 {
@@ -91,6 +152,19 @@ const renderedMarkdown = computed(() => parseMarkdown(props.content))
 
   h3 {
     font-size: 1.5em;
+  }
+
+  h4 {
+    font-size: 1.3em;
+  }
+
+  h5 {
+    font-size: 1.1em;
+  }
+
+  h6 {
+    font-size: 1em;
+    font-weight: 600;
   }
 
   p {
@@ -173,7 +247,7 @@ const renderedMarkdown = computed(() => parseMarkdown(props.content))
 
   hr {
     border: none;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
     margin: var(--space-l) 0;
   }
 
@@ -183,21 +257,110 @@ const renderedMarkdown = computed(() => parseMarkdown(props.content))
     border-radius: var(--border-radius);
   }
 
+  // Mark (highlighted text)
+  mark {
+    background-color: var(--color-warning-light, #fff3cd);
+    color: var(--color-warning-dark, #856404);
+    padding: 0.1em 0.2em;
+    border-radius: 2px;
+  }
+
+  // Footnotes
+  .footnote-ref {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-size: 0.8em;
+    vertical-align: super;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .footnotes {
+    margin-top: var(--space-xl);
+    padding-top: var(--space);
+    border-top: 1px solid var(--color-accent);
+    font-size: 0.9em;
+
+    .footnote-backref {
+      color: var(--color-primary);
+      text-decoration: none;
+      margin-left: var(--space-xs);
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  // Tables
   table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: var(--space);
+    border: 1px solid var(--color-accent);
+    border-radius: var(--border-radius);
+    overflow: hidden;
 
     th, td {
-      padding: var(--space-s);
+      padding: var(--space-s) var(--space);
       text-align: left;
-      border-bottom: 1px solid var(--color-border);
+      border-bottom: 1px solid var(--color-accent);
+
+      &:not(:last-child) {
+        border-right: 1px solid var(--color-accent);
+      }
     }
 
     th {
-      font-weight: bold;
+      font-weight: 600;
       background-color: var(--color-background-secondary);
     }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    // Striped rows
+    tbody tr:nth-child(even) {
+      background-color: var(--color-background-tertiary, rgba(0, 0, 0, 0.02));
+    }
+  }
+
+  // Emoji sizing
+  .emoji {
+    height: 1.2em;
+    width: 1.2em;
+    vertical-align: -0.1em;
+  }
+
+  // Task lists (GitHub-style checkboxes)
+  .task-list-item {
+    list-style: none;
+    margin-left: -1.5em;
+
+    .task-list-item-checkbox {
+      margin-right: var(--space-xs);
+    }
+  }
+
+  // Better spacing for nested lists
+  ul ul, ol ol, ul ol, ol ul {
+    margin-top: var(--space-xs);
+    margin-bottom: var(--space-xs);
+  }
+
+  // Enhanced blockquotes
+  blockquote {
+    border-left: 4px solid var(--color-primary);
+    padding-left: var(--space);
+    margin: var(--space) 0;
+    font-style: italic;
+    color: var(--color-foreground-secondary);
+    background-color: var(--color-background-secondary);
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    padding: var(--space);
   }
 }
 </style>

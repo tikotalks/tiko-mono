@@ -15,8 +15,8 @@
     <div v-if="media.tags?.length" :class="bemm('tags')">
       <h3>{{ t('media.detail.tags', 'Tags') }}</h3>
       <TChipGroup>
-        <TChip 
-          v-for="tag in media.tags" 
+        <TChip
+          v-for="tag in media.tags"
           :key="tag"
           clickable
           @click="$emit('filter-by-tag', tag)"
@@ -30,9 +30,9 @@
     <div v-if="media.categories?.length" :class="bemm('categories')">
       <h3>{{ t('media.detail.categories', 'Categories') }}</h3>
       <TChipGroup>
-        <TChip 
-          v-for="category in media.categories" 
-          :key="category" 
+        <TChip
+          v-for="category in media.categories"
+          :key="category"
           color="secondary"
           clickable
           @click="$emit('filter-by-category', category)"
@@ -110,7 +110,7 @@ import {
   TChip,
   TChipGroup
 } from '@tiko/ui'
-import { useI18n } from '@tiko/core'
+import { formatDate, formatFileSize, useI18n } from '@tiko/core'
 
 interface Props {
   media: MediaItem
@@ -151,24 +151,7 @@ const metadataItems = computed(() => {
   ]
 })
 
-// Format file size
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes'
-  const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-}
 
-// Format date
-function formatDate(dateString: string): string {
-  const date = new Date(dateString)
-  return date.toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-}
 </script>
 
 <style lang="scss">

@@ -22,7 +22,7 @@ withDefaults(defineProps<{
   gap: var(--space-s);
   margin-top: var(--space);
   padding-top: var(--space);
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--color-accent);
 
   &--align {
     &-left {

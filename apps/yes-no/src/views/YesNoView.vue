@@ -117,7 +117,7 @@ const localSettings = reactive({
 const { currentQuestion, isPlaying, settings } = toRefs(yesNoStore);
 
 // Device motion setup
-const { tilt, requestPermission } = useDeviceTilt({
+const { tilt, requestPermission: requestMotionPermission } = useDeviceTilt({
   maxDeg: 20,
   smooth: 0.2,
   source: 'sensor' // Only use sensor, not pointer

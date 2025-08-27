@@ -7,14 +7,14 @@ export default defineConfig({
   description: 'Typing practice app',
   icon: {
     mediaId: '07eb3cb4-cd71-49c5-8498-ee1e8a3ab7f5',
-    color: BaseColors.NAVY,
+    color: BaseColors.BLUE_DARK,
   },
   auth: {
     skipAuth: true
   },
   theme: {
-    primary: BaseColors.PURPLE,
-    secondary: BaseColors.GREEN,
+    primary: BaseColors.CYAN,
+    secondary: BaseColors.CORAL,
     tertiary: BaseColors.RED,
   },
   splash: {

@@ -604,7 +604,7 @@ async function handleSave() {
         console.log(`[CreateSectionInstanceDialog] Field "${key}" value before save:`, JSON.stringify(value));
       }
     });
-    
+
     // Log linked_items fields specifically
     templateFields.value.forEach((field) => {
       if (field.field_type === 'linked_items') {
@@ -674,7 +674,7 @@ padding-bottom: var(--spacing);
 
   &__header {
     padding: var(--space-lg);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
 
     h2 {
       font-size: var(--font-size-lg);
@@ -701,7 +701,7 @@ padding-bottom: var(--spacing);
     padding: var(--space);
     background: var(--color-background-secondary);
     border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
 
     h3 {
       font-size: var(--font-size-md);
@@ -734,7 +734,7 @@ padding-bottom: var(--spacing);
     padding: var(--space);
     background: var(--color-background-secondary);
     border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
 
     h3 {
       font-size: var(--font-size-md);

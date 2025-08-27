@@ -159,7 +159,7 @@ watch([localMinutes, localSeconds, localSettings], () => {
     display: flex;
     justify-content: center;
     padding-top: 1rem;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
     margin-top: 1.5rem;
   }
 }

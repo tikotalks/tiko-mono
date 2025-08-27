@@ -533,7 +533,7 @@ onMounted(() => {
 
   &__header {
     padding: var(--space-lg);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
 
     h2 {
       font-size: var(--font-size-lg);
@@ -555,7 +555,7 @@ onMounted(() => {
     align-items: center;
     gap: var(--space);
     padding: var(--space);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
     background: var(--color-background-secondary);
 
     &-left,
@@ -621,7 +621,7 @@ onMounted(() => {
     justify-content: space-between;
     align-items: center;
     padding: var(--space-lg);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
     background: var(--color-background-secondary);
   }
 

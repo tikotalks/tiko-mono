@@ -204,7 +204,7 @@ onMounted(() => {
     .t-card {
       text-align: center;
       padding: var(--space-xl);
-      border: 2px dashed var(--color-border);
+      border: 2px dashed var(--color-accent);
       transition: all 0.2s;
     }
 
@@ -280,7 +280,7 @@ onMounted(() => {
       width: 60px;
       height: 60px;
       object-fit: cover;
-      border-radius: var(--radius-sm);
+      border-radius: var(--border-radius);
     }
   }
 

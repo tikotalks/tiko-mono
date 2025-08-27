@@ -9,7 +9,7 @@
     <section :class="bemm('section')">
       <h2>Basic PIN Input</h2>
       <p>Simple PIN input with default 4-digit length</p>
-      
+
       <div :class="bemm('demo')">
         <TPinInput v-model="basicPin" />
         <div :class="bemm('value')">Value: {{ basicPin || 'empty' }}</div>
@@ -25,7 +25,7 @@
     <section :class="bemm('section')">
       <h2>Custom Length</h2>
       <p>Configure the number of digits required</p>
-      
+
       <div :class="bemm('demo')">
         <div :class="bemm('demo-item')">
           <label>4 digits (default)</label>
@@ -51,7 +51,7 @@
     <section :class="bemm('section')">
       <h2>Show Values</h2>
       <p>Display entered digits instead of dots</p>
-      
+
       <div :class="bemm('demo')">
         <div :class="bemm('demo-item')">
           <label>Hidden (default)</label>
@@ -81,10 +81,10 @@
     <section :class="bemm('section')">
       <h2>Auto Submit</h2>
       <p>Automatically trigger complete event when all digits are entered</p>
-      
+
       <div :class="bemm('demo')">
-        <TPinInput 
-          v-model="autoSubmitPin" 
+        <TPinInput
+          v-model="autoSubmitPin"
           :auto-submit="true"
           @complete="handleComplete"
         />
@@ -95,8 +95,8 @@
 
       <div :class="bemm('code')">
         <h4>Usage</h4>
-        <pre><code>&lt;TPinInput 
-  v-model="pin" 
+        <pre><code>&lt;TPinInput
+  v-model="pin"
   :auto-submit="true"
   @complete="handlePinComplete"
 /&gt;</code></pre>
@@ -107,7 +107,7 @@
     <section :class="bemm('section')">
       <h2>States</h2>
       <p>Different states for validation and feedback</p>
-      
+
       <div :class="bemm('demo')">
         <div :class="bemm('demo-item')">
           <label>Normal</label>
@@ -137,7 +137,7 @@
     <section :class="bemm('section')">
       <h2>Interactive Example</h2>
       <p>Try different configurations</p>
-      
+
       <div :class="bemm('demo', 'interactive')">
         <div :class="bemm('controls')">
           <label>
@@ -162,16 +162,16 @@
           </label>
           <label>
             Length:
-            <input 
-              type="number" 
-              v-model.number="interactive.length" 
-              min="1" 
+            <input
+              type="number"
+              v-model.number="interactive.length"
+              min="1"
               max="10"
               style="width: 60px; margin-left: 8px;"
             >
           </label>
         </div>
-        
+
         <div :class="bemm('result')">
           <TPinInput
             v-model="interactive.value"
@@ -389,7 +389,7 @@ const handleInteractiveComplete = (pin: string) => {
 
   &__header {
     margin-bottom: var(--space-xl);
-    
+
     h1 {
       font-size: 2.5rem;
       font-weight: 700;
@@ -406,7 +406,7 @@ const handleInteractiveComplete = (pin: string) => {
 
   &__section {
     margin-bottom: var(--space-xl);
-    
+
     h2 {
       font-size: 1.5rem;
       font-weight: 600;
@@ -429,7 +429,7 @@ const handleInteractiveComplete = (pin: string) => {
     padding: var(--space-lg);
     background: var(--color-background-secondary);
     border-radius: var(--radius);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
 
     &--interactive {
       gap: var(--space-lg);
@@ -440,7 +440,7 @@ const handleInteractiveComplete = (pin: string) => {
     display: flex;
     flex-direction: column;
     gap: var(--space-s);
-    
+
     label {
       font-size: 0.875rem;
       font-weight: 600;
@@ -467,7 +467,7 @@ const handleInteractiveComplete = (pin: string) => {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space);
-    
+
     label {
       display: flex;
       align-items: center;
@@ -475,7 +475,7 @@ const handleInteractiveComplete = (pin: string) => {
       font-size: 0.875rem;
       color: var(--color-foreground);
       cursor: pointer;
-      
+
       input[type="checkbox"] {
         cursor: pointer;
       }
@@ -491,7 +491,7 @@ const handleInteractiveComplete = (pin: string) => {
 
   &__code {
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius);
     padding: var(--space);
 
@@ -506,7 +506,7 @@ const handleInteractiveComplete = (pin: string) => {
       margin: 0;
       padding: 0;
       overflow-x: auto;
-      
+
       code {
         font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
         font-size: 0.875rem;
@@ -519,31 +519,31 @@ const handleInteractiveComplete = (pin: string) => {
 
   &__props-table {
     overflow-x: auto;
-    
+
     table {
       width: 100%;
       border-collapse: collapse;
       background: var(--color-background);
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--color-accent);
       border-radius: var(--radius);
-      
+
       th, td {
         padding: var(--space-s) var(--space);
         text-align: left;
-        border-bottom: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-accent);
       }
-      
+
       th {
         background: var(--color-background-secondary);
         font-weight: 600;
         color: var(--color-foreground);
         font-size: 0.875rem;
       }
-      
+
       td {
         color: var(--color-foreground-secondary);
         font-size: 0.875rem;
-        
+
         code {
           background: var(--color-background-secondary);
           padding: 0.125rem 0.25rem;
@@ -553,7 +553,7 @@ const handleInteractiveComplete = (pin: string) => {
           color: var(--color-foreground);
         }
       }
-      
+
       tbody tr:last-child {
         th, td {
           border-bottom: none;
@@ -566,7 +566,7 @@ const handleInteractiveComplete = (pin: string) => {
 @media (max-width: 768px) {
   .pin-input-view {
     padding: var(--space);
-    
+
     &__header h1 {
       font-size: 2rem;
     }

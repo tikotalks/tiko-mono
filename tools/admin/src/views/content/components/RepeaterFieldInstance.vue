@@ -7,28 +7,21 @@
           {{ t('common.required') }}
         </TChip>
       </label>
-      <TButton
-        v-if="schema.length > 0"
-        type="outline"
-        size="small"
-        :icon="Icons.ADD_M"
-        @click="addItem"
-      >
-        {{ t('common.fields.addItem') }}
-      </TButton>
+      <div :class="bemm('actions')">
+
+        <TButton v-if="schema.length > 0" type="outline" :icon="Icons.ADD_M" @click="addItem">
+          {{ t('common.fields.addItem') }}
+        </TButton>
+      </div>
     </div>
 
     <div v-if="schema.length === 0" :class="bemm('error')">
-      <TEmptyState
-        :icon="Icons.WARNING"
-        :title="'No schema defined'"
-        :description="'This repeater field needs a schema configuration to define its fields.'"
-        :compact="true"
-        color="warning"
-      />
+      <TEmptyState :icon="Icons.WARNING" :title="'No schema defined'"
+        :description="'This repeater field needs a schema configuration to define its fields.'" :compact="true"
+        color="warning" />
     </div>
 
-    <div v-else-if="items.length === 0" :class="bemm('empty')">
+    <!-- <div v-else-if="items.length === 0" :class="bemm('empty')">
       <TEmptyState
         :icon="Icons.LIST"
         :title="t('common.fields.empty.title')"
@@ -43,14 +36,9 @@
           {{ t('common.fields.addFirstItem') }}
         </TButton>
       </TEmptyState>
-    </div>
+    </div> -->
 
-    <TDraggableList
-      v-else
-      :items="items"
-      :class="bemm('items')"
-      :onReorder="reorderItems"
-    >
+    <TDraggableList v-else :items="items" :class="bemm('items')" :onReorder="reorderItems">
       <template v-slot="{ item, index }">
         <TCard :class="bemm('item')">
           <template #header>
@@ -62,91 +50,49 @@
                 </span>
               </span>
               <div :class="bemm('item-actions')">
-                <TButton
-                  type="ghost"
-                  size="small"
-                  :icon="Icons.COPY"
-                  @click="duplicateItem(index)"
-                />
-                <TButton
-                  type="ghost"
-                  size="small"
-                  :icon="Icons.TRASH"
-                  :color="Colors.ERROR"
-                  @click="removeItem(index)"
-                />
+                <TButton type="ghost" size="small" :icon="Icons.COPY" @click="duplicateItem(index)" />
+                <TButton type="ghost" size="small" :icon="Icons.TRASH" :color="Colors.ERROR"
+                  @click="removeItem(index)" />
               </div>
             </div>
           </template>
 
           <TFormGroup>
-            <div
-              v-for="schemaField in schema"
-              :key="schemaField.key"
-              :class="bemm('field')"
-            >
+            <div v-for="schemaField in schema" :key="schemaField.key" :class="bemm('field')">
               <!-- Text Input -->
-              <TInputText
-                v-if="schemaField.type === 'text'"
-                :inline="true"
-                :model-value="item[schemaField.key] || ''"
-                :label="schemaField.label"
-                :required="schemaField.required"
-                @update:model-value="updateItemField(index, schemaField.key, $event)"
-              />
+              <TInputText v-if="schemaField.type === 'text'" :inline="true" :model-value="item[schemaField.key] || ''"
+                :label="schemaField.label" :required="schemaField.required"
+                @update:model-value="updateItemField(index, schemaField.key, $event)" />
 
               <!-- Textarea -->
-              <TInputTextArea
-                v-else-if="schemaField.type === 'textarea'"
-                :inline="true"
-                :model-value="item[schemaField.key] || ''"
-                :label="schemaField.label"
-                :required="schemaField.required"
-                @update:model-value="updateItemField(index, schemaField.key, $event)"
-              />
+              <TInputTextArea v-else-if="schemaField.type === 'textarea'" :inline="true"
+                :model-value="item[schemaField.key] || ''" :label="schemaField.label" :required="schemaField.required"
+                @update:model-value="updateItemField(index, schemaField.key, $event)" />
 
               <!-- Number -->
-              <TInputNumber
-                v-else-if="schemaField.type === 'number'"
-                :inline="true"
-                :model-value="item[schemaField.key] || 0"
-                :label="schemaField.label"
-                :required="schemaField.required"
-                @update:model-value="updateItemField(index, schemaField.key, $event)"
-              />
+              <TInputNumber v-else-if="schemaField.type === 'number'" :inline="true"
+                :model-value="item[schemaField.key] || 0" :label="schemaField.label" :required="schemaField.required"
+                @update:model-value="updateItemField(index, schemaField.key, $event)" />
 
               <!-- Boolean -->
-              <TInputCheckbox
-                v-else-if="schemaField.type === 'boolean'"
-                :inline="true"
-                :model-value="item[schemaField.key] || false"
-                :label="schemaField.label"
-                @update:model-value="updateItemField(index, schemaField.key, $event)"
-              />
+              <TInputCheckbox v-else-if="schemaField.type === 'boolean'" :inline="true"
+                :model-value="item[schemaField.key] || false" :label="schemaField.label"
+                @update:model-value="updateItemField(index, schemaField.key, $event)" />
 
               <!-- Select -->
-              <TInputSelect
-                v-else-if="schemaField.type === 'select'"
-                :inline="true"
-                :model-value="item[schemaField.key] || ''"
-                :label="schemaField.label"
-                :options="schemaField.options || []"
-                :required="schemaField.required"
-                @update:model-value="updateItemField(index, schemaField.key, $event)"
-              />
+              <TInputSelect v-else-if="schemaField.type === 'select'" :inline="true"
+                :model-value="item[schemaField.key] || ''" :label="schemaField.label"
+                :options="schemaField.options || []" :required="schemaField.required"
+                @update:model-value="updateItemField(index, schemaField.key, $event)" />
 
               <!-- Media -->
-              <MediaFieldInstance
-                v-else-if="schemaField.type === 'media'"
-                :field="{
-                  ...schemaField,
-                  field_key: schemaField.key,
-                  field_type: 'media',
-                  is_required: schemaField.required
-                }"
-                :model-value="item[schemaField.key]"
-                @update:model-value="updateItemField(index, schemaField.key, $event)"
-              />
+              <MediaFieldInstance v-else-if="schemaField.type === 'media'" :field="{
+                ...schemaField,
+                field_key: schemaField.key,
+                field_type: 'media',
+                is_required: schemaField.required
+              }" :model-value="item[schemaField.key]"
+                @update:model-value="updateItemField(index, schemaField.key, $event)" />
             </div>
           </TFormGroup>
         </TCard>
@@ -173,8 +119,10 @@ import {
   Colors
 } from '@tiko/ui'
 import { Icons } from 'open-icon'
-import { type ContentField ,
-  useI18n,} from '@tiko/core'
+import {
+  type ContentField,
+  useI18n,
+} from '@tiko/core'
 import MediaFieldInstance from './MediaFieldInstance.vue'
 
 interface RepeaterField {
@@ -333,7 +281,7 @@ function getItemPreview(item: Record<string, any>): string {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--space);
+    gap: var(--space);
   }
 
   &__label {
@@ -341,6 +289,7 @@ function getItemPreview(item: Record<string, any>): string {
     align-items: center;
     gap: var(--space-xs);
     font-weight: 500;
+    width: var(--input-label-width, 30%);
   }
 
   &__empty {
@@ -382,6 +331,9 @@ function getItemPreview(item: Record<string, any>): string {
     &:last-child {
       margin-bottom: 0;
     }
+  }
+  &__actions{
+    width: 100%;
   }
 }
 </style>

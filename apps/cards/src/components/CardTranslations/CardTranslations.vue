@@ -530,7 +530,7 @@ watch(() => props.baseTitle, (newTitle) => {
 
     &--viewing {
       .card-translations__header {
-        border-bottom: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-accent);
         padding-bottom: var(--space-xs);
         margin-bottom: var(--space);
       }
@@ -595,7 +595,7 @@ watch(() => props.baseTitle, (newTitle) => {
   }
 
   &__translation-card {
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius);
     overflow: hidden;
 
@@ -612,7 +612,7 @@ watch(() => props.baseTitle, (newTitle) => {
     align-items: center;
     padding: var(--space-s) var(--space);
     background: var(--color-background-secondary);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
   }
 
   &__locale-info {

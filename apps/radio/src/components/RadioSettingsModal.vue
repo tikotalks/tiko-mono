@@ -382,7 +382,7 @@ onMounted(() => {
     width: 1.25em;
     height: 1.25em;
     border: 2px solid color-mix(in srgb, var(--color-foreground), transparent 70%);
-    border-radius: var(--radius-sm, 0.25em);
+    border-radius: var(--border-radius, 0.25em);
     display: flex;
     align-items: center;
     justify-content: center;

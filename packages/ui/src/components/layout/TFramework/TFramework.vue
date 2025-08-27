@@ -143,11 +143,11 @@ const deviceMotionEnabled = computed(() => {
 });
 
 // Initialize with 'none' source initially, will be updated based on user settings
-const deviceTilt = useDeviceTilt({ 
-  source: deviceMotionEnabled.value ? 'auto' : 'none', 
-  maxDeg: 10, 
-  smooth: .1, 
-  liftPx: 30 
+const deviceTilt = useDeviceTilt({
+  source: deviceMotionEnabled.value ? 'auto' : 'none',
+  maxDeg: 10,
+  smooth: .1,
+  liftPx: 30
 });
 
 // Store whether we've requested permission
@@ -156,11 +156,11 @@ const hasRequestedMotionPermission = ref(false);
 // Function to request device motion permission on user interaction
 const requestDeviceMotionPermission = async () => {
   if (hasRequestedMotionPermission.value || !deviceMotionEnabled.value) return;
-  
+
   try {
     const result = await deviceTilt.requestPermission();
     hasRequestedMotionPermission.value = true;
-    
+
     if (result === 'denied') {
       console.log('[TFramework] Device motion permission denied, using pointer mode only');
     } else if (result === 'granted') {
@@ -178,7 +178,7 @@ watch(deviceMotionEnabled, (enabled) => {
   if (enabled) {
     console.log('[TFramework] Device motion enabled');
     // If on iOS and needs permission, wait for user interaction
-    if (typeof DeviceOrientationEvent !== 'undefined' && 
+    if (typeof DeviceOrientationEvent !== 'undefined' &&
         typeof DeviceOrientationEvent.requestPermission === 'function' &&
         !hasRequestedMotionPermission.value) {
       // Will be handled by the click/touch listeners
@@ -205,7 +205,7 @@ onMounted(() => {
   }
 
   // Check if we need permission (iOS 13+)
-  if (typeof DeviceOrientationEvent !== 'undefined' && 
+  if (typeof DeviceOrientationEvent !== 'undefined' &&
       typeof DeviceOrientationEvent.requestPermission === 'function') {
     // Add listeners for first user interaction
     const handleFirstInteraction = async () => {
@@ -214,7 +214,7 @@ onMounted(() => {
       document.removeEventListener('click', handleFirstInteraction);
       document.removeEventListener('touchstart', handleFirstInteraction);
     };
-    
+
     document.addEventListener('click', handleFirstInteraction, { once: true });
     document.addEventListener('touchstart', handleFirstInteraction, { once: true });
   } else {
@@ -515,8 +515,14 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .framework {
-  --bg-outside: color-mix(in srgb, var(--color-primary), var(--color-dark) 95%);
-  --bg-inside: color-mix(in srgb, var(--color-primary), var(--color-dark) 50%);
+  --bg-outside: color-mix(in srgb, var(--color-primary), var(--color-background) 95%);
+  --bg-inside: color-mix(in srgb, var(--color-primary), var(--color-background) 50%);
+
+  [data-theme="light"] &{
+    --bg-inside: color-mix(in srgb, var(--color-primary), var(--color-background) 95%);
+  --bg-outside: color-mix(in srgb, var(--color-primary), var(--color-background) 50%);
+
+  }
 
   background-image: radial-gradient(var(--bg-inside), var(--bg-outside));
 

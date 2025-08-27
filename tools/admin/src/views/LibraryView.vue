@@ -793,7 +793,7 @@ onUnmounted(() => {
     height: 60px;
     object-fit: cover;
     border-radius: var(--border-radius-sm);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
 
     // Checkerboard pattern for transparent images (smaller for list view)
     --dot-color: color-mix(in srgb, var(--color-foreground), transparent 90%);

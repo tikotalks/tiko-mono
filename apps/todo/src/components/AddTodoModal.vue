@@ -203,7 +203,7 @@ const handleSubmit = async () => {
   &__image-placeholder {
     width: 100%;
     aspect-ratio: 16 / 9;
-    border: 2px dashed var(--color-border);
+    border: 2px dashed var(--color-accent);
     border-radius: var(--radius);
     display: flex;
     flex-direction: column;

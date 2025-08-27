@@ -160,14 +160,14 @@ const notificationOptions = [
       :options="options"
       :size="Size.SMALL"
     />
-    
+
     <TInputSelect
       v-model="medium"
       label="Medium Select"
       :options="options"
       :size="Size.MEDIUM"
     />
-    
+
     <TInputSelect
       v-model="large"
       label="Large Select"
@@ -279,7 +279,7 @@ The select component uses native styling with custom enhancements:
 .input-select__control {
   /* Custom styles */
   background-color: var(--color-background);
-  border-color: var(--color-border);
+  border-color: var(--color-accent);
 }
 
 .input-select__control:focus {

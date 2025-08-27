@@ -348,12 +348,12 @@ watch(() => props.cards.length, async () => {
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--color-border);
+    background: var(--color-accent);
     border-radius: var(--border-radius);
     border: 2px solid var(--color-background-secondary);
 
     &:hover {
-      background: var(--color-border-hover);
+      background: var(--color-accent-hover);
     }
   }
 

@@ -149,7 +149,7 @@
               {{ isRefreshing ? t('settings.refreshing') : t('settings.refreshApp') }}
             </TButton>
           </div>
-          
+
           <!-- Force Update button (dev only) -->
           <div v-if="isDev || isForceUpdateAvailable" :class="bemm('setting-row')">
             <div :class="bemm('setting-info')">
@@ -465,17 +465,17 @@ const handleHardRefresh = async () => {
 
 const handleForceUpdate = async () => {
   isForceUpdating.value = true
-  
+
   try {
     toastService.show({
       type: 'warning',
       message: t('settings.clearingCaches') || 'Clearing all caches...',
       duration: 0 // Keep showing
     })
-    
+
     // Call the force update function
     await forceUpdatePWA()
-    
+
     // The page will reload automatically
   } catch (error) {
     console.error('Force update failed:', error)
@@ -544,7 +544,7 @@ onMounted(async () => {
     align-items: center;
     justify-content: space-between;
     padding: var(--space);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
   }
 
   &__title {
@@ -623,7 +623,7 @@ onMounted(async () => {
 
   &__select {
     padding: var(--space-xs) var(--space-s);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius);
     background: var(--color-background);
     color: var(--color-foreground);
@@ -652,7 +652,7 @@ onMounted(async () => {
     justify-content: flex-end;
     gap: var(--space);
     padding: var(--space);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
   }
 }
 </style>

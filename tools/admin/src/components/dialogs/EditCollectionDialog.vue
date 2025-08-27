@@ -270,7 +270,7 @@ onMounted(() => {
     justify-content: flex-end;
     margin-top: var(--space-lg);
     padding-top: var(--space);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
   }
 
   &__label {
@@ -295,7 +295,7 @@ onMounted(() => {
     border-radius: var(--radius);
     overflow: hidden;
     background-color: var(--color-bg-secondary);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
   }
 
   &__cover-preview-image {

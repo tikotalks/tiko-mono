@@ -112,7 +112,7 @@ const previewItems = computed(() => {
 
   &__preview {
     background: var(--color-background-secondary);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius-md);
     overflow: hidden;
   }
@@ -120,7 +120,7 @@ const previewItems = computed(() => {
   &__preview-header {
     padding: var(--space-s) var(--space);
     background: var(--color-background-tertiary);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
     font-weight: 500;
     font-size: var(--font-size-sm);
     color: var(--color-foreground-secondary);
@@ -140,7 +140,7 @@ const previewItems = computed(() => {
     align-items: center;
     padding: var(--space-xs);
     background: var(--color-background);
-    border-radius: var(--radius-sm);
+    border-radius: var(--border-radius);
     font-size: var(--font-size-sm);
   }
 
@@ -185,7 +185,7 @@ const previewItems = computed(() => {
     color: var(--color-error);
     padding: var(--space-s);
     background-color: var(--color-error-background);
-    border-radius: var(--radius-sm);
+    border-radius: var(--border-radius);
     font-size: var(--font-size-sm);
 
     p {

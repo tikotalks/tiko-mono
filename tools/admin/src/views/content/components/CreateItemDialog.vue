@@ -220,7 +220,7 @@ onMounted(() => {
     gap: var(--space-xs);
     padding: var(--space);
     background: var(--color-background-secondary);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius-md);
 
     strong {

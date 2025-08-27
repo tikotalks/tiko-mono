@@ -163,7 +163,7 @@ const handleDuplicate = () => {
 
   &__explanation {
     background: var(--color-background-secondary);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: 0.75rem;
     padding: 1rem;
 

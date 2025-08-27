@@ -944,7 +944,7 @@ onMounted(async () => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
 
     h2 {
       font-size: var(--font-size-l);
@@ -1075,7 +1075,7 @@ onMounted(async () => {
     margin-top: var(--space);
     padding: var(--space);
     background: var(--color-background-secondary);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius-md);
   }
 
@@ -1103,8 +1103,8 @@ onMounted(async () => {
     display: inline-block;
     padding: var(--space-xs) var(--space-s);
     background: var(--color-background);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-accent);
+    border-radius: var(--border-radius);
     font-size: var(--font-size-sm);
     font-family: var(--font-family-mono);
 

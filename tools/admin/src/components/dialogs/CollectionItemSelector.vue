@@ -203,7 +203,7 @@ onMounted(() => {
     justify-content: flex-end;
     padding: var(--space) 0;
     margin-top: auto;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
   }
 
   // Ensure the grid is scrollable

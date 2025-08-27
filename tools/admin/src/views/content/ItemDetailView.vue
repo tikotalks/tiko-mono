@@ -33,36 +33,14 @@
     <!-- Item Content -->
     <template v-else-if="item && template">
       <!-- Metadata Card -->
-      <TCard :class="bemm('metadata')">
-        <div :class="bemm('metadata-grid')">
-          <div>
-            <label>{{ t('admin.content.items.template') }}</label>
-            <span>{{ template.name }}</span>
-          </div>
-          <div v-if="item.language_code">
-            <label>{{ t('common.language') }}</label>
-            <span>{{ item.language_code }}</span>
-          </div>
-          <div v-if="baseItem">
-            <label>{{ t('admin.content.items.baseItem') }}</label>
-            <RouterLink :to="{ name: 'admin-content-item-detail', params: { id: baseItem.id } }">
-              {{ baseItem.name }}
-            </RouterLink>
-          </div>
-          <div>
-            <label>{{ t('common.slug') }}</label>
-            <span>{{ item.slug }}</span>
-          </div>
-          <div>
-            <label>{{ t('common.createdAt') }}</label>
-            <span>{{ formatDate(item.created_at) }}</span>
-          </div>
-          <div>
-            <label>{{ t('common.updatedAt') }}</label>
-            <span>{{ formatDate(item.updated_at) }}</span>
-          </div>
-        </div>
-      </TCard>
+        <TKeyValue :items="[
+          { key: t('admin.content.items.template'), value: template.name },
+          { key: t('common.language'), value: item?.language_code || '' },
+          { key:  t('admin.content.items.baseItem'), value: baseItem?.name || '', onClick: ()=>{ router.push({ name: 'admin-content-item-detail', params: { id: baseItem?.id } })} },
+          { key: t('common.slug'), value: item?.slug || '' },
+          { key:  t('common.createdAt'), value: getFormattedDate(item?.created_at) },
+          { key: t('common.updatedAt'), value: getFormattedDate(item?.updated_at) }
+        ]" />
 
       <!-- Fields Card -->
       <TCard :class="bemm('fields')">
@@ -136,7 +114,8 @@ import {
   TEmptyState,
   listActions,
   type ToastService,
-  type PopupService
+  type PopupService,
+  TKeyValue
 } from '@tiko/ui'
 import { Icons } from 'open-icon'
 import {
@@ -147,6 +126,7 @@ import {
   type ItemData,
 
   useI18n,
+  formatDate,
 } from '@tiko/core'
 import FieldRenderer from './components/FieldRenderer.vue'
 import AdminPageHeader from '@/components/AdminPageHeader.vue'
@@ -275,6 +255,32 @@ function getItemDescription(): string {
   return parts.join(' ')
 }
 
+function getFormattedDate(dateValue: any): string {
+  console.log('getFormattedDate called with:', {
+    value: dateValue,
+    type: typeof dateValue,
+    isNull: dateValue === null,
+    isUndefined: dateValue === undefined,
+    isStringNull: dateValue === 'null',
+    stringValue: String(dateValue)
+  })
+
+  if (!dateValue || dateValue === 'null' || dateValue === null || dateValue === undefined) {
+    console.log('Returning dash for invalid date value')
+    return '-'
+  }
+
+  try {
+    const result = formatDate(dateValue)
+    console.log('formatDate successful:', result)
+    return result
+  } catch (error) {
+    console.error('formatDate failed:', error)
+    console.error('Failed value was:', dateValue)
+    return '-'
+  }
+}
+
 async function saveItem() {
   if (!hasChanges.value || !item.value) return
 
@@ -357,11 +363,6 @@ function goToItem(itemId: string) {
   })
 }
 
-function formatDate(dateString: string): string {
-  const date = new Date(dateString)
-  return date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
-}
-
 // Watch for route changes
 watch(itemId, (newId) => {
   if (newId) {
@@ -377,6 +378,10 @@ onMounted(() => {
 
 <style lang="scss">
 .item-detail-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space);
+
   &__loading {
     display: flex;
     justify-content: center;
@@ -391,7 +396,7 @@ onMounted(() => {
   &__metadata-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: var(--space-lg);
+    gap: var(--space);
 
     > div {
       display: flex;
@@ -399,8 +404,8 @@ onMounted(() => {
       gap: var(--space-xs);
 
       label {
-        font-size: var(--font-size-sm);
-        color: var(--color-foreground-secondary);
+        font-size: var(--font-size-s);
+        color: var(--color-secondary);
         font-weight: 500;
       }
 

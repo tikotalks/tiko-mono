@@ -51,7 +51,7 @@ const navigationItems = ref<NavigationItem[]>([
   width: 100%;
   z-index: 15;
   top: 0;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-accent);
 
   &__logo-link {
     display: flex;

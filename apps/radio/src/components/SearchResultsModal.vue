@@ -414,7 +414,7 @@ onMounted(async () => {
     width: 4em;
     height: 4em;
     object-fit: cover;
-    border-radius: var(--radius-sm, 0.25em);
+    border-radius: var(--border-radius, 0.25em);
     flex-shrink: 0;
   }
 

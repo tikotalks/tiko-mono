@@ -27,9 +27,9 @@
         </div>
       </div>
     </div>
-    <div v-else :class="bemm('empty')">
+    <!-- <div v-else :class="bemm('empty')">
       <p>{{ t('admin.content.field.noItemsSelected') }}</p>
-    </div>
+    </div> -->
 
     <!-- Add Items Button -->
     <div :class="bemm('actions')">
@@ -38,7 +38,7 @@
         :icon="Icons.ADD"
         @click="openItemSelector"
       >
-        {{ t('admin.content.field.addItems') }}
+      {{t('common.fields.addItem')}}
       </TButton>
     </div>
   </div>
@@ -244,10 +244,11 @@ onMounted(() => {
 <style lang="scss">
 .linked-items-field {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-s);
+  flex-direction: row;
+  gap: var(--space);
 
   &__label {
+    width: var(--input-label-width, 30%);
     font-weight: 500;
     color: var(--color-foreground);
   }
@@ -260,7 +261,7 @@ onMounted(() => {
 
   &__selected {
     background: var(--color-background-secondary);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius-md);
     padding: var(--space);
   }
@@ -284,8 +285,8 @@ onMounted(() => {
     gap: var(--space-s);
     padding: var(--space-s);
     background: var(--color-background);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-accent);
+    border-radius: var(--border-radius);
     cursor: move;
 
     &:hover {
@@ -324,13 +325,14 @@ onMounted(() => {
     text-align: center;
     color: var(--color-foreground-secondary);
     background: var(--color-background-secondary);
-    border: 1px dashed var(--color-border);
+    border: 1px dashed var(--color-accent);
     border-radius: var(--radius-md);
   }
 
   &__actions {
     display: flex;
     gap: var(--space-s);
+    width: 100%;
   }
 }
 </style>

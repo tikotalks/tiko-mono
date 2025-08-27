@@ -1,18 +1,18 @@
 <template>
-  <TAppLayout 
-    :title="t('dashboard.title')" 
-    :show-header="true" 
-    app-name="tiko" 
+  <TAppLayout
+    :title="t('dashboard.title')"
+    :show-header="true"
+    app-name="tiko"
     @profile="handleProfile"
-    @settings="handleSettings" 
+    @settings="handleSettings"
     @logout="handleLogout"
   >
     <template #app-controls>
       <!-- Login/Logout button -->
-      <TButton 
+      <TButton
         v-if="!isAuthenticated"
-        :icon="Icons.USER" 
-        type="outline" 
+        :icon="Icons.USER"
+        type="outline"
         color="primary"
         @click="handleLogin"
         :aria-label="t('auth.signIn')"
@@ -27,7 +27,7 @@
         <h1 :class="bemm('welcome-title')">{{ t('dashboard.welcome', { name: userName }) }}</h1>
         <p :class="bemm('welcome-subtitle')">{{ t('dashboard.chooseApp') }}</p>
       </div>
-      
+
       <div :class="bemm('welcome')" v-else>
         <h1 :class="bemm('welcome-title')">{{ t('dashboard.welcomeGuest') }}</h1>
         <p :class="bemm('welcome-subtitle')">{{ t('dashboard.signInForBest') }}</p>
@@ -35,9 +35,9 @@
 
       <!-- App Grid -->
       <div :class="bemm('apps-section')">
-        <TCardGrid 
-          :cards="appCards" 
-          :show-arrows="false" 
+        <TCardGrid
+          :cards="appCards"
+          :show-arrows="false"
           :edit-mode="false"
           :is-loading="isLoading"
           @card-click="handleAppClick"
@@ -142,10 +142,10 @@ const handleAppClick = async (card: TCardTile) => {
 
       // Generate SSO URL with token if authenticated
       const ssoUrl = appsService.generateSSOUrl(
-        app, 
+        app,
         isAuthenticated.value ? authStore.session?.access_token : undefined
       );
-      
+
       window.location.href = ssoUrl;
     } catch (error) {
       console.error('Failed to navigate to app:', error);
@@ -158,7 +158,7 @@ const handleAppClick = async (card: TCardTile) => {
 // Data loading
 const loadApps = async () => {
   isLoading.value = true;
-  
+
   try {
     // Load apps from the apps service
     appCards.value = await appsService.getAppsAsCards();
@@ -179,7 +179,7 @@ const handleSSORequest = async () => {
   if (requestId && appId && returnUrl) {
     try {
       const ssoResponse = await ssoService.handleSSORequest(requestId, appId, returnUrl);
-      
+
       if (ssoResponse.success) {
         // User is authenticated, redirect back with tokens
         const redirectUrl = new URL(returnUrl);
@@ -189,7 +189,7 @@ const handleSSORequest = async () => {
         }
         redirectUrl.searchParams.set('sso_request_id', requestId);
         redirectUrl.searchParams.set('sso_success', 'true');
-        
+
         window.location.href = redirectUrl.toString();
         return;
       } else if (ssoResponse.error === 'Authentication required') {
@@ -217,7 +217,7 @@ const checkParentMode = async () => {
 onMounted(async () => {
   await loadApps();
   await checkParentMode();
-  
+
   // Handle SSO request if present
   if (route.path === '/sso' || route.query.request_id) {
     await handleSSORequest();
@@ -276,7 +276,7 @@ watch(
 
   &__parent-mode-section {
     background: var(--color-background-secondary);
-    border: 2px solid var(--color-border);
+    border: 2px solid var(--color-accent);
     border-radius: var(--border-radius);
     padding: var(--space-xl);
     text-align: center;
@@ -291,7 +291,7 @@ watch(
 
   &__sso-section {
     background: var(--color-background-secondary);
-    border: 2px solid var(--color-border);
+    border: 2px solid var(--color-accent);
     border-radius: var(--border-radius);
     padding: var(--space-xl);
     text-align: center;

@@ -3,7 +3,7 @@
     <!-- Header with Tabs -->
     <div :class="bemm('header')">
       <h2>{{ t('admin.media.selectMedia', 'Select Media') }}</h2>
-      
+
       <!-- Source Tabs -->
       <div :class="bemm('tabs')">
         <button
@@ -11,7 +11,7 @@
           :key="source.key"
           :class="[
             bemm('tab'),
-            { [bemm('tab', 'active')]: activeSource === source.key }
+            activeSource === source.key ? bemm('tab', 'active') : ''
           ]"
           @click="activeSource = source.key"
         >
@@ -75,7 +75,7 @@
       <!-- Empty state -->
       <TEmptyState
         v-else-if="filteredMedia.length === 0"
-        :icon="Icons.IMAGE_M"
+        :icon="Icons.IMAGE"
         :title="getEmptyStateTitle()"
         :description="getEmptyStateDescription()"
       >
@@ -100,13 +100,13 @@
           <div
             :class="[
               bemm('media-item'),
-              { [bemm('media-item', 'selected')]: isSelected(item) }
+              isSelected(item) ? bemm('media-item', 'selected') : ''
             ]"
             @click="toggleSelection(item)"
           >
             <TMediaTile
-              :media="item"
-              :get-image-variants="getImageUrl"
+              :media="{ ...item, original_url: getResolvedUrl(item) }"
+              :get-image-variants="getImageVariantsForTile"
             />
             <div
               v-if="isSelected(item)"
@@ -137,7 +137,7 @@
         >
           <TListCell
             type="image"
-            :src="getImageUrl(item.original_url, { width: 60, height: 60 })"
+            :src="getImageVariantsForTile(getResolvedUrl(item)).thumbnail"
             :alt="item.title || item.filename"
           />
           <TListCell
@@ -176,7 +176,7 @@
     <div :class="bemm('footer')">
       <div :class="bemm('selection-info')">
         <span v-if="selectedMediaWithSource.length > 0">
-          {{ t('admin.media.selectedCount', `${selectedMediaWithSource.length} selected`, { count: selectedMediaWithSource.length }) }}
+          {{ t('admin.media.selectedCount', `${selectedMediaWithSource.length} selected`) }}
         </span>
       </div>
 
@@ -217,12 +217,10 @@ import {
   TIcon,
   TVirtualGrid,
 } from '@tiko/ui'
-import { useI18n, useAuthStore } from '@tiko/core'
+import { useI18n, useAuthStore, mediaSourceService, useImageResolver } from '@tiko/core'
 import { Icons } from 'open-icon'
-import { mediaService } from '@tiko/core'
-import type { MediaItem } from '@tiko/core'
+import type { MediaItem, MediaSourceType, MediaFieldValue } from '@tiko/core'
 import { useImageUrl } from '@tiko/core'
-import type { MediaSourceType, MediaFieldValue } from '../types/media-field'
 
 // Simple debounce implementation
 function debounce<T extends (...args: any[]) => any>(func: T, delay: number): T {
@@ -257,30 +255,31 @@ const emit = defineEmits<{
 
 const bemm = useBemm('media-selector-enhanced')
 const { t } = useI18n()
-const { getImageUrl } = useImageUrl()
+const { getImageVariants } = useImageUrl()
+const { resolveImageUrl } = useImageResolver()
 const authStore = useAuthStore()
 
 // Source configuration
 const allSources = [
-  { 
-    key: 'public' as MediaSourceType, 
-    label: t('admin.media.sourcePublic', 'Public Library'), 
-    icon: Icons.GLOBE 
+  {
+    key: 'public' as MediaSourceType,
+    label: t('admin.media.sourcePublic', 'Public Library'),
+    icon: Icons.ADD
   },
-  { 
-    key: 'assets' as MediaSourceType, 
-    label: t('admin.media.sourceAssets', 'Assets'), 
-    icon: Icons.FOLDER 
+  {
+    key: 'assets' as MediaSourceType,
+    label: t('admin.media.sourceAssets', 'Assets'),
+    icon: Icons.ADD
   },
-  { 
-    key: 'personal' as MediaSourceType, 
-    label: t('admin.media.sourcePersonal', 'My Library'), 
-    icon: Icons.USER_M 
+  {
+    key: 'personal' as MediaSourceType,
+    label: t('admin.media.sourcePersonal', 'My Library'),
+    icon: Icons.ADD
   }
 ]
 
 // Filter sources based on allowed
-const availableSources = computed(() => 
+const availableSources = computed(() =>
   allSources.filter(s => props.allowedSources.includes(s.key))
 )
 
@@ -416,81 +415,102 @@ const tagOptions = computed(() => {
   return Array.from(tags).map(tag => ({ value: tag, label: tag }))
 })
 
+// Reactive state for resolved URLs
+const resolvedUrls = ref<Record<string, string>>({})
+
+// Image URL resolver that handles different sources synchronously
+function getResolvedUrl(item: MediaItem): string {
+  const key = `${item.id}-${activeSource.value}`
+  return resolvedUrls.value[key] || item.original_url || ''
+}
+
+// Async function to resolve and cache URLs
+async function resolveAndCacheUrl(item: MediaItem) {
+  const key = `${item.id}-${activeSource.value}`
+
+  // Skip if already resolved
+  if (resolvedUrls.value[key]) return
+
+  let resolvedUrl = ''
+
+  // If the item has a full URL already, use it
+  if (item.original_url?.startsWith('http://') || item.original_url?.startsWith('https://')) {
+    resolvedUrl = item.original_url
+  }
+  // For assets source, we need to handle the ID
+  else if (activeSource.value === 'assets' && item.id) {
+    try {
+      resolvedUrl = await resolveImageUrl(item.id, { media: 'assets' })
+    } catch (error) {
+      console.error(`Failed to resolve asset URL for ${item.id}:`, error)
+      resolvedUrl = item.original_url || ''
+    }
+  }
+  // For public media, construct the URL
+  else if (activeSource.value === 'public') {
+    // Check if it has a filename
+    if (item.filename) {
+      resolvedUrl = `https://media.tikocdn.org/${item.filename}`
+    }
+    // Fallback to using ID
+    else {
+      resolvedUrl = `https://media.tikocdn.org/${item.id}`
+    }
+  }
+  // For personal media
+  else if (activeSource.value === 'personal') {
+    resolvedUrl = `https://user-media.tikocdn.org/${item.id}`
+  }
+  // Fallback
+  else {
+    resolvedUrl = item.original_url || ''
+  }
+
+  // Cache the resolved URL
+  resolvedUrls.value[key] = resolvedUrl
+}
+
+// Enhanced getImageVariants function for TMediaTile
+const getImageVariantsForTile = (url: string) => {
+  // For assets that might be UUIDs, we need to resolve them first
+  if (activeSource.value === 'assets' && !url.startsWith('http')) {
+    // This is handled by the TMediaTile component itself
+    return {
+      thumbnail: url,
+      medium: url,
+      large: url,
+      original: url
+    }
+  }
+
+  // For already resolved URLs, use the getImageVariants utility
+  return getImageVariants(url)
+}
+
 // Methods
 async function loadMedia() {
   loading.value = true
-  
+
   try {
-    let loadedMedia: MediaItem[] = []
-    
-    switch (activeSource.value) {
-      case 'public':
-        // Load public media from media service
-        loadedMedia = await mediaService.getPublicMedia()
-        break
-        
-      case 'personal':
-        // Load user's personal media
-        const userId = authStore.user?.id
-        if (userId) {
-          loadedMedia = await mediaService.getUserMedia(userId)
-        }
-        break
-        
-      case 'assets':
-        // TODO: Implement assets loading when asset service is available
-        // For now, use mock data
-        loadedMedia = getMockAssets()
-        break
-    }
-    
+    const userId = authStore.user?.id
+    const loadedMedia = await mediaSourceService.loadMediaFromSource(
+      activeSource.value,
+      {
+        userId,
+        search: searchQuery.value || undefined
+      }
+    )
+
     media.value = loadedMedia
+
+    // Resolve URLs for all loaded media
+    await Promise.all(loadedMedia.map(item => resolveAndCacheUrl(item)))
   } catch (error) {
     console.error('Failed to load media:', error)
     media.value = []
   } finally {
     loading.value = false
   }
-}
-
-// Mock assets for demonstration
-function getMockAssets(): MediaItem[] {
-  return [
-    {
-      id: 'asset-1',
-      user_id: 'system',
-      filename: 'logo.png',
-      original_filename: 'logo.png',
-      file_size: 5000,
-      mime_type: 'image/png',
-      original_url: '/assets/logo.png',
-      width: 200,
-      height: 200,
-      title: 'Company Logo',
-      description: 'Main company logo',
-      categories: ['branding'],
-      tags: ['logo', 'brand'],
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    },
-    {
-      id: 'asset-2',
-      user_id: 'system',
-      filename: 'icon.svg',
-      original_filename: 'icon.svg',
-      file_size: 2000,
-      mime_type: 'image/svg+xml',
-      original_url: '/assets/icon.svg',
-      width: 100,
-      height: 100,
-      title: 'App Icon',
-      description: 'Application icon',
-      categories: ['branding'],
-      tags: ['icon', 'app'],
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }
-  ]
 }
 
 function isSelected(item: MediaItem): boolean {
@@ -508,7 +528,7 @@ function toggleSelection(item: MediaItem) {
       caption: item.description
     }
   }
-  
+
   const existingIndex = selectedMediaWithSource.value.findIndex(
     selected => selected.id === item.id && selected.source === activeSource.value
   )
@@ -549,6 +569,8 @@ function handleCancel() {
 
 // Watch source changes
 watch(activeSource, () => {
+  // Clear resolved URLs when source changes
+  resolvedUrls.value = {}
   loadMedia()
 })
 
@@ -558,7 +580,7 @@ onMounted(() => {
   if (props.selectedIds.length > 0) {
     // TODO: Load pre-selected items from their respective sources
   }
-  
+
   loadMedia()
 })
 </script>
@@ -575,8 +597,8 @@ onMounted(() => {
 
   &__header {
     padding: var(--space-lg);
-    border-bottom: 1px solid var(--color-border);
-    
+    border-bottom: 1px solid var(--color-accent);
+
     h2 {
       margin: 0 0 var(--space);
       font-size: var(--font-size-lg);
@@ -586,7 +608,7 @@ onMounted(() => {
   &__tabs {
     display: flex;
     gap: var(--space-xs);
-    border-bottom: 2px solid var(--color-border);
+    border-bottom: 2px solid var(--color-accent);
     margin: 0 calc(-1 * var(--space-lg));
     padding: 0 var(--space-lg);
   }
@@ -622,7 +644,7 @@ onMounted(() => {
     justify-content: space-between;
     gap: var(--space);
     padding: var(--space);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
 
     &-left,
     &-right {
@@ -683,7 +705,7 @@ onMounted(() => {
     left: var(--space-s);
     padding: var(--space-xs) var(--space-s);
     background: var(--color-background);
-    border-radius: var(--radius-sm);
+    border-radius: var(--border-radius);
     font-size: var(--font-size-xs);
     font-weight: 600;
     text-transform: uppercase;
@@ -727,7 +749,7 @@ onMounted(() => {
     justify-content: space-between;
     align-items: center;
     padding: var(--space);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
     background: var(--color-background-secondary);
   }
 

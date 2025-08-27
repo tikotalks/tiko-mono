@@ -81,7 +81,7 @@ const handleVideoError = (event: Event) => {
     gap: var(--space-xs, 0.5em);
     padding: var(--space-s, 0.75em);
     background: color-mix(in srgb, var(--color-primary), transparent 95%);
-    border-radius: var(--radius-sm, 0.25em);
+    border-radius: var(--border-radius, 0.25em);
     font-size: 0.875em;
 
     p {
@@ -101,7 +101,7 @@ const handleVideoError = (event: Event) => {
   &__video {
     max-width: 100%;
     height: auto;
-    border-radius: var(--radius-sm, 0.25em);
+    border-radius: var(--border-radius, 0.25em);
     box-shadow: 0 2px 8px color-mix(in srgb, var(--color-foreground), transparent 85%);
   }
 
@@ -109,7 +109,7 @@ const handleVideoError = (event: Event) => {
     padding: var(--space-s, 0.75em);
     background: color-mix(in srgb, var(--color-error), transparent 90%);
     border: 1px solid color-mix(in srgb, var(--color-error), transparent 70%);
-    border-radius: var(--radius-sm, 0.25em);
+    border-radius: var(--border-radius, 0.25em);
     color: color-mix(in srgb, var(--color-error), var(--color-foreground) 20%);
 
     p {

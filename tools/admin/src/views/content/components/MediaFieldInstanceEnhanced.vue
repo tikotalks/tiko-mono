@@ -99,13 +99,9 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useBemm } from 'bemm'
 import { TButton } from '@tiko/ui'
 import { Icons } from 'open-icon'
-import { type MediaItem, useI18n, useImageUrl, useImages } from '@tiko/core'
+import { type MediaItem, type MediaFieldValue, type MediaSourceType, useI18n, useImageUrl, useImageResolver, mediaSourceService } from '@tiko/core'
 import { useMediaSelector } from '../../../composables/useMediaSelector'
-import { 
-  type MediaFieldValue, 
-  type MediaSourceType,
-  normalizeMediaValue 
-} from '../../../types/media-field'
+import { normalizeMediaValue } from '../../../types/media-field'
 
 interface Props {
   modelValue: any // Can be string, array, or MediaFieldValue format
@@ -130,20 +126,28 @@ const emit = defineEmits<{
 const bemm = useBemm('media-field-enhanced')
 const { t } = useI18n()
 const { getImageUrl } = useImageUrl()
+const { resolveImageUrl } = useImageResolver()
 const { openMediaSelector } = useMediaSelector()
-const { getImage, loadImages } = useImages()
+
+// Helper to check if a string is a valid UUID
+function isValidUUID(str: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  return uuidRegex.test(str)
+}
 
 // State for storing enhanced media objects
 const selectedMedia = ref<MediaFieldValue | null>(null)
 const selectedMediaList = ref<MediaFieldValue[]>([])
 
-// Map to store loaded MediaItem objects by ID
+// Map to store loaded MediaItem objects by source and ID
 const mediaItemsMap = ref<Map<string, MediaItem>>(new Map())
 
-// Load images on mount
+// Map to store resolved image URLs
+const resolvedImageUrls = ref<Map<string, string>>(new Map())
+
+// Load initial data on mount
 onMounted(async () => {
-  await loadImages()
-  // Re-process modelValue after images are loaded
+  // Process modelValue if present
   if (props.modelValue) {
     await processModelValue(props.modelValue)
   }
@@ -163,37 +167,71 @@ function getSourceLabel(source: MediaSourceType): string {
 // Function to get media title
 function getMediaTitle(media: MediaFieldValue): string {
   if (media.metadata?.alt) return media.metadata.alt
-  
+
   // Try to get title from loaded MediaItem
-  const mediaItem = mediaItemsMap.value.get(media.id)
+  const cacheKey = `${media.source}-${media.id}`
+  const mediaItem = mediaItemsMap.value.get(cacheKey)
   if (mediaItem) {
     return mediaItem.title || mediaItem.filename || media.id
   }
-  
+
   return media.id
 }
 
-// Function to get preview URL
+// Function to get preview URL (synchronous - returns cached or placeholder)
 function getPreviewUrl(media: MediaFieldValue): string {
+  const cacheKey = `${media.source}-${media.id}`
+
+  // Return cached resolved URL if available
+  if (resolvedImageUrls.value.has(cacheKey)) {
+    return resolvedImageUrls.value.get(cacheKey)!
+  }
+
   // If external URL, return it directly
   if (media.source === 'url' && media.url) {
     return media.url
   }
-  
+
   // Try to get URL from loaded MediaItem
-  const mediaItem = mediaItemsMap.value.get(media.id)
+  const mediaItem = mediaItemsMap.value.get(cacheKey)
   if (mediaItem?.original_url) {
-    return getImageUrl(mediaItem.original_url, { width: 200, height: 200 })
+    // Handle assets with UUID resolution
+    if (media.source === 'assets' && isValidUUID(mediaItem.original_url)) {
+      // Resolve async and cache
+      resolveImageAsync(mediaItem.original_url, cacheKey)
+      return '/assets/placeholder.png' // Temporary placeholder
+    }
+    // Handle other sources with regular image URL
+    const url = getImageUrl(mediaItem.original_url, { width: 200, height: 200 })
+    resolvedImageUrls.value.set(cacheKey, url)
+    return url
   }
-  
+
+  // For assets, try to resolve the ID directly if it's a UUID
+  if (media.source === 'assets' && isValidUUID(media.id)) {
+    resolveImageAsync(media.id, cacheKey)
+    return '/assets/placeholder.png' // Temporary placeholder
+  }
+
   // Fallback to URL if provided
-  return media.url || ''
+  return media.url || '/assets/placeholder.png'
+}
+
+// Async function to resolve and cache image URLs
+async function resolveImageAsync(uuid: string, cacheKey: string) {
+  try {
+    const url = await resolveImageUrl(uuid, { media: 'assets' })
+    resolvedImageUrls.value.set(cacheKey, url)
+  } catch (error) {
+    console.error('Failed to resolve image:', error)
+    resolvedImageUrls.value.set(cacheKey, '/assets/placeholder.png')
+  }
 }
 
 // Function to process model value
 async function processModelValue(newValue: any) {
   const normalized = normalizeMediaValue(newValue)
-  
+
   if (props.multiple) {
     if (Array.isArray(normalized)) {
       selectedMediaList.value = normalized
@@ -216,20 +254,30 @@ async function processModelValue(newValue: any) {
 
 // Function to load a media item
 async function loadMediaItem(mediaValue: MediaFieldValue) {
-  // Skip if already loaded or if it's an external URL
-  if (mediaItemsMap.value.has(mediaValue.id) || mediaValue.source === 'url') {
+  const cacheKey = `${mediaValue.source}-${mediaValue.id}`
+
+  // Skip if already loaded
+  if (mediaItemsMap.value.has(cacheKey)) {
     return
   }
-  
-  // Try to get from loaded images (public library)
-  if (mediaValue.source === 'public') {
-    const mediaItem = getImage(mediaValue.id)
+
+  try {
+    const mediaItem = await mediaSourceService.getMediaBySource(mediaValue)
     if (mediaItem) {
-      mediaItemsMap.value.set(mediaValue.id, mediaItem)
+      mediaItemsMap.value.set(cacheKey, mediaItem)
+
+      // For assets, trigger image URL resolution
+      if (mediaValue.source === 'assets' && mediaItem.original_url && isValidUUID(mediaItem.original_url)) {
+        resolveImageAsync(mediaItem.original_url, cacheKey)
+      } else if (mediaItem.original_url) {
+        // Cache regular image URLs
+        const url = getImageUrl(mediaItem.original_url, { width: 200, height: 200 })
+        resolvedImageUrls.value.set(cacheKey, url)
+      }
     }
+  } catch (error) {
+    console.error('Failed to load media item:', error)
   }
-  
-  // TODO: Load from other sources (assets, personal) when those APIs are available
 }
 
 // Initialize from modelValue
@@ -239,51 +287,31 @@ watch(() => props.modelValue, async (newValue) => {
 
 // Methods
 async function selectMedia() {
-  // TODO: When the MediaSelector is updated to support source selection,
-  // we'll pass the allowedSources prop here
   const currentIds = props.multiple
     ? selectedMediaList.value.map(m => m.id)
     : selectedMedia.value ? [selectedMedia.value.id] : []
 
   const selected = await openMediaSelector({
     multiple: props.multiple,
-    selectedIds: currentIds
-  })
+    selectedIds: currentIds,
+    enhanced: true,
+    allowedSources: props.allowedSources
+  }) as MediaFieldValue[]
 
   if (selected.length > 0) {
     if (props.multiple) {
-      // Add to existing selection with source info
-      const newItems: MediaFieldValue[] = selected
-        .filter(item => !selectedMediaList.value.some(existing => existing.id === item.id))
-        .map(item => ({
-          id: item.id,
-          source: 'public', // Default to public for now
-          metadata: {
-            alt: item.title || item.filename
-          }
-        }))
-      
-      // Store MediaItems in map
-      selected.forEach(item => {
-        mediaItemsMap.value.set(item.id, item)
-      })
-      
+      // Add to existing selection
+      const newItems = selected.filter(item =>
+        !selectedMediaList.value.some(existing =>
+          existing.id === item.id && existing.source === item.source
+        )
+      )
+
       selectedMediaList.value = [...selectedMediaList.value, ...newItems]
       emitUpdate()
     } else {
       // Replace single selection
-      const mediaItem = selected[0]
-      selectedMedia.value = {
-        id: mediaItem.id,
-        source: 'public', // Default to public for now
-        metadata: {
-          alt: mediaItem.title || mediaItem.filename
-        }
-      }
-      
-      // Store MediaItem in map
-      mediaItemsMap.value.set(mediaItem.id, mediaItem)
-      
+      selectedMedia.value = selected[0]
       emit('update:modelValue', selectedMedia.value)
     }
   }
@@ -361,19 +389,19 @@ function emitUpdate() {
   &__preview-source {
     font-size: var(--font-size-sm);
     color: var(--color-foreground-secondary);
-    
+
     &--public {
       color: var(--color-info);
     }
-    
+
     &--assets {
       color: var(--color-warning);
     }
-    
+
     &--personal {
       color: var(--color-success);
     }
-    
+
     &--url {
       color: var(--color-foreground-secondary);
     }
@@ -402,16 +430,16 @@ function emitUpdate() {
     align-items: center;
     gap: var(--space);
     padding: var(--space-s);
-    background: var(--color-background-secondary);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    background: var(--color-secondary);
+    border: 1px solid var(--color-accent);
+    border-radius:  var(--border-radius);
   }
 
   &__list-item-image {
     width: 48px;
     height: 48px;
     object-fit: cover;
-    border-radius: var(--radius-sm);
+    border-radius: var(--border-radius);
     background-image:
       linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
       linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
@@ -436,19 +464,19 @@ function emitUpdate() {
   &__list-item-source {
     font-size: var(--font-size-xs);
     color: var(--color-foreground-secondary);
-    
+
     &--public {
       color: var(--color-info);
     }
-    
+
     &--assets {
       color: var(--color-warning);
     }
-    
+
     &--personal {
       color: var(--color-success);
     }
-    
+
     &--url {
       color: var(--color-foreground-secondary);
     }

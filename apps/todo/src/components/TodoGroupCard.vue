@@ -67,7 +67,7 @@ const { t, keys } = useI18n()
 <style lang="scss" scoped>
 .todo-group-card {
   background-color: var(--color-background);
-  border: 2px solid var(--color-border);
+  border: 2px solid var(--color-accent);
   border-radius: var(--radius-lg);
   padding: var(--space);
   display: flex;

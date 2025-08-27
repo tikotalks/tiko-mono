@@ -33,6 +33,8 @@ const BackupsView = () => import('../views/deployment/BackupsView.vue')
 const GenerateView = () => import('../views/GenerateView.vue')
 const PersonalLibraryView = () => import('../views/PersonalLibraryView.vue')
 const CollectionsView = () => import('../views/CollectionsView.vue')
+const TestMarkdownView = () => import('../views/TestMarkdownView.vue')
+const TestRichEditorView = () => import('../views/TestRichEditorView.vue')
 
 const router = createAppRouter({
   routes: [
@@ -199,6 +201,26 @@ const router = createAppRouter({
           path: 'items/public',
           name: 'PublicItems',
           component: () => import('../views/PublicItemsView.vue')
+        },
+        {
+          path: 'test-markdown',
+          name: 'TestMarkdown',
+          component: TestMarkdownView
+        },
+        {
+          path: 'test-dragdrop',
+          name: 'TestDragDrop',
+          component: () => import('../views/TestDragDropView.vue')
+        },
+        {
+          path: 'test-rich-editor',
+          name: 'TestRichEditor',
+          component: TestRichEditorView
+        },
+        {
+          path: 'test-rich-direct',
+          name: 'TestRichDirect',
+          component: () => import('../views/TestRichTextDirectView.vue')
         }
       ]
     }

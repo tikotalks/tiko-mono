@@ -60,7 +60,7 @@ const isUntranslated = computed(() => {
   &--untranslated {
     opacity: 0.5;
     border: 1px solid var(--color-error);
-    border-radius: var(--radius-sm);
+    border-radius: var(--border-radius);
     padding: 0 var(--space-xs);
     font-family: var(--font-family-mono);
     font-size: 0.9em;

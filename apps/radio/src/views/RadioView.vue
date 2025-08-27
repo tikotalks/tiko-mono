@@ -555,7 +555,7 @@ onMounted(async () => {
   &__mini-thumbnail {
     width: 3em;
     height: 3em;
-    border-radius: var(--radius-sm, 0.25em);
+    border-radius: var(--border-radius, 0.25em);
     object-fit: cover;
     flex-shrink: 0;
   }
@@ -578,7 +578,7 @@ onMounted(async () => {
   &__mini-progress {
     height: 0.25em;
     background: color-mix(in srgb, var(--color-foreground), transparent 90%);
-    border-radius: var(--radius-sm, 0.25em);
+    border-radius: var(--border-radius, 0.25em);
     overflow: hidden;
   }
 

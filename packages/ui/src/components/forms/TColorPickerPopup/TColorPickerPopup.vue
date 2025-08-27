@@ -32,7 +32,7 @@ const props = defineProps<{
   modelValue?: Colors
   colors?: Colors[]
   placeholder?: string
-  size?: 'small' | 'medium' | 'large'
+  size?: 'small' | 'medium' | 'large',
 }>()
 
 const emit = defineEmits<{
@@ -73,7 +73,7 @@ const openColorPicker = () => {
   gap: 0.5rem;
   padding: 0.5rem;
   background: var(--color-background);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-accent);
   border-radius: 0.375rem;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -87,6 +87,7 @@ const openColorPicker = () => {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
+
 
   &__selected {
     flex: 1;

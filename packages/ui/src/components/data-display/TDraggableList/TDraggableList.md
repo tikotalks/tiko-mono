@@ -421,7 +421,7 @@ The component uses BEM classes:
   align-items: center;
   gap: var(--space-s);
   background-color: var(--color-background);
-  border: 2px solid var(--color-border);
+  border: 2px solid var(--color-accent);
   border-radius: var(--radius);
   padding: var(--space-s);
   transition: all 0.2s ease;

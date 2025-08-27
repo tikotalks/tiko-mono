@@ -7,8 +7,8 @@
 
 
     <!-- Items Section -->
-    <TCard :class="bemm('section')">
-      <template #header>
+    <!-- <TCard :class="bemm('section')">
+      <template #header> -->
         <div :class="bemm('section-header')">
           <h3>{{ t('admin.content.items.title') }}</h3>
           <TButton
@@ -21,7 +21,7 @@
             {{ t('admin.content.items.create') }}
           </TButton>
         </div>
-      </template>
+      <!-- </template> -->
 
       <!-- Filters -->
       <div :class="bemm('filters')">
@@ -134,12 +134,12 @@
 
       <TEmptyState
         v-else
-        :icon="Icons.FOLDER_OPEN"
+        :icon="Icons.FOLDER"
         :title="t('admin.content.items.empty.title')"
         :description="t('admin.content.items.empty.description')"
         :compact="true"
       />
-    </TCard>
+    <!-- </TCard> -->
 
     <!-- Templates Section -->
     <TCard :class="bemm('section')">

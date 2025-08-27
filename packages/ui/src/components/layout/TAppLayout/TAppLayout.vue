@@ -1,5 +1,5 @@
 <template>
-  <div :class="bemm('',['', config?.isApp ? 'is-app' : 'is-website'])">
+  <div :class="bemm('',['', tikoConfig.isApp ? 'is-app' : 'is-website'])">
     <!-- Top Bar -->
     <header :class="bemm('header')">
       <TTopBar
@@ -22,7 +22,8 @@
         :user-role="userRole"
         :show-parent-mode-indicator="showParentModeIndicator"
         :enable-parent-mode="computedEnableParentMode"
-        :is-app="config?.isApp"
+        :is-app="tikoConfig.isApp"
+        :config="tikoConfig"
         @back="$emit('back')"
         @profile="$emit('profile')"
         @settings="$emit('settings')"
@@ -60,6 +61,7 @@ import { computed } from 'vue';
 import { useBemm } from 'bemm';
 import TTopBar from '../TTopBar/TTopBar.vue';
 import type { TAppLayoutProps, TAppLayoutEmits } from './TAppLayout.model';
+import { useTikoConfig } from '@tiko/core';
 
 const props = withDefaults(defineProps<TAppLayoutProps>(), {
   showBackButton: false,
@@ -77,6 +79,10 @@ const props = withDefaults(defineProps<TAppLayoutProps>(), {
 defineEmits<TAppLayoutEmits>();
 
 const bemm = useBemm('app-layout');
+
+const tikoConfig = computed(()=>{
+  return useTikoConfig(props.config).config;
+})
 
 // Compute enableParentMode with proper default based on isApp
 const computedEnableParentMode = computed(() => {
@@ -135,7 +141,7 @@ const showTopBar = computed(()=>{
 
   &__footer {
     flex-shrink: 0;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
     background: var(--color-accent);
   }
 }

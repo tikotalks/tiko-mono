@@ -399,7 +399,7 @@ const navigationItems = computed<NavigationItem[]>(() => [
   display: flex;
   flex-direction: column;
   width: 250px;
-  border-right: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-accent);
   padding: var(--space);
 
   container-type: inline-size;
@@ -424,10 +424,9 @@ const navigationItems = computed<NavigationItem[]>(() => [
     }
 
     &--sub {
-      max-height: 0;
-      overflow: hidden;
+     display:none;
       transition: max-height 0.2s ease-in-out;
-      padding-left: 1em;
+      padding: var(--space-xs);
     }
   }
   &__nav-item {
@@ -458,7 +457,7 @@ const navigationItems = computed<NavigationItem[]>(() => [
 
     &--active {
       .admin-navigation__nav-list {
-        max-height: fit-content;
+       display: block;
       }
     }
   }
@@ -490,12 +489,12 @@ const navigationItems = computed<NavigationItem[]>(() => [
     }
 
     &--action {
-      border: 1px dashed var(--color-primary);
+      // border: 1px dashed var(--color-primary);
 
-      &:hover {
-        background-color: var(--color-primary);
-        border-style: solid;
-      }
+      // &:hover {
+      //   background-color: var(--color-primary);
+      //   border-style: solid;
+      // }
     }
 
     &.router-link-active {

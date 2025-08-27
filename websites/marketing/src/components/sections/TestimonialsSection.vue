@@ -120,7 +120,7 @@ const bemm = useBemm('testimonials-section')
   }
 
   &__star {
-    color: var(--color-border);
+    color: var(--color-accent);
     font-size: var(--font-size-lg);
 
     &--filled {

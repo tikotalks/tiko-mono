@@ -60,12 +60,12 @@
           <div v-else :class="bemm('video-placeholder')">
             <TIcon :name="Icons.VIDEOS" size="large" />
           </div>
-          
+
           <!-- Play button overlay -->
           <div :class="bemm('video-overlay')">
             <TIcon :name="Icons.CARET_RIGHT" size="large" />
           </div>
-          
+
           <!-- Duration badge -->
           <div v-if="displayDuration" :class="bemm('video-duration')">
             {{ displayDuration }}
@@ -227,11 +227,11 @@ const aspectRatioCss = computed(() => {
 
 const displayDuration = computed(() => {
   if (!props.media?.duration) return '';
-  
+
   const duration = props.media.duration;
   const minutes = Math.floor(duration / 60);
   const seconds = Math.floor(duration % 60);
-  
+
   if (minutes > 0) {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
@@ -472,7 +472,7 @@ onUnmounted(() => {
     cursor: pointer;
     overflow: hidden;
     background: #000;
-    
+
     &:hover {
       .t-media-tile__video-overlay {
         opacity: 1;
@@ -497,7 +497,7 @@ onUnmounted(() => {
     align-items: center;
     justify-content: center;
     background: var(--color-background-secondary);
-    
+
     .icon {
       opacity: 0.5;
       color: var(--color-foreground-secondary);
@@ -520,7 +520,7 @@ onUnmounted(() => {
     align-items: center;
     justify-content: center;
     backdrop-filter: blur(10px);
-    
+
     .icon {
       font-size: 2em;
       color: rgba(255, 255, 255, 0.95);
@@ -557,7 +557,7 @@ onUnmounted(() => {
     display: grid;
     height: 100%;
     gap: 2px;
-    background: var(--color-border);
+    background: var(--color-accent);
 
     &--two {
       grid-template-columns: 1fr 1fr;

@@ -175,13 +175,6 @@ const newUsersThisMonth = computed(() => {
   ).length
 })
 
-const formatDate = (dateString: string | undefined): string => {
-  if (!dateString) return t('common.never')
-  return new Intl.DateTimeFormat('en-US', {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  }).format(new Date(dateString))
-}
 
 const getRoleColor = (role: string): string => {
   switch (role) {
@@ -379,13 +372,13 @@ onMounted(async () => {
       padding: var(--space);
       font-weight: 600;
       color: var(--color-text-secondary);
-      border-bottom: 2px solid var(--color-border);
+      border-bottom: 2px solid var(--color-accent);
       font-size: var(--font-size-s);
     }
 
     td {
       padding: var(--space);
-      border-bottom: 1px solid var(--color-border);
+      border-bottom: 1px solid var(--color-accent);
     }
 
     tr:hover {

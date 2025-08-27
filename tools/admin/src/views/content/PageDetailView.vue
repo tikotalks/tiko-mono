@@ -86,29 +86,26 @@
             :on-reorder="handleSectionsReorder"
           >
             <template v-slot="{ item }">
-              <div :class="bemm('section-item')">
-                <TIcon :name="Icons.ARROW_HEADED_UP_DOWN" :class="bemm('drag-handle')" />
-                <div :class="bemm('section-info')">
-                  <span :class="bemm('section-name')">{{ item?.section?.name || item?.pageSection?.override_name || 'Unknown Section' }}</span>
-                  <span :class="bemm('section-type')">{{ item?.section?.component_type || 'unknown' }}</span>
-                </div>
-                <div :class="bemm('section-actions')">
-                  <TButton
-                    type="icon-only"
-                    :icon="Icons.EDIT_M"
-                    size="small"
-                    @click="handleEditSection(item)"
-                    :tooltip="t('common.edit')"
-                  />
-                  <TButton
-                    type="icon-only"
-                    :icon="Icons.MULTIPLY_M"
-                    color="error"
-                    size="small"
-                    @click="handleRemoveSection(item)"
-                    :tooltip="t('common.delete')"
-                  />
-                </div>
+              <div :class="bemm('section-info')">
+                <span :class="bemm('section-name')">{{ item?.section?.name || item?.pageSection?.override_name || 'Unknown Section' }}</span>
+                <span :class="bemm('section-type')">{{ item?.section?.component_type || 'unknown' }}</span>
+              </div>
+              <div :class="bemm('section-actions')">
+                <TButton
+                  type="icon-only"
+                  :icon="Icons.EDIT_M"
+                  size="small"
+                  @click="handleEditSection(item)"
+                  :tooltip="t('common.edit')"
+                />
+                <TButton
+                  type="icon-only"
+                  :icon="Icons.MULTIPLY_M"
+                  color="error"
+                  size="small"
+                  @click="handleRemoveSection(item)"
+                  :tooltip="t('common.delete')"
+                />
               </div>
             </template>
           </TDragList>
@@ -502,15 +499,35 @@ async function handleSectionsReorder(newSections: any[]) {
 
     // Update order indices - ensure we keep ALL properties
     const updatedSections = newSections.map((section, index) => {
-      // Deep clone to ensure we don't lose any properties
-      const clonedSection = JSON.parse(JSON.stringify(section))
+      // Ensure the section has the expected structure
+      if (!section || !section.pageSection) {
+        console.error('Section missing pageSection:', section)
+        // Try to recover by finding the original section
+        const originalSection = originalSections.find(s => s.id === section?.id)
+        if (originalSection) {
+          console.warn('Recovered section from original:', originalSection)
+          section = originalSection
+        } else {
+          throw new Error(`Invalid section structure at index ${index}`)
+        }
+      }
 
-      // Debug: Check if section_template_id exists before and after clone
-      console.log(`Section ${index} before clone - section_template_id:`, section.pageSection?.section_template_id)
-      console.log(`Section ${index} after clone - section_template_id:`, clonedSection.pageSection?.section_template_id)
+      // Create a safe copy of the section without using JSON.parse/stringify
+      // which can fail with certain object types
+      const updatedSection = {
+        ...section,
+        pageSection: {
+          ...section.pageSection,
+          order_index: index
+        },
+        section: section.section ? { ...section.section } : null,
+        content: section.content ? { ...section.content } : null
+      }
 
-      clonedSection.pageSection.order_index = index
-      return clonedSection
+      // Debug: Verify structure is preserved
+      console.log(`Section ${index} updated - section_template_id:`, updatedSection.pageSection?.section_template_id)
+
+      return updatedSection
     })
 
     // Update local state optimistically
@@ -801,7 +818,7 @@ onMounted(() => {
 
   &__page-data {
     background: var(--color-background-secondary);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--border-radius);
     padding: var(--space);
     font-family: var(--font-mono);
@@ -830,29 +847,12 @@ onMounted(() => {
     gap: var(--space-xs);
   }
 
-  &__section-item {
+  // Style the drag list items through the TDragList wrapper
+  .drag-list__content {
     display: flex;
     align-items: center;
     gap: var(--space);
-    background: var(--color-background-secondary);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--space);
-    transition: all 0.2s ease;
-
-    &:hover {
-      border-color: var(--color-primary-10);
-      background: var(--color-background);
-    }
-  }
-
-  &__drag-handle {
-    color: var(--color-foreground-secondary);
-    cursor: grab;
-
-    &:active {
-      cursor: grabbing;
-    }
+    flex: 1;
   }
 
   &__section-info {

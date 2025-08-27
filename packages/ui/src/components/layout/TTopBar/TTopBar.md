@@ -388,7 +388,7 @@ The component uses BEM methodology:
   align-items: center;
   justify-content: space-between;
   background: var(--color-background);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-accent);
   min-height: 4rem;
 }
 

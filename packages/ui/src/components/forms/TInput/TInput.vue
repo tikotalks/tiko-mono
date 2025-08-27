@@ -236,7 +236,7 @@ const decrement = () => {
     right: 0.25rem;
     display: flex;
     flex-direction: column;
-    border-radius: var(--radius-sm);
+    border-radius: var(--border-radius);
     overflow: hidden;
     border: 1px solid var(--border-primary);
   }

@@ -148,7 +148,7 @@ const selectRecentQuestion = (question: string) => {
 
   &__header {
     padding-bottom: 1rem;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
     margin-bottom: 1.5rem;
     text-align: center;
   }
@@ -182,7 +182,7 @@ const selectRecentQuestion = (question: string) => {
   &__textarea {
     width: 100%;
     padding: 1rem;
-    border: 2px solid var(--color-border);
+    border: 2px solid var(--color-accent);
     border-radius: 0.5rem;
     font-family: inherit;
     font-size: 1rem;
@@ -201,7 +201,7 @@ const selectRecentQuestion = (question: string) => {
   }
 
   &__recent {
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
     padding-top: 1rem;
   }
 
@@ -224,7 +224,7 @@ const selectRecentQuestion = (question: string) => {
     justify-content: space-between;
     padding: var(--space-s) var(--space);
     background: var(--color-accent);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--border-radius);
     cursor: pointer;
     transition: all 0.2s ease;
@@ -232,7 +232,7 @@ const selectRecentQuestion = (question: string) => {
     position: relative;
 
     &--favorite {
-      --color-border: var(--color-primary);
+      --color-accent: var(--color-primary);
       background: color-mix(in srgb, var(--color-primary), transparent 95%);
     }
 
@@ -279,7 +279,7 @@ const selectRecentQuestion = (question: string) => {
     gap: 1rem;
     justify-content: flex-end;
     padding-top: 1rem;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
     margin-top: 1.5rem;
   }
 }

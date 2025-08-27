@@ -250,22 +250,22 @@ const loadSequence = async () => {
   // If we're navigating to a group but got no items, try forcing a refresh
   if (currentGroupId.value && savedSequence.length === 0) {
     console.log('[SequenceView] No items found for group, attempting force refresh...');
-    
+
     // Get the parent card info to check if it's a curated sequence
     const parentCard = await sequenceStore.getCardById(currentGroupId.value);
     console.log('[SequenceView] Parent card info:', parentCard);
-    
+
     // Force refresh by bypassing cache
     savedSequence = await sequenceStore.loadSequence(currentGroupId.value, currentLocale.value, true);
     console.log('[SequenceView] Force refresh result:', savedSequence.length, 'items');
-    
+
     // If still no items, it might be a timing issue - try one more time after a delay
     if (savedSequence.length === 0) {
       console.log('[SequenceView] Still no items, waiting and trying again...');
       await new Promise(resolve => setTimeout(resolve, 500));
       savedSequence = await sequenceStore.loadSequence(currentGroupId.value, currentLocale.value, true);
       console.log('[SequenceView] Final attempt result:', savedSequence.length, 'items');
-      
+
       // If still no items, check if it's an access issue
       if (savedSequence.length === 0 && parentCard) {
         console.warn('[SequenceView] No items found after multiple attempts. Parent card details:', {
@@ -642,7 +642,7 @@ const handleSaveSequence = async (formData: any, card: SequenceTile, isNewCard: 
       const freshCard = await sequenceStore.getCardById(card.id);
       if (freshCard) {
         await sequenceStore.updateCardInCache(freshCard, currentGroupId.value, currentLocale.value);
-        
+
         // Update local sequence array with fresh data
         const updatedSequenceArray = [...sequence.value];
         const existingIndex = updatedSequenceArray.findIndex(c => c.id === card.id);
@@ -651,7 +651,7 @@ const handleSaveSequence = async (formData: any, card: SequenceTile, isNewCard: 
           sequence.value = updatedSequenceArray;
         }
       }
-      
+
       await loadSequence();
     }
   } catch (error) {
@@ -996,7 +996,7 @@ const handleCardClick = async (card: SequenceTile, index: number) => {
     if (!card.id.startsWith('empty-')) {
       // Check if this is a sequence (has children) - check both the loaded children and card type
       const hasChildren = tilesWithChildren.value.has(card.id) || card.type === 'sequence';
-      
+
       console.log('[SequenceView] Card type check:', {
         hasChildren,
         tilesWithChildren: Array.from(tilesWithChildren.value),
@@ -1048,7 +1048,7 @@ const handleTileAction = async (tile: SequenceTile) => {
 
 const navigateToTile = async (tile: SequenceTile) => {
   console.log('[SequenceView] navigateToTile called for:', tile.id, tile.title);
-  
+
   // Navigate to play mode
   await router.push(`/play/${tile.id}`);
 };
@@ -1069,10 +1069,10 @@ const handleBack = async () => {
 // Use computed properties to get children data from the store's cache
 const tilesWithChildren = computed(() => {
   const hasChildren = new Set<string>();
-  
+
   // Trigger reactivity on sequence changes
   const currentSequence = sequence.value;
-  
+
   currentSequence.forEach(card => {
     if (card.type === 'sequence' && !card.id.startsWith('empty-')) {
       // Check if this sequence has children in the store cache
@@ -1083,7 +1083,7 @@ const tilesWithChildren = computed(() => {
       }
     }
   });
-  
+
   console.log('[SequenceView] tilesWithChildren computed:', hasChildren.size, 'tiles have children');
   return hasChildren;
 });
@@ -1091,10 +1091,10 @@ const tilesWithChildren = computed(() => {
 // Store actual children data for preview - computed from store cache
 const tileChildrenMap = computed(() => {
   const childrenMap = new Map<string, SequenceTile[]>();
-  
+
   // Trigger reactivity on sequence changes
   const currentSequence = sequence.value;
-  
+
   currentSequence.forEach(card => {
     if (card.type === 'sequence' && !card.id.startsWith('empty-')) {
       // This will be reactive to cache updates
@@ -1104,7 +1104,7 @@ const tileChildrenMap = computed(() => {
       }
     }
   });
-  
+
   console.log('[SequenceView] tileChildrenMap computed:', childrenMap.size, 'tiles mapped');
   return childrenMap;
 });
@@ -1664,7 +1664,7 @@ const openBulkAddMode = () => {
 // Build breadcrumbs from current card
 const buildBreadcrumbs = async (cardId: string | undefined) => {
   console.log('[SequenceView] buildBreadcrumbs called with cardId:', cardId);
-  
+
   if (!cardId) {
     console.log('[SequenceView] No cardId provided, resetting to home');
     breadcrumbs.value = [];
@@ -1687,7 +1687,7 @@ const buildBreadcrumbs = async (cardId: string | undefined) => {
 
     breadcrumbs.value = path;
     currentGroupId.value = cardId;
-    
+
     console.log('[SequenceView] Breadcrumbs set:', breadcrumbs.value);
     console.log('[SequenceView] currentGroupId set to:', currentGroupId.value);
   } catch (error) {
@@ -1783,7 +1783,7 @@ onMounted(async () => {
 
     // Set loading state
     isLoading.value = true;
-    
+
     // Show loading state while loading
     console.log('[SequenceView] Setting ghost sequence while loading');
     sequence.value = generateGhostSequence();
@@ -1891,7 +1891,7 @@ onUnmounted(() => {
     align-items: center;
     padding: var(--space) var(--space);
     background-color: var(--color-background-secondary);
-    border-bottom: 2px solid var(--color-border);
+    border-bottom: 2px solid var(--color-accent);
     gap: var(--space-xs);
     overflow-x: auto;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -1907,7 +1907,7 @@ onUnmounted(() => {
     gap: var(--space-xs);
     padding: var(--space-xs) var(--space);
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--border-radius-sm);
     color: var(--color-text-muted);
     font-size: var(--font-size);

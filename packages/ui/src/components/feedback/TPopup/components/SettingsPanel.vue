@@ -92,7 +92,7 @@ const handleClose = () => {
 
   &__header {
     padding-bottom: 1rem;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
   }
 
   &__title {
@@ -116,7 +116,7 @@ const handleClose = () => {
     gap: 1rem;
     justify-content: center;
     padding-top: 1rem;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
   }
 
   &__cancel-button,

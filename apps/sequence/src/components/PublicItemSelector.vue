@@ -231,7 +231,7 @@ onMounted(() => {
     justify-content: space-between;
     align-items: center;
     padding: var(--space);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
   }
 
   &__title {
@@ -242,13 +242,13 @@ onMounted(() => {
 
   &__search {
     padding: var(--space);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
   }
 
   &__tabs {
     display: flex;
     gap: 0;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
   }
 
   &__tab {
@@ -344,7 +344,7 @@ onMounted(() => {
     justify-content: flex-end;
     gap: var(--space-s);
     padding: var(--space);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
   }
 }
 </style>

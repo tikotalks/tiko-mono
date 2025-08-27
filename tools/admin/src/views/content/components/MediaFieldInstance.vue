@@ -290,7 +290,7 @@ function emitUpdate() {
     gap: var(--space);
     padding: var(--space-s);
     background: var(--color-background-secondary);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius-md);
   }
 
@@ -298,7 +298,7 @@ function emitUpdate() {
     width: 48px;
     height: 48px;
     object-fit: cover;
-    border-radius: var(--radius-sm);
+    border-radius: var(--border-radius);
     background-image:
       linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
       linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),

@@ -91,7 +91,7 @@
               </span>
               <TIcon
                 v-if="translation.auto_translated"
-                :name="Icons.SPARKLE"
+                :name="Icons.STAR_M"
                 :class="bemm('auto-icon')"
                 :title="t(keys.admin.translations.autoTranslatedTooltip)"
               />
@@ -113,7 +113,7 @@
                 <TButton
                   type="ghost"
                   size="small"
-                  :icon="Icons.CHECK"
+                  :icon="Icons.CHECK_M"
                   @click="approveTranslation(translation)"
                   :title="t(keys.admin.translations.approve)"
                 />
@@ -127,7 +127,7 @@
                 <TButton
                   type="ghost"
                   size="small"
-                  :icon="Icons.HISTORY"
+                  :icon="Icons.ARROW_LEFT"
                   @click="viewHistory(translation)"
                   :title="t(keys.admin.translations.viewHistory)"
                 />
@@ -154,7 +154,7 @@
 import { ref, computed, onMounted, inject } from 'vue';
 import { useBemm } from 'bemm';
 import { Icons } from 'open-icon';
-import { translationService } from '@tiko/core';
+import { formatDate, translationService } from '@tiko/core';
 import type { TranslationVersion } from '@tiko/core';
 import type { PopupService, ToastService } from '@tiko/ui';
 import AdminPageHeader from '@/components/AdminPageHeader.vue';
@@ -356,23 +356,6 @@ async function viewHistory(translation: TranslationVersion) {
   });
 }
 
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-
-  if (hours < 1) {
-    const minutes = Math.floor(diff / (1000 * 60));
-    return t(keys.common.minutesAgo, { count: minutes });
-  } else if (hours < 24) {
-    return t(keys.common.hoursAgo, { count: hours });
-  } else {
-    const days = Math.floor(hours / 24);
-    return t(keys.common.daysAgo, { count: days });
-  }
-}
-
 onMounted(() => {
   loadPendingTranslations();
 });
@@ -415,7 +398,7 @@ onMounted(() => {
     flex: 1;
     overflow: auto;
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--border-radius);
   }
 
@@ -431,7 +414,7 @@ onMounted(() => {
     padding: var(--space-s) var(--space);
     text-align: left;
     font-weight: var(--font-weight-bold);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
     z-index: 1;
 
     &--checkbox {
@@ -455,7 +438,7 @@ onMounted(() => {
 
   &__td {
     padding: var(--space-s) var(--space);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
     vertical-align: middle;
   }
 

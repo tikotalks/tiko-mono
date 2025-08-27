@@ -288,7 +288,7 @@ const pageFilterOptions = computed(() => {
   // Get unique pages that have sections
   const pagesWithSections = new Set<string>()
   const pageMap = new Map<string, ContentPage>()
-  
+
   sections.value.forEach(section => {
     if (section.page_sections && section.page_sections.length > 0) {
       section.page_sections.forEach((ps: any) => {
@@ -367,7 +367,7 @@ async function loadSections() {
   // Load actual sections (instances) with their page relationships
   try {
     const sectionsData = await contentService.getSections()
-    
+
     // For each section, get its usage
     const sectionsWithPages = await Promise.all(
       sectionsData.map(async (section) => {
@@ -381,7 +381,7 @@ async function loadSections() {
         }
       })
     )
-    
+
     sections.value = sectionsWithPages
     console.log('Loaded sections with pages:', sections.value)
   } catch (error) {

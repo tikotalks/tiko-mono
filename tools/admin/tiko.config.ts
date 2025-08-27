@@ -13,7 +13,7 @@ export default defineConfig({
   },
   theme: {
     primary: BaseColors.SKYBLUE,
-    secondary: BaseColors.YELLOW,
+    secondary: BaseColors.ORANGE,
     tertiary: BaseColors.GREEN,
   },
   auth: {

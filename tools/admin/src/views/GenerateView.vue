@@ -676,7 +676,7 @@ onUnmounted(() => {
 
   &__panel {
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--border-radius);
     padding: var(--space);
     overflow: hidden;
@@ -741,7 +741,7 @@ onUnmounted(() => {
     justify-content: space-between;
     align-items: center;
     padding: var(--space-s);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--border-radius);
     margin-bottom: var(--space-s);
 

@@ -134,13 +134,13 @@ const categories = ['All', 'Interface', 'Actions', 'Communication', 'Media', 'Na
 
 const filteredIcons = computed(() => {
   let icons = allIcons
-  
+
   if (searchQuery.value) {
-    icons = icons.filter(icon => 
+    icons = icons.filter(icon =>
       icon.toLowerCase().includes(searchQuery.value.toLowerCase())
     )
   }
-  
+
   return icons.sort()
 })
 
@@ -159,7 +159,7 @@ const copyIconCode = (iconName: string) => {
 
   &__header {
     margin-bottom: var(--space-xl);
-    
+
     h1 {
       font-size: 2.5rem;
       font-weight: 700;
@@ -176,7 +176,7 @@ const copyIconCode = (iconName: string) => {
 
   &__section {
     margin-bottom: var(--space-xl);
-    
+
     h2 {
       font-size: 1.5rem;
       font-weight: 600;
@@ -197,7 +197,7 @@ const copyIconCode = (iconName: string) => {
 
   &__category-btn {
     padding: var(--space-s) var(--space);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     background: var(--color-background);
     color: var(--color-foreground-secondary);
     border-radius: var(--radius);
@@ -226,12 +226,12 @@ const copyIconCode = (iconName: string) => {
     padding: var(--space-lg);
     background: var(--color-background-secondary);
     border-radius: var(--radius);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
   }
 
   &__code {
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius);
     padding: var(--space);
 
@@ -246,7 +246,7 @@ const copyIconCode = (iconName: string) => {
       margin: 0;
       padding: 0;
       overflow-x: auto;
-      
+
       code {
         font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
         font-size: 0.875rem;
@@ -270,7 +270,7 @@ const copyIconCode = (iconName: string) => {
     gap: var(--space-s);
     padding: var(--space);
     background: var(--color-background-secondary);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius);
     cursor: pointer;
     transition: all 0.2s ease;
@@ -291,31 +291,31 @@ const copyIconCode = (iconName: string) => {
 
   &__props-table {
     overflow-x: auto;
-    
+
     table {
       width: 100%;
       border-collapse: collapse;
       background: var(--color-background);
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--color-accent);
       border-radius: var(--radius);
-      
+
       th, td {
         padding: var(--space-s) var(--space);
         text-align: left;
-        border-bottom: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-accent);
       }
-      
+
       th {
         background: var(--color-background-secondary);
         font-weight: 600;
         color: var(--color-foreground);
         font-size: 0.875rem;
       }
-      
+
       td {
         color: var(--color-foreground-secondary);
         font-size: 0.875rem;
-        
+
         code {
           background: var(--color-background-secondary);
           padding: 0.125rem 0.25rem;
@@ -325,7 +325,7 @@ const copyIconCode = (iconName: string) => {
           color: var(--color-foreground);
         }
       }
-      
+
       tbody tr:last-child {
         th, td {
           border-bottom: none;
@@ -338,11 +338,11 @@ const copyIconCode = (iconName: string) => {
 @media (max-width: 768px) {
   .icons-view {
     padding: var(--space);
-    
+
     &__header h1 {
       font-size: 2rem;
     }
-    
+
     &__icon-grid {
       grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     }

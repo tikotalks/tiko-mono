@@ -296,7 +296,7 @@ onMounted(() => {
   &__progress-bar {
     flex: 1;
     height: 8px;
-    background: var(--color-border);
+    background: var(--color-accent);
     border-radius: 4px;
     overflow: hidden;
   }

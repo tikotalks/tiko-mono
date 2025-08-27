@@ -3,7 +3,7 @@
     <div v-if="history.length === 0" :class="bemm('empty')">
       <p>{{ t('deployment.noHistory') }}</p>
     </div>
-    
+
     <div v-else :class="bemm('list')">
       <div
         v-for="event in history"
@@ -12,7 +12,7 @@
       >
         <div :class="bemm('item-header')">
           <div :class="bemm('commit')">
-            <TIcon :name="Icons.GIT_COMMIT" />
+            <TIcon :name="Icons.GIT_MERGE" />
             <code>{{ event.commit }}</code>
           </div>
           <div :class="bemm('status', [event.status])">
@@ -20,7 +20,7 @@
             {{ t(`deployment.status.${event.status}`) }}
           </div>
         </div>
-        
+
         <div :class="bemm('item-meta')">
           <div :class="bemm('meta-item')">
             <TIcon :name="Icons.USER" />
@@ -35,7 +35,7 @@
             <span>{{ formatDuration(event.duration) }}</span>
           </div>
         </div>
-        
+
         <div v-if="event.logUrl" :class="bemm('item-actions')">
           <TButton
             type="outline"
@@ -53,47 +53,28 @@
 
 <script setup lang="ts">
 import { useBemm } from 'bemm'
-import { useI18n } from '@tiko/core'
+import { formatDate, formatDuration, useI18n } from '@tiko/core'
 import { Icons } from 'open-icon'
 import { TIcon, TButton } from '@tiko/ui'
-import type { DeploymentHistory } from '@tiko/core/services/deployment.service'
+import type { DeploymentHistory } from '@tiko/core'
 
 interface Props {
   history: DeploymentHistory[]
   targetName: string
 }
 
-const props = defineProps<Props>()
+ defineProps<Props>()
 
 const bemm = useBemm('deployment-history-modal')
 const { t } = useI18n()
 
 const getStatusIcon = (status: string) => {
   switch (status) {
-    case 'running': return Icons.LOADING
-    case 'success': return Icons.CHECK
+    case 'running': return Icons.THREE_DOTS_HORIZONTAL
+    case 'success': return Icons.CHECK_M
     case 'failed': return Icons.X
-    default: return Icons.CIRCLE
+    default: return Icons.CIRCLED
   }
-}
-
-const formatDate = (date: Date) => {
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(date)
-}
-
-const formatDuration = (ms: number) => {
-  const seconds = Math.floor(ms / 1000)
-  const minutes = Math.floor(seconds / 60)
-  
-  if (minutes > 0) {
-    return `${minutes}m ${seconds % 60}s`
-  }
-  return `${seconds}s`
 }
 
 const openLogs = (url: string) => {
@@ -118,7 +99,7 @@ const openLogs = (url: string) => {
   }
 
   &__item {
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius);
     padding: var(--space);
     background: var(--color-background-elevated);
@@ -140,7 +121,7 @@ const openLogs = (url: string) => {
     code {
       background: var(--color-background);
       padding: var(--space-xs);
-      border-radius: var(--radius-sm);
+      border-radius: var(--border-radius);
       font-size: var(--font-size-sm);
     }
   }

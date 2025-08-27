@@ -116,14 +116,14 @@ onMounted(async () => {
 
   &::after {
     position: absolute;
-    right: 0;
+    right: -25vw;
     top: 0;
-    width: 50vw;
+    width: 75vw;
     background-image: var(--image);
     height: 120%;
     content: '';
     display: block;
-    background-size: 150%;
+    background-size: contain;
     background-position: 0% 50%;
     background-repeat: no-repeat;
   }

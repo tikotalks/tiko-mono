@@ -153,8 +153,8 @@
           </TListCell>
 
           <!-- Actions Column -->
-          <TListCell 
-            type="actions" 
+          <TListCell
+            type="actions"
             :actions="row.key === editingKey ? [
               listActions.custom({
                 icon: Icons.CHECK_M,
@@ -1637,7 +1637,7 @@ onMounted(async () => {
     flex: 1;
     overflow: auto;
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--border-radius);
 
     &--selecting {
@@ -1720,7 +1720,7 @@ onMounted(async () => {
 
   &__progress-section {
     background: var(--color-background-secondary);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--border-radius);
     padding: var(--space);
     margin-bottom: var(--space);
@@ -1771,7 +1771,7 @@ onMounted(async () => {
     border-radius: 4px;
     overflow: hidden;
     margin-bottom: var(--space-xs);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
   }
 
   &__progress-fill {

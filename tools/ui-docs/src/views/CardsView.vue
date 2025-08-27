@@ -9,7 +9,7 @@
     <section :class="bemm('section')">
       <h2>Basic Cards</h2>
       <p>Simple card layouts for content organization</p>
-      
+
       <div :class="bemm('demo', 'grid')">
         <TCard>
           <h3>Simple Card</h3>
@@ -52,7 +52,7 @@
     <section :class="bemm('section')">
       <h2>Interactive Cards</h2>
       <p>Cards with hover effects and click interactions</p>
-      
+
       <div :class="bemm('demo', 'grid')">
         <TCard hover @click="handleCardClick('features')">
           <TIcon name="star" size="2rem" style="color: var(--color-primary)" />
@@ -87,7 +87,7 @@
     <section :class="bemm('section')">
       <h2>Card Variants</h2>
       <p>Different visual styles for various use cases</p>
-      
+
       <div :class="bemm('demo', 'grid')">
         <TCard variant="default">
           <h3>Default Card</h3>
@@ -117,7 +117,7 @@
     <section :class="bemm('section')">
       <h2>Card Sizes</h2>
       <p>Different sizes for various layout needs</p>
-      
+
       <div :class="bemm('demo', 'sizes')">
         <TCard size="small">
           <h4>Small Card</h4>
@@ -147,7 +147,7 @@
     <section :class="bemm('section')">
       <h2>Complex Examples</h2>
       <p>Real-world card implementations</p>
-      
+
       <div :class="bemm('demo', 'complex')">
         <TCard variant="elevated" hover>
           <template #header>
@@ -156,7 +156,7 @@
               <span>User Profile</span>
             </div>
           </template>
-          
+
           <div style="display: flex; flex-direction: column; gap: var(--space);">
             <div style="display: flex; align-items: center; gap: var(--space);">
               <div style="width: 3rem; height: 3rem; background: var(--color-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
@@ -169,7 +169,7 @@
             </div>
             <p>Passionate developer with 5 years of experience in Vue.js and TypeScript.</p>
           </div>
-          
+
           <template #footer>
             <div style="display: flex; gap: var(--space-s);">
               <TButton size="small" type="outline">Message</TButton>
@@ -185,7 +185,7 @@
               <TIcon name="settings" />
             </div>
           </template>
-          
+
           <div style="display: flex; flex-direction: column; gap: var(--space);">
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <span>Dark Mode</span>
@@ -301,7 +301,7 @@ const handleCardClick = (type: string) => {
 
   &__header {
     margin-bottom: var(--space-xl);
-    
+
     h1 {
       font-size: 2.5rem;
       font-weight: 700;
@@ -318,7 +318,7 @@ const handleCardClick = (type: string) => {
 
   &__section {
     margin-bottom: var(--space-xl);
-    
+
     h2 {
       font-size: 1.5rem;
       font-weight: 600;
@@ -345,7 +345,7 @@ const handleCardClick = (type: string) => {
     padding: var(--space-lg);
     background: var(--color-background-secondary);
     border-radius: var(--radius);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
 
     &--grid {
       display: grid;
@@ -369,7 +369,7 @@ const handleCardClick = (type: string) => {
 
   &__code {
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius);
     padding: var(--space);
 
@@ -384,7 +384,7 @@ const handleCardClick = (type: string) => {
       margin: 0;
       padding: 0;
       overflow-x: auto;
-      
+
       code {
         font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
         font-size: 0.875rem;
@@ -398,31 +398,31 @@ const handleCardClick = (type: string) => {
   &__props-table {
     overflow-x: auto;
     margin-bottom: var(--space);
-    
+
     table {
       width: 100%;
       border-collapse: collapse;
       background: var(--color-background);
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--color-accent);
       border-radius: var(--radius);
-      
+
       th, td {
         padding: var(--space-s) var(--space);
         text-align: left;
-        border-bottom: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-accent);
       }
-      
+
       th {
         background: var(--color-background-secondary);
         font-weight: 600;
         color: var(--color-foreground);
         font-size: 0.875rem;
       }
-      
+
       td {
         color: var(--color-foreground-secondary);
         font-size: 0.875rem;
-        
+
         code {
           background: var(--color-background-secondary);
           padding: 0.125rem 0.25rem;
@@ -432,7 +432,7 @@ const handleCardClick = (type: string) => {
           color: var(--color-foreground);
         }
       }
-      
+
       tbody tr:last-child {
         th, td {
           border-bottom: none;
@@ -445,21 +445,21 @@ const handleCardClick = (type: string) => {
 @media (max-width: 768px) {
   .cards-view {
     padding: var(--space);
-    
+
     &__header h1 {
       font-size: 2rem;
     }
-    
+
     &__demo {
       &--grid {
         grid-template-columns: 1fr;
       }
-      
+
       &--sizes {
         flex-direction: column;
         align-items: stretch;
       }
-      
+
       &--complex {
         grid-template-columns: 1fr;
       }

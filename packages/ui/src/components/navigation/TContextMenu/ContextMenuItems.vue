@@ -239,7 +239,7 @@ const handleClick = (event: Event, item: ContextMenuItem) => {
                 width: 100%;
                 height: 100%;
                 border-radius: inherit;
-                background-color: var(--color-border, #e0e0e0);
+                background-color: var(--color-accent, #e0e0e0);
                 display: block;
                 position: absolute;
                 left: 50%;
@@ -279,7 +279,7 @@ const handleClick = (event: Event, item: ContextMenuItem) => {
         //         width: 100%;
         //         height: 100%;
         //         border-radius: inherit;
-        //         background-color: var(--color-border, #e0e0e0);
+        //         background-color: var(--color-accent, #e0e0e0);
         //         display: block;
         //         position: absolute;
         //         left: 50%;

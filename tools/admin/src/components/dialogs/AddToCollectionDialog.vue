@@ -384,7 +384,7 @@ onMounted(() => {
     align-items: center;
     gap: var(--space);
     padding: var(--space-s);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--border-radius);
     cursor: pointer;
     transition: all 0.2s;
@@ -479,7 +479,7 @@ onMounted(() => {
   }
 
   &__create-new {
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
     padding-top: var(--space);
   }
 
@@ -488,7 +488,7 @@ onMounted(() => {
     gap: var(--space);
     justify-content: flex-end;
     padding-top: var(--space);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
   }
 }
 </style>

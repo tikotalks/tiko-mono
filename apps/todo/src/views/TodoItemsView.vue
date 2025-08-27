@@ -215,7 +215,7 @@ onMounted(async () => {
     flex-direction: column;
     gap: var(--space-xs);
     padding-top: var(--space);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
 
     &-bar {
       height: 8px;

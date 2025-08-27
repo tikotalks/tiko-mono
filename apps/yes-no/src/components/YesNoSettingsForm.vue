@@ -116,7 +116,7 @@ watch(localSettings, () => {
 
   &__header {
     padding-bottom: 1rem;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
     margin-bottom: 1.5rem;
   }
 
@@ -148,7 +148,7 @@ watch(localSettings, () => {
   &__select {
     width: 100%;
     padding: 0.75rem;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: 0.5rem;
     font-size: 1rem;
     background: white;
@@ -179,7 +179,7 @@ watch(localSettings, () => {
     display: flex;
     justify-content: center;
     padding-top: 1rem;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
     margin-top: 1.5rem;
   }
 }

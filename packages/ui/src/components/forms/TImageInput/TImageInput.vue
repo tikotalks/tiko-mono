@@ -134,7 +134,7 @@ const clearImage = () => {
     height: 8em;
     border-radius: calc(var(--border-radius) / 2);
     overflow: hidden;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     background-color: var(--current-color);
     cursor: pointer;
     transition: all 0.2s ease;
@@ -189,7 +189,7 @@ const clearImage = () => {
     gap: 0.5rem;
     padding: 2rem;
     background: var(--color-background);
-    border: 2px dashed var(--color-border);
+    border: 2px dashed var(--color-accent);
     border-radius: 0.5rem;
     color: var(--color-text-secondary);
     cursor: pointer;

@@ -211,7 +211,7 @@ const handleClose = () => {
 
   &__progress-bar {
     height: 4px;
-    background: var(--color-border);
+    background: var(--color-accent);
     border-radius: 2px;
     overflow: hidden;
   }
@@ -230,7 +230,7 @@ const handleClose = () => {
   &__details {
     max-height: 300px;
     overflow-y: auto;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
     margin-top: var(--space-s);
   }
 

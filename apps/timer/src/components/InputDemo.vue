@@ -91,7 +91,7 @@ const newTextInput = ref('')
     gap: var(--space-s, 0.75em);
     padding: var(--space-md, 1em);
     background: color-mix(in srgb, var(--color-primary), transparent 95%);
-    border-radius: var(--radius-sm, 0.25em);
+    border-radius: var(--border-radius, 0.25em);
   }
 
   &__value {

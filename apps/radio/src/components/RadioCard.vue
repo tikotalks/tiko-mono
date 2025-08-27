@@ -321,7 +321,7 @@ const formatLastPlayed = (date: Date): string => {
     background: color-mix(in srgb, var(--color-foreground), transparent 10%);
     color: var(--color-background);
     padding: var(--space-xs, 0.25em) var(--space-s, 0.5em);
-    border-radius: var(--radius-sm, 0.25em);
+    border-radius: var(--border-radius, 0.25em);
     font-size: 0.75em;
     font-weight: 600;
   }
@@ -368,7 +368,7 @@ const formatLastPlayed = (date: Date): string => {
     background: color-mix(in srgb, var(--color-primary), transparent 90%);
     color: color-mix(in srgb, var(--color-primary), var(--color-foreground) 20%);
     padding: var(--space-xs, 0.25em) var(--space-s, 0.5em);
-    border-radius: var(--radius-sm, 0.25em);
+    border-radius: var(--border-radius, 0.25em);
     font-size: 0.75em;
     font-weight: 500;
   }
@@ -377,7 +377,7 @@ const formatLastPlayed = (date: Date): string => {
     background: color-mix(in srgb, var(--color-foreground), transparent 90%);
     color: color-mix(in srgb, var(--color-foreground), transparent 20%);
     padding: var(--space-xs, 0.25em) var(--space-s, 0.5em);
-    border-radius: var(--radius-sm, 0.25em);
+    border-radius: var(--border-radius, 0.25em);
     font-size: 0.75em;
     font-weight: 500;
   }

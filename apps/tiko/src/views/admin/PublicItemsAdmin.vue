@@ -222,7 +222,7 @@ import {
   TCardTile,
   type ToastService
 } from '@tiko/ui';
-import { useI18n } from "@tiko/core";
+import { formatDate, useI18n } from "@tiko/core";
 import { Icons } from 'open-icon';
 import { debounce } from 'lodash-es';
 import { adminItemsService } from '../../services/admin-items.service';
@@ -385,10 +385,6 @@ const debouncedSearch = debounce(() => {
   loadItems();
 }, 300);
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString();
-};
-
 // Check admin access on mount
 onMounted(async () => {
   try {
@@ -519,7 +515,7 @@ onMounted(async () => {
     gap: var(--space);
     padding: var(--space);
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--border-radius);
     transition: all 0.2s ease;
 
@@ -620,7 +616,7 @@ onMounted(async () => {
     gap: var(--space);
     margin-top: var(--space-xl);
     padding-top: var(--space);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
   }
 
   &__page-info {

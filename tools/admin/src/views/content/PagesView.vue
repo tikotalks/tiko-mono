@@ -55,12 +55,13 @@
         <template v-slot="{ item }">
           <div :class="bemm('list-row')" style="width: 100%">
             <div :class="bemm('list-row-content')">
-              <div
-                :class="bemm('cell', ['', 'title'])"
+              <!-- Title Cell with custom content -->
+              <TListCell
+                type="custom"
                 :style="{ paddingLeft: `${(item.depth || 0) * 24}px` }"
+                :class="bemm('cell', ['', 'title'])"
               >
                 <span v-if="item.depth > 0" :class="bemm('indent-line')">└</span>
-
                 <div :class="bemm('page-info')">
                   <div :class="bemm('page-header')">
                     <a
@@ -103,83 +104,45 @@
                     </div>
                   </div>
                 </div>
-              </div>
+              </TListCell>
 
-              <div
+              <!-- Project Cell -->
+              <TListCell
                 v-if="selectedProjectId === 'all'"
+                type="text"
+                :content="getProjectName(item.project_id)"
                 :class="bemm('cell', ['', 'project'])"
-              >
-                {{ getProjectName(item.project_id) }}
-              </div>
+              />
 
-              <div :class="bemm('cell', ['', 'metadata'])">
-                <div :class="bemm('metadata')">
-                  <!-- Show available translation count -->
-                  <TChip
-                    v-if="item.translations && item.translations.length > 0"
-                    size="small"
-                    type="outline"
-                  >
-                    {{ item.translations.length }} {{ item.translations.length === 1 ? 'translation' : 'translations' }}
-                  </TChip>
+              <!-- Status/Metadata Cell -->
+              <TListCell
+                type="chips"
+                :chips="getPageMetadata(item).concat(item.translations?.length ? [`${item.translations.length} ${item.translations.length === 1 ? 'translation' : 'translations'}`] : [])"
+                :class="bemm('cell', ['', 'metadata'])"
+              />
 
-                  <!-- Other metadata -->
-                  <TChip
-                    v-for="meta in getPageMetadata(item)"
-                    :key="meta"
-                    size="small"
-                    type="outline"
-                  >
-                    {{ meta }}
-                  </TChip>
-                </div>
-              </div>
-
-              <div :class="bemm('cell', ['', 'toggle'])">
+              <!-- Navigation Toggle Cell -->
+              <TListCell type="custom" :class="bemm('cell', ['', 'toggle'])">
                 <TToggle
                   :model-value="item.show_in_navigation"
                   @update:model-value="(value) => handleNavigationToggle(item, value)"
                   size="small"
                 />
-              </div>
+              </TListCell>
 
-              <div :class="bemm('cell', ['', 'toggle'])">
+              <!-- Published Toggle Cell -->
+              <TListCell type="custom" :class="bemm('cell', ['', 'toggle'])">
                 <TToggle
                   :model-value="item.is_published"
                   @update:model-value="(value) => handlePublishedToggle(item, value)"
                   size="small"
                 />
-              </div>
+              </TListCell>
 
-              <div :class="bemm('cell', ['', 'actions'])">
-                <div :class="bemm('actions')">
-                  <TButton
-                    type="ghost"
-                    size="small"
-                    :icon="Icons.SPEECH_BALLOON"
-                    @click.stop="handleCreateTranslation(item)"
-                    :title="t('common.translations')"
-                  />
-                  <TButton
-                    type="ghost"
-                    size="small"
-                    :icon="Icons.VISIBLE_L"
-                    @click.stop="handlePageClick(item)"
-                  />
-                  <TButton
-                    type="ghost"
-                    size="small"
-                    :icon="Icons.EDIT_M"
-                    @click.stop="handleEdit(item)"
-                  />
-                  <TButton
-                    type="ghost"
-                    size="small"
-                    :icon="Icons.TRASH"
-                    @click.stop="handleDelete(item)"
-                  />
-                </div>
-              </div>
+              <!-- Actions Cell -->
+              <TListCell type="custom" :class="bemm('cell', ['', 'actions'])">
+                <TListActions :actions="getPageActions(item)" />
+              </TListCell>
             </div>
           </div>
         </template>
@@ -211,8 +174,13 @@ import {
   TInputSelect,
   TToggle,
   TDragList,
+  TListCell,
+  TListActions,
+  type ListAction,
   type ToastService,
   type PopupService,
+  Colors,
+  AllColors,
 } from '@tiko/ui';
 import { contentService,
   useI18n, } from '@tiko/core';
@@ -374,6 +342,37 @@ function getPageMetadata(page: ContentPage): string[] {
 // Helper functions for translations
 function getPageTranslations(pageId: string): ContentPage[] {
   return pages.value.filter((p) => p.base_page_id === pageId);
+}
+
+// Helper function to create actions array for each page
+function getPageActions(page: ContentPage): ListAction[] {
+  return [
+    {
+      type: 'custom',
+      icon: Icons.SPEECH_BALLOON,
+      color: AllColors.RED,
+      tooltip: t('common.translations'),
+      handler: () => handleCreateTranslation(page)
+    },
+    {
+      type: 'view',
+      icon: Icons.VISIBLE_L,
+      tooltip: t('common.view'),
+      handler: () => handlePageClick(page)
+    },
+    {
+      type: 'edit',
+      icon: Icons.EDIT_M,
+      tooltip: t('common.edit'),
+      handler: () => handleEdit(page)
+    },
+    {
+      type: 'delete',
+      icon: Icons.TRASH,
+      tooltip: t('common.delete'),
+      handler: () => handleDelete(page)
+    }
+  ];
 }
 
 // Removed togglePageExpanded - translations are always shown inline
@@ -766,7 +765,7 @@ onMounted(() => {
       }
 
       &:hover {
-        background: var(--color-secondary);
+        background: color-mix(in srgb, var(--color-primary), transparent 80%);
       }
 
       &--drop-target {
@@ -880,7 +879,7 @@ onMounted(() => {
   &__translations {
     margin-top: var(--space-xs);
     padding-left: var(--space);
-    border-left: 2px solid var(--color-border);
+    border-left: 2px solid var(--color-accent);
   }
 
   &__translation-item {
@@ -890,7 +889,7 @@ onMounted(() => {
     padding: var(--space-xs) 0;
 
     &:not(:last-child) {
-      border-bottom: 1px solid var(--color-border-light);
+      border-bottom: 1px solid var(--color-accent-light);
     }
   }
 

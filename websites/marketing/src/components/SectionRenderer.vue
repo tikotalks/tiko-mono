@@ -47,6 +47,9 @@ const sectionComponents = {
   columnright: defineAsyncComponent(
     () => import('./sections/ColumnRightSection.vue'),
   ),
+  columncenter: defineAsyncComponent(
+    () => import('./sections/ColumnCenterSection.vue'),
+  ),
   features: defineAsyncComponent(
     () => import('./sections/FeaturesSection.vue'),
   ),

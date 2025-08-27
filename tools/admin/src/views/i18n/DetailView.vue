@@ -698,7 +698,7 @@ async function generateAITranslations() {
       currentItem: '',
       details: [] as Array<{ label: string; value: number; type: string }>
     })
-    
+
     // Show progress dialog
     progressDialogId = popupService?.open({
       component: 'ProgressDialog',
@@ -1074,7 +1074,7 @@ onMounted(() => {
 
   &__selection-filter-info {
     padding-left: var(--space);
-    border-left: 1px solid var(--color-border);
+    border-left: 1px solid var(--color-accent);
     margin-left: var(--space-xs);
     font-weight: normal;
     color: var(--color-foreground-secondary);

@@ -75,13 +75,13 @@ import { TContextMenu, TButton } from '@tiko/ui'
 
 const simpleMenu = {
   menu: [
-    { 
+    {
       id: 'view',
       label: 'View',
       icon: 'eye',
       action: () => console.log('View clicked')
     },
-    { 
+    {
       id: 'edit',
       label: 'Edit',
       icon: 'edit',
@@ -91,7 +91,7 @@ const simpleMenu = {
       id: 'separator1',
       type: 'separator'
     },
-    { 
+    {
       id: 'delete',
       label: 'Delete',
       icon: 'trash',
@@ -149,15 +149,15 @@ const nestedMenu = {
     <TContextMenu :config="{ ...baseMenu, position: 'top-left' }">
       <TButton>Top Left</TButton>
     </TContextMenu>
-    
+
     <TContextMenu :config="{ ...baseMenu, position: 'top-right' }">
       <TButton>Top Right</TButton>
     </TContextMenu>
-    
+
     <TContextMenu :config="{ ...baseMenu, position: 'bottom-left' }">
       <TButton>Bottom Left</TButton>
     </TContextMenu>
-    
+
     <TContextMenu :config="{ ...baseMenu, position: 'bottom-right' }">
       <TButton>Bottom Right</TButton>
     </TContextMenu>
@@ -325,13 +325,13 @@ const dynamicMenu = computed(() => ({
 
 ```vue
 <template>
-  <div 
+  <div
     class="context-area"
     @contextmenu.prevent="showContextMenu"
   >
     Right-click anywhere in this area
-    
-    <TContextMenu 
+
+    <TContextMenu
       ref="contextMenuRef"
       :config="rightClickMenu"
     >
@@ -364,7 +364,7 @@ const showContextMenu = (event) => {
     triggerRef.value.style.left = `${event.clientX}px`
     triggerRef.value.style.top = `${event.clientY}px`
   }
-  
+
   contextMenuRef.value?.open()
 }
 </script>
@@ -373,7 +373,7 @@ const showContextMenu = (event) => {
 .context-area {
   padding: var(--space-xl);
   background: var(--color-accent);
-  border: 2px dashed var(--color-border);
+  border: 2px dashed var(--color-accent);
   border-radius: var(--border-radius);
   min-height: 200px;
   display: flex;
@@ -474,7 +474,7 @@ The component uses BEM classes for styling:
 .context-panel__content {
   /* Dropdown content */
   background: var(--color-background);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-accent);
   border-radius: var(--border-radius);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }

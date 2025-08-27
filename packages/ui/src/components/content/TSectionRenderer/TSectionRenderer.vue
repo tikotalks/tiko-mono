@@ -1,12 +1,12 @@
 <template>
   <div :class="bemm()">
-    <component 
+    <component
       :is="sectionComponent"
       v-if="sectionComponent"
       :section="section"
       :content="content"
     />
-    
+
     <div v-else :class="bemm('unknown')">
       <TEmptyState
         :icon="Icons.PUZZLE"
@@ -56,12 +56,12 @@ const bemm = useBemm('t-section-renderer')
 // Get the appropriate component for this section type
 const sectionComponent = computed(() => {
   const componentLoader = getSectionComponent(props.section.section_template_id)
-  
+
   if (!componentLoader) {
     console.warn(`No component registered for section type: ${props.section.section_template_id}`)
     return null
   }
-  
+
   // Return async component
   return defineAsyncComponent(componentLoader)
 })
@@ -72,7 +72,7 @@ const sectionComponent = computed(() => {
   &__unknown {
     padding: var(--space-xl);
     margin: var(--space-xl) 0;
-    border: 2px dashed var(--color-border);
+    border: 2px dashed var(--color-accent);
     border-radius: var(--border-radius);
   }
 
@@ -92,13 +92,13 @@ const sectionComponent = computed(() => {
 
   &__debug-details {
     margin-top: var(--space-s);
-    
+
     summary {
       cursor: pointer;
       user-select: none;
       font-weight: var(--font-weight-medium);
     }
-    
+
     pre {
       margin-top: var(--space-s);
       padding: var(--space-s);

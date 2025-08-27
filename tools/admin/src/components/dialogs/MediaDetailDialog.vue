@@ -124,7 +124,7 @@ const close = () => {
     width: 100%;
     height: auto;
     border-radius: var(--border-radius);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
   }
 
   &__info {
@@ -136,7 +136,7 @@ const close = () => {
   &__generation-info {
     margin-top: var(--space);
     padding-top: var(--space);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
 
     h4 {
       margin: 0 0 var(--space-s) 0;
@@ -158,7 +158,7 @@ const close = () => {
     gap: var(--space);
     justify-content: flex-end;
     padding-top: var(--space);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
   }
 }
 </style>

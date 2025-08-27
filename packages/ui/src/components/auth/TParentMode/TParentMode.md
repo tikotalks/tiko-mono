@@ -10,7 +10,7 @@ The main toggle button for enabling/disabling parent mode.
 
 ```vue
 <template>
-  <TParentModeToggle 
+  <TParentModeToggle
     app-name="timer"
     required-permission="canManageContent"
   />
@@ -27,7 +27,7 @@ PIN input component for setting up or unlocking parent mode.
 
 ```vue
 <template>
-  <TParentModePinInput 
+  <TParentModePinInput
     mode="unlock"
     @pin-entered="handlePin"
   />
@@ -91,8 +91,8 @@ const handlePin = (pin) => {
 <template>
   <div class="app-header">
     <h1>Timer Settings</h1>
-    
-    <TParentModeToggle 
+
+    <TParentModeToggle
       app-name="timer"
       @mode-changed="handleModeChange"
     />
@@ -113,12 +113,12 @@ const handleModeChange = (isUnlocked) => {
 ```vue
 <template>
   <div class="admin-panel">
-    <TParentModeToggle 
+    <TParentModeToggle
       app-name="radio"
       required-permission="canManageContent"
       @permission-denied="handlePermissionDenied"
     />
-    
+
     <div v-if="canManage" class="admin-controls">
       <!-- Admin controls here -->
     </div>
@@ -145,8 +145,8 @@ const handlePermissionDenied = (permission) => {
 <template>
   <div class="setup-flow">
     <h2>Set Up Parental Controls</h2>
-    
-    <TParentModePinInput 
+
+    <TParentModePinInput
       mode="setup"
       title="Create Your PIN"
       description="This PIN will protect parental settings"
@@ -174,7 +174,7 @@ const createParentPin = async (pin) => {
 
 ```vue
 <template>
-  <TParentModeToggle 
+  <TParentModeToggle
     app-name="cards"
     :popup-service="popupService"
     :toast-service="toastService"
@@ -196,12 +196,12 @@ const toastService = inject('toastService')
 ```vue
 <template>
   <div class="content-manager">
-    <TParentModeToggle 
+    <TParentModeToggle
       app-name="radio"
       required-permission="canManageContent"
       label="Manage Content"
     />
-    
+
     <transition name="fade">
       <div v-if="canManageContent" class="content-list">
         <h3>Manage Radio Stations</h3>
@@ -252,7 +252,7 @@ The PIN input component provides:
 
 ```vue
 <template>
-  <TParentModePinInput 
+  <TParentModePinInput
     mode="unlock"
     :show-numpad="true"
     @pin-entered="unlockParentMode"
@@ -318,7 +318,7 @@ The PIN input component provides:
   width: 3em;
   height: 3em;
   border-radius: 50%;
-  border: 2px solid var(--color-border);
+  border: 2px solid var(--color-accent);
 }
 
 .parent-mode-pin-input__numpad-button {

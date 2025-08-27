@@ -87,7 +87,7 @@ watch(form, () => {
     border-radius: var(--border-radius-l);
     padding: var(--space-xl);
     box-shadow: var(--shadow-subtle);
-    border: 1px solid var(--color-border-subtle);
+    border: 1px solid var(--color-accent-subtle);
   }
 
   &__title {
@@ -153,7 +153,7 @@ watch(form, () => {
   @media (prefers-color-scheme: dark) {
     &__group {
       background: var(--color-surface-dark);
-      border-color: var(--color-border-dark);
+      border-color: var(--color-accent-dark);
     }
 
     &__description {

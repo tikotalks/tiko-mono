@@ -2,115 +2,55 @@
   <div :class="bemm()">
     <div :class="bemm('header')">
       <label :class="bemm('label')">{{ label }}</label>
-      <TButton
-        type="ghost"
-        size="small"
-        :icon="Icons.ADD_M"
-        @click="addItem"
-        :disabled="items.length >= maxItems"
-      >
-        {{ t('admin.content.field.addItem', 'Add Item') }}
-      </TButton>
+      <div :class="bemm('actions')">
+        <TButton type="outline" :icon="Icons.ADD_M" @click="addItem" :disabled="items.length >= maxItems">
+          {{ t('common.fields.addItem') }}
+        </TButton>
+      </div>
     </div>
 
-    <div v-if="items.length === 0" :class="bemm('empty')">
-      <p>{{ t('admin.content.field.noItems', 'No items added yet.') }}</p>
-    </div>
-
-    <div v-else :class="bemm('items')">
-      <div
-        v-for="(item, index) in items"
-        :key="item.id"
-        :class="bemm('item')"
-      >
+    <div v-if="items.length" :class="bemm('items')">
+      <div v-for="(item, index) in items" :key="item.id" :class="bemm('item')">
         <div :class="bemm('item-header')">
           <span :class="bemm('item-title')">
             {{ getItemTitle(item, index) }}
           </span>
           <div :class="bemm('item-actions')">
-            <TButton
-              type="ghost"
-              size="small"
-              :icon="Icons.EDIT_M"
-              @click="editItem(index)"
-            />
-            <TButton
-              type="ghost"
-              size="small"
-              :icon="Icons.MULTIPLY_M"
-              color="error"
-              @click="removeItem(index)"
-            />
+            <TButton type="ghost" size="small" :icon="Icons.EDIT_M" @click="editItem(index)" />
+            <TButton type="ghost" size="small" :icon="Icons.MULTIPLY_M" color="error" @click="removeItem(index)" />
           </div>
         </div>
 
         <div v-if="expandedItems.has(index)" :class="bemm('item-content')">
           <TFormGroup v-for="field in itemFields" :key="field.key">
             <!-- Text Field -->
-            <TInputText
-              v-if="field.type === 'text'"
-              v-model="item[field.key]"
-              :label="field.label"
-              :required="field.required"
-              @blur="emitUpdate"
-            />
+            <TInputText v-if="field.type === 'text'" v-model="item[field.key]" :label="field.label"
+              :required="field.required" @blur="emitUpdate" />
 
             <!-- Textarea Field -->
-            <TTextArea
-              v-else-if="field.type === 'textarea'"
-              v-model="item[field.key]"
-              :label="field.label"
-              :required="field.required"
-              :rows="3"
-              @blur="emitUpdate"
-            />
+            <TTextArea v-else-if="field.type === 'textarea'" v-model="item[field.key]" :label="field.label"
+              :required="field.required" :rows="3" @blur="emitUpdate" />
 
             <!-- Number Field -->
-            <TInputNumber
-              v-else-if="field.type === 'number'"
-              v-model="item[field.key]"
-              :label="field.label"
-              :required="field.required"
-              @blur="emitUpdate"
-            />
+            <TInputNumber v-else-if="field.type === 'number'" v-model="item[field.key]" :label="field.label"
+              :required="field.required" @blur="emitUpdate" />
 
             <!-- Boolean Field -->
-            <TInputCheckbox
-              v-else-if="field.type === 'boolean'"
-              v-model="item[field.key]"
-              :label="field.label"
-              @update:model-value="emitUpdate"
-            />
+            <TInputCheckbox v-else-if="field.type === 'boolean'" v-model="item[field.key]" :label="field.label"
+              @update:model-value="emitUpdate" />
 
             <!-- Select Field -->
-            <TInputSelect
-              v-else-if="field.type === 'select' && field.options"
-              v-model="item[field.key]"
-              :label="field.label"
-              :options="field.options"
-              :required="field.required"
-              @update:model-value="emitUpdate"
-            />
+            <TInputSelect v-else-if="field.type === 'select' && field.options" v-model="item[field.key]"
+              :label="field.label" :options="field.options" :required="field.required"
+              @update:model-value="emitUpdate" />
 
             <!-- Image Field -->
-            <MediaFieldInstance
-              v-else-if="field.type === 'image'"
-              v-model="item[field.key]"
-              :label="field.label"
-              :required="field.required"
-              :multiple="false"
-              @update:model-value="emitUpdate"
-            />
+            <MediaFieldInstance v-else-if="field.type === 'image'" v-model="item[field.key]" :label="field.label"
+              :required="field.required" :multiple="false" @update:model-value="emitUpdate" />
 
             <!-- Images Field (Multiple) -->
-            <MediaFieldInstance
-              v-else-if="field.type === 'images'"
-              v-model="item[field.key]"
-              :label="field.label"
-              :required="field.required"
-              :multiple="true"
-              @update:model-value="emitUpdate"
-            />
+            <MediaFieldInstance v-else-if="field.type === 'images'" v-model="item[field.key]" :label="field.label"
+              :required="field.required" :multiple="true" @update:model-value="emitUpdate" />
           </TFormGroup>
         </div>
       </div>
@@ -126,7 +66,8 @@
 import { ref, computed, watch } from 'vue'
 import { useBemm } from 'bemm'
 import {
-  useI18n } from "@tiko/core";
+  useI18n
+} from "@tiko/core";
 import {
   TButton,
   TInputText,
@@ -341,11 +282,17 @@ if (props.required && items.value.length < minItems.value) {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: var(--space);
+  }
+
+  &__actions{
+    width: 100%;
   }
 
   &__label {
     font-weight: 500;
     color: var(--color-foreground);
+    width: var(--input-label-width, 30%);
   }
 
   &__empty {
@@ -360,11 +307,14 @@ if (props.required && items.value.length < minItems.value) {
     display: flex;
     flex-direction: column;
     gap: var(--space);
+    background: var(--color-background);
+    // border: 1px solid color-mix(in srgb, var(--color-secondary), transparent 50%);
+    border-radius: var(--border-radius);
   }
 
   &__item {
     background-color: var(--color-background-secondary);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--border-radius);
     overflow: hidden;
   }
@@ -389,7 +339,7 @@ if (props.required && items.value.length < minItems.value) {
 
   &__item-content {
     padding: var(--space);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
     background-color: var(--color-background);
   }
 

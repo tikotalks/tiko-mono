@@ -1,197 +1,130 @@
 <template>
   <TAuthWrapper :backgroundVideo="backgroundVideoUrl" :title="t(keys.type.typeAndSpeak)">
-    <TAppLayout
-    :title="t(keys.type.typeAndSpeak)"
-    :subtitle="t(keys.type.typeTextAndHearItSpoken)"
-    :show-header="true"
-    @profile="handleProfile"
-    @settings="handleSettings"
-    @logout="handleLogout"
-  >
-    <div :class="bemm()">
-      <!-- Text Display Area -->
-      <div :class="bemm('display-area')">
-        <div :class="bemm('text-display')">
-          <div :class="bemm('text-content')">
-            {{ currentText || t(keys.type.typeToSpeak) }}
+    <TAppLayout :title="t('type.typeAndSpeak')" :show-header="true" @profile="handleProfile" @settings="handleSettings"
+      @logout="handleLogout">
+      <div :class="bemm()">
+        <!-- Text Display Area -->
+        <div :class="bemm('display-area')">
+          <div :class="bemm('text-display')">
+            <div :class="bemm('text-content', ['', currentText ? 'has-text' : 'no-text'])">
+
+
+              <ul :class="bemm('word-list')" v-if="currentWords">
+                <li :class="bemm('word-item')" v-for="(word, index) in currentWords" :key="index" @click="speakWord(word)">
+                  {{ word }}
+                </li>
+              </ul>
+              <template v-else>
+                {{ currentText || t(keys.type.typeToSpeak) }}
+              </template>
+            </div>
+            <div :class="bemm('text-actions')">
+              <TButton v-if="currentText.trim()" icon="x" type="ghost" size="small" color="secondary" @click="clearText"
+                :aria-label="t(keys.type.clearText)" />
+              <TButton :icon="keyboardMode === 'letters' ? '123' : 'abc'" type="ghost" size="small" color="primary"
+                @click="toggleKeyboardMode"
+                :aria-label="keyboardMode === 'letters' ? 'Switch to numbers' : 'Switch to letters'">
+                {{ keyboardMode === 'letters' ? '123' : 'ABC' }}
+              </TButton>
+              <TButton :icon="isSpeaking ? 'square' : 'volume-2'" type="default"
+                :color="isSpeaking ? 'error' : 'primary'" @click="toggleSpeak" size="medium"
+                :disabled="!canSpeak && !isSpeaking">
+                {{ isSpeaking ? t(keys.type.stop) : t(keys.type.speak) }}
+              </TButton>
+            </div>
           </div>
-          <div :class="bemm('text-actions')">
-            <TButton
-              v-if="currentText.trim()"
-              icon="x"
-              type="ghost"
-              size="small"
-              color="secondary"
-              @click="clearText"
-              :aria-label="t(keys.type.clearText)"
-            />
-            <TButton
-              :icon="keyboardMode === 'letters' ? '123' : 'abc'"
-              type="ghost"
-              size="small"
-              color="primary"
-              @click="toggleKeyboardMode"
-              :aria-label="keyboardMode === 'letters' ? 'Switch to numbers' : 'Switch to letters'"
-            >
-              {{ keyboardMode === 'letters' ? '123' : 'ABC' }}
-            </TButton>
-            <TButton
-              :icon="isSpeaking ? 'square' : 'volume-2'"
-              type="default"
-              :color="isSpeaking ? 'error' : 'primary'"
-              @click="toggleSpeak"
-              size="medium"
-              :disabled="!canSpeak && !isSpeaking"
-            >
-              {{ isSpeaking ? t(keys.type.stop) : t(keys.type.speak) }}
-            </TButton>
-          </div>
+        </div>
+
+        <!-- Virtual Keyboard Area -->
+        <div :class="bemm('keyboard-area')">
+          <VirtualKeyboard :layout="keyboardMode === 'letters' ? settings.keyboardLayout : 'numbers'"
+            :disabled="isSpeaking" :uppercase="isUppercase" :haptic-feedback="settings.hapticFeedback"
+            :speak-on-type="settings.speakOnType" :theme="settings.keyboardTheme" @keypress="handleVirtualKeyPress"
+            @backspace="handleBackspace" @space="handleSpace" />
         </div>
       </div>
 
-      <!-- Virtual Keyboard Area -->
-      <div :class="bemm('keyboard-area')">
-        <VirtualKeyboard
-          :layout="keyboardMode === 'letters' ? settings.keyboardLayout : 'numbers'"
-          :disabled="isSpeaking"
-          :uppercase="isUppercase"
-          :haptic-feedback="settings.hapticFeedback"
-          :speak-on-type="settings.speakOnType"
-          :theme="settings.keyboardTheme"
-          @keypress="handleVirtualKeyPress"
-          @backspace="handleBackspace"
-          @space="handleSpace"
-        />
-      </div>
-    </div>
+      <!-- Settings Panel -->
+      <div v-if="showSettings" class="type-settings">
+        <div class="type-settings__backdrop" @click="hideSettings" />
+        <div class="type-settings__panel">
+          <h3 class="type-settings__title">App Settings</h3>
 
-    <!-- Settings Panel -->
-    <div v-if="showSettings" class="type-settings">
-      <div class="type-settings__backdrop" @click="hideSettings" />
-      <div class="type-settings__panel">
-        <h3 class="type-settings__title">App Settings</h3>
+          <!-- Voice Settings Section -->
+          <h4 class="type-settings__subtitle">Voice & Speech</h4>
 
-        <!-- Voice Settings Section -->
-        <h4 class="type-settings__subtitle">Voice & Speech</h4>
+          <!-- Rate -->
+          <div class="type-settings__group">
+            <TInputRange v-model.number="localSettings.rate" :label="t(keys.type.speechRate)" :min="0.1" :max="3"
+              :step="0.1" @input="updateSettings" />
+          </div>
 
-        <!-- Rate -->
-        <div class="type-settings__group">
-          <TInputRange
-            v-model.number="localSettings.rate"
-            :label="t(keys.type.speechRate)"
-            :min="0.1"
-            :max="3"
-            :step="0.1"
-            @input="updateSettings"
-          />
-        </div>
+          <!-- Pitch -->
+          <div class="type-settings__group">
+            <TInputRange v-model.number="localSettings.pitch" :label="t(keys.type.pitch)" :min="0" :max="2" :step="0.1"
+              @input="updateSettings" />
+          </div>
 
-        <!-- Pitch -->
-        <div class="type-settings__group">
-          <TInputRange
-            v-model.number="localSettings.pitch"
-            :label="t(keys.type.pitch)"
-            :min="0"
-            :max="2"
-            :step="0.1"
-            @input="updateSettings"
-          />
-        </div>
+          <!-- Volume -->
+          <div class="type-settings__group">
+            <TInputRange v-model.number="localSettings.volume" :label="t(keys.type.volume)" :min="0" :max="1"
+              :step="0.1" @input="updateSettings" />
+          </div>
 
-        <!-- Volume -->
-        <div class="type-settings__group">
-          <TInputRange
-            v-model.number="localSettings.volume"
-            :label="t(keys.type.volume)"
-            :min="0"
-            :max="1"
-            :step="0.1"
-            @input="updateSettings"
-          />
-        </div>
+          <!-- Auto Save -->
+          <div class="type-settings__group">
+            <TInputCheckbox v-model="localSettings.autoSave" :label="t(keys.type.saveToHistoryAutomatically)"
+              @change="updateSettings" />
+          </div>
 
-        <!-- Auto Save -->
-        <div class="type-settings__group">
-          <TInputCheckbox
-            v-model="localSettings.autoSave"
-            :label="t(keys.type.saveToHistoryAutomatically)"
-            @change="updateSettings"
-          />
-        </div>
+          <!-- Keyboard Settings Section -->
+          <h4 class="type-settings__subtitle">Keyboard</h4>
 
-        <!-- Keyboard Settings Section -->
-        <h4 class="type-settings__subtitle">Keyboard</h4>
+          <!-- Haptic Feedback -->
+          <div class="type-settings__group">
+            <TInputCheckbox v-model="localSettings.hapticFeedback" label="Haptic Feedback" @change="updateSettings" />
+          </div>
 
-        <!-- Haptic Feedback -->
-        <div class="type-settings__group">
-          <TInputCheckbox
-            v-model="localSettings.hapticFeedback"
-            label="Haptic Feedback"
-            @change="updateSettings"
-          />
-        </div>
+          <!-- Speak on Type -->
+          <div class="type-settings__group">
+            <TInputCheckbox v-model="localSettings.speakOnType" label="Speak Letters When Typing"
+              @change="updateSettings" />
+          </div>
 
-        <!-- Speak on Type -->
-        <div class="type-settings__group">
-          <TInputCheckbox
-            v-model="localSettings.speakOnType"
-            label="Speak Letters When Typing"
-            @change="updateSettings"
-          />
-        </div>
+          <!-- Keyboard Layout -->
+          <div class="type-settings__group">
+            <TInputSelect v-model="localSettings.keyboardLayout" label="Keyboard Layout" :options="availableLayouts"
+              @update:model-value="updateSettings" />
+          </div>
 
-        <!-- Keyboard Layout -->
-        <div class="type-settings__group">
-          <TInputSelect
-            v-model="localSettings.keyboardLayout"
-            label="Keyboard Layout"
-            :options="availableLayouts"
-            @update:model-value="updateSettings"
-          />
-        </div>
-
-        <!-- Keyboard Theme -->
-        <div class="type-settings__group">
-          <TInputSelect
-            v-model="localSettings.keyboardTheme"
-            label="Keyboard Theme"
-            :options="[
+          <!-- Keyboard Theme -->
+          <div class="type-settings__group">
+            <TInputSelect v-model="localSettings.keyboardTheme" label="Keyboard Theme" :options="[
               { value: 'default', label: 'Default' },
               { value: 'dark', label: 'Dark' },
               { value: 'colorful', label: 'Colorful' }
-            ]"
-            @update:model-value="updateSettings"
-          />
-        </div>
+            ]" @update:model-value="updateSettings" />
+          </div>
 
-        <!-- Fun Letters -->
-        <div class="type-settings__group">
-          <TInputCheckbox
-            v-model="localSettings.funLetters"
-            label="Fun Letters (Images)"
-            @change="updateSettings"
-          />
-        </div>
+          <!-- Fun Letters -->
+          <div class="type-settings__group">
+            <TInputCheckbox v-model="localSettings.funLetters" label="Fun Letters (Images)" @change="updateSettings" />
+          </div>
 
-        <div class="type-settings__actions">
-          <TButton
-            :label="t(keys.common.close)"
-            type="default"
-            color="primary"
-            :action="hideSettings"
-            size="medium"
-          />
+          <div class="type-settings__actions">
+            <TButton :label="t(keys.common.close)" type="default" color="primary" :action="hideSettings"
+              size="medium" />
+          </div>
         </div>
       </div>
-    </div>
-  </TAppLayout>
+    </TAppLayout>
   </TAuthWrapper>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, reactive, watch, toRefs } from 'vue'
 import { useBemm } from 'bemm'
-import { useI18n } from '@tiko/core';
+import { useI18n, useSpeak } from '@tiko/core';
 import { TButton, TAppLayout, TAuthWrapper, TInputRange, TInputCheckbox, TInputSelect } from '@tiko/ui'
 import { useTypeStore } from '../stores/type'
 import VirtualKeyboard from '../components/VirtualKeyboard.vue'
@@ -203,6 +136,11 @@ const bemm = useBemm('type-view')
 
 const typeStore = useTypeStore()
 const { t, keys } = useI18n()
+const { speak } = useSpeak();
+
+const speakWord = (word:string)=>{
+  speak(word)
+}
 
 // Local state
 const showSettings = ref(false)
@@ -229,6 +167,7 @@ const localSettings = reactive({
 // Destructure store
 const {
   currentText,
+  currentWords,
   isSpeaking,
   isLoading,
   availableVoices,
@@ -439,6 +378,8 @@ onUnmounted(() => {
       content: attr(placeholder);
       color: var(--color-foreground-tertiary);
     }
+
+    &--has-text {}
   }
 
   &__text-actions {
@@ -456,7 +397,56 @@ onUnmounted(() => {
     position: relative;
     min-height: fit-content; // Important for flexbox
   }
+
+  &__word-list {
+    display: flex;
+    gap: var(--space-s);
+  }
+
+  &__word-item {
+    display: block;
+    background-color: color-mix(in srgb, var(--color-primary), transparent 80%);
+    border: 1px solid color-mix(in srgb, var(--color-primary), transparent 50%);
+    border-radius: calc(var(--border-radius) / 2);
+    padding: var(--space-xs) var(--space-s);
+
+    &:empty {
+      display: none;
+    }
+
+    &:last-child {
+      &::after {
+        display: inline-block;
+        content: "";
+        height: 1em;
+        width: 2px;
+        background-color: color-mix(in srgb, var(--color-primary), transparent 50%);
+        animation: blink 1s infinite;
+        margin-left: .125em;
+
+        @keyframes blink {
+
+          0%,
+          100% {
+            opacity: 1;
+          }
+
+          25%,
+          75% {
+            opacity: 0;
+          }
+        }
+      }
+    }
+
+    &:hover {
+      background-color: color-mix(in srgb, var(--color-primary), transparent 60%);
+      border: 1px solid color-mix(in srgb, var(--color-primary), transparent 30%);
+    }
+  }
 }
+
+
 
 .type-header {
   display: flex;

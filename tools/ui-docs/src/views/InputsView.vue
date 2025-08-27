@@ -9,7 +9,7 @@
     <section :class="bemm('section')">
       <h2>Basic Text Input</h2>
       <p>Standard text input for single-line text entry</p>
-      
+
       <div :class="bemm('demo')">
         <TInput v-model="basicText" placeholder="Enter text..." />
         <TInput v-model="basicText" placeholder="With label" label="Name" />
@@ -28,7 +28,7 @@
     <section :class="bemm('section')">
       <h2>Input with Icons</h2>
       <p>Add visual context with icons</p>
-      
+
       <div :class="bemm('demo')">
         <TInput v-model="searchText" placeholder="Search..." icon="search-fat" />
         <TInput v-model="emailText" placeholder="Email address" icon="mail" label="Email" />
@@ -47,7 +47,7 @@
     <section :class="bemm('section')">
       <h2>Input Types</h2>
       <p>Different input types for specific data formats</p>
-      
+
       <div :class="bemm('demo', 'vertical')">
         <TInput v-model="textValue" type="text" placeholder="Text input" label="Text" />
         <TInput v-model="emailValue" type="email" placeholder="email@example.com" label="Email" />
@@ -70,7 +70,7 @@
     <section :class="bemm('section')">
       <h2>Input States</h2>
       <p>Different states for user feedback and interaction</p>
-      
+
       <div :class="bemm('demo', 'vertical')">
         <TInput v-model="normalState" placeholder="Normal state" label="Normal" />
         <TInput v-model="disabledState" placeholder="Disabled state" label="Disabled" disabled />
@@ -91,7 +91,7 @@
     <section :class="bemm('section')">
       <h2>Textarea</h2>
       <p>Multi-line text input for longer content</p>
-      
+
       <div :class="bemm('demo')">
         <TTextArea v-model="textareaValue" placeholder="Enter multi-line text..." label="Description" />
         <TTextArea v-model="textareaValue" placeholder="With row limit" label="Comments" :rows="3" />
@@ -108,7 +108,7 @@
     <section :class="bemm('section')">
       <h2>Form Examples</h2>
       <p>Real-world input combinations in forms</p>
-      
+
       <div :class="bemm('demo', 'vertical')">
         <div :class="bemm('form-group')">
           <h4>User Profile</h4>
@@ -248,7 +248,7 @@ const account = ref({
 
   &__header {
     margin-bottom: var(--space-xl);
-    
+
     h1 {
       font-size: 2.5rem;
       font-weight: 700;
@@ -265,7 +265,7 @@ const account = ref({
 
   &__section {
     margin-bottom: var(--space-xl);
-    
+
     h2 {
       font-size: 1.5rem;
       font-weight: 600;
@@ -289,7 +289,7 @@ const account = ref({
     padding: var(--space-lg);
     background: var(--color-background-secondary);
     border-radius: var(--radius);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
 
     &--vertical {
       flex-direction: column;
@@ -303,9 +303,9 @@ const account = ref({
     gap: var(--space);
     padding: var(--space);
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius);
-    
+
     h4 {
       margin: 0;
       font-size: 0.875rem;
@@ -318,7 +318,7 @@ const account = ref({
 
   &__code {
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius);
     padding: var(--space);
 
@@ -333,7 +333,7 @@ const account = ref({
       margin: 0;
       padding: 0;
       overflow-x: auto;
-      
+
       code {
         font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
         font-size: 0.875rem;
@@ -346,31 +346,31 @@ const account = ref({
 
   &__props-table {
     overflow-x: auto;
-    
+
     table {
       width: 100%;
       border-collapse: collapse;
       background: var(--color-background);
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--color-accent);
       border-radius: var(--radius);
-      
+
       th, td {
         padding: var(--space-s) var(--space);
         text-align: left;
-        border-bottom: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-accent);
       }
-      
+
       th {
         background: var(--color-background-secondary);
         font-weight: 600;
         color: var(--color-foreground);
         font-size: 0.875rem;
       }
-      
+
       td {
         color: var(--color-foreground-secondary);
         font-size: 0.875rem;
-        
+
         code {
           background: var(--color-background-secondary);
           padding: 0.125rem 0.25rem;
@@ -380,7 +380,7 @@ const account = ref({
           color: var(--color-foreground);
         }
       }
-      
+
       tbody tr:last-child {
         th, td {
           border-bottom: none;
@@ -393,11 +393,11 @@ const account = ref({
 @media (max-width: 768px) {
   .inputs-view {
     padding: var(--space);
-    
+
     &__header h1 {
       font-size: 2rem;
     }
-    
+
     &__demo {
       flex-direction: column;
       align-items: stretch;

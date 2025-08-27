@@ -193,7 +193,7 @@ const getSortIcon = (column: string) => {
     align-items: center;
     padding: var(--space);
     background: var(--color-background-secondary);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
   }
 }
 </style>

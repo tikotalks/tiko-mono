@@ -194,7 +194,7 @@ const handleCancel = () => {
     justify-content: flex-end;
     margin-top: var(--space-l);
     padding-top: var(--space);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
   }
 }
 </style>

@@ -49,9 +49,30 @@ class AssetsService {
       .from('assets')
       .select('*')
       .or(`title.ilike.%${query}%,description.ilike.%${query}%,tags.cs.{${query}}`)
+      .eq('is_public', true)
 
     if (error) {
       console.error(`[AssetsService] Failed to search assets:`, error)
+      return []
+    }
+
+    return data as AssetRecord[]
+  }
+
+  /**
+   * Get all public assets
+   */
+  async getPublicAssets(limit: number = 100): Promise<AssetRecord[]> {
+    const supabase = getSupabase()
+    const { data, error } = await supabase
+      .from('assets')
+      .select('*')
+      .eq('is_public', true)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    if (error) {
+      console.error(`[AssetsService] Failed to fetch public assets:`, error)
       return []
     }
 

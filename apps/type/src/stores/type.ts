@@ -25,7 +25,7 @@ export interface TypeHistory {
 
 export const useTypeStore = defineStore('type', () => {
   const appStore = useAppStore()
-  
+
   // State
   const currentText = ref<string>('')
   const isSpeaking = ref<boolean>(false)
@@ -66,6 +66,10 @@ export const useTypeStore = defineStore('type', () => {
     return availableVoices.value.length > 0
   })
 
+  const currentWords = computed(()=>{
+    return currentText.value.split(' ');
+  })
+
   const recentHistory = computed(() => {
     return history.value
       .slice()
@@ -76,18 +80,18 @@ export const useTypeStore = defineStore('type', () => {
   // Actions
   const loadVoices = () => {
     isLoading.value = true
-    
+
     const updateVoices = () => {
       const voices = speechSynthesis.getVoices()
       availableVoices.value = voices
-      
+
       // Set default voice if none selected
       if (!selectedVoice.value && voices.length > 0) {
         // Try to find a good default voice (English, if available)
         const englishVoice = voices.find(voice => voice.lang.startsWith('en'))
         selectedVoice.value = englishVoice || voices[0]
       }
-      
+
       isLoading.value = false
     }
 
@@ -112,7 +116,7 @@ export const useTypeStore = defineStore('type', () => {
 
     try {
       currentUtterance = new SpeechSynthesisUtterance(textToSpeak)
-      
+
       // Apply settings
       const currentSettings = settings.value
       if (selectedVoice.value) {
@@ -199,7 +203,7 @@ export const useTypeStore = defineStore('type', () => {
     }
 
     history.value.unshift(historyItem)
-    
+
     // Limit history size
     const limit = settings.value.historyLimit
     if (history.value.length > limit) {
@@ -227,7 +231,7 @@ export const useTypeStore = defineStore('type', () => {
   const updateSettings = async (newSettings: Partial<TypeSettings>) => {
     const currentSettings = settings.value
     const updatedSettings = { ...currentSettings, ...newSettings }
-    
+
     await appStore.updateAppSettings('type', updatedSettings)
   }
 
@@ -240,12 +244,12 @@ export const useTypeStore = defineStore('type', () => {
 
   const loadState = async () => {
     await appStore.loadAppSettings('type')
-    
+
     const appSettings = appStore.getAppSettings('type')
     if (appSettings.history && Array.isArray(appSettings.history)) {
       history.value = appSettings.history
     }
-    
+
     // Load voices
     loadVoices()
   }
@@ -258,18 +262,19 @@ export const useTypeStore = defineStore('type', () => {
   return {
     // State
     currentText,
+    currentWords,
     isSpeaking,
     isLoading,
     availableVoices,
     history,
     selectedVoice,
-    
+
     // Getters
     settings,
     canSpeak,
     hasVoices,
     recentHistory,
-    
+
     // Actions
     loadVoices,
     speak,

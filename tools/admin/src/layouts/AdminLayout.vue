@@ -47,7 +47,7 @@ const { hasItems } = useUpload(uploadService, toastService);
     --topbar-height: calc(4rem + var(--space));
 
     width: clamp(240px, 15vw, 320px);
-    border-right: 1px solid var(--color-border);
+    border-right: 1px solid var(--color-accent);
     height: fit-content;
     max-height: calc(100vh - (var(--topbar-height)) - var(--space));
     position: sticky;
@@ -139,7 +139,7 @@ const { hasItems } = useUpload(uploadService, toastService);
 
   &__progress-bar {
     height: 4px;
-    background: var(--color-border);
+    background: var(--color-accent);
     border-radius: 2px;
     overflow: hidden;
   }

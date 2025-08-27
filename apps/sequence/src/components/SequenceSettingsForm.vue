@@ -45,7 +45,7 @@
         />
         <p :class="bemm('description')">{{ t('sequence.showHiddenItemsDescription') }}</p>
       </div>
-      
+
       <!-- Hidden Sequences Button -->
       <div v-if="hiddenItemsCount > 0" :class="bemm('item')">
         <TButton
@@ -149,7 +149,7 @@ watch(form, () => {
     border-radius: var(--border-radius-l);
     padding: var(--space-xl);
     box-shadow: var(--shadow-subtle);
-    border: 1px solid var(--color-border-subtle);
+    border: 1px solid var(--color-accent-subtle);
   }
 
   &__title {
@@ -186,7 +186,7 @@ watch(form, () => {
       opacity: 1;
     }
   }
-  
+
   &__hidden-button {
     width: 100%;
     justify-content: center;
@@ -221,7 +221,7 @@ watch(form, () => {
   @media (prefers-color-scheme: dark) {
     &__group {
       background: var(--color-surface-dark);
-      border-color: var(--color-border-dark);
+      border-color: var(--color-accent-dark);
     }
 
     &__description {

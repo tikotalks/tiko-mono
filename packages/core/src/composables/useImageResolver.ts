@@ -1,6 +1,7 @@
 import { ref, type Ref } from 'vue'
 import { useAssetsStore } from '../stores/assets.store'
 import { useMediaStore } from '../stores/media.store'
+import { useImageUrl } from './useImageUrl'
 
 export type MediaType = 'assets' | 'public' | 'user'
 
@@ -23,6 +24,7 @@ export interface ResolvedImage {
 export function useImageResolver() {
   const assetsStore = useAssetsStore()
   const mediaStore = useMediaStore()
+  const { getImageVariants } = useImageUrl()
 
   /**
    * Check if a string is a valid UUID
@@ -39,21 +41,26 @@ export function useImageResolver() {
     src: string,
     options: ResolveImageOptions = {}
   ): Promise<string> => {
-    // If it's already a full URL, return as is
+    // If it's already a full URL, apply size transformation if needed
     if (src.startsWith('http://') || src.startsWith('https://')) {
+      if (options.size) {
+        const variants = getImageVariants(src)
+        return variants[options.size] || src
+      }
       return src
     }
 
     // If it looks like a UUID, resolve based on media type
     if (isUUID(src)) {
       const mediaType = options.media || 'assets' // Default to assets
+      let resolvedUrl = ''
 
       switch (mediaType) {
         case 'assets':
           try {
             const asset = await assetsStore.getAsset(src)
             if (asset) {
-              return assetsStore.getAssetUrl(asset)
+              resolvedUrl = assetsStore.getAssetUrl(asset)
             }
           } catch (error) {
             console.warn(`[AssetResolver] Failed to load from assets: ${error}`)
@@ -63,28 +70,43 @@ export function useImageResolver() {
         case 'user':
           // TODO: Create a method to fetch single user media by ID
           // For now, just construct the URL directly
-          return `https://user-media.tikocdn.org/${src}`
+          resolvedUrl = `https://user-media.tikocdn.org/${src}`
+          break
 
         case 'public':
           try {
             const media = await mediaStore.getMediaItem(src)
             if (media) {
-              return media.filename 
+              resolvedUrl = media.filename 
                 ? `https://media.tikocdn.org/${media.filename}`
                 : `https://media.tikocdn.org/${src}`
             } else {
               // Fallback to constructed URL
-              return `https://media.tikocdn.org/${src}`
+              resolvedUrl = `https://media.tikocdn.org/${src}`
             }
           } catch (error) {
             console.warn(`[AssetResolver] Failed to fetch public media ${src}:`, error)
-            return `https://media.tikocdn.org/${src}`
+            resolvedUrl = `https://media.tikocdn.org/${src}`
           }
+          break
       }
+
+      // Apply size transformation if we have a resolved URL and size option
+      if (resolvedUrl && options.size) {
+        const variants = getImageVariants(resolvedUrl)
+        return variants[options.size] || resolvedUrl
+      }
+
+      return resolvedUrl
     }
 
-    // Otherwise treat as a path
-    return src.startsWith('/') ? src : `/${src}`
+    // Otherwise treat as a path and apply size transformation if needed
+    const path = src.startsWith('/') ? src : `/${src}`
+    if (options.size) {
+      const variants = getImageVariants(path)
+      return variants[options.size] || path
+    }
+    return path
   }
 
   /**

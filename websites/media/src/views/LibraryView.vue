@@ -140,7 +140,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useBemm } from 'bemm';
 import { Icons } from 'open-icon';
-import { useImageUrl, useImages } from '@tiko/core';
+import { formatDate, useImageUrl, useImages } from '@tiko/core';
 import {
   TGrid,
   TMediaTile,
@@ -205,28 +205,6 @@ const sortOrderOptions = [
   { value: 'asc', label: t('common.sortBy.asc') },
 ];
 
-// Format date for display with i18n support
-function formatDate(dateString: string): string {
-  const inputDate = new Date(dateString);
-  const now = new Date();
-  const diffTime = Math.abs(now.getTime() - inputDate.getTime());
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) {
-    return t('common.today');
-  } else if (diffDays === 1) {
-    return t('common.yesterday');
-  } else if (diffDays < 7) {
-    return t('common.daysAgo', { days: diffDays });
-  } else {
-    // Format as regular date
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    }).format(inputDate);
-  }
-}
 
 // Use filtered images from useImages and apply category and tag filters
 const filteredByCategoryImages = computed(() => {

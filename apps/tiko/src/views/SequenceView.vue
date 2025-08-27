@@ -1779,7 +1779,7 @@ onUnmounted(() => {
     align-items: center;
     padding: var(--space) var(--space);
     background-color: var(--color-background-secondary);
-    border-bottom: 2px solid var(--color-border);
+    border-bottom: 2px solid var(--color-accent);
     gap: var(--space-xs);
     overflow-x: auto;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -1795,7 +1795,7 @@ onUnmounted(() => {
     gap: var(--space-xs);
     padding: var(--space-xs) var(--space);
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--border-radius-sm);
     color: var(--color-text-muted);
     font-size: var(--font-size);

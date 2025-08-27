@@ -16,28 +16,36 @@ interface MediaSelectorOptions {
 export function useMediaSelector() {
   const popupService = inject<PopupService>('popupService')
 
-  function openMediaSelector(options: MediaSelectorOptions = {}): Promise<MediaItem[]> {
+  function openMediaSelector(options: MediaSelectorOptions = {}): Promise<MediaItem[] | MediaFieldValue[]> {
     return new Promise((resolve, reject) => {
       if (!popupService) {
         reject(new Error('PopupService not available'))
         return
       }
 
-      const popupId = popupService.open({
-        component: MediaSelector,
-        title: options.title || (options.multiple ? 'Select Media' : 'Select Media Item'),
-        props: {
-          multiple: options.multiple || false,
-          selectedIds: options.selectedIds || [],
-          onConfirm: (selectedItems: MediaItem[]) => {
-            popupService.close({ id: popupId })
-            resolve(selectedItems)
-          },
-          onCancel: () => {
-            popupService.close({ id: popupId })
-            resolve([])
-          }
+      const component = options.enhanced ? MediaSelectorEnhanced : MediaSelector
+      const props: any = {
+        multiple: options.multiple || false,
+        selectedIds: options.selectedIds || [],
+        onConfirm: (selectedItems: MediaItem[] | MediaFieldValue[]) => {
+          popupService.close({ id: popupId })
+          resolve(selectedItems)
         },
+        onCancel: () => {
+          popupService.close({ id: popupId })
+          resolve([])
+        }
+      }
+
+      // Add enhanced-specific props
+      if (options.enhanced && options.allowedSources) {
+        props.allowedSources = options.allowedSources
+      }
+
+      const popupId = popupService.open({
+        component,
+        title: options.title || (options.multiple ? 'Select Media' : 'Select Media Item'),
+        props,
         on: {
           close: () => {
             resolve([])

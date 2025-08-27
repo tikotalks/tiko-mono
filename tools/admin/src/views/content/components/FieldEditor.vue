@@ -64,15 +64,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject } from 'vue'
+import { ref, computed, inject, watch } from 'vue'
 import { useBemm } from 'bemm'
 import {
   TFormGroup,
   TInputSelect,
   TInputCheckbox,
   TButton,
-  type ToastService,
-  TInputText
+  TInputText,
+  type ToastService
 } from '@tiko/ui'
 import { contentService, type ContentField,
   useI18n } from '@tiko/core'
@@ -80,6 +80,7 @@ import { kebabCase } from '@sil/case'
 import FieldOptionsEditor from './FieldOptionsEditor.vue'
 import ItemsFieldConfig from './ItemsFieldConfig.vue'
 import RepeaterFieldConfig from './RepeaterFieldConfig.vue'
+import MediaFieldConfig from './MediaFieldConfig.vue'
 
 interface Props {
   field?: ContentField | null
@@ -104,12 +105,22 @@ const toastService = inject<ToastService>('toastService')
 const form = ref({
   label: '',
   field_key: '',
-  field_type: 'text',
+  field_type: 'text' as ContentField['field_type'],
   is_required: false,
   is_translatable: true,
   default_value: '',
   config: {} as any
 })
+
+// Set initial config based on field type
+if (!props.field && (form.value.field_type === 'media' || form.value.field_type === 'image')) {
+  form.value.config = {
+    enableSourceSelection: true,
+    allowedSources: ['public', 'assets', 'personal'],
+    multiple: false,
+    maxItems: 0
+  }
+}
 
 // Field type options
 const fieldTypeOptions = computed(() => {
@@ -153,6 +164,9 @@ const configComponent = computed(() => {
       return RepeaterFieldConfig
     case 'linked_items':
       return ItemsFieldConfig // Reuse for selecting item template
+    case 'media':
+    case 'image':
+      return MediaFieldConfig
     default:
       return null
   }
@@ -180,6 +194,23 @@ if (props.field) {
     config: props.field.config || {}
   }
 }
+
+// Watch for field type changes to set default configurations
+watch(() => form.value.field_type, (newType, oldType) => {
+  // Only set defaults when changing to media type from another type
+  if ((newType === 'media' || newType === 'image') && oldType !== 'media' && oldType !== 'image') {
+    // Set default media configuration with enableSourceSelection enabled
+    form.value.config = {
+      enableSourceSelection: true,
+      allowedSources: ['public', 'assets', 'personal'],
+      multiple: false,
+      maxItems: 0
+    }
+  } else if (oldType === 'media' || oldType === 'image') {
+    // Clear config when changing from media to another type
+    form.value.config = {}
+  }
+})
 
 // Auto-generate field key from label
 function generateFieldKey() {

@@ -482,7 +482,7 @@ watch(() => form.value.videoUrl, extractMetadata, { debounce: 500 })
     width: 6em;
     height: 6em;
     object-fit: cover;
-    border-radius: var(--radius-sm, 0.25em);
+    border-radius: var(--border-radius, 0.25em);
     flex-shrink: 0;
   }
 
@@ -517,7 +517,7 @@ watch(() => form.value.videoUrl, extractMetadata, { debounce: 500 })
     background: color-mix(in srgb, var(--color-secondary), transparent 90%);
     color: color-mix(in srgb, var(--color-secondary), var(--color-foreground) 20%);
     padding: var(--space-xs, 0.25em) var(--space-s, 0.5em);
-    border-radius: var(--radius-sm, 0.25em);
+    border-radius: var(--border-radius, 0.25em);
     font-weight: 600;
     text-transform: uppercase;
   }

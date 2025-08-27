@@ -400,7 +400,7 @@ watch(
     padding: var(--space-s, 0.75em);
     background: color-mix(in srgb, var(--color-error), transparent 90%);
     border: 1px solid color-mix(in srgb, var(--color-error), transparent 70%);
-    border-radius: var(--radius-sm, 0.25em);
+    border-radius: var(--border-radius, 0.25em);
     color: color-mix(in srgb, var(--color-error), var(--color-foreground) 20%);
     font-size: 0.875em;
     text-align: center;

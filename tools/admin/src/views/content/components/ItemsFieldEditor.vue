@@ -307,7 +307,7 @@ watch(() => props.modelValue, (newValue) => {
     background-color: var(--color-background);
     padding: var(--space);
     border-radius: var(--border-radius);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
 
     &:hover {
       border-color: var(--color-primary-20);
@@ -320,7 +320,7 @@ watch(() => props.modelValue, (newValue) => {
     align-items: center;
     margin-bottom: var(--space);
     padding-bottom: var(--space-s);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
   }
 
   &__field-title {

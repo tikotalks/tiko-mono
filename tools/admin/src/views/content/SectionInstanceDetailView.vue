@@ -1,23 +1,12 @@
 <template>
   <div :class="bemm()">
-    <AdminPageHeader
-      :title="
-        isEditMode
-          ? section?.name || 'Edit Section Instance'
-          : 'Create Section Instance'
-      "
-      :description="
-        isEditMode ? section?.description : 'Create a new section instance'
-      "
-      :back-to="{ path: '/content/sections' }"
-    >
+    <AdminPageHeader :title="isEditMode
+        ? section?.name || 'Edit Section Instance'
+        : 'Create Section Instance'
+      " :description="isEditMode ? section?.description : 'Create a new section instance'
+        " :back-to="{ path: '/content/sections' }">
       <template #actions>
-        <TButton
-          color="primary"
-          :status="saving ? 'loading' : 'idle'"
-          :disabled="!canSave"
-          @click="handleSave"
-        >
+        <TButton color="primary" :status="saving ? 'loading' : 'idle'" :disabled="!canSave" @click="handleSave">
           {{ isEditMode ? 'Save Changes' : 'Create Section' }}
         </TButton>
       </template>
@@ -36,118 +25,80 @@
 
         <TFormGroup>
           <template v-for="field in templateFields" :key="field.id">
+
             <!-- Text Field -->
-            <TInputText
-              v-if="field.field_type === 'text'"
-              v-model="fieldValues[field.field_key]"
-              :label="field.label"
-              :placeholder="`Enter ${field.label.toLowerCase()}`"
-              :required="field.is_required"
-            />
+            <TInputText v-if="field.field_type === 'text'" v-model="fieldValues[field.field_key]" :inline="true"
+              :label="field.label" :placeholder="`Enter ${field.label.toLowerCase()}`"
+              :required="field.config?.is_required || false" />
 
             <!-- Textarea Field -->
             <TInputTextArea
               v-else-if="field.field_type === 'textarea'"
               v-model="fieldValues[field.field_key]"
               :label="field.label"
+              :inline="true"
               :placeholder="`Enter ${field.label.toLowerCase()}`"
               :required="field.is_required"
-              rows="4"
+              :rows="4"
             />
+
+
 
             <!-- Number Field -->
-            <TInputNumber
-              v-else-if="field.field_type === 'number'"
-              v-model="fieldValues[field.field_key]"
-              :label="field.label"
-              :placeholder="`Enter ${field.label.toLowerCase()}`"
-              :required="field.is_required"
-            />
+            <TInputNumber v-else-if="field.field_type === 'number'" v-model="fieldValues[field.field_key]"
+              :label="field.label" :inline="true" :placeholder="`Enter ${field.label.toLowerCase()}`"
+              :required="field.is_required" />
 
             <!-- Boolean Field -->
-            <TInputCheckbox
-              v-else-if="field.field_type === 'boolean'"
-              v-model="fieldValues[field.field_key]"
-              :label="field.label"
-              :required="field.is_required"
-            />
+            <TInputCheckbox v-else-if="field.field_type === 'boolean'" v-model="fieldValues[field.field_key]"
+              :label="field.label" :inline="true" :required="field.is_required" />
 
             <!-- Color Field -->
             <div v-else-if="field.field_type === 'color' || isColorField(field)">
               <label :class="bemm('field-label')">{{ field.label }}<span v-if="field.is_required">*</span></label>
-              <TColorPickerPopup
-                v-model="fieldValues[field.field_key]"
-                :placeholder="`Select ${field.label.toLowerCase()}`"
-              />
+              <TColorPickerPopup v-model="fieldValues[field.field_key]" :inline="true"
+                :placeholder="`Select ${field.label.toLowerCase()}`" />
             </div>
 
             <!-- Select/Options Field -->
-            <TInputSelect
-              v-else-if="field.field_type === 'select' || field.field_type === 'options'"
-              v-model="fieldValues[field.field_key]"
-              :label="field.label"
-              :options="getSelectOptions(field)"
-              :placeholder="`Select ${field.label.toLowerCase()}`"
-              :required="field.is_required"
-            />
+            <TInputSelect v-else-if="field.field_type === 'select' || field.field_type === 'options'"
+              v-model="fieldValues[field.field_key]" :label="field.label" :inline="true"
+              :options="getSelectOptions(field)" :placeholder="`Select ${field.label.toLowerCase()}`"
+              :required="field.is_required" />
 
             <!-- Items Field (Repeater) -->
-            <ItemsFieldInstance
-              v-else-if="field.field_type === 'items'"
-              v-model="fieldValues[field.field_key]"
-              :label="field.label"
-              :field-id="field.id"
-              :config="field.config"
-              :required="field.is_required"
-            />
+            <ItemsFieldInstance v-else-if="field.field_type === 'items'" v-model="fieldValues[field.field_key]"
+              :label="field.label" :field-id="field.id" :config="field.config" :required="field.is_required" />
 
             <!-- Media Field (Single) -->
-            <MediaFieldInstance
-              v-else-if="field.field_type === 'media'"
-              v-model="fieldValues[field.field_key]"
-              :label="field.label"
-              :required="field.is_required"
-              :multiple="false"
-            />
+            <MediaFieldInstance v-else-if="field.field_type === 'media'" v-model="fieldValues[field.field_key]"
+              :label="field.label" :required="field.is_required" :multiple="false" />
 
             <!-- Media List Field (Multiple) -->
-            <MediaFieldInstance
-              v-else-if="field.field_type === 'media_list'"
-              v-model="fieldValues[field.field_key]"
-              :label="field.label"
-              :required="field.is_required"
-              :multiple="true"
-              :max-items="field.config?.max_items || 0"
-            />
+            <MediaFieldInstance v-else-if="field.field_type === 'media_list'" v-model="fieldValues[field.field_key]"
+              :label="field.label" :required="field.is_required" :multiple="true"
+              :max-items="field.config?.max_items || 0" />
 
             <!-- Linked Items Field -->
-            <LinkedItemsFieldInstance
-              v-else-if="field.field_type === 'linked_items'"
-              v-model="fieldValues[field.field_key]"
-              :label="field.label"
-              :field-id="field.id"
-              :section-id="sectionId"
-              :item-template-id="field.config?.item_template_id"
-              :required="field.is_required"
-            />
+            <LinkedItemsFieldInstance v-else-if="field.field_type === 'linked_items'"
+              v-model="fieldValues[field.field_key]" :label="field.label" :field-id="field.id" :section-id="sectionId"
+              :item-template-id="field.config?.item_template_id" :required="field.is_required" />
 
             <!-- Repeater Field -->
-            <RepeaterFieldInstance
-              v-else-if="field.field_type === 'repeater'"
-              v-model="fieldValues[field.field_key]"
-              :label="field.label"
-              :field="field"
-              :required="field.is_required"
-            />
+            <RepeaterFieldInstance v-else-if="field.field_type === 'repeater'" v-model="fieldValues[field.field_key]"
+              :label="field.label" :field="field" :required="field.is_required" />
+
+
+
+            <TRichTextEditor v-else-if="field.field_type === 'richtext'" v-model="fieldValues[field.field_key]"
+              :label="field.label" :inline="true" :placeholder="`Enter ${field.label.toLowerCase()}`"
+              :required="field.is_required" :rows="4" />
+
 
             <!-- Default Text for other field types -->
-            <TInputTextArea
-              v-else
-              v-model="fieldValues[field.field_key]"
-              :label="`${field.label} (${field.field_type})`"
-              :placeholder="`Enter ${field.label.toLowerCase()}`"
-              :required="field.is_required"
-            />
+            <TInputTextArea v-else v-model="fieldValues[field.field_key]" :inline="true"
+              :label="`${field.label} (${field.field_type})`" :placeholder="`Enter ${field.label.toLowerCase()}`"
+              :required="field.is_required" />
           </template>
         </TFormGroup>
       </TCard>
@@ -161,53 +112,21 @@
         </template>
 
         <TFormGroup>
-          <TInputSelect
-            :inline="true"
-            v-model="formData.section_template_id"
-            label="Template"
-            :options="templateOptions"
-            placeholder="Select a template"
-            required
-            @update:model-value="onTemplateChange"
-          />
+          <TInputSelect :inline="true" v-model="formData.section_template_id" label="Template"
+            :options="templateOptions" placeholder="Select a template" required
+            @update:model-value="onTemplateChange" />
 
-          <TInputText
-            :inline="true"
-            v-model="formData.name"
-            label="Name"
-            placeholder="Enter section name"
-            required
-          />
+          <TInputText :inline="true" v-model="formData.name" label="Name" placeholder="Enter section name" required />
 
-          <TInputText
-            :inline="true"
-            v-model="formData.slug"
-            label="Slug"
-            placeholder="Enter section slug"
-            required
-          />
+          <TInputText :inline="true" v-model="formData.slug" label="Slug" placeholder="Enter section slug" required />
 
-          <TInputTextArea
-            :inline="true"
-            v-model="formData.description"
-            label="Description"
-            placeholder="Enter section description"
-            rows="3"
-          />
+          <TInputTextArea :inline="true" v-model="formData.description" label="Description"
+            placeholder="Enter section description" rows="3" />
 
-          <TInputSelect
-            :inline="true"
-            v-model="formData.language_code"
-            label="Language"
-            :options="languageOptions"
-            placeholder="Select language (optional for global)"
-          />
+          <TInputSelect :inline="true" v-model="formData.language_code" label="Language" :options="languageOptions"
+            placeholder="Select language (optional for global)" />
 
-          <TInputCheckbox
-            v-model="formData.is_active"
-            label="Active"
-            help="Whether this section is active"
-          />
+          <TInputCheckbox v-model="formData.is_active" label="Active" help="Whether this section is active" />
         </TFormGroup>
       </TCard>
     </div>
@@ -231,6 +150,7 @@ import {
   TInputSelect,
   TColorPickerPopup,
   type ToastService,
+  TRichTextEditor,
 } from '@tiko/ui';
 import { contentService, translationService, useI18n } from '@tiko/core';
 import type {
@@ -475,9 +395,9 @@ function getDefaultValueForFieldType(fieldType: string): any {
 
 function isColorField(field: ContentField): boolean {
   // Check if field is a color field by field_key, label, or specific config
-  return field.field_key?.toLowerCase().includes('color') || 
-         field.label?.toLowerCase().includes('color') ||
-         field.config?.isColorField === true;
+  return field.field_key?.toLowerCase().includes('color') ||
+    field.label?.toLowerCase().includes('color') ||
+    field.config?.isColorField === true;
 }
 
 function getSelectOptions(

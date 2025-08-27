@@ -669,7 +669,7 @@ onMounted(async () => {
     background: var(--color-background-secondary);
     padding: var(--space-lg);
     border-radius: var(--radius-lg);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
 
     h2 {
       font-size: var(--font-size-lg);
@@ -715,7 +715,7 @@ onMounted(async () => {
 
   &__status {
     padding: var(--space-2xs) var(--space-xs);
-    border-radius: var(--radius-sm);
+    border-radius: var(--border-radius);
     font-size: var(--font-size-s);
     font-weight: 500;
 
@@ -768,7 +768,7 @@ onMounted(async () => {
   }
 
   &__upload-area {
-    border: 2px dashed var(--color-border);
+    border: 2px dashed var(--color-accent);
     border-radius: var(--radius-lg);
     padding: var(--space-2xl);
     text-align: center;
@@ -797,7 +797,7 @@ onMounted(async () => {
 
   &__preview {
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius-md);
     overflow: hidden;
   }
@@ -807,7 +807,7 @@ onMounted(async () => {
     justify-content: space-between;
     align-items: center;
     padding: var(--space);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
     background: var(--color-background-tertiary);
 
     h3 {
@@ -818,7 +818,7 @@ onMounted(async () => {
 
   &__preview-stats {
     padding: var(--space);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
   }
 
   &__preview-content {

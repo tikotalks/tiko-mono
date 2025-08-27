@@ -167,7 +167,7 @@ onMounted(() => {
 
   &__header {
     padding: var(--space-l);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
 
     h2 {
       font-size: var(--font-size-l);
@@ -190,7 +190,7 @@ onMounted(() => {
     justify-content: flex-end;
     gap: var(--space);
     padding: var(--space-l);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
   }
 }
 </style>

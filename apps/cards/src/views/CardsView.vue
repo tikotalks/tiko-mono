@@ -419,7 +419,7 @@ const loadCards = async () => {
             if (children.length > 0) {
               newTilesWithChildren.add(card.id);
               // Ensure we have unique children by filtering out duplicates based on ID
-              const uniqueChildren = children.filter((child, index, self) => 
+              const uniqueChildren = children.filter((child, index, self) =>
                 index === self.findIndex(c => c.id === child.id)
               );
               newTileChildrenMap.set(card.id, uniqueChildren);
@@ -454,7 +454,7 @@ const loadCards = async () => {
               // Only add if not already in the map to avoid duplicates
               if (!newTileChildrenMap.has(card.id)) {
                 // Ensure we have unique children by filtering out duplicates based on ID
-                const uniqueChildren = children.filter((child, index, self) => 
+                const uniqueChildren = children.filter((child, index, self) =>
                   index === self.findIndex(c => c.id === child.id)
                 );
                 newTileChildrenMap.set(card.id, uniqueChildren);
@@ -1139,7 +1139,7 @@ const handleCardDrop = async (droppedCard: CardTile, targetCard: CardTile) => {
 
     // Update the children map after successful save
     // Ensure no duplicates by filtering based on ID
-    const allChildren = [...existingChildren, droppedCard].filter((child, index, self) => 
+    const allChildren = [...existingChildren, droppedCard].filter((child, index, self) =>
       index === self.findIndex(c => c.id === child.id)
     );
     tileChildrenMap.value.set(targetCard.id, allChildren);
@@ -1227,7 +1227,7 @@ const handleMultiCardDrop = async (droppedCards: CardTile[], targetCard: CardTil
 
     // Update the children preview for the target tile
     // Ensure no duplicates by filtering based on ID
-    const allChildren = [...existingChildren, ...sortedDroppedCards].filter((child, index, self) => 
+    const allChildren = [...existingChildren, ...sortedDroppedCards].filter((child, index, self) =>
       index === self.findIndex(c => c.id === child.id)
     );
     tileChildrenMap.value.set(targetCard.id, allChildren);
@@ -1981,7 +1981,7 @@ onUnmounted(() => {
     align-items: center;
     padding: var(--space) var(--space);
     background-color: var(--color-background-secondary);
-    border-bottom: 2px solid var(--color-border);
+    border-bottom: 2px solid var(--color-accent);
     gap: var(--space-xs);
     overflow-x: auto;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -1997,7 +1997,7 @@ onUnmounted(() => {
     gap: var(--space-xs);
     padding: var(--space-xs) var(--space);
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--border-radius-sm);
     color: var(--color-text-muted);
     font-size: var(--font-size);

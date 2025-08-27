@@ -36,7 +36,7 @@
     </AdminPageHeader>
 
     <!-- Conflict Alert -->
-    <I18nConflictAlert :keys="keys" />
+    <I18nConflictAlert :keys="keys.map(k => ({ id: String(k.id), key: k.key }))" />
 
     <!-- Keys List -->
     <div :class="bemm('keys-section')">
@@ -97,8 +97,8 @@
           <template #prepend>
             <TListCell type="custom" :style="{ width: '40px' }">
               <TInputCheckbox
-                :modelValue="selectedIds.has(key.id)"
-                @update:modelValue="toggleSelection(key.id)"
+                :modelValue="selectedIds.has(String(key.id))"
+                @update:modelValue="toggleSelection(String(key.id))"
                 @click.stop
               />
             </TListCell>
@@ -141,13 +141,58 @@
         </TListItem>
       </TList>
 
-      <div v-if="filteredKeys.length === 0" :class="bemm('empty')">
-        <p v-if="keys.length === 0">
-          {{ t('admin.i18n.database.keys.empty') }}
-        </p>
-        <p v-else>
-          {{ t('admin.i18n.database.keys.noResults') }}
-        </p>
+      <!-- Empty state when no search performed -->
+      <TEmptyState
+        v-if="!hasSearched && !searchQuery && !loading && filteredKeys.length === 0"
+        :icon="Icons.SEARCH_M"
+        :title="t('admin.i18n.database.searchPrompt', 'Start typing to search')"
+        :description="t('admin.i18n.database.searchPromptDescription', 'Enter a key, category, or description to find translations')"
+      />
+
+      <!-- No results -->
+      <TEmptyState
+        v-else-if="hasSearched && filteredKeys.length === 0 && !loading"
+        :icon="Icons.FILE_TEXT"
+        :title="t('admin.i18n.database.noResults', 'No results found')"
+        :description="t('admin.i18n.database.noResultsDescription', 'Try adjusting your search terms')"
+      >
+        <TButton @click="clearSearch" type="outline">
+          {{ t('common.clear') }}
+        </TButton>
+      </TEmptyState>
+
+      <!-- Loading state -->
+      <div v-else-if="loading" :class="bemm('loading')">
+        <TSpinner />
+        <p>{{ t('common.loading') }}</p>
+      </div>
+
+      <!-- Pagination -->
+      <div v-if="totalPages > 1 && hasSearched" :class="bemm('pagination')">
+        <TButton
+          type="outline"
+          :disabled="currentPage === 1"
+          @click="loadKeys(currentPage - 1)"
+          :icon="Icons.CHEVRON_LEFT"
+          size="small"
+        >
+          {{ t('common.previous') }}
+        </TButton>
+
+        <span :class="bemm('pagination-info')">
+          {{ t('common.pageXofY', { x: currentPage, y: totalPages }, `Page ${currentPage} of ${totalPages}`) }}
+        </span>
+
+        <TButton
+          type="outline"
+          :disabled="currentPage === totalPages"
+          @click="loadKeys(currentPage + 1)"
+          :icon="Icons.CHEVRON_RIGHT"
+          iconPosition="right"
+          size="small"
+        >
+          {{ t('common.next') }}
+        </TButton>
       </div>
     </div>
   </div>
@@ -189,7 +234,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, inject, nextTick } from 'vue';
+import { ref, computed, onMounted, inject, nextTick, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useBemm } from 'bemm';
 import { Icons } from 'open-icon';
@@ -206,6 +251,8 @@ import {
   listActions,
   TInputCheckbox,
   TStatusBar,
+  TEmptyState,
+  TSpinner,
   ConfirmDialog,
   Size
 } from '@tiko/ui';
@@ -228,12 +275,17 @@ const { getListPreferences, updateListPreferences, loadPreferences } = useUserPr
 
 // Data
 const keys = ref<I18nKey[]>([]);
+const allKeys = ref<I18nKey[]>([]); // Store all keys for client-side filtering
 const searchQuery = ref('');
 const loading = ref(false);
 const sortBy = ref('key');
 const sortDirection = ref<'asc' | 'desc'>('asc');
 const selectedIds = ref(new Set<string>());
 const selectAll = ref(false);
+const currentPage = ref(1);
+const itemsPerPage = ref(50);
+const totalItems = ref(0);
+const hasSearched = ref(false);
 
 // Stats
 const stats = ref({
@@ -242,49 +294,25 @@ const stats = ref({
   totalTranslations: 0,
 });
 
+// Computed for total pages
+const totalPages = computed(() => {
+  return Math.ceil(totalItems.value / itemsPerPage.value) || 1;
+});
+
 // Computed
 const filteredKeys = computed(() => {
-  let result = keys.value;
-
-  // Apply search filter
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase();
-    result = result.filter(
-      (key) =>
-        key.key.toLowerCase().includes(query) ||
-        key.category?.toLowerCase().includes(query) ||
-        key.description?.toLowerCase().includes(query),
-    );
-  }
-
-  // Apply sorting
-  if (sortBy.value) {
-    result = [...result].sort((a, b) => {
-      let aVal = a[sortBy.value] || '';
-      let bVal = b[sortBy.value] || '';
-
-      // Handle translation count separately
-      if (sortBy.value === 'translations') {
-        aVal = a.translationCount || 0;
-        bVal = b.translationCount || 0;
-      }
-
-      // Convert to strings for comparison
-      aVal = String(aVal).toLowerCase();
-      bVal = String(bVal).toLowerCase();
-
-      if (sortDirection.value === 'asc') {
-        return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
-      } else {
-        return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
-      }
-    });
-  }
-
-  return result;
+  return keys.value;
 });
 
 // Methods
+function clearSearch() {
+  searchQuery.value = '';
+  hasSearched.value = false;
+  keys.value = [];
+  totalItems.value = 0;
+  currentPage.value = 1;
+}
+
 function handleSort(column: string, direction: 'asc' | 'desc') {
   sortBy.value = column;
   sortDirection.value = direction;
@@ -294,43 +322,82 @@ function handleSort(column: string, direction: 'asc' | 'desc') {
     sortBy: column,
     sortDirection: direction
   });
+
+  // Re-sort current results
+  if (hasSearched.value || searchQuery.value) {
+    loadKeys(currentPage.value);
+  }
 }
 
-async function loadKeys() {
+async function loadKeys(page = 1) {
   loading.value = true;
+  currentPage.value = page;
+
   try {
-    // Get keys with translation counts in a single optimized query
-    const data = await translationService.getKeysWithTranslationCounts();
-    keys.value = data.map((key) => ({
-      ...key,
-      translationCount: key.translation_count || 0,
-    }));
+    // Load all keys only once
+    if (allKeys.value.length === 0) {
+      const data = await translationService.getKeysWithTranslationCounts();
+      allKeys.value = data.map((key) => ({
+        ...key,
+        translationCount: key.translation_count || 0,
+      }));
+
+      // Load stats only once
+      await loadStats();
+    }
+
+    // Apply search filter
+    let filtered = allKeys.value;
+    if (searchQuery.value) {
+      const query = searchQuery.value.toLowerCase();
+      filtered = filtered.filter(
+        (key) =>
+          key.key.toLowerCase().includes(query) ||
+          key.category?.toLowerCase().includes(query) ||
+          key.description?.toLowerCase().includes(query)
+      );
+      hasSearched.value = true;
+    }
+
+    // Apply sorting
+    if (sortBy.value) {
+      filtered = [...filtered].sort((a, b) => {
+        let aVal = a[sortBy.value] || '';
+        let bVal = b[sortBy.value] || '';
+
+        // Handle translation count separately
+        if (sortBy.value === 'translations') {
+          aVal = a.translationCount || 0;
+          bVal = b.translationCount || 0;
+        }
+
+        // Convert to strings for comparison
+        aVal = String(aVal).toLowerCase();
+        bVal = String(bVal).toLowerCase();
+
+        if (sortDirection.value === 'asc') {
+          return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+        } else {
+          return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
+        }
+      });
+    }
+
+    // Update total items
+    totalItems.value = filtered.length;
+
+    // Apply pagination
+    const offset = (page - 1) * itemsPerPage.value;
+    keys.value = filtered.slice(offset, offset + itemsPerPage.value);
 
     // Log the actual number of keys fetched
-    console.log(`Loaded ${keys.value.length} translation keys`);
-
-    // Load other stats
-    await loadStats();
+    console.log(`Showing ${keys.value.length} of ${totalItems.value} translation keys (page ${page})`);
   } catch (error) {
     console.error('Failed to load keys:', error);
-    // Check if it's an auth error
-    if (error.message.includes('401')) {
-      uploadStatus.value = t(
-        'admin.i18n.database.authError',
-        'Please make sure you are logged in and have the necessary permissions.',
-      );
-    } else if (error.message.includes('404')) {
-      uploadStatus.value = t(
-        'admin.i18n.database.tablesNotFound',
-        'Translation tables not found. Please run the database migration.',
-      );
-    } else {
-      uploadStatus.value = t(
-        'admin.i18n.database.loadError',
-        'Failed to load translation keys: {error}',
-        { error: error.message },
-      );
-    }
+    toastService?.show({
+      message: t('admin.i18n.database.loadError', 'Failed to load translation keys'),
+      type: 'error'
+    });
   } finally {
     loading.value = false;
   }
@@ -341,14 +408,14 @@ async function loadStats() {
     // Only load languages, we already have the translation counts
     const languages = await translationService.getLanguages();
 
-    // Calculate total translations from the keys we already loaded
-    const totalTranslations = keys.value.reduce(
+    // Calculate total translations from all keys
+    const totalTranslations = allKeys.value.reduce(
       (sum, key) => sum + (key.translationCount || 0),
       0,
     );
 
     stats.value = {
-      totalKeys: keys.value.length,
+      totalKeys: allKeys.value.length,
       totalLanguages: languages.filter((l) => l.is_active).length,
       totalTranslations,
     };
@@ -397,7 +464,7 @@ function openAddKeyDialog() {
           });
 
           // Reload keys to show the new one
-          await loadKeys();
+          await loadKeys(currentPage.value);
         } catch (error) {
           console.error('Failed to create translation key:', error);
           toastService?.show({
@@ -480,7 +547,7 @@ async function handleEditKey(event: Event, key: I18nKey) {
           });
 
           // Reload keys to show updated data
-          await loadKeys();
+          await loadKeys(currentPage.value);
         } catch (error) {
           console.error('Failed to update translation key:', error);
           toastService?.show({
@@ -521,7 +588,7 @@ async function handleDelete(event: Event, key: I18nKey) {
           });
 
           // Reload keys to reflect the deletion
-          await loadKeys();
+          await loadKeys(currentPage.value);
         } catch (error) {
           console.error('Failed to delete translation key:', error);
           toastService?.show({
@@ -599,7 +666,7 @@ async function viewKeyDetails(key: I18nKey) {
           });
 
           // Reload keys to show updated data
-          await loadKeys();
+          await loadKeys(currentPage.value);
         } catch (error) {
           console.error('Failed to update translation key:', error);
           toastService?.show({
@@ -626,7 +693,7 @@ function toggleSelection(keyId: string) {
 
 function toggleSelectAll(value: boolean) {
   if (value) {
-    filteredKeys.value.forEach(key => selectedIds.value.add(key.id));
+    filteredKeys.value.forEach(key => selectedIds.value.add(String(key.id)));
   } else {
     selectedIds.value.clear();
   }
@@ -658,9 +725,9 @@ async function bulkDelete() {
         try {
           // Delete all selected keys
           const promises = Array.from(selectedIds.value).map(id => {
-            const key = keys.value.find(k => k.id === id);
+            const key = keys.value.find(k => String(k.id) === id);
             if (key) {
-              return translationService.deleteTranslationKey(parseInt(id));
+              return translationService.deleteTranslationKey(key.id);
             }
           });
 
@@ -673,7 +740,7 @@ async function bulkDelete() {
 
           // Clear selection and reload
           clearSelection();
-          await loadKeys();
+          await loadKeys(currentPage.value);
         } catch (error) {
           console.error('Failed to delete translation keys:', error);
           toastService?.show({
@@ -690,9 +757,9 @@ async function bulkDelete() {
 const canGenerateTranslations = computed(() => {
   // Check if any selected keys have English translations
   return Array.from(selectedIds.value).some(id => {
-    const key = keys.value.find(k => k.id === id);
+    const key = keys.value.find(k => String(k.id) === id);
     // This is a simplified check - you may need to load actual translations
-    return key && key.translationCount > 0;
+    return key && (key.translationCount || 0) > 0;
   });
 });
 
@@ -712,7 +779,7 @@ async function bulkGenerateTranslations() {
       confirmLabel: t('admin.i18n.database.bulkGenerate.confirm'),
       cancelLabel: t('common.cancel'),
       confirmColor: 'primary',
-      icon: Icons.SPARKLE,
+      icon: Icons.STAR_M,
       onConfirm: async () => {
         try {
           // TODO: Implement GPT translation generation for selected keys
@@ -728,7 +795,7 @@ async function bulkGenerateTranslations() {
 
           // Clear selection and reload
           clearSelection();
-          await loadKeys();
+          await loadKeys(currentPage.value);
         } catch (error) {
           console.error('Failed to generate translations:', error);
           toastService?.show({
@@ -740,6 +807,30 @@ async function bulkGenerateTranslations() {
     }
   });
 }
+
+// Watch for search query changes
+let searchTimeout: ReturnType<typeof setTimeout>;
+watch(searchQuery, (newValue) => {
+  clearTimeout(searchTimeout);
+
+  if (!newValue) {
+    // If search is cleared, reset immediately
+    currentPage.value = 1;
+    if (hasSearched.value) {
+      loadKeys(1);
+    } else {
+      keys.value = [];
+      totalItems.value = 0;
+    }
+  } else {
+    // Debounce search
+    searchTimeout = setTimeout(() => {
+      currentPage.value = 1;
+      hasSearched.value = true;
+      loadKeys(1);
+    }, 300);
+  }
+});
 
 // Lifecycle
 onMounted(async () => {
@@ -757,11 +848,10 @@ onMounted(async () => {
       sortDirection.value = savedPrefs.sortDirection;
     }
 
-    // Then load keys
-    loadKeys().catch((error) => {
-      console.error('Failed to load keys on mount:', error);
-      // Don't block the UI, just log the error
-    });
+    // Don't load keys on mount - wait for user to search
+    // Just clear the display
+    keys.value = [];
+    totalItems.value = 0;
   }
 });
 </script>
@@ -795,7 +885,8 @@ onMounted(async () => {
 
   &__keys-section {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+    gap: var(--space);
     justify-content: space-between;
     h2 {
       font-size: var(--font-size-lg);
@@ -829,7 +920,7 @@ onMounted(async () => {
     padding: var(--space-xxs) var(--space-xs);
     background: var(--color-primary-10);
     color: var(--color-primary);
-    border-radius: var(--radius-sm);
+    border-radius: var(--border-radius);
     font-size: var(--font-size-s);
   }
 
@@ -861,6 +952,30 @@ onMounted(async () => {
     display: flex;
     gap: var(--space-s);
     align-items: center;
+  }
+
+  &__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xl);
+    gap: var(--space);
+    color: var(--color-foreground-secondary);
+  }
+
+  &__pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space);
+    padding: var(--space-lg);
+    border-top: 1px solid var(--color-accent);
+
+    &-info {
+      font-size: var(--font-size-sm);
+      color: var(--color-foreground-secondary);
+    }
   }
 }
 </style>

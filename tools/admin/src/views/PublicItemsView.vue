@@ -456,7 +456,7 @@ onMounted(() => {
 
   &__content {
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--border-radius);
     overflow: hidden;
   }
@@ -481,7 +481,7 @@ onMounted(() => {
     gap: var(--space);
     padding: var(--space);
     background: var(--color-background-secondary);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-accent);
 
     span {
       font-weight: 500;

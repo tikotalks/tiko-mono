@@ -20,6 +20,7 @@ import {
   TInputCheckbox,
   TInputSelect,
   TColorPickerPopup,
+  TRichTextEditor,
 } from '@tiko/ui'
 import  { type ContentField, useI18n } from '@tiko/core'
 import ItemsFieldEditor from './ItemsFieldEditor.vue'
@@ -46,16 +47,17 @@ const { t } = useI18n()
 
 // Determine which component to use based on field type
 const fieldComponent = computed(() => {
-  // Debug: Log all fields to see their types
-  console.log(`Rendering field "${props.field.label}" with type: "${props.field.field_type}"`)
+  const fieldType = props.field.field_type
+  console.log(`FieldRenderer: Processing field "${props.field.label}" with type: "${fieldType}"`)
 
-  switch (props.field.field_type) {
+  switch (fieldType) {
     case 'text':
       return TInputText
     case 'textarea':
       return TTextArea
     case 'richtext':
-      return TTextArea // TODO: Replace with rich text editor
+      console.log('FieldRenderer: Returning TRichTextEditor for richtext field')
+      return TRichTextEditor
     case 'number':
       return TInputNumber
     case 'boolean':
@@ -80,6 +82,7 @@ const fieldComponent = computed(() => {
     case 'color':
       return TColorPickerPopup
     default:
+      console.warn(`FieldRenderer: Unknown field type "${fieldType}", falling back to TInputText`)
       return TInputText
   }
 })
@@ -90,8 +93,15 @@ const fieldProps = computed(() => {
 
   switch (props.field.field_type) {
     case 'textarea':
-    case 'richtext':
       baseProps.rows = 4
+      break
+      
+    case 'richtext':
+      console.log('Setting richtext props:', props.field.config)
+      baseProps.height = props.field.config?.height || '300px'
+      // Fix: use 'heading' instead of 'h1', 'h2', 'h3'
+      baseProps.features = props.field.config?.features || ['bold', 'italic', 'underline', 'strike', 'heading', 'bulletList', 'orderedList', 'blockquote', 'link', 'code', 'undo', 'redo']
+      console.log('Richtext baseProps:', baseProps)
       break
 
     case 'select':

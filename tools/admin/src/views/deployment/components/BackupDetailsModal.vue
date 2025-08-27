@@ -207,7 +207,7 @@ const handleClose = () => {
     align-items: center;
     gap: var(--space-s);
     padding: var(--space-s);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius);
     background: var(--color-background-elevated);
 
@@ -261,7 +261,7 @@ const handleClose = () => {
     gap: var(--space-s);
     padding: var(--space-xs);
     background: var(--color-background);
-    border-radius: var(--radius-sm);
+    border-radius: var(--border-radius);
     font-family: var(--font-mono);
     font-size: var(--font-size-sm);
 
@@ -281,7 +281,7 @@ const handleClose = () => {
     gap: var(--space-s);
     justify-content: flex-end;
     padding-top: var(--space);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
   }
 }
 </style>

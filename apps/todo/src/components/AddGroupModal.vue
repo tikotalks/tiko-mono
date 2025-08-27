@@ -199,7 +199,7 @@ const handleSubmit = async () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid var(--color-border);
+    border: 2px solid var(--color-accent);
     border-radius: var(--radius);
     cursor: pointer;
     transition: all 0.2s ease;

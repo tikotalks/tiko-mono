@@ -241,7 +241,7 @@ onMounted(() => {
     gap: var(--space);
     padding: var(--space);
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius-md);
     cursor: pointer;
     transition: all 0.2s;
@@ -333,7 +333,7 @@ onMounted(() => {
     align-items: center;
     justify-content: space-between;
     padding-top: var(--space);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
   }
 
   &__count {

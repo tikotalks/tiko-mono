@@ -166,7 +166,7 @@ onUnmounted(() => {
   &__event {
     padding: var(--space-xs, 0.5em);
     background: color-mix(in srgb, var(--color-primary), transparent 90%);
-    border-radius: var(--radius-sm, 0.25em);
+    border-radius: var(--border-radius, 0.25em);
     font-size: 0.875em;
     color: var(--color-foreground);
   }

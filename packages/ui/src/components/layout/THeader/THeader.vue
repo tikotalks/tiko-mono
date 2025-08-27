@@ -5,12 +5,12 @@
         <h1 v-if="title" :class="bemm('title')">{{ title }}</h1>
         <p v-if="description" :class="bemm('description')">{{ description }}</p>
       </div>
-      
+
       <div v-if="$slots.actions" :class="bemm('actions')">
         <slot name="actions" />
       </div>
     </div>
-    
+
     <div v-if="$slots.default" :class="bemm('extra')">
       <slot />
     </div>
@@ -35,7 +35,7 @@ const bemm = useBemm('header')
 
   &__content {
     display: flex;
-    justify-content: space-between;  
+    justify-content: space-between;
     align-items: flex-start;
     gap: var(--space);
   }
@@ -69,7 +69,7 @@ const bemm = useBemm('header')
 
   &__extra {
     padding-top: var(--space);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
   }
 }
 </style>

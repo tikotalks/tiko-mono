@@ -93,7 +93,7 @@ async function save() {
     gap: var(--space);
     margin-top: var(--space-lg);
     padding-top: var(--space);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
   }
 }
 </style>

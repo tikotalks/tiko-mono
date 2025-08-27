@@ -85,7 +85,7 @@ const handleChange = (value: string) => {
     margin: 0;
     padding: var(--space-s, 0.75em);
     background: color-mix(in srgb, var(--color-primary), transparent 95%);
-    border-radius: var(--radius-sm, 0.25em);
+    border-radius: var(--border-radius, 0.25em);
   }
 
   &__form {
@@ -104,7 +104,7 @@ const handleChange = (value: string) => {
     gap: var(--space-xs, 0.5em);
     padding: var(--space-s, 0.75em);
     background: color-mix(in srgb, var(--color-foreground), transparent 97%);
-    border-radius: var(--radius-sm, 0.25em);
+    border-radius: var(--border-radius, 0.25em);
     font-size: 0.875em;
 
     p {

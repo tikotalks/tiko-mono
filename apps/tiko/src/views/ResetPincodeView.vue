@@ -131,8 +131,8 @@ const confirmPinError = ref('')
 
 // Computed
 const canSubmit = computed(() => {
-  return currentPinVerified.value && 
-         newPin.value.length === 4 && 
+  return currentPinVerified.value &&
+         newPin.value.length === 4 &&
          confirmPin.value.length === 4 &&
          newPin.value === confirmPin.value &&
          !isSubmitting.value
@@ -146,10 +146,10 @@ const handleCurrentPinComplete = async () => {
   }
 
   currentPinError.value = ''
-  
+
   // Verify current PIN
   const result = await parentModeService.verifyPin(user.value.id, currentPin.value)
-  
+
   if (result.success) {
     currentPinVerified.value = true
   } else {
@@ -161,13 +161,13 @@ const handleCurrentPinComplete = async () => {
 // Handle new PIN complete
 const handleNewPinComplete = () => {
   newPinError.value = ''
-  
+
   // Validate new PIN
   if (newPin.value.length !== 4 || !/^\d{4}$/.test(newPin.value)) {
     newPinError.value = t('parentMode.pincodeRequirements')
     return
   }
-  
+
   if (newPin.value === currentPin.value) {
     newPinError.value = t('parentMode.newPincodeMustBeDifferent')
     return
@@ -177,7 +177,7 @@ const handleNewPinComplete = () => {
 // Handle confirm PIN complete
 const handleConfirmPinComplete = () => {
   confirmPinError.value = ''
-  
+
   if (confirmPin.value !== newPin.value) {
     confirmPinError.value = t('parentMode.pincodesDoNotMatch')
   }
@@ -186,20 +186,20 @@ const handleConfirmPinComplete = () => {
 // Handle form submission
 const handleResetPincode = async () => {
   if (!canSubmit.value || !user.value) return
-  
+
   isSubmitting.value = true
-  
+
   try {
     const result = await parentModeService.changePin(
       user.value.id,
       currentPin.value,
       newPin.value
     )
-    
+
     if (result.success) {
       // Show success message
       alert(t('parentMode.pincodeChangedSuccessfully'))
-      
+
       // Navigate back to dashboard
       await router.push('/')
     } else {
@@ -300,7 +300,7 @@ const handleLogin = () => {
   &__help {
     margin-top: var(--space-xl);
     padding-top: var(--space-xl);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
     text-align: center;
   }
 

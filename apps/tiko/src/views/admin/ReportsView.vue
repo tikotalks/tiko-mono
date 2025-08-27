@@ -85,32 +85,32 @@
             <div class="date-main">{{ formatDate(report.created_at) }}</div>
             <div class="date-time">{{ formatTime(report.created_at) }}</div>
           </div>
-          
+
           <div class="col-app">
             <span class="app-badge" :data-app="report.app_name">
               {{ report.app_name }}
             </span>
           </div>
-          
+
           <div class="col-type">
             <span class="type-badge" :data-type="report.issue_type">
               {{ formatType(report.issue_type) }}
             </span>
           </div>
-          
+
           <div class="col-description">
             <div class="description-preview">
               {{ truncateText(report.description, 100) }}
             </div>
           </div>
-          
+
           <div class="col-contact">
             <span v-if="report.user_email" class="contact-email">
               {{ report.user_email }}
             </span>
             <span v-else class="no-contact">No contact</span>
           </div>
-          
+
           <div class="col-actions">
             <button
               @click="toggleExpand(report.id)"
@@ -147,33 +147,33 @@
               <h4>Technical Information</h4>
               <div class="tech-info">
                 <div class="tech-item">
-                  <strong>Version:</strong> 
+                  <strong>Version:</strong>
                   {{ report.build_info?.version || 'Unknown' }}
                 </div>
                 <div class="tech-item">
-                  <strong>Build:</strong> 
+                  <strong>Build:</strong>
                   {{ report.build_info?.buildNumber || 'Unknown' }}
                 </div>
                 <div class="tech-item">
-                  <strong>Environment:</strong> 
+                  <strong>Environment:</strong>
                   {{ report.build_info?.environment || 'Unknown' }}
                 </div>
                 <div class="tech-item">
-                  <strong>User Agent:</strong> 
+                  <strong>User Agent:</strong>
                   {{ report.user_agent }}
                 </div>
                 <div v-if="report.metadata?.url" class="tech-item">
-                  <strong>URL:</strong> 
+                  <strong>URL:</strong>
                   <a :href="report.metadata.url" target="_blank" rel="noopener">
                     {{ report.metadata.url }}
                   </a>
                 </div>
                 <div v-if="report.metadata?.timezone" class="tech-item">
-                  <strong>Timezone:</strong> 
+                  <strong>Timezone:</strong>
                   {{ report.metadata.timezone }}
                 </div>
                 <div v-if="report.metadata?.screenResolution" class="tech-item">
-                  <strong>Screen:</strong> 
+                  <strong>Screen:</strong>
                   {{ report.metadata.screenResolution }}
                 </div>
               </div>
@@ -191,12 +191,12 @@
         >
           ← Previous
         </button>
-        
+
         <span class="page-info">
-          Page {{ currentPage }} of {{ totalPages }} 
+          Page {{ currentPage }} of {{ totalPages }}
           ({{ reports.length }} total reports)
         </span>
-        
+
         <button
           @click="currentPage = Math.min(totalPages, currentPage + 1)"
           :disabled="currentPage === totalPages"
@@ -210,6 +210,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatDate, formatTime } from '@tiko/core'
 import { ref, onMounted, computed } from 'vue'
 
 interface IssueReport {
@@ -266,7 +267,7 @@ const filteredReports = computed(() => {
 
   if (filters.value.search) {
     const search = filters.value.search.toLowerCase()
-    filtered = filtered.filter(r => 
+    filtered = filtered.filter(r =>
       r.description.toLowerCase().includes(search) ||
       (r.user_email && r.user_email.toLowerCase().includes(search))
     )
@@ -306,7 +307,7 @@ const loadReports = async () => {
 
     reports.value = await response.json()
     console.log(`Loaded ${reports.value.length} issue reports`)
-    
+
     // Reset to first page when filters change
     currentPage.value = 1
   } catch (err) {
@@ -335,33 +336,19 @@ const toggleExpand = (reportId: string) => {
 
 const emailUser = (report: IssueReport) => {
   if (!report.user_email) return
-  
+
   const subject = `Re: ${formatType(report.issue_type)} - ${report.app_name}`
   const body = `Hi,\n\nThank you for your ${report.issue_type} report regarding the ${report.app_name} app.\n\n`
-  
+
   const mailtoUrl = `mailto:${report.user_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
   window.open(mailtoUrl, '_blank')
 }
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  })
-}
-
-const formatTime = (dateString: string) => {
-  return new Date(dateString).toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
 
 const formatType = (type: string) => {
   const types = {
     bug: 'Bug Report',
-    feature: 'Feature Request', 
+    feature: 'Feature Request',
     improvement: 'Improvement',
     other: 'Other'
   }
@@ -686,11 +673,11 @@ onMounted(() => {
   .table-row {
     grid-template-columns: 100px 80px 120px 1fr 80px;
   }
-  
+
   .col-contact {
     display: none;
   }
-  
+
   .details-grid {
     grid-template-columns: 1fr;
   }
@@ -700,30 +687,30 @@ onMounted(() => {
   .reports-view {
     padding: 1rem;
   }
-  
+
   .reports-header {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .reports-filters {
     justify-content: center;
   }
-  
+
   .search-input {
     min-width: 150px;
   }
-  
+
   .reports-stats {
     justify-content: center;
   }
-  
+
   .table-header,
   .table-row {
     grid-template-columns: 1fr;
     gap: 0.5rem;
   }
-  
+
   .table-row {
     padding: 1rem 0.5rem;
   }

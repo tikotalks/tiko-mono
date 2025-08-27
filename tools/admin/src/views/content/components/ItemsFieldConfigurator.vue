@@ -37,7 +37,7 @@
 
     <div :class="bemm('subfields')">
       <h4 :class="bemm('subfields-title')">{{ t('admin.content.items.subFields') }}</h4>
-      
+
       <div v-if="localConfig.fields.length === 0" :class="bemm('empty')">
         <p>{{ t('admin.content.items.noSubFields') }}</p>
       </div>
@@ -202,7 +202,7 @@ function parseSelectOptions(field: SubFieldForm) {
         const [value, label] = line.split('|').map(s => s.trim())
         return { value: value || line, label: label || value || line }
       })
-    
+
     field.options = options
   }
   emitUpdate()
@@ -219,30 +219,30 @@ function emitUpdate() {
         required: field.required,
         placeholder: field.placeholder
       }
-      
+
       if (field.type === 'select' && field.options) {
         clean.options = field.options
       }
-      
+
       // Remove undefined values
       Object.keys(clean).forEach(key => {
         if (clean[key as keyof ItemSubField] === undefined) {
           delete clean[key as keyof ItemSubField]
         }
       })
-      
+
       return clean
     }),
     min_items: localConfig.value.min_items,
     max_items: localConfig.value.max_items,
     default_items: localConfig.value.default_items
   }
-  
+
   // Remove undefined values
   if (cleanConfig.min_items === undefined) delete cleanConfig.min_items
   if (cleanConfig.max_items === undefined) delete cleanConfig.max_items
   if (cleanConfig.default_items === undefined) delete cleanConfig.default_items
-  
+
   emit('update:modelValue', cleanConfig)
 }
 
@@ -253,8 +253,8 @@ onMounted(() => {
       ...props.modelValue,
       fields: (props.modelValue.fields || []).map((field: ItemSubField) => ({
         ...field,
-        options_text: field.options ? 
-          field.options.map((opt: any) => `${opt.value}|${opt.label}`).join('\n') : 
+        options_text: field.options ?
+          field.options.map((opt: any) => `${opt.value}|${opt.label}`).join('\n') :
           ''
       }))
     }
@@ -268,8 +268,8 @@ watch(() => props.modelValue, (newValue) => {
       ...newValue,
       fields: (newValue.fields || []).map((field: ItemSubField) => ({
         ...field,
-        options_text: field.options ? 
-          field.options.map((opt: any) => `${opt.value}|${opt.label}`).join('\n') : 
+        options_text: field.options ?
+          field.options.map((opt: any) => `${opt.value}|${opt.label}`).join('\n') :
           ''
       }))
     }
@@ -298,7 +298,7 @@ watch(() => props.modelValue, (newValue) => {
     background: var(--color-background-secondary);
     padding: var(--space);
     border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
   }
 
   &__subfields {
@@ -317,7 +317,7 @@ watch(() => props.modelValue, (newValue) => {
     padding: var(--space-lg);
     color: var(--color-foreground-secondary);
     background: var(--color-background-secondary);
-    border: 1px dashed var(--color-border);
+    border: 1px dashed var(--color-accent);
     border-radius: var(--radius-md);
   }
 
@@ -329,7 +329,7 @@ watch(() => props.modelValue, (newValue) => {
 
   &__subfield {
     background: var(--color-background-secondary);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius-md);
     padding: var(--space);
   }
@@ -339,7 +339,7 @@ watch(() => props.modelValue, (newValue) => {
     justify-content: space-between;
     align-items: center;
     margin-bottom: var(--space);
-    
+
     span {
       font-weight: 500;
       color: var(--color-foreground);
@@ -349,7 +349,7 @@ watch(() => props.modelValue, (newValue) => {
   &__subfield-config {
     margin-top: var(--space);
     padding-top: var(--space);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-accent);
   }
 }
 </style>

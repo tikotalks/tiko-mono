@@ -492,7 +492,7 @@ onMounted(() => {
     height: 150px;
     border-radius: var(--border-radius);
     overflow: hidden;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
 background-color: var(--current-color);
     img {
       width: 100%;
@@ -514,7 +514,7 @@ background-color: var(--current-color);
     padding: var(--space);
     background: var(--color-background-secondary);
     border-radius: var(--border-radius);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
   }
 
   &__suggestions-label {
@@ -537,7 +537,7 @@ background-color: var(--current-color);
     padding: var(--space-xs);
     background: var(--color-background);
     border-radius: var(--border-radius-sm);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     cursor: pointer;
     transition: all 0.2s ease;
 
@@ -585,7 +585,7 @@ background-color: var(--current-color);
       height: 60px;
       object-fit: cover;
       border-radius: var(--border-radius-sm);
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--color-accent);
       margin-bottom: var(--space-xs);
     }
 

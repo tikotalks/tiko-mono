@@ -83,7 +83,7 @@ const relatedItems = computed(() => {
 .media-related {
   margin-top: var(--space-2xl);
   padding-top: var(--space-2xl);
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--color-accent);
 
   &__title {
     font-size: var(--font-size-xl);

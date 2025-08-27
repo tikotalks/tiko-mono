@@ -60,7 +60,7 @@ const handleDismiss = () => {
   padding: var(--space);
   border-radius: var(--radius);
   background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-accent);
 
   &--info {
     background-color: var(--color-info-background);

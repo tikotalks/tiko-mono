@@ -1,6 +1,6 @@
 <template>
-  <div :class="bemm('',['',direction])">
-    <dl :class="bemm('list-item')" v-for="item in items" :key="item.key">
+  <div :class="bemm('', ['', direction])">
+    <dl :class="bemm('list-item')" v-for="item in items" :key="item.key" @click="handleClick(item)">
       <dt :class="bemm('title')">{{ item.key }}</dt>
       <dd :class="bemm('detail')">{{ item.value }}</dd>
     </dl>
@@ -13,7 +13,7 @@ import type { TKeyValueModel } from './TKeyValue.model';
 
 const bemm = useBemm('t-key-value');
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     items: TKeyValueModel[];
     direction?: 'row' | 'column';
@@ -23,29 +23,31 @@ const props = withDefaults(
     direction: 'row',
   },
 );
+
+const handleClick = (item: TKeyValueModel) => {
+  if (item.onClick) {
+    item.onClick()
+  }
+}
 </script>
 
 <style lang="scss">
-
 .t-key-value {
   --key-value-border: color-mix(in srgb, var(--color-primary), transparent 50%);
   --key-value-background:
-    linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--color-primary), transparent 75%),
-      transparent
-    );
-
+    linear-gradient(to right bottom,
+      color-mix(in srgb, var(--color-background), transparent 65%),
+      color-mix(in srgb, var(--color-background), transparent 95%));
+width: 100%;
   // color-mix(in srgb, var(--color-primary), transparent 75%);
   display: flex;
   flex-direction: var(--direction, column);
-  // background:var(--key-value-background);
-  border: 1px solid var(--key-value-border);
+  background:var(--key-value-background);
+  // border: 1px solid var(--key-value-border);
   border-radius: var(--border-radius);
-  width: fit-content;
+  // width: fit-content;
   max-width: 100%;
   margin: auto;
-  flex-wrap: wrap;
   overflow: hidden;
   justify-content: stretch;
   // box-shadow: 2px 2px 1em 0 color-mix(in srgb, var(--color-light), transparent 90%) inset,
@@ -53,9 +55,10 @@ const props = withDefaults(
 
 
 
-  &--row{
+  &--row {
     --direction: row;
   }
+
   &--column {
     --direction: column;
   }
@@ -63,11 +66,12 @@ const props = withDefaults(
   &__list-item {
     margin-bottom: -1px;
     display: flex;
-    border-bottom: 1px solid var(--key-value-border);
+    // border-bottom: 1px solid var(--key-value-border);
     flex-direction: column;
     justify-content: space-between;
-    border-right: 1px solid var(--key-value-border);
+    // border-right: 1px solid var(--key-value-border);
     padding: var(--space-s) var(--space);
+
     &:last-child {
       border-right: none;
     }
@@ -81,9 +85,9 @@ const props = withDefaults(
     font-weight: bold;
     color: var(--color-primary);
   }
+
   &__detail {
     color: var(--color-foreground-secondary);
   }
 }
-
 </style>

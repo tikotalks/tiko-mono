@@ -271,7 +271,6 @@ const handleKeyPress = (key: KeyboardKey | { key: string; display: string }) => 
     }
 
     &__key {
-      font-size: clamp(0.75rem, 2vw, 1.5rem);
 
       &--space {
         width: calc(var(--key-size) * 5 + 4%);

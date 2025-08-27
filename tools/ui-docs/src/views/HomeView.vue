@@ -8,8 +8,8 @@
     </header>
 
     <section :class="bemm('categories')">
-      <div 
-        v-for="category in categories" 
+      <div
+        v-for="category in categories"
         :key="category.id"
         :class="bemm('category')"
         @click="$router.push(category.route)"
@@ -29,7 +29,7 @@
         This documentation app showcases all available UI components in the Tiko design system.
         Each section demonstrates component usage, props, variants, and best practices.
       </p>
-      
+
       <div :class="bemm('features')">
         <div :class="bemm('feature')">
           <TIcon name="code-brackets" />
@@ -152,7 +152,7 @@ const categories = [
 
   &__category {
     background: var(--color-background);
-    border: 2px solid var(--color-border);
+    border: 2px solid var(--color-accent);
     border-radius: var(--radius-lg);
     padding: var(--space);
     cursor: pointer;
@@ -201,7 +201,7 @@ const categories = [
     background: var(--color-background-secondary);
     border-radius: var(--radius-lg);
     padding: var(--space-lg);
-    
+
     h2 {
       color: var(--color-foreground);
       margin: 0 0 var(--space);
@@ -222,7 +222,7 @@ const categories = [
 
   &__feature {
     text-align: center;
-    
+
     .icon {
       color: var(--color-primary);
       margin-bottom: var(--space-s);
@@ -246,11 +246,11 @@ const categories = [
 @media (max-width: 768px) {
   .home-view {
     padding: var(--space);
-    
+
     &__title {
       font-size: 2rem;
     }
-    
+
     &__categories {
       grid-template-columns: 1fr;
     }

@@ -1,5 +1,6 @@
 <template>
-  <header :class="bemm('', ['', isApp ? 'is-app' : 'is-website'])" :style="`--x: ${pointer.x}; --y: ${pointer.y}`" @pointermove="setPointerPosition">
+  <header :class="bemm('', ['', isApp ? 'is-app' : 'is-website'])" :style="`--x: ${pointer.x}; --y: ${pointer.y}`"
+    @pointermove="setPointerPosition">
     <div :class="bemm('container')">
       <!-- Left Section -->
       <div :class="bemm('left')">
@@ -9,12 +10,15 @@
         </div>
 
         <div :class="bemm('title-section')">
-          <TContextMenu v-if="title && isApp" :config="titleContextMenuConfig" ref="titleContextMenuRef">
-            <h1 :class="bemm('title')">{{ title }}</h1>
-          </TContextMenu>
-          <h1 v-else-if="title" :class="bemm('title')">
-            {{ title }}
-          </h1>
+          <component :is="titleContextMenuConfig ? TContextMenu : 'div'" :config="titleContextMenuConfig"
+            ref="titleContextMenuRef">
+            <div :class="bemm('app-title')">
+              <TAppIcon v-if="config?.icon" :imageId="config.icon.mediaId" :color="config.icon.color" size="medium"
+                :class="bemm('app-icon')" />
+              <h1 :class="bemm('title')">{{ title }}</h1>
+            </div>
+          </component>
+
           <p v-if="subtitle" :class="bemm('subtitle')">{{ subtitle }}</p>
         </div>
 
@@ -64,6 +68,7 @@ import { useBemm } from 'bemm'
 import { useAuthStore } from '@tiko/core'
 import TButton from '../../ui-elements/TButton/TButton.vue'
 import TButtonGroup from '../../ui-elements/TButton/TButtonGroup.vue'
+import TAppIcon from '../../ui-elements/TAppIcon/TAppIcon.vue'
 import TUserMenu from '../../navigation/TUserMenu/TUserMenu.vue'
 import TContextMenu from '../../navigation/TContextMenu/TContextMenu.vue'
 import { useParentMode } from '../../../composables/useParentMode'
@@ -90,6 +95,7 @@ const { t } = useI18n()
 // Initialize stores - try immediately and also on mount
 const authStore = ref<any>(null)
 const parentMode = ref<any>(null)
+
 
 // Try to initialize stores
 const initializeStores = () => {
@@ -289,7 +295,7 @@ const handleAboutApp = async () => {
     console.warn('[TTopBar] PopupService not available - about dialog cannot be shown')
     return
   }
-  
+
   if (!props.appName) {
     console.warn('[TTopBar] App name not provided - using default')
   }
@@ -373,8 +379,8 @@ const setPointerPosition = (e: PointerEvent) => {
   const y = ((e.clientY - rect.top) / rect.height) * 100
 
   pointer.value = {
-    x: Math.round(Math.max(0, Math.min(100, x)) * 100)/100,
-    y: Math.round(Math.max(0, Math.min(100, y)) * 100)/100
+    x: Math.round(Math.max(0, Math.min(100, x)) * 100) / 100,
+    y: Math.round(Math.max(0, Math.min(100, y)) * 100) / 100
   }
 }
 
@@ -417,13 +423,22 @@ onUnmounted(() => {
     padding: var(--space-s);
     padding-left: var(--space);
     background: color-mix(in srgb, var(--color-background), transparent 50%);
-    border-bottom: 1px solid var(--color-border);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     min-height: 4rem;
-    background-image: radial-gradient(circle at calc(var(--x) * 1%) calc(var(--y) * 1%), color-mix(in srgb, var(--color-primary), transparent 80%) 0%, rgba(0, 0, 0, 0) 100%);
 
+    --top-bar-bg-color-1: color-mix(in srgb, var(--color-primary), transparent 80%) 0%;
+    --top-bar-bg-color-2: rgba(0, 0, 0, 0);
+    --top-bar-bg-color-inside: var(--top-bar-bg-color-1);
+    --top-bar-bg-color-outside: var(--top-bar-bg-color-2);
+    background-image: radial-gradient(circle at calc(var(--x) * 1%) calc(var(--y) * 1%), var(--top-bar-bg-color-inside), var(--top-bar-bg-color-outside) 100%);
     border-radius: 0 0 var(--border-radius) var(--border-radius);
+
+    [data-theme="light"] & {
+      --top-bar-bg-color-inside: var(--top-bar-bg-color-2);
+      --top-bar-bg-color-outside: var(--top-bar-bg-color-1);
+    }
+
   }
 
 
@@ -476,6 +491,28 @@ onUnmounted(() => {
         opacity: 0.8;
       }
     }
+  }
+
+  &__app-icon {
+    border-radius: calc(var(--border-radius) / 2);
+    background-color: var(--app-color);
+    width: 2em;
+    height: 2em;
+    display: block;
+
+    img {
+      width: 100%;
+    }
+  }
+
+  &__app-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+  }
+
+  &__app-icon {
+    flex-shrink: 0;
   }
 
   &__subtitle {
@@ -536,7 +573,7 @@ onUnmounted(() => {
   &__loading-spinner {
     width: 1.5rem;
     height: 1.5rem;
-    border: 2px solid var(--color-border);
+    border: 2px solid var(--color-accent);
     border-top-color: var(--color-primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;

@@ -2,6 +2,7 @@
 export * from './components/ui-elements/TButton'
 export * from './components/ui-elements/TIcon'
 export * from './components/ui-elements/TCard'
+export * from './components/ui-elements/TAppIcon'
 
 // Icon Registry for tree-shaking
 export { IconRegistryPlugin, useIconRegistry } from './icons'
@@ -51,6 +52,7 @@ export * from './components/media/TMediaSelector'
 export * from './components/data-display/TList'
 export * from './components/data-display/TListItem'
 export * from './components/data-display/TListCell'
+export * from './components/data-display/TListActions'
 export * from './components/data-display/TOrderableList'
 export * from './components/layout/TGrid'
 export * from './components/navigation/TNavigation'
@@ -84,7 +86,7 @@ export { default as TImageInput } from './components/forms/TImageInput/TImageInp
 export { default as TForm } from './components/forms/TForm/TForm.vue';
 export { default as TFormActions } from './components/forms/TFormActions/TFormActions.vue';
 export { default as TTextarea } from './components/forms/TForm/inputs/TInputTextArea/TInputTextArea.vue';
-// export * from './components/forms/TRichTextEditor'; // Temporarily disabled until TipTap deps are installed
+export * from './components/forms/TRichTextEditor';
 
 // TrustCafe-style components with T prefix (temporarily disabled due to import issues)
 // ============================================
@@ -135,6 +137,7 @@ export { useBuildInfo } from './composables/useBuildInfo'
 export type { BuildInfo } from './composables/useBuildInfo'
 export { usePWAUpdate } from './composables/usePWAUpdate'
 export type { PWAUpdateOptions } from './composables/usePWAUpdate'
+export { useDeviceTilt } from './composables/useDeviceTilt'
 
 // Sections
 export * from './sections'

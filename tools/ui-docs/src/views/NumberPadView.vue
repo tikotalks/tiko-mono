@@ -502,7 +502,7 @@ const interactive = reactive({
     padding: var(--space-lg);
     background: var(--color-background-secondary);
     border-radius: var(--radius);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     align-items: center;
 
     &--sizes, &--variants, &--hide-actions {
@@ -544,7 +544,7 @@ const interactive = reactive({
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     padding: var(--space-s) var(--space);
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius);
     min-width: 200px;
     text-align: center;
@@ -582,7 +582,7 @@ const interactive = reactive({
 
       select {
         padding: var(--space-xs) var(--space-s);
-        border: 1px solid var(--color-border);
+        border: 1px solid var(--color-accent);
         border-radius: var(--radius-s);
         background: var(--color-background);
         color: var(--color-foreground);
@@ -599,7 +599,7 @@ const interactive = reactive({
 
   &__code {
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius);
     padding: var(--space);
 
@@ -632,13 +632,13 @@ const interactive = reactive({
       width: 100%;
       border-collapse: collapse;
       background: var(--color-background);
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--color-accent);
       border-radius: var(--radius);
 
       th, td {
         padding: var(--space-s) var(--space);
         text-align: left;
-        border-bottom: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-accent);
       }
 
       th {

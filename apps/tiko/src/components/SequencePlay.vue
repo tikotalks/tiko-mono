@@ -253,7 +253,7 @@ watch(() => props.sequenceId, async (newId) => {
     // flex-shrink: 0;
     // z-index: 10; // Ensure it stays above the grid
     // background: var(--color-background);
-    // border-top: 1px solid var(--color-border);
+    // border-top: 1px solid var(--color-accent);
     // padding-top: var(--space-m);
   }
 }

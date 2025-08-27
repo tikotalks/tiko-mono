@@ -4,7 +4,7 @@
       <p :class="bemm('description')">
         {{ t('deployment.confirmDeployDescription', { name: targetName }) }}
       </p>
-      
+
       <div :class="bemm('form')">
         <div :class="bemm('field')">
           <label :class="bemm('label')">
@@ -17,7 +17,7 @@
             rows="3"
           />
         </div>
-        
+
         <div :class="bemm('info')">
           <p :class="bemm('info-text')">
             {{ t('deployment.workflowDispatchInfo') }}
@@ -33,7 +33,7 @@
       >
         {{ t('common.cancel') }}
       </TButton>
-      
+
       <TButton
         type="primary"
         :icon="Icons.PLAY"
@@ -79,7 +79,7 @@ const handleConfirm = async () => {
   if (!commitMessage.value.trim()) {
     return
   }
-  
+
   isLoading.value = true
   try {
     emit('confirm', commitMessage.value.trim())
@@ -122,7 +122,7 @@ const handleConfirm = async () => {
 
   &__textarea {
     padding: var(--space-s);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius);
     font-family: inherit;
     font-size: var(--font-size-sm);
@@ -141,7 +141,7 @@ const handleConfirm = async () => {
 
   &__info {
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius);
     padding: var(--space-s);
   }

@@ -406,7 +406,7 @@ onMounted(() => {
     gap: var(--space);
     padding: var(--space);
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius-md);
     cursor: move;
 

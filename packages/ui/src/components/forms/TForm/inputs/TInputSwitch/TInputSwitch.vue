@@ -1,7 +1,7 @@
 <template>
   <div :class="bemm()">
     <label v-if="label" :class="bemm('label')">{{ label }}</label>
-    
+
     <div :class="bemm('options')">
       <button
         v-for="option in formattedOptions"
@@ -21,7 +21,7 @@
         </span>
       </button>
     </div>
-    
+
     <div v-if="error && error.length > 0" :class="bemm('error')">
       <span v-for="(err, idx) in error" :key="idx">{{ err }}</span>
     </div>
@@ -71,7 +71,7 @@ const formattedOptions = computed<SwitchOption[]>(() => {
 // Handle option selection
 const handleSelect = (value: string | number | boolean) => {
   if (props.disabled) return
-  
+
   modelValue.value = value
   emit('update:modelValue', value)
   emit('change', value)
@@ -105,7 +105,7 @@ onMounted(() => {
     gap: 2px;
     padding: 2px;
     background: var(--color-background);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-accent);
     border-radius: var(--border-radius);
   }
 
