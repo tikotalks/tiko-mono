@@ -1,11 +1,12 @@
 import { createAppRouter } from '@tiko/ui'
 import AdminLayout from '../layouts/AdminLayout.vue';
 import ContentSectionsView from '../views/content/SectionsView.vue'
+import { adminAuthGuard } from '../middleware/auth'
 
 
 // Lazy load all route components
 const AdminDashboard = () => import('../views/Dashboard.vue')
-// const NotAuthorizedView = () => import('../views/NotAuthorizedView.vue')
+const NotAuthorizedView = () => import('../views/NotAuthorizedView.vue')
 const AssetsView = () => import('../views/AssetsView.vue')
 const LibraryView = () => import('../views/LibraryView.vue')
 const MediaDashboardView = () => import('../views/MediaDashboardView.vue')
@@ -39,8 +40,14 @@ const TestRichEditorView = () => import('../views/TestRichEditorView.vue')
 const router = createAppRouter({
   routes: [
     {
+      path: '/not-authorized',
+      name: 'NotAuthorized',
+      component: NotAuthorizedView
+    },
+    {
       path: '/',
       component: AdminLayout,
+      beforeEnter: adminAuthGuard,
       children: [
         {
           path: '',
