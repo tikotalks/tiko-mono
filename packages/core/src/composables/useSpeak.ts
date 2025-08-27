@@ -39,6 +39,10 @@ export function useSpeak() {
   const error = ref<string | null>(null);
   const currentAudio = ref<HTMLAudioElement | null>(null);
   const currentMetadata = ref<AudioMetadata | null>(null);
+  
+  const isPlaying = computed(() => {
+    return currentAudio.value ? !currentAudio.value.paused && !currentAudio.value.ended : false;
+  });
 
   const speak = async (text: string, options: SpeakOptions = {}) => {
     const startTime = Date.now();
@@ -211,6 +215,8 @@ export function useSpeak() {
     clearCache,
     isLoading,
     error,
-    currentMetadata
+    currentMetadata,
+    currentAudio,
+    isPlaying
   };
 }

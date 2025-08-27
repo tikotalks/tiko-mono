@@ -21,7 +21,7 @@
         { key: 'slug', label: t('common.slug'), width: '20%' },
         { key: 'languages', label: t('common.languages'), width: '20%' },
         { key: 'pages', label: t('admin.content.projects.pageCount'), width: '15%' },
-        { key: 'actions', label: t('common.actions'), width: '80px' }
+        { key: 'actions', label: t('common.actionsLabel'), width: '80px' }
       ]"
       :striped="true"
       :bordered="true"

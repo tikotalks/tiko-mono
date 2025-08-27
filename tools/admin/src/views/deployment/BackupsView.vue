@@ -137,7 +137,7 @@ const columns = [
   { label: t('deployment.backups.name', 'Name'), key: 'name' },
   { label: t('deployment.status', 'Status'), key: 'status' },
   { label: t('deployment.details', 'Details'), key: 'details' },
-  { label: t('common.actions', 'Actions'), key: 'actions' }
+  { label: t('common.actionsLabel', 'Actions'), key: 'actions' }
 ];
 
 // Methods

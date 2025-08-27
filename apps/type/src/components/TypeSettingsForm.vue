@@ -1,20 +1,20 @@
 <template>
   <div :class="bemm()">
-    <div :class="bemm('section')">
-      <h3 :class="bemm('section-title')">{{ t('type.voiceSettings') }}</h3>
-      
+    <!-- <div :class="bemm('section')"> -->
+      <!-- <h3 :class="bemm('section-title')">{{ t('type.voiceSettings') }}</h3> -->
+
       <!-- Voice Selection -->
-      <div :class="bemm('group')">
+      <!-- <div :class="bemm('group')">
         <TInputSelect
           label="Voice"
           :options="voiceOptions"
           :model-value="selectedVoiceIndex.toString()"
           @update:model-value="(value) => { selectedVoiceIndex = parseInt(value); handleVoiceChange() }"
         />
-      </div>
-      
+      </div> -->
+
       <!-- Speech Rate -->
-      <div :class="bemm('group')">
+      <!-- <div :class="bemm('group')">
         <TInputRange
           v-model="localSettings.rate"
           :label="t(keys.type.speechRate)"
@@ -22,10 +22,10 @@
           :max="3"
           :step="0.1"
         />
-      </div>
+      </div> -->
 
       <!-- Pitch -->
-      <div :class="bemm('group')">
+      <!-- <div :class="bemm('group')">
         <TInputRange
           v-model="localSettings.pitch"
           :label="t(keys.type.pitch)"
@@ -33,10 +33,10 @@
           :max="2"
           :step="0.1"
         />
-      </div>
+      </div> -->
 
       <!-- Volume -->
-      <div :class="bemm('group')">
+      <!-- <div :class="bemm('group')">
         <TInputRange
           v-model="localSettings.volume"
           :label="t(keys.type.volume)"
@@ -44,20 +44,19 @@
           :max="1"
           :step="0.1"
         />
-      </div>
+      </div> -->
 
       <!-- Auto Save -->
-      <div :class="bemm('group')">
+      <!-- <div :class="bemm('group')">
         <TInputCheckbox
           v-model="localSettings.autoSave"
           :label="t(keys.type.saveToHistoryAutomatically)"
         />
-      </div>
-    </div>
+      </div> -->
+    <!-- </div> -->
 
     <div :class="bemm('section')">
-      <h3 :class="bemm('section-title')">{{ t('type.keyboardSettings') }}</h3>
-      
+
       <!-- Keyboard Layout -->
       <div :class="bemm('group')">
         <TInputSelect
@@ -84,7 +83,7 @@
       </div>
 
       <!-- Keyboard Theme -->
-      <div :class="bemm('group')">
+      <!-- <div :class="bemm('group')">
         <TInputSelect
           v-model="localSettings.keyboardTheme"
           label="Keyboard Theme"
@@ -94,7 +93,7 @@
             { value: 'colorful', label: 'Colorful' }
           ]"
         />
-      </div>
+      </div> -->
 
       <!-- Fun Letters -->
       <div :class="bemm('group')">

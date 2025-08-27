@@ -55,7 +55,7 @@
             { key: 'type', label: t('common.type'), width: '10%' },
             { key: 'pages', label: t('common.pages'), width: '20%' },
             { key: 'metadata', label: t('common.properties'), width: '10%' },
-            { key: 'actions', label: t('common.actions'), width: '15%' }
+            { key: 'actions', label: t('common.actionsLabel'), width: '15%' }
           ]"
           :striped="true"
           :bordered="true"
@@ -152,7 +152,7 @@
             { key: 'slug', label: t('common.slug'), width: '20%' },
             { key: 'type', label: t('common.type'), width: '20%' },
             { key: 'metadata', label: t('common.properties'), width: '20%' },
-            { key: 'actions', label: t('common.actions'), width: '15%' }
+            { key: 'actions', label: t('common.actionsLabel'), width: '15%' }
           ]"
           :striped="true"
           :bordered="true"

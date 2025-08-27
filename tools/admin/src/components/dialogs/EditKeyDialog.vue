@@ -42,7 +42,7 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useBemm } from 'bemm'
 import { TButton, TInputText, TAlert, TFormGroup } from '@tiko/ui'
-import { useI18nDatabaseService } from '@tiko/core'
+import { useI18nDatabaseService, useI18n } from '@tiko/core'
 import type { EditKeyDialogProps } from './EditKeyDialog.model'
 
 const props = withDefaults(defineProps<EditKeyDialogProps>(), {

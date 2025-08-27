@@ -14,7 +14,13 @@
           <button v-for="key in currentLayout.rows[0]" :key="key.key"
             :class="[bemm('key'), key.modifier ? bemm('key', 'modifier') : '']" @click="handleKeyPress(key)"
             :disabled="disabled">
-            <span :class="bemm('key-text')">
+            <img
+              v-if="props.funLetters && funLetters[key.key]"
+              :src="funLetters[key.key]"
+              :alt="key.key"
+              :class="bemm('key-image')"
+            />
+            <span v-else :class="bemm('key-text')">
               {{ getKeyDisplay(key) }}
             </span>
           </button>
@@ -25,7 +31,13 @@
           <button v-for="key in currentLayout.rows[1]" :key="key.key"
             :class="[bemm('key'), key.modifier ? bemm('key', 'modifier') : '']" @click="handleKeyPress(key)"
             :disabled="disabled">
-            <span :class="bemm('key-text')">
+            <img
+              v-if="props.funLetters && funLetters[key.key]"
+              :src="funLetters[key.key]"
+              :alt="key.key"
+              :class="bemm('key-image')"
+            />
+            <span v-else :class="bemm('key-text')">
               {{ getKeyDisplay(key) }}
             </span>
           </button>
@@ -36,7 +48,13 @@
           <button v-for="key in currentLayout.rows[2]" :key="key.key"
             :class="[bemm('key'), key.modifier ? bemm('key', 'modifier') : '']" @click="handleKeyPress(key)"
             :disabled="disabled">
-            <span :class="bemm('key-text')">
+            <img
+              v-if="props.funLetters && funLetters[key.key]"
+              :src="funLetters[key.key]"
+              :alt="key.key"
+              :class="bemm('key-image')"
+            />
+            <span v-else :class="bemm('key-text')">
               {{ getKeyDisplay(key) }}
             </span>
           </button>
@@ -61,15 +79,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, watch, ref } from 'vue'
+import { computed, onMounted, onUnmounted, watch, ref } from 'vue'
 import { useBemm } from 'bemm'
 import {
+  funKeyboardIds,
   getKeyboardLayout,
   specialKeys,
   type KeyboardKey,
   type KeyboardLayout
 } from './VirtualKeyboard.data'
-import { useSpeak } from '@tiko/core'
+import { useImageResolver, useSpeak } from '@tiko/core'
 
 interface Props {
   layout?: string
@@ -78,6 +97,8 @@ interface Props {
   uppercase?: boolean
   hapticFeedback?: boolean
   speakOnType?: boolean
+  funLetters?: boolean
+  enablePhysicalKeyboard?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -86,7 +107,9 @@ const props = withDefaults(defineProps<Props>(), {
   theme: 'default',
   uppercase: false,
   hapticFeedback: true,
-  speakOnType: false
+  speakOnType: false,
+  funLetters: false,
+  enablePhysicalKeyboard: true
 })
 
 const emit = defineEmits<{
@@ -97,6 +120,9 @@ const emit = defineEmits<{
 
 const bemm = useBemm('virtual-keyboard')
 const { speak, preloadAudio } = useSpeak()
+const { resolveAssetUrl } = useImageResolver()
+
+
 
 // Track preloading state
 const isPreloading = ref(false)
@@ -110,6 +136,80 @@ const getKeyDisplay = (key: KeyboardKey): string => {
   const display = key.display || key.key
   return props.uppercase ? display.toUpperCase() : display
 }
+
+// Fun letters
+const funLetters = ref<Record<string, string>>({})
+
+const loadFunLetterData = async () => {
+  if (!props.funLetters) return
+
+  const allLetters: string[] = []
+
+  // Collect all letters from the keyboard layout
+  currentLayout.value.rows.forEach((row) => {
+    row.forEach((key) => {
+      // Only add regular letter keys (single character, not special keys)
+      if (key.key.length === 1 && !key.modifier) {
+        allLetters.push(key.key.toLowerCase())
+      }
+    })
+  })
+
+  // Remove duplicates
+  const uniqueLetters = [...new Set(allLetters)]
+
+  // Initialize funLetters object
+  const letterUrls: Record<string, string> = {}
+
+  // Load fun letter images for each unique letter
+  await Promise.all(uniqueLetters.map(async (letter) => {
+    const letterId = funKeyboardIds[letter as keyof typeof funKeyboardIds]
+    if (letterId) {
+      const letterUrl = await resolveAssetUrl(letterId, { media: 'public', size: 'small' })
+      letterUrls[letter] = letterUrl
+      // Also add uppercase version
+      letterUrls[letter.toUpperCase()] = letterUrl
+    }
+  }))
+
+  funLetters.value = letterUrls
+}
+
+const usePhysicalKeyboard = () => {
+  const handlePhysicalKey = (event: KeyboardEvent) => {
+    // Don't process if disabled or if user is typing in an input or textarea
+    if (props.disabled) return
+    
+    if (event.target && ['INPUT', 'TEXTAREA'].includes((event.target as HTMLElement).tagName)) {
+      return
+    }
+
+    // Handle letter keys
+    if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      event.preventDefault()
+      const key = props.uppercase ? event.key.toUpperCase() : event.key
+      handleKeyPress({ key, display: key })
+    }
+    // Handle special keys
+    else if (event.key === 'Backspace') {
+      event.preventDefault()
+      handleKeyPress(specialKeys.backspace)
+    }
+    else if (event.key === ' ') {
+      event.preventDefault()
+      handleKeyPress(specialKeys.space)
+    }
+  }
+
+  window.addEventListener('keydown', handlePhysicalKey)
+  
+  // Return cleanup function
+  return () => {
+    window.removeEventListener('keydown', handlePhysicalKey)
+  }
+}
+
+
 
 // Preload audio for all keys in the current layout
 const preloadLayoutAudio = async () => {
@@ -160,6 +260,7 @@ const preloadLayoutAudio = async () => {
 // Watch for layout changes
 watch(() => props.layout, () => {
   preloadLayoutAudio()
+  loadFunLetterData()
 })
 
 // Watch for speakOnType changes
@@ -169,10 +270,33 @@ watch(() => props.speakOnType, (newValue) => {
   }
 })
 
+// Watch for funLetters changes
+watch(() => props.funLetters, (newValue) => {
+  if (newValue) {
+    loadFunLetterData()
+  }
+})
+
+// Store cleanup function for physical keyboard
+let cleanupPhysicalKeyboard: (() => void) | null = null
+
 // Initial preload on mount
 onMounted(() => {
   if (props.speakOnType) {
     preloadLayoutAudio()
+  }
+  loadFunLetterData()
+  
+  // Only enable physical keyboard if the prop is true
+  if (props.enablePhysicalKeyboard) {
+    cleanupPhysicalKeyboard = usePhysicalKeyboard()
+  }
+})
+
+// Cleanup on unmount
+onUnmounted(() => {
+  if (cleanupPhysicalKeyboard) {
+    cleanupPhysicalKeyboard()
   }
 })
 
@@ -369,6 +493,13 @@ const handleKeyPress = (key: KeyboardKey | { key: string; display: string }) => 
   &__key-text{
     transform: translateY(calc((var(--keyboard-shadow-size) / 2) * -1));
     text-shadow: 1px 1px 2px color-mix(in srgb, var(--color-dark), transparent 50%);
+  }
+
+  &__key-image {
+    width: 80%;
+    height: 80%;
+    object-fit: contain;
+    transform: translateY(calc((var(--keyboard-shadow-size) / 2) * -1));
   }
 
   // Preload indicator

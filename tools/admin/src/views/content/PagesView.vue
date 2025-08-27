@@ -41,7 +41,7 @@
           <div :class="bemm('header-cell', ['', 'toggle'])">
             {{ t('common.published') || 'Pub' }}
           </div>
-          <div :class="bemm('header-cell')">{{ t('common.actions') }}</div>
+          <div :class="bemm('header-cell')">{{ t('common.actionsLabel') }}</div>
         </div>
       </div>
 

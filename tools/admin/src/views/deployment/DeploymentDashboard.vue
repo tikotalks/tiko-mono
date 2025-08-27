@@ -44,7 +44,7 @@
               </div>
             </div>
           </TListCell>
-          
+
           <TListCell type="custom">
             <TChip
               :icon="getStatusIcon(target.status)"
@@ -54,33 +54,33 @@
               {{ t(`deployment.status.${target.status}`) }}
             </TChip>
           </TListCell>
-          
+
           <TListCell type="custom">
             <div :class="bemm('meta-cell')">
               <div v-if="target.version" :class="bemm('meta-item')">
                 <TIcon :name="Icons.TAG" />
                 {{ target.version }}
               </div>
-              
+
               <div v-if="target.commit" :class="bemm('meta-item')">
                 <TIcon :name="Icons.GIT_BRANCH" />
                 {{ target.commit }}
               </div>
-              
+
               <div v-if="target.lastDeployed" :class="bemm('meta-item')">
                 <TIcon :name="Icons.CLOCK" />
                 {{ formatDate(target.lastDeployed) }}
               </div>
-              
+
               <div v-if="target.buildDuration" :class="bemm('meta-item')">
                 <TIcon :name="Icons.TIMER" />
                 {{ formatDuration(target.buildDuration) }}
               </div>
             </div>
           </TListCell>
-          
-          <TListCell 
-            type="actions" 
+
+          <TListCell
+            type="actions"
             :actions="[
               ...(target.url ? [listActions.custom({
                 handler: () => window.open(target.url, '_blank'),
@@ -129,7 +129,7 @@ const columns = [
   { label: t('deployment.target', 'Target'), key: 'name' },
   { label: t('deployment.status', 'Status'), key: 'status' },
   { label: t('deployment.details', 'Details'), key: 'details' },
-  { label: t('common.actions', 'Actions'), key: 'actions' }
+  { label: t('common.actionsLabel', 'Actions'), key: 'actions' }
 ];
 
 // Filters

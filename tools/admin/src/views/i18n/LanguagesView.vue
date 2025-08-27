@@ -88,7 +88,7 @@
           },
           {
             key: 'actions',
-            label: t('common.actions'),
+            label: t('common.actionsLabel'),
             width: '15%',
           },
         ]"

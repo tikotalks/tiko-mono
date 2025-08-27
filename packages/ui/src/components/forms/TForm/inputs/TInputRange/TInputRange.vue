@@ -4,21 +4,21 @@
       {{ label }}
       <span v-if="required" :class="bemm('required')">*</span>
     </label>
-    
+
     <div v-if="description && !hasError" :class="bemm('description')">
       {{ description }}
     </div>
 
     <div :class="bemm('control-container')">
-      <div 
-        v-if="showValue && valuePosition === 'left'" 
+      <div
+        v-if="showValue && valuePosition === 'left'"
         :class="bemm('value', ['left'])"
       >
         <span v-if="prefix" :class="bemm('prefix')">{{ prefix }}</span>
         {{ displayValue }}
         <span v-if="suffix" :class="bemm('suffix')">{{ suffix }}</span>
       </div>
-      
+
       <div :class="bemm('track-wrapper')">
         <input
           :id="inputId"
@@ -42,9 +42,9 @@
         <div :class="bemm('track')" />
         <div :class="bemm('progress')" :style="progressStyle" />
       </div>
-      
-      <div 
-        v-if="showValue && valuePosition === 'right'" 
+
+      <div
+        v-if="showValue && valuePosition === 'right'"
         :class="bemm('value', ['right'])"
       >
         <span v-if="prefix" :class="bemm('prefix')">{{ prefix }}</span>
@@ -147,19 +147,23 @@ watch(() => props.modelValue, (newValue) => {
 
 .input-range {
   @include form.inputBase();
-  
+
   &__control-container {
     display: flex;
     align-items: center;
     gap: calc(var(--space) * var(--sizing));
     padding: calc(var(--space-s) * var(--sizing));
     margin-top: calc(var(--space-xs) * var(--sizing));
-    
+
     &::before {
       display: none; // Remove default input background
     }
   }
-  
+
+  &__control{
+    padding: 0;
+  }
+
   &__track-wrapper {
     position: relative;
     flex: 1;
@@ -167,7 +171,7 @@ watch(() => props.modelValue, (newValue) => {
     display: flex;
     align-items: center;
   }
-  
+
   &__track {
     position: absolute;
     width: 100%;
@@ -176,7 +180,7 @@ watch(() => props.modelValue, (newValue) => {
     border-radius: calc(0.25em * var(--sizing));
     pointer-events: none;
   }
-  
+
   &__progress {
     position: absolute;
     height: calc(0.5em * var(--sizing));
@@ -186,7 +190,7 @@ watch(() => props.modelValue, (newValue) => {
     pointer-events: none;
     transition: width 0.1s ease-out;
   }
-  
+
   &__control {
     -webkit-appearance: none;
     appearance: none;
@@ -196,11 +200,11 @@ watch(() => props.modelValue, (newValue) => {
     cursor: pointer;
     position: relative;
     z-index: 2;
-    
+
     &:focus {
       outline: none;
     }
-    
+
     // Webkit browsers (Chrome, Safari, Edge)
     &::-webkit-slider-thumb {
       -webkit-appearance: none;
@@ -211,23 +215,23 @@ watch(() => props.modelValue, (newValue) => {
       border: 2px solid var(--color-background);
       border-radius: 50%;
       cursor: pointer;
-      box-shadow: 
+      box-shadow:
         0 0 0 1px color-mix(in srgb, var(--color-primary), var(--color-background) 50%),
         var(--drop-shadow);
       transition: all 0.2s ease;
-      
+
       &:hover {
         transform: scale(1.1);
       }
-      
+
       &:active {
         transform: scale(0.95);
-        box-shadow: 
+        box-shadow:
           0 0 0 4px color-mix(in srgb, var(--color-primary), var(--color-background) 80%),
           var(--drop-shadow);
       }
     }
-    
+
     // Firefox
     &::-moz-range-thumb {
       width: calc(1.5em * var(--sizing));
@@ -236,46 +240,46 @@ watch(() => props.modelValue, (newValue) => {
       border: 2px solid var(--color-background);
       border-radius: 50%;
       cursor: pointer;
-      box-shadow: 
+      box-shadow:
         0 0 0 1px color-mix(in srgb, var(--color-primary), var(--color-background) 50%),
         var(--drop-shadow);
       transition: all 0.2s ease;
-      
+
       &:hover {
         transform: scale(1.1);
       }
-      
+
       &:active {
         transform: scale(0.95);
-        box-shadow: 
+        box-shadow:
           0 0 0 4px color-mix(in srgb, var(--color-primary), var(--color-background) 80%),
           var(--drop-shadow);
       }
     }
-    
+
     &:focus::-webkit-slider-thumb {
-      box-shadow: 
+      box-shadow:
         0 0 0 4px color-mix(in srgb, var(--color-primary), var(--color-background) 80%),
         var(--drop-shadow);
     }
-    
+
     &:focus::-moz-range-thumb {
-      box-shadow: 
+      box-shadow:
         0 0 0 4px color-mix(in srgb, var(--color-primary), var(--color-background) 80%),
         var(--drop-shadow);
     }
-    
+
     // Remove default track styling
     &::-webkit-slider-runnable-track {
       -webkit-appearance: none;
       background: transparent;
     }
-    
+
     &::-moz-range-track {
       background: transparent;
     }
   }
-  
+
   &__value {
     min-width: calc(3em * var(--sizing));
     padding: calc(0.5em * var(--sizing)) calc(0.75em * var(--sizing));
@@ -285,40 +289,40 @@ watch(() => props.modelValue, (newValue) => {
     font-weight: 600;
     text-align: center;
     font-variant-numeric: tabular-nums;
-    
+
     &--left {
       margin-right: calc(var(--space-xs) * var(--sizing));
     }
-    
+
     &--right {
       margin-left: calc(var(--space-xs) * var(--sizing));
     }
   }
-  
+
   &__prefix,
   &__suffix {
     opacity: 0.7;
     font-size: 0.875em;
   }
-  
+
   &--disabled {
     opacity: 0.5;
-    
+
     .input-range__control {
       cursor: not-allowed;
-      
+
       &::-webkit-slider-thumb {
         cursor: not-allowed;
-        
+
         &:hover,
         &:active {
           transform: none;
         }
       }
-      
+
       &::-moz-range-thumb {
         cursor: not-allowed;
-        
+
         &:hover,
         &:active {
           transform: none;
@@ -326,15 +330,15 @@ watch(() => props.modelValue, (newValue) => {
       }
     }
   }
-  
+
   &--readonly {
     .input-range__control {
       cursor: default;
-      
+
       &::-webkit-slider-thumb {
         cursor: default;
       }
-      
+
       &::-moz-range-thumb {
         cursor: default;
       }
@@ -348,7 +352,7 @@ watch(() => props.modelValue, (newValue) => {
     &__track {
       outline: 2px solid var(--color-foreground);
     }
-    
+
     &__control {
       &::-webkit-slider-thumb,
       &::-moz-range-thumb {

@@ -5,7 +5,7 @@
 **NEVER include "Co-Authored-By: Claude" in commit messages.** The user does not want Claude credited as a co-author in commits.
 
 **DO NOT COMMIT CHANGES WITHOUT EXPLICIT USER PERMISSION.** Only commit when:
-- The user explicitly tells you to "commit" 
+- The user explicitly tells you to "commit"
 - The user asks you to "deploy" (which requires a commit)
 - Otherwise, make all changes but DO NOT run git commit or git push
 
@@ -27,7 +27,7 @@ npm run lint       # Run ESLint
 - The user will add missing keys to the database separately
 - Language files are auto-generated and should never be manually modified
 - DO NOT attempt to fix i18n loading errors, locale structure issues, or translation key conflicts
-- i18n errors like "Cannot create property 'edit' on string 'common.actions'" should be ignored
+- i18n errors like "Cannot create property 'edit' on string 'common.actionsLabel'" should be ignored
 - These errors are related to the auto-generation process and will be resolved by the user
 
 **When providing translation keys to user:**

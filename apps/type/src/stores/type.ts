@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useAppStore } from '@tiko/core'
+import { useAppStore, useSpeak } from '@tiko/core'
 
 export interface TypeSettings {
   voice: string | null
@@ -14,6 +14,7 @@ export interface TypeSettings {
   keyboardTheme: string
   keyboardLayout: string
   funLetters: boolean
+  speakWordByWord: boolean
 }
 
 export interface TypeHistory {
@@ -46,7 +47,8 @@ export const useTypeStore = defineStore('type', () => {
     speakOnType: true,
     keyboardTheme: 'default',
     keyboardLayout: 'qwerty',
-    funLetters: false
+    funLetters: false,
+    speakWordByWord: true
   }
 
   // Speech synthesis reference
@@ -105,7 +107,15 @@ export const useTypeStore = defineStore('type', () => {
     }
   }
 
-  const speak = (text?: string) => {
+  const speak = async (text?: string) => {
+    // Check if we should use word-by-word speaking
+    const currentSettings = settings.value
+    if (currentSettings.speakWordByWord) {
+      await speakWordByWord(text)
+      return
+    }
+
+    // Otherwise use the browser's speech synthesis
     if (isSpeaking.value) {
       stop()
       return
@@ -118,7 +128,6 @@ export const useTypeStore = defineStore('type', () => {
       currentUtterance = new SpeechSynthesisUtterance(textToSpeak)
 
       // Apply settings
-      const currentSettings = settings.value
       if (selectedVoice.value) {
         currentUtterance.voice = selectedVoice.value
       }
@@ -151,6 +160,67 @@ export const useTypeStore = defineStore('type', () => {
       }
     } catch (error) {
       console.error('Error speaking text:', error)
+      isSpeaking.value = false
+    }
+  }
+
+  // Speak text word by word using AI-generated audio
+  const speakWordByWord = async (text?: string) => {
+    const { speak, currentAudio, isPlaying } = useSpeak()
+    
+    if (isSpeaking.value) {
+      stop()
+      return
+    }
+
+    const textToSpeak = text || currentText.value.trim()
+    if (!textToSpeak) return
+
+    // Split text into words
+    const words = textToSpeak.split(/\s+/).filter(word => word.length > 0)
+    if (words.length === 0) return
+
+    isSpeaking.value = true
+    
+    try {
+      // Speak each word and wait for it to finish
+      for (let i = 0; i < words.length; i++) {
+        if (!isSpeaking.value) break // Check if stopped
+        
+        const word = words[i]
+        
+        // Use AI-generated audio for each word
+        await speak(word)
+        
+        // Wait for the audio to finish playing
+        if (currentAudio.value) {
+          await new Promise<void>((resolve) => {
+            const audio = currentAudio.value
+            if (!audio) {
+              resolve()
+              return
+            }
+            
+            // Check if already finished
+            if (audio.ended || audio.paused) {
+              resolve()
+              return
+            }
+            
+            // Wait for audio to end
+            audio.addEventListener('ended', () => resolve(), { once: true })
+            audio.addEventListener('error', () => resolve(), { once: true })
+          })
+        }
+        
+        // Add a small pause between words (100ms instead of 200ms for more natural flow)
+        if (i < words.length - 1 && isSpeaking.value) {
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
+      }
+    } catch (error) {
+      console.error('Error speaking word by word:', error)
+    } finally {
       isSpeaking.value = false
     }
   }
@@ -278,6 +348,7 @@ export const useTypeStore = defineStore('type', () => {
     // Actions
     loadVoices,
     speak,
+    speakWordByWord,
     stop,
     pause,
     resume,

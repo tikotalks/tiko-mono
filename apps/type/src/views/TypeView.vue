@@ -29,15 +29,19 @@
                 {{ currentText || t(keys.type.typeToSpeak) }}
               </template>
             </div>
-            <div :class="bemm('text-actions')">
-              <TButton v-if="currentText.trim()" icon="x" type="ghost" size="small" color="secondary" @click="clearText"
+            <div v-if="currentText.trim()" :class="bemm('text-actions')">
+              <TButton v-if="currentText.trim()" :icon="Icons.MULTIPLY_FAT" type="outline" color="secondary" @click="clearText"
                 :aria-label="t(keys.type.clearText)" />
-              <TButton :icon="keyboardMode === 'letters' ? '123' : 'abc'" type="ghost" size="small" color="primary"
+              <TButton
+                type="outline"
+                color="primary"
                 @click="toggleKeyboardMode"
                 :aria-label="keyboardMode === 'letters' ? 'Switch to numbers' : 'Switch to letters'">
                 {{ keyboardMode === 'letters' ? '123' : 'ABC' }}
               </TButton>
-              <TButton :icon="isSpeaking ? 'square' : 'volume-2'" type="default"
+              <TButton
+                :icon="isSpeaking ? 'square' : 'volume-2'"
+                type="default"
                 :color="isSpeaking ? 'error' : 'primary'" @click="toggleSpeak" size="medium"
                 :disabled="!canSpeak && !isSpeaking">
                 {{ isSpeaking ? t(keys.type.stop) : t(keys.type.speak) }}
@@ -50,6 +54,7 @@
         <div :class="bemm('keyboard-area')">
           <VirtualKeyboard :layout="keyboardMode === 'letters' ? settings.keyboardLayout : 'numbers'"
             :disabled="isSpeaking" :uppercase="isUppercase" :haptic-feedback="settings.hapticFeedback"
+            :fun-letters="settings.funLetters"
             :speak-on-type="settings.speakOnType" :theme="settings.keyboardTheme" @keypress="handleVirtualKeyPress"
             @backspace="handleBackspace" @space="handleSpace" />
         </div>
@@ -264,18 +269,21 @@ const handleKeydown = (event: KeyboardEvent) => {
 
 // Global keyboard shortcuts
 const handleGlobalKeydown = (event: KeyboardEvent) => {
-  if (event.target && (event.target as HTMLElement).tagName === 'TEXTAREA') {
-    return // Don't interfere with textarea input
+  // Don't interfere with any input elements
+  if (event.target && ['INPUT', 'TEXTAREA'].includes((event.target as HTMLElement).tagName)) {
+    return
   }
 
   switch (event.key) {
     case ' ':
-      if (!event.ctrlKey && !event.metaKey) {
+      // Only use spacebar for speak toggle if Ctrl or Cmd is held
+      if (event.ctrlKey || event.metaKey) {
         event.preventDefault()
         if (canSpeak.value || isSpeaking.value) {
           toggleSpeak()
         }
       }
+      // Otherwise, let the VirtualKeyboard handle it
       break
     case 'Escape':
       if (isSpeaking.value) {
@@ -353,7 +361,7 @@ onUnmounted(() => {
 
   &__text-actions {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     gap: var(--space);
   }

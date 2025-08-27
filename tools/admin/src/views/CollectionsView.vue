@@ -257,7 +257,7 @@ const listColumns = [
   { key: 'items', label: t('common.items'), width: '100px' },
   { key: 'views', label: t('common.views'), width: '100px' },
   { key: 'likes', label: t('common.likes'), width: '100px' },
-  { key: 'actions', label: t('common.actions'), width: '150px' }
+  { key: 'actions', label: t('common.actionsLabel'), width: '150px' }
 ];
 
 // Computed
