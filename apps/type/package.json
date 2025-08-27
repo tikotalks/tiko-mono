@@ -25,7 +25,8 @@
     "vue-router": "^4.3.0",
     "pinia": "^2.1.7",
     "@tiko/ui": "workspace:*",
-    "@tiko/core": "workspace:*"
+    "@tiko/core": "workspace:*",
+    "open-icon": "^1.1.2"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.6.2",
