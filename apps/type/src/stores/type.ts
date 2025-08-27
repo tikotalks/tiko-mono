@@ -9,6 +9,11 @@ export interface TypeSettings {
   volume: number // 0 to 1
   autoSave: boolean
   historyLimit: number
+  hapticFeedback: boolean
+  speakOnType: boolean
+  keyboardTheme: string
+  keyboardLayout: string
+  funLetters: boolean
 }
 
 export interface TypeHistory {
@@ -36,7 +41,12 @@ export const useTypeStore = defineStore('type', () => {
     pitch: 1,
     volume: 1,
     autoSave: true,
-    historyLimit: 50
+    historyLimit: 50,
+    hapticFeedback: true,
+    speakOnType: false,
+    keyboardTheme: 'default',
+    keyboardLayout: 'qwerty',
+    funLetters: false
   }
 
   // Speech synthesis reference
@@ -169,6 +179,10 @@ export const useTypeStore = defineStore('type', () => {
     currentText.value = ''
   }
 
+  const appendText = (text: string) => {
+    currentText.value += text
+  }
+
   const setVoice = (voice: SpeechSynthesisVoice | null) => {
     selectedVoice.value = voice
     if (voice) {
@@ -264,6 +278,7 @@ export const useTypeStore = defineStore('type', () => {
     resume,
     setText,
     clearText,
+    appendText,
     setVoice,
     addToHistory,
     removeFromHistory,

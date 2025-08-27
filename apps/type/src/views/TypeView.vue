@@ -9,21 +9,13 @@
     @logout="handleLogout"
   >
     <div :class="bemm()">
-      <!-- Main Content -->
-      <main :class="bemm('main')">
-        <!-- Text Input Area -->
-      <div class="type-input-section">
-        <div class="type-input-container">
-          <textarea
-            v-model="currentText"
-            class="type-textarea"
-            :placeholder="t(keys.type.typeToSpeak)"
-            :aria-label="t(keys.type.textToSpeak)"
-            :disabled="isSpeaking"
-            @keydown="handleKeydown"
-          />
-
-          <div class="type-input-actions">
+      <!-- Text Display Area -->
+      <div :class="bemm('display-area')">
+        <div :class="bemm('text-display')">
+          <div :class="bemm('text-content')">
+            {{ currentText || t(keys.type.typeToSpeak) }}
+          </div>
+          <div :class="bemm('text-actions')">
             <TButton
               v-if="currentText.trim()"
               icon="x"
@@ -33,117 +25,42 @@
               @click="clearText"
               :aria-label="t(keys.type.clearText)"
             />
-
-            <span class="type-character-count">
-              {{ currentText.length }} {{ t(keys.type.characters) }}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Main Controls -->
-      <div class="type-controls">
-        <TButton
-          :icon="isSpeaking ? 'square' : 'volume-2'"
-          type="default"
-          :color="isSpeaking ? 'error' : 'primary'"
-          @click="toggleSpeak"
-          size="large"
-          :disabled="!canSpeak && !isSpeaking"
-          class="type-speak-button"
-        >
-          {{ isSpeaking ? t(keys.type.stop) : t(keys.type.speak) }}
-        </TButton>
-
-        <div class="type-secondary-controls">
-          <TButton
-            v-if="isSpeaking"
-            icon="pause"
-            type="default"
-            color="warning"
-            @click="pause"
-            size="medium"
-          >
-            {{ t(keys.type.pause) }}
-          </TButton>
-        </div>
-      </div>
-
-      <!-- Voice Selection -->
-      <div class="type-voice-section">
-        <h3 class="type-section-title">{{ t(keys.type.voice) }}</h3>
-        <TInputSelect
-          :options="availableVoices.map((voice, index) => ({
-            label: `${voice.name} (${voice.lang})`,
-            value: index
-          }))"
-          v-model="selectedVoiceIndex"
-          :disabled="isSpeaking || isLoading"
-          @change="onVoiceChange"
-          />
-        <!-- <select
-          v-model="selectedVoiceIndex"
-          class="type-voice-select"
-          :disabled="isSpeaking || isLoading"
-          @change="onVoiceChange"
-        >
-          <option value="-1" disabled>
-            {{ isLoading ? 'Loading voices...' : 'Select a voice' }}
-          </option>
-          <option
-            v-for="(voice, index) in availableVoices"
-            :key="voice.name"
-            :value="index"
-          >
-            {{ voice.name }} ({{ voice.lang }})
-          </option>
-        </select> -->
-      </div>
-    </main>
-
-    <!-- History Panel -->
-    <div v-if="showHistory && recentHistory.length > 0" class="type-history">
-      <h3 class="type-history__title">Recent</h3>
-
-      <div class="type-history__list">
-        <div
-          v-for="item in recentHistory.slice(0, 5)"
-          :key="item.id"
-          class="type-history__item"
-        >
-          <div class="type-history__text">
-            {{ item.text.length > 50 ? item.text.substring(0, 50) + '...' : item.text }}
-          </div>
-
-          <div class="type-history__actions">
             <TButton
-              icon="volume-2"
+              :icon="keyboardMode === 'letters' ? '123' : 'abc'"
               type="ghost"
               size="small"
               color="primary"
-              :action="() => speakFromHistory(item)"
-              aria-label="Speak this text"
-            />
-
+              @click="toggleKeyboardMode"
+              :aria-label="keyboardMode === 'letters' ? 'Switch to numbers' : 'Switch to letters'"
+            >
+              {{ keyboardMode === 'letters' ? '123' : 'ABC' }}
+            </TButton>
             <TButton
-              icon="copy"
-              type="ghost"
-              size="small"
-              color="secondary"
-              :action="() => copyFromHistory(item)"
-              aria-label="Copy to input"
-            />
+              :icon="isSpeaking ? 'square' : 'volume-2'"
+              type="default"
+              :color="isSpeaking ? 'error' : 'primary'"
+              @click="toggleSpeak"
+              size="medium"
+              :disabled="!canSpeak && !isSpeaking"
+            >
+              {{ isSpeaking ? t(keys.type.stop) : t(keys.type.speak) }}
+            </TButton>
           </div>
         </div>
       </div>
 
-      <div class="type-history__footer">
-        <TButton
-          label="Show All History"
-          type="ghost"
-          size="small"
-          color="secondary"
-          :action="showFullHistory"
+      <!-- Virtual Keyboard Area -->
+      <div :class="bemm('keyboard-area')">
+        <VirtualKeyboard
+          :layout="keyboardMode === 'letters' ? settings.keyboardLayout : 'numbers'"
+          :disabled="isSpeaking"
+          :uppercase="isUppercase"
+          :haptic-feedback="settings.hapticFeedback"
+          :speak-on-type="settings.speakOnType"
+          :theme="settings.keyboardTheme"
+          @keypress="handleVirtualKeyPress"
+          @backspace="handleBackspace"
+          @space="handleSpace"
         />
       </div>
     </div>
@@ -152,90 +69,10 @@
     <div v-if="showSettings" class="type-settings">
       <div class="type-settings__backdrop" @click="hideSettings" />
       <div class="type-settings__panel">
-        <h3 class="type-settings__title">Voice Settings</h3>
+        <h3 class="type-settings__title">App Settings</h3>
 
-        <!-- Rate -->
-        <div class="type-settings__group">
-          <label class="type-settings__label">
-            Speech Rate: {{ localSettings.rate.toFixed(1) }}x
-          </label>
-          <input
-            v-model.number="localSettings.rate"
-            type="range"
-            min="0.1"
-            max="3"
-            step="0.1"
-            class="type-settings__slider"
-            @input="updateSettings"
-          />
-        </div>
-
-        <!-- Pitch -->
-        <div class="type-settings__group">
-          <label class="type-settings__label">
-            Pitch: {{ localSettings.pitch.toFixed(1) }}
-          </label>
-          <input
-            v-model.number="localSettings.pitch"
-            type="range"
-            min="0"
-            max="2"
-            step="0.1"
-            class="type-settings__slider"
-            @input="updateSettings"
-          />
-        </div>
-
-        <!-- Volume -->
-        <div class="type-settings__group">
-          <label class="type-settings__label">
-            Volume: {{ Math.round(localSettings.volume * 100) }}%
-          </label>
-          <input
-            v-model.number="localSettings.volume"
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            class="type-settings__slider"
-            @input="updateSettings"
-          />
-        </div>
-
-        <!-- Auto Save -->
-        <div class="type-settings__group">
-          <TInputCheckbox
-            v-model="localSettings.autoSave"
-            :label="t(keys.type.saveToHistoryAutomatically)"
-            @change="updateSettings"
-          />
-          <!-- <label class="type-settings__checkbox">
-            <input
-              v-model="localSettings.autoSave"
-              type="checkbox"
-              @change="updateSettings"
-            />
-            <span>Save to history automatically</span>
-          </label> -->
-        </div>
-
-        <div class="type-settings__actions">
-          <TButton
-            :label="t(keys.common.close)"
-            type="default"
-            color="primary"
-            :action="hideSettings"
-            size="medium"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- Settings Panel -->
-    <div v-if="showSettings" class="type-settings">
-      <div class="type-settings__backdrop" @click="hideSettings" />
-      <div class="type-settings__panel">
-        <h3 class="type-settings__title">Voice Settings</h3>
+        <!-- Voice Settings Section -->
+        <h4 class="type-settings__subtitle">Voice & Speech</h4>
 
         <!-- Rate -->
         <div class="type-settings__group">
@@ -247,18 +84,6 @@
             :step="0.1"
             @input="updateSettings"
           />
-          <!-- <label class="type-settings__label">
-            Speech Rate: {{ localSettings.rate.toFixed(1) }}x
-          </label>
-          <input
-            v-model.number="localSettings.rate"
-            type="range"
-            min="0.1"
-            max="3"
-            step="0.1"
-            class="type-settings__slider"
-            @input="updateSettings"
-          /> -->
         </div>
 
         <!-- Pitch -->
@@ -271,18 +96,6 @@
             :step="0.1"
             @input="updateSettings"
           />
-          <!-- <label class="type-settings__label">
-            Pitch: {{ localSettings.pitch.toFixed(1) }}
-          </label>
-          <input
-            v-model.number="localSettings.pitch"
-            type="range"
-            min="0"
-            max="2"
-            step="0.1"
-            class="type-settings__slider"
-            @input="updateSettings"
-          /> -->
         </div>
 
         <!-- Volume -->
@@ -295,18 +108,6 @@
             :step="0.1"
             @input="updateSettings"
           />
-          <!-- <label class="type-settings__label">
-            Volume: {{ Math.round(localSettings.volume * 100) }}%
-          </label>
-          <input
-            v-model.number="localSettings.volume"
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            class="type-settings__slider"
-            @input="updateSettings"
-          /> -->
         </div>
 
         <!-- Auto Save -->
@@ -315,16 +116,61 @@
             v-model="localSettings.autoSave"
             :label="t(keys.type.saveToHistoryAutomatically)"
             @change="updateSettings"
-            />
-          <!-- <label class="type-settings__checkbox">
+          />
+        </div>
 
-            <input
-              v-model="localSettings.autoSave"
-              type="checkbox"
-              @change="updateSettings"
-            />
-            <span>Save to history automatically</span>
-          </label> -->
+        <!-- Keyboard Settings Section -->
+        <h4 class="type-settings__subtitle">Keyboard</h4>
+
+        <!-- Haptic Feedback -->
+        <div class="type-settings__group">
+          <TInputCheckbox
+            v-model="localSettings.hapticFeedback"
+            label="Haptic Feedback"
+            @change="updateSettings"
+          />
+        </div>
+
+        <!-- Speak on Type -->
+        <div class="type-settings__group">
+          <TInputCheckbox
+            v-model="localSettings.speakOnType"
+            label="Speak Letters When Typing"
+            @change="updateSettings"
+          />
+        </div>
+
+        <!-- Keyboard Layout -->
+        <div class="type-settings__group">
+          <TInputSelect
+            v-model="localSettings.keyboardLayout"
+            label="Keyboard Layout"
+            :options="availableLayouts"
+            @update:model-value="updateSettings"
+          />
+        </div>
+
+        <!-- Keyboard Theme -->
+        <div class="type-settings__group">
+          <TInputSelect
+            v-model="localSettings.keyboardTheme"
+            label="Keyboard Theme"
+            :options="[
+              { value: 'default', label: 'Default' },
+              { value: 'dark', label: 'Dark' },
+              { value: 'colorful', label: 'Colorful' }
+            ]"
+            @update:model-value="updateSettings"
+          />
+        </div>
+
+        <!-- Fun Letters -->
+        <div class="type-settings__group">
+          <TInputCheckbox
+            v-model="localSettings.funLetters"
+            label="Fun Letters (Images)"
+            @change="updateSettings"
+          />
         </div>
 
         <div class="type-settings__actions">
@@ -338,7 +184,6 @@
         </div>
       </div>
     </div>
-  </div>
   </TAppLayout>
   </TAuthWrapper>
 </template>
@@ -349,6 +194,8 @@ import { useBemm } from 'bemm'
 import { useI18n } from '@tiko/core';
 import { TButton, TAppLayout, TAuthWrapper, TInputRange, TInputCheckbox, TInputSelect } from '@tiko/ui'
 import { useTypeStore } from '../stores/type'
+import VirtualKeyboard from '../components/VirtualKeyboard.vue'
+import { availableLayouts } from '../components/VirtualKeyboard.data'
 import backgroundVideoUrl from '../assets/login-background.mp4'
 
 
@@ -361,6 +208,8 @@ const { t, keys } = useI18n()
 const showSettings = ref(false)
 const showHistory = ref(true)
 const selectedVoiceIndex = ref(-1)
+const keyboardMode = ref<'letters' | 'numbers'>('letters')
+const isUppercase = ref(false)
 
 // Local settings copy for immediate UI updates
 const localSettings = reactive({
@@ -369,7 +218,12 @@ const localSettings = reactive({
   pitch: 1,
   volume: 1,
   autoSave: true,
-  historyLimit: 50
+  historyLimit: 50,
+  hapticFeedback: true,
+  speakOnType: false,
+  keyboardTheme: 'default',
+  keyboardLayout: 'qwerty',
+  funLetters: false
 })
 
 // Destructure store
@@ -413,6 +267,25 @@ const pause = () => {
 
 const clearText = () => {
   typeStore.clearText()
+}
+
+const toggleKeyboardMode = () => {
+  keyboardMode.value = keyboardMode.value === 'letters' ? 'numbers' : 'letters'
+}
+
+const handleVirtualKeyPress = (key: string) => {
+  typeStore.appendText(key)
+}
+
+const handleBackspace = () => {
+  const text = currentText.value
+  if (text.length > 0) {
+    typeStore.setText(text.slice(0, -1))
+  }
+}
+
+const handleSpace = () => {
+  typeStore.appendText(' ')
 }
 
 const onVoiceChange = () => {
@@ -525,6 +398,64 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   position: relative;
+  height: 100vh;
+  overflow: hidden;
+
+  &__display-area {
+    min-height: 120px;
+    height: 100%;
+    flex-shrink: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space);
+    padding-top: var(--spacing);
+    backdrop-filter: blur(10px);
+  }
+
+  &__text-display {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space);
+  }
+
+  &__text-content {
+    min-height: 60px;
+    padding: var(--space);
+    border: 2px solid var(--color-accent);
+    border-radius: var(--border-radius);
+    background: var(--color-background);
+    font-size: 1.25rem;
+    line-height: 1.4;
+    color: var(--color-foreground);
+    display: flex;
+    align-items: center;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+
+    &:empty::before {
+      content: attr(placeholder);
+      color: var(--color-foreground-tertiary);
+    }
+  }
+
+  &__text-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space);
+  }
+
+  &__keyboard-area {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    min-height: fit-content; // Important for flexbox
+  }
 }
 
 .type-header {
@@ -745,6 +676,19 @@ onUnmounted(() => {
     font-size: 1.25rem;
     font-weight: 600;
     text-align: center;
+  }
+
+  &__subtitle {
+    margin: 1.5rem 0 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    border-bottom: 1px solid var(--color-accent);
+    padding-bottom: 0.5rem;
+
+    &:first-of-type {
+      margin-top: 0;
+    }
   }
 
   &__group {
