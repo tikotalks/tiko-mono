@@ -54,6 +54,14 @@ export const adminAuthGuard = (
     // Check if user has admin permissions
     if (!authStore.isAdmin) {
       console.warn('[AdminAuth] User lacks admin permissions, blocking access to:', to.path)
+      console.warn('[AdminAuth] Debug info:', {
+        isAdmin: authStore.isAdmin,
+        userRole: authStore.userRole,
+        user: authStore.user,
+        userEmail: authStore.user?.email,
+        userMetadata: authStore.user?.user_metadata,
+        appMetadata: authStore.user?.app_metadata
+      })
       
       // Redirect to not authorized page instead of login
       if (to.path !== '/not-authorized') {

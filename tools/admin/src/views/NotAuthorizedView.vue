@@ -1,44 +1,59 @@
 <template>
-  <div class="not-authorized">
-    <div class="not-authorized__content">
-      <div class="not-authorized__icon">🔒</div>
-      <h1 class="not-authorized__title">Access Denied</h1>
-      <p class="not-authorized__message">
-        You don't have permission to access the admin panel.
-      </p>
-      <p class="not-authorized__details">
-        Admin access is required. Please contact your administrator if you believe this is an error.
-      </p>
-      <div class="not-authorized__actions">
-        <button 
-          @click="signOut"
-          class="not-authorized__button not-authorized__button--primary"
-        >
-          Sign Out
-        </button>
-        <button 
-          @click="goHome"
-          class="not-authorized__button not-authorized__button--secondary"
-        >
-          Go to Main App
-        </button>
-      </div>
-      <div class="not-authorized__debug" v-if="isDev">
-        <details>
-          <summary>Debug Info</summary>
-          <pre>{{ debugInfo }}</pre>
-        </details>
-      </div>
+  <TAppLayout
+    :show-header="false"
+  >
+    <div :class="bemm()">
+      <TCard :class="bemm('card')">
+        <div :class="bemm('content')">
+          <TIcon name="shield" :class="bemm('icon')" size="xl" color="error" />
+          
+          <h1 :class="bemm('title')">Access Denied</h1>
+          
+          <p :class="bemm('message')">
+            You don't have permission to access the admin panel.
+          </p>
+          
+          <p :class="bemm('details')">
+            Admin access is required. Please contact your administrator if you believe this is an error.
+          </p>
+          
+          <TFormActions :class="bemm('actions')">
+            <TButton
+              color="primary"
+              @click="signOut"
+            >
+              Sign Out
+            </TButton>
+            <TButton
+              type="outline"
+              @click="goHome"
+            >
+              Go to Main Site
+            </TButton>
+          </TFormActions>
+          
+          <div :class="bemm('debug')" v-if="isDev">
+            <details>
+              <summary>Debug Info</summary>
+              <pre>{{ debugInfo }}</pre>
+            </details>
+          </div>
+        </div>
+      </TCard>
     </div>
-  </div>
+  </TAppLayout>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useAuthStore } from '@tiko/core'
+import { useBemm } from 'bemm'
+import { useAuthStore, useI18n } from '@tiko/core'
+import { TAppLayout, TCard, TIcon, TButton, TFormActions } from '@tiko/ui'
 
 const authStore = useAuthStore()
 const isDev = import.meta.env.DEV
+const bemm = useBemm('not-authorized')
+const { t } = useI18n()
 
 const debugInfo = computed(() => {
   if (!isDev) return null
@@ -64,7 +79,7 @@ const signOut = async () => {
 
 const goHome = () => {
   // Redirect to main app
-  window.location.href = 'https://tiko.org'
+  window.location.href = 'https://tikotalks.com'
 }
 </script>
 
@@ -73,100 +88,71 @@ const goHome = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: calc(100vh - var(--topbar-height, 0px));
+  padding: var(--space-lg);
+  
+  &__card {
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+  }
 
   &__content {
-    background: white;
-    border-radius: 12px;
-    padding: 3rem;
     text-align: center;
-    max-width: 500px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    padding: var(--space-xl);
   }
 
   &__icon {
-    font-size: 4rem;
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-lg);
   }
 
   &__title {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    color: #2d3748;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--space);
+    color: var(--color-error);
   }
 
   &__message {
-    font-size: 1.1rem;
-    margin-bottom: 0.5rem;
-    color: #4a5568;
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--space-s);
+    color: var(--color-foreground);
   }
 
   &__details {
-    font-size: 0.9rem;
-    margin-bottom: 2rem;
-    color: #718096;
+    font-size: var(--font-size);
+    margin-bottom: var(--space-xl);
+    color: var(--color-foreground-muted);
   }
 
   &__actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  &__button {
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &--primary {
-      background: #3182ce;
-      color: white;
-
-      &:hover {
-        background: #2c5aa0;
-        transform: translateY(-1px);
-      }
-    }
-
-    &--secondary {
-      background: #e2e8f0;
-      color: #2d3748;
-
-      &:hover {
-        background: #cbd5e0;
-        transform: translateY(-1px);
-      }
-    }
+    margin-top: var(--space-xl);
   }
 
   &__debug {
-    margin-top: 2rem;
+    margin-top: var(--space-xl);
     text-align: left;
-
-    details {
-      font-size: 0.8rem;
-    }
-
+    font-size: var(--font-size-sm);
+    
     summary {
       cursor: pointer;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
+      font-weight: var(--font-weight-semibold);
+      margin-bottom: var(--space-s);
+      color: var(--color-foreground-muted);
+      
+      &:hover {
+        color: var(--color-foreground);
+      }
     }
-
+    
     pre {
-      background: #f7fafc;
-      padding: 1rem;
-      border-radius: 4px;
+      background: var(--color-accent);
+      padding: var(--space);
+      border-radius: var(--border-radius);
       overflow: auto;
-      font-size: 0.75rem;
+      font-size: var(--font-size-xs);
+      font-family: var(--font-family-mono);
+      line-height: 1.4;
     }
   }
-}
-</style>
+}</style>
