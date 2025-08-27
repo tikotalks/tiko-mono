@@ -72,7 +72,7 @@ export { default as TUploadStatus } from './components/media/TUploadStatus/TUplo
 export { default as TInputText } from './components/forms/TForm/inputs/TInputText/TInputText.vue';
 export { default as TInputNumber } from './components/forms/TForm/inputs/TInputNumber/TInputNumber.vue';
 export { default as TInputEmail } from './components/forms/TForm/InputEmail/InputEmail.vue';
-export { default as TInputRange } from './components/forms/TForm/InputRange.vue';
+export { default as TInputRange } from './components/forms/TForm/inputs/TInputRange/TInputRange.vue';
 export { default as TInputTextArea } from './components/forms/TForm/InputTextArea.vue';
 export { default as TInputSelect } from './components/forms/TForm/inputs/TInputSelect/TInputSelect.vue';
 export { default as TInputCheckbox } from './components/forms/TForm/inputs/TInputCheckbox/TInputCheckbox.vue';

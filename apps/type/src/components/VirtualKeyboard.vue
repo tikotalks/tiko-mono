@@ -14,7 +14,9 @@
           <button v-for="key in currentLayout.rows[0]" :key="key.key"
             :class="[bemm('key'), key.modifier ? bemm('key', 'modifier') : '']" @click="handleKeyPress(key)"
             :disabled="disabled">
-            {{ getKeyDisplay(key) }}
+            <span :class="bemm('key-text')">
+              {{ getKeyDisplay(key) }}
+            </span>
           </button>
         </div>
 
@@ -23,7 +25,9 @@
           <button v-for="key in currentLayout.rows[1]" :key="key.key"
             :class="[bemm('key'), key.modifier ? bemm('key', 'modifier') : '']" @click="handleKeyPress(key)"
             :disabled="disabled">
-            {{ getKeyDisplay(key) }}
+            <span :class="bemm('key-text')">
+              {{ getKeyDisplay(key) }}
+            </span>
           </button>
         </div>
 
@@ -32,17 +36,23 @@
           <button v-for="key in currentLayout.rows[2]" :key="key.key"
             :class="[bemm('key'), key.modifier ? bemm('key', 'modifier') : '']" @click="handleKeyPress(key)"
             :disabled="disabled">
-            {{ getKeyDisplay(key) }}
+            <span :class="bemm('key-text')">
+              {{ getKeyDisplay(key) }}
+            </span>
           </button>
         </div>
 
         <!-- Fourth row (spacebar, etc.) -->
         <div :class="bemm('row')">
           <button :class="bemm('key', ['','space'])" @click="handleKeyPress(specialKeys.space)" :disabled="disabled">
-            {{ specialKeys.space.display }}
+            <span :class="bemm('key-text')">
+              {{ specialKeys.space.display }}
+            </span>
           </button>
           <button :class="bemm('key', ['','backspace'])" @click="handleKeyPress(specialKeys.backspace)" :disabled="disabled">
-            {{ specialKeys.backspace.display }}
+            <span :class="bemm('key-text')">
+              {{ specialKeys.backspace.display }}
+            </span>
           </button>
         </div>
       </div>
@@ -214,6 +224,8 @@ const handleKeyPress = (key: KeyboardKey | { key: string; display: string }) => 
   --keyboard-key-color--hover: var(--color-primary);
   --keyboard-key-text-color--hover: var(--color-primary-text);
 
+  --keyboard-shadow-size: 4px;
+
   width: 100%;
   height: 100%;
 
@@ -269,27 +281,29 @@ const handleKeyPress = (key: KeyboardKey | { key: string; display: string }) => 
   }
 
   &__row {
+    --keyboard-key-size: calc((100% - 20%) / 10);
+
     display: flex;
     justify-content: center;
     gap: var(--keyboard-gap);
     width: 100%;
-
-    // Calculate key size based on available width
-    // First row has 10 keys, so each key = (100% - 9 gaps) / 10
-    --key-size: calc((100% - 20%) / 10);
   }
 
   &__key {
-    width: var(--key-size);
-    aspect-ratio: 1;
+    --keyboard-key-color-shadow:  color-mix(in srgb, var(--keyboard-key-color), var(--color-dark) 50%);
+
+    width: var(--keyboard-key-size);
+    aspect-ratio: var(--keyboard-key-aspect-ratio, 1);
     display: flex;
     align-items: center;
     justify-content: center;
     background: color-mix(in srgb, var(--keyboard-key-color), transparent 50%);
+    background-image: radial-gradient(var(--keyboard-key-color), color-mix(in srgb, var(--keyboard-key-color), var(--color-background) 25%));
     color: var(--keyboard-key-text-color);
-    border: 1px solid var(--keyboard-key-color);
+    box-shadow: 0 calc(var(--keyboard-shadow-size) * -1) 0 0 var(--keyboard-key-color-shadow) inset;
+    border: none;
     border-radius: var(--keyboard-radius);
-    font-size: clamp(1rem, 2.5vw, 2rem);
+    font-size: clamp(1.5rem, 2.5vw, 3rem);
     font-weight: 600;
     color: var(--color-foreground);
     cursor: pointer;
@@ -299,15 +313,13 @@ const handleKeyPress = (key: KeyboardKey | { key: string; display: string }) => 
     &:hover {
       --keyboard-key-text-color: var(--keyboard-key-text-color--hover);
       --keyboard-key-color: var(--keyboard-key-color--hover);
-
-      transform: scale(1.05);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
     &:active {
-      transform: translateY(0);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transform: translateY(calc(var(--keyboard-shadow-size) / 2));
+      box-shadow: 0 calc((var(--keyboard-shadow-size) * -1) / 2) 0 0 var(--keyboard-key-color-shadow) inset;
     }
+
 
     &:disabled {
       opacity: 0.5;
@@ -317,30 +329,33 @@ const handleKeyPress = (key: KeyboardKey | { key: string; display: string }) => 
 
     &--space {
       --keyboard-key-color: var(--color-primary);
-      width: calc(var(--key-size) * 5 + 8%); // 5 keys wide + 4 gaps
+
+      width: calc(var(--keyboard-key-size) * 5 + (var(--keyboard-gap) * 4));
       aspect-ratio: 5 / 1;
       border-radius: var(--keyboard-radius);
       border: none;
     }
 
     &--backspace {
-      width: calc(var(--key-size) * 2 + 2%); // 2 keys wide + 1 gap
+      --keyboard-key-color: var(--color-error);
+      --keyboard-key-text-color: var(--color-error-text);
+
+      width: calc(var(--keyboard-key-size) * 1.5 + var(--keyboard-gap));
       aspect-ratio: 2 / 1;
-      background: var(--color-error);
-      color: var(--color-error-contrast);
+
       border-radius: var(--keyboard-radius);
 
       border: none;
 
       &:hover {
-        background: var(--color-error-dark);
+        background: var(--color-error);
       }
     }
 
     &--modifier {
       background: var(--color-warning);
       color: var(--color-warning-contrast);
-      width: calc(var(--key-size) * 1.5 + 1%);
+      width: calc(var(--key-size) * 1.5 + var(--keyboard-gap));
       aspect-ratio: 1.5 / 1;
 
       border: none;
@@ -351,25 +366,9 @@ const handleKeyPress = (key: KeyboardKey | { key: string; display: string }) => 
     }
   }
 
-  // For smaller screens, reduce gaps
-  @media (max-width: 768px) {
-    &__keyboard {}
-
-    &__row {
-
-      --key-size: calc((100% - 9%) / 10);
-    }
-
-    &__key {
-
-      &--space {
-        width: calc(var(--key-size) * 5 + 4%);
-      }
-
-      &--backspace {
-        width: calc(var(--key-size) * 2 + 1%);
-      }
-    }
+  &__key-text{
+    transform: translateY(calc((var(--keyboard-shadow-size) / 2) * -1));
+    text-shadow: 1px 1px 2px color-mix(in srgb, var(--color-dark), transparent 50%);
   }
 
   // Preload indicator
@@ -393,6 +392,10 @@ const handleKeyPress = (key: KeyboardKey | { key: string; display: string }) => 
         opacity: 1;
       }
     }
+  }
+  @media screen and (max-width: 720px){
+    --keyboard-key-aspect-ratio: 3/4;
+    --keyboard-gap: var(--space-xs);
   }
 }
 </style>

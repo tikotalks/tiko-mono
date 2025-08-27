@@ -500,7 +500,7 @@ onUnmounted(() => {
     height: 2em;
     display: block;
 
-    img {
+    img { border: 2px solid red;
       width: 100%;
     }
   }

@@ -1,17 +1,18 @@
 <template>
-  <div 
+  <div
     :class="bemm('', size)"
     :style="`--app-color: var(--color-${color});`"
   >
-    <img 
-      v-if="resolvedImageUrl" 
-      :src="resolvedImageUrl" 
+    <img
+      v-if="resolvedImageUrl"
+    :class="bemm('img')"
+      :src="resolvedImageUrl"
       :alt="alt"
       @error="handleImageError"
     />
-    <TIcon 
-      v-else-if="fallbackIcon" 
-      :icon="fallbackIcon" 
+    <TIcon
+      v-else-if="fallbackIcon"
+      :icon="fallbackIcon"
       :size="iconSize"
     />
   </div>
@@ -97,28 +98,32 @@ watch(() => props.imageId, () => {
   background-color: var(--app-color);
   overflow: hidden;
   position: relative;
-  
+
   &--small {
     width: 1.5rem;
     height: 1.5rem;
   }
-  
+
   &--medium {
     width: 2rem;
     height: 2rem;
   }
-  
+
   &--large {
     width: 3rem;
     height: 3rem;
   }
-  
+
+
+  &__img{
+    width: 100%;
+  }
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-  
+
   :deep(.icon) {
     color: var(--color-white);
   }
