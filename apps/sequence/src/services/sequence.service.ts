@@ -1,4 +1,4 @@
-import { useAuthStore } from '@tiko/core';
+import { useAuthStore, unifiedItemService } from '@tiko/core';
 import { useI18n } from '@tiko/core';
 import type { TCardTile as BaseCardTile } from '@tiko/ui';
 
@@ -29,16 +29,44 @@ export const sequenceService = {
     try {
       const authStore = useAuthStore();
       const userId = authStore.user?.id;
-      if (!userId) {
-        console.warn('No authenticated user found');
+      const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true';
+      
+      // If no user and not in skip auth mode, return empty
+      if (!userId && !isSkipAuth) {
+        console.warn('[SequenceService] No authenticated user found and not in skip auth mode');
         return [];
       }
 
       // Get current locale from i18n
       const { currentLocale } = useI18n();
       const locale = currentLocale.value;
-      // Load sequence with translations for current locale
-      const items = await sequenceSupabaseService.getSequenceWithTranslations(userId, parentId, locale);
+      
+      let items: any[];
+      
+      if (isSkipAuth && !userId) {
+        // Skip auth mode: Load only curated sequences using unified service
+        const baseItems = parentId 
+          ? await unifiedItemService.loadItemsByParentId(parentId, {
+              includeCurated: true,
+              includeChildren: false,
+              locale
+            })
+          : await unifiedItemService.loadRootItems('', APP_NAME, {
+              includeCurated: true,
+              includeChildren: false,
+              locale
+            });
+        
+        // Convert BaseItem to the format expected by sequence service
+        items = baseItems.map(item => ({
+          ...item,
+          metadata: item.metadata || {},
+          effective_locale: item.effective_locale || item.base_locale || 'en'
+        }));
+      } else {
+        // Normal mode: Load sequence with translations for current locale
+        items = await sequenceSupabaseService.getSequenceWithTranslations(userId, parentId, locale);
+      }
 
       return items.map(item => {
         const metadata = item.metadata as CardMetadata;

@@ -15,7 +15,8 @@ export default defineConfig({
     tertiary: BaseColors.BLUE,
   },
   auth: {
-    skipAuth: true // Allow using the app without login
+    skipAuth: true, // Allow using the app without login
+    showLoginButton: true // Show login button in skip auth mode
   },
   topBar: {
     show: true,

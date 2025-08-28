@@ -120,33 +120,45 @@ export const useSequenceStore = defineStore('sequence', () => {
   }
 
   const updateSettings = async (newSettings: Partial<SequenceSettings>) => {
+    const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
     const currentSettings = settings.value
     const updatedSettings = { ...currentSettings, ...newSettings }
 
-    await appStore.updateAppSettings('sequence', updatedSettings)
+    // Only save to backend if not in skip auth mode
+    if (!isSkipAuth) {
+      await appStore.updateAppSettings('sequence', updatedSettings)
+    } else {
+      console.log('[SequenceStore] Skip auth mode - settings only updated locally')
+    }
   }
 
   const saveState = async () => {
-    await appStore.updateAppSettings('sequence', {
-      ...settings.value
-    })
+    const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
+    
+    // Only save app settings if not in skip auth mode
+    if (!isSkipAuth) {
+      await appStore.updateAppSettings('sequence', {
+        ...settings.value
+      })
+    } else {
+      console.log('[SequenceStore] Skip auth mode - not saving user settings')
+    }
   }
 
 
   const loadState = async () => {
     console.log('[SequenceStore] Loading state...')
-    await appStore.loadAppSettings('sequence')
+    const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
+    
+    // Only load app settings if not in skip auth mode
+    if (!isSkipAuth) {
+      await appStore.loadAppSettings('sequence')
 
-    const appSettings = appStore.getAppSettings('sequence')
-    console.log('[SequenceStore] Retrieved settings:', appSettings)
-
-    if (appSettings?.currentQuestion) {
-      console.log('[SequenceStore] Loaded question:', appSettings.currentQuestion)
+      const appSettings = appStore.getAppSettings('sequence')
+      console.log('[SequenceStore] Retrieved settings:', appSettings)
     } else {
-      console.log('[SequenceStore] No saved question found, using default')
+      console.log('[SequenceStore] Skip auth mode - not loading user settings')
     }
-
-    // Load questions from Items service
   }
 
   // Card loading with caching
