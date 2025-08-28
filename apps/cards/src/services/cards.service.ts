@@ -47,30 +47,55 @@ export const cardsService = {
     try {
       const authStore = useAuthStore();
       const userId = authStore.user?.id;
-      if (!userId) {
-        console.warn('[CardsService] No authenticated user found');
+      const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true';
+      
+      // If no user and not in skip auth mode, return empty
+      if (!userId && !isSkipAuth) {
+        console.warn('[CardsService] No authenticated user found and not in skip auth mode');
         return [];
       }
       
       // Get current locale from i18n or use provided locale
       const { currentLocale } = useI18n();
       const effectiveLocale = locale || currentLocale.value;
-      console.log('[CardsService] loadCards - userId:', userId, 'parentId:', parentId, 'includeCurated:', includeCurated, 'locale:', effectiveLocale);
+      
+      // In skip auth mode, force includeCurated to true
+      const effectiveIncludeCurated = isSkipAuth ? true : includeCurated;
+      
+      console.log('[CardsService] loadCards - userId:', userId, 'isSkipAuth:', isSkipAuth, 'parentId:', parentId, 'includeCurated:', effectiveIncludeCurated, 'locale:', effectiveLocale);
       
       let items: BaseItem[];
       
-      if (parentId) {
-        // Load children of specific parent
+      if (isSkipAuth && !userId) {
+        // Skip auth mode: Load only curated cards
+        if (parentId) {
+          // Load children of specific parent
+          items = await unifiedItemService.loadItemsByParentId(parentId, {
+            includeCurated: true,
+            includeChildren: false,
+            locale: effectiveLocale
+          });
+        } else {
+          // Load root level curated cards - use a dummy user ID since the API filters will handle curated items
+          // We'll get only curated items because userId won't match any items, so only public curated items are returned
+          items = await unifiedItemService.loadRootItems('skip-auth-user', APP_NAME, {
+            includeCurated: true,
+            includeChildren: false,
+            locale: effectiveLocale
+          });
+        }
+      } else if (parentId) {
+        // Normal mode: Load children of specific parent
         items = await unifiedItemService.loadItemsByParentId(parentId, {
-          includeCurated,
-          includeChildren: false, // We don't need nested children for card loading
+          includeCurated: effectiveIncludeCurated,
+          includeChildren: false,
           locale: effectiveLocale
         });
       } else {
-        // Load root level cards
+        // Normal mode: Load root level cards
         items = await unifiedItemService.loadRootItems(userId, APP_NAME, {
-          includeCurated,
-          includeChildren: false, // We don't need nested children for card loading
+          includeCurated: effectiveIncludeCurated,
+          includeChildren: false,
           locale: effectiveLocale
         });
       }
@@ -89,22 +114,40 @@ export const cardsService = {
     try {
       const authStore = useAuthStore();
       const userId = authStore.user?.id;
-      if (!userId) {
-        console.warn('[CardsService] No authenticated user found');
+      const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true';
+      
+      // If no user and not in skip auth mode, return empty
+      if (!userId && !isSkipAuth) {
+        console.warn('[CardsService] No authenticated user found and not in skip auth mode');
         return [];
       }
       
       // Get current locale from i18n
       const { currentLocale } = useI18n();
       const effectiveLocale = currentLocale.value;
-      console.log('[CardsService] loadAllCards - userId:', userId, 'includeCurated:', includeCurated, 'locale:', effectiveLocale);
       
-      // Load ALL cards (user + curated) with children automatically loaded
-      const items = await unifiedItemService.loadItemsByUserAndApp(userId, APP_NAME, {
-        includeCurated,
-        includeChildren: true, // Load all children - this solves the children loading issue!
-        locale: effectiveLocale
-      });
+      // In skip auth mode, force includeCurated to true
+      const effectiveIncludeCurated = isSkipAuth ? true : includeCurated;
+      
+      console.log('[CardsService] loadAllCards - userId:', userId, 'isSkipAuth:', isSkipAuth, 'includeCurated:', effectiveIncludeCurated, 'locale:', effectiveLocale);
+      
+      let items: BaseItem[];
+      
+      if (isSkipAuth && !userId) {
+        // Skip auth mode: Load only curated cards - use a dummy user ID
+        items = await unifiedItemService.loadItemsByUserAndApp('skip-auth-user', APP_NAME, {
+          includeCurated: true,
+          includeChildren: true,
+          locale: effectiveLocale
+        });
+      } else {
+        // Normal mode: Load ALL cards (user + curated) with children automatically loaded
+        items = await unifiedItemService.loadItemsByUserAndApp(userId, APP_NAME, {
+          includeCurated: effectiveIncludeCurated,
+          includeChildren: true,
+          locale: effectiveLocale
+        });
+      }
       
       console.log('[CardsService] Loaded', items.length, 'total items from ItemService (including children)');
       
@@ -146,7 +189,9 @@ export const cardsService = {
     try {
       const authStore = useAuthStore();
       const userId = authStore.user?.id;
-      if (!userId) {
+      const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true';
+      
+      if (!userId && !isSkipAuth) {
         return false;
       }
       

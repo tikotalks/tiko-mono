@@ -115,9 +115,10 @@ export const useCardStore = defineStore('cards', () => {
     const cacheKey = getCacheKey(parentId, locale)
     const cache = cardCache.value
     const userId = authStore.user?.id
+    const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
     
-    if (!userId) {
-      console.warn('[CardsStore] No user ID available')
+    if (!userId && !isSkipAuth) {
+      console.warn('[CardsStore] No user ID available and not in skip auth mode')
       return []
     }
     
@@ -213,19 +214,26 @@ export const useCardStore = defineStore('cards', () => {
         const showCurated = settings.value.showCuratedItems
         cards = await cardsService.loadCards(parentId, showCurated, locale)
         
-        // Store in offline storage for future use
-        await offlineStorageService.storeCards(userId, cards, parentId, locale)
+        // Store in offline storage for future use (only if we have a userId)
+        if (userId) {
+          await offlineStorageService.storeCards(userId, cards, parentId, locale)
+        }
         
       } catch (error) {
         console.warn('[CardsStore] Failed to load from API, trying offline storage:', error)
         
-        // Try to load from offline storage
-        const offlineCards = await offlineStorageService.getCards(userId, parentId, locale)
-        if (offlineCards) {
-          console.log(`[CardsStore] Loaded ${offlineCards.length} cards from offline storage`)
-          cards = offlineCards
+        // Try to load from offline storage (only if we have a userId)
+        if (userId) {
+          const offlineCards = await offlineStorageService.getCards(userId, parentId, locale)
+          if (offlineCards) {
+            console.log(`[CardsStore] Loaded ${offlineCards.length} cards from offline storage`)
+            cards = offlineCards
+          } else {
+            throw new Error('No offline data available')
+          }
         } else {
-          throw new Error('No offline data available')
+          // Skip auth mode - no offline storage
+          throw new Error('No offline data available in skip auth mode')
         }
       }
       
