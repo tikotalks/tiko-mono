@@ -355,6 +355,8 @@ const handleKeyPress = (key: KeyboardKey | { key: string; display: string }) => 
 
   padding: var(--space);
   user-select: none;
+  -webkit-user-select: none; /* iOS Safari */
+  touch-action: pan-y; /* Allow vertical scrolling but prevent zoom */
 
   @media screen and (max-width: 960px) {
     padding: var(--space-xs);
@@ -371,9 +373,17 @@ const handleKeyPress = (key: KeyboardKey | { key: string; display: string }) => 
     background: color-mix(in srgb, var(--color-background), transparent 50%);
     backdrop-filter: blur(4px);
     position: relative;
+    z-index: 20; /* Ensure it's above other elements */
 
     @media screen and (max-width: 960px) {
       padding: var(--space-s);
+    }
+    
+    /* iOS specific fixes */
+    @supports (-webkit-touch-callout: none) {
+      /* Ensure keyboard is visible on iOS */
+      transform: translate3d(0, 0, 0); /* Force GPU acceleration */
+      -webkit-transform: translate3d(0, 0, 0);
     }
   }
 
@@ -443,6 +453,10 @@ const handleKeyPress = (key: KeyboardKey | { key: string; display: string }) => 
       transform: translateY(calc(var(--keyboard-shadow-size) / 2));
       box-shadow: 0 calc((var(--keyboard-shadow-size) * -1) / 2) 0 0 var(--keyboard-key-color-shadow) inset;
     }
+    
+    /* iOS touch highlight fix */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
 
 
     &:disabled {

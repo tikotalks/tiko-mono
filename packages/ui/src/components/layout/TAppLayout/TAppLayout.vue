@@ -121,10 +121,16 @@ const showTopBar = computed(()=>{
 
   &--is-app {
     height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for iOS */
     overflow: auto;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 
     .app-layout__header {
       position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
     }
   }
 

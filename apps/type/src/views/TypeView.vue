@@ -311,7 +311,11 @@ onUnmounted(() => {
   flex-direction: column;
   position: relative;
   height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for iOS */
   overflow: hidden;
+  
+  /* iOS safe area handling */
+  padding-bottom: env(safe-area-inset-bottom);
 
   &__display-area {
     min-height: 120px;
@@ -368,11 +372,18 @@ onUnmounted(() => {
 
   &__keyboard-area {
     flex: 1;
-    overflow: hidden;
+    overflow: visible; /* Allow keyboard to be visible */
     display: flex;
     flex-direction: column;
     position: relative;
     min-height: fit-content; // Important for flexbox
+    z-index: 10; /* Ensure keyboard is above other elements */
+    
+    /* iOS specific adjustments */
+    @supports (-webkit-touch-callout: none) {
+      /* iOS only */
+      min-height: 40vh; /* Ensure minimum height on iOS */
+    }
   }
 
   &__word-list {
