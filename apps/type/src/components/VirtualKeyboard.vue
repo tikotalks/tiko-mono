@@ -351,7 +351,8 @@ const handleKeyPress = (key: KeyboardKey | { key: string; display: string }) => 
   --keyboard-shadow-size: 4px;
 
   width: 100%;
-  height: 100%;
+  height: auto; /* Let content determine height */
+  min-height: 0; /* Allow it to be as small as needed */
 
   padding: var(--space);
   user-select: none;
@@ -411,7 +412,11 @@ const handleKeyPress = (key: KeyboardKey | { key: string; display: string }) => 
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-
+    
+    /* Ensure keyboard fits on iPad landscape */
+    @media screen and (orientation: landscape) and (max-height: 850px) {
+      max-width: 900px; /* Slightly smaller on landscape tablets */
+    }
   }
 
   &__row {
@@ -541,6 +546,15 @@ const handleKeyPress = (key: KeyboardKey | { key: string; display: string }) => 
   @media screen and (max-width: 720px){
     --keyboard-key-aspect-ratio: 3/4;
     --keyboard-gap: var(--space-xs);
+  }
+  
+  /* iPad landscape specific adjustments */
+  @media screen and (orientation: landscape) and (max-height: 850px) {
+    --keyboard-key-aspect-ratio: 4/3; /* Wider keys on landscape */
+    
+    .virtual-keyboard__key {
+      font-size: clamp(1.2rem, 2vw, 2rem); /* Smaller font on landscape */
+    }
   }
 }
 </style>

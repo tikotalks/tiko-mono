@@ -319,14 +319,15 @@ onUnmounted(() => {
 
   &__display-area {
     min-height: 120px;
-    height: 100%;
-    flex-shrink: 1;
+    flex: 0 1 auto; /* Can shrink but not grow beyond content */
     display: flex;
     align-items: center;
     justify-content: center;
     padding: var(--space);
     padding-top: var(--spacing);
     backdrop-filter: blur(10px);
+    overflow-y: auto; /* Allow scrolling if content is too tall */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
   }
 
   &__text-display {
@@ -371,18 +372,19 @@ onUnmounted(() => {
   }
 
   &__keyboard-area {
-    flex: 1;
+    flex: 1 1 auto; /* Allow it to grow and shrink */
     overflow: visible; /* Allow keyboard to be visible */
     display: flex;
     flex-direction: column;
     position: relative;
-    min-height: fit-content; // Important for flexbox
+    min-height: 0; /* Allow flexbox to shrink properly */
     z-index: 10; /* Ensure keyboard is above other elements */
     
     /* iOS specific adjustments */
     @supports (-webkit-touch-callout: none) {
-      /* iOS only */
-      min-height: 40vh; /* Ensure minimum height on iOS */
+      /* iOS only - ensure keyboard takes the space it needs */
+      flex-shrink: 0; /* Don't shrink on iOS */
+      min-height: auto; /* Let content determine height */
     }
   }
 
