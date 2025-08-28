@@ -271,9 +271,9 @@ const currentLanguage = computed(() => {
 })
 
 const isAuthenticated = computed(() => {
-  // Check if user skipped auth
+  // Skip auth users are NOT authenticated - they should see the login button
   if (sessionStorage.getItem('tiko_skip_auth') === 'true') {
-    return true;
+    return false;
   }
   if (!authStore.value) return false
   const refs = storeToRefs(authStore.value)
