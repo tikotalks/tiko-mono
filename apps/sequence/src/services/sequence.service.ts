@@ -64,7 +64,7 @@ export const sequenceService = {
           effective_locale: item.effective_locale || item.base_locale || 'en'
         }));
       } else {
-        // Normal mode: Load sequence with translations for current locale
+        // Normal mode: Load sequence with translations for current locale (includes curated items)
         items = await sequenceSupabaseService.getSequenceWithTranslations(userId, parentId, locale);
       }
 

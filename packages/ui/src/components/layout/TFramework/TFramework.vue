@@ -1,30 +1,20 @@
 <template>
   <div :class="bemm('', ['', tikoConfig.isApp ? 'is-app' : 'is-website'])" :style="deviceTiltStyles">
-    <TAuthWrapper :background-image="backgroundImage"
-      v-if="tikoConfig"
-      :title="tikoConfig.name"
-      :app-name="tikoConfig.id"
-      :require-auth="tikoConfig.auth.show"
-      :show-splash-screen="tikoConfig.settings.show"
+    <TAuthWrapper :background-image="backgroundImage" v-if="tikoConfig" :title="tikoConfig.name"
+      :app-name="tikoConfig.id" :require-auth="tikoConfig.auth.show" :show-splash-screen="tikoConfig.settings.show"
       :allow-skip-auth="tikoConfig.auth.skipAuth">
-      <TAppLayout :title="displayTitle"
-        :subtitle="displaySubtitle"
-        :show-back="showBackButton"
-        :is-loading="loading"
-        :config="tikoConfig"
-        @profile="handleProfile"
-        @settings="handleSettings"
-        @logout="handleLogout"
+      <TAppLayout :title="displayTitle" :subtitle="displaySubtitle" :show-back="showBackButton" :is-loading="loading"
+        :config="tikoConfig" @profile="handleProfile" @settings="handleSettings" @logout="handleLogout"
         @back="handleBack">
         <!-- TopBar middle content (for route display) -->
-        <template v-if="topBar.showCurrentRoute && topBar.routeDisplay === 'middle'" #top-bar-middle>
+        <template v-if="topBar.showCurrentRoute && topBar.routeDisplay === 'middle'" #center>
           <div :class="bemm('route-display')">
             {{ currentRouteTitle }}
           </div>
         </template>
 
         <!-- TopBar actions -->
-        <template #top-bar-actions>
+        <template #actions>
           <!-- App specific actions first -->
           <slot name="topbar-actions" />
         </template>
@@ -32,8 +22,8 @@
         <!-- Main content -->
         <slot />
 
-        <!-- Login button when in skip auth mode -->
-        <TButton v-if="tikoConfig.auth.showLoginButton" :class="bemm('login-button')" type="ghost" :icon="Icons.USER"
+        <!-- Login button when in skip auth mode and not authenticated -->
+        <TButton v-if="tikoConfig.auth.showLoginButton && !isAuthenticated" :class="bemm('login-button')" type="ghost" :icon="Icons.USER"
           @click="handleSkipAuthLogin">
           {{ t('auth.login') }}
         </TButton>
@@ -113,7 +103,7 @@ initializeStores()
 
 // Initialize i18n after stores are available
 const setLocale = ref<(locale: string) => Promise<void>>(() => Promise.resolve())
-const t = ref((key:string) => key)
+const t = ref((key: string) => key)
 const keys = ref({ auth: { login: 'Login' } })
 const locale = ref('en')
 
@@ -179,8 +169,8 @@ watch(deviceMotionEnabled, (enabled) => {
     console.log('[TFramework] Device motion enabled');
     // If on iOS and needs permission, wait for user interaction
     if (typeof DeviceOrientationEvent !== 'undefined' &&
-        typeof DeviceOrientationEvent.requestPermission === 'function' &&
-        !hasRequestedMotionPermission.value) {
+      typeof DeviceOrientationEvent.requestPermission === 'function' &&
+      !hasRequestedMotionPermission.value) {
       // Will be handled by the click/touch listeners
       return;
     }
@@ -206,7 +196,7 @@ onMounted(() => {
 
   // Check if we need permission (iOS 13+)
   if (typeof DeviceOrientationEvent !== 'undefined' &&
-      typeof DeviceOrientationEvent.requestPermission === 'function') {
+    typeof DeviceOrientationEvent.requestPermission === 'function') {
     // Add listeners for first user interaction
     const handleFirstInteraction = async () => {
       await requestDeviceMotionPermission();
@@ -227,7 +217,7 @@ const frameworkStyles = computed(() => ({
   ...(themeStyles?.value ?? {})
 }));
 
-const deviceTiltStyles = computed(()=>({
+const deviceTiltStyles = computed(() => ({
   '--rx': deviceTilt.tilt.rx + 'deg',
   '--ry': deviceTilt.tilt.ry + 'deg',
   '--tz': deviceTilt.tilt.tz + 'px'
@@ -280,11 +270,21 @@ const currentLanguage = computed(() => {
   return refs.currentLanguage?.value || 'en'
 })
 
+const isAuthenticated = computed(() => {
+  // Check if user skipped auth
+  if (sessionStorage.getItem('tiko_skip_auth') === 'true') {
+    return true;
+  }
+  if (!authStore.value) return false
+  const refs = storeToRefs(authStore.value)
+  return refs.isAuthenticated?.value || false
+})
+
 // TopBar configuration with defaults
 const topBar = computed(() => ({
   showUser: true,
   showParentMode: true,
-  showTitle: true,  
+  showTitle: true,
   showSubtitle: true,
   showCurrentRoute: false,
   routeDisplay: 'subtitle' as const,
@@ -516,16 +516,16 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .framework {
-  --bg-outside: color-mix(in srgb, var(--color-primary), var(--color-background) 95%);
-  --bg-inside: color-mix(in srgb, var(--color-primary), var(--color-background) 50%);
+  --bg-outside: color-mix(in oklab, var(--color-primary), var(--color-background) 80%);
+  --bg-inside: color-mix(in oklab, var(--color-primary), var(--color-background) 25%);
 
-  [data-theme="light"] &{
-    --bg-inside: color-mix(in srgb, var(--color-primary), var(--color-background) 95%);
-  --bg-outside: color-mix(in srgb, var(--color-primary), var(--color-background) 50%);
+  [data-theme="light"] & {
+    --bg-inside: color-mix(in oklab, var(--color-primary), var(--color-white) 95%);
+    --bg-outside: color-mix(in oklab, var(--color-primary), var(--color-white) 66.66%);
 
   }
 
-  background-image: radial-gradient(var(--bg-inside), var(--bg-outside));
+  background-image: radial-gradient(circle at 20% 20%, var(--bg-inside), var(--bg-outside));
 
   width: 100vw;
   display: flex;
