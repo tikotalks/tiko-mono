@@ -70,33 +70,47 @@ export const useCardStore = defineStore('cards', () => {
   }
 
   const updateSettings = async (newSettings: Partial<YesNoSettings>) => {
+    const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
     const currentSettings = settings.value
     const updatedSettings = { ...currentSettings, ...newSettings }
 
-    await appStore.updateAppSettings('yes-no', updatedSettings)
+    // Only save to backend if not in skip auth mode
+    if (!isSkipAuth) {
+      await appStore.updateAppSettings('cards', updatedSettings)
+    } else {
+      console.log('[CardsStore] Skip auth mode - settings only updated locally')
+      // Update local settings
+      Object.assign(settings.value, updatedSettings)
+    }
   }
 
   const saveState = async () => {
-    await appStore.updateAppSettings('cards', {
-      ...settings.value
-    })
+    const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
+    
+    // Only save app settings if not in skip auth mode
+    if (!isSkipAuth) {
+      await appStore.updateAppSettings('cards', {
+        ...settings.value
+      })
+    } else {
+      console.log('[CardsStore] Skip auth mode - not saving user settings')
+    }
   }
 
 
   const loadState = async () => {
     console.log('[CardsStore] Loading state...')
-    await appStore.loadAppSettings('yes-no')
+    const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
+    
+    // Only load app settings if not in skip auth mode
+    if (!isSkipAuth) {
+      await appStore.loadAppSettings('cards')
 
-    const appSettings = appStore.getAppSettings('yes-no')
-    console.log('[CardsStore] Retrieved settings:', appSettings)
-
-    if (appSettings?.currentQuestion) {
-      console.log('[CardsStore] Loaded question:', appSettings.currentQuestion)
+      const appSettings = appStore.getAppSettings('cards')
+      console.log('[CardsStore] Retrieved settings:', appSettings)
     } else {
-      console.log('[CardsStore] No saved question found, using default')
+      console.log('[CardsStore] Skip auth mode - not loading user settings')
     }
-
-    // Load questions from Items service
   }
   
   // Card loading with caching

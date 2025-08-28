@@ -81,17 +81,22 @@ export function useTextToSpeech() {
   
   // Get voice for current locale
   const getVoiceForLocale = (targetLocale?: Locale): SpeechSynthesisVoice | null => {
-    const localeToUse = targetLocale || locale.value
+    const localeToUse = targetLocale || locale.value || 'en'
     
     if (!voices.value.length) {
       loadVoices()
+    }
+    
+    // Ensure localeToUse is a string before using split
+    if (!localeToUse || typeof localeToUse !== 'string') {
+      return voices.value.find(v => v.default) || voices.value[0] || null
     }
     
     // Try to find exact match first
     let voice = voices.value.find(v => v.lang === localeToUse)
     
     // If not found, try to match language part only (e.g., 'en' from 'en-GB')
-    if (!voice) {
+    if (!voice && localeToUse.includes('-')) {
       const langPart = localeToUse.split('-')[0]
       voice = voices.value.find(v => v.lang.startsWith(langPart))
     }

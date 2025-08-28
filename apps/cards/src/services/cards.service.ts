@@ -76,9 +76,8 @@ export const cardsService = {
             locale: effectiveLocale
           });
         } else {
-          // Load root level curated cards - use a dummy user ID since the API filters will handle curated items
-          // We'll get only curated items because userId won't match any items, so only public curated items are returned
-          items = await unifiedItemService.loadRootItems('skip-auth-user', APP_NAME, {
+          // Load root level curated cards - pass empty string for userId to skip user items
+          items = await unifiedItemService.loadRootItems('', APP_NAME, {
             includeCurated: true,
             includeChildren: false,
             locale: effectiveLocale
@@ -134,8 +133,8 @@ export const cardsService = {
       let items: BaseItem[];
       
       if (isSkipAuth && !userId) {
-        // Skip auth mode: Load only curated cards - use a dummy user ID
-        items = await unifiedItemService.loadItemsByUserAndApp('skip-auth-user', APP_NAME, {
+        // Skip auth mode: Load only curated cards - use empty string for userId
+        items = await unifiedItemService.loadItemsByUserAndApp('', APP_NAME, {
           includeCurated: true,
           includeChildren: true,
           locale: effectiveLocale
@@ -211,9 +210,26 @@ export const cardsService = {
       }
       
       // Fallback to loading children (or if we need to check curated items)
-      const children = includeCurated 
-        ? await cardsSupabaseService.getCardsWithCurated(userId, parentId)
-        : await cardsSupabaseService.getCards(userId, parentId);
+      let children: any[] = [];
+      
+      // Use unified item service for checking children
+      if (isSkipAuth && !userId) {
+        // In skip auth mode without user, only check for curated items
+        if (includeCurated) {
+          children = await unifiedItemService.loadItemsByParentId(parentId, {
+            includeCurated: true,
+            includeChildren: false,
+            locale: 'en' // Default locale for existence check
+          });
+        }
+      } else {
+        // Normal mode with user authentication
+        children = await unifiedItemService.loadItemsByParentId(parentId, {
+          includeCurated,
+          includeChildren: false,
+          locale: 'en' // Default locale for existence check
+        });
+      }
       
       const hasChildren = children.length > 0;
       
