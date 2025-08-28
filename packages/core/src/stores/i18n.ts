@@ -62,7 +62,7 @@ export const useI18nStore = defineStore('i18n', () => {
           if (i === parts.length - 1) {
             current[part] = key
           } else {
-            if (!current[part]) {
+            if (!current[part] || typeof current[part] !== 'object') {
               current[part] = {}
             }
             current = current[part]

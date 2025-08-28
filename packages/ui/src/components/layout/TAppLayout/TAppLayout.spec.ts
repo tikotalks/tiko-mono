@@ -19,7 +19,7 @@ describe('TAppLayout.vue', () => {
         default: '<p>Main content</p>'
       }
     })
-    
+
     expect(wrapper.html()).toBeTruthy()
     expect(wrapper.find('.app-layout').exists()).toBe(true)
     expect(wrapper.find('.app-layout__content').exists()).toBe(true)
@@ -30,7 +30,7 @@ describe('TAppLayout.vue', () => {
     const wrapper = mount(TAppLayout, {
       props: { showHeader: true }
     })
-    
+
     expect(wrapper.find('.app-layout__header').exists()).toBe(true)
     expect(wrapper.findComponent({ name: 'TTopBar' }).exists()).toBe(true)
   })
@@ -39,7 +39,7 @@ describe('TAppLayout.vue', () => {
     const wrapper = mount(TAppLayout, {
       props: { showHeader: false }
     })
-    
+
     expect(wrapper.findComponent({ name: 'TTopBar' }).exists()).toBe(false)
   })
 
@@ -55,10 +55,10 @@ describe('TAppLayout.vue', () => {
       isLoading: true,
       appName: 'test-app'
     }
-    
+
     const wrapper = mount(TAppLayout, { props })
     const topBar = wrapper.findComponent({ name: 'TTopBar' })
-    
+
     expect(topBar.props('title')).toBe('Test Title')
     expect(topBar.props('subtitle')).toBe('Test Subtitle')
     expect(topBar.props('showBackButton')).toBe(true)
@@ -74,11 +74,11 @@ describe('TAppLayout.vue', () => {
     const customMenuItems = [
       { id: 'custom', label: 'Custom Action', icon: 'star' }
     ]
-    
+
     const wrapper = mount(TAppLayout, {
       props: { customMenuItems }
     })
-    
+
     const topBar = wrapper.findComponent({ name: 'TTopBar' })
     expect(topBar.props('customMenuItems')).toEqual(customMenuItems)
   })
@@ -86,7 +86,7 @@ describe('TAppLayout.vue', () => {
   it('emits back event when TTopBar emits back', async () => {
     const wrapper = mount(TAppLayout)
     const topBar = wrapper.findComponent({ name: 'TTopBar' })
-    
+
     await topBar.vm.$emit('back')
     expect(wrapper.emitted()).toHaveProperty('back')
     expect(wrapper.emitted('back')).toHaveLength(1)
@@ -95,7 +95,7 @@ describe('TAppLayout.vue', () => {
   it('emits profile event when TTopBar emits profile', async () => {
     const wrapper = mount(TAppLayout)
     const topBar = wrapper.findComponent({ name: 'TTopBar' })
-    
+
     await topBar.vm.$emit('profile')
     expect(wrapper.emitted()).toHaveProperty('profile')
     expect(wrapper.emitted('profile')).toHaveLength(1)
@@ -104,7 +104,7 @@ describe('TAppLayout.vue', () => {
   it('emits settings event when TTopBar emits settings', async () => {
     const wrapper = mount(TAppLayout)
     const topBar = wrapper.findComponent({ name: 'TTopBar' })
-    
+
     await topBar.vm.$emit('settings')
     expect(wrapper.emitted()).toHaveProperty('settings')
     expect(wrapper.emitted('settings')).toHaveLength(1)
@@ -113,7 +113,7 @@ describe('TAppLayout.vue', () => {
   it('emits logout event when TTopBar emits logout', async () => {
     const wrapper = mount(TAppLayout)
     const topBar = wrapper.findComponent({ name: 'TTopBar' })
-    
+
     await topBar.vm.$emit('logout')
     expect(wrapper.emitted()).toHaveProperty('logout')
     expect(wrapper.emitted('logout')).toHaveLength(1)
@@ -123,7 +123,7 @@ describe('TAppLayout.vue', () => {
     const wrapper = mount(TAppLayout)
     const topBar = wrapper.findComponent({ name: 'TTopBar' })
     const menuItem = { id: 'test', label: 'Test', icon: 'star' }
-    
+
     await topBar.vm.$emit('menu-item-click', menuItem)
     expect(wrapper.emitted()).toHaveProperty('menu-item-click')
     expect(wrapper.emitted('menu-item-click')).toHaveLength(1)
@@ -136,17 +136,17 @@ describe('TAppLayout.vue', () => {
         'top-bar-center': '<span>Center content</span>'
       }
     })
-    
+
     expect(wrapper.html()).toContain('<span>Center content</span>')
   })
 
   it('renders top-bar-actions slot content', () => {
     const wrapper = mount(TAppLayout, {
       slots: {
-        'top-bar-actions': '<button>Action</button>'
+        'actions': '<button>Action</button>'
       }
     })
-    
+
     expect(wrapper.html()).toContain('<button>Action</button>')
   })
 
@@ -156,7 +156,7 @@ describe('TAppLayout.vue', () => {
         footer: '<div class="footer-content">Footer</div>'
       }
     })
-    
+
     expect(wrapper.find('.app-layout__footer').exists()).toBe(true)
     expect(wrapper.text()).toContain('Footer')
   })
@@ -169,7 +169,7 @@ describe('TAppLayout.vue', () => {
   it('applies correct default props', () => {
     const wrapper = mount(TAppLayout)
     const topBar = wrapper.findComponent({ name: 'TTopBar' })
-    
+
     expect(topBar.props('showBackButton')).toBe(false)
     expect(topBar.props('backButtonLabel')).toBe('Back')
     expect(topBar.props('showUserInfo')).toBe(true)
@@ -185,14 +185,14 @@ describe('TAppLayout.vue', () => {
         footer: '<p>Footer</p>'
       }
     })
-    
+
     const layout = wrapper.find('.app-layout')
     expect(layout.exists()).toBe(true)
-    
+
     const header = layout.find('.app-layout__header')
     const content = layout.find('.app-layout__content')
     const footer = layout.find('.app-layout__footer')
-    
+
     expect(header.exists()).toBe(true)
     expect(content.exists()).toBe(true)
     expect(footer.exists()).toBe(true)

@@ -88,7 +88,7 @@ import {
   type KeyboardKey,
   type KeyboardLayout
 } from './VirtualKeyboard.data'
-import { useImageResolver, useSpeak } from '@tiko/core'
+import { useImageResolver, useSpeak, usePlaySound, SOUNDS } from '@tiko/core'
 
 interface Props {
   layout?: string
@@ -99,6 +99,7 @@ interface Props {
   speakOnType?: boolean
   funLetters?: boolean
   enablePhysicalKeyboard?: boolean
+  playTypingSounds?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -109,7 +110,8 @@ const props = withDefaults(defineProps<Props>(), {
   hapticFeedback: true,
   speakOnType: false,
   funLetters: false,
-  enablePhysicalKeyboard: true
+  enablePhysicalKeyboard: true,
+  playTypingSounds: false
 })
 
 const emit = defineEmits<{
@@ -121,6 +123,7 @@ const emit = defineEmits<{
 const bemm = useBemm('virtual-keyboard')
 const { speak, preloadAudio } = useSpeak()
 const { resolveAssetUrl } = useImageResolver()
+const { playSound, preloadSounds } = usePlaySound()
 
 
 
@@ -277,15 +280,27 @@ watch(() => props.funLetters, (newValue) => {
   }
 })
 
+// Watch for playTypingSounds changes
+watch(() => props.playTypingSounds, async (newValue) => {
+  if (newValue) {
+    await preloadSounds([{ id: SOUNDS.TYPING, media: 'assets' }])
+  }
+})
+
 // Store cleanup function for physical keyboard
 let cleanupPhysicalKeyboard: (() => void) | null = null
 
 // Initial preload on mount
-onMounted(() => {
+onMounted(async () => {
   if (props.speakOnType) {
     preloadLayoutAudio()
   }
   loadFunLetterData()
+  
+  // Preload typing sound if enabled
+  if (props.playTypingSounds) {
+    await preloadSounds([{ id: SOUNDS.TYPING, media: 'assets' }])
+  }
   
   // Only enable physical keyboard if the prop is true
   if (props.enablePhysicalKeyboard) {
@@ -309,6 +324,20 @@ const triggerHapticFeedback = () => {
   }
 }
 
+const playTypingSound = async () => {
+  if (!props.playTypingSounds) return
+  
+  try {
+    await playSound({
+      id: SOUNDS.TYPING,
+      media: 'assets',
+      volume: 0.3 // Softer volume for typing sounds
+    })
+  } catch (error) {
+    console.error('[VirtualKeyboard] Error playing typing sound:', error)
+  }
+}
+
 const speakKey = (key: string) => {
   if (!props.speakOnType) return
 
@@ -323,6 +352,9 @@ const handleKeyPress = (key: KeyboardKey | { key: string; display: string }) => 
 
   // Trigger haptic feedback for all key presses
   triggerHapticFeedback()
+  
+  // Play typing sound for all key presses
+  playTypingSound()
 
 
   if (keyValue === 'Backspace') {

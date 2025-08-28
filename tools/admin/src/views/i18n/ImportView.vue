@@ -669,7 +669,6 @@ onMounted(async () => {
     background: var(--color-background-secondary);
     padding: var(--space-lg);
     border-radius: var(--radius-lg);
-    border: 1px solid var(--color-accent);
 
     h2 {
       font-size: var(--font-size-lg);

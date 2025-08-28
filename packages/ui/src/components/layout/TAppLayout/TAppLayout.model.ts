@@ -149,12 +149,12 @@ export interface TAppLayoutSlots {
   /**
    * Content for the center of the top bar
    */
-  'top-bar-center': {}
+  'center': {}
 
   /**
    * Actions area in the top bar
    */
-  'top-bar-actions': {}
+  'actions': {}
 
   /**
    * Footer content (optional)

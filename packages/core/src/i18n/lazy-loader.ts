@@ -139,10 +139,15 @@ export async function loadLanguageWithBase(locale: string): Promise<Translations
   // If base language exists, merge it with regional
   if (baseTranslations) {
     console.log(`[i18n] Merging ${baseLocale} into ${locale}`)
-    return {
+    const baseKeys = Object.keys(baseTranslations).length
+    const regionalKeys = Object.keys(regionalTranslations).length
+    const merged = {
       ...baseTranslations,
       ...regionalTranslations
     }
+    const mergedKeys = Object.keys(merged).length
+    console.log(`[i18n] Base ${baseLocale}: ${baseKeys} keys, Regional ${locale}: ${regionalKeys} keys, Merged: ${mergedKeys} keys`)
+    return merged
   }
 
   // Return just regional if no base exists

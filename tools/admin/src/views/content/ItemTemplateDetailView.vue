@@ -27,7 +27,7 @@
       <TCard :class="bemm('section')">
         <template #header>
           <div :class="bemm('section-header')">
-            <h3>{{ t('common.fields') }}</h3>
+            <h3>{{ t('common.fieldsLabel') }}</h3>
             <TButton
               color="primary"
               size="small"

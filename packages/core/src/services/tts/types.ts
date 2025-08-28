@@ -1,15 +1,17 @@
 export interface TTSConfig {
-  provider: 'openai' | 'browser';
+  provider: 'openai' | 'azure' | 'browser';
   language: string;
   voice?: string;
   model?: 'tts-1' | 'tts-1-hd';
   originalLanguage?: string;
   fallbackUsed?: boolean;
+  speed?: number;
+  pitch?: number;
 }
 
 export interface AudioMetadata {
   url?: string;
-  provider: 'openai' | 'browser';
+  provider: 'openai' | 'azure' | 'browser';
   language: string;
   voice?: string;
   model?: string;
@@ -18,6 +20,8 @@ export interface AudioMetadata {
   fallbackUsed?: boolean;
   duration?: number;
   size?: number;
+  speed?: number;
+  pitch?: number;
 }
 
 export interface TTSRequest {
@@ -25,6 +29,9 @@ export interface TTSRequest {
   language: string;
   voice?: string;
   model?: 'tts-1' | 'tts-1-hd';
+  provider?: 'openai' | 'azure' | 'browser';
+  speed?: number;
+  pitch?: number;
 }
 
 export interface TTSResponse {

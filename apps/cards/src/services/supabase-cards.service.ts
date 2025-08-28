@@ -111,24 +111,16 @@ class CardsSupabaseService {
   async getCardsWithCurated(userId: string, parentId?: string): Promise<CardItem[]> {
     console.log('[getCardsWithCurated] Called with:', { userId, parentId });
 
-    // Fetch user's own cards
-    const userParams = new URLSearchParams();
-    userParams.append('user_id', `eq.${userId}`);
-    userParams.append('app_name', 'eq.cards');
-
-    if (parentId === undefined || parentId === null) {
-      userParams.append('parent_id', 'is.null');
-    } else {
-      userParams.append('parent_id', `eq.${parentId}`);
-    }
-    userParams.append('order', 'order_index.asc');
-
     // Fetch curated public cards for the same parent
     const curatedParams = new URLSearchParams();
     curatedParams.append('app_name', 'eq.cards');
     curatedParams.append('is_public', 'eq.true');
     curatedParams.append('is_curated', 'eq.true');
-    curatedParams.append('user_id', `neq.${userId}`); // Exclude user's own items
+    
+    // Only exclude user's items if userId is provided
+    if (userId) {
+      curatedParams.append('user_id', `neq.${userId}`); // Exclude user's own items
+    }
 
     if (parentId === undefined || parentId === null) {
       curatedParams.append('parent_id', 'is.null');
@@ -138,6 +130,25 @@ class CardsSupabaseService {
     curatedParams.append('order', 'order_index.asc');
 
     try {
+      // If no userId, only fetch curated cards
+      if (!userId) {
+        const curatedCards = await this.apiRequest<CardItem[]>(`items?${curatedParams.toString()}`);
+        console.log('[getCardsWithCurated] Found', curatedCards.length, 'curated cards (no user)');
+        return curatedCards;
+      }
+
+      // Fetch user's own cards
+      const userParams = new URLSearchParams();
+      userParams.append('user_id', `eq.${userId}`);
+      userParams.append('app_name', 'eq.cards');
+
+      if (parentId === undefined || parentId === null) {
+        userParams.append('parent_id', 'is.null');
+      } else {
+        userParams.append('parent_id', `eq.${parentId}`);
+      }
+      userParams.append('order', 'order_index.asc');
+
       // Fetch both in parallel
       const [userCards, curatedCards] = await Promise.all([
         this.apiRequest<CardItem[]>(`items?${userParams.toString()}`),

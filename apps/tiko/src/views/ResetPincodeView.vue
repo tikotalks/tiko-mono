@@ -18,7 +18,7 @@
               <label :class="bemm('label')" for="current-pin">
                 {{ t('parentMode.currentPincode') }}
               </label>
-              <TPinCode
+              <TPinInput
                 v-model="currentPin"
                 :length="4"
                 :auto-focus="true"
@@ -35,7 +35,7 @@
               <label :class="bemm('label')" for="new-pin">
                 {{ t('parentMode.newPincode') }}
               </label>
-              <TPinCode
+              <TPinInput
                 v-model="newPin"
                 :length="4"
                 :auto-focus="currentPinVerified"
@@ -52,7 +52,7 @@
               <label :class="bemm('label')" for="confirm-pin">
                 {{ t('parentMode.confirmNewPincode') }}
               </label>
-              <TPinCode
+              <TPinInput
                 v-model="confirmPin"
                 :length="4"
                 :auto-focus="newPin.length === 4"
@@ -107,7 +107,7 @@
 import { ref, computed } from 'vue'
 import { useBemm } from 'bemm'
 import { useRouter } from 'vue-router'
-import { TAppLayout, TButton, TPinCode } from '@tiko/ui'
+import { TAppLayout, TButton, TPinInput } from '@tiko/ui'
 import { useI18n, useAuthStore, parentModeService } from '@tiko/core'
 import { storeToRefs } from 'pinia'
 

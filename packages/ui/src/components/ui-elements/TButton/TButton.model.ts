@@ -70,11 +70,11 @@ export interface TButtonProps {
   /** HTML element type to render */
   element?: string;
   /** Tooltip text */
-  tooltip?: string;
-  tooltipSettings?: {
-    delay: number,
+  tooltip?: string | {
+    value: string,
+    delay?: number,
     position: ToolTipPosition
-  },
+  };
   /** Whether to show shadow */
   shadow?: boolean;
   /** HTML button type attribute */

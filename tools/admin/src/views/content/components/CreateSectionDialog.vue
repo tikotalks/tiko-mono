@@ -63,7 +63,7 @@
       </TFormGroup>
 
       <div :class="bemm('fields-section')" v-if="formData.slug">
-        <h3>{{ t('common.fields') }}</h3>
+        <h3>{{ t('common.fieldsLabel') }}</h3>
         <p :class="bemm('help-text')">{{ t('common.fieldsHelp') }}</p>
 
         <div :class="bemm('fields-list')">

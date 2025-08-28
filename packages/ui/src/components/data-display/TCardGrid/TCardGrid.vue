@@ -135,10 +135,10 @@ const GRID_COLUMNS = {
   XXL: 8,
   XL: 8,
   L: 6,
-  M: 6,
-  S: 3, // Mobile landscape - 3 columns instead of 4
-  XS: 3, // Mobile portrait - 3 columns instead of 4  
-  XXS: 3, // Very small phones - keep 3 columns
+  M: 4, // Medium screens - 4 columns instead of 6
+  S: 3, // Mobile landscape - 3 columns 
+  XS: 3, // Mobile portrait - 3 columns  
+  XXS: 3, // Very small phones - 3 columns
 } as const;
 
 // Layout spacing constants

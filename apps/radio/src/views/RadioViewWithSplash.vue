@@ -24,7 +24,7 @@
         @settings="handleSettings"
         @logout="handleLogout"
       >
-        <template #top-bar-actions>
+        <template #actions>
           <div :class="bemm('search-input')">
             <TInputText
               v-model="searchQuery"

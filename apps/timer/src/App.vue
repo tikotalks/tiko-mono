@@ -1,62 +1,26 @@
 <template>
-  <TFramework
-    :config="frameworkConfig"
-    :background-image="backgroundImage"
-    :loading="loading"
-  >
+  <TFramework :config="frameworkConfig" :background-image="backgroundImage" :loading="loading">
     <template #topbar-actions>
       <!-- Timer Controls -->
-      <TButton
-        v-if="!isRunning"
-        icon="play"
-        type="icon-only"
-        size="medium"
-        @click="start"
-        :aria-label="t('timer.start')"
-      />
-      <TButton
-        v-else
-        icon="pause"
-        type="outline"
-        color="success"
-        size="medium"
-        @click="pause"
+      <TButton v-if="!isRunning" icon="play" type="icon-only" size="medium" @click="start"
+        :aria-label="t('timer.start')" />
+      <TButton v-else icon="pause" type="outline" color="success" size="medium" @click="pause"
         :aria-label="t('timer.pause')"
-        :tooltip="t('timer.pause')"
-        :tooltipSettings="{delay: .5, position: ToolTipPosition.BOTTOM}"
-      />
+        :tooltip="{ value: t('timer.pause'), delay: .5, position: ToolTipPosition.BOTTOM }" />
 
-      <TButton
-        icon="arrow-rotate-top-left"
-        type="outline"
-        size="medium"
-        @click="reset"
-        :aria-label="t('timer.reset')"
-        :tooltip="t('timer.reset')"
-        :tooltipSettings="{delay: .5, position: ToolTipPosition.BOTTOM}"
-      />
+      <TButton icon="arrow-rotate-top-left" type="outline" size="medium" @click="reset" :aria-label="t('timer.reset')"
+        :tooltip="{ value: t('timer.reset'), delay: .5, position: ToolTipPosition.BOTTOM }" />
 
       <!-- Edit Timer Button -->
-      <TButton
-        icon="edit"
-        type="outline"
-        size="medium"
-        @click="showEditSettings"
-        :aria-label="t('common.settings')"
-        :tooltip="t('common.settings')"
-        :tooltipSettings="{delay: .5, position: ToolTipPosition.BOTTOM}"
-      />
+      <TButton icon="edit" type="outline" size="medium" @click="showEditSettings" :aria-label="t('common.settings')"
+        :tooltip="{ value: t('common.settings'), delay: .5, position: ToolTipPosition.BOTTOM }" />
 
       <!-- Mode Toggle -->
-      <TButton
-        :icon="mode === 'up' ? 'arrow-up' : 'arrow-down'"
-        type="outline"
-        size="medium"
-        @click="toggleMode"
-        :aria-label="mode === 'up' ? t('timer.countDown') : t('timer.countUp')"
-        :tooltip="mode === 'up' ? t('timer.countDown') : t('timer.countUp')"
-        :tooltipSettings="{delay: .5, position: ToolTipPosition.BOTTOM}"
-      />
+      <TButton :icon="mode === 'up' ? 'arrow-up' : 'arrow-down'" type="outline" size="medium" @click="toggleMode"
+        :aria-label="mode === 'up' ? t('timer.countDown') : t('timer.countUp')" :tooltip="{
+          value: mode === 'up' ? t('timer.countDown') : t('timer.countUp'),
+          delay: .5, position: ToolTipPosition.BOTTOM
+        }" />
     </template>
 
     <router-view />
@@ -65,7 +29,7 @@
 
 <script setup lang="ts">
 import { computed, inject, ref, onMounted } from 'vue'
-import { TFramework, TButton, type FrameworkConfig, popupService as importedPopupService, ToolTipPosition} from '@tiko/ui'
+import { TFramework, TButton, type FrameworkConfig, popupService as importedPopupService, ToolTipPosition } from '@tiko/ui'
 import { useTimer } from './composables/useTimer'
 import { useTimerStore } from './stores/timer'
 import TimerSettingsForm from './components/TimerSettingsForm.vue'

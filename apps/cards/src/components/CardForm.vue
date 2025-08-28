@@ -5,7 +5,7 @@
       <!-- Translations toggle button (only when editing) -->
       <div v-if="isEditing" :class="bemm('translations-toggle')">
         <TButton type="outline" color="primary" :icon="Icons.SPEECH_BALLOON" @click="toggleTranslations">
-          {{ showTranslations ? t('common.hide') : t('common.show') }} {{ t('cards.translations') }}
+          {{ t('cards.translations') }}
           <span v-if="form.translations.length > 0" :class="bemm('translations-count')">
             ({{ form.translations.length }})
           </span>
@@ -92,20 +92,6 @@
 
         </section>
 
-        <!-- Right Column: Translations -->
-        <div v-if="isEditing && showTranslations" :class="bemm('section', ['', 'translations'])">
-          <div :class="bemm('translations-header')">
-            <h3 :class="bemm('section-title')">{{ t('cards.translations') }}</h3>
-          </div>
-
-          <div :class="bemm('translations-content')">
-            <CardTranslations v-model="form.translations" :item-id="props.card?.id" :base-title="form.title"
-              :base-speech="form.speech" :base-locale="form.base_locale || currentLocale.value.split('-')[0]"
-              @update:base-title="form.title = $event"
-              @update:base-speech="form.speech = $event; speechManuallyEdited = true"
-              @translations-generated="$emit('translationsGenerated')" />
-          </div>
-        </div>
 
     </TForm>
   </div>
@@ -185,12 +171,39 @@ const form = reactive({
 // Track if user has manually edited speech
 const speechManuallyEdited = ref(false);
 
-// Translations visibility toggle
-const showTranslations = ref(false);
-
-// Toggle translations visibility
+// Toggle translations visibility - opens popup
 const toggleTranslations = () => {
-  showTranslations.value = !showTranslations.value;
+  openTranslationsPopup();
+};
+
+// Open translations in popup
+const openTranslationsPopup = () => {
+  if (!popupService) return;
+  
+  popupService.open({
+    component: CardTranslations,
+    title: t('cards.translations'),
+    props: {
+      modelValue: form.translations,
+      itemId: props.card?.id,
+      baseTitle: form.title,
+      baseSpeech: form.speech,
+      baseLocale: form.base_locale || currentLocale.value.split('-')[0],
+      'onUpdate:modelValue': (translations: ItemTranslation[]) => {
+        form.translations = translations;
+      },
+      'onUpdate:baseTitle': (title: string) => {
+        form.title = title;
+      },
+      'onUpdate:baseSpeech': (speech: string) => {
+        form.speech = speech;
+        speechManuallyEdited.value = true;
+      },
+      onTranslationsGenerated: () => {
+        emit('translationsGenerated');
+      }
+    }
+  });
 };
 
 

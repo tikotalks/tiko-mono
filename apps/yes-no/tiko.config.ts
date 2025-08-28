@@ -20,7 +20,7 @@ export default defineConfig({
   splash: {
     show: true,
     appName: 'Yes-No',
-    backgroundColor: ColorValue.BLUE_DARK,
+    color: ColorValue.BLUE_DARK,
     themeColor: ColorValue.PURPLE,
     loadingText: 'Loading Yes-No...'
   },

@@ -2,8 +2,8 @@
   <div :class="bemm()">
     <div :class="bemm('header')">
       <div :class="bemm('header-actions')">
-        <TButton v-if="isAdmin && hasBaseContent" type="primary" size="small" :class="bemm('generate-all')"
-          :icon="Icons.SPARKLES" :status="isGeneratingAll ? Status.LOADING : undefined" @click="handleGenerateAll">
+        <TButton v-if="isAdmin && hasBaseContent" size="small" :class="bemm('generate-all')"
+          :icon="Icons.REFRESH" :status="isGeneratingAll ? Status.LOADING : undefined" @click="handleGenerateAll">
           {{ t('cards.generateAllTranslations') }}
         </TButton>
       </div>
@@ -113,6 +113,11 @@ import { useAuthStore } from '@tiko/core';
 import { ItemTranslationService } from '../../services/item-translation.service';
 import type { ItemTranslation } from '../../models/ItemTranslation.model';
 
+// Extended type for internal use that includes the is_base flag
+interface ItemTranslationWithBase extends ItemTranslation {
+  is_base?: boolean;
+}
+
 interface Props {
   itemId?: string;
   baseTitle: string;
@@ -140,13 +145,17 @@ const popupService = inject<any>('popupService');
 // Local state - Initialize with base language translation
 const initializeTranslations = () => {
   const existing = [...props.modelValue];
+  console.log('[CardTranslations] Initializing with modelValue:', props.modelValue);
+  console.log('[CardTranslations] Base locale:', props.baseLocale);
+  console.log('[CardTranslations] Base title:', props.baseTitle);
+  console.log('[CardTranslations] Base speech:', props.baseSpeech);
 
   // Always show base language as first item with original values
   // Remove any existing base language entry first
   const withoutBase = existing.filter(t => t.locale !== props.baseLocale);
 
   // Add base language at the beginning with original values
-  const baseTranslation: ItemTranslation = {
+  const baseTranslation: ItemTranslationWithBase = {
     item_id: props.itemId || '',
     locale: props.baseLocale,
     name: props.baseTitle,
@@ -160,15 +169,17 @@ const initializeTranslations = () => {
     baseTranslation.id = existingBase.id;
   }
 
-  return [baseTranslation, ...withoutBase];
+  const result = [baseTranslation, ...withoutBase];
+  console.log('[CardTranslations] Initialized translations:', result);
+  return result;
 };
 
-const translations = ref<ItemTranslation[]>(initializeTranslations());
+const translations = ref<ItemTranslationWithBase[]>(initializeTranslations());
 const isAddingNew = ref(false);
 const isGeneratingAll = ref(false);
 const currentGeneratingIndex = ref(0);
 const totalToGenerate = ref(0);
-const newTranslation = ref<ItemTranslation>({
+const newTranslation = ref<ItemTranslationWithBase>({
   item_id: props.itemId || '',
   locale: '',
   name: '',
@@ -179,7 +190,7 @@ const newTranslation = ref<ItemTranslation>({
 const editingTranslations = ref<Set<string>>(new Set());
 
 // Toggle edit mode for a translation
-const toggleEditMode = (translation: ItemTranslation) => {
+const toggleEditMode = (translation: ItemTranslationWithBase) => {
   const key = translation.id || translation.locale;
   if (editingTranslations.value.has(key)) {
     editingTranslations.value.delete(key);
@@ -191,7 +202,7 @@ const toggleEditMode = (translation: ItemTranslation) => {
 };
 
 // Check if a translation is in edit mode
-const isEditMode = (translation: ItemTranslation): boolean => {
+const isEditMode = (translation: ItemTranslationWithBase): boolean => {
   const key = translation.id || translation.locale;
   return editingTranslations.value.has(key);
 };
@@ -213,24 +224,31 @@ const availableLocaleOptions = computed(() => {
   const usedLocales = translations.value.map(t => t.locale);
 
   // Get base languages from available locales (e.g., 'en' from 'en-GB')
+  const locales = availableLocales?.value || [];
+  console.log('[CardTranslations] Available locales from i18n:', locales);
+  console.log('[CardTranslations] Used locales:', usedLocales);
+  
   const baseLanguages = [...new Set(
-    availableLocales.value.map(locale => locale.split('-')[0])
+    locales.map(locale => locale.split('-')[0])
   )];
 
   // Sort: base languages first, then locales
   const sortedOptions = [
     ...baseLanguages.sort(),
-    ...availableLocales.value.filter(locale => locale.includes('-')).sort()
+    ...locales.filter(locale => locale.includes('-')).sort()
   ];
 
   // Filter out already used locales
-  return sortedOptions
+  const filtered = sortedOptions
     .filter(locale => !usedLocales.includes(locale))
     .map(locale => ({
       value: locale,
       label: getLocaleName(locale),
       isBase: !locale.includes('-')
     }));
+    
+  console.log('[CardTranslations] Available locale options:', filtered);
+  return filtered;
 });
 
 // Methods
@@ -302,7 +320,7 @@ const handleAddNew = async () => {
   }
 };
 
-const handleSave = async (translation: ItemTranslation) => {
+const handleSave = async (translation: ItemTranslationWithBase) => {
   if (!translation.name) return;
 
   try {
@@ -333,7 +351,7 @@ const handleSave = async (translation: ItemTranslation) => {
   }
 };
 
-const handleDelete = async (translation: ItemTranslation) => {
+const handleDelete = async (translation: ItemTranslationWithBase) => {
   popupService.open({
     component: ConfirmDialog,
     props: {
@@ -429,7 +447,7 @@ const handleGenerateAll = async () => {
           }
         } else {
           // Create new translation
-          const translation: ItemTranslation = {
+          const translation: ItemTranslationWithBase = {
             item_id: props.itemId || '',
             locale: locale,
             name: generated.title[locale] || props.baseTitle,

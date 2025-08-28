@@ -15,6 +15,7 @@ export interface TypeSettings {
   keyboardLayout: string
   funLetters: boolean
   speakWordByWord: boolean
+  playTypingSounds: boolean
 }
 
 export interface TypeHistory {
@@ -48,7 +49,8 @@ export const useTypeStore = defineStore('type', () => {
     keyboardTheme: 'default',
     keyboardLayout: 'qwerty',
     funLetters: false,
-    speakWordByWord: true
+    speakWordByWord: true,
+    playTypingSounds: false
   }
 
   // Speech synthesis reference

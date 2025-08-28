@@ -28,19 +28,22 @@
               <template v-else>
                 {{ currentText || t(keys.type.typeToSpeak) }}
               </template>
+              <TButton :class="bemm('reset-button')" v-if="currentText.trim()" :icon="Icons.MULTIPLY_FAT" type="outline" color="secondary" @click="clearText"
+              :aria-label="t(keys.type.clearText)" />
             </div>
             <div v-if="currentText.trim()" :class="bemm('text-actions')">
-              <TButton v-if="currentText.trim()" :icon="Icons.MULTIPLY_FAT" type="outline" color="secondary" @click="clearText"
-                :aria-label="t(keys.type.clearText)" />
+
               <TButton
                 type="outline"
                 color="primary"
+                size="large"
                 @click="toggleKeyboardMode"
                 :aria-label="keyboardMode === 'letters' ? 'Switch to numbers' : 'Switch to letters'">
                 {{ keyboardMode === 'letters' ? '123' : 'ABC' }}
               </TButton>
               <TButton
-                :icon="isSpeaking ? 'square' : 'volume-2'"
+                :icon="isSpeaking ? Icons.PLAYBACK_STOP : Icons.PLAYBACK_PLAY"
+                :size="'large'"
                 type="default"
                 :color="isSpeaking ? 'error' : 'primary'" @click="toggleSpeak" size="medium"
                 :disabled="!canSpeak && !isSpeaking">
@@ -55,7 +58,9 @@
           <VirtualKeyboard :layout="keyboardMode === 'letters' ? settings.keyboardLayout : 'numbers'"
             :disabled="isSpeaking" :uppercase="isUppercase" :haptic-feedback="settings.hapticFeedback"
             :fun-letters="settings.funLetters"
-            :speak-on-type="settings.speakOnType" :theme="settings.keyboardTheme" @keypress="handleVirtualKeyPress"
+            :speak-on-type="settings.speakOnType"
+            :play-typing-sounds="settings.playTypingSounds"
+            :theme="settings.keyboardTheme" @keypress="handleVirtualKeyPress"
             @backspace="handleBackspace" @space="handleSpace" />
         </div>
       </div>
@@ -112,7 +117,8 @@ const localSettings = reactive({
   speakOnType: false,
   keyboardTheme: 'default',
   keyboardLayout: 'qwerty',
-  funLetters: false
+  funLetters: false,
+  playTypingSounds: false
 })
 
 // Destructure store
@@ -313,14 +319,15 @@ onUnmounted(() => {
   height: 100vh;
   height: 100dvh; /* Dynamic viewport height for iOS */
   overflow: hidden;
-  
+
   /* iOS safe area handling */
   padding-bottom: env(safe-area-inset-bottom);
 
   &__display-area {
     min-height: 120px;
-    flex: 0 1 auto; /* Can shrink but not grow beyond content */
+    flex: 1 1 auto; /* Can shrink but not grow beyond content */
     display: flex;
+    height: 100%;
     align-items: center;
     justify-content: center;
     padding: var(--space);
@@ -377,9 +384,9 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     position: relative;
-    min-height: 0; /* Allow flexbox to shrink properly */
+    min-height: fit-content; /* Allow flexbox to shrink properly */
     z-index: 10; /* Ensure keyboard is above other elements */
-    
+
     /* iOS specific adjustments */
     @supports (-webkit-touch-callout: none) {
       /* iOS only - ensure keyboard takes the space it needs */
@@ -439,6 +446,11 @@ onUnmounted(() => {
       background-color: color-mix(in srgb, var(--color-primary), transparent 60%);
       border: 1px solid color-mix(in srgb, var(--color-primary), transparent 30%);
     }
+  }
+
+  &__reset-button{
+    position: absolute; right: var(--space-l);
+    font-size: .5em;
   }
 }
 

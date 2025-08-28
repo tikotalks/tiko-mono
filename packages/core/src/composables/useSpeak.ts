@@ -9,6 +9,9 @@ export interface SpeakOptions {
   voice?: string;
   model?: 'tts-1' | 'tts-1-hd';
   language?: string;
+  provider?: 'openai' | 'azure' | 'browser';
+  speed?: number;
+  pitch?: number;
 }
 
 /**
@@ -60,7 +63,7 @@ export function useSpeak() {
 
       // Get TTS configuration
       const configStart = Date.now();
-      const config = ttsService.getTTSConfig(text, language);
+      const config = ttsService.getTTSConfig(text, language, options.provider);
       console.log(`[useSpeak] getTTSConfig took ${Date.now() - configStart}ms`);
       
       // If browser provider or fallback is used and no OpenAI preference
@@ -80,7 +83,15 @@ export function useSpeak() {
 
       // Use speech store to get or create audio
       // This handles all caching, preloading, and audio element creation
-      const { audio, metadata } = await speechStore.getOrCreateAudio(text, language);
+      const { audio, metadata } = await speechStore.getOrCreateAudio(
+        text, 
+        language, 
+        options.provider,
+        options.voice,
+        options.model,
+        options.speed,
+        options.pitch
+      );
       
       // Store metadata
       currentMetadata.value = metadata || null;
@@ -177,7 +188,7 @@ export function useSpeak() {
   };
 
   const preloadAudio = async (
-    texts: Array<{ text: string; language?: string }>
+    texts: Array<{ text: string; language?: string; provider?: 'openai' | 'azure' | 'browser'; voice?: string; speed?: number; pitch?: number }>
   ) => {
     if (texts.length === 0) {
       return;
@@ -187,7 +198,11 @@ export function useSpeak() {
     
     const textsWithLanguage = texts.map(item => ({
       text: item.text,
-      language: item.language || userLanguage.value
+      language: item.language || userLanguage.value,
+      provider: item.provider,
+      voice: item.voice,
+      speed: item.speed,
+      pitch: item.pitch
     }));
     
     // Use speech store to preload
@@ -206,6 +221,10 @@ export function useSpeak() {
     clearCache();
   });
 
+  const setPreferredProvider = (provider: 'openai' | 'azure' | 'auto') => {
+    ttsService.setPreferredProvider(provider);
+  };
+
   return {
     speak,
     stop,
@@ -213,6 +232,7 @@ export function useSpeak() {
     resume,
     preloadAudio,
     clearCache,
+    setPreferredProvider,
     isLoading,
     error,
     currentMetadata,

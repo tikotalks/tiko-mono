@@ -8,6 +8,7 @@ const BaseColorValues = {
   pink: "#e23ea9",
   purple: "#b214c0",
   violet: "#7f23d3",
+  indigo: "#4b0082",
   blue: "#2923d3",
   cobalt: "#2376d3",
   skyblue: "#3bb6f1",

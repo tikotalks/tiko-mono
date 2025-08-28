@@ -1,14 +1,6 @@
 <template>
-  <component
-    :is="componentTag"
-    :href="linkHref"
-    :class="blockClasses"
-    :disabled="isDisabled"
-    :type="buttonType"
-    :style="buttonStyles"
-    :tooltip="!!tooltip"
-    v-bind="$attrs"
-  >
+  <component :is="componentTag" :href="linkHref" :class="blockClasses" :disabled="isDisabled" :type="buttonType"
+    :style="buttonStyles" :tooltip="!!tooltip" v-bind="$attrs">
     <div :class="bemm('container', ['', reverse ? 'direction-reverse' : ''])">
       <span v-if="icon" :class="bemm('icon')">
         <TIcon :name="icon" />
@@ -20,30 +12,15 @@
     </div>
     <div v-if="status !== ButtonStatus.IDLE" :class="bemm('status')">
       <span v-if="status === ButtonStatus.LOADING">{{ t(keys.common.loading) }}</span>
-      <TIcon
-        v-if="status === ButtonStatus.SUCCESS || status === ButtonStatus.SUCCESS_ALT"
-        name="check"
-      />
-      <TIcon
-        v-if="status === ButtonStatus.ERROR || status === ButtonStatus.ERROR_ALT"
-        name="x"
-      />
+      <TIcon v-if="status === ButtonStatus.SUCCESS || status === ButtonStatus.SUCCESS_ALT" name="check" />
+      <TIcon v-if="status === ButtonStatus.ERROR || status === ButtonStatus.ERROR_ALT" name="x" />
     </div>
-    <span
-      v-if="count && count > -1"
-      :class="bemm('count')"
-    >
+    <span v-if="count && count > -1" :class="bemm('count')">
       {{ count }}
     </span>
-    <TToolTip
-      v-if="tooltip"
-      :content="tooltip"
-      :position="'top'"
-      :disabled="!tooltip"
-      :delay="tooltipSettings.delay"
-      :max-width="'200px'"
-    >
-       {{tooltip}}
+    <TToolTip v-if="tooltip" :content="tooltipData.value" :position="tooltipData.position" :disabled="!tooltip" :delay="tooltipData.delay"
+      :max-width="'200px'">
+      {{ tooltipData.value }}
     </TToolTip>
   </component>
 </template>
@@ -69,8 +46,8 @@ const props = withDefaults(defineProps<TButtonProps>(), {
   to: undefined,
   href: undefined,
   element: 'button',
-  tooltip: '',
-  tooltipSettings: {
+  tooltip: {
+    value: '',
     position: ToolTipPosition.TOP,
     delay: .5
   },
@@ -140,7 +117,7 @@ const buttonType = computed(() => {
 })
 
 const buttonStyles = computed(() => {
-  if([ButtonType.GHOST, ButtonType.OUTLINE].includes(props.type)){
+  if ([ButtonType.GHOST, ButtonType.OUTLINE].includes(props.type)) {
     return {
       '--button-color': `var(--color-${props.color})`,
     }
@@ -149,6 +126,19 @@ const buttonStyles = computed(() => {
     '--button-color': `var(--color-${props.color})`,
     '--button-color-text': `var(--color-${props.color}-text)`
   }
+})
+
+const tooltipData = computed(()=>{
+  if(!props.tooltip) return null;
+
+  if(typeof props.tooltip == 'string'){
+    return {
+        value: props.tooltip,
+        position: ToolTipPosition.BOTTOM,
+        delay: .5
+    }
+  }
+  return props.tooltip;
 })
 </script>
 
@@ -279,14 +269,15 @@ const buttonStyles = computed(() => {
       padding: var(--space-s, 0.75em);
       aspect-ratio: 1;
     }
-    .button__text{
+
+    .button__text {
       position: absolute;
       visibility: hidden;
     }
   }
 
-  &--text-icon:not(.button--icon-only){
-    .button__container{
+  &--text-icon:not(.button--icon-only) {
+    .button__container {
       padding-left: var(--space);
     }
   }

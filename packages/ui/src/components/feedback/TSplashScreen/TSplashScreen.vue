@@ -5,7 +5,7 @@
       'fade-in': enableTransitions && isVisible,
       'fade-out': enableTransitions && !isVisible
     })"
-    :style="splashStyles"
+    :style="{ '--splash-color': props.color }"
     role="dialog"
     aria-label="Application loading screen"
   >
@@ -37,6 +37,7 @@ const props = withDefaults(defineProps<TSplashScreenProps>(), {
   theme: 'auto',
   duration: 1500,
   showLoading: true,
+  color: '',
   loadingText: 'Loading...',
   enableTransitions: true
 })
@@ -56,6 +57,9 @@ const splashStyles = computed(() => {
 
   // Use custom text color if provided, otherwise fallback to primary text color
   styles.color = `var(--color-${props.color}-text, var(--color-primary-text))`;
+
+
+  console.log(styles);
 
   return styles
 })
@@ -117,7 +121,7 @@ defineExpose({
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .splash-screen {
   position: fixed;
   top: 0;
@@ -139,8 +143,8 @@ defineExpose({
     height: 200%;
     background: radial-gradient(
       circle at center,
-      rgba(255, 255, 255, 0.25) 0%,
-      rgba(255, 255, 255, 0) 70%
+     var(--splash-color) 0%,
+      color-mix(in srgb, var(--splash-color), var(--color-background) 50%) 70%
     );
     animation: pulseGlow 3s ease-in-out infinite;
     pointer-events: none;
@@ -209,32 +213,6 @@ defineExpose({
     animation: slideUp 0.8s ease-out 1.2s forwards;
   }
 
-  // Responsive design
-  @media (max-width: 768px) {
-    &__content {
-      padding: var(--space-s);
-    }
-
-    &__logo {
-      width: 6em;
-      height: 6em;
-    }
-
-    &__title {
-      font-size: 1.75em;
-    }
-  }
-
-  @media (max-width: 480px) {
-    &__logo {
-      width: 5em;
-      height: 5em;
-    }
-
-    &__title {
-      font-size: 1.5em;
-    }
-  }
 }
 
 @keyframes fadeIn {

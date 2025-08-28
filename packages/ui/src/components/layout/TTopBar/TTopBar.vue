@@ -528,21 +528,23 @@ onUnmounted(() => {
     flex: 0 0 auto;
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: var(--space);
+    padding: 0 var(--space);
   }
 
   &__right {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: var(--space);
     flex: 1;
+    padding-right: var(--space);
     justify-content: flex-end;
   }
 
   &__user-section {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-s);
   }
 
   &__parent-mode-indicator {

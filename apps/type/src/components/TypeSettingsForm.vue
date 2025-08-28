@@ -102,6 +102,14 @@
           label="Fun Letters (Images)"
         />
       </div>
+
+      <!-- Play Typing Sounds -->
+      <div :class="bemm('group')">
+        <TInputCheckbox
+          v-model="localSettings.playTypingSounds"
+          label="Play Typing Sounds"
+        />
+      </div>
     </div>
 
     <TFormActions>

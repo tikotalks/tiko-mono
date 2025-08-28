@@ -18,7 +18,8 @@ export const SOUNDS = {
   ZOOF: '4ab87e97-db4a-42bd-b137-a80f554b0367',
   SLURP: '362cf825-5fe8-427f-b259-a7dbfcf9d617',
   DENY: '4393a16c-3f49-4b33-8ebc-5254bb55bef8',
-  EHEH: '09e0367e-337f-49b2-b2e0-ec57e329d184'
+  EHEH: '09e0367e-337f-49b2-b2e0-ec57e329d184',
+  TYPING: '75de76a6-a83e-4db6-ba65-7a7e2e7ffe96' // Typing sound (soft key click)
 } as const
 
 export type SoundId = typeof SOUNDS[keyof typeof SOUNDS]

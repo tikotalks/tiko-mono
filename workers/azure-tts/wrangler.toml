@@ -1,0 +1,30 @@
+name = "azure-tts"
+main = "src/index.ts"
+compatibility_date = "2024-12-14"
+
+# Custom domain for Azure TTS worker
+routes = [
+  { pattern = "https://azure-tts.tikoapi.org/*", zone_name = "tikoapi.org" }
+]
+
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+[[r2_buckets]]
+binding = "AUDIO_BUCKET"
+bucket_name = "tiko-azure-tts-audio"
+preview_bucket_name = "tiko-azure-tts-audio-preview"
+
+[[kv_namespaces]]
+binding = "AUDIO_CACHE"
+id = "azure-tts-cache"
+preview_id = "azure-tts-cache-preview"
+
+[vars]
+ENVIRONMENT = "development"
+
+# Secrets to be set:
+# AZURE_SPEECH_KEY - Your Azure Speech Service key
+# AZURE_SPEECH_REGION - Your Azure Speech Service region (e.g., "westeurope")
+# SUPABASE_URL - Supabase project URL  
+# SUPABASE_SERVICE_KEY - Supabase service role key

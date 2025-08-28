@@ -104,7 +104,7 @@
 
       <!-- Template Fields -->
       <div v-if="templateFields.length > 0" :class="bemm('template-fields')">
-        <h3>{{ t('common.fields') }}</h3>
+        <h3>{{ t('common.fieldsLabel') }}</h3>
         <p :class="bemm('help-text')">{{ t('common.fieldsHelp') }}</p>
 
         <TCard>

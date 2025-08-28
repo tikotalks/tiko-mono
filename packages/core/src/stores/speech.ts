@@ -29,34 +29,75 @@ export const useSpeechStore = defineStore('speech', () => {
   
   console.log('[SpeechStore] Store initialized');
   
-  // Get cache key for text and language
-  const getCacheKey = (text: string, language: string) => {
-    const key = `${hashText(text)}_${language}`;
+  // Get cache key for text and language with optional provider and settings
+  const getCacheKey = (
+    text: string, 
+    language: string,
+    provider?: string,
+    voice?: string,
+    model?: string,
+    speed?: number,
+    pitch?: number
+  ) => {
+    const parts = [
+      hashText(text),
+      language,
+      provider || 'auto',
+      voice || 'default',
+      model || 'default',
+      speed?.toString() || '1',
+      pitch?.toString() || '0'
+    ];
+    const key = parts.join('_');
     console.log('[SpeechStore] Cache key generated:', {
       text: text.substring(0, 50) + '...',
       language,
-      hash: hashText(text),
+      provider,
       fullKey: key
     });
     return key;
   };
   
   // Check if audio exists in cache
-  const hasAudio = (text: string, language: string): boolean => {
-    const cacheKey = getCacheKey(text, language);
+  const hasAudio = (
+    text: string, 
+    language: string,
+    provider?: string,
+    voice?: string,
+    model?: string,
+    speed?: number,
+    pitch?: number
+  ): boolean => {
+    const cacheKey = getCacheKey(text, language, provider, voice, model, speed, pitch);
     const entry = audioCache.get(cacheKey);
     return !!(entry && entry.url && !entry.error);
   };
   
   // Get audio from cache
-  const getAudio = (text: string, language: string): AudioCacheEntry | null => {
-    const cacheKey = getCacheKey(text, language);
+  const getAudio = (
+    text: string, 
+    language: string,
+    provider?: string,
+    voice?: string,
+    model?: string,
+    speed?: number,
+    pitch?: number
+  ): AudioCacheEntry | null => {
+    const cacheKey = getCacheKey(text, language, provider, voice, model, speed, pitch);
     return audioCache.get(cacheKey) || null;
   };
   
   // Preload audio for a single text
-  const preloadAudio = async (text: string, language: string): Promise<AudioCacheEntry | null> => {
-    const cacheKey = getCacheKey(text, language);
+  const preloadAudio = async (
+    text: string, 
+    language: string,
+    provider?: string,
+    voice?: string,
+    model?: string,
+    speed?: number,
+    pitch?: number
+  ): Promise<AudioCacheEntry | null> => {
+    const cacheKey = getCacheKey(text, language, provider, voice, model, speed, pitch);
     
     // Check if already cached
     const existing = audioCache.get(cacheKey);
@@ -75,7 +116,7 @@ export const useSpeechStore = defineStore('speech', () => {
     
     try {
       // Get TTS configuration
-      const config = ttsService.getTTSConfig(text, language);
+      const config = ttsService.getTTSConfig(text, language, provider as any);
       
       // Skip browser-only TTS
       if (config.provider === 'browser') {
@@ -88,7 +129,12 @@ export const useSpeechStore = defineStore('speech', () => {
       console.log('[SpeechStore] Fetching audio URL for:', cacheKey);
       const response = await ttsService.getAudioForText({
         text,
-        language
+        language,
+        provider: provider as any,
+        voice,
+        model: model as any,
+        speed,
+        pitch
       });
       
       if (!response.success || !response.audioUrl) {
@@ -142,7 +188,15 @@ export const useSpeechStore = defineStore('speech', () => {
   
   // Preload multiple texts
   const preloadMultiple = async (
-    texts: Array<{ text: string; language: string }>
+    texts: Array<{ 
+      text: string; 
+      language: string;
+      provider?: string;
+      voice?: string;
+      model?: string;
+      speed?: number;
+      pitch?: number;
+    }>
   ) => {
     console.log(`[SpeechStore] preloadMultiple called with ${texts.length} texts`);
     console.log('[SpeechStore] Texts to preload:', texts.map(t => t.text.substring(0, 30) + '...'));
@@ -151,8 +205,16 @@ export const useSpeechStore = defineStore('speech', () => {
     const batchSize = 3;
     const promises: Promise<AudioCacheEntry | null>[] = [];
     
-    for (const { text, language } of texts) {
-      promises.push(preloadAudio(text, language));
+    for (const item of texts) {
+      promises.push(preloadAudio(
+        item.text, 
+        item.language,
+        item.provider,
+        item.voice,
+        item.model,
+        item.speed,
+        item.pitch
+      ));
     }
     
     // Process in batches
@@ -167,9 +229,14 @@ export const useSpeechStore = defineStore('speech', () => {
   // Get or create audio for text
   const getOrCreateAudio = async (
     text: string, 
-    language: string
+    language: string,
+    provider?: string,
+    voice?: string,
+    model?: string,
+    speed?: number,
+    pitch?: number
   ): Promise<{ audio: HTMLAudioElement | null; url: string; metadata?: AudioMetadata }> => {
-    const cacheKey = getCacheKey(text, language);
+    const cacheKey = getCacheKey(text, language, provider, voice, model, speed, pitch);
     let entry = audioCache.get(cacheKey);
     
     console.log('[SpeechStore] getOrCreateAudio called for:', cacheKey);
@@ -180,7 +247,7 @@ export const useSpeechStore = defineStore('speech', () => {
     // If not cached or had error, try to load it
     if (!entry || entry.error) {
       console.log('[SpeechStore] Audio not cached or has error, loading:', cacheKey);
-      entry = await preloadAudio(text, language);
+      entry = await preloadAudio(text, language, provider, voice, model, speed, pitch);
     } else {
       console.log('[SpeechStore] Using cached audio for:', cacheKey);
     }

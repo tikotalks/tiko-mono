@@ -35,11 +35,11 @@
         </template>
 
         <template #center>
-          <slot name="top-bar-center" />
+          <slot name="center" />
         </template>
 
         <template #actions>
-          <slot name="top-bar-actions" />
+          <slot name="actions" />
         </template>
       </TTopBar>
     </header>
@@ -112,6 +112,7 @@ const showTopBar = computed(()=>{
 
   &__header {
     width: calc(100% - (var(--space) * 2));
+    margin: auto;
     top: 0;
     position: sticky;
     z-index: 10;
