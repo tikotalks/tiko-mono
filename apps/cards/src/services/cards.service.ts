@@ -110,10 +110,15 @@ export const cardsService = {
       
       // Flatten the hierarchy - convert all items and their children to a flat array
       const allItems: BaseItem[] = [];
+      const seenIds = new Set<string>(); // Track seen IDs to prevent duplicates
       
       function collectAllItems(items: BaseItem[]) {
         for (const item of items) {
-          allItems.push(item);
+          // Only add if we haven't seen this ID before
+          if (!seenIds.has(item.id)) {
+            seenIds.add(item.id);
+            allItems.push(item);
+          }
           if (item.children && item.children.length > 0) {
             collectAllItems(item.children);
           }
@@ -121,7 +126,7 @@ export const cardsService = {
       }
       
       collectAllItems(items);
-      console.log('[CardsService] Flattened to', allItems.length, 'total items');
+      console.log('[CardsService] Flattened to', allItems.length, 'total unique items (deduplicated)');
       
       // Convert BaseItem to CardTile
       return allItems.map(baseItemToCardTile);
