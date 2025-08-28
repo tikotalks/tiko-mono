@@ -15,4 +15,6 @@ export const GRID_SPACING = {
   HORIZONTAL_PADDING: 40,
   /** Gap between grid items */
   TILE_GAP: 16,
+  /** Smaller gap between grid items on mobile */
+  MOBILE_TILE_GAP: 8,
 } as const;

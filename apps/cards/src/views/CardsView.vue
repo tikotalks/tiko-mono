@@ -1,94 +1,60 @@
 <template>
-  <TAppLayout
-    :title="t('cards.cardsTitle')"
-    :show-header="true"
-    @profile="handleProfile"
-    @settings="handleSettings"
-    @logout="handleLogout"
-  >
+  <TAppLayout :title="t('cards.cardsTitle')" :show-header="true" @profile="handleProfile" @settings="handleSettings"
+    @logout="handleLogout">
     <template #app-controls>
+
       <!-- Back button when in sub-level -->
-      <TButton
-        v-if="currentGroupId"
-        :icon="Icons.CHEVRON_LEFT"
-        type="outline"
-        color="primary"
-        @click="handleBack"
-        :aria-label="t('common.back')"
-      >{{ t('common.back') }}</TButton>
+      <TButton v-if="currentGroupId" :icon="Icons.CHEVRON_LEFT" type="outline" color="primary" @click="handleBack"
+        :aria-label="t('common.back')">{{ t('common.back') }}</TButton>
+    </template>
+    <template #actions>
 
-      <!-- Edit mode toggle (only visible in parent mode) -->
-      <TButton
-        v-if="isParentModeUnlocked"
-        :icon="isEditMode ? Icons.EDIT_M : Icons.EDIT_LINE"
-        :type="isEditMode ? 'default' : 'outline'"
-        :color="isEditMode ? 'primary' : 'secondary'"
-        @click="toggleEditMode"
-        :tooltip="isEditMode ? t('common.exitEditMode') : t('common.enterEditMode')"
-        :tooltip-settings="{delay: 0.5, position: ToolTipPosition.BOTTOM}"
-        :aria-label="isEditMode ? t('common.exitEditMode') : t('common.enterEditMode')"
-      />
 
-      <!-- Bulk Add button (only in edit mode) -->
-      <TButton
-        v-if="isEditMode"
-        :icon="Icons.ADD_FAT"
-        type="icon-only"
-        color="secondary"
-        @click="openBulkAddMode"
-        :aria-label="t('cards.bulkAdd')"
-        :tooltip="t('cards.bulkAdd')"
-      />
-
-      <!-- Selection mode toggle (only in edit mode) -->
-      <TButton
-        v-if="isEditMode && cards.length > 0"
-        :icon="Icons.CHECK_M"
-        :type="selectionMode ? 'default' : 'outline'"
-        :color="selectionMode ? 'accent' : 'secondary'"
-        @click="toggleSelectionMode"
-        :aria-label="selectionMode ? t('cards.exitSelectionMode') : t('cards.enterSelectionMode')"
-      >
-        {{ selectionMode ? t('cards.selectTiles') : t('common.select') }}
-        <span v-if="selectedTileIds.size > 0">({{ selectedTileIds.size }})</span>
-      </TButton>
 
       <!-- Select All button (only in selection mode) -->
-      <TButton
-        v-if="selectionMode"
-        :icon="Icons.CHECK_FAT"
-        type="ghost"
-        size="small"
-        @click="toggleSelectAll"
-        :aria-label="isAllSelected ? t('common.deselectAll') : t('common.selectAll')"
-      >
+      <TButton v-if="selectionMode" :icon="Icons.CHECK_FAT" type="outline" size="small" @click="toggleSelectAll"
+        :aria-label="isAllSelected ? t('common.deselectAll') : t('common.selectAll')">
         {{ isAllSelected ? t('common.deselectAll') : t('common.selectAll') }}
       </TButton>
+      <!-- Selection mode toggle (only in edit mode) -->
+      <TButton v-if="isEditMode && cards.length > 0" :icon="Icons.CHECK_M" :type="selectionMode ? 'default' : 'outline'"
+        :color="'secondary'" @click="toggleSelectionMode"
+        :aria-label="selectionMode ? t('cards.exitSelectionMode') : t('cards.enterSelectionMode')">
+        {{ t('common.select') }}
+        <span v-if="selectedTileIds.size > 0">({{ selectedTileIds.size }})</span>
+      </TButton>
+      <!-- Bulk Add button (only in edit mode) -->
+      <TButton v-if="isEditMode" :icon="Icons.ADD_M" :type="'outline'" :iconOnly="true" color="secondary" @click="openBulkAddMode"
+        :aria-label="t('cards.bulkAdd')" :tooltip="t('cards.bulkAdd')" />
+
+      <!-- Edit mode toggle (only visible in parent mode) -->
+      <TButton v-if="isParentModeUnlocked" :icon="isEditMode ? Icons.EDIT_M : Icons.EDIT_LINE" :iconOnly="true"
+        :type="isEditMode ? 'default' : 'outline'" :color="isEditMode ? 'primary' : 'primary'" @click="toggleEditMode"
+        :tooltip="isEditMode ? t('common.exitEditMode') : t('common.enterEditMode')"
+        :tooltip-settings="{ delay: 0.5, position: ToolTipPosition.BOTTOM }"
+        :aria-label="isEditMode ? t('common.exitEditMode') : t('common.enterEditMode')" />
+
+
       <!-- App settings button (only visible in parent mode) -->
-      <TButton
-        v-if="isParentModeUnlocked"
-        :icon="Icons.SETTINGS"
-        type="outline"
-        color="secondary"
-        @click="handleAppSettings"
-        :aria-label="t('cards.cardsSettings')"
-      />
+      <TButton v-if="isParentModeUnlocked" :icon="Icons.SETTINGS" type="outline" color="secondary"
+        @click="handleAppSettings" :aria-label="t('cards.cardsSettings')" />
 
       <!-- Dev only: Clear cache button -->
-      <TButton
-        v-if="isParentModeUnlocked && isDev"
-        :icon="Icons.REFRESH"
-        type="outline"
-        color="warning"
-        @click="handleClearCacheAndReload"
-        :aria-label="'Clear cache and reload (Dev only)'"
-        :tooltip="'Clear cache and reload all cards'"
-      />
+      <TButton v-if="isParentModeUnlocked && isDev" :icon="Icons.ARROW_ROTATE_TOP_LEFT" :iconOnly="true" type="outline"
+        color="warning" @click="handleClearCacheAndReload" :aria-label="'Clear cache and reload (Dev only)'"
+        :tooltip="'Clear cache and reload all cards'" />
+
+    </template>
+
+    <template #center>
+      <div :class="bemm('title')" v-if="breadcrumbs.length">
+        {{ breadcrumbs[breadcrumbs.length - 1].title }}
+      </div>
     </template>
 
     <div :class="bemm('container')">
       <!-- Breadcrumb navigation -->
-      <nav v-if="breadcrumbs.length > 0" :class="bemm('breadcrumbs')">
+      <!-- <nav v-if="breadcrumbs.length > 0" :class="bemm('breadcrumbs')">
         <button
           v-for="(crumb, index) in breadcrumbs"
           :key="crumb.id || 'root'"
@@ -98,28 +64,16 @@
           <TIcon v-if="index > 0" name="chevron-right" size="small" />
           {{ crumb.title }}
         </button>
-      </nav>
+      </nav> -->
 
       <!-- Main question display -->
       <div :class="bemm('main')">
-        <TCardGrid
-          :cards="cards"
-          :show-arrows="true"
-          :edit-mode="isEditMode"
-          :tiles-with-children="tilesWithChildren"
-          :tile-children-map="tileChildrenMap"
-          :is-tile-dragging="isTileDragging"
-          :selection-mode="selectionMode"
-          :selected-tile-ids="selectedTileIds"
-          :is-loading="isLoading"
-          :get-context-menu="isEditMode ? getCardContextMenu : undefined"
-          @card-click="handleCardClick"
-          @card-drop="handleCardDrop"
-          @card-reorder="handleCardReorder"
-          @cards-drop="handleMultiCardDrop"
-          @cards-reorder="handleMultiCardReorder"
-          @update:tile-dragging="isTileDragging = $event"
-        />
+        <TCardGrid :cards="cards" :show-arrows="true" :edit-mode="isEditMode" :tiles-with-children="tilesWithChildren"
+          :tile-children-map="tileChildrenMap" :is-tile-dragging="isTileDragging" :selection-mode="selectionMode"
+          :selected-tile-ids="selectedTileIds" :is-loading="isLoading"
+          :get-context-menu="isEditMode ? getCardContextMenu : undefined" @card-click="handleCardClick"
+          @card-drop="handleCardDrop" @card-reorder="handleCardReorder" @cards-drop="handleMultiCardDrop"
+          @cards-reorder="handleMultiCardReorder" @update:tile-dragging="isTileDragging = $event" />
       </div>
     </div>
 
@@ -135,39 +89,19 @@
 
         <div :class="bemm('selection-actions')">
           <TButtonGroup>
-            <TButton
-              size="small"
-              type="outline"
-              :icon="Icons.FOLDER_PLUS"
-              @click="moveSelectedToGroup"
-            >
+            <TButton size="small" type="outline" :icon="Icons.FOLDER_ADD" @click="moveSelectedToGroup">
               Move to Group
             </TButton>
 
-            <TButton
-              size="small"
-              type="outline"
-              :icon="Icons.PALETTE"
-              @click="changeSelectedColor"
-            >
+            <TButton size="small" type="outline" :icon="Icons.COLOR_PALLETTE" @click="changeSelectedColor">
               Change Color
             </TButton>
 
-            <TButton
-              size="small"
-              type="outline"
-              color="error"
-              :icon="Icons.TRASH"
-              @click="deleteSelected"
-            >
+            <TButton size="small" type="outline" color="error" :icon="Icons.TRASH" @click="deleteSelected">
               Delete
             </TButton>
 
-            <TButton
-              size="small"
-              type="ghost"
-              @click="clearSelection"
-            >
+            <TButton size="small" type="ghost" @click="clearSelection">
               Clear Selection
             </TButton>
           </TButtonGroup>
@@ -370,9 +304,9 @@ const loadCards = async () => {
     if (savedCards.length > 0) {
       cards.value = savedCards;
 
-      // Preload audio for cards with speech
+      // Preload audio for cards with speech (skip group cards)
       const textsToPreload = savedCards
-        .filter(card => !card.id.startsWith('empty-') && card.speech)
+        .filter(card => !card.id.startsWith('empty-') && card.speech && card.type !== 'sequence')
         .map(card => ({
           text: card.speech || ''
         }));
@@ -688,124 +622,124 @@ const openCardEditForm = async (card: CardTile, index: number) => {
     component: CardForm,
     title: isNewCard ? 'Create New Tile' : 'Edit Tile',
     actions: actions,
-      props: {
-        card: card,
-        index: index,
-        hasChildren: tilesWithChildren.value.has(card.id),
-        translations: translations,
-        showVisibilityToggle: isTopLevelCard, // Only show for top-level cards
-        isOwner: isOwner,
-        onMounted: (instance: any) => {
-          formComponentRef = instance;
-        },
-        onTranslationsGenerated: async () => {
-          // Reload cards when translations are generated
-          await loadCards();
-        },
-        onSubmit: async (cardData: Partial<CardTile>, cardIndex: number, newTranslations: ItemTranslation[]) => {
-          isSaving.value = true;
-          if (isNewCard) {
-            // For new cards, we need to save first to get the ID
-            try {
-              const savedId = await cardsService.saveCard(cardData, currentGroupId.value, index, newTranslations);
-              if (savedId) {
-                const newCard: CardTile = {
-                  ...cardData,
-                  id: savedId,
-                  index: index,
-                } as CardTile;
+    props: {
+      card: card,
+      index: index,
+      hasChildren: tilesWithChildren.value.has(card.id),
+      translations: translations,
+      showVisibilityToggle: isTopLevelCard, // Only show for top-level cards
+      isOwner: isOwner,
+      onMounted: (instance: any) => {
+        formComponentRef = instance;
+      },
+      onTranslationsGenerated: async () => {
+        // Reload cards when translations are generated
+        await loadCards();
+      },
+      onSubmit: async (cardData: Partial<CardTile>, cardIndex: number, newTranslations: ItemTranslation[]) => {
+        isSaving.value = true;
+        if (isNewCard) {
+          // For new cards, we need to save first to get the ID
+          try {
+            const savedId = await cardsService.saveCard(cardData, currentGroupId.value, index, newTranslations);
+            if (savedId) {
+              const newCard: CardTile = {
+                ...cardData,
+                id: savedId,
+                index: index,
+              } as CardTile;
 
-                // Update local state
-                cards.value = [...cards.value.filter(c => !c.id.startsWith('empty-')), newCard];
+              // Update local state
+              cards.value = [...cards.value.filter(c => !c.id.startsWith('empty-')), newCard];
 
-                // Update store cache
-                await yesNoStore.addCardToCache(newCard, currentGroupId.value, currentLocale.value);
-              }
-              popupService.close();
-            } catch (error) {
-              console.error('Failed to create card:', error);
-              toastService?.show({
-                message: t('cards.failedToCreateCard'),
-                type: 'error'
-              });
-            } finally {
-              isSaving.value = false;
+              // Update store cache
+              await yesNoStore.addCardToCache(newCard, currentGroupId.value, currentLocale.value);
             }
-          } else {
-            // For existing cards, use optimistic update
-            const originalCard = { ...card };
-            const originalCardsArray = [...cards.value];
-            const originalChildrenMap = card.parentId && tileChildrenMap.value.has(card.parentId)
-              ? [...tileChildrenMap.value.get(card.parentId)!]
-              : null;
+            popupService.close();
+          } catch (error) {
+            console.error('Failed to create card:', error);
+            toastService?.show({
+              message: t('cards.failedToCreateCard'),
+              type: 'error'
+            });
+          } finally {
+            isSaving.value = false;
+          }
+        } else {
+          // For existing cards, use optimistic update
+          const originalCard = { ...card };
+          const originalCardsArray = [...cards.value];
+          const originalChildrenMap = card.parentId && tileChildrenMap.value.has(card.parentId)
+            ? [...tileChildrenMap.value.get(card.parentId)!]
+            : null;
 
-            try {
-              // Optimistic update - update UI immediately
-              const updatedCard = { ...card, ...cardData };
-              const updatedCards = [...cards.value];
-              const existingIndex = updatedCards.findIndex(c => c.id === card.id);
-              if (existingIndex >= 0) {
-                updatedCards[existingIndex] = updatedCard;
-                cards.value = updatedCards;
-              }
+          try {
+            // Optimistic update - update UI immediately
+            const updatedCard = { ...card, ...cardData };
+            const updatedCards = [...cards.value];
+            const existingIndex = updatedCards.findIndex(c => c.id === card.id);
+            if (existingIndex >= 0) {
+              updatedCards[existingIndex] = updatedCard;
+              cards.value = updatedCards;
+            }
 
-              // Update store cache optimistically
-              await yesNoStore.updateCardInCache(updatedCard, currentGroupId.value, currentLocale.value);
+            // Update store cache optimistically
+            await yesNoStore.updateCardInCache(updatedCard, currentGroupId.value, currentLocale.value);
 
-              // If this card has a parent, also update it in the parent's children map
-              if (updatedCard.parentId && tileChildrenMap.value.has(updatedCard.parentId)) {
-                const parentChildren = tileChildrenMap.value.get(updatedCard.parentId);
-                if (parentChildren) {
-                  const childIndex = parentChildren.findIndex(c => c.id === updatedCard.id);
-                  if (childIndex >= 0) {
-                    const updatedChildren = [...parentChildren];
-                    updatedChildren[childIndex] = updatedCard;
-                    tileChildrenMap.value.set(updatedCard.parentId, updatedChildren);
-                    console.log(`Updated child card ${updatedCard.id} in parent ${updatedCard.parentId} children map`);
-                  }
+            // If this card has a parent, also update it in the parent's children map
+            if (updatedCard.parentId && tileChildrenMap.value.has(updatedCard.parentId)) {
+              const parentChildren = tileChildrenMap.value.get(updatedCard.parentId);
+              if (parentChildren) {
+                const childIndex = parentChildren.findIndex(c => c.id === updatedCard.id);
+                if (childIndex >= 0) {
+                  const updatedChildren = [...parentChildren];
+                  updatedChildren[childIndex] = updatedCard;
+                  tileChildrenMap.value.set(updatedCard.parentId, updatedChildren);
+                  console.log(`Updated child card ${updatedCard.id} in parent ${updatedCard.parentId} children map`);
                 }
               }
-
-              // Close popup immediately for better UX
-              popupService.close();
-
-              // Save to database in background
-              const savedId = await cardsService.saveCard(updatedCard, currentGroupId.value, undefined, newTranslations);
-
-              if (!savedId) {
-                throw new Error('Failed to save card');
-              }
-
-              // Success - no need to do anything, UI is already updated
-              console.log('Card saved successfully:', savedId);
-
-            } catch (error) {
-              console.error('Failed to save card:', error);
-
-              // Rollback on failure
-              cards.value = originalCardsArray;
-              await yesNoStore.updateCardInCache(originalCard, currentGroupId.value, currentLocale.value);
-
-              // Rollback children map if needed
-              if (originalChildrenMap && originalCard.parentId) {
-                tileChildrenMap.value.set(originalCard.parentId, originalChildrenMap);
-              }
-
-              // Show error toast
-              toastService?.show({
-                message: t('cards.failedToSaveCard'),
-                type: 'error'
-              });
-            } finally {
-              isSaving.value = false;
             }
+
+            // Close popup immediately for better UX
+            popupService.close();
+
+            // Save to database in background
+            const savedId = await cardsService.saveCard(updatedCard, currentGroupId.value, undefined, newTranslations);
+
+            if (!savedId) {
+              throw new Error('Failed to save card');
+            }
+
+            // Success - no need to do anything, UI is already updated
+            console.log('Card saved successfully:', savedId);
+
+          } catch (error) {
+            console.error('Failed to save card:', error);
+
+            // Rollback on failure
+            cards.value = originalCardsArray;
+            await yesNoStore.updateCardInCache(originalCard, currentGroupId.value, currentLocale.value);
+
+            // Rollback children map if needed
+            if (originalChildrenMap && originalCard.parentId) {
+              tileChildrenMap.value.set(originalCard.parentId, originalChildrenMap);
+            }
+
+            // Show error toast
+            toastService?.show({
+              message: t('cards.failedToSaveCard'),
+              type: 'error'
+            });
+          } finally {
+            isSaving.value = false;
           }
-        },
-        onCancel: () => {
-          popupService.close();
         }
       },
-    });
+      onCancel: () => {
+        popupService.close();
+      }
+    },
+  });
 };
 
 // Confirm delete card action
@@ -1425,57 +1359,57 @@ const moveSelectedToGroup = async () => {
       props: {
         groups: availableGroups,
         selectedCount: selectedCards.length,
-      onSelect: async (group: CardTile) => {
-        try {
-          console.log(`[CardsView] Moving ${selectedCards.length} cards to group ${group.id} (${group.title})`);
+        onSelect: async (group: CardTile) => {
+          try {
+            console.log(`[CardsView] Moving ${selectedCards.length} cards to group ${group.id} (${group.title})`);
 
-          // Get existing children to find the next available index
-          const existingChildren = await cardsService.loadCards(group.id);
-          let nextIndex = existingChildren.length;
-          console.log(`[CardsView] Target group has ${existingChildren.length} existing children`);
+            // Get existing children to find the next available index
+            const existingChildren = await cardsService.loadCards(group.id);
+            let nextIndex = existingChildren.length;
+            console.log(`[CardsView] Target group has ${existingChildren.length} existing children`);
 
-          // Move all selected cards to the target group with sequential indices
-          for (const card of selectedCards) {
-            console.log(`[CardsView] Moving card ${card.id} (${card.title}) to parent ${group.id} at index ${nextIndex}`);
+            // Move all selected cards to the target group with sequential indices
+            for (const card of selectedCards) {
+              console.log(`[CardsView] Moving card ${card.id} (${card.title}) to parent ${group.id} at index ${nextIndex}`);
 
-            const result = await cardsService.saveCard({
-              ...card,
-              parentId: group.id,  // Set the new parent
-              index: nextIndex     // Set the sequential index
-            }, group.id, nextIndex);  // Pass both parentId and index parameters
+              const result = await cardsService.saveCard({
+                ...card,
+                parentId: group.id,  // Set the new parent
+                index: nextIndex     // Set the sequential index
+              }, group.id, nextIndex);  // Pass both parentId and index parameters
 
-            console.log(`[CardsView] Save result for ${card.id}:`, result);
+              console.log(`[CardsView] Save result for ${card.id}:`, result);
 
-            nextIndex++; // Increment for next card
+              nextIndex++; // Increment for next card
+            }
+
+            // Remove moved cards from current view
+            cards.value = cards.value.filter(c => !selectedTileIds.value.has(c.id));
+
+            // Clear selection
+            clearSelection();
+
+            // Update target group cache
+            tilesWithChildren.value.add(group.id);
+
+            popupService.close();
+
+            // Navigate to the target group to show the moved cards
+            console.log(`[CardsView] Navigating to target group: ${group.id}`);
+            await navigateToTile(group);
+          } catch (error) {
+            console.error('Failed to move cards:', error);
+            toastService?.show({
+              message: 'Failed to move cards. Please try again.',
+              type: 'error'
+            });
           }
-
-          // Remove moved cards from current view
-          cards.value = cards.value.filter(c => !selectedTileIds.value.has(c.id));
-
-          // Clear selection
-          clearSelection();
-
-          // Update target group cache
-          tilesWithChildren.value.add(group.id);
-
+        },
+        onCancel: () => {
           popupService.close();
-
-          // Navigate to the target group to show the moved cards
-          console.log(`[CardsView] Navigating to target group: ${group.id}`);
-          await navigateToTile(group);
-        } catch (error) {
-          console.error('Failed to move cards:', error);
-          toastService?.show({
-            message: 'Failed to move cards. Please try again.',
-            type: 'error'
-          });
         }
-      },
-      onCancel: () => {
-        popupService.close();
       }
-    }
-  });
+    });
   } catch (error) {
     console.error('[CardsView] Error in moveSelectedToGroup:', error);
     toastService?.show({
@@ -1967,6 +1901,12 @@ onUnmounted(() => {
     overflow: hidden;
   }
 
+  &__title {
+    width: 100%;
+    text-align: center;
+    font-size: 1.5em;
+  }
+
   &__main {
     flex: 1;
     min-height: 0; // Important for flex children
@@ -1985,6 +1925,11 @@ onUnmounted(() => {
     gap: var(--space-xs);
     overflow-x: auto;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
 
     &::-webkit-scrollbar {
       height: 4px;
@@ -2042,172 +1987,6 @@ onUnmounted(() => {
   &__selection-actions {
     display: flex;
     gap: var(--space);
-  }
-}
-
-.yes-no {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    left: 0;
-    top: 0;
-    background-color: var(
-      --layout-background-color,
-      color-mix(in srgb, var(--color-primary), transparent 75%)
-    );
-    transition: background-color 0.3s ease;
-    opacity: 1;
-    z-index: 0;
-    pointer-events: none;
-  }
-
-  &--yes {
-    --layout-background-color: color-mix(
-      in srgb,
-      var(--color-success),
-      var(--color-background) 50%
-    );
-  }
-  &--no {
-    --layout-background-color: color-mix(
-      in srgb,
-      var(--color-error),
-      var(--color-background) 50%
-    );
-  }
-
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    padding: 1rem;
-    position: relative;
-    z-index: 10;
-  }
-
-  &__main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    gap: 3rem;
-    z-index: 8;
-  }
-
-  &__answers {
-    display: flex;
-    // gap: var(--space-s);
-    width: 100%;
-    justify-content: center;
-    font-size: 10vh;
-    border: 2px solid red;
-  }
-
-  &__question {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: var(--space);
-    cursor: pointer;
-    padding: var(--space);
-    border-radius: var(--border-radius);
-    transition: background-color 0.2s ease;
-
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.1);
-    }
-
-    &-text {
-      font-size: 2em;
-      text-align: center;
-    }
-
-    &-controls {
-      display: flex;
-      gap: var(--space-s);
-
-      .yes-no__question:hover & {
-        opacity: 1;
-      }
-    }
-  }
-
-  // Feedback overlay
-  &__feedback {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    padding: 2rem;
-    background: white;
-    border-radius: 1rem;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-    z-index: 2000;
-    pointer-events: none;
-    animation: feedbackPulse 1.5s ease-in-out;
-
-    &__text {
-      font-size: 2rem;
-      font-weight: 700;
-    }
-
-    &--yes {
-      color: var(--color-green);
-    }
-
-    &--no {
-      color: var(--color-green);
-    }
-  }
-}
-
-@keyframes feedbackPulse {
-  0% {
-    transform: translate(-50%, -50%) scale(0.8);
-    opacity: 0;
-  }
-  20% {
-    transform: translate(-50%, -50%) scale(1.1);
-    opacity: 1;
-  }
-  80% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(0.9);
-    opacity: 0;
-  }
-}
-
-// Reduced motion support
-@media (prefers-reduced-motion: reduce) {
-  .yes-no-question__button {
-    transition: none;
-
-    &:hover:not(:disabled) {
-      transform: none;
-    }
-  }
-
-  .yes-no-feedback {
-    animation: none;
   }
 }
 </style>

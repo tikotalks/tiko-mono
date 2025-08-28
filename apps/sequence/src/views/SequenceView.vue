@@ -321,8 +321,8 @@ const loadSequence = async () => {
           try {
             const children = await sequenceStore.loadSequence(card.id, currentLocale.value);
 
-            // Pre-generate speech for children with speech content
-            const childrenWithSpeech = children.filter(child => child.speech);
+            // Pre-generate speech for children with speech content (skip group cards)
+            const childrenWithSpeech = children.filter(child => child.speech && child.type !== 'sequence');
             if (childrenWithSpeech.length > 0) {
               console.log(`[SequenceView] Pre-generating speech for ${childrenWithSpeech.length} items in sequence ${card.id}`);
               const language = currentLocale.value.split('-')[0];

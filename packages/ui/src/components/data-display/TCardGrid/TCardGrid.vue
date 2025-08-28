@@ -22,7 +22,7 @@
             '--grid-cols': String(grid.cols),
             '--grid-rows': String(grid.rows),
             '--tile-size': `${tileSize}px`,
-            '--tile-gap': `${TILE_CONFIG.tileGap}px`,
+            '--tile-gap': `${currentTileGap}px`,
           }">
             <template v-for="(cardsAtPosition, index) in pageCards" :key="`slot-${pageIndex}-${index}`">
               <div v-if="cardsAtPosition && cardsAtPosition.length > 0" :class="bemm('tile-position')">
@@ -148,6 +148,7 @@ const LAYOUT_SPACING = {
   VERTICAL_PADDING_BOTTOM: GRID_SPACING.MIN_BOTTOM_SPACE,
   VERTICAL_PADDING: GRID_SPACING.TOTAL_VERTICAL_PADDING,
   TILE_GAP: GRID_SPACING.TILE_GAP,
+  MOBILE_TILE_GAP: GRID_SPACING.MOBILE_TILE_GAP,
   MIN_ROWS: 2, // Minimum number of rows
 } as const;
 
@@ -161,7 +162,7 @@ const SWIPE_CONFIG = {
 const TILE_CONFIG = {
   horizontalPadding: LAYOUT_SPACING.HORIZONTAL_PADDING,
   verticalPadding: LAYOUT_SPACING.VERTICAL_PADDING,
-  tileGap: LAYOUT_SPACING.TILE_GAP,
+  getTileGap: (isMobile: boolean) => isMobile ? LAYOUT_SPACING.MOBILE_TILE_GAP : LAYOUT_SPACING.TILE_GAP,
   minTileSize: 80, // Minimum tile size in pixels
   // Target columns based on screen width
   widthBreakpoints: [
@@ -191,6 +192,12 @@ const dragScrollTimer = ref<number | null>(null);
 const DRAG_EDGE_THRESHOLD = 100; // pixels from edge to trigger scroll
 const DRAG_SCROLL_INTERVAL = 1000; // ms between auto-scrolls
 
+// Responsive tile gap - smaller on mobile
+const currentTileGap = computed(() => {
+  const isMobile = screenWidth.value <= SCREEN_WIDTHS.S; // Mobile and below
+  return TILE_CONFIG.getTileGap(isMobile);
+});
+
 // Calculate grid dimensions dynamically
 const grid = computed(() => {
   if (screenWidth.value === 0 || screenHeight.value === 0) {
@@ -207,7 +214,7 @@ const grid = computed(() => {
   const targetCols = breakpoint?.columns || 2;
 
   // Calculate tile size (width) including gaps
-  let totalGapsX = (targetCols - 1) * TILE_CONFIG.tileGap;
+  let totalGapsX = (targetCols - 1) * currentTileGap.value;
   let availableWidthForTiles = effectiveWidth - totalGapsX;
   let calculatedTileSize = Math.floor(availableWidthForTiles / targetCols);
 
@@ -215,7 +222,7 @@ const grid = computed(() => {
   let actualCols = targetCols;
   while (calculatedTileSize < TILE_CONFIG.minTileSize && actualCols > 1) {
     actualCols--;
-    totalGapsX = (actualCols - 1) * TILE_CONFIG.tileGap;
+    totalGapsX = (actualCols - 1) * currentTileGap.value;
     availableWidthForTiles = effectiveWidth - totalGapsX;
     calculatedTileSize = Math.floor(availableWidthForTiles / actualCols);
   }
@@ -226,7 +233,7 @@ const grid = computed(() => {
   // Calculate how many rows fit based on height
   // Always subtract the full vertical padding (top + bottom spacing)
   const effectiveHeight = screenHeight.value - LAYOUT_SPACING.VERTICAL_PADDING;
-  const totalTileHeight = calculatedTileSize + TILE_CONFIG.tileGap;
+  const totalTileHeight = calculatedTileSize + currentTileGap.value;
   const targetRows = Math.floor(effectiveHeight / totalTileHeight);
 
   // Ensure minimum rows
