@@ -1,6 +1,6 @@
 <template>
   <div
-    :class="bemm('', size)"
+    :class="bemm('', ['',size])"
     :style="`--app-color: var(--color-${color});`"
   >
     <img
@@ -23,12 +23,12 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useBemm } from 'bemm'
 import { useImageResolver } from '@tiko/core'
 import TIcon from '../TIcon/TIcon.vue'
-import type { BaseColors } from '@tiko/core'
+import type { BaseColors } from '@tiko/ui'
 
 export interface TAppIconProps {
   imageId?: string
   color?: BaseColors | string
-  size?: 'small' | 'medium' | 'large'
+  size?: 'small' | 'medium' | 'large' | 'auto'
   alt?: string
   fallbackIcon?: string
   media?: 'assets' | 'public' | 'user'
@@ -98,6 +98,15 @@ watch(() => props.imageId, () => {
   background-color: var(--app-color);
   overflow: hidden;
   position: relative;
+
+  &--auto{
+    width: 100%;
+    height: 100%;
+  img{
+    width: 100%;
+    height: 100%;
+  }
+  }
 
   &--small {
     width: 1.5rem;
