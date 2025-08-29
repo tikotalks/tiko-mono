@@ -1,8 +1,8 @@
 <template>
-  <ColumnSection 
-    :section="section" 
-    :content="content" 
-    alignment="right" 
+  <ColumnSection
+    :section="section"
+    :content="content"
+    alignment="right"
   />
 </template>
 
@@ -19,13 +19,5 @@ defineProps<ColumnRightSectionProps>();
 </script>
 
 <style lang="scss">
-// Override CSS custom properties for right alignment
-.column-right-section {
-  --column-flex-direction: row-reverse;
-  
-  .column-right-section__image img {
-    left: 0;
-    right: auto;
-  }
-}
+
 </style>

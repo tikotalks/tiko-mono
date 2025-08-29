@@ -96,13 +96,13 @@ const navigation = computed<
   padding: var(--space);
   background-image: linear-gradient(
     to top,
-    var(--color-foreground) 10%,
+    var(--color-foreground) 60%,
     var(--color-background)
   );
 
   &__container {
-    background-color: var(--color-foreground);
-    color: var(--color-background);
+    background-color: var(--color-background);
+    color: var(--color-foreground);
     padding: calc(var(--spacing) - var(--space));
     border-radius: var(--border-radius);
   }

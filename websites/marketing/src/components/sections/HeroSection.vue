@@ -206,7 +206,7 @@ watch(
 
 <style lang="scss">
 .hero-section {
-  background-color: var(--color-dark);
+  background-color: var(--color-background);
   background-image: radial-gradient(
     circle at left bottom,
     color-mix(in srgb, var(--color-primary), transparent 50%) 0%,

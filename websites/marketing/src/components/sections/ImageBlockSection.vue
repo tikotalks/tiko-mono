@@ -48,8 +48,8 @@ const getImageUrl = (imageId: string) => {
 .image-block-section {
   $b: &;
 
-  background-color: var(--color-light);
-  color: var(--color-dark);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
   display: flex;
   position: relative;
   width: 100%;

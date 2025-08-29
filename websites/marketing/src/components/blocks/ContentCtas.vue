@@ -43,7 +43,8 @@ const handleAction = (cta: {
     }
   } else if (cta.link.startsWith('router:')) {
     const route = cta.link.replace('router:', '');
-    router.push(route);
+    console.log('trying to go to', route)
+    router.push({ name: 'content', params: { view: route }});
   } else {
     // Handle internal actions
     console.log(`Action: ${cta.link}`);

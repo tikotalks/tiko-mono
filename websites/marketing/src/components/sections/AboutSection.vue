@@ -69,8 +69,8 @@ onMounted(async () => {
 <style lang="scss">
 .about-section {
   padding: calc(var(--spacing) * 2) var(--spacing);
-  background-color: var(--color-light);
-  color: var(--color-dark);
+  background-color: transparent;
+  color: var(--color-foreground);
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
@@ -132,23 +132,12 @@ onMounted(async () => {
     flex-direction: column;
     gap: var(--space-l);
 
-    //     animation: adjustPositionReverse linear forwards;
-    //     animation-timeline: view();
-
-    // @keyframes adjustPosition {
-    //   0% {
-    //     transform: translateY(calc(100% - 100vh));
-    //   }
-    //   100% {
-    //     transform: translateY(calc(-100% + 100vh));
-    //   }
-    // }
     @media (max-width: 720px) {
       padding: 0;
       width: 100%;
       background-image: linear-gradient(
         to top,
-        var(--color-light) 0%,
+        var(--color-background) 0%,
         transparent 100%
       );
     }

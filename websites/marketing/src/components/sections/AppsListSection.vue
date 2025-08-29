@@ -126,8 +126,8 @@ onMounted(async () => {
 
 <style lang="scss">
 .apps-list-section {
-  background-color: var(--color-light);
-  color: var(--color-dark);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
 
   position: relative;
 

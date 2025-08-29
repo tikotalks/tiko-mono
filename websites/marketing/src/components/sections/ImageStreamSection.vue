@@ -1,25 +1,13 @@
 <template>
   <section :class="bemm()" @mouseleave="handleMouseLeave">
     <div :class="bemm('container')">
-      <canvas
-        ref="canvasRef"
-        :class="bemm('canvas')"
-        :width="canvasWidth"
-        :height="canvasHeight"
-        @click="handleCanvasClick"
-      />
+      <canvas ref="canvasRef" :class="bemm('canvas')" :width="canvasWidth" :height="canvasHeight"
+        @click="handleCanvasClick" />
 
       <div :class="bemm('content')">
         <h3 :class="bemm('title')">{{ content.title }}</h3>
-        <TMarkdownRenderer
-          v-if="content.content"
-          :content="content.content"
-          :class="bemm('description')"
-        />
-        <ContentCtas
-          :items="content.cta"
-          v-if="content.cta && content.cta.length"
-        />
+        <TMarkdownRenderer v-if="content.content" :content="content.content" :class="bemm('description')" />
+        <ContentCtas :items="content.cta" v-if="content.cta && content.cta.length" />
       </div>
     </div>
   </section>
@@ -96,7 +84,7 @@ function getHoveredRow(): number {
   // Calculate which row is being hovered
   const row = Math.floor(
     (relativeY - IMAGE_SPACING - CANVAS_PADDING) /
-      (IMAGE_HEIGHT + IMAGE_SPACING),
+    (IMAGE_HEIGHT + IMAGE_SPACING),
   );
 
   // Return -1 if outside any row
@@ -429,7 +417,7 @@ function animate() {
     // Determine which row this image belongs to
     const row = Math.floor(
       (image.y - IMAGE_SPACING - CANVAS_PADDING) /
-        (IMAGE_HEIGHT + IMAGE_SPACING),
+      (IMAGE_HEIGHT + IMAGE_SPACING),
     );
 
     // Get row-specific speed based on mouse position
@@ -576,36 +564,36 @@ onUnmounted(() => {
   width: 100%;
   overflow: hidden;
 
+  background-color: var(--color-background);
+    color: var(--color-foreground);
   padding: var(--spacing);
   position: relative;
 
 
-  &__container{
+  &__container {
 
-background-color: var(--color-dark);
-  color: var(--color-light);
-  position: relative;
-  border-radius: var(--border-radius);
-  padding: var(--spacing) 0;
-
-&::before {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 100%;
-    height: 100%;
-    content: '';
-    display: block;
-    transform: translate(-50%, -50%);
+    position: relative;
+    background-color: var(--color-black);
+    color: var(--color-light);
     border-radius: var(--border-radius);
+    padding: var(--spacing) 0;
 
-    z-index: 10;
-    background-image: radial-gradient(
-      circle at center,
-      rgba(0, 0, 0, 0) 0%,
-      rgba(0, 0, 0, 1) 100%
-    );
-  }
+    &::before {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 100%;
+      height: 100%;
+      content: '';
+      display: block;
+      transform: translate(-50%, -50%);
+      border-radius: var(--border-radius);
+
+      z-index: 10;
+      background-image: radial-gradient(circle at center,
+          rgba(0, 0, 0, 0) 0%,
+          rgba(0, 0, 0, 1) 100%);
+    }
   }
 
   &__content {

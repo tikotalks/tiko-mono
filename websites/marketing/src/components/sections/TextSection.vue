@@ -26,6 +26,7 @@ const bemm = useBemm('text-section')
 
 <style lang="scss">
 .text-section {
+  --section-color: var(--color-secondary);
   padding: var(--spacing);
   background-color: var(--color-background);
   color: var(--color-foreground);
@@ -34,6 +35,9 @@ const bemm = useBemm('text-section')
     display: flex;
     flex-direction: column;
     gap: var(--space);
+    width: 100%;
+    max-width: 720px;
+    margin: auto;
   }
 
   &__title {}

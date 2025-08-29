@@ -114,16 +114,19 @@ const navigation = computed<
   background-color: var(--color-background);
   color: var(--color-foreground);
   padding: var(--space);
-  background-image: linear-gradient(to top,
-      var(--color-dark) 10%,
-      var(--color-light));
+  background-image: linear-gradient(
+    to bottom,
+    var(--color-background) 25%,
+    var(--color-primary)
+  );
 
   &__container {
-    background-color: var(--color-foreground);
-    color: var(--color-background);
+    background-color: var(--color-background);
+    color: var(--color-foreground);
     padding: calc(var(--spacing) - var(--space));
     border-radius: var(--border-radius);
   }
+
 
   &__column {
     width: 50%;
@@ -177,7 +180,7 @@ const navigation = computed<
   }
 
   &__nav-link {
-    color: var(--color-background);
+    color: var(--color-foreground);
     text-decoration: none;
     width: 100%;
     transition: color 0.2s;

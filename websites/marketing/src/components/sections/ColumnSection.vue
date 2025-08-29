@@ -1,9 +1,6 @@
 <template>
-  <section
-    :id="section?.slug"
-    :class="bemm('', ['', sectionBlock])"
-    :style="`--section-image: url(${imageUrl}); --section-color: ${content.color ? `var(--color-${content.color})` : 'var(--color-primary)'};`"
-  >
+  <section :id="section?.slug" :class="bemm('', ['', alignment, sectionBlock])"
+    :style="`--section-image: url(${imageUrl}); --section-color: ${content.color ? `var(--color-${content.color})` : 'var(--color-primary)'};`">
     <div :class="bemm('wrapper')" v-if="alignment === 'left'">
       <div :class="bemm('container')">
         <div :class="bemm('image', ['', imageUrl ? 'has-image' : 'no-image'])">
@@ -56,19 +53,8 @@ const props = withDefaults(defineProps<ColumnSectionProps>(), {
   alignment: 'left'
 });
 
-// Create the appropriate bemm instance based on alignment
-const getBemm = () => {
-  switch (props.alignment) {
-    case 'right':
-      return useBemm('column-right-section');
-    case 'center':
-      return useBemm('column-center-section');
-    default:
-      return useBemm('column-left-section');
-  }
-};
 
-const bemm = getBemm();
+const bemm = useBemm('column-section');
 
 const sectionBlock = computed(() => {
   if (props.content['section-block-type']) {
@@ -111,9 +97,8 @@ onMounted(async () => {
 
 <style lang="scss">
 // Base column section styles with CSS custom properties
-.column-left-section,
-.column-right-section,
-.column-center-section {
+.column-section {
+  $b: &;
   // CSS Custom Properties for customization with defaults
   --column-flex-direction: row;
   --column-content-width: 50%;
@@ -130,13 +115,26 @@ onMounted(async () => {
   --column-image-margin: 0;
   --column-mobile-flex-direction: column;
 
-  background-color: var(--color-light);
-  color: var(--color-dark);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
   position: relative;
 
   @media (max-width: 720px) {
     flex-direction: column-reverse;
     align-items: center;
+  }
+
+  &--left {
+    --column-flex-direction: row-reverse;
+
+  }
+
+  &--right {
+    --column-flex-direction: row;
+
+    #{$b}__image img {
+      left: unset;
+    }
   }
 
   &__wrapper {
@@ -148,7 +146,6 @@ onMounted(async () => {
     display: flex;
     position: relative;
     flex-direction: var(--column-flex-direction);
-    border-radius: var(--border-radius);
     padding: var(--spacing);
 
     @media (max-width: 720px) {
@@ -157,19 +154,23 @@ onMounted(async () => {
     }
   }
 
-  &--blocked {
-    &__wrapper,
-    &__container {
+  &--background {
+
+    #{$b}__wrapper,
+    #{$b}__container {
       padding: var(--spacing);
     }
 
-    &__container {
-      background-color: color-mix(in srgb, var(--section-color), transparent 75%);
+    #{$b}__container {
+      background-color: color-mix(in srgb, var(--section-color), transparent 25%);
     }
   }
 
-  &--background {
-    background-color: color-mix(in srgb, var(--section-color), transparent 75%);
+  &--blocked {
+    #{$b}__container {
+      border-radius: var(--border-radius);
+      background-color: color-mix(in srgb, var(--section-color), transparent 25%);
+    }
   }
 
   &__image {
@@ -177,7 +178,7 @@ onMounted(async () => {
     max-width: var(--column-image-max-width);
     position: relative;
     margin-bottom: var(--column-image-margin);
-    pointer-events:none;
+    pointer-events: none;
 
     &--has-image {
       aspect-ratio: var(--column-image-aspect);
@@ -248,25 +249,6 @@ onMounted(async () => {
 
   &__items {
     width: 100%;
-  }
-}
-
-// Specific style fixes needed per variant to match original behavior
-.column-left-section,
-.column-right-section {
-  // These maintain the specific padding structure from original
-  &--blocked {
-    .column-left-section__wrapper,
-    .column-right-section__wrapper {
-      padding: var(--spacing);
-    }
-  }
-}
-
-// Right section specific blocked state
-.column-right-section {
-  &--blocked {
-    padding: var(--spacing);
   }
 }
 </style>

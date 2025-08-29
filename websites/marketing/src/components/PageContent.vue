@@ -139,7 +139,7 @@ watch(pageSlug, () => {
 
 <style lang="scss">
 .page-content {
-  background-color: var(--color-light);
+  background-color: var(--color-background);
   // Loading state
   &__loading {
     min-height: 100vh;

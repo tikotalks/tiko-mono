@@ -53,8 +53,8 @@ const goToApp = (app: any) => {
 <style lang="scss">
 .apps-section {
   padding: var(--spacing);
-  background-color: var(--color-light);
-  color: var(--color-dark);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
 
   position: relative;
 
