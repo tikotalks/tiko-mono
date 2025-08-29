@@ -538,6 +538,7 @@ jobs:
         run: |
           pnpm --filter=@tiko/ui build
           pnpm --filter=@tiko/core build
+          pnpm --filter=@tiko/animations build
           cd apps/sequence && pnpm run build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
