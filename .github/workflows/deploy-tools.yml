@@ -120,6 +120,7 @@ jobs:
     needs: check-triggers
     if: needs.check-triggers.outputs.should-build == 'true'
     uses: ./.github/workflows/reusable-check-environment.yml
+    secrets: inherit
 
   deploy-admin:
     needs: [determine-environment, check-triggers, check-environment]

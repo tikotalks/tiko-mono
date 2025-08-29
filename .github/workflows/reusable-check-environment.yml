@@ -2,6 +2,15 @@ name: Check Environment Variables
 
 on:
   workflow_call:
+    secrets:
+      CLOUDFLARE_API_TOKEN:
+        required: false
+      CLOUDFLARE_ACCOUNT_ID:
+        required: false
+      VITE_SUPABASE_URL:
+        required: false
+      VITE_SUPABASE_ANON_KEY:
+        required: false
 
 jobs:
   check:
