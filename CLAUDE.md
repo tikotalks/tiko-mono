@@ -9,6 +9,13 @@
 - The user asks you to "deploy" (which requires a commit)
 - Otherwise, make all changes but DO NOT run git commit or git push
 
+## Development Principles
+
+**IMPORTANT: Do not try to make workarounds when errors occur - try to fix the error.**
+- Figure out why the error happens, do not just make a workaround
+- Investigate the root cause of issues before implementing solutions
+- Workarounds often hide deeper problems that need proper fixes
+
 ## Commands to Run After Code Changes
 
 When making changes to the Cards app:

@@ -82,11 +82,12 @@ const languageLoaders: Record<string, () => Promise<{ default: Translations }>> 
 /**
  * Load a language file dynamically
  * @param locale The locale to load
+ * @param forceReload Force reload even if cached
  * @returns The translations for the locale
  */
-export async function loadLanguage(locale: string): Promise<Translations | null> {
-  // Check cache first
-  if (languageCache.has(locale)) {
+export async function loadLanguage(locale: string, forceReload = false): Promise<Translations | null> {
+  // Check cache first (unless force reload)
+  if (!forceReload && languageCache.has(locale)) {
     console.log(`[i18n] Returning cached language: ${locale}`)
     return languageCache.get(locale)!
   }

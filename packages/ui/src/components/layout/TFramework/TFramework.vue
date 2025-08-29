@@ -22,11 +22,20 @@
         <!-- Main content -->
         <slot />
 
-        <!-- Login button when in skip auth mode and not authenticated -->
-        <TButton v-if="tikoConfig.auth.showLoginButton && !isAuthenticated" :class="bemm('login-button')" type="ghost" :icon="Icons.USER"
-          @click="handleSkipAuthLogin">
-          {{ t('auth.login') }}
-        </TButton>
+        <!-- Skip auth mode buttons -->
+        <div v-if="tikoConfig.auth.showLoginButton && !isAuthenticated" :class="bemm('skip-auth-buttons')">
+          <!-- Language switcher button -->
+          <TButton :class="bemm('language-button')" type="ghost" :icon="Icons.SPEECH_BALLOON"
+            @click="openLanguageSelector">
+            {{ currentLanguageName }}
+          </TButton>
+
+          <!-- Login button -->
+          <TButton :class="bemm('login-button')" type="outline" :icon="Icons.USER"
+            @click="handleSkipAuthLogin">
+            {{ t('auth.login') }}
+          </TButton>
+        </div>
 
       </TAppLayout>
     </TAuthWrapper>
@@ -44,7 +53,7 @@ import { ref, computed, onMounted, provide, watch, getCurrentInstance } from 'vu
 import { useRoute, useRouter } from 'vue-router'
 import { useBemm } from 'bemm'
 import { Icons } from 'open-icon'
-import { useAuthStore, useAppStore, useTikoConfig, useI18n } from '@tiko/core'
+import { useAuthStore, useAppStore, useTikoConfig, useI18n, useI18nStore } from '@tiko/core'
 import { storeToRefs } from 'pinia'
 import TAuthWrapper from '../../auth/TAuthWrapper/TAuthWrapper.vue'
 import TAppLayout from '../TAppLayout/TAppLayout.vue'
@@ -55,6 +64,7 @@ import TProfile from '../../user/TProfile/TProfile.vue'
 import TButton from '../../ui-elements/TButton/TButton.vue'
 import { popupService } from '../../feedback/TPopup/TPopup.service'
 import { toastService } from '../../feedback/TToast/TToast.service'
+import TChooseLanguage from '../../user/TChooseLanguage/TChooseLanguage.vue'
 import { createIconRegistry, iconRegistryKey } from '../../../icons/registry'
 import { usePWAUpdate } from '../../../composables/usePWAUpdate'
 import type { TFrameworkProps, TFrameworkEmits } from './TFramework.model'
@@ -102,25 +112,44 @@ const initializeStores = () => {
 initializeStores()
 
 // Initialize i18n after stores are available
-const setLocale = ref<(locale: string) => Promise<void>>(() => Promise.resolve())
-const t = ref((key: string) => key)
-const keys = ref({ auth: { login: 'Login' } })
-const locale = ref('en')
+const i18nInstance = ref<ReturnType<typeof useI18n> | null>(null)
+
+// Try to get i18n instance immediately for skip auth mode
+try {
+  const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
+  if (isSkipAuth) {
+    i18nInstance.value = useI18n()
+    const savedLanguage = localStorage.getItem('tiko_language_preference')
+    if (savedLanguage && i18nInstance.value?.setLocale) {
+      console.log('[TFramework] Early i18n init for skip auth, setting locale:', savedLanguage)
+      i18nInstance.value.setLocale(savedLanguage)
+    }
+  }
+} catch (error) {
+  // Will be initialized later
+}
 
 // Initialize i18n when stores are available
 const initializeI18n = () => {
   try {
-    const i18n = useI18n()
-    setLocale.value = i18n.setLocale
-    t.value = i18n.t
-    keys.value = i18n.keys
-    locale.value = i18n.locale
+    i18nInstance.value = useI18n()
     return true
   } catch (error) {
     console.warn('[TFramework] i18n not available yet, will retry...', error)
     return false
   }
 }
+
+// Computed properties to access i18n values reactively
+const setLocale = computed(() => i18nInstance.value?.setLocale || (() => Promise.resolve()))
+const t = computed(() => i18nInstance.value?.t || ((key: string) => key))
+const keys = computed(() => i18nInstance.value?.keys || { auth: { login: 'Login' } })
+// Get the actual locale value from i18n
+const locale = computed(() => {
+  if (!i18nInstance.value) return 'en'
+  return i18nInstance.value.locale || 'en'
+})
+const currentLocale = computed(() => i18nInstance.value?.currentLocale || ref('en'))
 
 // Set config and get theme styles
 const { themeStyles, config: tikoConfig } = useTikoConfig(props.config)
@@ -265,9 +294,54 @@ const currentTheme = computed(() => {
 })
 
 const currentLanguage = computed(() => {
+  const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
+  
+  if (isSkipAuth) {
+    // In skip auth mode, use localStorage preference
+    return localStorage.getItem('tiko_language_preference') || locale.value || 'en'
+  }
+  
   if (!authStore.value) return 'en'
   const refs = storeToRefs(authStore.value)
   return refs.currentLanguage?.value || 'en'
+})
+
+// Try to get i18n store directly for better reactivity
+const i18nStore = computed(() => {
+  try {
+    return useI18nStore()
+  } catch {
+    return null
+  }
+})
+
+// Get current language display name from i18n
+const currentLanguageName = computed(() => {
+  // In skip auth mode, use i18n locale directly
+  const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
+  
+  if (isSkipAuth) {
+    // Try to get locale from store directly for better reactivity
+    const directLocale = i18nStore.value?.currentLocale
+    if (directLocale) {
+      console.log('[TFramework] Skip auth mode - direct store locale:', directLocale)
+      return directLocale.toUpperCase().split('-')[0]
+    }
+    
+    // Fallback to i18n instance
+    if (i18nInstance.value) {
+      const currentLoc = i18nInstance.value.currentLocale?.value || 
+                        i18nInstance.value.locale || 
+                        localStorage.getItem('tiko:locale') || 
+                        'en'
+      console.log('[TFramework] Skip auth mode - instance locale:', currentLoc)
+      return currentLoc.toUpperCase().split('-')[0]
+    }
+  }
+  
+  // For authenticated users, use auth store
+  const code = currentLanguage.value || 'en'
+  return code.toUpperCase().split('-')[0] // e.g., "EN" from "en-US"
 })
 
 const isAuthenticated = computed(() => {
@@ -388,6 +462,74 @@ const handleSkipAuthLogin = () => {
   window.location.reload()
 }
 
+const openLanguageSelector = () => {
+  // Create a wrapper component that handles the select event
+  import('vue').then(({ defineComponent, h, computed }) => {
+    const LanguageSelectorWrapper = defineComponent({
+      setup() {
+        const handleSelect = async (language: string) => {
+          console.log('[TFramework] Language selected:', language)
+          
+          const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
+          
+          if (isSkipAuth) {
+            // In skip auth mode, store language preference in localStorage
+            localStorage.setItem('tiko_language_preference', language)
+          } else {
+            // Update language in auth store for authenticated users
+            await authStore.value?.updateSettings({ language })
+          }
+          
+          // Always update i18n locale (this is what actually changes the UI)
+          const setLocaleFn = setLocale.value
+          if (setLocaleFn) {
+            await setLocaleFn(language)
+          }
+          
+          // Close popup
+          popupService.close()
+
+          // The locale change will trigger reactivity and reload translations
+          // No need for page refresh - Vue's reactivity handles it
+        }
+
+        // Create a reactive computed property for the model value
+        const currentModelValue = computed(() => {
+          const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
+          
+          if (isSkipAuth) {
+            try {
+              const store = useI18nStore()
+              const locale = store.currentLocale || 'en'
+              console.log('[TFramework] Language selector reactive modelValue:', locale)
+              return locale
+            } catch {
+              // Fallback to instance
+              const locale = i18nInstance.value?.currentLocale?.value || 
+                           i18nInstance.value?.locale || 
+                           'en'
+              console.log('[TFramework] Language selector fallback modelValue:', locale)
+              return locale
+            }
+          } else {
+            return currentLanguage.value
+          }
+        })
+        
+        return () => h(TChooseLanguage, {
+          modelValue: currentModelValue.value,
+          onSelect: handleSelect
+        })
+      }
+    })
+
+    popupService.open({
+      component: LanguageSelectorWrapper,
+      title: t.value('common.selectLanguage') || 'Select Language'
+    })
+  })
+}
+
 // Update current route title
 const updateRouteTitle = () => {
   if (!route) return
@@ -424,8 +566,9 @@ watch(currentLanguage, (newLanguage, oldLanguage) => {
   if (newLanguage && newLanguage !== locale.value && newLanguage !== oldLanguage) {
     console.log('[TFramework] Language changed in settings:', newLanguage, 'current locale:', locale.value)
     isSettingLocale = true
-    if (setLocale.value) {
-      setLocale.value(newLanguage as string)
+    const setLocaleFn = setLocale.value
+    if (setLocaleFn) {
+      setLocaleFn(newLanguage as string)
     }
 
     // Reset flag after a short delay
@@ -434,6 +577,21 @@ watch(currentLanguage, (newLanguage, oldLanguage) => {
     }, 100)
   }
 })
+
+// Watch for i18n availability and set skip auth locale if needed
+watch(setLocale, (newSetLocale) => {
+  if (newSetLocale && typeof newSetLocale === 'function') {
+    const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
+    if (isSkipAuth) {
+      const savedLanguage = localStorage.getItem('tiko_language_preference')
+      const currentLocale = locale.value
+      if (savedLanguage && savedLanguage !== currentLocale) {
+        console.log('[TFramework] i18n now available, setting skip auth locale:', savedLanguage)
+        newSetLocale(savedLanguage)
+      }
+    }
+  }
+}, { immediate: true })
 
 // Apply theme to DOM
 const applyTheme = (theme: string) => {
@@ -498,6 +656,29 @@ onMounted(async () => {
     await authStore.value.initializeFromStorage()
   }
 
+  // In skip auth mode, set initial locale from localStorage
+  const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
+  if (isSkipAuth) {
+    const savedLanguage = localStorage.getItem('tiko_language_preference')
+    if (savedLanguage) {
+      console.log('[TFramework] Setting initial locale for skip auth mode:', savedLanguage)
+      // Wait a bit to ensure i18n is fully initialized
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      // Try to initialize i18n if not done yet
+      if (!setLocale.value) {
+        initializeI18n()
+      }
+      
+      const setLocaleFn = setLocale.value
+      if (setLocaleFn) {
+        await setLocaleFn(savedLanguage)
+      } else {
+        console.warn('[TFramework] setLocale not available yet, will be set via watcher')
+      }
+    }
+  }
+
   // The theme and language are now automatically applied via watchers
   // No need for manual initialization here
 
@@ -532,11 +713,20 @@ onMounted(async () => {
   flex-direction: column;
 
 
-  &__login-button {
+  &__skip-auth-buttons {
     position: fixed;
     top: var(--space);
     right: var(--space);
     z-index: 100;
+    display: flex;
+    gap: var(--space-xs);
+    align-items: center;
+    padding-right: var(--space);
+  }
+
+  &__language-button,
+  &__login-button {
+    // Buttons will inherit TButton styles
   }
 
   &--is-app {

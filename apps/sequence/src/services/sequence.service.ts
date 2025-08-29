@@ -38,37 +38,61 @@ export const sequenceService = {
       }
 
       // Get current locale from i18n
-      const { currentLocale } = useI18n();
-      const locale = currentLocale.value;
+      const { currentLocale, locale: localeRef } = useI18n();
+      const locale = localeRef.value || currentLocale.value;
+      
+      console.log('[loadSequence] Using locale:', locale, 'from i18n (localeRef:', localeRef.value, 'currentLocale:', currentLocale.value, ')');
       
       let items: any[];
       
       if (isSkipAuth && !userId) {
         // Skip auth mode: Load only curated sequences using unified service
+        console.log('[loadSequence] Skip auth mode - loading with locale:', locale);
+        
+        // In skip auth mode, try with requested locale first, but unified service should
+        // automatically fallback to base locale if translations don't exist
+        // If this doesn't work, we might need to implement client-side fallback
+        const loadLocale = locale || 'en'; // Use requested locale with English as ultimate fallback
+        
+        console.log('[loadSequence] Calling unified service with locale:', loadLocale);
         const baseItems = parentId 
           ? await unifiedItemService.loadItemsByParentId(parentId, {
               includeCurated: true,
-              includeChildren: false,
-              locale
+              includeChildren: true,
+              locale: loadLocale
             })
           : await unifiedItemService.loadRootItems('', APP_NAME, {
               includeCurated: true,
-              includeChildren: false,
-              locale
+              includeChildren: true,
+              locale: loadLocale
             });
+        console.log('[loadSequence] Unified service returned', baseItems.length, 'items');
+        if (baseItems.length > 0) {
+          console.log('[loadSequence] First item from unified service:', {
+            id: baseItems[0].id,
+            name: baseItems[0].name,
+            content: baseItems[0].content,
+            base_locale: baseItems[0].base_locale,
+            effective_locale: baseItems[0].effective_locale
+          });
+        }
         
         // Convert BaseItem to the format expected by sequence service
         items = baseItems.map(item => ({
           ...item,
+          name: item.name, // Ensure name is mapped
+          content: item.content || '', // Ensure content is mapped
           metadata: item.metadata || {},
-          effective_locale: item.effective_locale || item.base_locale || 'en'
+          effective_locale: item.effective_locale || item.base_locale || 'en',
+          order_index: item.order_index, // Use order_index from BaseItem
+          has_children: item.has_children || (item.children && item.children.length > 0) // Check both flag and actual children
         }));
       } else {
         // Normal mode: Load sequence with translations for current locale (includes curated items)
         items = await sequenceSupabaseService.getSequenceWithTranslations(userId, parentId, locale);
       }
 
-      return items.map(item => {
+      return items.map((item, arrayIndex) => {
         const metadata = item.metadata as CardMetadata;
         
 
@@ -79,6 +103,9 @@ export const sequenceService = {
 
         const image = metadata?.image || '';
         
+        const finalIndex = item.order_index ?? arrayIndex;
+        console.log(`[loadSequence] Item ${item.id} (${item.name}): order_index=${item.order_index}, arrayIndex=${arrayIndex}, finalIndex=${finalIndex}`);
+        
         const result = {
           id: item.id,
           title: item.name, // This will already be the translated name from getSequenceWithTranslations
@@ -87,7 +114,7 @@ export const sequenceService = {
           color: metadata?.color || item.color || 'primary',
           image: image,
           speak: speech, // Changed from 'speech' to 'speak' to match what the store expects
-          index: item.order_index ?? 0,
+          index: finalIndex,
           parentId: item.parent_id || undefined,
           base_locale: item.base_locale || 'en',
           effective_locale: item.effective_locale || item.base_locale || 'en',
@@ -95,7 +122,8 @@ export const sequenceService = {
           isCurated: item.is_curated || false,
           ownerId: item.user_id, // Add ownerId for ownership checks
           user_id: item.user_id, // Add user_id for ownership checks
-          rewardAnimation: metadata?.rewardAnimation
+          rewardAnimation: metadata?.rewardAnimation,
+          has_children: item.has_children // Add has_children for UI
         } as CardTile;
 
 
@@ -111,21 +139,73 @@ export const sequenceService = {
     try {
       const authStore = useAuthStore();
       const userId = authStore.user?.id;
-      if (!userId) {
-        console.warn('No authenticated user found');
+      const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true';
+
+      // Allow loading in skip auth mode or when user is authenticated
+      if (!userId && !isSkipAuth) {
+        console.warn('[SequenceService] No authenticated user found and not in skip auth mode');
         return [];
       }
 
       // Get current locale from i18n
-      const { currentLocale } = useI18n();
-      const locale = currentLocale.value;
-      console.log('[loadAllSequence] Loading ALL sequence with locale:', locale, 'includeCurated:', includeCurated);
+      const { currentLocale, locale: localeRef } = useI18n();
+      const locale = localeRef.value || currentLocale.value;
+      console.log('[loadAllSequence] Loading ALL sequence with locale:', locale, 'includeCurated:', includeCurated, 'skipAuth:', isSkipAuth);
 
-      // Load ALL sequence with translations for current locale
-      const items = await sequenceSupabaseService.getAllSequenceWithTranslations(userId, locale, includeCurated);
+      let items: any[];
+      
+      if (isSkipAuth && !userId) {
+        // Skip auth mode: Load only curated sequences using unified service
+        console.log('[loadAllSequence] Skip auth mode - loading curated sequences');
+        
+        // Use requested locale but unified service should fallback to base locale if needed
+        const loadLocale = locale || 'en';
+        
+        const curatedItems = await unifiedItemService.loadRootItems('', APP_NAME, {
+          includeCurated: true,
+          includeChildren: true,
+          locale: loadLocale
+        });
+        
+        // Flatten the structure to include both parents and children
+        const flattenItems = (itemList: any[], parentId: string | null = null): any[] => {
+          const result: any[] = [];
+          
+          for (const item of itemList) {
+            // Add the parent item
+            result.push({
+              ...item,
+              metadata: item.metadata,
+              effective_locale: locale,
+              base_locale: item.base_locale || 'en',
+              name: item.name || item.title,
+              content: item.content || item.speech || item.speak || '',
+              order_index: item.order_index,
+              parent_id: parentId,
+              user_id: item.user_id || null,
+              is_public: item.is_public || false,
+              is_curated: item.is_curated || false,
+              has_children: item.has_children || (item.children && item.children.length > 0)
+            });
+            
+            // Recursively add children
+            if (item.children && item.children.length > 0) {
+              result.push(...flattenItems(item.children, item.id));
+            }
+          }
+          
+          return result;
+        };
+        
+        items = flattenItems(curatedItems);
+      } else {
+        // Authenticated mode: Load user's sequences and optionally curated ones
+        items = await sequenceSupabaseService.getAllSequenceWithTranslations(userId, locale, includeCurated);
+      }
+      
       console.log('[loadAllSequence] Total items loaded:', items.length);
 
-      return items.map(item => {
+      return items.map((item, arrayIndex) => {
         const metadata = item.metadata as CardMetadata;
 
         // If we have a translation (effective_locale is set), use the translated content for speech
@@ -133,6 +213,9 @@ export const sequenceService = {
           ? item.content || metadata?.speech || ''  // Use translated content if available
           : metadata?.speech || item.content || ''; // Otherwise use metadata speech or base content
 
+        const finalIndex = item.order_index ?? arrayIndex;
+        console.log(`[loadAllSequence] Item ${item.id} (${item.name}): order_index=${item.order_index}, arrayIndex=${arrayIndex}, finalIndex=${finalIndex}`);
+        
         return {
           id: item.id,
           title: item.name, // This will already be the translated name from getSequenceWithTranslations
@@ -141,7 +224,7 @@ export const sequenceService = {
           color: metadata?.color || item.color || 'primary',
           image: metadata?.image || '',
           speak: speech, // Changed from 'speech' to 'speak' to match what the store expects
-          index: item.order_index ?? 0,
+          index: finalIndex,
           parentId: item.parent_id || undefined,
           base_locale: item.base_locale || 'en',
           effective_locale: item.effective_locale || item.base_locale || 'en',
@@ -149,7 +232,8 @@ export const sequenceService = {
           isCurated: item.is_curated || false,
           ownerId: item.user_id, // Add ownerId for ownership checks
           user_id: item.user_id, // Add user_id for ownership checks
-          rewardAnimation: metadata?.rewardAnimation
+          rewardAnimation: metadata?.rewardAnimation,
+          has_children: item.has_children // Add has_children for UI
         };
       });
     } catch (error) {

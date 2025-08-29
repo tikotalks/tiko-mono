@@ -36,19 +36,16 @@
           <span :class="bemm('item-name')">
             {{ getTranslatedLanguageName(group.baseCode) }}
           </span>
-          <!-- <span v-if="group.variants.length === 1" :class="bemm('item-code')">
-            {{ group.variants[0].code.toUpperCase() }}
-          </span> -->
         </button>
 
-        <!-- Region buttons for multi-variant languages -->
-        <div v-if="group.variants.length > 1" :class="bemm('item-regions')">
+        <!-- Region buttons for multi-variant languages OR single variant with region -->
+        <div v-if="group.variants.length > 1 || (group.variants.length === 1 && group.variants[0].regionCode)" :class="bemm('item-regions')">
           <TButton
             v-for="variant in group.variants"
             size="small"
             :type="selectedLanguage === variant.code ? 'default' : 'outline'"
             :key="variant.code"
-            :color="selectedLanguage === variant.code ? 'secondary' : 'default'"
+            :color="selectedLanguage === variant.code ? ButtonColor.PRIMARY : ButtonColor.SECONDARY"
             :class="bemm('region-button')"
             @click.stop="handleRegionClick(variant.code)"
           >
@@ -75,6 +72,7 @@ import { groupDatabaseLanguages, getBaseLanguageCode, type LanguageGroup } from 
 import { Icons } from 'open-icon'
 import type { TChooseLanguageProps, TChooseLanguageEmits } from './TChooseLanguage.model'
 import TButton from '../../ui-elements/TButton/TButton.vue'
+import { ButtonColor } from '../../ui-elements/TButton/TButton.model';
 
 const props = withDefaults(defineProps<TChooseLanguageProps>(), {
   disabled: false
@@ -97,8 +95,10 @@ const error = ref<string | null>(null)
 const initializeFromModelValue = () => {
   if (props.modelValue) {
     selectedLanguage.value = props.modelValue
+    console.log('[TChooseLanguage] Initialized from modelValue:', props.modelValue)
   } else if (locale.value) {
     selectedLanguage.value = locale.value
+    console.log('[TChooseLanguage] Initialized from locale:', locale.value)
   }
 }
 
@@ -249,10 +249,20 @@ watch(selectedLanguage, () => {
 
 // Update local value when prop changes
 watch(() => props.modelValue, (newValue) => {
-  if (newValue !== selectedLanguage.value) {
-    initializeFromModelValue()
+  console.log('[TChooseLanguage] modelValue watcher - new value:', newValue, 'current:', selectedLanguage.value)
+  if (newValue && newValue !== selectedLanguage.value) {
+    selectedLanguage.value = newValue
   }
 }, { immediate: true })
+
+// Also watch for locale changes from i18n store
+watch(() => locale.value, (newLocale) => {
+  console.log('[TChooseLanguage] locale watcher - new locale:', newLocale, 'modelValue:', props.modelValue)
+  if (newLocale && newLocale !== selectedLanguage.value && !props.modelValue) {
+    // Only update if there's no modelValue prop (uncontrolled mode)
+    selectedLanguage.value = newLocale
+  }
+})
 
 // Load languages from database
 const loadLanguages = async () => {
@@ -273,6 +283,7 @@ const loadLanguages = async () => {
 
 // Initialize on mount
 onMounted(async () => {
+  console.log('[TChooseLanguage] Component mounted with modelValue:', props.modelValue, 'locale:', locale.value)
   initializeFromModelValue()
   await loadLanguages()
 })
@@ -290,7 +301,7 @@ onMounted(async () => {
     flex-shrink: 0;
     padding: 0 var(--space);
     position: sticky;
-    top:80px;
+    top: 0px;
     background-color: color-mix(in srgb, var(--color-primary), transparent 90%);
     padding: calc(var(--border-radius) / 2);
     z-index: 10;
@@ -319,14 +330,14 @@ onMounted(async () => {
     transition: background-color 0.2s ease;
 
     &:hover {
-      background: var(--color-background-tertiary);
+      background: color-mix(in srgb, var(--color-secondary), transparent 75%);
     }
 
     &--active {
-      background: var(--color-primary);
+      background: color-mix(in srgb, var(--color-primary), transparent 75%);
 
       &:hover {
-        background: var(--color-primary-subtle);
+        background:  color-mix(in srgb, var(--color-primary), transparent 50%);
       }
     }
   }

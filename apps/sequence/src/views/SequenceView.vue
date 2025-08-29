@@ -112,7 +112,7 @@ const route = useRoute();
 const router = useRouter();
 const sequenceStore = useSequenceStore();
 const authStore = useAuthStore();
-const { t, currentLocale } = useI18n();
+const { t, currentLocale, locale } = useI18n();
 const parentMode = useParentMode();
 
 // Parent mode computed state
@@ -1080,6 +1080,10 @@ const tilesWithChildren = computed(() => {
       const children = sequenceStore.getSequenceForParent(card.id, currentLocale.value);
       if (children && children.length > 0) {
         hasChildren.add(card.id);
+      } else if ((card as any).has_children) {
+        // If no cached children but has_children flag is true, add it
+        // This helps in skip auth mode where cache might not be populated yet
+        hasChildren.add(card.id);
       }
     }
   });
@@ -1753,6 +1757,48 @@ watch(() => currentLocale.value, async (newLocale, oldLocale) => {
 
     // Reload current view with new translations
     await loadSequence();
+  }
+});
+
+// Watch for locale changes and reload sequences
+watch(() => locale.value || currentLocale.value, async (newLocale, oldLocale) => {
+  console.log('[SequenceView] Locale watcher triggered. New:', newLocale, 'Old:', oldLocale);
+  
+  if (newLocale && oldLocale && newLocale !== oldLocale) {
+    console.log('[SequenceView] Locale changed from', oldLocale, 'to', newLocale, '- reloading sequences');
+    
+    // Show loading state while reloading
+    sequence.value = generateGhostSequence();
+    
+    try {
+      // Clear all cache to ensure fresh data
+      console.log('[SequenceView] Clearing all cache');
+      await sequenceStore.clearCache();
+      
+      // Force a small delay to ensure i18n has updated
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Reload all sequences - this should use the new locale from i18n
+      console.log('[SequenceView] Reloading all sequences');
+      await sequenceStore.loadAllSequence(newLocale);
+      
+      // Reload the current view
+      console.log('[SequenceView] Reloading current view');
+      await loadSequence();
+      
+      console.log('[SequenceView] Locale change reload complete');
+    } catch (error) {
+      console.error('[SequenceView] Error reloading sequences after locale change:', error);
+      sequence.value = [];
+    }
+  }
+}, { immediate: false });
+
+// Watch for route changes to handle navigation to play page
+watch(() => route.params.id, async (newId) => {
+  if (route.name === 'play' && newId) {
+    console.log('[SequenceView] Route changed to play page with id:', newId);
+    // The play view should handle its own data loading
   }
 });
 

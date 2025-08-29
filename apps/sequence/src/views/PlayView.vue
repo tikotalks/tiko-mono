@@ -73,6 +73,11 @@ onMounted(async () => {
 
   // Start play mode
   if (sequenceId.value) {
+    // Make sure all sequences are loaded first
+    const { currentLocale } = useI18n();
+    await sequenceStore.loadAllSequence(currentLocale.value);
+    
+    // Then start play mode
     await sequenceStore.startPlay(sequenceId.value);
   }
 });

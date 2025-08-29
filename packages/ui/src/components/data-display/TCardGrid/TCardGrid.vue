@@ -121,24 +121,24 @@ const CardGridViewType = {
 
 // Screen width breakpoints
 const SCREEN_WIDTHS = {
-  XXL: 1400,
-  XL: 1200,
-  L: 1000,
-  M: 800,
-  S: 600,
-  XS: 400,
-  XXS: 0,
+  XXL: 1400, // 8 columns from 1400+ as requested
+  XL: 1200,  // 6 columns 
+  L: 1000,   // 5 columns
+  M: 800,    // 4 columns
+  S: 600,    // 3 columns (mobile)
+  XS: 400,   // 3 columns (mobile)
+  XXS: 0,    // 3 columns (mobile)
 } as const;
 
-// Grid column configuration per breakpoint
+// Grid column configuration per breakpoint - 3, 4, 5, 6, 8 progression
 const GRID_COLUMNS = {
-  XXL: 8,
-  XL: 8,
-  L: 6,
-  M: 4, // Medium screens - 4 columns instead of 6
-  S: 3, // Mobile landscape - 3 columns 
-  XS: 3, // Mobile portrait - 3 columns  
-  XXS: 3, // Very small phones - 3 columns
+  XXL: 8, // 8 columns from 1400+
+  XL: 6,  // 6 columns from 1200-1399
+  L: 5,   // 5 columns from 1000-1199
+  M: 4,   // 4 columns from 800-999
+  S: 3,   // 3 columns from 600-799 (mobile landscape)
+  XS: 3,  // 3 columns from 400-599 (mobile portrait)
+  XXS: 3, // 3 columns from 0-399 (very small phones)
 } as const;
 
 // Layout spacing constants

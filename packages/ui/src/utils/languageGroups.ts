@@ -90,7 +90,7 @@ export function findLanguageGroupByLocale(locale: Locale): LanguageGroup | undef
       return group
     }
   }
-  
+
   // Try base code match
   const baseCode = getBaseLanguageCode(locale)
   return languageData[baseCode]
@@ -110,7 +110,7 @@ export function getBaseLanguageCode(locale: Locale): string {
 export function databaseLanguageToGroup(language: { code: string; name: string; native_name?: string }): LanguageGroup {
   const baseCode = getBaseLanguageCode(language.code)
   const regionCode = language.code.includes('-') ? language.code.split('-')[1] : language.code.toUpperCase()
-  
+
   return {
     baseCode,
     translationKey: language.name.toLowerCase(),
@@ -127,11 +127,13 @@ export function databaseLanguageToGroup(language: { code: string; name: string; 
  */
 export function groupDatabaseLanguages(languages: Array<{ code: string; name: string; native_name?: string }>): LanguageGroup[] {
   const groups: Record<string, LanguageGroup> = {}
-  
+
   languages.forEach(language => {
     const baseCode = getBaseLanguageCode(language.code)
-    const regionCode = language.code.includes('-') ? language.code.split('-')[1] : ''
-    
+    const parts = language.code.split('-')
+    // Only use region code if it's actually present in the original code
+    const regionCode = parts.length > 1 ? parts[1] : ''
+
     if (!groups[baseCode]) {
       groups[baseCode] = {
         baseCode,
@@ -139,13 +141,13 @@ export function groupDatabaseLanguages(languages: Array<{ code: string; name: st
         variants: []
       }
     }
-    
+
     groups[baseCode].variants.push({
       code: language.code,
-      regionCode: regionCode || baseCode.toUpperCase(),
+      regionCode: regionCode,
       translationKey: language.name.toLowerCase()
     })
   })
-  
+
   return Object.values(groups)
 }

@@ -177,9 +177,11 @@ export const useSequenceStore = defineStore('sequence', () => {
     const cacheKey = getCacheKey(parentId, locale)
     const cache = cardCache.value
     const userId = authStore.user?.id
+    const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
 
-    if (!userId) {
-      console.warn('[SequenceStore] No user ID available')
+    // Allow loading in skip auth mode or when user is authenticated
+    if (!userId && !isSkipAuth) {
+      console.warn('[SequenceStore] No authenticated user found and not in skip auth mode')
       return []
     }
 
@@ -301,25 +303,34 @@ export const useSequenceStore = defineStore('sequence', () => {
 
     try {
       let sequence: CardTile[] = []
+      const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
 
       // Try to load from API first
       try {
         console.log(`[SequenceStore] Loading sequence from API for ${cacheKey}`)
         sequence = await sequenceService.loadSequence(parentId, locale)
 
-        // Store in offline storage for future use
-        await offlineStorageService.storeSequence(userId, sequence, parentId, locale)
+        // Store in offline storage for future use (skip in skip auth mode)
+        if (!isSkipAuth && userId) {
+          await offlineStorageService.storeSequence(userId, sequence, parentId, locale)
+        }
 
       } catch (error) {
-        console.warn('[SequenceStore] Failed to load from API, trying offline storage:', error)
+        console.warn('[SequenceStore] Failed to load from API:', error)
 
-        // Try to load from offline storage
-        const offlineSequence = await offlineStorageService.getSequence(userId, parentId, locale)
-        if (offlineSequence) {
-          console.log(`[SequenceStore] Loaded ${offlineSequence.length} sequence from offline storage`)
-          sequence = offlineSequence
+        // Try to load from offline storage (skip in skip auth mode)
+        if (!isSkipAuth && userId) {
+          const offlineSequence = await offlineStorageService.getSequence(userId, parentId, locale)
+          if (offlineSequence) {
+            console.log(`[SequenceStore] Loaded ${offlineSequence.length} sequence from offline storage`)
+            sequence = offlineSequence
+          } else {
+            console.warn('[SequenceStore] No offline data available')
+            sequence = []
+          }
         } else {
-          throw new Error('No offline data available')
+          console.warn('[SequenceStore] No offline storage in skip auth mode, using empty sequence')
+          sequence = []
         }
       }
 
@@ -375,8 +386,11 @@ export const useSequenceStore = defineStore('sequence', () => {
 
   const loadAllSequence = async (locale?: string): Promise<void> => {
     const userId = authStore.user?.id
-    if (!userId) {
-      console.warn('[SequenceStore] No user ID available')
+    const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
+
+    // Allow loading in skip auth mode or when user is authenticated
+    if (!userId && !isSkipAuth) {
+      console.warn('[SequenceStore] No authenticated user found and not in skip auth mode')
       return
     }
 
@@ -428,11 +442,13 @@ export const useSequenceStore = defineStore('sequence', () => {
       cardCache.value = newCache
       allSequenceLoaded.value = true
 
-      // Store in offline storage for future use
-      await offlineStorageService.storeSequence(userId, allSequence, undefined, locale)
+      // Store in offline storage for future use (skip in skip auth mode)
+      if (userId) {
+        await offlineStorageService.storeSequence(userId, allSequence, undefined, locale)
 
-      // Update sync metadata
-      await offlineStorageService.updateSyncMetadata(userId, allSequence.length)
+        // Update sync metadata
+        await offlineStorageService.updateSyncMetadata(userId, allSequence.length)
+      }
 
       console.log(`[SequenceStore] Cached all sequence. Total sequence: ${allSequence.length}, Total cache entries: ${cardCache.value.size}`)
     } finally {
@@ -442,11 +458,13 @@ export const useSequenceStore = defineStore('sequence', () => {
 
   const clearCache = async () => {
     const userId = authStore.user?.id
+    const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
+    
     cardCache.value = new Map()
     allSequenceLoaded.value = false
 
-    // Also clear offline storage if user is available
-    if (userId) {
+    // Also clear offline storage if user is available and not in skip auth mode
+    if (userId && !isSkipAuth) {
       await offlineStorageService.clearUserData(userId)
     }
 
@@ -550,7 +568,12 @@ export const useSequenceStore = defineStore('sequence', () => {
   // Check offline data availability
   const checkOfflineStatus = async () => {
     const userId = authStore.user?.id
-    if (!userId) return
+    const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
+    
+    if (!userId || isSkipAuth) {
+      hasOfflineData.value = false
+      return
+    }
 
     hasOfflineData.value = await offlineStorageService.hasOfflineData(userId)
   }
@@ -558,7 +581,9 @@ export const useSequenceStore = defineStore('sequence', () => {
   // Sync offline data with server
   const syncOfflineData = async () => {
     const userId = authStore.user?.id
-    if (!userId || !appStore.isOnline) return
+    const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
+    
+    if (!userId || !appStore.isOnline || isSkipAuth) return
 
     console.log('[SequenceStore] Starting offline data sync...')
 

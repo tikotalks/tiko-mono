@@ -139,12 +139,6 @@ export const useI18nStore = defineStore('i18n', () => {
   async function loadLocale(locale: string): Promise<boolean> {
     console.log(`[i18n-store] Loading locale: ${locale}`)
 
-    // Check if already loaded
-    if (loadedTranslations.value[locale]) {
-      console.log(`[i18n-store] Locale already loaded: ${locale}`)
-      return true
-    }
-
     // Check if locale is available
     if (!availableLanguages.value.includes(locale)) {
       console.warn(`[i18n-store] Locale not available: ${locale}`)
@@ -251,7 +245,12 @@ export const useI18nStore = defineStore('i18n', () => {
       return
     }
 
-    // Load the locale if not already loaded
+    // Force reload by removing from loadedTranslations first
+    delete loadedTranslations.value[localeToUse]
+    delete keysCache.value[localeToUse]
+    console.log(`[i18n-store] Removed ${localeToUse} from cache`)
+
+    // Always force load the locale
     const success = await loadLocale(localeToUse)
     if (success) {
       currentLocale.value = localeToUse
@@ -262,6 +261,7 @@ export const useI18nStore = defineStore('i18n', () => {
       }
 
       console.log(`[i18n-store] Locale set to: ${localeToUse}`)
+      console.log(`[i18n-store] Loaded translations:`, Object.keys(loadedTranslations.value))
     } else {
       console.error(`[i18n-store] Failed to load locale: ${localeToUse}`)
     }

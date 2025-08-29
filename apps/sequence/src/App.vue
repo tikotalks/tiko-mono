@@ -97,10 +97,12 @@ onMounted(async () => {
     // Initialize offline support
     await cardStore.initializeOfflineSupport()
 
-    // Optionally pre-load all sequence to improve performance
+    // Pre-load all sequences in skip auth mode or if enabled in settings
+    const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
     const preloadSequence = localStorage.getItem('tiko:sequence:preload') === 'true'
-    if (preloadSequence) {
-      console.log('[App] Pre-loading all sequence...')
+    
+    if (preloadSequence || isSkipAuth) {
+      console.log('[App] Pre-loading all sequence... (skip auth:', isSkipAuth, 'preload setting:', preloadSequence, ')')
       await cardStore.loadAllSequence(currentLocale.value)
     }
 
