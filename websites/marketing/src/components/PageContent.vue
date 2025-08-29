@@ -63,12 +63,14 @@ const { pageSlug } = toRefs(props);
 const bemm = useBemm('page-content');
 const { locale } = useI18n();
 
+const isDev = import.meta.env.DEV
+
 const content = useContent({
   projectSlug: 'marketing',
   useWorker: import.meta.env.VITE_USE_CONTENT_WORKER === 'true',
   workerUrl: import.meta.env.VITE_CONTENT_API_URL,
   deployedVersionId: import.meta.env.VITE_DEPLOYED_VERSION_ID,
-  noCache: true
+  noCache: isDev ? true : false
 });
 
 // Page content
