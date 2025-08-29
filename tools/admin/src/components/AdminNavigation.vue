@@ -400,6 +400,8 @@ const navigationItems = computed<NavigationItem[]>(() => [
   flex-direction: column;
   width: 250px;
   padding: var(--space);
+  max-height: calc(100vh - var(--topbar-height));
+  overflow-y: auto;
 
 
   &__nav-list {

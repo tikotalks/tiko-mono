@@ -47,7 +47,6 @@ const { hasItems } = useUpload(uploadService, toastService);
     --topbar-height: calc(4rem + var(--space));
 
     width: clamp(240px, 15vw, 320px);
-    border-right: 1px solid var(--color-accent);
     height: fit-content;
     max-height: calc(100vh - (var(--topbar-height)) - var(--space));
     position: sticky;
