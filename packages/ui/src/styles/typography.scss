@@ -167,10 +167,10 @@ ul:not([class]) {
 			position: absolute;
 			left: -1.5em;
 			top: 0.5em;
-			width: 0.5em;
-			height: 0.5em;
-			border-radius: 50%;
-			background-color: var(--color, var(--accent, currentColor));
+			width: 0.75em;
+			height: 0.75em;
+			border-radius: 0.125em;
+			background-color: var(--section-color, var(--color-accent, currentColor));
 		}
 
 		// Nested lists
@@ -179,7 +179,7 @@ ul:not([class]) {
 
 			li:before {
 				background-color: transparent;
-				border: 1px solid var(--color, var(--accent, currentColor));
+				border: 1px solid var(--section-color, var(--color-accent, currentColor));
 			}
 		}
 	}
