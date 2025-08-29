@@ -21,38 +21,38 @@ const log = (message: string, data?: any) => {
 
 const testSupabase = async () => {
   debugInfo.value = ''
-  
+
   log('Environment variables:', {
     VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
     VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY ? '[PRESENT]' : '[MISSING]',
     MODE: import.meta.env.MODE,
     DEV: import.meta.env.DEV
   })
-  
+
   try {
     log('Importing Supabase client...')
     const { supabase } = await import('@tiko/core')
-    
+
     log('Supabase client imported:', {
       hasSupabase: !!supabase,
       hasAuth: !!supabase?.auth,
       supabaseUrl: (supabase as any)?.supabaseUrl || (supabase as any)?.restUrl || 'not found',
       methods: supabase?.auth ? Object.getOwnPropertyNames(Object.getPrototypeOf(supabase.auth)) : []
     })
-    
+
     log('Testing getSession with timeout...')
     const getSessionPromise = supabase.auth.getSession()
-    const timeoutPromise = new Promise((_, reject) => 
+    const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error('Timeout after 3s')), 3000)
     )
-    
+
     try {
       const result = await Promise.race([getSessionPromise, timeoutPromise])
       log('getSession result:', result)
     } catch (e) {
       log('getSession error:', { message: (e as Error).message })
     }
-    
+
   } catch (error) {
     log('Error:', { message: (error as Error).message, stack: (error as Error).stack })
   }
@@ -60,14 +60,14 @@ const testSupabase = async () => {
 
 const testDirectFetch = async () => {
   debugInfo.value = ''
-  
+
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://kejvhvszhevfwgsztedf.supabase.co'
   const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-  
+
   log('Testing direct fetch to Supabase...')
   log('URL:', supabaseUrl)
   log('Has key:', !!anonKey)
-  
+
   try {
     log('Fetching /auth/v1/settings...')
     const response = await fetch(`${supabaseUrl}/auth/v1/settings`, {
@@ -76,15 +76,15 @@ const testDirectFetch = async () => {
         'Authorization': `Bearer ${anonKey}`
       }
     })
-    
+
     log('Response status:', response.status)
     const data = await response.json()
     log('Response data:', data)
-    
+
   } catch (error) {
     log('Fetch error:', { message: (error as Error).message })
   }
-  
+
   try {
     log('\nTesting external fetch...')
     const testResponse = await fetch('https://httpbin.org/get')
@@ -95,10 +95,10 @@ const testDirectFetch = async () => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .supabase-debug {
   padding: var(--space);
-  
+
   pre {
     background: var(--color-background);
     border: 1px solid var(--color-foreground);
@@ -108,7 +108,7 @@ const testDirectFetch = async () => {
     max-height: 400px;
     overflow-y: auto;
   }
-  
+
   button {
     margin: var(--space-s);
     padding: var(--space-s) var(--space);
@@ -117,7 +117,7 @@ const testDirectFetch = async () => {
     border: none;
     border-radius: var(--border-radius);
     cursor: pointer;
-    
+
     &:hover {
       opacity: 0.8;
     }

@@ -169,7 +169,7 @@ function handleReorder(reorderedItems: T[]) {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .orderable-list {
   &__reorder-header,
   &__actions-header {

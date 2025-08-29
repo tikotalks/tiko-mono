@@ -25,7 +25,7 @@ interface I18nOptions {
  */
 function createFallbackI18n(options: I18nOptions) {
   console.warn('[i18n] Using fallback i18n implementation - will try to reconnect when Pinia is ready')
-  
+
   const locale = ref(options.fallbackLocale || 'en')
   const loading = ref(false)
   const error = ref(null)
@@ -34,10 +34,10 @@ function createFallbackI18n(options: I18nOptions) {
   // Try to reconnect to the store periodically
   let reconnectAttempts = 0
   const maxReconnectAttempts = 5
-  
+
   const tryReconnect = () => {
     if (reconnectAttempts >= maxReconnectAttempts) return
-    
+
     reconnectAttempts++
     setTimeout(() => {
       try {
@@ -139,11 +139,11 @@ export function useI18n(options: I18nOptions = {}) {
 }
 
 /**
- * Create a scoped translation function with prefix
+ * Create a translation function with prefix
  */
 export function createScopedT(prefix: string) {
   let store: ReturnType<typeof useI18nStore>
-  
+
   try {
     store = useI18nStore()
   } catch (error) {

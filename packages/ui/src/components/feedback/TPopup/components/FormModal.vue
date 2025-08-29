@@ -69,7 +69,7 @@ const handleCancel = () => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .form-modal {
   display: flex;
   flex-direction: column;

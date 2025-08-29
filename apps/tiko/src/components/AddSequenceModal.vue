@@ -8,7 +8,7 @@
 // Placeholder for add sequence modal
 </script>
 
-<style scoped>
+<style>
 .add-sequence-modal {
   padding: 1rem;
 }

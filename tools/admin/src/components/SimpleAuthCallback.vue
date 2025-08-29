@@ -18,16 +18,16 @@ const log = (msg: string) => {
 
 onMounted(async () => {
   log('[SimpleAuthCallback] Starting...')
-  
+
   // Debug localStorage
   log('LocalStorage contents:')
   log(`- tiko_pending_auth_email: ${localStorage.getItem('tiko_pending_auth_email')}`)
   log(`- supabase.auth.code_verifier: ${localStorage.getItem('supabase.auth.code_verifier')}`)
-  
+
   // Get the URL parameters
   const url = new URL(window.location.href)
   log(`URL: ${url.href}`)
-  
+
   // Check for error
   if (url.searchParams.has('error')) {
     status.value = 'Authentication Failed'
@@ -35,19 +35,19 @@ onMounted(async () => {
     log(`Description: ${url.searchParams.get('error_description')}`)
     return
   }
-  
+
   // Look for tokens in hash (implicit flow)
   if (url.hash) {
     log(`Hash found: ${url.hash}`)
     const hashParams = new URLSearchParams(url.hash.substring(1))
-    
+
     const accessToken = hashParams.get('access_token')
     const refreshToken = hashParams.get('refresh_token')
     const expiresIn = hashParams.get('expires_in')
-    
+
     if (accessToken) {
       log('Access token found!')
-      
+
       // Store the session
       const session = {
         access_token: accessToken,
@@ -57,10 +57,10 @@ onMounted(async () => {
         token_type: 'bearer',
         user: null
       }
-      
+
       localStorage.setItem('tiko_auth_session', JSON.stringify(session))
       log('Session stored!')
-      
+
       status.value = 'Success! Redirecting...'
       setTimeout(() => {
         window.location.href = '/'
@@ -68,20 +68,20 @@ onMounted(async () => {
       return
     }
   }
-  
+
   // Look for code in query params (authorization code flow)
   const code = url.searchParams.get('code')
   if (code) {
     log(`Code found: ${code}`)
     status.value = 'Exchanging code...'
-    
+
     // For magic links, we need to use PKCE flow
     // First check if we have a code verifier
     const codeVerifier = localStorage.getItem('supabase.auth.code_verifier')
-    
+
     try {
       let response
-      
+
       if (codeVerifier) {
         // PKCE flow
         log('Found code verifier, using PKCE flow')
@@ -100,7 +100,7 @@ onMounted(async () => {
         // Try magic link verification
         log('No code verifier, trying magic link verification')
         const pendingEmail = localStorage.getItem('tiko_pending_auth_email')
-        
+
         if (pendingEmail) {
           response = await fetch('https://kejvhvszhevfwgsztedf.supabase.co/auth/v1/verify', {
             method: 'POST',
@@ -120,13 +120,13 @@ onMounted(async () => {
           return
         }
       }
-      
+
       log(`Exchange response: ${response.status}`)
-      
+
       if (response.ok) {
         const data = await response.json()
         log('Exchange successful!')
-        
+
         // Store the session
         const session = {
           access_token: data.access_token,
@@ -136,9 +136,9 @@ onMounted(async () => {
           token_type: data.token_type || 'bearer',
           user: data.user
         }
-        
+
         localStorage.setItem('tiko_auth_session', JSON.stringify(session))
-        
+
         status.value = 'Success! Redirecting...'
         setTimeout(() => {
           window.location.href = '/'
@@ -146,15 +146,15 @@ onMounted(async () => {
       } else {
         const error = await response.text()
         log(`Exchange failed: ${error}`)
-        
+
         // Sometimes Supabase puts the session directly in localStorage
         log('Checking if Supabase stored session directly...')
-        
+
         // Check for Supabase's storage format
         const keys = Object.keys(localStorage)
         const supabaseKeys = keys.filter(k => k.includes('supabase'))
         log(`Supabase keys in localStorage: ${supabaseKeys.join(', ')}`)
-        
+
         // Check each key
         supabaseKeys.forEach(key => {
           const value = localStorage.getItem(key)
@@ -168,7 +168,7 @@ onMounted(async () => {
             }
           }
         })
-        
+
         status.value = 'Exchange failed - check console'
       }
     } catch (err) {
@@ -182,7 +182,7 @@ onMounted(async () => {
 })
 </script>
 
-<style scoped>
+<style>
 .auth-callback {
   padding: 2rem;
   max-width: 600px;

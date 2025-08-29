@@ -20,21 +20,21 @@ const log = (msg: string) => {
 const tryDirectApiExchange = async (code: string) => {
   try {
     log('Making direct API call to exchange code...')
-    
+
     // Check for code_verifier in localStorage
     const codeVerifier = localStorage.getItem('supabase.auth.code_verifier') || localStorage.getItem('supabase-auth-code-verifier') || ''
-    
+
     log(`Code verifier found: ${codeVerifier ? 'Yes' : 'No'} (length: ${codeVerifier.length})`)
-    
+
     // For magic links, we might not have a code verifier since they don't use PKCE
     // Let's try the standard token exchange first
     const payload = {
       auth_code: code,
       code_verifier: codeVerifier
     }
-    
+
     log(`Payload: ${JSON.stringify(payload)}`)
-    
+
     const response = await fetch('https://kejvhvszhevfwgsztedf.supabase.co/auth/v1/token?grant_type=pkce', {
       method: 'POST',
       headers: {
@@ -61,7 +61,7 @@ const tryDirectApiExchange = async (code: string) => {
 
       // Store session both in localStorage and Supabase
       localStorage.setItem('tiko_auth_session', JSON.stringify(session))
-      
+
       // Try to set session in Supabase too
       try {
         await supabase.auth.setSession({
@@ -81,7 +81,7 @@ const tryDirectApiExchange = async (code: string) => {
       }, 1000)
     } else {
       log(`Direct API exchange failed - payload: ${JSON.stringify(payload)} response - ${JSON.stringify(data)}`)
-      
+
       // If PKCE failed, try treating it as a magic link verification
       if (data.error_code === 'validation_failed' && (data.msg?.includes('code_verifier') || data.msg?.includes('code verifier') || data.msg?.includes('non-empty'))) {
         log('Trying as magic link instead of PKCE...')
@@ -100,7 +100,7 @@ const tryDirectApiExchange = async (code: string) => {
 const tryMagicLinkVerification = async (code: string) => {
   try {
     log('Attempting magic link verification...')
-    
+
     // Get stored email
     const email = localStorage.getItem('tiko_pending_auth_email')
     if (!email) {
@@ -145,7 +145,7 @@ const tryMagicLinkVerification = async (code: string) => {
 
     for (const approach of approaches) {
       log(`\nTrying approach: ${approach.name}`)
-      
+
       const response = await fetch(approach.endpoint, {
         method: 'POST',
         headers: {
@@ -196,14 +196,14 @@ onMounted(async () => {
   // Check URL for different auth patterns
   const urlParams = new URLSearchParams(window.location.search)
   const hashParams = new URLSearchParams(window.location.hash.substring(1))
-  
+
   log(`URL: ${window.location.href}`)
   log(`Query params: ${window.location.search}`)
   log(`Hash params: ${window.location.hash}`)
 
   // Check for OAuth code (query parameter)
   const code = urlParams.get('code')
-  
+
   // Check for magic link tokens (hash parameters)
   const accessToken = hashParams.get('access_token')
   const refreshToken = hashParams.get('refresh_token')
@@ -212,22 +212,22 @@ onMounted(async () => {
 
   if (code) {
     log(`Found OAuth code: ${code}`)
-    
+
     try {
       log('Calling exchangeCodeForSession...')
       status.value = 'Exchanging code for session...'
-      
+
       // Add a timeout to detect if the method hangs
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('exchangeCodeForSession timeout after 10 seconds')), 10000)
       })
-      
+
       const exchangePromise = supabase.auth.exchangeCodeForSession(code)
-      
+
       const { data, error } = await Promise.race([exchangePromise, timeoutPromise])
-      
+
       log(`exchangeCodeForSession completed`)
-      
+
       if (error) {
         log(`exchangeCodeForSession error: ${error.message}`)
         status.value = 'OAuth exchange failed'
@@ -239,7 +239,7 @@ onMounted(async () => {
         log(`Session user: ${data.session.user?.email}`)
         localStorage.removeItem('tiko_pending_auth_email')
         status.value = 'Success! Redirecting...'
-        
+
         setTimeout(() => {
           window.location.href = '/'
         }, 1000)
@@ -250,7 +250,7 @@ onMounted(async () => {
     } catch (err) {
       log(`OAuth error: ${err}`)
       status.value = 'OAuth error occurred'
-      
+
       // If it timed out, try direct API call
       if (err.message.includes('timeout')) {
         log('\nTrying direct API call due to timeout...')
@@ -260,14 +260,14 @@ onMounted(async () => {
   } else if (accessToken) {
     log(`Found magic link tokens in hash`)
     log(`Access token: ${accessToken?.substring(0, 20)}...`)
-    
+
     try {
       // Set the session directly from hash parameters
       const { data, error } = await supabase.auth.setSession({
         access_token: accessToken,
         refresh_token: refreshToken || ''
       })
-      
+
       if (error) {
         log(`setSession error: ${error.message}`)
         status.value = 'Magic link session failed'
@@ -278,7 +278,7 @@ onMounted(async () => {
         log('Magic link session set successfully!')
         localStorage.removeItem('tiko_pending_auth_email')
         status.value = 'Success! Redirecting...'
-        
+
         setTimeout(() => {
           window.location.href = '/'
         }, 1000)
@@ -293,19 +293,19 @@ onMounted(async () => {
   } else {
     log('No auth parameters found')
     status.value = 'No authentication data found'
-    
+
     // Try to let Supabase handle it automatically
     try {
       log('Attempting automatic session detection...')
       const { data: { session }, error } = await supabase.auth.getSession()
-      
+
       if (error) {
         log(`getSession error: ${error.message}`)
       } else if (session) {
         log('Session found automatically!')
         localStorage.removeItem('tiko_pending_auth_email')
         status.value = 'Success! Redirecting...'
-        
+
         setTimeout(() => {
           window.location.href = '/'
         }, 1000)
@@ -319,7 +319,7 @@ onMounted(async () => {
 })
 </script>
 
-<style scoped>
+<style>
 .auth-callback {
   padding: 2rem;
   max-width: 800px;

@@ -398,7 +398,7 @@ onUnmounted(() => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .top-bar {
   position: relative;
   z-index: 100;
@@ -500,7 +500,7 @@ onUnmounted(() => {
     height: 2em;
     display: block;
 
-    img { border: 2px solid red;
+    img {
       width: 100%;
     }
   }

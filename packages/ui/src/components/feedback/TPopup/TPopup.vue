@@ -126,7 +126,7 @@ const hasSlot = (name: string) => {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 @use "../../../styles/global.scss" as g;
 
 .popup {

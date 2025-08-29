@@ -133,7 +133,7 @@ const selectRecentQuestion = (question: string) => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .question-input-form {
   display: flex;
   flex-direction: column;

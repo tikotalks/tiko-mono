@@ -126,7 +126,7 @@ const options = ref({
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .markdown-test-view {
   &__container {
     display: grid;

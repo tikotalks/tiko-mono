@@ -6,7 +6,7 @@ A specialized button component for Single Sign-On (SSO) authentication with the 
 
 ```vue
 <template>
-  <TSSOButton 
+  <TSSOButton
     app-id="timer"
     app-name="Tiko Timer"
   />
@@ -52,14 +52,14 @@ import { TSSOButton } from '@tiko/ui'
 <template>
   <div class="login-options">
     <h2>Sign in to continue</h2>
-    
-    <TSSOButton 
+
+    <TSSOButton
       app-id="cards"
       app-name="Tiko Cards"
     />
-    
+
     <p>or</p>
-    
+
     <button @click="useEmailLogin">
       Sign in with email
     </button>
@@ -80,17 +80,17 @@ const useEmailLogin = () => {
 ```vue
 <template>
   <div class="sso-examples">
-    <TSSOButton 
+    <TSSOButton
       app-id="timer"
       size="small"
     />
-    
-    <TSSOButton 
+
+    <TSSOButton
       app-id="timer"
       size="medium"
     />
-    
-    <TSSOButton 
+
+    <TSSOButton
       app-id="timer"
       size="large"
     />
@@ -103,21 +103,21 @@ const useEmailLogin = () => {
 ```vue
 <template>
   <div class="sso-variants">
-    <TSSOButton 
+    <TSSOButton
       app-id="radio"
       type="default"
     >
       Sign in with Tiko
     </TSSOButton>
-    
-    <TSSOButton 
+
+    <TSSOButton
       app-id="radio"
       type="outline"
     >
       Use Tiko Account
     </TSSOButton>
-    
-    <TSSOButton 
+
+    <TSSOButton
       app-id="radio"
       type="ghost"
     >
@@ -131,7 +131,7 @@ const useEmailLogin = () => {
 
 ```vue
 <template>
-  <TSSOButton 
+  <TSSOButton
     app-id="todo"
     app-name="Tiko Todo"
   >
@@ -144,7 +144,7 @@ const useEmailLogin = () => {
 
 ```vue
 <template>
-  <TSSOButton 
+  <TSSOButton
     app-id="timer"
     :disabled="isAuthenticating"
   >
@@ -171,26 +171,26 @@ window.addEventListener('beforeunload', () => {
 <template>
   <form class="login-form" @submit.prevent>
     <h1>Welcome to {{ appName }}</h1>
-    
+
     <!-- Primary SSO option -->
-    <TSSOButton 
+    <TSSOButton
       :app-id="appId"
       :app-name="appName"
       size="large"
       class="login-form__sso"
     />
-    
+
     <div class="divider">
       <span>or</span>
     </div>
-    
+
     <!-- Alternative login methods -->
-    <input 
-      type="email" 
+    <input
+      type="email"
       placeholder="Email address"
       v-model="email"
     />
-    
+
     <button type="submit">
       Continue with email
     </button>
@@ -206,7 +206,7 @@ const appName = 'Tiko Cards'
 const email = ref('')
 </script>
 
-<style scoped>
+<style>
 .login-form__sso {
   width: 100%;
   margin-bottom: var(--space);
@@ -225,12 +225,12 @@ const email = ref('')
 ```vue
 <template>
   <div class="mobile-login">
-    <TSSOButton 
+    <TSSOButton
       :app-id="config.appId"
       :app-name="config.appName"
       @click="trackSSOAttempt"
     />
-    
+
     <p class="help-text">
       This will open the Tiko app if installed,
       or sign in through your browser.
@@ -306,11 +306,11 @@ import { authStore } from '@/stores/auth'
 // Handle deep link returns
 App.addListener('appUrlOpen', async (data) => {
   const url = new URL(data.url)
-  
+
   if (url.pathname === '/auth/callback') {
     const token = url.searchParams.get('token')
     const userId = url.searchParams.get('user_id')
-    
+
     if (token && userId) {
       await authStore.handleSSOCallback(token, userId)
     }
@@ -382,11 +382,11 @@ Register your app with Tiko:
 ```vue
 <template>
   <div>
-    <TSSOButton 
+    <TSSOButton
       app-id="timer"
       @click="attemptSSO"
     />
-    
+
     <div v-if="error" class="error">
       {{ error }}
     </div>

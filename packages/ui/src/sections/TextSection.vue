@@ -4,13 +4,13 @@
       <h2 v-if="content?.title" :class="bemm('title')">
         {{ content.title }}
       </h2>
-      
-      <TMarkdownRenderer 
-        v-if="content?.content" 
+
+      <TMarkdownRenderer
+        v-if="content?.content"
         :content="content.content"
         :class="bemm('content')"
       />
-      
+
       <div v-if="content?.subtitle" :class="bemm('subtitle')">
         {{ content.subtitle }}
       </div>
@@ -33,13 +33,17 @@ interface Props {
   }
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 const bemm = useBemm('text-section')
 </script>
 
 <style lang="scss">
 .text-section {
-  padding: var(--space-2xl) 0;
+  padding: var(--spacing);
+
+  &:first-child{
+    padding-top: calc(var(--spacing) + 100px);
+  }
 
   &__container {
     max-width: var(--max-width-content);
@@ -48,10 +52,10 @@ const bemm = useBemm('text-section')
   }
 
   &__title {
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xxl);
     font-weight: var(--font-weight-bold);
     margin: 0 0 var(--space-l) 0;
-    text-align: center;
+    text-align: left;
   }
 
   &__subtitle {

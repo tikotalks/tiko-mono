@@ -81,7 +81,7 @@ const handleClose = () => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .settings-panel {
   display: flex;
   flex-direction: column;

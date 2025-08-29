@@ -103,7 +103,7 @@ watch([localMinutes, localSeconds, localSettings], () => {
 }, { deep: true })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .timer-settings-form {
   display: flex;
   flex-direction: column;

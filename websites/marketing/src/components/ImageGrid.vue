@@ -229,7 +229,7 @@ const placedTiles = computed(() => {
 });
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
 // Transition animations for tiles
 .tile-transition-enter-active,
 .tile-transition-leave-active {

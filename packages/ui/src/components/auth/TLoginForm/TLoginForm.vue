@@ -326,7 +326,7 @@ onUnmounted(() => {
 });
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .login-form {
   display: flex;
   justify-content: center;

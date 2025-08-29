@@ -126,7 +126,6 @@ const renderedMarkdown = computed(() => {
     .header-anchor {
       color: var(--color-primary);
       text-decoration: none;
-      opacity: 0;
       transition: opacity 0.2s ease;
       margin-right: var(--space-xs);
       font-weight: normal;

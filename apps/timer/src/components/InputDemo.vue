@@ -59,7 +59,7 @@ const textInput = ref('')
 const newTextInput = ref('')
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .input-demo {
   display: flex;
   flex-direction: column;

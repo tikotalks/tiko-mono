@@ -293,7 +293,7 @@ const handleCardClick = (type: string) => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .cards-view {
   padding: var(--space-lg);
   max-width: 1200px;

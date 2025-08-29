@@ -412,7 +412,7 @@ onMounted(async () => {
 });
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .auth-wrapper {
   display: flex;
   flex-direction: column;

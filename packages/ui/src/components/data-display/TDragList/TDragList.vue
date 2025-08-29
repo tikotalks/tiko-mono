@@ -182,7 +182,7 @@ function onDrop(dropIndex: number, event: DragEvent) {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .drag-list {
   display: flex;
   flex-direction: column;
@@ -215,7 +215,6 @@ function onDrop(dropIndex: number, event: DragEvent) {
     }
 
     &--drop-target {
-      border: 2px solid red;
       border-color: var(--color-primary);
       background: var(--color-primary-light);
       border-radius: var(--border-radius);

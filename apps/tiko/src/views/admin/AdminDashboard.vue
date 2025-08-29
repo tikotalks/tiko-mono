@@ -27,7 +27,7 @@
 // No additional logic needed for this dashboard
 </script>
 
-<style scoped>
+<style>
 .admin-dashboard {
   max-width: 800px;
   margin: 0 auto;
@@ -108,13 +108,13 @@
   .admin-dashboard {
     padding: 1rem;
   }
-  
+
   .admin-header {
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;
   }
-  
+
   .admin-cards {
     grid-template-columns: 1fr;
   }

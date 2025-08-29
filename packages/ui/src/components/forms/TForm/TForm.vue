@@ -120,7 +120,7 @@ const reset = () => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .form {
   display: flex;
   flex-direction: column;

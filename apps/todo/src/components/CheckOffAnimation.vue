@@ -87,7 +87,7 @@ onMounted(() => {
 });
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .check-off-animation {
   position: fixed;
   inset: 0;

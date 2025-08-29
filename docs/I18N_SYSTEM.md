@@ -272,12 +272,12 @@ pnpm run build:app yes-no
 
 ### Scoped Translations
 
-Create scoped translation functions for cleaner code:
+Create translation functions for cleaner code:
 
 ```typescript
 import { createScopedT } from '@tiko/ui'
 
-// Create scoped function for user translations
+// Create function for user translations
 const tu = createScopedT('user')
 
 // Use without prefix
@@ -326,7 +326,7 @@ If you're migrating from database-driven i18n:
    ```typescript
    // Old
    import { useDatabaseTranslations } from '@tiko/ui'
-   
+
    // New
    import { useStaticI18n } from '@tiko/ui'
    ```

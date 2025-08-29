@@ -1,9 +1,9 @@
 import mitt, { type Emitter } from 'mitt'
-import type { 
-  EventMap, 
-  EventHandler, 
-  EventBusComposable, 
-  TikoEvents 
+import type {
+  EventMap,
+  EventHandler,
+  EventBusComposable,
+  TikoEvents
 } from './useEventBus.model'
 
 /**
@@ -25,29 +25,29 @@ function getEventBus(): Emitter<any> {
 
 /**
  * EventBus composable for cross-component communication
- * 
+ *
  * Provides a type-safe event system using Mitt that can be used throughout
  * all Tiko applications. The event bus allows components to communicate
  * without tight coupling through a publish-subscribe pattern.
- * 
+ *
  * @template Events - Event map defining available events and their data types
  * @returns EventBus interface with emit, on, off, and clear methods
- * 
+ *
  * @example
  * // Basic usage with TikoEvents
  * const eventBus = useEventBus<TikoEvents>()
- * 
+ *
  * // Listen to events
  * eventBus.on('auth:login', (data) => {
  *   console.log(`User ${data.email} logged in`)
  * })
- * 
+ *
  * // Emit events
- * eventBus.emit('auth:login', { 
- *   userId: '123', 
- *   email: 'user@example.com' 
+ * eventBus.emit('auth:login', {
+ *   userId: '123',
+ *   email: 'user@example.com'
  * })
- * 
+ *
  * @example
  * // Custom events for specific app
  * interface TimerEvents extends TikoEvents {
@@ -55,19 +55,19 @@ function getEventBus(): Emitter<any> {
  *   'timer:pause': Record<string, never>
  *   'timer:complete': { duration: number; mode: 'up' | 'down' }
  * }
- * 
+ *
  * const eventBus = useEventBus<TimerEvents>()
  * eventBus.emit('timer:start', { duration: 300 })
- * 
+ *
  * @example
  * // Cleanup listeners in component unmount
  * import { onUnmounted } from 'vue'
- * 
+ *
  * const eventBus = useEventBus<TikoEvents>()
- * 
+ *
  * const handleLogin = (data) => console.log('Login:', data)
  * eventBus.on('auth:login', handleLogin)
- * 
+ *
  * onUnmounted(() => {
  *   eventBus.off('auth:login', handleLogin)
  * })
@@ -90,7 +90,7 @@ export function useEventBus<Events extends EventMap = TikoEvents>(): EventBusCom
    * @param handler - The event handler function
    */
   const on = <K extends keyof Events>(
-    event: K, 
+    event: K,
     handler: EventHandler<Events[K]>
   ): void => {
     emitter.on(event as string, handler)
@@ -102,7 +102,7 @@ export function useEventBus<Events extends EventMap = TikoEvents>(): EventBusCom
    * @param handler - The event handler function to remove
    */
   const off = <K extends keyof Events>(
-    event: K, 
+    event: K,
     handler: EventHandler<Events[K]>
   ): void => {
     emitter.off(event as string, handler)
@@ -129,12 +129,12 @@ export function useEventBus<Events extends EventMap = TikoEvents>(): EventBusCom
 }
 
 /**
- * Create a scoped event bus for specific use cases
+ * Create a event bus for specific use cases
  * Useful when you need isolated event communication
- * 
+ *
  * @template Events - Event map defining available events and their data types
  * @returns New EventBus instance that doesn't share events with global bus
- * 
+ *
  * @example
  * // Create isolated event bus for a modal component
  * const modalEventBus = createEventBus<{

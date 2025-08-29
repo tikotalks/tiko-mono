@@ -401,14 +401,7 @@ const navigationItems = computed<NavigationItem[]>(() => [
   width: 250px;
   padding: var(--space);
 
-  container-type: inline-size;
 
-  @container (max-width: 200px) {
-  border: 2px solid red;
-}
-@container (min-width: 200px) {
-  border: 2px solid green;
-}
   &__nav-list {
     list-style: none;
     padding: 0;
@@ -451,7 +444,6 @@ const navigationItems = computed<NavigationItem[]>(() => [
     }
 
     &--has-children {
-      // border: 2px solid red;
     }
 
     &--active {

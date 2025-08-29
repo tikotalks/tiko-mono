@@ -64,7 +64,7 @@ const bemm = useBemm('todo-group-card')
 const { t, keys } = useI18n()
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .todo-group-card {
   background-color: var(--color-background);
   border: 2px solid var(--color-accent);

@@ -26,29 +26,29 @@ const log = (msg: string) => {
 onMounted(async () => {
   log('[AuthCallbackSupabase] Starting auth callback')
   log(`URL: ${window.location.href}`)
-  
+
   const SUPABASE_URL = 'https://kejvhvszhevfwgsztedf.supabase.co'
   const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlanZodnN6aGV2Zndnc3p0ZWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4ODg2MTIsImV4cCI6MjA2NzQ2NDYxMn0.xUYXxNodJTpTwChlKbuBSojVJqX9CDW87aVISEUc2rE'
-  
+
   try {
     // Parse URL to get the code
     const params = new URLSearchParams(window.location.search)
     const code = params.get('code')
     const error = params.get('error')
-    
+
     log(`Params: code=${code}, error=${error}`)
-    
+
     if (error) {
       throw new Error(params.get('error_description') || error)
     }
-    
+
     if (!code) {
       throw new Error('No authentication code found')
     }
-    
+
     // Make DIRECT API call to verify the magic link
     log('\nMaking direct API call to verify magic link...')
-    
+
     const response = await fetch(`${SUPABASE_URL}/auth/v1/verify`, {
       method: 'POST',
       headers: {
@@ -60,11 +60,11 @@ onMounted(async () => {
         token: code
       })
     })
-    
+
     log(`Response status: ${response.status}`)
     const data = await response.json()
     log(`Response data: ${JSON.stringify(data, null, 2)}`)
-    
+
     if (response.ok && data.access_token) {
       // Success! Store the session
       const session = {
@@ -75,12 +75,12 @@ onMounted(async () => {
         token_type: data.token_type || 'bearer',
         user: data.user
       }
-      
+
       // Store in localStorage in Supabase format
       localStorage.setItem('sb-kejvhvszhevfwgsztedf-auth-token', JSON.stringify(session))
-      
+
       statusMessage.value = 'Success! Redirecting...'
-      
+
       setTimeout(() => {
         window.location.href = '/'
       }, 1000)
@@ -90,7 +90,7 @@ onMounted(async () => {
   } catch (error) {
     log(`\nError: ${error.message}`)
     statusMessage.value = 'Authentication failed'
-    
+
     setTimeout(() => {
       router.push('/')
     }, 2000)
@@ -98,14 +98,14 @@ onMounted(async () => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .auth-callback {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  
+
   &__container {
     background: white;
     border-radius: 16px;
@@ -115,20 +115,20 @@ onMounted(async () => {
     max-width: 400px;
     width: 90%;
   }
-  
+
   &__loading {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
-    
+
     p {
       margin: 0;
       font-size: 1.1rem;
       color: #666;
     }
   }
-  
+
   &__spinner {
     width: 40px;
     height: 40px;

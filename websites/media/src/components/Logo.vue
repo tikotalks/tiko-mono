@@ -24,7 +24,7 @@
 </template>
 
 
-<style lang="scss" scoped>
+<style lang="scss">
 svg{
 
   --delay: .3s;

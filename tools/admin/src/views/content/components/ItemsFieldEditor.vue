@@ -249,7 +249,7 @@ watch(() => props.modelValue, (newValue) => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .items-field-editor {
   display: flex;
   flex-direction: column;

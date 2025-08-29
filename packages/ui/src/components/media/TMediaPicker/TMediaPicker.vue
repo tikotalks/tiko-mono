@@ -71,7 +71,7 @@ const handleCancel = () => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .media-picker {
   display: flex;
   flex-direction: column;

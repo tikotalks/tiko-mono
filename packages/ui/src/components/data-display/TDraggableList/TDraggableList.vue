@@ -58,7 +58,7 @@ const {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .draggable-list {
   &__container {
     display: flex;
@@ -79,11 +79,11 @@ const {
 
     &:not(.draggable-list__item--disabled) {
       cursor: grab;
-      
+
       &:active {
         cursor: grabbing;
       }
-      
+
       &:hover {
         border-color: var(--color-accent-hover);
       }
@@ -103,7 +103,7 @@ const {
     flex-shrink: 0;
     opacity: 0.5;
     transition: opacity 0.2s ease;
-    
+
     .draggable-list__item:hover & {
       opacity: 1;
     }

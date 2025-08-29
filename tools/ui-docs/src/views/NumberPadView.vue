@@ -454,7 +454,7 @@ const interactive = reactive({
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .number-pad-view {
   padding: var(--space-lg);
   max-width: 1000px;

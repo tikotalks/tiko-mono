@@ -73,8 +73,8 @@ import { TBanner } from '@tiko/ui'
 
 ```vue
 <template>
-  <TBanner 
-    type="info" 
+  <TBanner
+    type="info"
     :close="true"
   >
     This message can be dismissed by clicking the X button
@@ -86,7 +86,7 @@ import { TBanner } from '@tiko/ui'
 
 ```vue
 <template>
-  <TBanner 
+  <TBanner
     type="info"
     icon="bell"
   >
@@ -99,7 +99,7 @@ import { TBanner } from '@tiko/ui'
 
 ```vue
 <template>
-  <TBanner 
+  <TBanner
     type="warning"
     :show-icon="false"
   >
@@ -157,7 +157,7 @@ import { TBanner } from '@tiko/ui'
       Toggle Banner
     </TButton>
 
-    <TBanner 
+    <TBanner
       type="info"
       :active="showBanner"
       :close="true"
@@ -194,7 +194,7 @@ const showBanner = ref(true)
   </TBanner>
 </template>
 
-<style scoped>
+<style>
 .custom-content {
   display: flex;
   flex-direction: column;
@@ -217,15 +217,15 @@ const showBanner = ref(true)
 
 ```vue
 <template>
-  <TBanner 
+  <TBanner
     v-if="updateAvailable"
     type="info"
     :close="false"
   >
     <div class="update-banner">
       <span>A new version of the app is available!</span>
-      <TButton 
-        size="small" 
+      <TButton
+        size="small"
         @click="updateApp"
       >
         Update Now
@@ -247,7 +247,7 @@ const updateApp = () => {
 }
 </script>
 
-<style scoped>
+<style>
 .update-banner {
   display: flex;
   align-items: center;
@@ -262,7 +262,7 @@ const updateApp = () => {
 
 ```vue
 <template>
-  <TBanner 
+  <TBanner
     v-if="!cookiesAccepted"
     type="default"
     :close="false"
@@ -271,14 +271,14 @@ const updateApp = () => {
     <div class="cookie-consent">
       <p>We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies.</p>
       <div class="cookie-actions">
-        <TButton 
-          size="small" 
+        <TButton
+          size="small"
           type="ghost"
           @click="learnMore"
         >
           Learn More
         </TButton>
-        <TButton 
+        <TButton
           size="small"
           @click="acceptCookies"
         >

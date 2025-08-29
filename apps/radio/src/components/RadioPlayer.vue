@@ -484,7 +484,7 @@ onUnmounted(() => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .radio-player {
   display: flex;
   flex-direction: column;

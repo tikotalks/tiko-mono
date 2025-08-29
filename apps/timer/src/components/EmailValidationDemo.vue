@@ -61,7 +61,7 @@ const handleChange = (value: string) => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .email-validation-demo {
   display: flex;
   flex-direction: column;

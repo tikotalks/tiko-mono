@@ -233,7 +233,7 @@ const formatLastPlayed = (date: Date): string => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .radio-card {
   display: flex;
   flex-direction: column;

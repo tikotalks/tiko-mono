@@ -348,7 +348,7 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style>
 .assets-view {
   padding: 2rem;
   max-width: 1400px;

@@ -142,7 +142,7 @@ const tooltipData = computed(()=>{
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 /**
  * TButton component styles following Tiko design system standards
  * - Uses em units and CSS custom properties for spacing

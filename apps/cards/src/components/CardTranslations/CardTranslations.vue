@@ -227,7 +227,7 @@ const availableLocaleOptions = computed(() => {
   const locales = availableLocales?.value || [];
   console.log('[CardTranslations] Available locales from i18n:', locales);
   console.log('[CardTranslations] Used locales:', usedLocales);
-  
+
   const baseLanguages = [...new Set(
     locales.map(locale => locale.split('-')[0])
   )];
@@ -246,7 +246,7 @@ const availableLocaleOptions = computed(() => {
       label: getLocaleName(locale),
       isBase: !locale.includes('-')
     }));
-    
+
   console.log('[CardTranslations] Available locale options:', filtered);
   return filtered;
 });
@@ -510,7 +510,7 @@ watch(() => props.baseTitle, (newTitle) => {
 });
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .card-translations {
   &__header {
     display: flex;

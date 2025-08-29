@@ -212,7 +212,7 @@ onMounted(async () => {
 })
 </script>
 
-<style scoped>
+<style>
 .auth-callback {
   padding: 2rem;
   max-width: 800px;

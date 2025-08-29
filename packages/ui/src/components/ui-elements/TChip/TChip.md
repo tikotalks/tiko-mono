@@ -180,7 +180,7 @@ import { TChip } from '@tiko/ui'
   </TChip>
 </template>
 
-<style scoped>
+<style>
 .chip-avatar {
   width: 1.5em;
   height: 1.5em;
@@ -259,7 +259,7 @@ const tags = [
 ]
 </script>
 
-<style scoped>
+<style>
 .tag-list {
   display: flex;
   flex-wrap: wrap;
@@ -318,7 +318,7 @@ const clearAllFilters = () => {
 }
 </script>
 
-<style scoped>
+<style>
 .remove-filter {
   background: none;
   border: none;

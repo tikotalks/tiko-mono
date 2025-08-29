@@ -26,29 +26,29 @@ const statusMessage = ref('Processing authentication...')
 onMounted(async () => {
   console.log('[AuthCallbackSimple] Starting simple auth callback...')
   console.log('[AuthCallbackSimple] URL:', window.location.href)
-  
+
   // Extract tokens from URL
   const urlParams = new URLSearchParams(window.location.search)
   const hashParams = new URLSearchParams(window.location.hash.substring(1))
-  
+
   const code = urlParams.get('code')
   const accessToken = hashParams.get('access_token')
   const refreshToken = hashParams.get('refresh_token')
-  
+
   console.log('[AuthCallbackSimple] Found:', {
     code: !!code,
     accessToken: !!accessToken,
     refreshToken: !!refreshToken
   })
-  
+
   if (accessToken) {
     console.log('[AuthCallbackSimple] Magic link with access token detected')
     statusMessage.value = 'Verifying your email...'
-    
+
     // Extract session data
     const expiresIn = parseInt(hashParams.get('expires_in') || '3600')
     const tokenType = hashParams.get('token_type') || 'bearer'
-    
+
     // Build session object
     const session = {
       access_token: accessToken,
@@ -58,38 +58,38 @@ onMounted(async () => {
       refresh_token: refreshToken,
       user: null
     }
-    
+
     // Store in the format Supabase expects
     const authData = {
       currentSession: session,
       expiresAt: Date.now() + (expiresIn * 1000)
     }
-    
+
     localStorage.setItem('supabase.auth.token', JSON.stringify(authData))
     console.log('[AuthCallbackSimple] Session stored in localStorage')
-    
+
     statusMessage.value = 'Success! Redirecting...'
-    
+
     // Redirect to home
     setTimeout(() => {
       window.location.href = '/'
     }, 500)
-    
+
   } else if (code) {
     console.log('[AuthCallbackSimple] Authorization code detected')
     statusMessage.value = 'Exchanging code...'
-    
+
     // For PKCE flow, we need to exchange the code
     // First check if we have a code verifier
     const codeVerifier = localStorage.getItem('supabase.auth.code_verifier')
-    
+
     if (codeVerifier) {
       console.log('[AuthCallbackSimple] Found code verifier, attempting exchange...')
-      
+
       try {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
         const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-        
+
         const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=pkce`, {
           method: 'POST',
           headers: {
@@ -101,13 +101,13 @@ onMounted(async () => {
             code_verifier: codeVerifier
           })
         })
-        
+
         console.log('[AuthCallbackSimple] Exchange response:', response.status)
-        
+
         if (response.ok) {
           const data = await response.json()
           console.log('[AuthCallbackSimple] Exchange successful')
-          
+
           // Store the session
           const authData = {
             currentSession: {
@@ -120,10 +120,10 @@ onMounted(async () => {
             },
             expiresAt: Date.now() + (data.expires_in * 1000)
           }
-          
+
           localStorage.setItem('supabase.auth.token', JSON.stringify(authData))
           localStorage.removeItem('supabase.auth.code_verifier')
-          
+
           statusMessage.value = 'Success! Redirecting...'
           setTimeout(() => {
             window.location.href = '/'
@@ -142,7 +142,7 @@ onMounted(async () => {
     } else {
       console.log('[AuthCallbackSimple] No code verifier found, trying as magic link...')
       statusMessage.value = 'Processing magic link...'
-      
+
       // For magic links without PKCE, we need to use the Supabase client
       // Let's import it fresh
       try {
@@ -150,7 +150,7 @@ onMounted(async () => {
         const { createClient } = await import('@supabase/supabase-js')
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
         const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-        
+
         console.log('[AuthCallbackSimple] Creating fresh client...')
         const supabase = createClient(supabaseUrl, supabaseKey, {
           auth: {
@@ -160,17 +160,17 @@ onMounted(async () => {
             flowType: 'implicit' // Use implicit flow for magic links
           }
         })
-        
+
         // Force the client to check the URL
         console.log('[AuthCallbackSimple] Checking for session in URL...')
-        
+
         // First, let the client auto-detect
         await new Promise(resolve => setTimeout(resolve, 1000))
-        
+
         // Then check if we have a session
         const { data: { session }, error } = await supabase.auth.getSession()
         console.log('[AuthCallbackSimple] Session check:', { hasSession: !!session, error })
-        
+
         if (session) {
           console.log('[AuthCallbackSimple] Session found!')
           statusMessage.value = 'Success! Redirecting...'
@@ -179,11 +179,11 @@ onMounted(async () => {
           }, 500)
           return
         }
-        
+
         // If no session, try exchanging the code
         console.log('[AuthCallbackSimple] No session found, trying code exchange...')
         const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
-        
+
         if (data?.session) {
           console.log('[AuthCallbackSimple] Code exchange successful!')
           statusMessage.value = 'Success! Redirecting...'
@@ -210,10 +210,10 @@ onMounted(async () => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .auth-callback {
   min-height: 100vh;
-  
+
   &__content {
     display: flex;
     flex-direction: column;
@@ -223,13 +223,13 @@ onMounted(async () => {
     padding: var(--space-xl) var(--space);
     text-align: center;
   }
-  
+
   &__spinner {
     font-size: 3em;
     color: var(--color-primary);
     animation: spin 1s linear infinite;
   }
-  
+
   &__message {
     margin: 0;
     font-size: 1.1em;

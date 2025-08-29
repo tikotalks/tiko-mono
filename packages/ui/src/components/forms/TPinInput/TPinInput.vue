@@ -64,7 +64,7 @@ const isFocused = ref(false)
 // Check if mobile device
 const isMobile = computed(() => {
   if (typeof window === 'undefined') return false
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
          'ontouchstart' in window ||
          window.innerWidth <= 768
 })
@@ -154,7 +154,7 @@ defineExpose({
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .pin-input {
   position: relative;
   display: inline-block;

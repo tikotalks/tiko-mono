@@ -650,7 +650,7 @@ onUnmounted(() => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .generate-view {
   padding: var(--space-xl);
 

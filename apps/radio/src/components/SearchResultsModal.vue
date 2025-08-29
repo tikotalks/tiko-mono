@@ -287,7 +287,7 @@ onMounted(async () => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .search-results-modal {
   width: 100%;
   max-width: 700px;

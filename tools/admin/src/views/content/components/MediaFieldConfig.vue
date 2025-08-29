@@ -96,7 +96,7 @@ watch([publicSourceEnabled, assetsSourceEnabled, personalSourceEnabled], () => {
   if (publicSourceEnabled.value) sources.push('public')
   if (assetsSourceEnabled.value) sources.push('assets')
   if (personalSourceEnabled.value) sources.push('personal')
-  
+
   config.value.allowedSources = sources
 })
 
@@ -115,7 +115,7 @@ watch(() => props.modelValue, (newValue) => {
       maxItems: 0,
       ...newValue
     }
-    
+
     // Update individual checkboxes
     publicSourceEnabled.value = config.value.allowedSources?.includes('public') ?? true
     assetsSourceEnabled.value = config.value.allowedSources?.includes('assets') ?? true
@@ -124,7 +124,7 @@ watch(() => props.modelValue, (newValue) => {
 }, { immediate: true })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .media-field-config {
   display: flex;
   flex-direction: column;

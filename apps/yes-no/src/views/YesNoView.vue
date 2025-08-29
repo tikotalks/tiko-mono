@@ -146,10 +146,10 @@ watch(() => currentLocale.value, async (newLocale) => {
 // Watch device motion for triggering answers
 watch(() => tilt, (newTilt) => {
   if (!localSettings.deviceMotion || !deviceMotionActive.value || showFeedback.value) return;
-  
+
   // Only process if using sensor (not pointer)
   if (newTilt.source !== 'sensor') return;
-  
+
   // Check if device is tilted beyond threshold
   if (newTilt.ry > motionThreshold && !motionAnswerTriggered.value) {
     // Tilted right = Yes
@@ -348,7 +348,7 @@ onMounted(async () => {
 });
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .yes-no {
 
   min-height: 100vh;

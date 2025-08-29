@@ -117,7 +117,7 @@ const categories = [
 ]
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .home-view {
   padding: var(--space-lg);
   max-width: 1200px;

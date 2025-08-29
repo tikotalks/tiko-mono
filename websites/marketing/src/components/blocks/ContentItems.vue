@@ -131,8 +131,6 @@ onMounted(async () => {
 
 <style lang="scss">
 .content-items {
-  // border: 1px solid red;
-
   display: flex;
   gap: var(--space);
 

@@ -327,7 +327,7 @@ watch(
 );
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .parent-mode-pin-input {
   display: flex;
   flex-direction: column;

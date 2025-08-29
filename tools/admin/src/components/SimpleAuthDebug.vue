@@ -1,12 +1,12 @@
 <template>
   <div class="simple-auth">
     <h2>Debug Auth Flow</h2>
-    
+
     <div class="section">
       <h3>Send Magic Link</h3>
-      <input 
-        v-model="email" 
-        type="email" 
+      <input
+        v-model="email"
+        type="email"
         placeholder="Enter your email"
         @keyup.enter="sendMagicLink"
       />
@@ -14,24 +14,24 @@
         {{ isLoading ? 'Sending...' : 'Send Magic Link' }}
       </button>
     </div>
-    
+
     <div class="section" v-if="debugInfo">
       <h3>Response:</h3>
       <pre>{{ debugInfo }}</pre>
     </div>
-    
+
     <div class="section">
       <h3>Manual Token Entry</h3>
       <p>If you received a code via email, paste it here:</p>
-      <input 
-        v-model="manualToken" 
+      <input
+        v-model="manualToken"
         placeholder="Paste token/code"
       />
       <button @click="verifyManualToken" :disabled="!manualToken || !email">
         Verify Token
       </button>
     </div>
-    
+
     <div class="section" v-if="verifyDebug">
       <h3>Verification Response:</h3>
       <pre>{{ verifyDebug }}</pre>
@@ -54,11 +54,11 @@ const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const sendMagicLink = async () => {
   isLoading.value = true
   debugInfo.value = ''
-  
+
   try {
     const timestamp = new Date().toISOString()
     debugInfo.value += `Sending at: ${timestamp}\n\n`
-    
+
     const response = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
       method: 'POST',
       headers: {
@@ -74,11 +74,11 @@ const sendMagicLink = async () => {
         }
       })
     })
-    
+
     debugInfo.value += `Response status: ${response.status}\n`
     const data = await response.json()
     debugInfo.value += `Response data: ${JSON.stringify(data, null, 2)}\n`
-    
+
     if (response.ok) {
       // Store email and timestamp
       localStorage.setItem('tiko_pending_auth_email', email.value)
@@ -94,12 +94,12 @@ const sendMagicLink = async () => {
 
 const verifyManualToken = async () => {
   verifyDebug.value = ''
-  
+
   const types = ['magiclink', 'email', 'signup', 'recovery']
-  
+
   for (const type of types) {
     verifyDebug.value += `\nTrying type: ${type}\n`
-    
+
     try {
       const response = await fetch(`${SUPABASE_URL}/auth/v1/verify`, {
         method: 'POST',
@@ -113,14 +113,14 @@ const verifyManualToken = async () => {
           token: manualToken.value
         })
       })
-      
+
       const data = await response.json()
       verifyDebug.value += `Response: ${response.status}\n`
       verifyDebug.value += `Data: ${JSON.stringify(data, null, 2)}\n`
-      
+
       if (response.ok && data.access_token) {
         verifyDebug.value += `\nSUCCESS! Token is valid for type: ${type}\n`
-        
+
         // Store session
         const session = {
           access_token: data.access_token,
@@ -130,10 +130,10 @@ const verifyManualToken = async () => {
           token_type: data.token_type || 'bearer',
           user: data.user
         }
-        
+
         localStorage.setItem('tiko_auth_session', JSON.stringify(session))
         verifyDebug.value += `\nSession stored! Redirecting...`
-        
+
         setTimeout(() => {
           window.location.href = '/'
         }, 2000)
@@ -143,12 +143,12 @@ const verifyManualToken = async () => {
       verifyDebug.value += `Error: ${err}\n`
     }
   }
-  
+
   verifyDebug.value += `\nAll verification types failed.`
 }
 </script>
 
-<style scoped>
+<style>
 .simple-auth {
   padding: 2rem;
   max-width: 800px;

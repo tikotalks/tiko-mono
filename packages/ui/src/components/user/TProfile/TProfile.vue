@@ -566,7 +566,7 @@ const removeUserAndAllData = async (userId: string) => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .profile {
   display: flex;
   flex-direction: column;

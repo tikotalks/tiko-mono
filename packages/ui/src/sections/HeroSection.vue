@@ -90,7 +90,6 @@ const handleButtonClick = (button: HeroButton) => {
   align-items: center;
   overflow: hidden;
 
-  border: 1px solid red;
 
   &__background {
     position: absolute;

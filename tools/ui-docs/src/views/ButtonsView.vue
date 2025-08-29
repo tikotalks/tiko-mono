@@ -194,7 +194,7 @@ import { TButton } from '@tiko/ui'
 const bemm = useBemm('buttons-view')
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .buttons-view {
   padding: var(--space-lg);
   max-width: 1000px;

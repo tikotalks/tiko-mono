@@ -109,7 +109,7 @@ const sectionComponent = computed(() => {
 });
 </script>
 
-<style scoped>
+<style>
 pre:has(pre) {
   background: blue;
   padding: 10px;

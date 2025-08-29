@@ -67,7 +67,7 @@ const handleImageError = () => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .avatar {
   position: relative;
   display: inline-flex;

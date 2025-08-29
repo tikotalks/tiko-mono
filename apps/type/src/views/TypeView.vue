@@ -311,7 +311,7 @@ onUnmounted(() => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .type-view {
   display: flex;
   flex-direction: column;

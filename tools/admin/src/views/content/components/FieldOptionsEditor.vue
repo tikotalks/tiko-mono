@@ -148,7 +148,7 @@ watch(() => props.modelValue, (newValue) => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .field-options-editor {
   display: flex;
   flex-direction: column;

@@ -148,7 +148,7 @@ const handleSubmit = async () => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .add-group-modal {
   background-color: var(--color-background);
   border-radius: var(--radius-lg);

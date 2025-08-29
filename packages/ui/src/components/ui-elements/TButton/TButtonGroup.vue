@@ -36,7 +36,6 @@ const modifiers = computed(() => ({
   }
 
   &--column {
-    border: 1px solid red;
     flex-direction: column;
   }
 

@@ -3,9 +3,9 @@
     <div v-if="!isAuthenticated" class="login-form">
       <h2>Login</h2>
       <form @submit.prevent="handleSubmit">
-        <input 
-          v-model="email" 
-          type="email" 
+        <input
+          v-model="email"
+          type="email"
           placeholder="Enter your email"
           required
         />
@@ -15,7 +15,7 @@
       </form>
       <p v-if="message" :class="{ error: isError }">{{ message }}</p>
     </div>
-    
+
     <div v-else class="welcome">
       <h2>Welcome!</h2>
       <p>{{ user?.email }}</p>
@@ -41,7 +41,7 @@ const user = computed(() => authStore.user)
 const handleSubmit = async () => {
   message.value = ''
   isError.value = false
-  
+
   try {
     await authStore.sendMagicLink(email.value)
     message.value = 'Check your email for the magic link!'
@@ -62,7 +62,7 @@ onMounted(async () => {
 })
 </script>
 
-<style scoped>
+<style>
 .simple-auth {
   padding: 2rem;
   max-width: 400px;

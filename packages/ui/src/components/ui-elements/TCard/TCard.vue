@@ -135,7 +135,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .card {
   --form-group-background: transparent;
   --form-group-padding: 0;

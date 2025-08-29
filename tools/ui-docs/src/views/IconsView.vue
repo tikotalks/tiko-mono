@@ -151,7 +151,7 @@ const copyIconCode = (iconName: string) => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .icons-view {
   padding: var(--space-lg);
   max-width: 1200px;

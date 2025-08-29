@@ -259,7 +259,7 @@ const handleUpload = async () => {
 }
 </script>
 
-<style scoped>
+<style>
 .asset-upload-dialog {
   padding: 1.5rem;
 }

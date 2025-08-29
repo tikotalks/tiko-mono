@@ -89,7 +89,7 @@ const selectRecentQuestion = (question: string) => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .question-input {
   max-width: 500px;
   margin: 0 auto;

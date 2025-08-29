@@ -305,7 +305,7 @@ onMounted(() => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .radio-settings-modal {
   width: 100%;
   max-width: 500px;

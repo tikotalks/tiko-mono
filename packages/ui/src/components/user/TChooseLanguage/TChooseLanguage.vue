@@ -289,7 +289,7 @@ onMounted(async () => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .choose-language {
   width: 100%;
   min-width: 320px;

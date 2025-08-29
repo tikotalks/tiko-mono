@@ -99,7 +99,7 @@ const shuffleArray = (array: number[]): number[] => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .number-pad {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

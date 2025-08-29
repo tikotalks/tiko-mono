@@ -419,7 +419,7 @@ onMounted(async () => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .radio-view {
 
 

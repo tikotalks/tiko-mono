@@ -272,7 +272,7 @@ if (props.required && items.value.length < minItems.value) {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .items-field-instance {
   display: flex;
   flex-direction: column;

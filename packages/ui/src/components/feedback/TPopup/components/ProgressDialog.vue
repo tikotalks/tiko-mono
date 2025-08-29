@@ -124,7 +124,7 @@ const handleCancel = () => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .progress-dialog {
   display: flex;
   flex-direction: column;

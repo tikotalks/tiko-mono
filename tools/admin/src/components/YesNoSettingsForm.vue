@@ -86,7 +86,7 @@ watch(localSettings, () => {
 }, { deep: true })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .yes-no-settings-form {
   display: flex;
   flex-direction: column;

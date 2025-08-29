@@ -141,7 +141,7 @@ onMounted(() => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .radio-view {
   &__content {
     padding: var(--space);

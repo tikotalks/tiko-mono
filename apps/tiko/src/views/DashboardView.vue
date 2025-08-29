@@ -241,7 +241,7 @@ watch(
 );
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .dashboard-view {
   &__container {
     padding: var(--space);

@@ -369,7 +369,7 @@ const showContextMenu = (event) => {
 }
 </script>
 
-<style scoped>
+<style>
 .context-area {
   padding: var(--space-xl);
   background: var(--color-accent);

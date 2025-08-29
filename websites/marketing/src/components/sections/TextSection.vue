@@ -1,9 +1,8 @@
 <template>
   <section :class="bemm()">
-    {{ content.template }}
     <div :class="bemm('container')">
       <h6 v-if="content?.subtitle">{{ content.subtitle }}</h6>
-      <h2 v-if="content?.title" :class="[bemm('title'),'title']">
+      <h2 v-if="content?.title" :class="[bemm('title'), 'title']">
         {{ content.title }}
       </h2>
       <TMarkdownRenderer v-if="content?.content" :class="bemm('content')" :content="content.content" />
@@ -32,16 +31,15 @@ const bemm = useBemm('text-section')
   color: var(--color-foreground);
 
   &__container {
-display: flex;
+    display: flex;
     flex-direction: column;
     gap: var(--space);
   }
 
-  &__title {
-  }
+  &__title {}
 
   &__content {
-    color: var(--color-foreground-secondary);
+    color: var(--color-foreground);
     line-height: 1.6;
 
     p {

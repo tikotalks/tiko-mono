@@ -120,7 +120,7 @@ import { TToolTip, TButton } from '@tiko/ui'
 import { TToolTip, TIcon } from '@tiko/ui'
 </script>
 
-<style scoped>
+<style>
 .form-field {
   display: flex;
   flex-direction: column;
@@ -144,12 +144,12 @@ label {
       <TButton icon="edit" type="ghost" />
       <TToolTip position="top">Edit item</TToolTip>
     </div>
-    
+
     <div tooltip>
       <TButton icon="share" type="ghost" />
       <TToolTip position="top">Share item</TToolTip>
     </div>
-    
+
     <div tooltip>
       <TButton icon="trash" type="ghost" />
       <TToolTip position="top">Delete item</TToolTip>
@@ -161,7 +161,7 @@ label {
 import { TToolTip, TButton } from '@tiko/ui'
 </script>
 
-<style scoped>
+<style>
 .action-bar {
   display: flex;
   gap: var(--space-s);
@@ -178,12 +178,12 @@ import { TToolTip, TButton } from '@tiko/ui'
       <div class="status-dot status-dot--online"></div>
       <TToolTip position="top">User is online</TToolTip>
     </div>
-    
+
     <div tooltip>
       <div class="status-dot status-dot--away"></div>
       <TToolTip position="top">User is away</TToolTip>
     </div>
-    
+
     <div tooltip>
       <div class="status-dot status-dot--offline"></div>
       <TToolTip position="top">User is offline</TToolTip>
@@ -195,7 +195,7 @@ import { TToolTip, TButton } from '@tiko/ui'
 import { TToolTip } from '@tiko/ui'
 </script>
 
-<style scoped>
+<style>
 .status-indicators {
   display: flex;
   gap: var(--space);
@@ -205,7 +205,7 @@ import { TToolTip } from '@tiko/ui'
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  
+
   &--online { background: var(--color-success); }
   &--away { background: var(--color-warning); }
   &--offline { background: var(--color-error); }
@@ -287,12 +287,12 @@ import { computed } from 'vue'
 import { TToolTip } from '@tiko/ui'
 
 const fullText = "This is a very long text that might be truncated in the UI but can be shown in full via the tooltip"
-const longText = computed(() => 
+const longText = computed(() =>
   fullText.length > 50 ? fullText.substring(0, 50) + '...' : fullText
 )
 </script>
 
-<style scoped>
+<style>
 .truncated-text {
   max-width: 200px;
   overflow: hidden;
@@ -325,7 +325,7 @@ import { TToolTip, TButton } from '@tiko/ui'
 const isLoading = ref(false)
 
 const tooltipText = computed(() => {
-  return isLoading.value 
+  return isLoading.value
     ? 'Please wait while we process your request'
     : 'Click to start the action'
 })
@@ -361,11 +361,11 @@ The tooltip uses CSS custom properties for styling:
   font-size: var(--tooltip-font-size, 0.75em);
   padding: var(--space-s) calc(var(--space) / 3 * 2);
   border-radius: var(--border-radius);
-  
+
   /* Animation */
   transition: all 0.2s ease-in-out;
   transition-delay: var(--tooltip-delay, 0.5s);
-  
+
   /* Positioning */
   position: absolute;
   z-index: 20;

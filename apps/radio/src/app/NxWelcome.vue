@@ -486,7 +486,7 @@ defineProps<{
   </div>
 </template>
 
-<style scoped>
+<style>
 svg {
   display: block;
   vertical-align: middle;

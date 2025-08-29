@@ -122,7 +122,7 @@ onUnmounted(() => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 /**
  * EventBusDemo component styles following Tiko design system standards
  */

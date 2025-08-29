@@ -22,7 +22,7 @@ onMounted(async () => {
   try {
     // Initialize auth from URL params (for magic link / OAuth callbacks)
     await authStore.initializeFromStorage()
-    
+
     // Check if we have a session
     if (authStore.isAuthenticated) {
       statusMessage.value = 'Authentication successful! Redirecting...'
@@ -45,14 +45,14 @@ onMounted(async () => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .auth-callback {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  
+
   &__container {
     background: white;
     border-radius: 16px;
@@ -62,20 +62,20 @@ onMounted(async () => {
     max-width: 400px;
     width: 90%;
   }
-  
+
   &__loading {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
-    
+
     p {
       margin: 0;
       font-size: 1.1rem;
       color: #666;
     }
   }
-  
+
   &__spinner {
     width: 40px;
     height: 40px;

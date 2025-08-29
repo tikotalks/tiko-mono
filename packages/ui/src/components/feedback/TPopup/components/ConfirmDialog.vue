@@ -122,7 +122,7 @@ onUnmounted(() => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .confirm-dialog {
   display: flex;
   flex-direction: column;

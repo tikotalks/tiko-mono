@@ -259,17 +259,12 @@ jobs:
           VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
           VITE_SITE_URL: https://${{ needs.determine-environment.outputs.url-suffix }}timer.tikoapps.org
 
-      - name: Install Wrangler
-        run: npm install -g wrangler
-
       - name: Deploy to Cloudflare Pages
-        run: |
-          PROJECT_NAME="tiko-timer${{ needs.determine-environment.outputs.branch-suffix }}"
-          wrangler pages project create $PROJECT_NAME --production-branch=${{ github.ref_name }} || echo "Project already exists"
-          wrangler pages deploy ./apps/timer/dist --project-name=$PROJECT_NAME --branch=${{ github.ref_name }}
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: dc2b7d14a69351375cab6de9a13ddee9
+          command: pages deploy ./apps/timer/dist --project-name=tiko-timer${{ needs.determine-environment.outputs.branch-suffix }} --commit-dirty=true --branch=${{ github.ref_name }}
 
   deploy-yes-no:
     needs: [determine-environment, check-triggers, check-environment, generate-translations]
@@ -312,17 +307,12 @@ jobs:
           VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
           VITE_SITE_URL: https://${{ needs.determine-environment.outputs.url-suffix }}yesno.tikoapps.org
 
-      - name: Install Wrangler
-        run: npm install -g wrangler
-
       - name: Deploy to Cloudflare Pages
-        run: |
-          PROJECT_NAME="tiko-yes-no${{ needs.determine-environment.outputs.branch-suffix }}"
-          wrangler pages project create $PROJECT_NAME --production-branch=${{ github.ref_name }} || echo "Project already exists"
-          wrangler pages deploy ./apps/yes-no/dist --project-name=$PROJECT_NAME --branch=${{ github.ref_name }}
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: dc2b7d14a69351375cab6de9a13ddee9
+          command: pages deploy ./apps/yes-no/dist --project-name=tiko-yes-no${{ needs.determine-environment.outputs.branch-suffix }} --commit-dirty=true --branch=${{ github.ref_name }}
 
   deploy-cards:
     needs: [determine-environment, check-triggers, check-environment, generate-translations]
@@ -365,17 +355,12 @@ jobs:
           VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
           VITE_SITE_URL: https://${{ needs.determine-environment.outputs.url-suffix }}cards.tikoapps.org
 
-      - name: Install Wrangler
-        run: npm install -g wrangler
-
       - name: Deploy to Cloudflare Pages
-        run: |
-          PROJECT_NAME="tiko-cards${{ needs.determine-environment.outputs.branch-suffix }}"
-          wrangler pages project create $PROJECT_NAME --production-branch=${{ github.ref_name }} || echo "Project already exists"
-          wrangler pages deploy ./apps/cards/dist --project-name=$PROJECT_NAME --branch=${{ github.ref_name }}
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: dc2b7d14a69351375cab6de9a13ddee9
+          command: pages deploy ./apps/cards/dist --project-name=tiko-cards${{ needs.determine-environment.outputs.branch-suffix }} --commit-dirty=true --branch=${{ github.ref_name }}
 
   deploy-radio:
     needs: [determine-environment, check-triggers, check-environment, generate-translations]
@@ -418,17 +403,12 @@ jobs:
           VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
           VITE_SITE_URL: https://${{ needs.determine-environment.outputs.url-suffix }}radio.tikoapps.org
 
-      - name: Install Wrangler
-        run: npm install -g wrangler
-
       - name: Deploy to Cloudflare Pages
-        run: |
-          PROJECT_NAME="tiko-radio${{ needs.determine-environment.outputs.branch-suffix }}"
-          wrangler pages project create $PROJECT_NAME --production-branch=${{ github.ref_name }} || echo "Project already exists"
-          wrangler pages deploy ./apps/radio/dist --project-name=$PROJECT_NAME --branch=${{ github.ref_name }}
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: dc2b7d14a69351375cab6de9a13ddee9
+          command: pages deploy ./apps/radio/dist --project-name=tiko-radio${{ needs.determine-environment.outputs.branch-suffix }} --commit-dirty=true --branch=${{ github.ref_name }}
 
   deploy-todo:
     needs: [determine-environment, check-triggers, check-environment, generate-translations]
@@ -471,17 +451,12 @@ jobs:
           VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
           VITE_SITE_URL: https://${{ needs.determine-environment.outputs.url-suffix }}todo.tikoapps.org
 
-      - name: Install Wrangler
-        run: npm install -g wrangler
-
       - name: Deploy to Cloudflare Pages
-        run: |
-          PROJECT_NAME="tiko-todo${{ needs.determine-environment.outputs.branch-suffix }}"
-          wrangler pages project create $PROJECT_NAME --production-branch=${{ github.ref_name }} || echo "Project already exists"
-          wrangler pages deploy ./apps/todo/dist --project-name=$PROJECT_NAME --branch=${{ github.ref_name }}
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: dc2b7d14a69351375cab6de9a13ddee9
+          command: pages deploy ./apps/todo/dist --project-name=tiko-todo${{ needs.determine-environment.outputs.branch-suffix }} --commit-dirty=true --branch=${{ github.ref_name }}
 
   deploy-type:
     needs: [determine-environment, check-triggers, check-environment, generate-translations]
@@ -524,17 +499,12 @@ jobs:
           VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
           VITE_SITE_URL: https://${{ needs.determine-environment.outputs.url-suffix }}type.tikoapps.org
 
-      - name: Install Wrangler
-        run: npm install -g wrangler
-
       - name: Deploy to Cloudflare Pages
-        run: |
-          PROJECT_NAME="tiko-type${{ needs.determine-environment.outputs.branch-suffix }}"
-          wrangler pages project create $PROJECT_NAME --production-branch=${{ github.ref_name }} || echo "Project already exists"
-          wrangler pages deploy ./apps/type/dist --project-name=$PROJECT_NAME --branch=${{ github.ref_name }}
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: dc2b7d14a69351375cab6de9a13ddee9
+          command: pages deploy ./apps/type/dist --project-name=tiko-type${{ needs.determine-environment.outputs.branch-suffix }} --commit-dirty=true --branch=${{ github.ref_name }}
 
   deploy-sequence:
     needs: [determine-environment, check-triggers, check-environment, generate-translations]
@@ -577,17 +547,12 @@ jobs:
           VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
           VITE_SITE_URL: https://${{ needs.determine-environment.outputs.url-suffix }}sequence.tikoapps.org
 
-      - name: Install Wrangler
-        run: npm install -g wrangler
-
       - name: Deploy to Cloudflare Pages
-        run: |
-          PROJECT_NAME="tiko-sequence${{ needs.determine-environment.outputs.branch-suffix }}"
-          wrangler pages project create $PROJECT_NAME --production-branch=${{ github.ref_name }} || echo "Project already exists"
-          wrangler pages deploy ./apps/sequence/dist --project-name=$PROJECT_NAME --branch=${{ github.ref_name }}
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: dc2b7d14a69351375cab6de9a13ddee9
+          command: pages deploy ./apps/sequence/dist --project-name=tiko-sequence${{ needs.determine-environment.outputs.branch-suffix }} --commit-dirty=true --branch=${{ github.ref_name }}
 
   # Skip tiko app for now as it has build issues
   # deploy-tiko:

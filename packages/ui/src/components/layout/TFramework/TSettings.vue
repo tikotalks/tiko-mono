@@ -529,7 +529,7 @@ onMounted(async () => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .settings {
   display: flex;
   flex-direction: column;

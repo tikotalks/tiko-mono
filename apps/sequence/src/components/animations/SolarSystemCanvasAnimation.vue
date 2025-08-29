@@ -1,9 +1,9 @@
 <template>
   <div ref="containerRef" :class="bemm()" v-if="!hideAnimation">
-    
+
     <!-- Radial gradient overlay -->
     <div :class="bemm('gradient-overlay')"></div>
-    
+
     <!-- Debug panel -->
     <div v-if="showDebug" :class="bemm('debug')">
       <h3>Solar System Animation Debug</h3>
@@ -144,18 +144,18 @@ const loadImages = async () => {
       try {
         const bgUrl = await resolveAssetUrl(spaceBackgroundId, { media: 'assets' }) // Always assets for videos
         console.log('[SolarSystem] Loading background video from URL:', bgUrl)
-        
+
         // Create video element
         const video = document.createElement('video')
         video.loop = true
         video.muted = true
         video.playsInline = true
         video.autoplay = true
-        
+
         // Add to DOM (hidden) for better loading
         video.style.display = 'none'
         document.body.appendChild(video)
-        
+
         await new Promise((resolve, reject) => {
           video.onloadedmetadata = () => {
             console.log('[SolarSystem] Background video metadata loaded:', video.videoWidth, 'x', video.videoHeight)
@@ -177,7 +177,7 @@ const loadImages = async () => {
             video.remove()
             reject(new Error('Video load failed'))
           }
-          
+
           // Set source after event handlers
           video.src = bgUrl
         })
@@ -197,7 +197,7 @@ const loadImages = async () => {
           const url = await resolveAssetUrl(planet.assetId, { media: 'public' })
           const img = new Image()
           img.src = url
-          
+
           return new Promise<AnimationImage>((resolve, reject) => {
             img.onload = () => {
               imagesLoaded.value++
@@ -234,28 +234,28 @@ const renderLoop = () => {
   const canvas = canvasAnimation.getCanvas()
   const ctx = canvasAnimation.getContext()
   const currentTime = performance.now()
-  
+
   // Initialize first frame time
   if (!firstFrameTime) {
     firstFrameTime = currentTime
   }
-  
+
   const elapsed = currentTime - firstFrameTime
   // Use logical dimensions, not physical canvas dimensions!
   const width = canvasAnimation.logicalWidth
   const height = canvasAnimation.logicalHeight
-  
+
   // Clear canvas
   ctx.clearRect(0, 0, width, height)
-  
+
   // Save context state for global fade
   ctx.save()
-  
+
   // Apply global fade if in complete phase
   if (phase.value === 'complete') {
     ctx.globalAlpha = fadeOpacity
   }
-  
+
   // Draw space background gradient
   const gradient = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, Math.max(width, height))
   gradient.addColorStop(0, '#0a0a2e') // Deep blue center
@@ -264,7 +264,7 @@ const renderLoop = () => {
   gradient.addColorStop(1, '#000000') // Black edges
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, width, height)
-  
+
   // If we have a background video loaded, draw it
   if (backgroundVideo) {
     if (backgroundVideo.readyState >= 2) {
@@ -276,7 +276,7 @@ const renderLoop = () => {
       console.log('[SolarSystem] Video not ready yet, readyState:', backgroundVideo.readyState)
     }
   }
-  
+
   // Debug: Only show debug info if debug mode is enabled
   if (showDebug.value) {
     ctx.fillStyle = 'white'
@@ -287,12 +287,12 @@ const renderLoop = () => {
     ctx.fillText(`Canvas: ${width}x${height}`, 10, 120)
     ctx.fillText(`Zoom Phase: ${sunZoomPhase}`, 10, 150)
     ctx.fillText(`Sun Distance: ${(0 - cameraZ.value).toFixed(0)}`, 10, 180)
-    
+
     // Draw a colorful test rectangle
     const hue = (elapsed / 100) % 360
     ctx.fillStyle = `hsl(${hue}, 100%, 50%)`
     ctx.fillRect(10, 180, 100, 100)
-    
+
     // Red crosshair at calculated center
     ctx.strokeStyle = 'red'
     ctx.lineWidth = 2
@@ -302,13 +302,13 @@ const renderLoop = () => {
     ctx.moveTo(width / 2, height / 2 - 20)
     ctx.lineTo(width / 2, height / 2 + 20)
     ctx.stroke()
-    
+
     // Green circle at center
     ctx.fillStyle = 'lime'
     ctx.beginPath()
     ctx.arc(width / 2, height / 2, 50, 0, Math.PI * 2)
     ctx.fill()
-    
+
     // Test positions
     ctx.fillStyle = 'yellow'
     ctx.fillRect(0, 0, 50, 50) // Top left
@@ -319,11 +319,11 @@ const renderLoop = () => {
     ctx.fillStyle = 'orange'
     ctx.fillRect(width - 50, height - 50, 50, 50) // Bottom right
   }
-  
-  
+
+
   // Update camera position - simple continuous movement
   cameraZ.value += cameraSpeed.value
-  
+
   // Draw stars with parallax effect (move slowly)
   stars.forEach(star => {
     // Make stars move much slower for parallax effect
@@ -342,35 +342,35 @@ const renderLoop = () => {
       ctx.fill()
     }
   })
-  
+
   // Draw planets - sort by distance so closer planets are drawn on top
   const planetsWithDistance = planets.map((planet, index) => ({
     planet,
     index,
     distanceFromCamera: planet.distance - cameraZ.value
   }))
-  
+
   // Sort by distance - furthest first
   planetsWithDistance.sort((a, b) => b.distanceFromCamera - a.distanceFromCamera)
-  
+
   planetsWithDistance.forEach(({ planet, index, distanceFromCamera }) => {
     const planetImage = loadedPlanetImages[index]
     if (!planetImage?.loaded) return
-    
+
     // Skip if planet is behind camera (but not if it's the Sun during zoom phase)
     if (distanceFromCamera < 0 && !(planet.name === 'Sun' && sunZoomPhase)) return
-    
+
     // Special handling for the Sun - it stays centered
     let x = 0
     let y = 0
-    
+
     if (planet.name !== 'Sun') {
       // Create fly-around effect for planets (but not the Sun)
       // Use a smoother curve that starts later and is more gradual
       const approachFactor = Math.max(0, 1 - (distanceFromCamera / 500))
       const smoothFactor = approachFactor * approachFactor * approachFactor // Cubic easing
       const flyAroundRadius = smoothFactor * 200 // Reduced from 400 to 200
-      
+
       // Different angle for each planet for variety
       const baseAngle = index * 1.2 // Starting position for each planet
       const rotationSpeed = 0.00005 * (1 + smoothFactor) // Rotate faster as we get closer
@@ -379,25 +379,25 @@ const renderLoop = () => {
       y = Math.sin(flyAngle) * flyAroundRadius * 0.5 // Elliptical path
     }
     const z = planet.distance
-    
+
     // Project to 2D
     const projected = project3D(x, y, z, cameraZ.value)
-    
+
     // Only draw if in reasonable view distance (always draw Sun during zoom phase)
     if ((projected.scale > 0.01 && distanceFromCamera < 3000) || (planet.name === 'Sun' && sunZoomPhase)) {
       const screenX = width / 2 + projected.x
       const screenY = height / 2 + projected.y
       const size = planet.size * projected.scale
-      
+
       // Calculate opacity and blur based on distance
       let alpha = 1
       let blurAmount = 0
-      
+
       // Debug log for all planets
       if (showDebug.value && elapsed % 1000 < 16) { // Log once per second
         console.log(`${planet.name} - Distance: ${distanceFromCamera.toFixed(0)}`)
       }
-      
+
       if (planet.name === 'Sun') {
         if (showDebug.value) {
           console.log('[SolarSystem] Drawing Sun:', {
@@ -409,13 +409,13 @@ const renderLoop = () => {
             size
           })
         }
-        
+
         // Draw glowing backdrop first (behind the sun)
         ctx.save()
-        
+
         // No zoom multiplier - just show the Sun as is
         const zoomMultiplier = 1
-        
+
         // Multiple layers of glow with more blur and rotation
         const glowLayers = [
           { scale: 4.0, blur: 80, alpha: 0.2, rotationSpeed: 0.001 },
@@ -424,16 +424,16 @@ const renderLoop = () => {
           { scale: 1.6, blur: 25, alpha: 0.5, rotationSpeed: -0.0025 },
           { scale: 1.3, blur: 15, alpha: 0.6, rotationSpeed: 0.003 }
         ]
-        
+
         glowLayers.forEach((layer, i) => {
           ctx.save()
           ctx.filter = `blur(${layer.blur}px)`
           ctx.globalAlpha = layer.alpha
-          
+
           // Translate to sun position and rotate
           ctx.translate(screenX, screenY)
           ctx.rotate(elapsed * layer.rotationSpeed)
-          
+
           // Draw larger blurred version of sun as glow with zoom
           const glowSize = size * layer.scale * zoomMultiplier
           ctx.drawImage(
@@ -445,14 +445,14 @@ const renderLoop = () => {
           )
           ctx.restore()
         })
-        
+
         ctx.restore()
-        
+
         // Add screen-filling glow as we approach
         if (distanceFromCamera < 800) {
           const glowIntensity = 1 - (distanceFromCamera / 800)
           ctx.save()
-          
+
           // Multiple radial gradients for more intense effect
           if (distanceFromCamera < 200) {
             // Very close - fill entire screen with bright light
@@ -461,7 +461,7 @@ const renderLoop = () => {
             ctx.fillStyle = 'rgba(255, 255, 200, 1)'
             ctx.fillRect(0, 0, width, height)
           }
-          
+
           // Main glow gradient
           ctx.globalAlpha = glowIntensity * 0.8
           const gradient = ctx.createRadialGradient(screenX, screenY, 0, screenX, screenY, size * 3)
@@ -473,7 +473,7 @@ const renderLoop = () => {
           ctx.fillRect(0, 0, width, height)
           ctx.restore()
         }
-        
+
         // Sun stays fully visible and rotates
         alpha = 1
         blurAmount = 0
@@ -497,29 +497,29 @@ const renderLoop = () => {
           blurAmount = Math.min(20, (200 - distanceFromCamera) / 10)
         }
         // Else: distanceFromCamera between 200-1000, full visibility
-        
+
         // Debug first planet's effects
         if (index === 1 && showDebug.value) {
           console.log(`${planet.name} - Distance: ${distanceFromCamera}, Alpha: ${alpha}, Blur: ${blurAmount}`)
         }
       }
-      
+
       // Apply blur and opacity
       ctx.save()
       ctx.globalAlpha = alpha
       if (blurAmount > 0) {
         ctx.filter = `blur(${blurAmount}px)`
       }
-      
+
       // Draw planet with rotation for the Sun
       if (planet.name === 'Sun') {
         ctx.save()
         ctx.translate(screenX, screenY)
         ctx.rotate(elapsed * 0.0005) // Even faster rotation
-        
+
         // No zoom - just show the Sun at its regular size
         const finalSize = size
-        
+
         ctx.drawImage(
           planetImage.element,
           -finalSize / 2,
@@ -542,20 +542,20 @@ const renderLoop = () => {
         )
         ctx.restore()
       }
-      
+
       ctx.restore()
-      
+
     }
   })
-  
+
   // Restore context state (this restores the global alpha for fade)
   ctx.restore()
-  
+
   // Check if animation is complete (travel much further past the Sun)
   if (cameraZ.value < -1500 && phase.value !== 'complete') {
     completeAnimation()
   }
-  
+
   // Continue animation loop
   requestAnimationFrame(renderLoop)
 }
@@ -563,19 +563,19 @@ const renderLoop = () => {
 // Start animation
 const startAnimation = async () => {
   if (animationState.value === 'playing') return
-  
+
   console.log('[SolarSystemAnimation] Starting animation')
   animationState.value = 'playing'
   phase.value = 'entering'
   animationStartTime = performance.now()
-  
+
   // Play space ambient sound
   playSound({
     id: ambientSoundId,
     volume: audioStartVolume,
     media: 'assets'
   })
-  
+
   // Start the render loop
   if (!renderLoopStarted) {
     renderLoopStarted = true
@@ -593,28 +593,28 @@ const skipAnimation = () => {
 const completeAnimation = () => {
   console.log('[SolarSystemAnimation] Starting fade out')
   phase.value = 'complete'
-  
+
   // Don't stop the canvas animation yet - let it continue during fade
   let audioVolume = audioStartVolume
   const fadeInterval = setInterval(() => {
     fadeOpacity -= 0.02 // Slower fade
-    
+
     // Fade audio along with visual
     audioVolume = Math.max(0, audioVolume - (audioStartVolume * 0.02))
     setVolume(audioVolume, ambientSoundId)
-    
+
     if (fadeOpacity <= 0) {
       clearInterval(fadeInterval)
       console.log('[SolarSystemAnimation] Animation complete')
       animationState.value = 'complete'
-      
+
       // Stop audio completely
       stopSound(ambientSoundId)
-      
+
       if (canvasAnimation) {
         canvasAnimation.stop()
       }
-      
+
       hideAnimation.value = true
       emit('completed')
     }
@@ -624,7 +624,7 @@ const completeAnimation = () => {
 // Initialize animation
 onMounted(async () => {
   console.log('[SolarSystemAnimation] Component mounted')
-  
+
   if (!containerRef.value) {
     console.error('[SolarSystemAnimation] Container ref not found')
     return
@@ -642,12 +642,12 @@ onMounted(async () => {
   console.log('[SolarSystemAnimation] Canvas dimensions:', canvas.width, 'x', canvas.height)
   console.log('[SolarSystemAnimation] Window dimensions:', window.innerWidth, 'x', window.innerHeight)
   initializeStars(canvas.width, canvas.height)
-  
+
   // Load all images first
   console.log('[SolarSystemAnimation] Starting to load images...')
   await loadImages()
   console.log('[SolarSystemAnimation] Images loaded:', imagesLoaded.value, '/', totalImages.value)
-  
+
   // Auto-start animation
   setTimeout(() => {
     console.log('[SolarSystemAnimation] Auto-starting animation...')
@@ -658,19 +658,19 @@ onMounted(async () => {
 // Cleanup
 onUnmounted(() => {
   console.log('[SolarSystemAnimation] Component unmounting')
-  
+
   if (canvasAnimation) {
     canvasAnimation.destroy()
     canvasAnimation = null
   }
-  
+
   // Clean up video element if it exists
   if (backgroundVideo) {
     backgroundVideo.pause()
     backgroundVideo.remove()
     backgroundVideo = null
   }
-  
+
   animationState.value = 'complete'
   renderLoopStarted = false
 })
@@ -711,7 +711,7 @@ export const animationImages: AnimationImageConfig[] = [
 ]
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .solar-system-canvas-animation {
   position: fixed;
   top: 0;
@@ -719,22 +719,22 @@ export const animationImages: AnimationImageConfig[] = [
   width: 100vw;
   height: 100vh;
   z-index: 9999;
-  
+
   &__gradient-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(ellipse at center, 
-      transparent 0%, 
-      transparent 40%, 
-      rgba(0, 0, 0, 0.2) 70%, 
+    background: radial-gradient(ellipse at center,
+      transparent 0%,
+      transparent 40%,
+      rgba(0, 0, 0, 0.2) 70%,
       rgba(0, 0, 0, 0.4) 100%);
     pointer-events: none;
     z-index: 1001;
   }
-  
+
   &__debug {
     position: fixed;
     top: 10px;
@@ -746,16 +746,16 @@ export const animationImages: AnimationImageConfig[] = [
     font-size: 12px;
     border-radius: 5px;
     z-index: 1002;
-    
+
     h3 {
       margin: 0 0 10px 0;
       font-size: 14px;
     }
-    
+
     p {
       margin: 5px 0;
     }
-    
+
     button {
       margin: 5px 5px 0 0;
       padding: 5px 10px;
@@ -764,7 +764,7 @@ export const animationImages: AnimationImageConfig[] = [
       border: 1px solid #666;
       border-radius: 3px;
       cursor: pointer;
-      
+
       &:hover {
         background: #444;
       }

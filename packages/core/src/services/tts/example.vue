@@ -1,12 +1,12 @@
 <template>
   <div class="tts-example">
     <h2>TTS Integration Example</h2>
-    
+
     <!-- Simple speak button -->
     <button @click="speakExample" :disabled="isLoading">
       {{ isLoading ? 'Generating...' : 'Speak "Hello World"' }}
     </button>
-    
+
     <!-- Text input with custom options -->
     <div class="custom-speak">
       <input v-model="customText" placeholder="Enter text to speak..." />
@@ -41,7 +41,7 @@
     <div v-if="error" class="error">
       Error: {{ error }}
     </div>
-    
+
     <div v-if="currentMetadata" class="metadata">
       <p>Provider: {{ currentMetadata.provider }}</p>
       <p>Language: {{ currentMetadata.language }}</p>
@@ -55,15 +55,15 @@ import { ref } from 'vue';
 import { useSpeak } from '@tiko/core';
 
 // Initialize TTS with default language
-const { 
-  speak, 
-  stop, 
-  pause, 
-  resume, 
+const {
+  speak,
+  stop,
+  pause,
+  resume,
   preloadAudio,
-  isLoading, 
-  error, 
-  currentMetadata 
+  isLoading,
+  error,
+  currentMetadata
 } = useSpeak('en');
 
 // Example data
@@ -98,7 +98,7 @@ const preloadExamples = () => {
 preloadExamples();
 </script>
 
-<style scoped>
+<style>
 .tts-example {
   max-width: 600px;
   margin: 0 auto;
@@ -155,7 +155,6 @@ preloadExamples();
   color: red;
   margin: 10px 0;
   padding: 10px;
-  border: 1px solid red;
   border-radius: 4px;
   background: #ffebee;
 }

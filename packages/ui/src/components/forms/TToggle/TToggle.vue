@@ -34,7 +34,7 @@ function handleChange(event: Event) {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .toggle {
   display: inline-flex;
   align-items: center;

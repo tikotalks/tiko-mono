@@ -4,15 +4,15 @@
       title="Direct Rich Text Editor Test"
       description="Testing TRichTextEditor import directly"
     />
-    
+
     <div v-if="isLoading">Loading...</div>
-    
+
     <div v-else-if="error">Error: {{ error }}</div>
-    
+
     <div v-else>
       <p>Component loaded: {{ componentLoaded }}</p>
       <p>Component type: {{ componentType }}</p>
-      
+
       <TRichTextEditor
         v-if="componentLoaded"
         v-model="content"
@@ -20,7 +20,7 @@
         placeholder="Type here..."
         height="300px"
       />
-      
+
       <pre style="margin-top: 20px; padding: 10px; background: #f5f5f5;">{{ content }}</pre>
     </div>
   </div>
@@ -42,7 +42,7 @@ onMounted(() => {
     console.log('TRichTextEditor import:', TRichTextEditor)
     componentLoaded.value = !!TRichTextEditor
     componentType.value = typeof TRichTextEditor
-    
+
     if (!TRichTextEditor) {
       error.value = 'TRichTextEditor is not imported properly'
     }
@@ -54,7 +54,7 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style>
 .test-rich-text-direct {
   padding: 20px;
   max-width: 800px;

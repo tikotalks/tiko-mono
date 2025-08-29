@@ -109,7 +109,7 @@ onUnmounted(() => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .timer-view {
   height: 100%;
   display: flex;

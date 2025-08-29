@@ -190,7 +190,7 @@ const handleApply = async () => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .type-settings-form {
   display: flex;
   flex-direction: column;

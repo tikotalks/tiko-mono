@@ -1843,7 +1843,7 @@ onUnmounted(() => {
 });
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 // Override TAppLayout's problematic styles
 :deep(.app-layout) {
   width: 100%;

@@ -4,11 +4,11 @@
       {{ label }}
       <span v-if="required" :class="bemm('required')">*</span>
     </label>
-    
+
     <div :class="bemm('input')">
       <slot :id="inputId" />
     </div>
-    
+
     <div v-if="shouldShowDescription || shouldShowError" :class="bemm('info')">
       <p v-if="shouldShowError" :class="bemm('error')">
         {{ computedError }}
@@ -36,7 +36,7 @@ const bemm = useBemm('form-field')
 const formContext = inject<any>('formContext', null)
 
 // Generate unique ID
-const inputId = computed(() => 
+const inputId = computed(() =>
   `field-${props.name}-${Math.random().toString(36).substr(2, 9)}`
 )
 
@@ -50,7 +50,7 @@ const computedError = computed(() => {
 })
 
 const shouldShowError = computed(() => {
-  return props.showError && computedError.value && 
+  return props.showError && computedError.value &&
     (formContext?.touched.value?.[props.name] || formContext?.showErrors.value)
 })
 
@@ -67,7 +67,7 @@ const fieldClasses = computed(() => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .form-field {
   display: flex;
   flex-direction: column;

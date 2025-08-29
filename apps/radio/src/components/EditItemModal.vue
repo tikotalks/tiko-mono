@@ -380,7 +380,7 @@ onMounted(() => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .edit-item-modal {
   width: 100%;
   max-width: 600px;

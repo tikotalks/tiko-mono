@@ -382,7 +382,7 @@ const handleSubmit = async () => {
 watch(() => form.value.videoUrl, extractMetadata, { debounce: 500 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .add-item-modal {
   width: 100%;
   max-width: 600px;

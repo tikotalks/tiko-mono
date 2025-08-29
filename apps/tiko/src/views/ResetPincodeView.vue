@@ -225,7 +225,7 @@ const handleLogin = () => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .reset-pincode {
   &__container {
     display: flex;

@@ -301,7 +301,7 @@ const copyColor = async (colorValue: string) => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .colors-view {
   padding: var(--space-lg);
   max-width: 1200px;

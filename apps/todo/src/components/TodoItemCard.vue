@@ -60,7 +60,7 @@ const handleClick = () => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .todo-item-card {
   background-color: var(--color-primary);
   color: var(--color-primary-text);

@@ -110,7 +110,7 @@ onUnmounted(() => {
 });
 </script>
 
-<style scoped>
+<style>
 div {
 	font-variant-numeric: tabular-nums;
 }

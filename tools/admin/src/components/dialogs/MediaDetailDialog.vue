@@ -107,7 +107,7 @@ const close = () => {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .media-detail-dialog {
   &__content {
     display: grid;

@@ -397,7 +397,7 @@ onUnmounted(() => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .user-menu {
   display: inline-flex;
 

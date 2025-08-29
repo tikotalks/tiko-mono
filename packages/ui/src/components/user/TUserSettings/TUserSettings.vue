@@ -237,7 +237,7 @@ const handleCancel = () => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .user-settings {
 
   &__form {
@@ -248,7 +248,6 @@ const handleCancel = () => {
   }
 
   &__section {
-    // border: 1px solid red;
   }
 
   &__section-title {

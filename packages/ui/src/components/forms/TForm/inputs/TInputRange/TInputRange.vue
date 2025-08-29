@@ -142,7 +142,7 @@ watch(() => props.modelValue, (newValue) => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 @use '../../Form' as form;
 
 .input-range {

@@ -6,17 +6,17 @@
       <TCard :class="bemm('card')">
         <div :class="bemm('content')">
           <TIcon name="shield" :class="bemm('icon')" size="xl" color="error" />
-          
+
           <h1 :class="bemm('title')">Access Denied</h1>
-          
+
           <p :class="bemm('message')">
             You don't have permission to access the admin panel.
           </p>
-          
+
           <p :class="bemm('details')">
             Admin access is required. Please contact your administrator if you believe this is an error.
           </p>
-          
+
           <TFormActions :class="bemm('actions')">
             <TButton
               color="primary"
@@ -31,7 +31,7 @@
               Go to Main Site
             </TButton>
           </TFormActions>
-          
+
           <div :class="bemm('debug')" v-if="isDev">
             <details>
               <summary>Debug Info</summary>
@@ -57,7 +57,7 @@ const { t } = useI18n()
 
 const debugInfo = computed(() => {
   if (!isDev) return null
-  
+
   return {
     isAuthenticated: authStore.isAuthenticated,
     isAdmin: authStore.isAdmin,
@@ -83,14 +83,14 @@ const goHome = () => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .not-authorized {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: calc(100vh - var(--topbar-height, 0px));
   padding: var(--space-lg);
-  
+
   &__card {
     max-width: 600px;
     width: 100%;
@@ -133,18 +133,18 @@ const goHome = () => {
     margin-top: var(--space-xl);
     text-align: left;
     font-size: var(--font-size-sm);
-    
+
     summary {
       cursor: pointer;
       font-weight: var(--font-weight-semibold);
       margin-bottom: var(--space-s);
       color: var(--color-foreground-muted);
-      
+
       &:hover {
         color: var(--color-foreground);
       }
     }
-    
+
     pre {
       background: var(--color-accent);
       padding: var(--space);

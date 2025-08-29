@@ -296,7 +296,7 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style>
 .asset-detail-dialog {
   display: grid;
   grid-template-columns: 300px 1fr;

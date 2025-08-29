@@ -171,7 +171,7 @@ onMounted(async () => {
 });
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .todo-items {
   height: 100%;
   display: flex;

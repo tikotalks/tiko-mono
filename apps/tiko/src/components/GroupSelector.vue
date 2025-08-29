@@ -8,7 +8,7 @@
 // Placeholder for group selector
 </script>
 
-<style scoped>
+<style>
 .group-selector {
   padding: 1rem;
 }

@@ -51,18 +51,18 @@ const eventLog = ref<string[]>([])
 function handleReorder(reorderedItems: TestItem[]) {
   eventLog.value.push(`Reorder event triggered at ${new Date().toLocaleTimeString()}`)
   eventLog.value.push(`New order: ${reorderedItems.map(item => item.name).join(', ')}`)
-  
+
   // Update the items
   testItems.value = reorderedItems.map((item, index) => ({
     ...item,
     order: index
   }))
-  
+
   eventLog.value.push('Items updated successfully')
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .test-drag-drop {
   display: flex;
   flex-direction: column;
@@ -96,7 +96,7 @@ function handleReorder(reorderedItems: TestItem[]) {
   h3 {
     margin-bottom: var(--space);
   }
-  
+
   pre {
     white-space: pre-wrap;
     font-family: var(--font-mono);

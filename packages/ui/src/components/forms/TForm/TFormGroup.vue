@@ -55,7 +55,7 @@ const handleHeaderClick = () => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .form-group {
   display: flex;
   flex-direction: column;

@@ -117,7 +117,7 @@ const handleReorderGroups = async (reorderedGroups: TodoGroup[]) => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .todo-groups {
   height: 100%;
   display: flex;

@@ -55,7 +55,7 @@ const handleVideoError = (event: Event) => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .video-test {
   display: flex;
   flex-direction: column;

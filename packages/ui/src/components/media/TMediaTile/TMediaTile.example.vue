@@ -1,7 +1,7 @@
 <template>
   <div class="media-tile-example">
     <h2>TMediaTile Video Example</h2>
-    
+
     <!-- Grid of media tiles -->
     <div class="media-grid">
       <TMediaTile
@@ -90,7 +90,7 @@ const closeVideo = () => {
 };
 </script>
 
-<style scoped>
+<style>
 .media-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));

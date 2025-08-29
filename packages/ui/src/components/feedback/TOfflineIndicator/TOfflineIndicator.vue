@@ -33,7 +33,7 @@ const isOffline = computed(() => props.offline !== undefined ? props.offline : a
 const hasPendingSync = computed(() => props.pendingSync !== undefined ? props.pendingSync : appStore.hasPendingSync)
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .t-offline-indicator {
   position: fixed;
   top: 0;

@@ -381,7 +381,7 @@ const handleInteractiveComplete = (pin: string) => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .pin-input-view {
   padding: var(--space-lg);
   max-width: 1000px;

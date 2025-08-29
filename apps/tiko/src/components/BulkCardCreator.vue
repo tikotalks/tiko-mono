@@ -8,7 +8,7 @@
 // Placeholder for bulk card creator
 </script>
 
-<style scoped>
+<style>
 .bulk-card-creator {
   padding: 1rem;
 }

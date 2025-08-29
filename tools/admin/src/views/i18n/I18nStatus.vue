@@ -155,7 +155,7 @@
         :icon="Icons.SEARCH_M"
         :class="bemm('search-input')"
       />
-      
+
       <div v-if="keySearch" :class="bemm('search-results')">
         <h3 :class="bemm('subsection-title')">
           {{ t('admin.i18n.status.searchResults') || 'Search Results' }}
@@ -198,7 +198,7 @@
           ]"
         />
       </div>
-      
+
       <details :class="bemm('expandable')">
         <summary :class="bemm('expandable-header')">
           {{ t('admin.i18n.status.showAllKeys') || 'Show All Keys' }} ({{ allKeysList.length }})
@@ -293,37 +293,37 @@ const keySearch = ref('');
 // Get all keys as a flat list
 const allKeysList = computed(() => {
   if (!keys.value) return [];
-  
+
   const collectKeys = (obj: any, prefix = ''): string[] => {
     let result: string[] = [];
-    
+
     for (const key in obj) {
       const fullKey = prefix ? `${prefix}.${key}` : key;
-      
+
       if (typeof obj[key] === 'string') {
         result.push(fullKey);
       } else if (typeof obj[key] === 'object' && obj[key] !== null) {
         result = result.concat(collectKeys(obj[key], fullKey));
       }
     }
-    
+
     return result;
   };
-  
+
   return collectKeys(keys.value).sort();
 });
 
 // Search results
 const searchResults = computed(() => {
   if (!keySearch.value || !keys.value) return [];
-  
+
   const searchLower = keySearch.value.toLowerCase();
   const results: Array<{ key: string; value: string }> = [];
-  
+
   const searchInObject = (obj: any, prefix = '') => {
     for (const key in obj) {
       const fullKey = prefix ? `${prefix}.${key}` : key;
-      
+
       if (fullKey.toLowerCase().includes(searchLower)) {
         if (typeof obj[key] === 'string') {
           results.push({ key: fullKey, value: obj[key] });
@@ -332,19 +332,19 @@ const searchResults = computed(() => {
           results.push({ key: fullKey, value: '[object with sub-keys]' });
         }
       }
-      
+
       if (typeof obj[key] === 'object' && obj[key] !== null) {
         searchInObject(obj[key], fullKey);
       }
     }
   };
-  
+
   searchInObject(keys.value);
   return results;
 });
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .i18-n-status {
   padding: var(--space);
   display: flex;
@@ -504,7 +504,7 @@ const searchResults = computed(() => {
     border-radius: var(--radius-s);
     font-weight: var(--font-weight-medium);
     user-select: none;
-    
+
     &:hover {
       background-color: var(--color-background-tertiary);
     }

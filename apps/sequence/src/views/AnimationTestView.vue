@@ -3,8 +3,8 @@
     <div class="controls">
       <h1>Animation Test View</h1>
       <div class="button-group">
-        <button 
-          v-for="anim in availableAnimations" 
+        <button
+          v-for="anim in availableAnimations"
           :key="anim.name"
           @click="selectedAnimation = anim.name"
           :class="{ active: selectedAnimation === anim.name }"
@@ -17,7 +17,7 @@
       </button>
     </div>
 
-    <component 
+    <component
       v-if="showAnimation && animationComponent"
       :is="animationComponent"
       @completed="onAnimationCompleted"
@@ -51,7 +51,7 @@ const onAnimationCompleted = () => {
 }
 </script>
 
-<style scoped>
+<style>
 .animation-test-view {
   padding: 20px;
   height: 100vh;

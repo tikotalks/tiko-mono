@@ -90,7 +90,7 @@ const createCheckboxId = (suffix: string | number) => {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .input-options {
 	display: flex;
 	flex-direction: column;

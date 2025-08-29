@@ -273,7 +273,7 @@ onMounted(async () => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .parent-mode-toggle {
   &--active {
     box-shadow: 0 0 0 2px var(--color-success);

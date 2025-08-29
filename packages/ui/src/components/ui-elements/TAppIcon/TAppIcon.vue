@@ -89,7 +89,7 @@ watch(() => props.imageId, () => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .app-icon {
   display: flex;
   align-items: center;

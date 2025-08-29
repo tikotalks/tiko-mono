@@ -180,7 +180,7 @@ const markdownContent = computed(() => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .test-rich-editor {
   &__container {
     display: grid;

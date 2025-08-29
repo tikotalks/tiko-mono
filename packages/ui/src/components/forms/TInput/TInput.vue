@@ -161,7 +161,7 @@ const decrement = () => {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .input {
   display: flex;
   flex-direction: column;
