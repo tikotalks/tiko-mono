@@ -92,6 +92,11 @@ const navigation = computed<
         url: '/sponsors',
         to: { name: 'content', params: { view: 'sponsors' } }
       },
+      {
+        text: 'Updates',
+        url: '/updates',
+        to: { name: 'content', params: { view: 'update' } }
+      },
       // { text: 'Help Center', url: '/help' },
       // { text: 'Contact Support', url: '/support' },
       {
@@ -178,12 +183,12 @@ const navigation = computed<
     transition: color 0.2s;
 
     &:hover {
-      color: var(--color-primary);
+      color: var(--color-secondary);
     }
   }
 
   &__nav-text {
-    color: var(--color-background);
+    color: inherit;
   }
 
   &__top {
@@ -216,6 +221,12 @@ const navigation = computed<
   &__links {
     display: flex;
     gap: var(--space);
+  }
+
+  &__link{
+    &:hover{
+      color: var(--color-primary);
+    }
   }
 }
 </style>

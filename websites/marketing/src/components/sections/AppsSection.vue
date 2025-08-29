@@ -2,32 +2,17 @@
   <section :class="bemm()">
     <div :class="bemm('wrapper')">
       <div :class="bemm('container')">
-        <h2
-          v-if="content?.title"
-          :class="bemm('title')"
-          v-html="processTitle(content.title)"
-        />
-        <h4
-          v-if="content?.subtitle"
-          :class="bemm('subtitle')"
-          v-html="content.subtitle"
-        />
-        <TMarkdownRenderer
-          :class="bemm('content')"
-          v-if="content?.content"
-          :content="content.content"
-        />
+        <h2 v-if="content?.title" :class="bemm('title')" v-html="processTitle(content.title)" />
+        <h4 v-if="content?.subtitle" :class="bemm('subtitle')" v-html="content.subtitle" />
+        <TMarkdownRenderer :class="bemm('content')" v-if="content?.content" :content="content.content" />
       </div>
     </div>
 
     <div :class="bemm('apps')">
       <div v-if="content?.items" :class="bemm('apps-list')">
-        <AppIcon
-          v-for="(app, index) in content.items"
-
-          :key="index"
-          :app="app" @click="goToApp(app)"
-        />
+        <div :class="bemm('apps-item')" v-for="(app, index) in content.items" :key="index">
+          <TAppIcon :size="'auto'" :color="app.data.color" :imageId="app.data['app-icon']?.id" @click="goToApp(app)" />
+        </div>
       </div>
     </div>
   </section>
@@ -39,6 +24,7 @@ import { TMarkdownRenderer } from '@tiko/ui';
 import type { ContentSection } from '@tiko/core';
 import { processTitle } from '@/utils/processTitle';
 import AppIcon from '../blocks/AppIcon.vue';
+import { TAppIcon } from '@tiko/ui';
 import { kebabCase } from '@sil/case';
 import { useRouter } from 'vue-router';
 
@@ -81,6 +67,7 @@ const goToApp = (app: any) => {
     align-items: flex-end;
     justify-content: flex-end;
   }
+
   &__image {
     width: 50vw;
     height: 50vw;
@@ -122,6 +109,7 @@ const goToApp = (app: any) => {
     left: 0;
     transform: translateX(-100%);
     width: calc(50vw - var(--spacing));
+
     span {
       color: var(--color-green);
     }
@@ -159,6 +147,7 @@ const goToApp = (app: any) => {
     z-index: 10;
     margin-top: calc((var(--spacing) / 2) * -1);
   }
+
   &__apps-list {
     list-style: none;
     padding: 0;
@@ -169,6 +158,15 @@ const goToApp = (app: any) => {
     justify-content: center;
 
     font-size: clamp(1em, 2vw, 3em);
+  }
+
+  &__apps-item{
+    width: 20vw; height: 20vw;
+    transition: all .3s cubic-bezier(0,.5,.5,1.5);
+    transform: scale(1);
+    &:hover{
+      transform: scale(1.1);
+    }
   }
 
 }

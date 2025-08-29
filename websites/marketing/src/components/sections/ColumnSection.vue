@@ -1,6 +1,6 @@
 <template>
-  <section 
-    :id="section?.slug" 
+  <section
+    :id="section?.slug"
     :class="bemm('', ['', sectionBlock])"
     :style="`--section-image: url(${imageUrl}); --section-color: ${content.color ? `var(--color-${content.color})` : 'var(--color-primary)'};`"
   >
@@ -9,7 +9,7 @@
         <div :class="bemm('image', ['', imageUrl ? 'has-image' : 'no-image'])">
           <img v-if="imageUrl" :src="imageUrl" alt="Section Image" />
         </div>
-        
+
         <div :class="bemm('content')">
           <h2 v-if="content?.title" :class="bemm('title')" v-html="processTitle(content.title)" />
           <TMarkdownRenderer v-if="content?.content" :class="bemm('markdown')" :content="content.content" />
@@ -17,19 +17,19 @@
         </div>
       </div>
     </div>
-    
+
     <div :class="bemm('container')" v-else>
       <div :class="bemm('image', ['', imageUrl ? 'has-image' : 'no-image'])">
         <img v-if="imageUrl" :src="imageUrl" alt="Section Image" />
       </div>
-      
+
       <div :class="bemm('content')">
         <h2 v-if="content?.title" :class="bemm('title')" v-html="processTitle(content.title)" />
         <TMarkdownRenderer v-if="content?.content" :class="bemm('markdown')" :content="content.content" />
         <ContentCtas :items="content.cta" v-if="content.cta && content.cta.length" />
       </div>
     </div>
-    
+
     <div :class="bemm('items')" v-if="content.items && content.items.length">
       <ContentItems :items="content?.items" />
     </div>
@@ -129,7 +129,7 @@ onMounted(async () => {
   --column-image-max-width: none;
   --column-image-margin: 0;
   --column-mobile-flex-direction: column;
-  
+
   background-color: var(--color-light);
   color: var(--color-dark);
   position: relative;
@@ -177,6 +177,7 @@ onMounted(async () => {
     max-width: var(--column-image-max-width);
     position: relative;
     margin-bottom: var(--column-image-margin);
+    pointer-events:none;
 
     &--has-image {
       aspect-ratio: var(--column-image-aspect);

@@ -37,7 +37,7 @@
         >
           <h3 :class="bemm('app-title')">{{ app.data.app_title }}</h3>
           <div :class="bemm('app-content')">
-            <AppIcon :app="app" />
+            <TAppIcon :class="bemm('app-icon')"  :size="'auto'" :color="app.data.color" :imageId="app.data['app-icon'].id" />
             <div :class="bemm('app-description')">
               <TMarkdownRenderer
                 v-if="app.data.app_description"
@@ -58,13 +58,12 @@
 
 <script setup lang="ts">
 import { useBemm } from 'bemm';
-import { TButton, TMarkdownRenderer } from '@tiko/ui';
+import { TButton, TMarkdownRenderer,TAppIcon } from '@tiko/ui';
 import type { ContentSection } from '@tiko/core';
 import { useImages, useImageUrl } from '@tiko/core';
 import { onMounted, ref } from 'vue';
 import { kebabCase } from '@sil/case';
 import { processTitle } from '@/utils/processTitle';
-import AppIcon from '../blocks/AppIcon.vue';
 
 interface TextSectionProps {
   section: ContentSection;
@@ -307,10 +306,17 @@ onMounted(async () => {
     flex-direction: row;
     gap: var(--space);
     align-items: flex-start;
+    justify-content: flex-start;
     @media screen and (max-width: 720px) {
       flex-direction: column;
       align-items: center;
     }
+  }
+
+  &__app-icon{
+    width: 20vw;
+    height: 20vw;
+    flex-shrink: 0;
   }
 }
 </style>
