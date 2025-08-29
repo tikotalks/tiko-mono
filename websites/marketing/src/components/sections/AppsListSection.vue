@@ -1,26 +1,11 @@
 <template>
   <section :class="bemm()">
     <div :class="bemm('wrapper')">
-      <div
-        :class="bemm('image')"
-        :style="`--background-image: url(${imageUrl})`"
-      ></div>
+      <div :class="bemm('image')" :style="`--background-image: url(${imageUrl})`"></div>
       <div :class="bemm('container')">
-        <h2
-          v-if="content?.title"
-          :class="bemm('title')"
-          v-html="processTitle(content.title)"
-        />
-        <h4
-          v-if="content?.subtitle"
-          :class="bemm('subtitle')"
-          v-html="content.subtitle"
-        />
-        <TMarkdownRenderer
-          :class="bemm('content')"
-          v-if="content?.content"
-          :content="content.content"
-        />
+        <h2 v-if="content?.title" :class="bemm('title')" v-html="processTitle(content.title)" />
+        <h4 v-if="content?.subtitle" :class="bemm('subtitle')" v-html="content.subtitle" />
+        <TMarkdownRenderer :class="bemm('content')" v-if="content?.content" :content="content.content" />
       </div>
     </div>
 
@@ -28,26 +13,19 @@
     </pre> -->
     <div :class="bemm('apps')">
       <div v-if="content?.items" :class="bemm('apps-list')">
-        <div
-          v-for="(app, index) in content.items"
-          :id="`app-${kebabCase(app.data?.app_title)}`"
-          :key="index"
+        <div v-for="(app, index) in content.items" :id="`app-${kebabCase(app.data?.app_title)}`" :key="index"
           :class="bemm('app-item')"
-          :style="`--app-color: ${app.data?.color ? `var(--color-${app.data.color})` : '#000'}; --app-color-text: ${app.data?.color ? `var(--color-${app.data.color}-text)` : '#fff'};`"
-        >
+          :style="`--app-color: ${app.data?.color ? `var(--color-${app.data.color})` : '#000'}; --app-color-text: ${app.data?.color ? `var(--color-${app.data.color}-text)` : '#fff'};`">
           <h3 :class="bemm('app-title')">{{ app.data.app_title }}</h3>
           <div :class="bemm('app-content')">
-            <TAppIcon :class="bemm('app-icon')"  :size="'auto'" :color="app.data.color" :imageId="app.data['app-icon'].id" />
+            <TAppIcon :class="bemm('app-icon')" :size="'auto'" :color="app.data.color"
+              :imageId="app.data['app-icon'].id" />
             <div :class="bemm('app-description')">
-              <TMarkdownRenderer
-                v-if="app.data.app_description"
-                :content="app.data.app_description"
-                :class="bemm('app-description-content')"
-              />
+              <TMarkdownRenderer v-if="app.data.app_description" :content="app.data.app_description"
+                :class="bemm('app-description-content')" />
 
-              <TButton :color="app.data.color" :link="app.data.app_link"
-                >Go to</TButton
-              >
+              <TButton v-if="app.data.app_link_website" :color="app.data.color" :href="app.data.app_link_website">Go to
+              </TButton>
             </div>
           </div>
         </div>
@@ -58,7 +36,7 @@
 
 <script setup lang="ts">
 import { useBemm } from 'bemm';
-import { TButton, TMarkdownRenderer,TAppIcon } from '@tiko/ui';
+import { TButton, TMarkdownRenderer, TAppIcon } from '@tiko/ui';
 import type { ContentSection } from '@tiko/core';
 import { useImages, useImageUrl } from '@tiko/core';
 import { onMounted, ref } from 'vue';
@@ -83,6 +61,10 @@ const getImageUrl = (imageId: string) => {
   }
   return '';
 };
+
+const handleLink = () => {
+
+}
 
 // Helper to get app data from the item structure
 const getAppData = (app: any, key: string) => {
@@ -109,18 +91,6 @@ const loadImage = async () => {
 onMounted(async () => {
   await loadImages();
   loadImage();
-
-  // Debug app items
-  console.log('Apps Section - Items:', props.content?.items);
-  props.content?.items?.forEach((item: any, index: number) => {
-    console.log(`App ${index}:`, {
-      name: item.item?.name,
-      data: item.data,
-      app_title: getAppData(item, 'app_title'),
-      color: getAppData(item, 'color'),
-      app_icon: getAppData(item, 'app_icon'),
-    });
-  });
 });
 </script>
 
@@ -140,6 +110,7 @@ onMounted(async () => {
     align-items: flex-end;
     justify-content: flex-end;
   }
+
   &__image {
     width: 50vw;
     height: 50vw;
@@ -180,6 +151,7 @@ onMounted(async () => {
     left: 0;
     transform: translateX(-100%);
     width: calc(50vw - var(--spacing));
+
     span {
       color: var(--color-green);
     }
@@ -216,6 +188,7 @@ onMounted(async () => {
     z-index: 10;
     margin-top: calc((var(--spacing) / 2) * -1);
   }
+
   &__apps-list {
     list-style: none;
     padding: 0;
@@ -229,12 +202,11 @@ onMounted(async () => {
     gap: var(--spacing);
     padding: var(--spacing);
   }
+
   &__app-item {
-    background-color: color-mix(
-      in srgb,
-      var(--app-color),
-      var(--color-background) 50%
-    );
+    background-color: color-mix(in srgb,
+        var(--app-color),
+        var(--color-background) 50%);
     color: var(--color-foreground);
     padding: var(--spacing);
     border-radius: calc(var(--border-radius) * 2);
@@ -248,12 +220,14 @@ onMounted(async () => {
     animation: linear reveal-center both;
     animation-timeline: --revealing-image;
     animation-range: entry 0% cover 20%;
+
     // box-shadow: inset 0 0 0 1px var(--color-secondary);
     @at-root {
       @keyframes reveal-center {
         0% {
           transform: scale(0);
         }
+
         100% {
           transform: scale(1);
         }
@@ -301,19 +275,21 @@ onMounted(async () => {
     font-family: var(--header-font-family);
 
   }
+
   &__app-content {
     display: flex;
     flex-direction: row;
     gap: var(--space);
     align-items: flex-start;
     justify-content: flex-start;
+
     @media screen and (max-width: 720px) {
       flex-direction: column;
       align-items: center;
     }
   }
 
-  &__app-icon{
+  &__app-icon {
     width: 20vw;
     height: 20vw;
     flex-shrink: 0;
