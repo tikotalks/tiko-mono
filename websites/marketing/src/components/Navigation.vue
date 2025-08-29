@@ -1,10 +1,7 @@
 <template>
   <nav :class="bemm()">
-    <button
-      :class="bemm('trigger', ['', active ? 'active' : ''])"
-      @click="active = !active"
-      :aria-label="active ? 'Close navigation' : 'Open navigation'"
-    >
+    <button :class="bemm('trigger', ['', active ? 'active' : ''])" @click="active = !active"
+      :aria-label="active ? 'Close navigation' : 'Open navigation'">
       <span />
       <span />
       <span />
@@ -12,18 +9,14 @@
     <div :class="bemm('overlay')" v-if="active" @click="active = false"></div>
     <div :class="bemm('container', ['', active ? 'active' : ''])">
       <ul :class="bemm('list')">
-        <li :class="bemm('item')" v-for="item in items" :key="item.name">
-          <router-link
-            :to="item.link"
-            :class="bemm('link')"
-            @mouseenter="preloadPage(item.link)"
-            @focus="preloadPage(item.link)"
-          >
+        <li :class="bemm('item')" v-for="item in items" :key="item.label">
+          <router-link :to="item.to" :class="bemm('link')" @mouseenter="preloadPage(item.link)"
+            @focus="preloadPage(item.link)">
             <span v-if="item.icon" :class="bemm('icon')">
               <TIcon :name="item.icon" />
             </span>
             <span :class="bemm('text')">
-              {{ item.name }}
+              {{ item.label }}
             </span>
           </router-link>
         </li>
@@ -41,15 +34,16 @@ import { useContent } from '@tiko/core';
 import { useI18n } from '@tiko/core';
 const bemm = useBemm('navigation');
 
-import { useRoute, useRouter } from 'vue-router';
+import { RouterLinkProps, useRoute, useRouter } from 'vue-router';
 
 const active = ref(false);
 const router = useRouter();
 const { locale } = useI18n();
 
 interface NavigationItem {
-  name: string;
+  label: string;
   link: string;
+  to: { name: string; params: { view: string } };
   icon?: Icons;
   items?: NavigationItem[];
 }
@@ -103,7 +97,7 @@ async function loadNavigationItems() {
 
     // Convert to navigation items
     items.value = navPages.map(page => ({
-      name: page.title,
+      label: page.title,
       link: `/${page.slug}`
     }));
 
@@ -118,9 +112,52 @@ async function loadNavigationItems() {
     // Fallback to hardcoded items
     console.warn('[Navigation] Using fallback hardcoded navigation items');
     items.value = [
-      { name: 'About', link: '/about' },
-      { name: 'Apps', link: '/apps' },
-      { name: 'Sponsors', link: '/sponsors' },
+      {
+        label: 'About',
+        link: '/about',
+        to: {
+          name: 'content',
+          params: { view: 'about' }
+        }
+      },
+      {
+        label: 'Apps',
+        link: '/apps',
+        to: {
+          name: 'content',
+          params: { view: 'apps' }
+        }
+      },
+      {
+        label: 'Sponsors',
+        link: '/sponsors',
+        to: {
+          name: 'content',
+          params: { view: 'sponsors' }
+        }
+      },
+      {
+        label: 'Technology',
+        link: '/technology',
+        to: {
+          name: 'content',
+          params: { view: 'technology' }
+        }
+      },
+      {
+        label: 'Contact',
+        link: '/contact',
+        to: { name: 'content', params: { view: 'contact' } }
+      },
+      {
+        label: 'Updates',
+        link: '/updates',
+        to: { name: 'content', params: { view: 'update' } }
+      }, {
+        label: 'FAQ',
+        link: '/faq',
+        to: { name: 'content', params: { view: 'faq' } }
+      },
     ];
   }
 }
@@ -163,8 +200,9 @@ watch(locale, async (newLocale, oldLocale) => {
   await loadNavigationItems();
 });
 
+const route = useRoute();
 watch(
-  () => useRoute(),
+  () => route,
   () => {
     // Close navigation when route changes
     active.value = false;
@@ -209,36 +247,48 @@ watch(
       transition: transform 0.3s ease;
 
       &:nth-child(1) {
-        transform:  scaleX(0.8) translateY(-0.3em);
+        transform: scaleX(0.8) translateY(-0.3em);
       }
+
       &:nth-child(2) {
         transform: scaleX(1);
       }
+
       &:nth-child(3) {
-        transform:  scaleX(0.8) translateY(0.3em);
+        transform: scaleX(0.8) translateY(0.3em);
       }
     }
+
     span {
       width: 1.5em;
       height: 0.2em;
       background-color: var(--color-light);
     }
 
-    &--active{
+    &--active {
       span:nth-child(1) {
-        transform: rotate(45deg) translateY(0.3em);
+        transform: translateX(.25em) rotate(45deg) translateY(0.3em);
       }
+
       span:nth-child(2) {
         opacity: 0;
       }
+
       span:nth-child(3) {
-        transform: rotate(-45deg) translateY(-0.3em);
+        transform: translateX(.25em) rotate(-45deg) translateY(-0.3em);
       }
     }
+
     @media screen and (min-width: 1024px) {
-      display:none;
+      display: none;
     }
+
+    @media screen and (max-width:720px) {
+      margin: var(--space);
+    }
+
   }
+
   &__container {
     padding: var(--space);
     gap: var(--space);
@@ -255,8 +305,10 @@ watch(
       opacity: 0;
       pointer-events: none;
       transition: 0.3s ease-in-out;
-      font-size: 2em;
+      font-size: 1.5em;
+      line-height: 2;
     }
+
     &--active {
       @media screen and (max-width: 1024px) {
         transform: translate(-50%, -50%) scale(1);
@@ -274,14 +326,16 @@ watch(
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 10;
+
     @media screen and (min-width: 1024px) {
-     display:none;
+      display: none;
     }
 
   }
 
   &__list {
     display: flex;
+
     @media screen and (max-width: 1024px) {
       flex-direction: column;
     }
@@ -293,14 +347,12 @@ watch(
     border-radius: var(--border-radius);
     transition: background-color 0.3s ease;
     color: var(--color-light);
-    text-shadow: 1px 1px 3px
-      color-mix(in srgb, var(--color-dark), transparent 75%);
+    text-shadow: 1px 1px 3px color-mix(in srgb, var(--color-dark), transparent 75%);
+
     &:hover {
-      background-color: color-mix(
-        in srgb,
-        var(--color-primary),
-        transparent 0%
-      );
+      background-color: color-mix(in srgb,
+          var(--color-primary),
+          transparent 0%);
       color: var(--color-light);
     }
 

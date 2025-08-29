@@ -32,5 +32,9 @@ const bemm = useBemm('page-header');
     }
   }
 
+  @media screen and (max-width:720px){
+    padding: var(--space-s);
+  }
+
 }
 </style>

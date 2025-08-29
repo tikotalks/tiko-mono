@@ -45,6 +45,8 @@ const handleAction = (cta: {
     const route = cta.link.replace('router:', '');
     console.log('trying to go to', route)
     router.push({ name: 'content', params: { view: route }});
+  } else if(cta.link.startsWith('mailto:')){
+    window.location.href = cta.link;
   } else {
     // Handle internal actions
     console.log(`Action: ${cta.link}`);
