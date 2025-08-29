@@ -44,8 +44,8 @@ import { RouterLinkProps } from 'vue-router';
 const bemm = useBemm('footer');
 
 const links = computed(() => [
-  { text: 'Privacy Policy', to: { name: 'content', params: { view: 'privacy' } } },
-  { text: 'Terms of Service', to: { name: 'content', params: { view: 'terms' } } },
+  { text: 'Privacy Policy', to: { name: 'content', params: { view: 'privacy-policy' } } },
+  { text: 'Terms of Service', to: { name: 'content', params: { view: 'terms-of-service' } } },
   { text: 'Contact Us', to: { name: 'content', params: { view: 'contact' } } },
 ]);
 
@@ -91,6 +91,11 @@ const navigation = computed<
         text: 'Sponsors',
         url: '/sponsors',
         to: { name: 'content', params: { view: 'sponsors' } }
+      },
+      {
+        text: 'Contact',
+        url: '/contact',
+        to: { name: 'content', params: { view: 'contact' } }
       },
       {
         text: 'Updates',
