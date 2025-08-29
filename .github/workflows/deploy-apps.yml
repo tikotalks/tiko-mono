@@ -200,7 +200,9 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: |
+          # Install only the required packages for translations
+          pnpm install --no-frozen-lockfile --filter=@tiko/ui --filter=@tiko/core
 
       - name: Generate i18n translations
         run: pnpm generate:i18n:worker:prod
@@ -234,7 +236,9 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: |
+          # Install only the required packages for Timer app build
+          pnpm install --no-frozen-lockfile --filter=timer...
 
       - name: Download translation files
         uses: actions/download-artifact@v4
@@ -285,7 +289,9 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: |
+          # Install only the required packages for Yes-No app build
+          pnpm install --no-frozen-lockfile --filter=yes-no...
 
       - name: Download translation files
         uses: actions/download-artifact@v4
@@ -336,7 +342,9 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: |
+          # Install only the required packages for Cards app build
+          pnpm install --no-frozen-lockfile --filter=cards...
 
       - name: Download translation files
         uses: actions/download-artifact@v4
@@ -387,7 +395,9 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: |
+          # Install only the required packages for Radio app build
+          pnpm install --no-frozen-lockfile --filter=radio...
 
       - name: Download translation files
         uses: actions/download-artifact@v4
@@ -438,7 +448,9 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: |
+          # Install only the required packages for Todo app build
+          pnpm install --no-frozen-lockfile --filter=todo...
 
       - name: Download translation files
         uses: actions/download-artifact@v4
@@ -489,7 +501,9 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: |
+          # Install only the required packages for Type app build
+          pnpm install --no-frozen-lockfile --filter=type...
 
       - name: Download translation files
         uses: actions/download-artifact@v4
@@ -540,7 +554,9 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: |
+          # Install only the required packages for Sequence app build
+          pnpm install --no-frozen-lockfile --filter=sequence...
 
       - name: Download translation files
         uses: actions/download-artifact@v4
