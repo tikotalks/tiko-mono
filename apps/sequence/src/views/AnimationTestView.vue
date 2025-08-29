@@ -3,12 +3,8 @@
     <div class="controls">
       <h1>Animation Test View</h1>
       <div class="button-group">
-        <button
-          v-for="anim in availableAnimations"
-          :key="anim.name"
-          @click="selectedAnimation = anim.name"
-          :class="{ active: selectedAnimation === anim.name }"
-        >
+        <button v-for="anim in availableAnimations" :key="anim.name" @click="selectedAnimation = anim.name"
+          :class="{ active: selectedAnimation === anim.name }">
           {{ anim.displayName }}
         </button>
       </div>
@@ -17,13 +13,8 @@
       </button>
     </div>
 
-    <component
-      v-if="showAnimation && animationComponent"
-      :is="animationComponent"
-      @completed="onAnimationCompleted"
-      :debug="true"
-      :show-close="true"
-    />
+    <component v-if="showAnimation && animationComponent" :is="animationComponent" @completed="onAnimationCompleted"
+      :debug="true" :show-close="true" />
   </div>
 </template>
 
@@ -56,59 +47,60 @@ const onAnimationCompleted = () => {
   padding: 20px;
   height: 100vh;
   background: #f0f0f0;
-}
 
-.controls {
-  position: relative;
-  z-index: 10;
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  max-width: 800px;
-  margin: 0 auto;
-}
 
-h1 {
-  margin: 0 0 20px 0;
-  color: #333;
-}
+  .controls {
+    position: relative;
+    z-index: 10;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: 0 auto;
+  }
 
-.button-group {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
+  h1 {
+    margin: 0 0 20px 0;
+    color: #333;
+  }
 
-button {
-  padding: 10px 20px;
-  border: 2px solid #ddd;
-  background: white;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
+  .button-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
 
-button:hover {
-  background: #f0f0f0;
-}
+  button {
+    padding: 10px 20px;
+    border: 2px solid #ddd;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
 
-button.active {
-  background: #007bff;
-  color: white;
-  border-color: #007bff;
-}
+  button:hover {
+    background: #f0f0f0;
+  }
 
-.toggle-btn {
-  background: #28a745;
-  color: white;
-  border-color: #28a745;
-  font-size: 16px;
-  padding: 12px 24px;
-}
+  button.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+  }
 
-.toggle-btn:hover {
-  background: #218838;
+  .toggle-btn {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+    font-size: 16px;
+    padding: 12px 24px;
+  }
+
+  .toggle-btn:hover {
+    background: #218838;
+  }
 }
 </style>
