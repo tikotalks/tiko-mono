@@ -140,6 +140,9 @@ watch(pageSlug, () => {
 <style lang="scss">
 .page-content {
   background-color: var(--color-background);
+
+// opacity: 0;
+
   // Loading state
   &__loading {
     min-height: 100vh;
@@ -214,11 +217,11 @@ watch(pageSlug, () => {
 
 // Smooth page transitions with crossfade
 .page-fade-enter-active {
-  transition: opacity 0.2s ease;
+  transition: opacity .5s ease;
 }
 
 .page-fade-leave-active {
-  transition: opacity 0.2s ease;
+  transition: opacity .5s ease;
   position: absolute;
   width: 100%;
 }

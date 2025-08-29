@@ -9,7 +9,7 @@
     <div :class="bemm('overlay')" v-if="active" @click="active = false"></div>
     <div :class="bemm('container', ['', active ? 'active' : ''])">
       <ul :class="bemm('list')">
-        <li :class="bemm('item')" v-for="item in items" :key="item.label">
+        <li :class="bemm('item', ['', item.mobile ? 'mobile-only':''])" v-for="item in items" :key="item.label">
           <router-link :to="item.to" :class="bemm('link')" @mouseenter="preloadPage(item.link)"
             @focus="preloadPage(item.link)">
             <span v-if="item.icon" :class="bemm('icon')">
@@ -139,6 +139,7 @@ async function loadNavigationItems() {
       {
         label: 'Technology',
         link: '/technology',
+        mobile: true,
         to: {
           name: 'content',
           params: { view: 'technology' }
@@ -147,15 +148,18 @@ async function loadNavigationItems() {
       {
         label: 'Contact',
         link: '/contact',
+        mobile: true,
         to: { name: 'content', params: { view: 'contact' } }
       },
       {
         label: 'Updates',
         link: '/updates',
+        mobile: true,
         to: { name: 'content', params: { view: 'update' } }
       }, {
         label: 'FAQ',
         link: '/faq',
+        mobile: true,
         to: { name: 'content', params: { view: 'faq' } }
       },
     ];
@@ -295,7 +299,7 @@ watch(
     background-color: color-mix(in srgb, var(--color-dark), transparent 75%);
     backdrop-filter: blur(10px);
     border-radius: calc(var(--border-radius));
-    z-index: 10;
+    z-index: 10;      font-size: 1.25em;
 
     @media screen and (max-width: 1024px) {
       position: fixed;
@@ -338,6 +342,15 @@ watch(
 
     @media screen and (max-width: 1024px) {
       flex-direction: column;
+    }
+  }
+
+  &__item{
+
+    &--mobile-only{
+    @media screen and (min-width: 1024px){
+      display:none;
+    }
     }
   }
 
