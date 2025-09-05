@@ -1569,19 +1569,9 @@ export class ContentServiceWrapper {
   }
 
   private async getNavigationMenuBySlug(params: any): Promise<QueryResult> {
-    // Handle both object params and direct arguments
-    let slug: string;
-    let projectId: string | undefined;
+    const { slug, projectId } = params;
     
-    if (params.slug !== undefined) {
-      // Called with object params
-      slug = params.slug;
-      projectId = params.projectId;
-    } else if (params[0] !== undefined) {
-      // Called with direct arguments (from content worker proxy)
-      slug = params[0];
-      projectId = params[1];
-    } else {
+    if (!slug) {
       return { data: null, error: 'Missing required parameter: slug' };
     }
     
