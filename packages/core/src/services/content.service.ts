@@ -1521,7 +1521,7 @@ class ContentService {
 
   async getNavigationMenuBySlug(slug: string, projectId?: string): Promise<NavigationMenu | null> {
     try {
-      let query = `/content_navigation_menus?slug=eq.${slug}&is_active=eq.true`
+      let query = `/content_navigation_menus?slug=eq.${slug}`
       if (projectId) {
         query += `&project_id=eq.${projectId}`
       }
