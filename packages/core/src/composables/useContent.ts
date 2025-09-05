@@ -716,6 +716,107 @@ export function useContent(options?: UseContentOptions) {
     }
   })
 
+  // Article methods - available when using worker service
+  async function getArticles(pageId?: string) {
+    if (service instanceof ContentWorkerService) {
+      return service.getArticles(pageId);
+    }
+    throw new Error('Article methods are only available when using content worker');
+  }
+
+  async function getArticle(id: string) {
+    if (service instanceof ContentWorkerService) {
+      return service.getArticle(id);
+    }
+    throw new Error('Article methods are only available when using content worker');
+  }
+
+  async function getArticleBySlug(pageId: string, languageCode: string, slug: string) {
+    if (service instanceof ContentWorkerService) {
+      return service.getArticleBySlug(pageId, languageCode, slug);
+    }
+    throw new Error('Article methods are only available when using content worker');
+  }
+
+  async function getArticlesByPage(pageId: string, languageCode?: string) {
+    if (service instanceof ContentWorkerService) {
+      return service.getArticlesByPage(pageId, languageCode);
+    }
+    throw new Error('Article methods are only available when using content worker');
+  }
+
+  async function getPublishedArticles(pageId?: string, languageCode?: string) {
+    if (service instanceof ContentWorkerService) {
+      return service.getPublishedArticles(pageId, languageCode);
+    }
+    throw new Error('Article methods are only available when using content worker');
+  }
+
+  // Navigation Methods
+  async function getNavigationMenus(projectId?: string) {
+    return service.getNavigationMenus(projectId);
+  }
+
+  async function getNavigationMenu(id: string) {
+    return service.getNavigationMenu(id);
+  }
+
+  async function getNavigationMenuBySlug(slug: string, projectId?: string) {
+    return service.getNavigationMenuBySlug(slug, projectId);
+  }
+
+  async function getNavigationItems(menuId: string) {
+    return service.getNavigationItems(menuId);
+  }
+
+  // Get a page with article detail
+  async function getPageWithArticle(pageIdOrSlug: string, articleSlug: string, language?: string): Promise<PageContent | null> {
+    const cacheKey = `${pageIdOrSlug}-${language || 'default'}-article-${articleSlug}`
+    
+    // Check cache first
+    if (pageCache.has(cacheKey)) {
+      contentLogger.log(`[useContent] Returning cached article page for key: ${cacheKey}`)
+      return pageCache.get(cacheKey)!
+    }
+
+    // Wait for initialization if needed
+    await initPromise
+
+    loading.value = true
+    error.value = null
+
+    try {
+      // Only ContentWorkerService supports article pages
+      if (service instanceof ContentWorkerService) {
+        const result = await service.getPageWithArticle(
+          pageIdOrSlug,
+          articleSlug,
+          currentProject.value?.id,
+          language || 'en'
+        )
+        
+        if (!result) {
+          throw new Error('Page or article not found')
+        }
+
+        const processedResult: PageContent = result
+
+        // Cache the result
+        pageCache.set(cacheKey, processedResult)
+        
+        return processedResult
+      } else {
+        throw new Error('Article pages are only supported with content worker')
+      }
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to load article page'
+      contentLogger.error('Failed to load article page:', err)
+      return null
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     // State
     currentProject: computed(() => currentProject.value),
@@ -730,6 +831,7 @@ export function useContent(options?: UseContentOptions) {
     
     // Page/Section Methods
     getPage,
+    getPageWithArticle,
     getPages,
     getSection,
     getSectionContent,
@@ -749,6 +851,19 @@ export function useContent(options?: UseContentOptions) {
     // Worker-specific methods
     refreshCache,
     clearWorkerCache,
+    
+    // Article Methods
+    getArticles,
+    getArticle,
+    getArticleBySlug,
+    getArticlesByPage,
+    getPublishedArticles,
+    
+    // Navigation Methods
+    getNavigationMenus,
+    getNavigationMenu,
+    getNavigationMenuBySlug,
+    getNavigationItems,
     
     // Project Management
     setProject: async (slugOrId: string) => {
