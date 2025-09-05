@@ -65,10 +65,16 @@
           <TListItem
             v-for="section in filteredSections"
             :key="section.id"
-            :clickable="true"
-            @click="handleSectionClick(section)"
           >
-            <TListCell type="text" :content="section.name" />
+            <TListCell type="custom">
+              <a
+                :href="`/content/sections/${section.id}`"
+                @click.prevent="handleSectionClick(section)"
+                style="color: var(--color-primary); text-decoration: none; font-weight: 500;"
+              >
+                {{ section.name }}
+              </a>
+            </TListCell>
             <TListCell type="badge" :content="getTemplateName(section.section_template_id)" />
             <TListCell type="badge" :content="section.language_code || t('common.global')" />
             <TListCell type="badge" :content="getSectionTypeLabel(section.component_type)" />
@@ -107,8 +113,8 @@
             <TListCell
               type="actions"
               :actions="[
-                listActions.edit((e) => { e.stopPropagation(); openEditSectionDialog(section) }),
-                listActions.delete((e) => { e.stopPropagation(); handleDeleteSection(section) })
+                listActions.edit(() => openEditSectionDialog(section)),
+                listActions.delete(() => handleDeleteSection(section))
               ]"
             />
           </TListItem>
@@ -162,10 +168,16 @@
           <TListItem
             v-for="template in filteredTemplates"
             :key="template.id"
-            :clickable="true"
-            @click="handleTemplateClick(template)"
           >
-            <TListCell type="text" :content="template.name" />
+            <TListCell type="custom">
+              <a
+                :href="`/content/section-templates/${template.id}`"
+                @click.prevent="handleTemplateClick(template)"
+                style="color: var(--color-primary); text-decoration: none; font-weight: 500;"
+              >
+                {{ template.name }}
+              </a>
+            </TListCell>
             <TListCell type="text" :content="template.slug" />
             <TListCell type="text" :content="getSectionTypeLabel(template.component_type)" />
             <TListCell type="custom">
@@ -183,8 +195,8 @@
             <TListCell
               type="actions"
               :actions="[
-                listActions.edit((e) => { e.stopPropagation(); openEditTemplateDialog(template) }),
-                listActions.delete((e) => { e.stopPropagation(); handleDeleteTemplate(template) })
+                listActions.edit(() => openEditTemplateDialog(template)),
+                listActions.delete(() => handleDeleteTemplate(template))
               ]"
             />
           </TListItem>
@@ -651,7 +663,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: var(--space);
 
   &__header {
     display: flex;

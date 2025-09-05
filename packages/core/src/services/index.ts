@@ -52,7 +52,10 @@ export {
   type ItemTemplate,
   type Item,
   type ItemData,
-  type LinkedItem
+  type LinkedItem,
+  type ContentArticle,
+  type NavigationMenu,
+  type NavigationItem
 } from './content.service'
 
 // Export Supabase implementations

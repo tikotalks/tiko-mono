@@ -1,0 +1,59 @@
+admin.content.navigation.title : Navigation Management
+admin.content.navigation.description : Manage navigation menus and hierarchical menu items
+admin.content.navigation.createMenu : Create Menu
+admin.content.navigation.allProjects : All Projects
+admin.content.navigation.empty : No Navigation Menus
+admin.content.navigation.emptyDescription : Create your first navigation menu to manage site navigation
+admin.content.navigation.createFirst : Create First Menu
+admin.content.navigation.noItems : No Items
+admin.content.navigation.noItemsDescription : This menu has no items yet
+admin.content.navigation.addFirstItem : Add First Item
+admin.content.navigation.addItem : Add Item
+admin.content.navigation.loadError : Failed to load navigation data
+admin.content.navigation.createSuccess : Menu created successfully
+admin.content.navigation.createError : Failed to create menu
+admin.content.navigation.updateSuccess : Menu updated successfully
+admin.content.navigation.updateError : Failed to update menu
+admin.content.navigation.editMenu : Edit Menu
+admin.content.navigation.itemCreateSuccess : Item created successfully
+admin.content.navigation.itemCreateError : Failed to create item
+admin.content.navigation.itemUpdateSuccess : Item updated successfully
+admin.content.navigation.itemUpdateError : Failed to update item
+admin.content.navigation.itemDeleteSuccess : Item deleted successfully
+admin.content.navigation.itemDeleteError : Failed to delete item
+admin.content.navigation.editItem : Edit Item
+admin.content.navigation.reorderError : Failed to reorder items
+admin.content.navigation.visibilityError : Failed to update visibility
+
+admin.content.navigation.menuNamePlaceholder : Enter menu name
+admin.content.navigation.menuSlugPlaceholder : enter-menu-slug
+admin.content.navigation.menuSlugHint : Used to identify the menu in code
+admin.content.navigation.project : Project
+admin.content.navigation.projectPlaceholder : Select a project
+admin.content.navigation.projectHint : Leave empty for a global menu
+admin.content.navigation.globalMenu : Global Menu
+admin.content.navigation.slugError : Slug can only contain lowercase letters, numbers, and hyphens
+
+admin.content.navigation.itemLabelPlaceholder : Enter item label
+admin.content.navigation.linkType : Link Type
+admin.content.navigation.linkTypePage : Page
+admin.content.navigation.linkTypeCustom : Custom Path
+admin.content.navigation.linkTypeExternal : External URL
+admin.content.navigation.selectPage : Select Page
+admin.content.navigation.selectPagePlaceholder : Choose a page to link to
+admin.content.navigation.linkTarget : Link Target
+admin.content.navigation.targetSelf : Same Window
+admin.content.navigation.targetBlank : New Window
+admin.content.navigation.parentItem : Parent Item
+admin.content.navigation.noParent : No Parent (Root Level)
+admin.content.navigation.icon : Icon
+admin.content.navigation.iconPlaceholder : Icon name or class
+admin.content.navigation.iconHint : Optional icon for the menu item
+admin.content.navigation.cssClass : CSS Class
+admin.content.navigation.cssClassPlaceholder : custom-class
+admin.content.navigation.visible : Visible
+admin.content.navigation.visibleHint : Show or hide this item in navigation
+admin.content.navigation.invalidUrl : Please enter a valid URL
+admin.content.navigation.pathMustStartWithSlash : Path must start with /
+
+admin.navigation.content.navigation : Navigation

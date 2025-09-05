@@ -1,6 +1,7 @@
 <template>
   <PageContent 
     :page-slug="pageSlug" 
+    :article-slug="articleSlug"
     @page-not-found="handlePageNotFound"
   />
 </template>
@@ -20,6 +21,15 @@ const pageSlug = computed(() => {
     return viewParam[0] || '';
   }
   return viewParam || '';
+});
+
+// Extract article slug if it exists
+const articleSlug = computed(() => {
+  const viewParam = route.params.view;
+  if (Array.isArray(viewParam) && viewParam.length >= 2) {
+    return viewParam[1];
+  }
+  return undefined;
 });
 
 // Handle page not found

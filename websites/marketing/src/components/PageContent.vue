@@ -42,11 +42,12 @@
 import { useBemm } from 'bemm';
 import { useContent, type PageContent } from '@tiko/core';
 import { useI18n } from '@tiko/core';
-import { ref, onMounted, watch, toRefs } from 'vue';
+import { ref, onMounted, watch, toRefs, provide } from 'vue';
 import SectionRenderer from './SectionRenderer.vue';
 
 interface PageContentProps {
   pageSlug: string;
+  articleSlug?: string;
   showDebug?: boolean;
 }
 
@@ -81,6 +82,9 @@ const error = ref<string | null>(null);
 // Keep track of current page to avoid flashing loading state
 const currentPageKey = ref<string>('');
 
+// Provide page data to child components
+provide('pageData', pageData);
+
 // Function to load content for current language
 async function loadContent() {
   try {
@@ -99,7 +103,12 @@ async function loadContent() {
 
     // Track loading time to detect cache hits
     const startTime = Date.now();
-    const page = await content.getPage(pageSlug.value, languageCode, false);
+    
+    // Use different method for article pages
+    const page = props.articleSlug 
+      ? await content.getPageWithArticle(pageSlug.value, props.articleSlug, languageCode)
+      : await content.getPage(pageSlug.value, languageCode, false);
+      
     const loadTime = Date.now() - startTime;
 
 
@@ -129,7 +138,7 @@ onMounted(() => {
 });
 
 // Reload content when language changes
-watch(locale, () => {
+watch(() => locale.value, () => {
   loadContent();
 });
 

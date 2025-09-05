@@ -168,7 +168,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useBemm } from 'bemm'
 import {
   TButton,
@@ -213,6 +213,7 @@ const { t } = useI18n()
 
 // State
 const languages = ref<Language[]>([])
+const slugManuallyEdited = ref(props.mode === 'edit')
 const formData = reactive({
   name: props.section?.name || '',
   slug: props.section?.slug || '',
@@ -293,17 +294,23 @@ async function loadLanguages() {
   }
 }
 
-function handleSlugInput() {
-  // Auto-generate slug from name if in create mode
-  if (props.mode === 'create' && !formData.slug) {
-    formData.slug = formData.name
+// Watch for name changes to auto-generate slug
+watch(() => formData.name, (newName) => {
+  // Only auto-generate if user hasn't manually edited the slug
+  if (!slugManuallyEdited.value && props.mode === 'create') {
+    formData.slug = newName
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '')
   }
+})
+
+function handleSlugInput() {
+  // Mark that user has manually edited the slug
+  slugManuallyEdited.value = true
 
   // Validate slug format
-  if (!/^[a-z0-9-]+$/.test(formData.slug)) {
+  if (formData.slug && !/^[a-z0-9-]+$/.test(formData.slug)) {
     errors.slug = t('admin.content.sections.slugError')
   } else {
     errors.slug = ''

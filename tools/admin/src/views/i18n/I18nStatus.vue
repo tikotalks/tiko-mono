@@ -12,9 +12,19 @@
 
     <!-- Current Status -->
     <TCard :class="bemm('section')">
-      <h2 :class="bemm('section-title')">
-        {{ t('admin.i18n.status.currentStatus') || 'Current Status' }}
-      </h2>
+      <div :class="bemm('section-header')">
+        <h2 :class="bemm('section-title')">
+          {{ t('admin.i18n.status.currentStatus') || 'Current Status' }}
+        </h2>
+        <TButton
+          :icon="Icons.REFRESH"
+          @click="handleReloadTranslations"
+          :status="isReloading ? 'loading' : 'idle'"
+          size="small"
+        >
+          {{ t('admin.i18n.status.reloadTranslations') || 'Reload Translations' }}
+        </TButton>
+      </div>
 
       <TKeyValue
         :items="[
@@ -214,15 +224,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, inject } from 'vue';
 import { useBemm } from 'bemm';
 import { useI18n } from '@tiko/core';
-import { TCard, TKeyValue, TChip, TInput } from '@tiko/ui';
+import { TCard, TKeyValue, TChip, TInput, TButton, type ToastService } from '@tiko/ui';
 import { Icons } from 'open-icon';
+import { reloadI18nTranslations } from '@/utils/reload-i18n';
 
 const bemm = useBemm('i18n-status');
 const { t, currentLocale, availableLocales, isReady, keys, setLocale } =
   useI18n();
+const toastService = inject<ToastService>('toastService');
+
+// Reload state
+const isReloading = ref(false);
 
 // Check if translations are loaded
 const translationsLoaded = computed(() => {
@@ -342,11 +357,30 @@ const searchResults = computed(() => {
   searchInObject(keys.value);
   return results;
 });
+
+// Reload translations handler
+async function handleReloadTranslations() {
+  isReloading.value = true;
+  try {
+    await reloadI18nTranslations();
+    toastService?.show({
+      message: t('admin.i18n.status.reloadSuccess') || 'Translations reloaded successfully',
+      type: 'success',
+    });
+  } catch (error) {
+    console.error('Failed to reload translations:', error);
+    toastService?.show({
+      message: t('admin.i18n.status.reloadError') || 'Failed to reload translations',
+      type: 'error',
+    });
+  } finally {
+    isReloading.value = false;
+  }
+}
 </script>
 
 <style lang="scss">
 .i18-n-status {
-  padding: var(--space);
   display: flex;
   flex-direction: column;
   gap: var(--space-l);
@@ -365,9 +399,16 @@ const searchResults = computed(() => {
     margin-bottom: var(--space-lg);
   }
 
+  &__section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space);
+  }
+
   &__section-title {
     font-size: var(--font-size-lg);
-    margin-bottom: var(--space);
+    margin: 0;
   }
 
   &__subsection {

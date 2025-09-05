@@ -67,6 +67,14 @@
             >
               <TIcon :name="subItem.icon" />
               <span>{{ subItem.label }}</span>
+              <TButton
+                v-if="subItem.quickAction"
+                type="ghost"
+                size="small"
+                :icon="Icons.ADD"
+                @click.stop.prevent="subItem.quickAction()"
+                :class="bemm('quick-action')"
+              />
             </router-link>
             <a
               v-else-if="subItem.action"
@@ -90,7 +98,7 @@ import { inject, computed, ref, onMounted } from 'vue';
 
 import { useBemm } from 'bemm';
 import { Icons } from 'open-icon';
-import { TIcon } from '@tiko/ui';
+import { TIcon, TButton } from '@tiko/ui';
 import {
   useI18n,
   useI18nDatabaseService,
@@ -116,6 +124,7 @@ interface NavigationItem {
   active?: boolean;
   items?: NavigationItem[];
   action?: () => void;
+  quickAction?: () => void;
 }
 
 const openedItems = ref<string[]>([]);
@@ -180,6 +189,137 @@ async function openAddKeyDialog() {
             type: 'error',
           });
         }
+      },
+    },
+  });
+}
+
+// Quick action functions for content creation
+async function openCreateProjectDialog() {
+  if (!popupService) {
+    console.error('PopupService not available');
+    return;
+  }
+
+  const { default: CreateProjectDialog } = await import(
+    '../views/content/components/CreateProjectDialog.vue'
+  );
+
+  popupService.open({
+    component: CreateProjectDialog,
+    title: t('admin.content.projects.create'),
+    props: {
+      mode: 'create',
+      onSave: () => {
+        toastService?.show({
+          message: t('admin.content.projects.createSuccess'),
+          type: 'success',
+        });
+      },
+    },
+  });
+}
+
+async function openCreatePageDialog() {
+  if (!popupService) {
+    console.error('PopupService not available');
+    return;
+  }
+
+  const { default: CreatePageDialog } = await import(
+    '../views/content/components/CreatePageDialog.vue'
+  );
+
+  // Need to fetch projects first
+  const { contentService } = await import('@tiko/core');
+  const projects = await contentService.getProjects();
+
+  popupService.open({
+    component: CreatePageDialog,
+    title: t('admin.content.pages.create'),
+    props: {
+      mode: 'create',
+      projects,
+      onSave: () => {
+        toastService?.show({
+          message: t('admin.content.pages.createSuccess'),
+          type: 'success',
+        });
+      },
+    },
+  });
+}
+
+async function openCreateSectionDialog() {
+  if (!popupService) {
+    console.error('PopupService not available');
+    return;
+  }
+
+  const { default: CreateSectionDialog } = await import(
+    '../views/content/components/CreateSectionDialog.vue'
+  );
+
+  popupService.open({
+    component: CreateSectionDialog,
+    title: t('admin.content.sections.create'),
+    props: {
+      mode: 'create',
+      onSave: () => {
+        toastService?.show({
+          message: t('admin.content.sections.createSuccess'),
+          type: 'success',
+        });
+      },
+    },
+  });
+}
+
+async function openCreateArticleDialog() {
+  if (!popupService) {
+    console.error('PopupService not available');
+    return;
+  }
+
+  const { default: CreateArticleDialog } = await import(
+    '../views/content/components/CreateArticleDialog.vue'
+  );
+
+  popupService.open({
+    component: CreateArticleDialog,
+    title: t('admin.content.articles.create'),
+    props: {
+      mode: 'create',
+      onSave: () => {
+        toastService?.show({
+          message: t('admin.content.articles.createSuccess'),
+          type: 'success',
+        });
+      },
+    },
+  });
+}
+
+async function openCreateItemDialog() {
+  if (!popupService) {
+    console.error('PopupService not available');
+    return;
+  }
+
+  const { default: CreateItemDialog } = await import(
+    '../views/content/components/CreateItemDialog.vue'
+  );
+
+  popupService.open({
+    component: CreateItemDialog,
+    title: t('admin.content.items.create'),
+    props: {
+      mode: 'create',
+      onSave: () => {
+        toastService?.show({
+          message: t('admin.content.items.createSuccess'),
+          type: 'success',
+        });
       },
     },
   });
@@ -333,30 +473,47 @@ const navigationItems = computed<NavigationItem[]>(() => [
         to: { name: 'ContentProjects' },
         icon: Icons.FOLDER,
         label: t('admin.navigation.content.projects'),
+        quickAction: openCreateProjectDialog,
       },
       {
         name: 'content-pages',
         to: { name: 'ContentPages' },
         icon: Icons.BOARD_SPLIT_T_UP,
         label: t('admin.navigation.content.pages'),
+        quickAction: openCreatePageDialog,
+      },
+      {
+        name: 'content-navigation',
+        to: { name: 'ContentNavigation' },
+        icon: Icons.MENU,
+        label: t('admin.navigation.content.navigation'),
       },
       {
         name: 'content-sections',
         to: { name: 'ContentSections' },
         icon: Icons.BOARD_MULTI2_HORIZONTAL,
         label: t('admin.navigation.content.sections'),
+        quickAction: openCreateSectionDialog,
+      },
+      {
+        name: 'content-articles',
+        to: { name: 'ContentArticles' },
+        icon: Icons.FILE_TEXT,
+        label: t('admin.navigation.content.articles'),
+        quickAction: openCreateArticleDialog,
       },
       {
         name: 'content-items',
         to: { name: 'admin-content-items' },
         icon: Icons.FOLDER,
         label: t('admin.navigation.content.items'),
+        quickAction: openCreateItemDialog,
       },
     ],
   },
   {
     name: 'items',
-    icon: Icons.GRID_SQUARES,
+    icon: Icons.GRID,
     label: t('admin.navigation.items.title'),
     active: isOpen('items'),
     action: () => toggleOpen('items'),
@@ -364,7 +521,7 @@ const navigationItems = computed<NavigationItem[]>(() => [
       {
         name: 'public-items',
         to: { name: 'PublicItems' },
-        icon: Icons.SPARKLE,
+        icon: Icons.STAR,
         label: t('admin.navigation.items.publicItems'),
       },
     ],
@@ -467,6 +624,7 @@ const navigationItems = computed<NavigationItem[]>(() => [
     transition: background-color 0.2s;
     gap: var(--space-xs);
     cursor: pointer;
+    position: relative;
     &:hover:not(.admin-layout__nav-link--header) {
       background-color: color-mix(
         in srgb,
@@ -514,6 +672,16 @@ const navigationItems = computed<NavigationItem[]>(() => [
 
     &--active {
       transform: scale(1, -1);
+    }
+  }
+
+  &__quick-action {
+    margin-left: auto;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    
+    .admin-navigation__nav-link:hover & {
+      opacity: 1;
     }
   }
 }

@@ -73,6 +73,16 @@
             v-model="formData.is_active"
             :label="t('common.active')"
           />
+          
+          <TInputSelect v-if="selectedTemplate"
+            :inline="true"
+            v-model="selectedPageIds"
+            :label="t('admin.content.sections.addToPages')"
+            :options="pageOptions"
+            :placeholder="t('admin.content.sections.selectPagesPlaceholder')"
+            :multiple="true"
+            :hint="t('admin.content.sections.addToPagesHint')"
+          />
         </TFormGroup>
       </TCard>
 
@@ -283,6 +293,7 @@ import type {
   ContentSection,
   Language,
   ContentField,
+  ContentPage,
 } from '@tiko/core';
 import ItemsFieldInstance from './ItemsFieldInstance.vue';
 import MediaFieldInstance from './MediaFieldInstance.vue';
@@ -300,6 +311,7 @@ interface Props {
   onSave?: (
     data: Omit<ContentSection, 'id' | 'created_at' | 'updated_at'>,
     fieldValues?: Record<string, any>,
+    pageIds?: string[],
   ) => Promise<void>;
 }
 
@@ -318,8 +330,10 @@ const { t } = useI18n();
 
 // State
 const languages = ref<Language[]>([]);
+const pages = ref<ContentPage[]>([]);
 const templateFields = ref<ContentField[]>([]);
 const fieldValues = ref<Record<string, any>>({});
+const selectedPageIds = ref<string[]>([]);
 const formData = reactive({
   section_template_id: props.section?.section_template_id || '',
   name: props.section?.name || '',
@@ -362,6 +376,15 @@ const languageOptions = computed(() => {
   return options;
 });
 
+const pageOptions = computed(() => {
+  return pages.value
+    .map((page) => ({
+      value: page.id,
+      label: `${page.title} (${page.language_code.toUpperCase()})`,
+      description: page.full_path,
+    }));
+});
+
 // Computed property to ensure we always have a valid language code
 const validatedLanguageCode = computed({
   get() {
@@ -395,6 +418,15 @@ async function loadLanguages() {
     languages.value = await translationService.getActiveLanguages();
   } catch (error) {
     console.error('Failed to load languages:', error);
+  }
+}
+
+async function loadPages() {
+  try {
+    pages.value = await contentService.getPages();
+  } catch (error) {
+    console.error('Failed to load pages:', error);
+    pages.value = [];
   }
 }
 
@@ -614,8 +646,8 @@ async function handleSave() {
 
     // If onSave prop is provided, use it and wait for completion
     if (props.onSave) {
-      // Pass both section data and field values
-      await props.onSave(sectionData, fieldValues.value);
+      // Pass section data, field values, and selected page IDs
+      await props.onSave(sectionData, fieldValues.value, selectedPageIds.value);
 
       // Close the dialog after successful save
       emit('close');
@@ -647,11 +679,23 @@ watch(
 
 // Lifecycle
 onMounted(async () => {
-  loadLanguages();
+  // Load languages and pages in parallel
+  await Promise.all([
+    loadLanguages(),
+    loadPages()
+  ]);
 
   // If editing an existing section, load its template fields
   if (props.mode === 'edit' && props.section?.section_template_id) {
     await loadTemplateFields(props.section.section_template_id);
+    
+    // Load existing page associations
+    try {
+      const pageSections = await contentService.getPageSectionsBySectionId(props.section.id);
+      selectedPageIds.value = pageSections.map(ps => ps.page_id);
+    } catch (error) {
+      console.error('Failed to load page associations:', error);
+    }
   }
 
   // Mark initialization as complete after a short delay

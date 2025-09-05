@@ -2,7 +2,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "name": "yes-no",
   "projectType": "application",
-  "sourceRoot": "apps/yes-no/src",
+  "sourceRoot": "apps/todo/src",
   "targets": {
     "build": {
       "executor": "@nx/vite:build",

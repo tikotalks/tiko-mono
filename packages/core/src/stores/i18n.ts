@@ -371,9 +371,35 @@ export const useI18nStore = defineStore('i18n', () => {
   }
 
   /**
+   * Get the correct plural form based on count
+   */
+  function selectPluralForm(translation: string, count: number): string {
+    // Check if translation contains plural forms (separated by |)
+    if (!translation.includes('|')) {
+      return translation
+    }
+
+    // Split by | to get plural forms
+    const forms = translation.split('|').map(form => form.trim())
+    
+    // For now, use simple English pluralization rules
+    // TODO: Add proper plural rules based on locale
+    if (forms.length === 2) {
+      // Simple singular|plural
+      return count === 1 ? forms[0] : forms[1]
+    } else if (forms.length === 3) {
+      // zero|singular|plural
+      return count === 0 ? forms[0] : (count === 1 ? forms[1] : forms[2])
+    }
+    
+    // Default to last form for multiple
+    return forms[forms.length - 1]
+  }
+
+  /**
    * Translation function
    */
-  function t(key: string | any, params?: Record<string, any> | string): string {
+  function t(key: string | any, params?: Record<string, any> | string | number): string {
     // Ensure key is a string
     const keyStr = typeof key === 'string' ? key : String(key)
 
@@ -399,12 +425,31 @@ export const useI18nStore = defineStore('i18n', () => {
       return keyStr
     }
 
-    // Handle legacy string params as fallback
-    if (typeof params === 'string') {
-      return translation
+    // Handle count for pluralization
+    let selectedTranslation = translation
+    let interpolationParams = params
+    
+    if (typeof params === 'number') {
+      // If params is just a number, treat it as count
+      selectedTranslation = selectPluralForm(translation, params)
+      interpolationParams = { count: params }
+    } else if (params && typeof params === 'object' && 'count' in params) {
+      // If params has a count property, use it for pluralization
+      selectedTranslation = selectPluralForm(translation, params.count as number)
+      interpolationParams = params
     }
 
-    return interpolateParams(translation, params)
+    // Handle legacy string params as fallback
+    if (typeof params === 'string') {
+      return selectedTranslation
+    }
+
+    // Handle no params
+    if (!interpolationParams) {
+      return selectedTranslation
+    }
+
+    return interpolateParams(selectedTranslation, interpolationParams as Record<string, any>)
   }
 
   /**

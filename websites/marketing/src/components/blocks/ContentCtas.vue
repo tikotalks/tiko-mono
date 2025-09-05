@@ -1,12 +1,7 @@
 <template>
   <div :class="bemm('')" v-if="items">
-    <div :class="bemm('cta')">
-      <TButton
-        :color="cta.color.toLowerCase() || 'primary'"
-        size="large"
-        :icon="cta.icon"
-        @click="handleAction(cta)"
-        v-for="cta in items"
+    <div :class="bemm('cta')"   v-for="cta in items">
+      <TButton :color="cta.color.toLowerCase() || 'primary'" size="large" :icon="cta.icon" @click="handleAction(cta)"
       >
         {{ cta.label }}
       </TButton>
@@ -44,8 +39,8 @@ const handleAction = (cta: {
   } else if (cta.link.startsWith('router:')) {
     const route = cta.link.replace('router:', '');
     console.log('trying to go to', route)
-    router.push({ name: 'content', params: { view: route }});
-  } else if(cta.link.startsWith('mailto:')){
+    router.push({ name: 'content', params: { view: route } });
+  } else if (cta.link.startsWith('mailto:')) {
     window.location.href = cta.link;
   } else {
     // Handle internal actions
@@ -56,4 +51,10 @@ const handleAction = (cta: {
 const bemm = useBemm('content-ctas'); // Use bemm for styling
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.content-ctas {
+  display: flex;
+  gap: var(--space);
+  flex-wrap: wrap;
+}
+</style>

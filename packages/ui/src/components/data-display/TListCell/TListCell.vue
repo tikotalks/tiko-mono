@@ -275,7 +275,6 @@ const formatBytes = (bytes: number): string => {
 
   &__custom {
     width: 100%;
-    min-width: fit-content;
 
     &--truncate {
       overflow: hidden;

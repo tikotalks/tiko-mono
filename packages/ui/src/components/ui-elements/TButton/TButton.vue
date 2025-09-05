@@ -18,7 +18,7 @@
     <span v-if="count && count > -1" :class="bemm('count')">
       {{ count }}
     </span>
-    <TToolTip v-if="tooltipData" :content="tooltipData.value" :position="tooltipData.position" :disabled="!tooltip" :delay="tooltipData.delay"
+    <TToolTip v-if="tooltipData.value" :content="tooltipData.value" :position="tooltipData.position" :disabled="!tooltip" :delay="tooltipData.delay"
       :max-width="'200px'">
       {{ tooltipData.value }}
     </TToolTip>

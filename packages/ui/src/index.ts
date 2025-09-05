@@ -86,6 +86,7 @@ export { default as TImageInput } from './components/forms/TImageInput/TImageInp
 export { default as TForm } from './components/forms/TForm/TForm.vue';
 export { default as TFormActions } from './components/forms/TFormActions/TFormActions.vue';
 export { default as TTextarea } from './components/forms/TForm/inputs/TInputTextArea/TInputTextArea.vue';
+export { default as TInputDate } from './components/forms/TForm/InputDate.vue';
 export * from './components/forms/TRichTextEditor';
 
 // TrustCafe-style components with T prefix (temporarily disabled due to import issues)

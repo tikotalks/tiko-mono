@@ -94,6 +94,11 @@ const computedEnableParentMode = computed(() => {
 });
 
 const showTopBar = computed(()=>{
+  // First check if showHeader prop is explicitly set to false
+  if (props.showHeader === false) {
+    return false;
+  }
+
   if(props.config?.topBar){
     return props.config.topBar.show;
   } else {
@@ -144,6 +149,7 @@ const showTopBar = computed(()=>{
     width: 100%;
     position: relative;
     height: fit-content;
+    flex-grow: 1;
   }
 
   &__footer {

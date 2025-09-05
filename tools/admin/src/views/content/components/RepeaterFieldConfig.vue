@@ -94,7 +94,7 @@ interface RepeaterField {
   id: string
   label: string
   key: string
-  type: 'text' | 'textarea' | 'number' | 'boolean' | 'select' | 'media'
+  type: 'text' | 'textarea' | 'number' | 'boolean' | 'select' | 'media' | 'color'
   required: boolean
   options?: Array<{ value: string; label: string }>
 }
@@ -132,7 +132,8 @@ const fieldTypeOptions = computed(() => [
   { value: 'number', label: t('admin.content.field.types.number') },
   { value: 'boolean', label: t('admin.content.field.types.boolean') },
   { value: 'select', label: t('admin.content.field.types.select') },
-  { value: 'media', label: t('admin.content.field.types.media') }
+  { value: 'media', label: t('admin.content.field.types.media') },
+  { value: 'color', label: t('admin.content.field.types.color') }
 ])
 
 // Watch for changes and emit

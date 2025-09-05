@@ -396,7 +396,7 @@ export class ContentWorkerService {
   }
 
   async getNavigationMenuBySlug(slug: string, projectId?: string): Promise<any> {
-    return this.makeWorkerRequest('getNavigationMenuBySlug', { 0: slug, 1: projectId })
+    return this.makeWorkerRequest('getNavigationMenuBySlug', { slug, projectId })
   }
 
   async getNavigationItems(menuId: string): Promise<any[]> {

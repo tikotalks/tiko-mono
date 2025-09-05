@@ -26,6 +26,8 @@ const SectionTemplateDetailView = () => import('../views/content/SectionTemplate
 const SectionInstanceDetailView = () => import('../views/content/SectionInstanceDetailView.vue')
 const ContentPagesView = () => import('../views/content/PagesView.vue')
 const ContentPageDetailView = () => import('../views/content/PageDetailView.vue')
+const ContentNavigationView = () => import('../views/content/NavigationView.vue')
+const ContentArticlesView = () => import('../views/content/ArticlesView.vue')
 const ItemTemplateDetailView = () => import('../views/content/ItemTemplateDetailView.vue')
 const ItemsView = () => import('../views/content/ItemsView.vue')
 const ItemDetailView = () => import('../views/content/ItemDetailView.vue')
@@ -172,6 +174,16 @@ const router = createAppRouter({
           path: 'content/pages/:id',
           name: 'ContentPageDetail',
           component: ContentPageDetailView
+        },
+        {
+          path: 'content/navigation',
+          name: 'ContentNavigation',
+          component: ContentNavigationView
+        },
+        {
+          path: 'content/articles',
+          name: 'ContentArticles',
+          component: ContentArticlesView
         },
         {
           path: 'content/item-templates/:id',

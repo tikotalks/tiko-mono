@@ -6,6 +6,15 @@
       " :description="isEditMode ? section?.description : 'Create a new section instance'
         " :back-to="{ path: '/content/sections' }">
       <template #actions>
+        <TButton 
+          v-if="isEditMode"
+          color="error" 
+          type="outline"
+          :icon="Icons.MULTIPLY_M"
+          @click="handleDelete"
+        >
+          Delete
+        </TButton>
         <TButton color="primary" :status="saving ? 'loading' : 'idle'" :disabled="!canSave" @click="handleSave">
           {{ isEditMode ? 'Save Changes' : 'Create Section' }}
         </TButton>
@@ -118,13 +127,23 @@
 
           <TInputText :inline="true" v-model="formData.name" label="Name" placeholder="Enter section name" required />
 
-          <TInputText :inline="true" v-model="formData.slug" label="Slug" placeholder="Enter section slug" required />
+          <TInputText :inline="true" v-model="formData.slug" label="Slug" placeholder="Enter section slug" required @input="slugManuallyEdited = true" />
 
           <TInputTextArea :inline="true" v-model="formData.description" label="Description"
             placeholder="Enter section description" rows="3" />
 
           <TInputSelect :inline="true" v-model="formData.language_code" label="Language" :options="languageOptions"
             placeholder="Select language (optional for global)" />
+
+          <TInputSelect 
+            :inline="true" 
+            v-model="selectedPageIds" 
+            label="Add to Pages" 
+            :options="pageOptions"
+            :multiple="true"
+            placeholder="Select pages to add this section to"
+            :hint="isEditMode ? 'Add or remove this section from pages' : 'Select pages where this section will appear'"
+          />
 
           <TInputCheckbox v-model="formData.is_active" label="Active" help="Whether this section is active" />
         </TFormGroup>
@@ -150,14 +169,18 @@ import {
   TInputSelect,
   TColorPickerPopup,
   type ToastService,
+  type PopupService,
   TRichTextEditor,
+  ConfirmDialog,
 } from '@tiko/ui';
 import { contentService, translationService, useI18n } from '@tiko/core';
+import { Icons } from 'open-icon';
 import type {
   SectionTemplate,
   ContentSection,
   Language,
   ContentField,
+  ContentPage,
 } from '@tiko/core';
 import AdminPageHeader from '@/components/AdminPageHeader.vue';
 import ItemsFieldInstance from './components/ItemsFieldInstance.vue';
@@ -170,6 +193,7 @@ const router = useRouter();
 const bemm = useBemm('section-instance-detail-view');
 const { t } = useI18n();
 const toastService = inject<ToastService>('toastService');
+const popupService = inject<PopupService>('popupService');
 
 // State
 const loading = ref(true);
@@ -177,6 +201,8 @@ const saving = ref(false);
 const section = ref<ContentSection | null>(null);
 const templates = ref<SectionTemplate[]>([]);
 const languages = ref<Language[]>([]);
+const pages = ref<ContentPage[]>([]);
+const selectedPageIds = ref<string[]>([]);
 const templateFields = ref<ContentField[]>([]);
 
 // Computed
@@ -195,6 +221,7 @@ const formData = reactive({
 });
 
 const fieldValues = ref<Record<string, any>>({});
+const slugManuallyEdited = ref(false);
 
 // Original values for change tracking
 const originalFormData = ref<typeof formData>({
@@ -221,6 +248,15 @@ const languageOptions = computed(() => [
     label: `${lang.name} (${lang.code})`,
   })),
 ]);
+
+const pageOptions = computed(() => {
+  return pages.value
+    .map((page) => ({
+      value: page.id,
+      label: `${page.title} (${page.language_code.toUpperCase()})`,
+      description: page.full_path,
+    }));
+});
 
 const selectedTemplate = computed(() =>
   templates.value.find((t) => t.id === formData.section_template_id),
@@ -269,18 +305,39 @@ const canSave = computed(() => {
 
 // Removed debug watcher to prevent performance issues
 
+// Watch for name changes to auto-generate slug
+watch(() => formData.name, (newName) => {
+  // Only auto-generate if user hasn't manually edited the slug and we're in create mode
+  if (!slugManuallyEdited.value && !isEditMode.value) {
+    formData.slug = newName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+  }
+});
+
+// Ensure selectedPageIds is always an array
+watch(selectedPageIds, (newValue) => {
+  if (!Array.isArray(newValue)) {
+    console.warn('selectedPageIds is not an array, converting:', newValue);
+    selectedPageIds.value = newValue ? [newValue] : [];
+  }
+}, { immediate: true });
+
 // Methods
 async function loadData() {
   loading.value = true;
   try {
-    // Load templates and languages in parallel
-    const [templatesData, languagesData] = await Promise.all([
+    // Load templates, languages, and pages in parallel
+    const [templatesData, languagesData, pagesData] = await Promise.all([
       contentService.getSectionTemplates(),
       translationService.getActiveLanguages(),
+      contentService.getPages(),
     ]);
 
     templates.value = templatesData;
     languages.value = languagesData;
+    pages.value = pagesData;
 
     // If editing, load the section
     if (isEditMode.value) {
@@ -323,10 +380,21 @@ async function loadSection() {
 
     // Store original form data for change tracking
     originalFormData.value = { ...formDataValues };
+    
+    // Set slugManuallyEdited to true when editing
+    slugManuallyEdited.value = true;
 
     // Load template fields and section data
     await loadTemplateFields(section.value.section_template_id);
     await loadSectionData();
+    
+    // Load page associations
+    try {
+      const usage = await contentService.getSectionUsage(sectionId.value);
+      selectedPageIds.value = usage.map(u => u.page_id);
+    } catch (error) {
+      console.error('Failed to load page associations:', error);
+    }
   } catch (error) {
     console.error('Failed to load section:', error);
     toastService?.show({
@@ -440,6 +508,73 @@ async function onTemplateChange() {
   }
 }
 
+async function addSectionToPages(sectionId: string, pageIds: string[] | string) {
+  try {
+    // Ensure pageIds is always an array
+    const pageIdArray = Array.isArray(pageIds) ? pageIds : [pageIds];
+    
+    // Process each page
+    const promises = pageIdArray.map(async (pageId) => {
+      // Get current sections for this page
+      const existingSections = await contentService.getPageSections(pageId);
+      
+      // Create new section entry
+      const newSection = {
+        page_id: pageId,
+        section_id: sectionId,
+        section_template_id: formData.section_template_id,
+        order_index: existingSections.length,
+        override_name: formData.name
+      };
+      
+      // Add the new section to existing ones
+      const updatedSections = [...existingSections, newSection];
+      
+      // Update the page with all sections
+      await contentService.setPageSections(pageId, updatedSections);
+    });
+    
+    await Promise.all(promises);
+  } catch (error) {
+    console.error('Failed to add section to pages:', error);
+    throw error;
+  }
+}
+
+async function updatePageAssociations(sectionId: string) {
+  try {
+    // Get current page associations
+    const currentUsage = await contentService.getSectionUsage(sectionId);
+    const currentPageIds = currentUsage.map(u => u.page_id);
+    
+    // Find pages to add and remove
+    const pagesToAdd = selectedPageIds.value.filter(id => !currentPageIds.includes(id));
+    const pagesToRemove = currentPageIds.filter(id => !selectedPageIds.value.includes(id));
+    
+    // Remove from pages
+    for (const pageId of pagesToRemove) {
+      const existingSections = await contentService.getPageSections(pageId);
+      const filteredSections = existingSections.filter(s => s.section_id !== sectionId);
+      
+      // Re-index the remaining sections
+      const reindexedSections = filteredSections.map((s, index) => ({
+        ...s,
+        order_index: index
+      }));
+      
+      await contentService.setPageSections(pageId, reindexedSections);
+    }
+    
+    // Add to new pages
+    if (pagesToAdd.length > 0) {
+      await addSectionToPages(sectionId, pagesToAdd);
+    }
+  } catch (error) {
+    console.error('Failed to update page associations:', error);
+    throw error;
+  }
+}
+
 async function handleSave() {
   if (!isValid.value) return;
 
@@ -478,6 +613,9 @@ async function handleSave() {
         );
       }
 
+      // Update page associations if changed
+      await updatePageAssociations(sectionId.value);
+
       toastService?.show({
         message: 'Section updated successfully',
         type: 'success',
@@ -493,6 +631,12 @@ async function handleSave() {
           fieldValues.value,
           formData.language_code || null,
         );
+      }
+
+      // Add section to selected pages
+      if (selectedPageIds.value && selectedPageIds.value.length > 0) {
+        console.log('Selected page IDs:', selectedPageIds.value, 'Type:', typeof selectedPageIds.value);
+        await addSectionToPages(savedSection.id, selectedPageIds.value);
       }
 
       toastService?.show({
@@ -520,6 +664,63 @@ async function handleSave() {
   } finally {
     saving.value = false;
   }
+}
+
+async function handleDelete() {
+  if (!section.value) return;
+
+  // Check if section is in use
+  const usage = await contentService.getSectionUsage(section.value.id);
+  
+  let message = t('admin.content.sections.deleteInstanceMessage', 
+    { name: section.value.name },
+    `Are you sure you want to delete "${section.value.name}"?`);
+  
+  if (usage.length > 0) {
+    const pageList = usage.map(u => u.page_title).join(', ');
+    message = t('admin.content.sections.deleteInstanceInUseMessage',
+      { name: section.value.name, count: usage.length, pages: pageList },
+      `"${section.value.name}" is currently used on ${usage.length} page(s): ${pageList}. You must remove it from these pages before deleting.`);
+  }
+
+  popupService?.open({
+    component: ConfirmDialog,
+    props: {
+      title: t('admin.content.sections.deleteInstanceConfirm', 'Delete Section Instance'),
+      message,
+      confirmLabel: t('common.delete'),
+      cancelLabel: t('common.cancel'),
+      confirmColor: 'error',
+      confirmDisabled: usage.length > 0,
+      icon: usage.length > 0 ? Icons.ALERT_TRIANGLE : Icons.ALERT_CIRCLE,
+      onConfirm: async () => {
+        try {
+          await contentService.deleteSection(section.value!.id);
+          toastService?.show({
+            message: t('admin.content.sections.instanceDeleteSuccess', 'Section deleted successfully'),
+            type: 'success'
+          });
+          router.push('/content/sections');
+        } catch (error: any) {
+          console.error('Failed to delete section:', error);
+          
+          if (error?.message?.includes('foreign key constraint') || error?.message?.includes('409')) {
+            toastService?.show({
+              message: t('admin.content.sections.instanceInUse',
+                'This section is currently used on pages. Remove it from all pages before deleting.'),
+              type: 'warning',
+              duration: 5000
+            });
+          } else {
+            toastService?.show({
+              message: t('admin.content.sections.instanceDeleteError', 'Failed to delete section'),
+              type: 'error'
+            });
+          }
+        }
+      }
+    }
+  });
 }
 
 // Lifecycle

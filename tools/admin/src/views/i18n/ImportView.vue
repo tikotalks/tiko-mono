@@ -640,7 +640,6 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: var(--space-xl);
-  padding: var(--space-xl);
 
   &__header {
     display: flex;

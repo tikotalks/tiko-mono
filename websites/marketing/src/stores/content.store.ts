@@ -25,6 +25,9 @@ export const useContentStore = defineStore('content', () => {
     deployedVersionId: import.meta.env.VITE_DEPLOYED_VERSION_ID,
     noCache: false
   })
+  
+  // Debug what methods are available
+  console.log('[ContentStore] Available methods on content:', Object.keys(content))
 
   // State
   const currentProject = ref<ContentProject | null>(null)

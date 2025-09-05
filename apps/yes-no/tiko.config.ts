@@ -6,7 +6,7 @@ export default defineConfig({
   name: 'Yes-No',
   icon: {
     mediaId: '07eb3cb4-cd71-49c5-8498-ee1e8a3ab7f5',
-    color: BaseColors.NAVY,
+    color: BaseColors.BLUE_DARK,
   },
   description: 'Simple yes/no decision maker app',
   theme: {

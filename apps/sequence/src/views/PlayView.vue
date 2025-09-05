@@ -76,7 +76,7 @@ onMounted(async () => {
     // Make sure all sequences are loaded first
     const { currentLocale } = useI18n();
     await sequenceStore.loadAllSequence(currentLocale.value);
-    
+
     // Then start play mode
     await sequenceStore.startPlay(sequenceId.value);
   }
@@ -89,20 +89,20 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: var(--spacing-md);
-    gap: var(--spacing-md);
+    padding: var(--space-md);
+    gap: var(--space-md);
     overflow: hidden; // Prevent scrollbars
   }
 
   &__breadcrumbs {
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: var(--space-xs);
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
     overflow-x: auto;
     white-space: nowrap;
-    padding-bottom: var(--spacing-sm);
+    padding-bottom: var(--space-sm);
     border-bottom: 1px solid var(--color-accent);
   }
 

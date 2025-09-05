@@ -7,7 +7,6 @@
     <TFramework
       v-else
       :config="frameworkConfig"
-      :background-image="backgroundImage"
       :loading="loading"
     >
       <router-view />
@@ -16,11 +15,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { TFramework, type FrameworkConfig } from '@tiko/ui'
 import tikoConfig from '../tiko.config'
-import backgroundImage from './assets/app-icon-yes-no.png'
 import { useI18n } from '@tiko/core'
 
 const route = useRoute()

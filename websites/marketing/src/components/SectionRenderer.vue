@@ -75,6 +75,15 @@ const sectionComponents = {
   'tile-gallery': defineAsyncComponent(
     () => import('./sections/ImageStreamSection.vue'),
   ),
+  articles: defineAsyncComponent(
+    () => import('./sections/ArticlesSection.vue'),
+  ),
+  'article-overview': defineAsyncComponent(
+    () => import('./sections/ArticlesSection.vue'),
+  ),
+  'article-detail': defineAsyncComponent(
+    () => import('./sections/ArticleDetailSection.vue'),
+  ),
 };
 
 // Get section type from slug or name

@@ -1,5 +1,5 @@
 <template>
-  <section :id="section?.slug" :class="bemm()" :style="`--image: url(${imageUrl}); --section-color: ${content.color || 'var(--color-primary)'};`">
+  <section :id="section?.slug" :class="bemm()" :style="`--image: url(${imageUrl}); --section-color: var(--color-${content.color || 'primary'});`">
     <div :class="bemm('container')">
       <h1
         v-if="content?.title"

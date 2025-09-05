@@ -15,15 +15,17 @@
       </div>
     </div>
 
-    <div :class="bemm('container')" v-else>
-      <div :class="bemm('image', ['', imageUrl ? 'has-image' : 'no-image'])">
-        <img v-if="imageUrl" :src="imageUrl" alt="Section Image" />
-      </div>
+    <div :class="bemm('wrapper')" v-else>
+      <div :class="bemm('container')">
+        <div :class="bemm('image', ['', imageUrl ? 'has-image' : 'no-image'])">
+          <img v-if="imageUrl" :src="imageUrl" alt="Section Image" />
+        </div>
 
-      <div :class="bemm('content')">
-        <h2 v-if="content?.title" :class="bemm('title')" v-html="processTitle(content.title)" />
-        <TMarkdownRenderer v-if="content?.content" :class="bemm('markdown')" :content="content.content" />
-        <ContentCtas :items="content.cta" v-if="content.cta && content.cta.length" />
+        <div :class="bemm('content')">
+          <h2 v-if="content?.title" :class="bemm('title')" v-html="processTitle(content.title)" />
+          <TMarkdownRenderer v-if="content?.content" :class="bemm('markdown')" :content="content.content" />
+          <ContentCtas :items="content.cta" v-if="content.cta && content.cta.length" />
+        </div>
       </div>
     </div>
 
@@ -146,7 +148,7 @@ onMounted(async () => {
     display: flex;
     position: relative;
     flex-direction: var(--column-flex-direction);
-    padding: var(--spacing);
+
 
     @media (max-width: 720px) {
       width: 100%;
@@ -156,18 +158,21 @@ onMounted(async () => {
 
   &--background {
 
-    #{$b}__wrapper,
-    #{$b}__container {
-      padding: var(--spacing);
+    #{$b}__wrapper{
+      background-color: color-mix(in srgb, var(--section-color), transparent 25%);
     }
 
     #{$b}__container {
-      background-color: color-mix(in srgb, var(--section-color), transparent 25%);
+
+      padding: 0;
     }
+
+
   }
 
   &--blocked {
     #{$b}__container {
+      padding: var(--spacing);
       border-radius: var(--border-radius);
       background-color: color-mix(in srgb, var(--section-color), transparent 25%);
     }
@@ -226,7 +231,7 @@ onMounted(async () => {
     font-size: clamp(3em, 4vw, 6em);
     line-height: 1;
     font-family: var(--header-font-family);
-    color: var(--section-color);
+    color: color-mix(in srgb, var(--section-color), var(--color-foreground) 50%);
     text-align: var(--column-content-text-align);
     width: 100%;
 

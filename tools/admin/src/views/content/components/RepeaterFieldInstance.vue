@@ -93,6 +93,20 @@
                 is_required: schemaField.required
               }" :model-value="item[schemaField.key]"
                 @update:model-value="updateItemField(index, schemaField.key, $event)" />
+
+              <!-- Color -->
+              <div v-else-if="schemaField.type === 'color'" :class="bemm('color-field')">
+                <label :class="bemm('field-label')">
+                  {{ schemaField.label }}
+                  <span v-if="schemaField.required">*</span>
+                </label>
+                <TColorPickerPopup
+                  :model-value="item[schemaField.key] || ''"
+                  @update:model-value="updateItemField(index, schemaField.key, $event)"
+                  :inline="true"
+                  :placeholder="`Select ${schemaField.label.toLowerCase()}`"
+                />
+              </div>
             </div>
           </TFormGroup>
         </TCard>
@@ -116,6 +130,7 @@ import {
   TInputCheckbox,
   TInputSelect,
   TDraggableList,
+  TColorPickerPopup,
   Colors
 } from '@tiko/ui'
 import { Icons } from 'open-icon'
@@ -129,7 +144,7 @@ interface RepeaterField {
   id: string
   label: string
   key: string
-  type: 'text' | 'textarea' | 'number' | 'boolean' | 'select' | 'media'
+  type: 'text' | 'textarea' | 'number' | 'boolean' | 'select' | 'media' | 'color'
   required: boolean
   options?: Array<{ value: string; label: string }>
 }
@@ -216,6 +231,9 @@ function createEmptyItem(): Record<string, any> {
         break
       case 'media':
         item[field.key] = null
+        break
+      case 'color':
+        item[field.key] = 'primary'
         break
     }
   })
@@ -332,6 +350,22 @@ function getItemPreview(item: Record<string, any>): string {
       margin-bottom: 0;
     }
   }
+  
+  &__field-label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: var(--space-xs);
+    color: var(--color-foreground);
+    
+    span {
+      color: var(--color-error);
+    }
+  }
+  
+  &__color-field {
+    margin-bottom: var(--space);
+  }
+  
   &__actions{
     width: 100%;
   }

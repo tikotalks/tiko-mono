@@ -319,6 +319,8 @@ onBeforeUnmount(() => {
   flex-direction: column;
   gap: var(--space-xs);
 
+  user-select: all;
+
   &__label {
     font-size: var(--font-size-sm);
     font-weight: 500;
@@ -418,6 +420,7 @@ onBeforeUnmount(() => {
   &__editor {
     overflow-y: auto;
     padding: var(--space);
+    background-color: color-mix(in srgb, var(--color-foreground), transparent 95%);
 
     .ProseMirror {
       min-height: 100px;

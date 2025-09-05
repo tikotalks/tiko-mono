@@ -114,7 +114,7 @@ const handleInputChange = (e: Event) => {
 		height: var(--input-radio-size);
 		display: flex;
 		align-items: center;
-		gap: var(--spacing-xs);
+		gap: var(--space-xs);
 		justify-content: row-reverse;
 	}
 
@@ -177,7 +177,7 @@ const handleInputChange = (e: Event) => {
 	}
 
 	&__label {
-		margin-left: var(--spacing-xs);
+		margin-left: var(--space-xs);
 		font-size: 0.875em;
 		cursor: pointer;
 	}

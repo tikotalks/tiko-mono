@@ -144,6 +144,7 @@ const toastService = inject<ToastService>('toastService')
 
 // State
 const templates = ref<PageTemplate[]>([])
+const slugManuallyEdited = ref(props.mode === 'edit')
 const formData = reactive({
   title: props.page?.title || '',
   slug: props.page?.slug || '',
@@ -215,6 +216,17 @@ const isValid = computed(() => {
          !Object.values(errors).some(error => error !== '')
 })
 
+// Watch for title changes to auto-generate slug
+watch(() => formData.title, (newTitle) => {
+  // Only auto-generate if user hasn't manually edited the slug
+  if (!slugManuallyEdited.value && props.mode === 'create') {
+    formData.slug = newTitle
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+  }
+})
+
 // Methods
 async function loadTemplates() {
   try {
@@ -230,13 +242,8 @@ async function loadTemplates() {
 }
 
 async function handleSlugInput() {
-  // Auto-generate slug from title if empty
-  if (!formData.slug && formData.title) {
-    formData.slug = formData.title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '')
-  }
+  // Mark that user has manually edited the slug
+  slugManuallyEdited.value = true
 
   // Validate slug format (alphanumeric and hyphens only)
   if (formData.slug && !/^[a-z0-9-]*$/.test(formData.slug)) {

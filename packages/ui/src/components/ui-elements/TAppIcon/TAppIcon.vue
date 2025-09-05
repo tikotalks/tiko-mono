@@ -1,6 +1,6 @@
 <template>
   <div
-    :class="bemm('', ['',size])"
+    :class="bemm('', ['',size, appStatus])"
     :style="`--app-color: var(--color-${color});`"
   >
     <img
@@ -24,6 +24,13 @@ import { useBemm } from 'bemm'
 import { useImageResolver } from '@tiko/core'
 import TIcon from '../TIcon/TIcon.vue'
 import type { BaseColors } from '@tiko/ui'
+import { useRoute } from 'vue-router'
+
+const route = useRoute();
+
+const appStatus = computed(()=>{
+  return route.query.appStatus ? (route.query.appStatus as string) : 'default';
+})
 
 export interface TAppIconProps {
   imageId?: string
@@ -98,6 +105,10 @@ watch(() => props.imageId, () => {
   background-color: var(--app-color);
   overflow: hidden;
   position: relative;
+
+  &--gold{
+    box-shadow: 0 0 4px 4px gold;
+  }
 
   &--auto{
     width: 100%;

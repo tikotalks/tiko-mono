@@ -3,9 +3,11 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
-    },
-    "types": ["vite/client"]
+      "@/*": ["src/*"],
+      "@tiko/ui": ["../../packages/ui/src"],
+      "@tiko/core": ["../../packages/core/src"]
+    }
   },
-  "include": ["src/**/*", "vite.config.ts", "tiko.config.ts", "src/**/*.d.ts"]
+  "include": ["src/**/*", "index.html"],
+  "exclude": ["dist", "node_modules"]
 }

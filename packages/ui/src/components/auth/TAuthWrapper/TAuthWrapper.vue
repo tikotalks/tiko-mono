@@ -27,12 +27,11 @@
     <!-- Login Form within App Layout -->
     <TAppLayout
       v-else-if="requireAuth && !isAuthenticated && !isAuthCallbackRoute && !isInitializing"
-      :title="t('auth.welcomeToTiko')"
-      :subtitle="t('auth.signInToAccess')"
+      :title="title"
       :showHeader="false"
+      :class="bemm('login-layout')"
       data-cy="auth-app-layout"
     >
-      <div :class="bemm('title')" v-if="title">{{title}}</div>
       <div :class="bemm('login')" data-cy="login-container">
         <TLoginForm
           :is-loading="authLoading"
@@ -71,7 +70,7 @@ import type { TAuthWrapperProps } from './TAuthWrapper.model'
 
 const props = withDefaults(defineProps<TAuthWrapperProps>(), {
   backgroundImage: '',
-  title: 'Welcome to Tiko',
+  title: 'Welcome',
   appName: 'todo',
   isApp: true,
   requireAuth: true,
@@ -474,6 +473,21 @@ onMounted(async () => {
         transform: translateY(0);
         opacity: 1;
       }
+    }
+  }
+
+  &__login-layout {
+    .app-layout {
+      width: fit-content;
+      max-width: 90vw;
+      margin: auto;
+    }
+    
+    .app-layout__content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
     }
   }
 

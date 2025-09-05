@@ -13,7 +13,7 @@
           {{ t('admin.i18n.addKeyLabel') }}
         </TButton>
         <TButton
-          @click="showAddLanguageDialog = true"
+          @click="openAddLanguageDialog"
           :icon="Icons.ADD_M"
           color="primary"
         >
@@ -157,95 +157,11 @@
         </TListItem>
       </TList>
     </div>
-
-    <!-- Upload Modal -->
-    <TPopupWrapper
-      v-if="uploadLanguage"
-      :title="
-        t('admin.i18n.languages.uploadTitle', { language: uploadLanguage.name })
-      "
-      @close="uploadLanguage = null"
-    >
-      <template #trigger> hi </template>
-      <template #content>
-        <div :class="bemm('upload-modal')">
-          <input
-            type="file"
-            accept=".json"
-            @change="handleLanguageFileUpload"
-            :class="bemm('upload-input')"
-            ref="languageFileInput"
-          />
-          <TButton
-            @click="$refs.languageFileInput.click()"
-            :icon="Icons.ARROW_UP"
-            color="primary"
-            :class="bemm('upload-button')"
-          >
-            {{ t('admin.i18n.languages.selectFile') }}
-          </TButton>
-
-          <div v-if="uploadStatus" :class="bemm('upload-status')">
-            <p>{{ uploadStatus }}</p>
-            <TProgressBar v-if="uploadProgress > 0" :value="uploadProgress" />
-          </div>
-        </div>
-      </template>
-    </TPopupWrapper>
-
-    <!-- Add Language Dialog -->
-    <TPopupWrapper
-      v-if="showAddLanguageDialog"
-      :title="t('admin.i18n.languages.addLanguage')"
-      @close="showAddLanguageDialog = false"
-    >
-      <template #trigger> hi </template>
-      <template #content>
-        <div :class="bemm('add-language-form')">
-          <TInputText
-            v-model="newLanguage.code"
-            :label="t('admin.i18n.languages.languageCode')"
-            :placeholder="t('admin.i18n.languages.languageCodePlaceholder')"
-            :class="bemm('form-field')"
-          />
-          <TInputText
-            v-model="newLanguage.name"
-            :label="t('admin.i18n.languages.languageName')"
-            :placeholder="t('admin.i18n.languages.languageNamePlaceholder')"
-            :class="bemm('form-field')"
-          />
-          <TInputText
-            v-model="newLanguage.native_name"
-            :label="t('admin.i18n.languages.nativeName')"
-            :placeholder="t('admin.i18n.languages.nativeNamePlaceholder')"
-            :class="bemm('form-field')"
-          />
-
-          <div :class="bemm('form-actions')">
-            <TButton type="ghost" @click="showAddLanguageDialog = false">
-              {{ t('common.cancel') }}
-            </TButton>
-            <TButton
-              color="primary"
-              @click="addLanguage"
-              :disabled="!newLanguage.code || !newLanguage.name"
-            >
-              {{ t('common.add') }}
-            </TButton>
-          </div>
-        </div>
-      </template>
-    </TPopupWrapper>
-
-    <!-- Add Key Dialog -->
-    <div v-if="showAddKeyDialog">
-      <!-- Using a div wrapper to trigger the popup programmatically -->
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, inject, computed } from 'vue';
+import { ref, onMounted, inject, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useBemm } from 'bemm';
 import {
@@ -256,7 +172,6 @@ import {
   TButtonGroup,
   TInputText,
   TSpinner,
-  TPopupWrapper,
   TProgressBar,
   TChip,
   Colors,
@@ -290,7 +205,6 @@ const totalKeys = ref(0);
 const uploadLanguage = ref<Language | null>(null);
 const uploadStatus = ref('');
 const uploadProgress = ref(0);
-const showAddLanguageDialog = ref(false);
 const showAddKeyDialog = ref(false);
 const loading = ref(false);
 const error = ref<string | null>(null);
@@ -460,10 +374,91 @@ function getCoverageColor(percent: number): Colors {
   return Colors.ERROR;
 }
 
-function uploadForLanguage(language: Language) {
+async function uploadForLanguage(language: Language) {
   uploadLanguage.value = language;
   uploadStatus.value = '';
   uploadProgress.value = 0;
+
+  if (!popupService) {
+    console.error('Popup service not available');
+    return;
+  }
+
+  // Create a component for the upload dialog
+  const UploadDialog = {
+    template: `
+      <div class="i18n-languages-view__upload-modal">
+        <input
+          type="file"
+          accept=".json"
+          @change="handleFileUpload"
+          class="i18n-languages-view__upload-input"
+          ref="fileInput"
+          style="display: none;"
+        />
+        <TButton
+          @click="triggerFileInput"
+          :icon="Icons.ARROW_UP"
+          color="primary"
+          class="i18n-languages-view__upload-button"
+        >
+          {{ t('admin.i18n.languages.selectFile') }}
+        </TButton>
+
+        <div v-if="localUploadStatus" class="i18n-languages-view__upload-status">
+          <p>{{ localUploadStatus }}</p>
+          <TProgressBar v-if="localUploadProgress > 0" :value="localUploadProgress" />
+        </div>
+      </div>
+    `,
+    components: { TButton, TProgressBar },
+    setup() {
+      const fileInput = ref(null);
+      const localUploadStatus = ref(uploadStatus.value);
+      const localUploadProgress = ref(uploadProgress.value);
+
+      const triggerFileInput = () => {
+        if (fileInput.value) {
+          fileInput.value.click();
+        }
+      };
+
+      const handleFileUpload = async (event: Event) => {
+        await handleLanguageFileUpload(event);
+        // Update local refs
+        localUploadStatus.value = uploadStatus.value;
+        localUploadProgress.value = uploadProgress.value;
+      };
+
+      // Watch for changes in parent component
+      watch(uploadStatus, (newVal) => {
+        localUploadStatus.value = newVal;
+      });
+      watch(uploadProgress, (newVal) => {
+        localUploadProgress.value = newVal;
+      });
+
+      return {
+        fileInput,
+        triggerFileInput,
+        handleFileUpload,
+        localUploadStatus,
+        localUploadProgress,
+        t,
+        Icons
+      };
+    }
+  };
+
+  popupService.open({
+    component: UploadDialog,
+    title: t('admin.i18n.languages.uploadTitle', { language: language.name }),
+    onClose: () => {
+      uploadLanguage.value = null;
+      uploadStatus.value = '';
+      uploadProgress.value = 0;
+    }
+  });
 }
 
 async function handleLanguageFileUpload(event: Event) {
@@ -502,6 +497,13 @@ async function handleLanguageFileUpload(event: Event) {
     // Reload languages to update coverage
     await loadLanguages();
 
+    // Show success message
+    toastService?.show({
+      message: uploadStatus.value,
+      type: 'success',
+      duration: 3000
+    });
+
     // Close modal after success
     setTimeout(() => {
       uploadLanguage.value = null;
@@ -538,24 +540,109 @@ async function toggleLanguageStatus(language: Language) {
   }
 }
 
-async function addLanguage() {
-  try {
-    await translationService.createLanguage({
-      code: newLanguage.value.code,
-      name: newLanguage.value.name,
-      native_name: newLanguage.value.native_name || newLanguage.value.name,
-      is_active: true,
-    });
-
-    // Reset form
-    newLanguage.value = { code: '', name: '', native_name: '' };
-    showAddLanguageDialog.value = false;
-
-    // Reload languages
-    await loadLanguages();
-  } catch (error) {
-    console.error('Failed to add language:', error);
+async function openAddLanguageDialog() {
+  if (!popupService) {
+    console.error('Popup service not available');
+    return;
   }
+
+  // Reset form
+  newLanguage.value = { code: '', name: '', native_name: '' };
+
+  // Create a component for the add language dialog
+  const AddLanguageDialog = {
+    template: `
+      <div class="i18n-languages-view__add-language-form">
+        <TInputText
+          v-model="localNewLanguage.code"
+          :label="t('admin.i18n.languages.languageCode')"
+          :placeholder="t('admin.i18n.languages.languageCodePlaceholder')"
+          class="i18n-languages-view__form-field"
+        />
+        <TInputText
+          v-model="localNewLanguage.name"
+          :label="t('admin.i18n.languages.languageName')"
+          :placeholder="t('admin.i18n.languages.languageNamePlaceholder')"
+          class="i18n-languages-view__form-field"
+        />
+        <TInputText
+          v-model="localNewLanguage.native_name"
+          :label="t('admin.i18n.languages.nativeName')"
+          :placeholder="t('admin.i18n.languages.nativeNamePlaceholder')"
+          class="i18n-languages-view__form-field"
+        />
+
+        <div class="i18n-languages-view__form-actions">
+          <TButton type="ghost" @click="handleCancel">
+            {{ t('common.cancel') }}
+          </TButton>
+          <TButton
+            color="primary"
+            @click="handleSave"
+            :disabled="!localNewLanguage.code || !localNewLanguage.name"
+          >
+            {{ t('common.add') }}
+          </TButton>
+        </div>
+      </div>
+    `,
+    components: { TInputText, TButton },
+    emits: ['close'],
+    setup(props, { emit }) {
+      const localNewLanguage = ref({
+        code: newLanguage.value.code,
+        name: newLanguage.value.name,
+        native_name: newLanguage.value.native_name
+      });
+
+      const handleCancel = () => {
+        emit('close');
+      };
+
+      const handleSave = async () => {
+        try {
+          await translationService.createLanguage({
+            code: localNewLanguage.value.code,
+            name: localNewLanguage.value.name,
+            native_name: localNewLanguage.value.native_name || localNewLanguage.value.name,
+            is_active: true,
+          });
+
+          // Show success message
+          toastService?.show({
+            message: t('admin.i18n.languages.addSuccess'),
+            type: 'success',
+            duration: 3000
+          });
+
+          // Reload languages
+          await loadLanguages();
+
+          // Close dialog
+          emit('close');
+        } catch (error) {
+          console.error('Failed to add language:', error);
+          toastService?.show({
+            message: t('admin.i18n.languages.addError', { error: error.message || 'Unknown error' }),
+            type: 'error',
+            duration: 5000
+          });
+        }
+      };
+
+      return {
+        localNewLanguage,
+        handleCancel,
+        handleSave,
+        t
+      };
+    }
+  };
+
+  const dialog = popupService.open({
+    component: AddLanguageDialog,
+    title: t('admin.i18n.languages.addLanguage')
+  });
 }
 
 // Open Add Key Dialog

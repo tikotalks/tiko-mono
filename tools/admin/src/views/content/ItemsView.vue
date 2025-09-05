@@ -623,7 +623,7 @@ onMounted(() => {
 
   display: flex;
   flex-direction: column;
-  gap: var(--spacing);
+  gap: var(--space);
 
   &__section {
     margin-top: var(--space-lg);
@@ -655,7 +655,7 @@ onMounted(() => {
   }
 
   &__list {
-    margin-top: var(--space);
+    width: 100%;
   }
 
   &__item-name {

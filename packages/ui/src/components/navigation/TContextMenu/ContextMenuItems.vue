@@ -215,8 +215,6 @@ const handleClick = (event: Event, item: ContextMenuItem) => {
         border-radius: var(--border-radius, 4px);
         position: relative;
 
-        --button-color-text: red;
-
         &:hover {
             .icon{
                 color: var(--color-primary);

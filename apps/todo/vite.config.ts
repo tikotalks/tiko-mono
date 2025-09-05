@@ -8,12 +8,12 @@ const pwaConfig = {
   registerType: 'autoUpdate',
   includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
   manifest: {
-    name: 'Todo - Tiko',
-    short_name: 'Todo',
-    description: 'Visual todo list app with groups and items',
-    theme_color: '#3b82f6',
+    name: 'Type - Tiko',
+    short_name: 'Type',
+    description: 'Text-to-speech communication app',
+    theme_color: '#667eea',
     background_color: '#ffffff',
-    display: 'standalone' as 'standalone',
+    display: 'standalone',
     orientation: 'portrait',
     scope: '/',
     start_url: '/',
@@ -40,8 +40,6 @@ const pwaConfig = {
 
 export default createViteConfig({
   dirname: __dirname,
-  port: 3007,
-  pwaConfig,
-  appName: 'todo',
-  i18nConfig: {}
+  por: 3002,
+  pwaConfig
 })

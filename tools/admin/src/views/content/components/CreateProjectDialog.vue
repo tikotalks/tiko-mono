@@ -83,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useBemm } from 'bemm'
 import {
   TButton,
@@ -115,6 +115,7 @@ const { t } = useI18n()
 
 // State
 const availableLanguages = ref<Language[]>([])
+const slugManuallyEdited = ref(props.mode === 'edit')
 const formData = reactive({
   name: props.project?.name || '',
   slug: props.project?.slug || '',
@@ -150,6 +151,17 @@ const isValid = computed(() => {
          !Object.values(errors).some(error => error !== '')
 })
 
+// Watch for name changes to auto-generate slug
+watch(() => formData.name, (newName) => {
+  // Only auto-generate if user hasn't manually edited the slug
+  if (!slugManuallyEdited.value && props.mode === 'create') {
+    formData.slug = newName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+  }
+})
+
 // Methods
 async function loadLanguages() {
   try {
@@ -160,16 +172,11 @@ async function loadLanguages() {
 }
 
 function handleSlugInput() {
-  // Auto-generate slug from name if in create mode
-  if (props.mode === 'create' && !formData.slug) {
-    formData.slug = formData.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '')
-  }
+  // Mark that user has manually edited the slug
+  slugManuallyEdited.value = true
 
   // Validate slug format
-  if (!/^[a-z0-9-]+$/.test(formData.slug)) {
+  if (formData.slug && !/^[a-z0-9-]+$/.test(formData.slug)) {
     errors.slug = t('admin.content.projects.slugError')
   } else {
     errors.slug = ''

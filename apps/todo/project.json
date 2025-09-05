@@ -1,69 +1,34 @@
 {
-  "name": "todo",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "todo",
   "projectType": "application",
   "sourceRoot": "apps/todo/src",
   "targets": {
     "build": {
       "executor": "@nx/vite:build",
-      "outputs": ["{options.outputPath}"],
-      "defaultConfiguration": "production",
       "options": {
-        "outputPath": "dist/apps/todo",
-        "skipTypeCheck": true
-      },
-      "configurations": {
-        "production": {
-          "mode": "production"
-        }
+        "outputPath": "dist/apps/todo"
       }
     },
     "serve": {
       "executor": "@nx/vite:dev-server",
-      "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "todo:build"
-      },
-      "configurations": {
-        "development": {
-          "buildTarget": "todo:build:development",
-          "hmr": true
-        },
-        "production": {
-          "buildTarget": "todo:build:production",
-          "hmr": false
-        }
+        "buildTarget": "todo:build",
+        "port": 3002
       }
     },
     "preview": {
       "executor": "@nx/vite:preview-server",
-      "defaultConfiguration": "development",
       "options": {
         "buildTarget": "todo:build"
-      },
-      "configurations": {
-        "development": {
-          "buildTarget": "todo:build:development"
-        },
-        "production": {
-          "buildTarget": "todo:build:production"
-        }
       }
     },
     "test": {
       "executor": "@nx/vite:test",
-      "outputs": ["{options.reportsDirectory}"],
       "options": {
-        "passWithNoTests": true,
-        "reportsDirectory": "../../coverage/apps/todo"
-      }
-    },
-    "lint": {
-      "executor": "@nx/linter:eslint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": ["apps/todo/**/*.{js,jsx,ts,tsx,vue}"]
+        "config": "apps/todo/vitest.config.ts"
       }
     }
-  }
+  },
+  "tags": []
 }
