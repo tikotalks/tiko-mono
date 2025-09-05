@@ -9,13 +9,11 @@
     <div :class="bemm('overlay')" v-if="active" @click="active = false"></div>
     <div :class="bemm('container', ['', active ? 'active' : ''])">
       <ul :class="bemm('list')">
-        <li :class="bemm('item', ['', item.mobile ? 'mobile-only' : 'show-all'])" v-for="item in items" :key="item.label">
+
+        <li :class="bemm('item')" v-for="item in navigationItems" :key="item.id">
           <!-- External links -->
-          <a v-if="item.type === 'external' && item.url" 
-            :href="item.link" 
-            :class="bemm('link')"
-            :target="item.target || '_blank'"
-            rel="noopener noreferrer">
+          <a v-if="item.type === 'external' && item.url" :href="item.url" :class="bemm('link')"
+            :target="item.target || '_blank'" rel="noopener noreferrer">
             <span v-if="item.icon" :class="bemm('icon')">
               <TIcon :name="item.icon" />
             </span>
@@ -23,18 +21,9 @@
               {{ item.label }}
             </span>
           </a>
-          <!-- Label only (no link) -->
-          <span v-else-if="item.type === 'label'" :class="bemm('link', 'label')">
-            <span v-if="item.icon" :class="bemm('icon')">
-              <TIcon :name="item.icon" />
-            </span>
-            <span :class="bemm('text')">
-              {{ item.label }}
-            </span>
-          </span>
-          <!-- Internal links -->
-          <router-link v-else :to="item.to" :class="bemm('link')" @mouseenter="preloadPage(item.link)"
-            @focus="preloadPage(item.link)">
+          <!-- Page links -->
+          <router-link v-else-if="item.type === 'page' && item.page_slug"
+            :to="{ name: 'content', params: { view: item.page_slug } }" :class="bemm('link')">
             <span v-if="item.icon" :class="bemm('icon')">
               <TIcon :name="item.icon" />
             </span>
@@ -42,6 +31,25 @@
               {{ item.label }}
             </span>
           </router-link>
+          <!-- Custom internal links -->
+          <router-link v-else-if="item.type === 'custom' && item.url"
+            :to="{ name: 'content', params: { view: item.url.replace(/^\//, '') } }" :class="bemm('link')">
+            <span v-if="item.icon" :class="bemm('icon')">
+              <TIcon :name="item.icon" />
+            </span>
+            <span :class="bemm('text')">
+              {{ item.label }}
+            </span>
+          </router-link>
+          <!-- Label only (no link) -->
+          <span v-else :class="bemm('link', 'label')">
+            <span v-if="item.icon" :class="bemm('icon')">
+              <TIcon :name="item.icon" />
+            </span>
+            <span :class="bemm('text')">
+              {{ item.label }}
+            </span>
+          </span>
         </li>
       </ul>
     </div>
@@ -51,306 +59,37 @@
 <script lang="ts" setup>
 import { TIcon } from '@tiko/ui';
 import { useBemm } from 'bemm';
-import { Icons } from 'open-icon';
-import { ref, watch, onMounted, onUnmounted } from 'vue';
-import { useI18n } from '@tiko/core';
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
 import { useContentStore } from '@/stores';
+import { useRoute } from 'vue-router';
+
 const bemm = useBemm('navigation');
-
-import { RouterLinkProps, useRoute, useRouter } from 'vue-router';
-
+const route = useRoute();
 const active = ref(false);
-const router = useRouter();
-const { locale } = useI18n();
-const windowWidth = ref(window.innerWidth);
-
-interface NavigationItem {
-  label: string;
-  link: string;
-  mobile?: boolean;
-  to: { name: string; params: { view: string } };
-  icon?: Icons;
-  items?: NavigationItem[];
-  type?: 'page' | 'custom' | 'external' | 'label';
-  target?: '_self' | '_blank';
-  url?: string;
-}
-
-// Dynamic navigation items from CMS
-const items = ref<NavigationItem[]>([]);
 
 // Use content store
 const contentStore = useContentStore();
-const { content } = contentStore;
 
+// Detect if mobile
+const isMobile = ref(window.innerWidth < 1024);
 
-// Load navigation from database navigation menus
-async function loadNavigationItems() {
-  try {
-    // Load navigation will automatically initialize project if needed
-    await contentStore.loadAllNavigation();
-    
-    // Detect if we're on mobile to determine which menu to use
-    const isMobile = window.innerWidth < 1024;
-    const menu = isMobile ? contentStore.mobileMenu : contentStore.headerMenu;
-    
-    console.log('[Navigation] Using menu:', {
-      isMobile,
-      menu: menu ? menu.slug : 'none'
-    });
-    
-    if (!menu) {
-      console.warn('[Navigation] No menu found, falling back to page-based navigation');
-      const project = contentStore.currentProject;
-      if (project) {
-        await loadNavigationFromPages(project);
-      }
-      return;
-    }
+// Get navigation items from store based on device type
+const navigationItems = computed(() => {
+  const menu = isMobile.value ? contentStore.mobileMenu : contentStore.headerMenu;
+  if (!menu || !menu.items) return [];
 
-    console.log(`[Navigation] Loaded menu "${menu.slug}" with ${menu.items?.length || 0} items`);
-    console.log('[Navigation] Menu items:', menu.items);
+  // Filter visible items only - worker now provides page_slug for page items
+  return menu.items.filter(item => item.is_visible);
+});
 
-    // Convert navigation items to the expected format
-    items.value = await convertMenuItemsToNavigationItems(menu.items || []);
-
-    console.log('[Navigation] Loaded navigation items:', items.value);
-    
-    // Preload pages from navigation
-    items.value.forEach(item => {
-      if (item.link && item.link !== '#') {
-        contentStore.preloadPage(item.link.replace('/', ''));
-      }
-    });
-  } catch (error) {
-    console.error('[Navigation] Failed to load navigation items:', error);
-    console.error('[Navigation] Error details:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined
-    });
-
-    // Fallback to hardcoded items
-    console.warn('[Navigation] Using fallback hardcoded navigation items');
-    items.value = [
-      {
-        label: 'About',
-        link: '/about',
-        to: {
-          name: 'content',
-          params: { view: 'about' }
-        }
-      },
-      {
-        label: 'Apps',
-        link: '/apps',
-        to: {
-          name: 'content',
-          params: { view: 'apps' }
-        }
-      },
-      {
-        label: 'Sponsors',
-        link: '/sponsors',
-        to: {
-          name: 'content',
-          params: { view: 'sponsors' }
-        }
-      },
-      {
-        label: 'Technology',
-        link: '/technology',
-        mobile: true,
-        to: {
-          name: 'content',
-          params: { view: 'technology' }
-        }
-      },
-      {
-        label: 'Contact',
-        link: '/contact',
-        mobile: true,
-        to: { name: 'content', params: { view: 'contact' } }
-      },
-      {
-        label: 'Updates',
-        link: '/updates',
-        mobile: true,
-        to: { name: 'content', params: { view: 'update' } }
-      }, {
-        label: 'FAQ',
-        link: '/faq',
-        mobile: true,
-        to: { name: 'content', params: { view: 'faq' } }
-      },
-    ];
-  }
-}
-
-// Convert database navigation items to component format
-async function convertMenuItemsToNavigationItems(menuItems: any[]): Promise<NavigationItem[]> {
-  const navItems: NavigationItem[] = [];
-  
-  for (const item of menuItems) {
-    // Skip invisible items
-    if (!item.is_visible) continue;
-    
-    let navItem: NavigationItem;
-    
-    if (item.type === 'page' && item.page_id) {
-      // Get the page details
-      const page = await content.getPage(item.page_id);
-      if (page) {
-        navItem = {
-          label: item.label || page.title,
-          link: page.slug ? `/${page.slug}` : '/',
-          to: { name: 'content', params: { view: page.slug || 'home' } },
-          icon: item.icon,
-          type: 'page'
-        };
-      } else {
-        continue; // Skip if page not found
-      }
-    } else if (item.type === 'custom' && item.url) {
-      // Custom internal link
-      const slug = item.url.replace(/^\//, ''); // Remove leading slash
-      navItem = {
-        label: item.label,
-        link: item.url,
-        to: { name: 'content', params: { view: slug || 'home' } },
-        icon: item.icon,
-        type: 'custom',
-        url: item.url
-      };
-    } else if (item.type === 'external' && item.url) {
-      // External link
-      navItem = {
-        label: item.label,
-        link: item.url,
-        to: { name: 'content', params: { view: '' } }, // External links won't use router
-        icon: item.icon,
-        type: 'external',
-        target: item.target || '_blank',
-        url: item.url
-      };
-    } else if (item.type === 'label') {
-      // Label-only item (no link)
-      navItem = {
-        label: item.label,
-        link: '#',
-        to: { name: 'content', params: { view: '' } },
-        icon: item.icon,
-        type: 'label'
-      };
-    } else {
-      continue; // Skip unknown types
-    }
-    
-    // Add children if any
-    if (item.items && item.items.length > 0) {
-      navItem.items = await convertMenuItemsToNavigationItems(item.items);
-    }
-    
-    navItems.push(navItem);
-  }
-  
-  return navItems;
-}
-
-// Fallback function to load navigation from pages (old method)
-async function loadNavigationFromPages(project: any) {
-  try {
-    // Get all pages for this project
-    const pages = await content.getPages(project.id);
-    console.log(`[Navigation] Fallback: Found ${pages.length} pages`);
-
-    // Get language code from locale (e.g., 'en-GB' -> 'en')
-    const currentLocale = locale.value || 'en-GB';
-    const languageCode = currentLocale.split('-')[0];
-
-    // Detect if we're on mobile
-    const isMobile = window.innerWidth < 1024;
-
-    // Filter pages that should show in navigation
-    const navPages = pages.filter(page => {
-      // Check basic conditions
-      if (!page.is_published || page.language_code !== languageCode || page.is_home) {
-        return false;
-      }
-
-      // Check show_in_navigation value
-      const showInNav = page.show_in_navigation;
-      
-      // Handle the different values
-      if (showInNav === 'false' || showInNav === false) {
-        return false;
-      } else if (showInNav === 'mobile') {
-        return isMobile;
-      } else if (showInNav === 'desktop') {
-        return !isMobile;
-      }
-      
-      // Default to showing (for 'true', true, or any other value)
-      return true;
-    });
-
-    // Sort by navigation order
-    navPages.sort((a, b) => a.navigation_order - b.navigation_order);
-
-    // Convert to navigation items
-    items.value = navPages.map(page => ({
-      label: page.title,
-      link: page.slug ? `/${page.slug}` : undefined,
-      to: { name: 'content', params: { view: page.slug } },
-      mobile: page.show_in_navigation === 'mobile'
-    })).filter(item => item.link);
-
-    console.log('[Navigation] Fallback: Loaded navigation items from pages:', items.value);
-  } catch (error) {
-    console.error('[Navigation] Fallback failed:', error);
-    // Will use hardcoded items as last resort
-  }
-}
-
-// Preload page content on hover
-const preloadPage = async (path: string) => {
-  // Extract slug from path (e.g., /about -> about)
-  const slug = path.replace('/', '') || 'home';
-
-  // Don't preload the current page
-  const currentSlug = router.currentRoute.value.path.replace('/', '') || 'home';
-  if (slug === currentSlug) return;
-
-
-  try {
-    // Preload the page content using getPage from useContent
-    const result = await content.getPage(slug, locale.value);
-    if (result) {
-    }
-  } catch (error: any) {
-    // Log warning instead of error for preload failures
-  }
-};
-
-// Update window width on resize
+// Update isMobile on window resize
 function handleResize() {
-  windowWidth.value = window.innerWidth;
-  // Reload navigation items when window size changes
-  loadNavigationItems();
+  isMobile.value = window.innerWidth < 1024;
 }
 
-// Preload all pages after initial load
+// Initialize navigation
 onMounted(async () => {
-  // Load navigation items from CMS
-  await loadNavigationItems();
-
-  // Wait a bit for the initial page to load, then preload all pages
-  setTimeout(() => {
-    items.value.forEach(item => {
-      preloadPage(item.link);
-    });
-  }, 3000); // Wait 3 seconds after mount
-  
-  // Add resize listener
+  await contentStore.loadAllNavigation();
   window.addEventListener('resize', handleResize);
 });
 
@@ -358,24 +97,10 @@ onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
 });
 
-// Reload navigation when language changes
-watch(() => locale.value, async (newLocale, oldLocale) => {
-  if (newLocale !== oldLocale) {
-    await loadNavigationItems();
-  }
+// Close navigation when route changes
+watch(() => route.path, () => {
+  active.value = false;
 });
-
-const route = useRoute();
-watch(
-  () => route,
-  () => {
-    // Close navigation when route changes
-    active.value = false;
-  },
-  {
-    deep: true,
-  },
-);
 </script>
 
 <style lang="scss">
@@ -509,12 +234,7 @@ watch(
   }
 
   &__item {
-
-    &--mobile-only {
-      @media screen and (min-width: 1024px) {
-        display: none;
-      }
-    }
+    position: relative;
   }
 
   &__link {
@@ -525,6 +245,9 @@ watch(
     color: var(--color-light);
     text-shadow: 1px 1px 3px color-mix(in srgb, var(--color-dark), transparent 75%);
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
 
     &:hover {
       background-color: color-mix(in srgb,
@@ -537,6 +260,102 @@ watch(
       background-color: var(--color-secondary);
       color: var(--color-secondary-text);
     }
+
+    &--label {
+      cursor: default;
+
+      &:hover {
+        background-color: transparent;
+      }
+    }
+  }
+
+  &__dropdown {
+    position: relative;
+  }
+
+  &__dropdown-toggle {
+    background-color: color-mix(in srgb, var(--color-light), transparent 100%);
+    padding: var(--space-xs) var(--space);
+    border-radius: var(--border-radius);
+    transition: background-color 0.3s ease;
+    color: var(--color-light);
+    text-shadow: 1px 1px 3px color-mix(in srgb, var(--color-dark), transparent 75%);
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    border: none;
+    cursor: pointer;
+    font-size: inherit;
+    font-family: inherit;
+
+    &:hover {
+      background-color: color-mix(in srgb,
+          var(--color-primary),
+          transparent 0%);
+      color: var(--color-light);
+    }
+  }
+
+  &__dropdown-arrow {
+    margin-left: var(--space-xs);
+    transition: transform 0.3s ease;
+  }
+
+  &__dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: var(--space-xs);
+    background-color: var(--color-dark);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    min-width: 200px;
+    z-index: 20;
+
+    @media screen and (max-width: 1024px) {
+      position: static;
+      margin-top: var(--space);
+      margin-left: var(--space);
+      box-shadow: none;
+      background-color: transparent;
+    }
+  }
+
+  &__dropdown-item {
+    list-style: none;
+  }
+
+  &__dropdown-link {
+    display: block;
+    padding: var(--space-xs) var(--space);
+    color: var(--color-light);
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background-color: var(--color-primary);
+    }
+
+    &--label {
+      cursor: default;
+
+      &:hover {
+        background-color: transparent;
+      }
+    }
+  }
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  &__text {
+    display: inline-flex;
+    align-items: center;
   }
 }
 </style>

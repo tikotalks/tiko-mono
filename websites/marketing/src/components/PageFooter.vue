@@ -8,12 +8,29 @@
 
         <div :class="bemm('column', ['', 'right'])">
           <ul :class="bemm('nav-columns')">
-            <li v-for="nav in navigation" :key="nav.label" :class="bemm('nav-item', ['', 'main'])">
-              <h4 :class="bemm('nav-label')">{{ nav.label }}</h4>
+            <li v-for="section in footerSections" :key="section.id" :class="bemm('nav-item', ['', 'main'])">
+              <h4 :class="bemm('nav-label')">{{ section.label }}</h4>
               <ul :class="bemm('nav-list')">
-                <li :class="bemm('nav-item')" v-for="item in nav.items" :key="item.text">
-                  <RouterLink :to="item.to" :class="bemm('nav-link')">
-                    <span :class="bemm('nav-text')">{{ item.text }}</span>
+                <li :class="bemm('nav-item')" v-for="item in section.items" :key="item.id">
+                  <!-- External links -->
+                  <a v-if="item.type === 'external' && item.url" 
+                    :href="item.url"
+                    :class="bemm('nav-link')"
+                    :target="item.target || '_blank'"
+                    rel="noopener noreferrer">
+                    <span :class="bemm('nav-text')">{{ item.label }}</span>
+                  </a>
+                  <!-- Page links -->
+                  <RouterLink v-else-if="item.type === 'page' && item.page_slug" 
+                    :to="{ name: 'content', params: { view: item.page_slug } }" 
+                    :class="bemm('nav-link')">
+                    <span :class="bemm('nav-text')">{{ item.label }}</span>
+                  </RouterLink>
+                  <!-- Custom internal links -->
+                  <RouterLink v-else-if="item.type === 'custom' && item.url"
+                    :to="{ name: 'content', params: { view: item.url.replace(/^\//, '') } }"
+                    :class="bemm('nav-link')">
+                    <span :class="bemm('nav-text')">{{ item.label }}</span>
                   </RouterLink>
                 </li>
               </ul>
@@ -27,8 +44,10 @@
           &copy; {{ new Date().getFullYear() }} Tiko. All rights reserved.
         </p>
         <div :class="bemm('links')">
-          <RouterLink v-for="link in links" :key="link.text" :to="link.to" :class="bemm('link')">
-            {{ link.text }}
+          <RouterLink v-for="link in bottomLinks" :key="link.id" 
+            :to="{ name: 'content', params: { view: link.page_slug || link.url?.replace(/^\//, '') } }" 
+            :class="bemm('link')">
+            {{ link.label }}
           </RouterLink>
         </div>
       </div>
@@ -39,165 +58,42 @@
 <script setup lang="ts">
 import { TLogo } from '@tiko/ui';
 import { useBemm } from 'bemm';
-import { computed, ref, onMounted } from 'vue';
-import { RouterLinkProps } from 'vue-router';
+import { computed, onMounted } from 'vue';
 import { useContentStore } from '@/stores';
-const bemm = useBemm('footer');
 
-const links = computed(() => [
-  { text: 'Privacy Policy', to: { name: 'content', params: { view: 'privacy-policy' } } },
-  { text: 'Terms of Service', to: { name: 'content', params: { view: 'terms-of-service' } } },
-  { text: 'Contact Us', to: { name: 'content', params: { view: 'contact' } } },
-]);
+const bemm = useBemm('footer');
 
 // Use content store
 const contentStore = useContentStore();
 
-// Dynamic navigation from database
-const navigation = ref<Array<{
-  label: string;
-  items: Array<{ text: string; url: string; to: { name: string; params: { view: string } } }>;
-}>>([]);
-
-// Fallback navigation
-const fallbackNavigation = [
-  {
-    label: 'Tiko',
-    items: [
-      {
-        text: 'Team', url: '/team', to: {
-          name: 'content',
-          params: { view: 'team' }
-        }
-      },
-      {
-        text: 'Apps', url: '/apps', to: {
-          name: 'content',
-          params: { view: 'apps' }
-        }
-      },
-      {
-        text: 'Contact',
-        url: '/contact',
-        to: { name: 'content', params: { view: 'contact' } }
-      },
-    ],
-  },
-  {
-    label: 'About',
-    items: [
-      {
-        text: 'About', url: '/about', to: {
-          name: 'content',
-          params: { view: 'about' }
-        }
-      },
-      {
-        text: 'Updates',
-        url: '/updates',
-        to: { name: 'content', params: { view: 'update' } }
-      },
-      {
-        text: 'FAQ',
-        url: '/faq',
-        to: { name: 'content', params: { view: 'faq' } }
-      },
-    ],
-  },
-  {
-    label: 'Information',
-    items: [
-      {
-        text: 'Sponsors',
-        url: '/sponsors',
-        to: { name: 'content', params: { view: 'sponsors' } }
-      },
-      {
-        text: 'Technology', url: '/technology', to: {
-          name: 'content',
-          params: { view: 'technology' }
-        }
-      },
-      {
-        text: 'Speech Therapy',
-        url: '/speech-therapy', to: {
-          name: 'content',
-          params: { view: 'speech-therapy' }
-        }
-      },
-    ]
-  }
-];
-
-// Load footer navigation from database
-async function loadFooterNavigation() {
-  try {
-    // Ensure navigation is loaded
-    await contentStore.loadAllNavigation();
-
-    const menu = contentStore.footerMenu;
-    
-    if (!menu || !menu.items || menu.items.length === 0) {
-      console.warn('[Footer] Menu "main-footer-menu" not found or empty, using fallback');
-      navigation.value = fallbackNavigation;
-      return;
-    }
-
-    console.log(`[Footer] Loaded footer menu with ${menu.items.length} sections`);
-
-    // Convert navigation items to footer format
-    // Footer expects items with children to be grouped into sections
-    navigation.value = menu.items
-      .filter(item => item.is_visible && item.type === 'label' && item.items && item.items.length > 0)
-      .map(section => ({
-        label: section.label,
-        items: section.items
-          .filter(child => child.is_visible)
-          .map(child => convertToFooterItem(child))
-          .filter(item => item !== null) as Array<{ text: string; url: string; to: { name: string; params: { view: string } } }>
-      }));
-
-    console.log('[Footer] Loaded navigation sections:', navigation.value);
-  } catch (error) {
-    console.error('[Footer] Failed to load footer navigation:', error);
-    navigation.value = fallbackNavigation;
-  }
-}
-
-// Convert navigation item to footer format
-function convertToFooterItem(item: any) {
-  if (item.type === 'page' && item.page_id) {
-    // For page links, we need to get the page slug
-    // Since we can't await here, we'll use the item label as fallback
-    const slug = item.url?.replace(/^\//, '') || item.label.toLowerCase().replace(/\s+/g, '-');
-    return {
-      text: item.label,
-      url: `/${slug}`,
-      to: { name: 'content', params: { view: slug } }
-    };
-  } else if (item.type === 'custom' && item.url) {
-    const slug = item.url.replace(/^\//, '');
-    return {
-      text: item.label,
-      url: item.url,
-      to: { name: 'content', params: { view: slug } }
-    };
-  } else if (item.type === 'external' && item.url) {
-    // External links - won't use router
-    return {
-      text: item.label,
-      url: item.url,
-      to: { name: '', params: { view: '' } } // Dummy route for external links
-    };
-  }
+// Get footer sections from navigation menu
+const footerSections = computed(() => {
+  const menu = contentStore.footerMenu;
+  if (!menu || !menu.items) return [];
   
-  // Skip label-only items in footer
-  return null;
-}
+  // Filter to only show label items with children (sections)
+  return menu.items
+    .filter(item => item.is_visible && item.type === 'label' && item.items && item.items.length > 0)
+    .map(section => ({
+      ...section,
+      items: section.items.filter(child => child.is_visible)
+    }));
+});
 
-// Load navigation on mount
+// Bottom links - could come from a separate menu or be hardcoded
+const bottomLinks = computed(() => {
+  // These could be managed in the CMS as a separate menu
+  // For now, returning static links
+  return [
+    { id: '1', label: 'Privacy Policy', page_slug: 'privacy-policy' },
+    { id: '2', label: 'Terms of Service', page_slug: 'terms-of-service' },
+    { id: '3', label: 'Contact Us', page_slug: 'contact' }
+  ];
+});
+
+// Initialize navigation on mount
 onMounted(() => {
-  loadFooterNavigation();
+  contentStore.loadAllNavigation();
 });
 </script>
 
