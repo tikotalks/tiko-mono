@@ -199,6 +199,55 @@ export interface LinkedItem {
   sort_order: number
 }
 
+export interface ContentArticle {
+  id: string
+  page_id: string
+  page_title?: string
+  page_slug?: string
+  page_path?: string
+  project_name?: string
+  project_slug?: string
+  language_code: string
+  title: string
+  short?: string
+  content: string
+  tags: string[]
+  category?: string
+  slug: string
+  is_published: boolean
+  published_at?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface NavigationMenu {
+  id: string
+  project_id?: string
+  slug: string
+  name: string
+  items?: NavigationItem[]
+  created_at: string
+  updated_at: string
+}
+
+export interface NavigationItem {
+  id: string
+  menu_id: string
+  parent_id?: string
+  label: string
+  type: 'label' | 'page' | 'custom' | 'external'
+  page_id?: string
+  url?: string
+  target?: '_self' | '_blank'
+  icon?: string
+  css_class?: string
+  is_visible: boolean
+  order_index: number
+  depth?: number
+  metadata?: Record<string, any>
+  items?: NavigationItem[]
+}
+
 class ContentService {
   private baseUrl: string
 
@@ -1368,6 +1417,259 @@ class ContentService {
       })
     } catch (error) {
       console.error('Failed to toggle page navigation:', error)
+      throw error
+    }
+  }
+
+  // =================== ARTICLES ===================
+
+  async getArticles(pageId?: string): Promise<ContentArticle[]> {
+    let query = '/content_articles_details?order=created_at.desc'
+    
+    if (pageId) {
+      query += `&page_id=eq.${pageId}`
+    }
+    
+    return this.makeRequest(query)
+  }
+
+  async getArticle(id: string): Promise<ContentArticle> {
+    const result = await this.makeRequest(`/content_articles?id=eq.${id}`)
+    return result[0]
+  }
+
+  async getArticleBySlug(pageId: string, languageCode: string, slug: string): Promise<ContentArticle> {
+    const result = await this.makeRequest(`/content_articles?page_id=eq.${pageId}&language_code=eq.${languageCode}&slug=eq.${slug}`)
+    return result[0]
+  }
+
+  async createArticle(article: Omit<ContentArticle, 'id' | 'created_at' | 'updated_at' | 'page_title' | 'page_slug' | 'page_path' | 'project_name' | 'project_slug'>): Promise<ContentArticle> {
+    const result = await this.makeRequest('/content_articles', {
+      method: 'POST',
+      body: JSON.stringify(article),
+    })
+    return Array.isArray(result) ? result[0] : result
+  }
+
+  async updateArticle(id: string, updates: Partial<ContentArticle>): Promise<ContentArticle> {
+    const result = await this.makeRequest(`/content_articles?id=eq.${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    })
+    return Array.isArray(result) ? result[0] : result
+  }
+
+  async deleteArticle(id: string): Promise<void> {
+    await this.makeRequest(`/content_articles?id=eq.${id}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async getArticlesByPage(pageId: string, languageCode?: string): Promise<ContentArticle[]> {
+    let query = `/content_articles_details?page_id=eq.${pageId}&order=created_at.desc`
+    
+    if (languageCode) {
+      query += `&language_code=eq.${languageCode}`
+    }
+    
+    return this.makeRequest(query)
+  }
+
+  async getPublishedArticles(pageId?: string, languageCode?: string): Promise<ContentArticle[]> {
+    let query = '/content_articles_details?is_published=eq.true&order=published_at.desc'
+    
+    if (pageId) {
+      query += `&page_id=eq.${pageId}`
+    }
+    
+    if (languageCode) {
+      query += `&language_code=eq.${languageCode}`
+    }
+    
+    return this.makeRequest(query)
+  }
+
+  // =================== NAVIGATION ===================
+
+  async getNavigationMenus(projectId?: string): Promise<NavigationMenu[]> {
+    try {
+      let query = '/content_navigation_menus?order=name'
+      if (projectId) {
+        query += `&project_id=eq.${projectId}`
+      }
+      return await this.makeRequest(query)
+    } catch (error) {
+      console.error('Error getting navigation menus:', error)
+      return []
+    }
+  }
+
+  async getNavigationMenu(id: string): Promise<NavigationMenu | null> {
+    try {
+      const menus = await this.makeRequest(`/content_navigation_menus?id=eq.${id}`)
+      if (menus.length === 0) return null
+      
+      const menu = menus[0]
+      // Get menu items
+      menu.items = await this.getNavigationItems(menu.id)
+      return menu
+    } catch (error) {
+      console.error('Error getting navigation menu:', error)
+      return null
+    }
+  }
+
+  async getNavigationMenuBySlug(slug: string, projectId?: string): Promise<NavigationMenu | null> {
+    try {
+      let query = `/content_navigation_menus?slug=eq.${slug}`
+      if (projectId) {
+        query += `&project_id=eq.${projectId}`
+      }
+      
+      const menus = await this.makeRequest(query)
+      if (menus.length === 0) return null
+      
+      const menu = menus[0]
+      // Get menu items
+      menu.items = await this.getNavigationItems(menu.id)
+      return menu
+    } catch (error) {
+      console.error('Error getting navigation menu by slug:', error)
+      return null
+    }
+  }
+
+  async createNavigationMenu(menu: Omit<NavigationMenu, 'id' | 'created_at' | 'updated_at'>): Promise<NavigationMenu> {
+    const result = await this.makeRequest('/content_navigation_menus', {
+      method: 'POST',
+      body: JSON.stringify(menu),
+    })
+    return Array.isArray(result) ? result[0] : result
+  }
+
+  async updateNavigationMenu(id: string, updates: Partial<NavigationMenu>): Promise<void> {
+    await this.makeRequest(`/content_navigation_menus?id=eq.${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    })
+  }
+
+  async deleteNavigationMenu(id: string): Promise<void> {
+    // First delete all items in the menu
+    await this.makeRequest(`/content_navigation_items?menu_id=eq.${id}`, {
+      method: 'DELETE',
+    })
+    
+    // Then delete the menu
+    await this.makeRequest(`/content_navigation_menus?id=eq.${id}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async getNavigationItems(menuId: string): Promise<NavigationItem[]> {
+    try {
+      const items = await this.makeRequest(`/content_navigation_items?menu_id=eq.${menuId}&order=order_index`)
+      
+      // Build hierarchical structure
+      const itemMap = new Map<string, NavigationItem>()
+      items.forEach((item: NavigationItem) => {
+        itemMap.set(item.id, { ...item })
+      })
+      const rootItems: NavigationItem[] = []
+      
+      items.forEach((item: NavigationItem) => {
+        if (item.parent_id) {
+          const parent = itemMap.get(item.parent_id)
+          if (parent) {
+            if (!parent.children) parent.children = []
+            const child = itemMap.get(item.id)
+            if (child) parent.children.push(child)
+          }
+        } else {
+          const rootItem = itemMap.get(item.id)
+          if (rootItem) rootItems.push(rootItem)
+        }
+      })
+      
+      // Add depth information
+      const addDepth = (items: NavigationItem[], depth: number = 0) => {
+        items.forEach(item => {
+          item.depth = depth
+          if (item.children) {
+            addDepth(item.children, depth + 1)
+          }
+        })
+      }
+      addDepth(rootItems)
+      
+      return this.flattenNavigationItems(rootItems)
+    } catch (error) {
+      console.error('Error getting navigation items:', error)
+      return []
+    }
+  }
+
+  private flattenNavigationItems(items: NavigationItem[], result: NavigationItem[] = []): NavigationItem[] {
+    items.forEach(item => {
+      result.push(item)
+      if (item.children) {
+        this.flattenNavigationItems(item.children, result)
+      }
+    })
+    return result
+  }
+
+  async createNavigationItem(item: Omit<NavigationItem, 'id'>): Promise<NavigationItem> {
+    // Get the max order index for new items
+    if (item.order_index === undefined) {
+      const existingItems = await this.makeRequest(
+        `/content_navigation_items?menu_id=eq.${item.menu_id}&parent_id=${item.parent_id ? `eq.${item.parent_id}` : 'is.null'}&order=order_index.desc&limit=1`
+      )
+      item.order_index = existingItems.length > 0 ? existingItems[0].order_index + 1 : 0
+    }
+    
+    const result = await this.makeRequest('/content_navigation_items', {
+      method: 'POST',
+      body: JSON.stringify(item),
+    })
+    return Array.isArray(result) ? result[0] : result
+  }
+
+  async updateNavigationItem(id: string, updates: Partial<NavigationItem>): Promise<void> {
+    await this.makeRequest(`/content_navigation_items?id=eq.${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    })
+  }
+
+  async deleteNavigationItem(id: string): Promise<void> {
+    // First delete all child items
+    await this.makeRequest(`/content_navigation_items?parent_id=eq.${id}`, {
+      method: 'DELETE',
+    })
+    
+    // Then delete the item
+    await this.makeRequest(`/content_navigation_items?id=eq.${id}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async reorderNavigationItems(menuId: string, items: Array<{ id: string; order_index: number; parent_id?: string | null }>): Promise<void> {
+    try {
+      // Update each item's order and parent
+      await Promise.all(
+        items.map(item =>
+          this.makeRequest(`/content_navigation_items?id=eq.${item.id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({
+              order_index: item.order_index,
+              parent_id: item.parent_id || null
+            }),
+          })
+        )
+      )
+    } catch (error) {
+      console.error('Error reordering navigation items:', error)
       throw error
     }
   }

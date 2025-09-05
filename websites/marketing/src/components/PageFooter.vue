@@ -39,8 +39,9 @@
 <script setup lang="ts">
 import { TLogo } from '@tiko/ui';
 import { useBemm } from 'bemm';
-import { computed } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { RouterLinkProps } from 'vue-router';
+import { useContent } from '@tiko/core';
 const bemm = useBemm('footer');
 
 const links = computed(() => [
@@ -49,61 +50,59 @@ const links = computed(() => [
   { text: 'Contact Us', to: { name: 'content', params: { view: 'contact' } } },
 ]);
 
-const navigation = computed<
-  Array<{
-    label: string;
-    items: Array<{ text: string; url: string; to: { name: string; params: { view: string } } }>;
-  }>
->(() => [
+// Initialize content service
+const content = useContent({
+  projectSlug: 'marketing',
+  useWorker: import.meta.env.VITE_USE_CONTENT_WORKER === 'true',
+  workerUrl: import.meta.env.VITE_CONTENT_API_URL,
+  deployedVersionId: import.meta.env.VITE_DEPLOYED_VERSION_ID,
+  noCache: false
+});
+
+// Dynamic navigation from database
+const navigation = ref<Array<{
+  label: string;
+  items: Array<{ text: string; url: string; to: { name: string; params: { view: string } } }>;
+}>>([]);
+
+// Fallback navigation
+const fallbackNavigation = [
   {
     label: 'Tiko',
     items: [
       {
-        text: 'About', url: '/about', to: {
-          name: 'content',
-          params: {   view: 'about'}
-        }
-      },
-      {
         text: 'Team', url: '/team', to: {
           name: 'content',
-          params: {  view: 'team'}
+          params: { view: 'team' }
         }
       },
       {
         text: 'Apps', url: '/apps', to: {
           name: 'content',
-          params: {  view: 'apps'}
+          params: { view: 'apps' }
         }
-      },
-      {
-        text: 'Technology', url: '/technology', to: {
-          name: 'content',
-          params: { view: 'technology' }
-        }
-      }
-    ],
-  },
-  {
-    label: 'Support',
-    items: [
-      {
-        text: 'Sponsors',
-        url: '/sponsors',
-        to: { name: 'content', params: { view: 'sponsors' } }
       },
       {
         text: 'Contact',
         url: '/contact',
         to: { name: 'content', params: { view: 'contact' } }
       },
+    ],
+  },
+  {
+    label: 'About',
+    items: [
+      {
+        text: 'About', url: '/about', to: {
+          name: 'content',
+          params: { view: 'about' }
+        }
+      },
       {
         text: 'Updates',
         url: '/updates',
         to: { name: 'content', params: { view: 'update' } }
       },
-      // { text: 'Help Center', url: '/help' },
-      // { text: 'Contact Support', url: '/support' },
       {
         text: 'FAQ',
         url: '/faq',
@@ -111,7 +110,107 @@ const navigation = computed<
       },
     ],
   },
-]);
+  {
+    label: 'Information',
+    items: [
+      {
+        text: 'Sponsors',
+        url: '/sponsors',
+        to: { name: 'content', params: { view: 'sponsors' } }
+      },
+      {
+        text: 'Technology', url: '/technology', to: {
+          name: 'content',
+          params: { view: 'technology' }
+        }
+      },
+      {
+        text: 'Speech Therapy',
+        url: '/speech-therapy', to: {
+          name: 'content',
+          params: { view: 'speech-therapy' }
+        }
+      },
+    ]
+  }
+];
+
+// Load footer navigation from database
+async function loadFooterNavigation() {
+  try {
+    // Get the marketing project
+    const project = await content.getProject('marketing');
+    if (!project) {
+      console.error('[Footer] Marketing project not found');
+      navigation.value = fallbackNavigation;
+      return;
+    }
+
+    // Get the footer menu
+    const menu = await content.getNavigationMenuBySlug('main-footer-menu', project.id);
+    
+    if (!menu || !menu.items || menu.items.length === 0) {
+      console.warn('[Footer] Menu "main-footer-menu" not found or empty, using fallback');
+      navigation.value = fallbackNavigation;
+      return;
+    }
+
+    console.log(`[Footer] Loaded footer menu with ${menu.items.length} sections`);
+
+    // Convert navigation items to footer format
+    // Footer expects items with children to be grouped into sections
+    navigation.value = menu.items
+      .filter(item => item.is_visible && item.type === 'label' && item.items && item.items.length > 0)
+      .map(section => ({
+        label: section.label,
+        items: section.items
+          .filter(child => child.is_visible)
+          .map(child => convertToFooterItem(child))
+          .filter(item => item !== null) as Array<{ text: string; url: string; to: { name: string; params: { view: string } } }>
+      }));
+
+    console.log('[Footer] Loaded navigation sections:', navigation.value);
+  } catch (error) {
+    console.error('[Footer] Failed to load footer navigation:', error);
+    navigation.value = fallbackNavigation;
+  }
+}
+
+// Convert navigation item to footer format
+function convertToFooterItem(item: any) {
+  if (item.type === 'page' && item.page_id) {
+    // For page links, we need to get the page slug
+    // Since we can't await here, we'll use the item label as fallback
+    const slug = item.url?.replace(/^\//, '') || item.label.toLowerCase().replace(/\s+/g, '-');
+    return {
+      text: item.label,
+      url: `/${slug}`,
+      to: { name: 'content', params: { view: slug } }
+    };
+  } else if (item.type === 'custom' && item.url) {
+    const slug = item.url.replace(/^\//, '');
+    return {
+      text: item.label,
+      url: item.url,
+      to: { name: 'content', params: { view: slug } }
+    };
+  } else if (item.type === 'external' && item.url) {
+    // External links - won't use router
+    return {
+      text: item.label,
+      url: item.url,
+      to: { name: '', params: { view: '' } } // Dummy route for external links
+    };
+  }
+  
+  // Skip label-only items in footer
+  return null;
+}
+
+// Load navigation on mount
+onMounted(() => {
+  loadFooterNavigation();
+});
 </script>
 
 <style lang="scss">
@@ -119,11 +218,9 @@ const navigation = computed<
   background-color: var(--color-background);
   color: var(--color-foreground);
   padding: var(--space);
-  background-image: linear-gradient(
-    to bottom,
-    var(--color-background) 25%,
-    var(--color-primary)
-  );
+  background-image: linear-gradient(to bottom,
+      var(--color-background) 25%,
+      var(--color-primary));
 
   &__container {
     background-color: var(--color-background);
@@ -132,9 +229,16 @@ const navigation = computed<
     border-radius: var(--border-radius);
   }
 
+  &__logo{
+    width: 10em;
+  }
+
 
   &__column {
     width: 50%;
+    @media screen and (max-width: 768px) {
+      width: 100%;
+    }
 
     &--left {
       text-align: left;
@@ -149,6 +253,11 @@ const navigation = computed<
     &--right {
       display: flex;
       justify-content: flex-end;
+
+      @media screen and (max-width: 768px) {
+
+        justify-content: center;
+      }
     }
   }
 
@@ -172,6 +281,9 @@ const navigation = computed<
   &__nav-label {
     font-weight: bold;
     color: var(--color-primary);
+    text-transform: uppercase;
+font-size: .75em;
+letter-spacing: .1em;
   }
 
   &__nav-list {
@@ -182,6 +294,7 @@ const navigation = computed<
     gap: var(--space-s);
 
     list-style: none;
+    margin-top: var(--space);
   }
 
   &__nav-link {
@@ -231,8 +344,8 @@ const navigation = computed<
     gap: var(--space);
   }
 
-  &__link{
-    &:hover{
+  &__link {
+    &:hover {
       color: var(--color-primary);
     }
   }

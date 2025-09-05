@@ -129,6 +129,10 @@ export class ContentWorkerService {
     return this.makeWorkerRequest('getPageWithFullContent', { pageIdOrSlug, projectId, language })
   }
 
+  async getPageWithArticle(pageIdOrSlug: string, articleSlug: string, projectId?: string, language?: string): Promise<any> {
+    return this.makeWorkerRequest('getPageWithFullContent', { pageIdOrSlug, projectId, language, articleSlug })
+  }
+
   // =================== SECTIONS ===================
 
   async getSection(id: string): Promise<ContentSection | null> {
@@ -357,5 +361,45 @@ export class ContentWorkerService {
     })
 
     return response.ok
+  }
+
+  // =================== ARTICLES ===================
+
+  async getArticles(pageId?: string): Promise<any[]> {
+    return this.makeWorkerRequest('getArticles', { pageId })
+  }
+
+  async getArticle(id: string): Promise<any> {
+    return this.makeWorkerRequest('getArticle', { id })
+  }
+
+  async getArticleBySlug(pageId: string, languageCode: string, slug: string): Promise<any> {
+    return this.makeWorkerRequest('getArticleBySlug', { pageId, languageCode, slug })
+  }
+
+  async getArticlesByPage(pageId: string, languageCode?: string): Promise<any[]> {
+    return this.makeWorkerRequest('getArticlesByPage', { pageId, languageCode })
+  }
+
+  async getPublishedArticles(pageId?: string, languageCode?: string): Promise<any[]> {
+    return this.makeWorkerRequest('getPublishedArticles', { pageId, languageCode })
+  }
+
+  // =================== NAVIGATION ===================
+
+  async getNavigationMenus(projectId?: string): Promise<any[]> {
+    return this.makeWorkerRequest('getNavigationMenus', { projectId })
+  }
+
+  async getNavigationMenu(id: string): Promise<any> {
+    return this.makeWorkerRequest('getNavigationMenu', { id })
+  }
+
+  async getNavigationMenuBySlug(slug: string, projectId?: string): Promise<any> {
+    return this.makeWorkerRequest('getNavigationMenuBySlug', { 0: slug, 1: projectId })
+  }
+
+  async getNavigationItems(menuId: string): Promise<any[]> {
+    return this.makeWorkerRequest('getNavigationItems', { menuId })
   }
 }

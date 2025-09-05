@@ -97,6 +97,28 @@ export class ContentServiceWrapper {
         case 'getItemTemplates':
           return await this.getItemTemplates();
 
+        // Articles
+        case 'getArticles':
+          return await this.getArticles(query.params);
+        case 'getArticle':
+          return await this.getArticle(query.params);
+        case 'getArticleBySlug':
+          return await this.getArticleBySlug(query.params);
+        case 'getArticlesByPage':
+          return await this.getArticlesByPage(query.params);
+        case 'getPublishedArticles':
+          return await this.getPublishedArticles(query.params);
+
+        // Navigation
+        case 'getNavigationMenus':
+          return await this.getNavigationMenus(query.params);
+        case 'getNavigationMenu':
+          return await this.getNavigationMenu(query.params);
+        case 'getNavigationMenuBySlug':
+          return await this.getNavigationMenuBySlug(query.params);
+        case 'getNavigationItems':
+          return await this.getNavigationItems(query.params);
+
         default:
           return { data: null, error: `Unknown method: ${query.method}` };
       }
@@ -214,7 +236,7 @@ export class ContentServiceWrapper {
    * This dramatically reduces the number of database calls from 20+ to just 2-3
    */
   private async getPageWithFullContent(params: any): Promise<QueryResult> {
-    const { pageIdOrSlug, id, slug, projectId, language } = params;
+    const { pageIdOrSlug, id, slug, projectId, language, articleSlug } = params;
     const pageIdentifier = pageIdOrSlug || id || slug;
     
     try {
@@ -449,7 +471,7 @@ export class ContentServiceWrapper {
 
 
       // Step 6: Transform the data into the expected format
-      const sectionsWithContent = sectionsData?.map(pageSection => {
+      const sectionsWithContent = await Promise.all(sectionsData?.map(async pageSection => {
         const sectionContent = sectionDataMap.get(pageSection.section_id) || {};
         const fields = pageSection.section?.template?.fields || [];
         
@@ -578,6 +600,26 @@ export class ContentServiceWrapper {
           }
         });
         
+        // Check if this is an article-overview section
+        const sectionTemplateSlug = pageSection.section?.template?.slug;
+        if (sectionTemplateSlug === 'article-overview') {
+          // Fetch articles for this page
+          const { data: articles } = await this.supabase
+            .from('content_articles_details')
+            .select('*')
+            .eq('page_id', pageSection.page_id)
+            .eq('is_published', true)
+            .eq('language_code', language || 'en')
+            .order('published_at', { ascending: false });
+          
+          if (articles && articles.length > 0) {
+            processedContent.articles = articles;
+            console.log(`Added ${articles.length} articles to article-overview section`);
+          } else {
+            processedContent.articles = [];
+          }
+        }
+
         return {
           pageSection: {
             id: pageSection.id,
@@ -594,7 +636,7 @@ export class ContentServiceWrapper {
           content: processedContent,
           fields: fields
         };
-      }) || [];
+      }) || []);
 
       // Fetch items for linked_items fields that have IDs stored directly
       const itemIdsToFetch = new Set<string>();
@@ -719,6 +761,46 @@ export class ContentServiceWrapper {
           content: section.content
         };
       });
+
+      // If an article slug is provided, add the article as a special section
+      if (articleSlug) {
+        console.log(`[getPageWithFullContent] Article slug provided: ${articleSlug}`);
+        
+        // Fetch the specific article
+        const { data: article } = await this.supabase
+          .from('content_articles_details')
+          .select('*')
+          .eq('page_id', page.id)
+          .eq('slug', articleSlug)
+          .eq('language_code', language || 'en')
+          .single();
+        
+        if (article) {
+          // Create an article detail section
+          const articleSection = {
+            pageSection: {
+              id: `article-${article.id}`,
+              order_index: 0,
+              override_name: article.title
+            },
+            section: {
+              id: `article-${article.id}`,
+              name: article.title,
+              slug: 'article-detail',
+              template: {
+                slug: 'article-detail'
+              }
+            },
+            content: {
+              article: article
+            }
+          };
+          
+          // Replace all sections with just the article section
+          simplifiedSections.length = 0;
+          simplifiedSections.push(articleSection);
+        }
+      }
 
       const result = {
         page: {
@@ -1345,5 +1427,236 @@ export class ContentServiceWrapper {
       .order('name', { ascending: true });
 
     return { data, error: error?.message };
+  }
+
+  // =================== ARTICLES ===================
+
+  private async getArticles(params: any): Promise<QueryResult> {
+    const { pageId } = params;
+    
+    let query = this.supabase
+      .from('content_articles_details')
+      .select('*')
+      .order('published_at', { ascending: false });
+
+    if (pageId) {
+      query = query.eq('page_id', pageId);
+    }
+
+    const { data, error } = await query;
+    return { data, error: error?.message };
+  }
+
+  private async getArticle(params: any): Promise<QueryResult> {
+    const { id } = params;
+    
+    const { data, error } = await this.supabase
+      .from('content_articles')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    return { data, error: error?.message };
+  }
+
+  private async getArticleBySlug(params: any): Promise<QueryResult> {
+    const { pageId, languageCode, slug } = params;
+    
+    const { data, error } = await this.supabase
+      .from('content_articles')
+      .select('*')
+      .eq('page_id', pageId)
+      .eq('language_code', languageCode)
+      .eq('slug', slug)
+      .single();
+
+    return { data, error: error?.message };
+  }
+
+  private async getArticlesByPage(params: any): Promise<QueryResult> {
+    const { pageId, languageCode } = params;
+    
+    let query = this.supabase
+      .from('content_articles_details')
+      .select('*')
+      .eq('page_id', pageId)
+      .order('published_at', { ascending: false });
+
+    if (languageCode) {
+      query = query.eq('language_code', languageCode);
+    }
+
+    const { data, error } = await query;
+    return { data, error: error?.message };
+  }
+
+  private async getPublishedArticles(params: any): Promise<QueryResult> {
+    const { pageId, languageCode } = params;
+    
+    let query = this.supabase
+      .from('content_articles_details')
+      .select('*')
+      .eq('is_published', true)
+      .order('published_at', { ascending: false });
+
+    if (pageId) {
+      query = query.eq('page_id', pageId);
+    }
+    if (languageCode) {
+      query = query.eq('language_code', languageCode);
+    }
+
+    const { data, error } = await query;
+    return { data, error: error?.message };
+  }
+
+  // =================== NAVIGATION ===================
+
+  private async getNavigationMenus(params: any = {}): Promise<QueryResult> {
+    const { projectId } = params;
+    
+    let query = this.supabase
+      .from('content_navigation_menus')
+      .select(`
+        *,
+        items:content_navigation_items(*)
+      `)
+      .eq('is_active', true)
+      .order('name', { ascending: true });
+
+    if (projectId) {
+      query = query.eq('project_id', projectId);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      return { data: null, error: error.message };
+    }
+
+    // Process menu items to build the hierarchical structure
+    const processedMenus = data?.map(menu => ({
+      ...menu,
+      items: this.buildNavigationTree(menu.items || [])
+    }));
+
+    return { data: processedMenus, error: null };
+  }
+
+  private async getNavigationMenu(params: any): Promise<QueryResult> {
+    const { id } = params;
+    
+    const { data, error } = await this.supabase
+      .from('content_navigation_menus')
+      .select(`
+        *,
+        items:content_navigation_items(*)
+      `)
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      return { data: null, error: error.message };
+    }
+
+    // Build hierarchical structure for items
+    const processedMenu = {
+      ...data,
+      items: this.buildNavigationTree(data.items || [])
+    };
+
+    return { data: processedMenu, error: null };
+  }
+
+  private async getNavigationMenuBySlug(params: any): Promise<QueryResult> {
+    // Handle both object params and direct arguments
+    let slug: string;
+    let projectId: string | undefined;
+    
+    if (params.slug !== undefined) {
+      // Called with object params
+      slug = params.slug;
+      projectId = params.projectId;
+    } else if (params[0] !== undefined) {
+      // Called with direct arguments (from content worker proxy)
+      slug = params[0];
+      projectId = params[1];
+    } else {
+      return { data: null, error: 'Missing required parameter: slug' };
+    }
+    
+    let query = this.supabase
+      .from('content_navigation_menus')
+      .select(`
+        *,
+        items:content_navigation_items(*)
+      `)
+      .eq('slug', slug)
+      .eq('is_active', true);
+
+    if (projectId) {
+      query = query.eq('project_id', projectId);
+    }
+
+    const { data, error } = await query.single();
+
+    if (error) {
+      return { data: null, error: error.message };
+    }
+
+    // Build hierarchical structure for items
+    const processedMenu = {
+      ...data,
+      items: this.buildNavigationTree(data.items || [])
+    };
+
+    return { data: processedMenu, error: null };
+  }
+
+  private async getNavigationItems(params: any): Promise<QueryResult> {
+    const { menuId } = params;
+    
+    const { data, error } = await this.supabase
+      .from('content_navigation_items')
+      .select('*')
+      .eq('menu_id', menuId)
+      .eq('is_visible', true)
+      .order('order_index', { ascending: true });
+
+    if (error) {
+      return { data: null, error: error.message };
+    }
+
+    // Build hierarchical structure
+    const tree = this.buildNavigationTree(data || []);
+
+    return { data: tree, error: null };
+  }
+
+  // Helper method to build hierarchical navigation tree
+  private buildNavigationTree(items: any[]): any[] {
+    const itemMap = new Map();
+    const rootItems: any[] = [];
+
+    // First pass: create a map of all items
+    items.forEach(item => {
+      itemMap.set(item.id, { ...item, items: [] });
+    });
+
+    // Second pass: build the tree structure
+    items.forEach(item => {
+      const currentItem = itemMap.get(item.id);
+      
+      if (item.parent_id && itemMap.has(item.parent_id)) {
+        // Add to parent's children
+        const parent = itemMap.get(item.parent_id);
+        parent.items.push(currentItem);
+      } else {
+        // Root level item
+        rootItems.push(currentItem);
+      }
+    });
+
+    return rootItems;
   }
 }
