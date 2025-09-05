@@ -53,8 +53,8 @@ import { TIcon } from '@tiko/ui';
 import { useBemm } from 'bemm';
 import { Icons } from 'open-icon';
 import { ref, watch, onMounted, onUnmounted } from 'vue';
-import { useContent } from '@tiko/core';
 import { useI18n } from '@tiko/core';
+import { useContentStore } from '@/stores';
 const bemm = useBemm('navigation');
 
 import { RouterLinkProps, useRoute, useRouter } from 'vue-router';
@@ -79,51 +79,49 @@ interface NavigationItem {
 // Dynamic navigation items from CMS
 const items = ref<NavigationItem[]>([]);
 
-// Initialize content service
-const content = useContent({
-  projectSlug: 'marketing',
-  useWorker: import.meta.env.VITE_USE_CONTENT_WORKER === 'true',
-  workerUrl: import.meta.env.VITE_CONTENT_API_URL,
-  deployedVersionId: import.meta.env.VITE_DEPLOYED_VERSION_ID,
-  noCache: false
-});
+// Use content store
+const contentStore = useContentStore();
+const { content } = contentStore;
 
 
 // Load navigation from database navigation menus
 async function loadNavigationItems() {
   try {
-    // Get the marketing project first
-    const project = await content.getProject('marketing');
-    if (!project) {
-      console.error('[Navigation] Marketing project not found');
-      throw new Error('Marketing project not found');
-    }
-
-    console.log('[Navigation] Marketing project loaded');
-
-    // Detect if we're on mobile to determine which menu to load
-    const isMobile = window.innerWidth < 1024;
-    const menuSlug = isMobile ? 'main-mobile-menu' : 'main-header-menu';
-
-    // Get the navigation menu by slug
-    console.log(`[Navigation] Looking for menu "${menuSlug}" in project ${project.id}`);
-    const menu = await content.getNavigationMenuBySlug(menuSlug, project.id);
+    // Load navigation will automatically initialize project if needed
+    await contentStore.loadAllNavigation();
     
-    console.log('[Navigation] Menu response:', menu);
+    // Detect if we're on mobile to determine which menu to use
+    const isMobile = window.innerWidth < 1024;
+    const menu = isMobile ? contentStore.mobileMenu : contentStore.headerMenu;
+    
+    console.log('[Navigation] Using menu:', {
+      isMobile,
+      menu: menu ? menu.slug : 'none'
+    });
     
     if (!menu) {
-      console.warn(`[Navigation] Menu "${menuSlug}" not found, falling back to page-based navigation`);
-      await loadNavigationFromPages(project);
+      console.warn('[Navigation] No menu found, falling back to page-based navigation');
+      const project = contentStore.currentProject;
+      if (project) {
+        await loadNavigationFromPages(project);
+      }
       return;
     }
 
-    console.log(`[Navigation] Loaded menu "${menuSlug}" with ${menu.items?.length || 0} items`);
+    console.log(`[Navigation] Loaded menu "${menu.slug}" with ${menu.items?.length || 0} items`);
     console.log('[Navigation] Menu items:', menu.items);
 
     // Convert navigation items to the expected format
     items.value = await convertMenuItemsToNavigationItems(menu.items || []);
 
     console.log('[Navigation] Loaded navigation items:', items.value);
+    
+    // Preload pages from navigation
+    items.value.forEach(item => {
+      if (item.link && item.link !== '#') {
+        contentStore.preloadPage(item.link.replace('/', ''));
+      }
+    });
   } catch (error) {
     console.error('[Navigation] Failed to load navigation items:', error);
     console.error('[Navigation] Error details:', {

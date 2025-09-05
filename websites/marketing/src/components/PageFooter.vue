@@ -41,7 +41,7 @@ import { TLogo } from '@tiko/ui';
 import { useBemm } from 'bemm';
 import { computed, ref, onMounted } from 'vue';
 import { RouterLinkProps } from 'vue-router';
-import { useContent } from '@tiko/core';
+import { useContentStore } from '@/stores';
 const bemm = useBemm('footer');
 
 const links = computed(() => [
@@ -50,14 +50,8 @@ const links = computed(() => [
   { text: 'Contact Us', to: { name: 'content', params: { view: 'contact' } } },
 ]);
 
-// Initialize content service
-const content = useContent({
-  projectSlug: 'marketing',
-  useWorker: import.meta.env.VITE_USE_CONTENT_WORKER === 'true',
-  workerUrl: import.meta.env.VITE_CONTENT_API_URL,
-  deployedVersionId: import.meta.env.VITE_DEPLOYED_VERSION_ID,
-  noCache: false
-});
+// Use content store
+const contentStore = useContentStore();
 
 // Dynamic navigation from database
 const navigation = ref<Array<{
@@ -138,16 +132,10 @@ const fallbackNavigation = [
 // Load footer navigation from database
 async function loadFooterNavigation() {
   try {
-    // Get the marketing project
-    const project = await content.getProject('marketing');
-    if (!project) {
-      console.error('[Footer] Marketing project not found');
-      navigation.value = fallbackNavigation;
-      return;
-    }
+    // Ensure navigation is loaded
+    await contentStore.loadAllNavigation();
 
-    // Get the footer menu
-    const menu = await content.getNavigationMenuBySlug('main-footer-menu', project.id);
+    const menu = contentStore.footerMenu;
     
     if (!menu || !menu.items || menu.items.length === 0) {
       console.warn('[Footer] Menu "main-footer-menu" not found or empty, using fallback');
