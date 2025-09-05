@@ -1521,7 +1521,6 @@ export class ContentServiceWrapper {
         *,
         items:content_navigation_items(*)
       `)
-      .eq('is_active', true)
       .order('name', { ascending: true });
 
     if (projectId) {
@@ -1550,7 +1549,14 @@ export class ContentServiceWrapper {
       .from('content_navigation_menus')
       .select(`
         *,
-        items:content_navigation_items(*)
+        items:content_navigation_items(
+          *,
+          page:content_pages(
+            id,
+            slug,
+            title
+          )
+        )
       `)
       .eq('id', id)
       .single();
@@ -1559,10 +1565,26 @@ export class ContentServiceWrapper {
       return { data: null, error: error.message };
     }
 
-    // Build hierarchical structure for items
+    // Process navigation items to include page slugs
+    const processNavigationItems = (items: any[]): any[] => {
+      return items.map(item => {
+        const processedItem = { ...item };
+        
+        // For page items, add the page slug from the joined data for easier access
+        if (item.type === 'page' && item.page) {
+          processedItem.page_slug = item.page.slug;
+          // Keep the full page object for complete information
+          processedItem.page = item.page;
+        }
+        
+        return processedItem;
+      });
+    };
+
+    // Build hierarchical structure for items with page slugs
     const processedMenu = {
       ...data,
-      items: this.buildNavigationTree(data.items || [])
+      items: this.buildNavigationTree(processNavigationItems(data.items || []))
     };
 
     return { data: processedMenu, error: null };
@@ -1579,10 +1601,16 @@ export class ContentServiceWrapper {
       .from('content_navigation_menus')
       .select(`
         *,
-        items:content_navigation_items(*)
+        items:content_navigation_items(
+          *,
+          page:content_pages(
+            id,
+            slug,
+            title
+          )
+        )
       `)
-      .eq('slug', slug)
-      .eq('is_active', true);
+      .eq('slug', slug);
 
     if (projectId) {
       query = query.eq('project_id', projectId);
@@ -1594,10 +1622,26 @@ export class ContentServiceWrapper {
       return { data: null, error: error.message };
     }
 
-    // Build hierarchical structure for items
+    // Process navigation items to include page slugs
+    const processNavigationItems = (items: any[]): any[] => {
+      return items.map(item => {
+        const processedItem = { ...item };
+        
+        // For page items, add the page slug from the joined data for easier access
+        if (item.type === 'page' && item.page) {
+          processedItem.page_slug = item.page.slug;
+          // Keep the full page object for complete information
+          processedItem.page = item.page;
+        }
+        
+        return processedItem;
+      });
+    };
+
+    // Build hierarchical structure for items with page slugs
     const processedMenu = {
       ...data,
-      items: this.buildNavigationTree(data.items || [])
+      items: this.buildNavigationTree(processNavigationItems(data.items || []))
     };
 
     return { data: processedMenu, error: null };
@@ -1628,7 +1672,7 @@ export class ContentServiceWrapper {
     const itemMap = new Map();
     const rootItems: any[] = [];
 
-    // First pass: create a map of all items
+    // First pass: create a map of all items (preserve all properties including page data)
     items.forEach(item => {
       itemMap.set(item.id, { ...item, items: [] });
     });
@@ -1646,6 +1690,21 @@ export class ContentServiceWrapper {
         rootItems.push(currentItem);
       }
     });
+
+    // Sort root items by order_index
+    rootItems.sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+    
+    // Sort children recursively
+    const sortChildren = (items: any[]) => {
+      items.forEach(item => {
+        if (item.items && item.items.length > 0) {
+          item.items.sort((a: any, b: any) => (a.order_index || 0) - (b.order_index || 0));
+          sortChildren(item.items);
+        }
+      });
+    };
+    
+    sortChildren(rootItems);
 
     return rootItems;
   }
