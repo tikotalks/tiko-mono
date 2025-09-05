@@ -28,6 +28,8 @@ export const useContentStore = defineStore('content', () => {
   
   // Debug what methods are available
   console.log('[ContentStore] Available methods on content:', Object.keys(content))
+  console.log('[ContentStore] getNavigationMenuBySlug exists?', typeof content.getNavigationMenuBySlug)
+  console.log('[ContentStore] Using worker?', import.meta.env.VITE_USE_CONTENT_WORKER)
 
   // State
   const currentProject = ref<ContentProject | null>(null)
@@ -84,6 +86,10 @@ export const useContentStore = defineStore('content', () => {
     loading.value.navigation = true
     try {
       console.log('[ContentStore] Loading all navigation menus...')
+      
+      // Debug: Check if method exists
+      console.log('[ContentStore] content object:', content)
+      console.log('[ContentStore] getNavigationMenuBySlug method:', content.getNavigationMenuBySlug)
       
       // Load all menus in parallel
       const [headerMenu, footerMenu, mobileMenu] = await Promise.all([

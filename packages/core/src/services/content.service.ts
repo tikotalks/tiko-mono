@@ -1493,7 +1493,7 @@ class ContentService {
 
   async getNavigationMenus(projectId?: string): Promise<NavigationMenu[]> {
     try {
-      let query = '/content_navigation_menus?order=name'
+      let query = '/content_navigation_menus?is_active=eq.true&order=name'
       if (projectId) {
         query += `&project_id=eq.${projectId}`
       }
@@ -1521,7 +1521,7 @@ class ContentService {
 
   async getNavigationMenuBySlug(slug: string, projectId?: string): Promise<NavigationMenu | null> {
     try {
-      let query = `/content_navigation_menus?slug=eq.${slug}`
+      let query = `/content_navigation_menus?slug=eq.${slug}&is_active=eq.true`
       if (projectId) {
         query += `&project_id=eq.${projectId}`
       }
