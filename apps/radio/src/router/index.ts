@@ -6,9 +6,9 @@ const router = createAppRouter({
     {
       path: '/',
       name: 'Radio',
-      component: RadioView
-    }
-  ]
+      component: RadioView,
+    },
+  ],
 })
 
 export default router

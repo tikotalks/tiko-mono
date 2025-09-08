@@ -15,11 +15,5 @@
     "**/.nuxt/**",
     "**/.output/**"
   ],
-  "fileExtensions": [
-    ".ts",
-    ".tsx",
-    ".js",
-    ".jsx",
-    ".vue"
-  ]
+  "fileExtensions": [".ts", ".tsx", ".js", ".jsx", ".vue"]
 }

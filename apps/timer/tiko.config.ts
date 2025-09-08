@@ -15,13 +15,13 @@ export default defineConfig({
     tertiary: BaseColors.GREEN,
   },
   auth: {
-    skipAuth: true
+    skipAuth: true,
   },
   splash: {
     show: true,
     appName: 'Timer',
     color: BaseColors.ORANGE,
     themeColor: ColorValue.ORANGE,
-    loadingText: 'Loading Timer...'
-  }
+    loadingText: 'Loading Timer...',
+  },
 })

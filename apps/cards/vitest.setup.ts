@@ -9,7 +9,7 @@ process.env.VITE_SUPABASE_PUBLISHABLE_KEY = 'test-anon-key'
 global.navigator = {
   ...global.navigator,
   onLine: true,
-  vibrate: vi.fn(() => true)
+  vibrate: vi.fn(() => true),
 }
 
 // Mock Speech Synthesis API
@@ -21,7 +21,7 @@ const mockSpeechSynthesis = {
   getVoices: vi.fn(() => []),
   speaking: false,
   paused: false,
-  pending: false
+  pending: false,
 }
 
 // Mock SpeechSynthesisUtterance
@@ -48,8 +48,8 @@ global.window = {
     href: 'http://localhost:3000',
     pathname: '/',
     search: '',
-    hash: ''
-  }
+    hash: '',
+  },
 }
 
 // Make speechSynthesis available globally
@@ -61,12 +61,12 @@ const localStorageMock = {
   getItem: vi.fn(),
   setItem: vi.fn(),
   clear: vi.fn(),
-  removeItem: vi.fn()
+  removeItem: vi.fn(),
 }
 global.localStorage = localStorageMock
 
 // Configure Vue Test Utils
 config.global.stubs = {
   transition: false,
-  'transition-group': false
+  'transition-group': false,
 }

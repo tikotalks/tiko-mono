@@ -32,87 +32,87 @@
         @cancel="handleCancel"
       />
 
-      <BulkCardCreator
-        v-if="mode === 'bulk'"
-        @create="handleBulkCreate"
-        @cancel="handleCancel"
-      />
+      <BulkCardCreator v-if="mode === 'bulk'" @create="handleBulkCreate" @cancel="handleCancel" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject } from 'vue';
-import { useBemm } from 'bemm';
-import { useI18n } from '@tiko/core';
-import { TButton, TButtonGroup } from '@tiko/ui';
-import CardForm from './CardForm.vue';
-import BulkCardCreator from './BulkCardCreator.vue';
-import type { TCardTile as CardTile } from '@tiko/ui';
+  import { ref, computed, inject } from 'vue'
+  import { useBemm } from 'bemm'
+  import { useI18n } from '@tiko/core'
+  import { TButton, TButtonGroup } from '@tiko/ui'
+  import CardForm from './CardForm.vue'
+  import BulkCardCreator from './BulkCardCreator.vue'
+  import type { TCardTile as CardTile } from '@tiko/ui'
 
-const bemm = useBemm('add-cards-modal');
-const { t } = useI18n();
+  const bemm = useBemm('add-cards-modal')
+  const { t } = useI18n()
 
-// Inject popup service to close modal
-const popupService = inject<any>('popupService');
+  // Inject popup service to close modal
+  const popupService = inject<any>('popupService')
 
-const props = defineProps<{
-  index?: number;
-  onSave?: (card: Partial<CardTile>, index: number) => Promise<void>;
-  onCreate?: (cards: Partial<CardTile>[]) => Promise<void>;
-}>();
+  const props = defineProps<{
+    index?: number
+    onSave?: (card: Partial<CardTile>, index: number) => Promise<void>
+    onCreate?: (cards: Partial<CardTile>[]) => Promise<void>
+  }>()
 
-// Toggle between single and bulk mode
-const mode = ref<'single' | 'bulk'>('single');
+  // Toggle between single and bulk mode
+  const mode = ref<'single' | 'bulk'>('single')
 
-// Create empty card for single mode
-const singleCard = computed(() => ({
-  id: 'new-card',
-  title: '',
-  icon: 'circle-question' as any,
-  color: 'red' as any,
-  type: 'card' as any,
-  image: '',
-  speech: '',
-  index: props.index ?? 0,
-}));
+  // Create empty card for single mode
+  const singleCard = computed(() => ({
+    id: 'new-card',
+    title: '',
+    icon: 'circle-question' as any,
+    color: 'red' as any,
+    type: 'card' as any,
+    image: '',
+    speech: '',
+    index: props.index ?? 0,
+  }))
 
-// Handle single card save
-const handleSingleSave = async (cardData: Partial<CardTile>, index: number, translations: any[]) => {
-  if (props.onSave) {
-    await props.onSave(cardData, props.index ?? index);
+  // Handle single card save
+  const handleSingleSave = async (
+    cardData: Partial<CardTile>,
+    index: number,
+    translations: any[]
+  ) => {
+    if (props.onSave) {
+      await props.onSave(cardData, props.index ?? index)
+    }
+    popupService.close()
   }
-  popupService.close();
-};
 
-// Handle bulk create
-const handleBulkCreate = async (cards: Partial<CardTile>[]) => {
-  if (props.onCreate) {
-    await props.onCreate(cards);
+  // Handle bulk create
+  const handleBulkCreate = async (cards: Partial<CardTile>[]) => {
+    if (props.onCreate) {
+      await props.onCreate(cards)
+    }
+    // BulkCardCreator handles its own closing
   }
-  // BulkCardCreator handles its own closing
-};
 
-// Handle cancel
-const handleCancel = () => {
-  popupService.close();
-};
+  // Handle cancel
+  const handleCancel = () => {
+    popupService.close()
+  }
 </script>
 
 <style lang="scss">
-.add-cards-modal {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space);
+  .add-cards-modal {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space);
 
-  &__mode-selector {
-    padding: 0 var(--space);
-    padding-top: var(--space);
-  }
+    &__mode-selector {
+      padding: 0 var(--space);
+      padding-top: var(--space);
+    }
 
-  &__content {
-    flex: 1;
-    overflow: auto;
+    &__content {
+      flex: 1;
+      overflow: auto;
+    }
   }
-}
 </style>

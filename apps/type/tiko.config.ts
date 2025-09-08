@@ -10,7 +10,7 @@ export default defineConfig({
     color: BaseColors.ORANGE,
   },
   auth: {
-    skipAuth: true
+    skipAuth: true,
   },
   theme: {
     primary: BaseColors.ORANGE,
@@ -22,9 +22,9 @@ export default defineConfig({
     appName: 'Type',
     color: BaseColors.ORANGE,
     themeColor: ColorValue.ORANGE,
-    loadingText: 'Loading Type...'
+    loadingText: 'Loading Type...',
   },
   i18n: {
-    categories: ['common', 'type']
-  }
+    categories: ['common', 'type'],
+  },
 })

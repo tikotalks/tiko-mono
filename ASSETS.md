@@ -24,7 +24,7 @@ Assets are stored in the `assets` table with the following structure:
 ```sql
 CREATE TABLE assets (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  
+
   -- Basic file information
   title VARCHAR(255) NOT NULL,
   description TEXT,
@@ -34,20 +34,20 @@ CREATE TABLE assets (
   file_size INTEGER NOT NULL,
   mime_type VARCHAR(100) NOT NULL,
   file_extension VARCHAR(10) NOT NULL,
-  
+
   -- Categorization
   categories TEXT[],
   tags TEXT[],
-  
+
   -- File metadata
   width INTEGER, -- For images/videos
   height INTEGER, -- For images/videos
   duration INTEGER, -- For audio/video files in seconds
-  
+
   -- Access control
   is_public BOOLEAN DEFAULT false,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  
+
   -- Timestamps
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -57,6 +57,7 @@ CREATE TABLE assets (
 ## API Endpoints
 
 ### Upload Asset
+
 ```http
 POST https://assets.tikoapi.org/upload
 Content-Type: multipart/form-data
@@ -71,16 +72,19 @@ userId: UUID (optional, inferred from auth)
 ```
 
 ### Get Asset
+
 ```http
 GET https://assets.tikoapi.org/assets/{id}
 ```
 
 ### List Assets
+
 ```http
 GET https://assets.tikoapi.org/assets?page=1&limit=20&search=query&category=icons&tag=blue&type=image&public=true&userId=uuid
 ```
 
 ### Update Asset
+
 ```http
 PUT https://assets.tikoapi.org/assets/{id}
 Content-Type: application/json
@@ -95,6 +99,7 @@ Content-Type: application/json
 ```
 
 ### Delete Asset
+
 ```http
 DELETE https://assets.tikoapi.org/assets/{id}
 ```
@@ -112,8 +117,9 @@ https://assets.tikocdn.org/assets/timestamp-filename.jpg?width=300&height=200&fo
 ```
 
 Parameters:
+
 - `width` - Target width in pixels
-- `height` - Target height in pixels  
+- `height` - Target height in pixels
 - `format` - Output format (webp, jpeg, png)
 - `quality` - JPEG/WebP quality (1-100)
 
@@ -122,6 +128,7 @@ Parameters:
 ### Admin Panel
 
 Navigate to `/assets` in the admin panel to:
+
 - Upload new assets
 - Browse and search existing assets
 - Edit asset metadata (title, description, categories, tags)
@@ -135,26 +142,13 @@ The `TImage` component automatically resolves asset IDs:
 
 ```vue
 <!-- Using asset ID -->
-<TImage 
-  src="550e8400-e29b-41d4-a716-446655440000" 
-  alt="My asset"
-  size="medium"
-/>
+<TImage src="550e8400-e29b-41d4-a716-446655440000" alt="My asset" size="medium" />
 
 <!-- Using direct URL -->
-<TImage 
-  src="https://assets.tikocdn.org/assets/1234567890-logo.png"
-  alt="Logo"
-/>
+<TImage src="https://assets.tikocdn.org/assets/1234567890-logo.png" alt="Logo" />
 
 <!-- With optimization -->
-<TImage 
-  :src="assetId"
-  alt="Optimized image"
-  :width="300"
-  :height="200"
-  responsive
-/>
+<TImage :src="assetId" alt="Optimized image" :width="300" :height="200" responsive />
 ```
 
 ### Assets Service
@@ -170,14 +164,14 @@ const asset = await assetsService.uploadAsset({
   title: 'My Image',
   categories: ['icons', 'ui'],
   tags: ['blue', 'round'],
-  isPublic: true
+  isPublic: true,
 })
 
 // Get asset URL
 const url = assetsService.getAssetUrl(asset)
-const optimizedUrl = assetsService.getOptimizedUrl(asset, { 
-  width: 300, 
-  format: 'webp' 
+const optimizedUrl = assetsService.getOptimizedUrl(asset, {
+  width: 300,
+  format: 'webp',
 })
 
 // List assets
@@ -186,7 +180,7 @@ const { assets, total } = await assetsService.listAssets({
   category: 'icons',
   isPublic: true,
   page: 1,
-  limit: 20
+  limit: 20,
 })
 ```
 
@@ -224,6 +218,7 @@ wrangler deploy
 ### 4. DNS Configuration
 
 Set up DNS records:
+
 - `assets.tikoapi.org` → Assets worker
 - `assets.tikocdn.org` → R2 bucket public URL
 
@@ -241,6 +236,7 @@ The assets table uses RLS policies:
 ### File Validation
 
 The worker validates:
+
 - File types (images, videos, audio, documents)
 - File size limits
 - Malicious content detection (planned)
@@ -254,6 +250,7 @@ The worker validates:
 ## Categories and Tags
 
 ### Suggested Categories
+
 - `icons` - UI icons and symbols
 - `backgrounds` - Background images and patterns
 - `logos` - Company and brand logos
@@ -264,6 +261,7 @@ The worker validates:
 - `videos` - Video content
 
 ### Tagging Best Practices
+
 - Use descriptive tags: `blue`, `round`, `button`, `navigation`
 - Include style tags: `flat`, `outlined`, `filled`, `gradient`
 - Add functional tags: `clickable`, `decorative`, `informational`
@@ -284,6 +282,7 @@ tiko-assets/
 Filename format: `{timestamp}-{safe-name}.{extension}`
 
 Where:
+
 - `timestamp` - Unix timestamp for uniqueness
 - `safe-name` - Sanitized version of original filename
 - `extension` - Original file extension (lowercase)
@@ -291,6 +290,7 @@ Where:
 ## Monitoring
 
 ### Metrics to Track
+
 - Upload success/failure rates
 - File size distribution
 - Most accessed assets
@@ -298,6 +298,7 @@ Where:
 - CDN cache hit rates
 
 ### Alerts
+
 - Failed uploads exceeding threshold
 - Storage quota approaching limits
 - Unusual access patterns

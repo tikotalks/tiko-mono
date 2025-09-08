@@ -1,82 +1,90 @@
-import { useAuthStore, unifiedItemService } from '@tiko/core';
-import { useI18n } from '@tiko/core';
-import type { TCardTile as BaseCardTile } from '@tiko/ui';
+import { useAuthStore, unifiedItemService } from '@tiko/core'
+import { useI18n } from '@tiko/core'
+import type { TCardTile as BaseCardTile } from '@tiko/ui'
 
 // Extend CardTile to include sequence-specific fields
 type CardTile = BaseCardTile & {
-  rewardAnimation?: string;
-};
-import { sequenceSupabaseService } from './supabase-sequence.service';
-import { ItemTranslationService } from './item-translation.service';
-import type { ItemTranslation } from '../models/ItemTranslation.model';
-import type { PublicItem, UserItemOrder } from '../models/PublicItem.model';
+  rewardAnimation?: string
+}
+import { sequenceSupabaseService } from './supabase-sequence.service'
+import { ItemTranslationService } from './item-translation.service'
+import type { ItemTranslation } from '../models/ItemTranslation.model'
+import type { PublicItem, UserItemOrder } from '../models/PublicItem.model'
 
-const APP_NAME = 'sequence';
+const APP_NAME = 'sequence'
 
 interface CardMetadata {
-  icon?: string;
-  color?: string;
-  image?: string;
-  speech?: string;
-  rewardAnimation?: string;
+  icon?: string
+  color?: string
+  image?: string
+  speech?: string
+  rewardAnimation?: string
 }
 
 // Cache for hasChildren checks
-const childrenCache = new Map<string, boolean>();
+const childrenCache = new Map<string, boolean>()
 
 export const sequenceService = {
-  async loadSequence(parentId?: string): Promise<typeof CardTile[]> {
+  async loadSequence(parentId?: string): Promise<(typeof CardTile)[]> {
     try {
-      const authStore = useAuthStore();
-      const userId = authStore.user?.id;
-      const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true';
-      
+      const authStore = useAuthStore()
+      const userId = authStore.user?.id
+      const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
+
       // If no user and not in skip auth mode, return empty
       if (!userId && !isSkipAuth) {
-        console.warn('[SequenceService] No authenticated user found and not in skip auth mode');
-        return [];
+        console.warn('[SequenceService] No authenticated user found and not in skip auth mode')
+        return []
       }
 
       // Get current locale from i18n
-      const { currentLocale, locale: localeRef } = useI18n();
-      const locale = localeRef.value || currentLocale.value;
-      
-      console.log('[loadSequence] Using locale:', locale, 'from i18n (localeRef:', localeRef.value, 'currentLocale:', currentLocale.value, ')');
-      
-      let items: any[];
-      
+      const { currentLocale, locale: localeRef } = useI18n()
+      const locale = localeRef.value || currentLocale.value
+
+      console.log(
+        '[loadSequence] Using locale:',
+        locale,
+        'from i18n (localeRef:',
+        localeRef.value,
+        'currentLocale:',
+        currentLocale.value,
+        ')'
+      )
+
+      let items: any[]
+
       if (isSkipAuth && !userId) {
         // Skip auth mode: Load only curated sequences using unified service
-        console.log('[loadSequence] Skip auth mode - loading with locale:', locale);
-        
+        console.log('[loadSequence] Skip auth mode - loading with locale:', locale)
+
         // In skip auth mode, try with requested locale first, but unified service should
         // automatically fallback to base locale if translations don't exist
         // If this doesn't work, we might need to implement client-side fallback
-        const loadLocale = locale || 'en'; // Use requested locale with English as ultimate fallback
-        
-        console.log('[loadSequence] Calling unified service with locale:', loadLocale);
-        const baseItems = parentId 
+        const loadLocale = locale || 'en' // Use requested locale with English as ultimate fallback
+
+        console.log('[loadSequence] Calling unified service with locale:', loadLocale)
+        const baseItems = parentId
           ? await unifiedItemService.loadItemsByParentId(parentId, {
               includeCurated: true,
               includeChildren: true,
-              locale: loadLocale
+              locale: loadLocale,
             })
           : await unifiedItemService.loadRootItems('', APP_NAME, {
               includeCurated: true,
               includeChildren: true,
-              locale: loadLocale
-            });
-        console.log('[loadSequence] Unified service returned', baseItems.length, 'items');
+              locale: loadLocale,
+            })
+        console.log('[loadSequence] Unified service returned', baseItems.length, 'items')
         if (baseItems.length > 0) {
           console.log('[loadSequence] First item from unified service:', {
             id: baseItems[0].id,
             name: baseItems[0].name,
             content: baseItems[0].content,
             base_locale: baseItems[0].base_locale,
-            effective_locale: baseItems[0].effective_locale
-          });
+            effective_locale: baseItems[0].effective_locale,
+          })
         }
-        
+
         // Convert BaseItem to the format expected by sequence service
         items = baseItems.map(item => ({
           ...item,
@@ -85,27 +93,29 @@ export const sequenceService = {
           metadata: item.metadata || {},
           effective_locale: item.effective_locale || item.base_locale || 'en',
           order_index: item.order_index, // Use order_index from BaseItem
-          has_children: item.has_children || (item.children && item.children.length > 0) // Check both flag and actual children
-        }));
+          has_children: item.has_children || (item.children && item.children.length > 0), // Check both flag and actual children
+        }))
       } else {
         // Normal mode: Load sequence with translations for current locale (includes curated items)
-        items = await sequenceSupabaseService.getSequenceWithTranslations(userId, parentId, locale);
+        items = await sequenceSupabaseService.getSequenceWithTranslations(userId, parentId, locale)
       }
 
       return items.map((item, arrayIndex) => {
-        const metadata = item.metadata as CardMetadata;
-        
+        const metadata = item.metadata as CardMetadata
 
         // If we have a translation (effective_locale is set), use the translated content for speech
-        const speech = item.effective_locale && item.effective_locale !== item.base_locale
-          ? item.content || metadata?.speech || ''  // Use translated content if available
-          : metadata?.speech || item.content || ''; // Otherwise use metadata speech or base content
+        const speech =
+          item.effective_locale && item.effective_locale !== item.base_locale
+            ? item.content || metadata?.speech || '' // Use translated content if available
+            : metadata?.speech || item.content || '' // Otherwise use metadata speech or base content
 
-        const image = metadata?.image || '';
-        
-        const finalIndex = item.order_index ?? arrayIndex;
-        console.log(`[loadSequence] Item ${item.id} (${item.name}): order_index=${item.order_index}, arrayIndex=${arrayIndex}, finalIndex=${finalIndex}`);
-        
+        const image = metadata?.image || ''
+
+        const finalIndex = item.order_index ?? arrayIndex
+        console.log(
+          `[loadSequence] Item ${item.id} (${item.name}): order_index=${item.order_index}, arrayIndex=${arrayIndex}, finalIndex=${finalIndex}`
+        )
+
         const result = {
           id: item.id,
           title: item.name, // This will already be the translated name from getSequenceWithTranslations
@@ -123,54 +133,60 @@ export const sequenceService = {
           ownerId: item.user_id, // Add ownerId for ownership checks
           user_id: item.user_id, // Add user_id for ownership checks
           rewardAnimation: metadata?.rewardAnimation,
-          has_children: item.has_children // Add has_children for UI
-        } as CardTile;
+          has_children: item.has_children, // Add has_children for UI
+        } as CardTile
 
-
-        return result;
-      });
+        return result
+      })
     } catch (error) {
-      console.error('Failed to load sequence:', error);
-      return [];
+      console.error('Failed to load sequence:', error)
+      return []
     }
   },
 
-  async loadAllSequence(includeCurated = false): Promise<typeof CardTile[]> {
+  async loadAllSequence(includeCurated = false): Promise<(typeof CardTile)[]> {
     try {
-      const authStore = useAuthStore();
-      const userId = authStore.user?.id;
-      const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true';
+      const authStore = useAuthStore()
+      const userId = authStore.user?.id
+      const isSkipAuth = sessionStorage.getItem('tiko_skip_auth') === 'true'
 
       // Allow loading in skip auth mode or when user is authenticated
       if (!userId && !isSkipAuth) {
-        console.warn('[SequenceService] No authenticated user found and not in skip auth mode');
-        return [];
+        console.warn('[SequenceService] No authenticated user found and not in skip auth mode')
+        return []
       }
 
       // Get current locale from i18n
-      const { currentLocale, locale: localeRef } = useI18n();
-      const locale = localeRef.value || currentLocale.value;
-      console.log('[loadAllSequence] Loading ALL sequence with locale:', locale, 'includeCurated:', includeCurated, 'skipAuth:', isSkipAuth);
+      const { currentLocale, locale: localeRef } = useI18n()
+      const locale = localeRef.value || currentLocale.value
+      console.log(
+        '[loadAllSequence] Loading ALL sequence with locale:',
+        locale,
+        'includeCurated:',
+        includeCurated,
+        'skipAuth:',
+        isSkipAuth
+      )
 
-      let items: any[];
-      
+      let items: any[]
+
       if (isSkipAuth && !userId) {
         // Skip auth mode: Load only curated sequences using unified service
-        console.log('[loadAllSequence] Skip auth mode - loading curated sequences');
-        
+        console.log('[loadAllSequence] Skip auth mode - loading curated sequences')
+
         // Use requested locale but unified service should fallback to base locale if needed
-        const loadLocale = locale || 'en';
-        
+        const loadLocale = locale || 'en'
+
         const curatedItems = await unifiedItemService.loadRootItems('', APP_NAME, {
           includeCurated: true,
           includeChildren: true,
-          locale: loadLocale
-        });
-        
+          locale: loadLocale,
+        })
+
         // Flatten the structure to include both parents and children
         const flattenItems = (itemList: any[], parentId: string | null = null): any[] => {
-          const result: any[] = [];
-          
+          const result: any[] = []
+
           for (const item of itemList) {
             // Add the parent item
             result.push({
@@ -185,37 +201,44 @@ export const sequenceService = {
               user_id: item.user_id || null,
               is_public: item.is_public || false,
               is_curated: item.is_curated || false,
-              has_children: item.has_children || (item.children && item.children.length > 0)
-            });
-            
+              has_children: item.has_children || (item.children && item.children.length > 0),
+            })
+
             // Recursively add children
             if (item.children && item.children.length > 0) {
-              result.push(...flattenItems(item.children, item.id));
+              result.push(...flattenItems(item.children, item.id))
             }
           }
-          
-          return result;
-        };
-        
-        items = flattenItems(curatedItems);
+
+          return result
+        }
+
+        items = flattenItems(curatedItems)
       } else {
         // Authenticated mode: Load user's sequences and optionally curated ones
-        items = await sequenceSupabaseService.getAllSequenceWithTranslations(userId, locale, includeCurated);
+        items = await sequenceSupabaseService.getAllSequenceWithTranslations(
+          userId,
+          locale,
+          includeCurated
+        )
       }
-      
-      console.log('[loadAllSequence] Total items loaded:', items.length);
+
+      console.log('[loadAllSequence] Total items loaded:', items.length)
 
       return items.map((item, arrayIndex) => {
-        const metadata = item.metadata as CardMetadata;
+        const metadata = item.metadata as CardMetadata
 
         // If we have a translation (effective_locale is set), use the translated content for speech
-        const speech = item.effective_locale && item.effective_locale !== item.base_locale
-          ? item.content || metadata?.speech || ''  // Use translated content if available
-          : metadata?.speech || item.content || ''; // Otherwise use metadata speech or base content
+        const speech =
+          item.effective_locale && item.effective_locale !== item.base_locale
+            ? item.content || metadata?.speech || '' // Use translated content if available
+            : metadata?.speech || item.content || '' // Otherwise use metadata speech or base content
 
-        const finalIndex = item.order_index ?? arrayIndex;
-        console.log(`[loadAllSequence] Item ${item.id} (${item.name}): order_index=${item.order_index}, arrayIndex=${arrayIndex}, finalIndex=${finalIndex}`);
-        
+        const finalIndex = item.order_index ?? arrayIndex
+        console.log(
+          `[loadAllSequence] Item ${item.id} (${item.name}): order_index=${item.order_index}, arrayIndex=${arrayIndex}, finalIndex=${finalIndex}`
+        )
+
         return {
           id: item.id,
           title: item.name, // This will already be the translated name from getSequenceWithTranslations
@@ -233,48 +256,53 @@ export const sequenceService = {
           ownerId: item.user_id, // Add ownerId for ownership checks
           user_id: item.user_id, // Add user_id for ownership checks
           rewardAnimation: metadata?.rewardAnimation,
-          has_children: item.has_children // Add has_children for UI
-        };
-      });
+          has_children: item.has_children, // Add has_children for UI
+        }
+      })
     } catch (error) {
-      console.error('Failed to load all sequence:', error);
-      return [];
+      console.error('Failed to load all sequence:', error)
+      return []
     }
   },
 
   async hasChildren(parentId: string): Promise<boolean> {
     // Check cache first
     if (childrenCache.has(parentId)) {
-      return childrenCache.get(parentId)!;
+      return childrenCache.get(parentId)!
     }
 
     try {
-      const authStore = useAuthStore();
-      const userId = authStore.user?.id;
+      const authStore = useAuthStore()
+      const userId = authStore.user?.id
       if (!userId) {
-        return false;
+        return false
       }
 
-      const children = await sequenceSupabaseService.getSequence(userId, parentId);
-      const hasChildren = children.length > 0;
+      const children = await sequenceSupabaseService.getSequence(userId, parentId)
+      const hasChildren = children.length > 0
 
       // Cache the result
-      childrenCache.set(parentId, hasChildren);
+      childrenCache.set(parentId, hasChildren)
 
-      return hasChildren;
+      return hasChildren
     } catch (error) {
-      console.error('Failed to check children:', error);
-      return false;
+      console.error('Failed to check children:', error)
+      return false
     }
   },
 
-  async saveCard(card: Partial<CardTile>, parentId?: string, index?: number, translations?: ItemTranslation[]): Promise<string | null> {
+  async saveCard(
+    card: Partial<CardTile>,
+    parentId?: string,
+    index?: number,
+    translations?: ItemTranslation[]
+  ): Promise<string | null> {
     try {
-      const authStore = useAuthStore();
-      const userId = authStore.user?.id;
+      const authStore = useAuthStore()
+      const userId = authStore.user?.id
       if (!userId) {
-        console.error('No authenticated user found');
-        return null;
+        console.error('No authenticated user found')
+        return null
       }
 
       const metadata: CardMetadata = {
@@ -283,19 +311,19 @@ export const sequenceService = {
         image: card.image,
         speech: card.speech,
         rewardAnimation: card.rewardAnimation === '' ? undefined : card.rewardAnimation,
-      };
-      
+      }
+
       console.log('[saveCard] Saving card with metadata:', {
         cardId: card.id,
         cardType: card.type,
         image: card.image,
         rewardAnimation: card.rewardAnimation,
         metadata: metadata,
-        metadataString: JSON.stringify(metadata)
-      });
+        metadataString: JSON.stringify(metadata),
+      })
 
-      const isPublic = card.isPublic || false;
-      
+      const isPublic = card.isPublic || false
+
       const itemData = {
         user_id: userId,
         app_name: APP_NAME,
@@ -303,7 +331,7 @@ export const sequenceService = {
         name: card.title || 'Untitled',
         content: card.speech || '',
         metadata,
-        parent_id: card.parentId !== undefined ? card.parentId : (parentId || null),
+        parent_id: card.parentId !== undefined ? card.parentId : parentId || null,
         icon: card.icon,
         color: card.color,
         order_index: index ?? card.index ?? 0,
@@ -311,66 +339,69 @@ export const sequenceService = {
         is_public: isPublic,
         // When making something non-public, also remove curated status
         // since curated items should always be public
-        is_curated: isPublic ? undefined : false
-      };
+        is_curated: isPublic ? undefined : false,
+      }
 
-      let cardId: string;
+      let cardId: string
 
       if (card.id && !card.id.startsWith('empty-') && !card.id.startsWith('temp-')) {
         // Update existing card
-        await sequenceSupabaseService.updateCard(card.id, itemData);
-        cardId = card.id;
-        
+        await sequenceSupabaseService.updateCard(card.id, itemData)
+        cardId = card.id
+
         // If this is a sequence being updated, cascade visibility to children
         if (card.type === 'sequence') {
           try {
-            await sequenceSupabaseService.updateSequenceChildrenVisibility(cardId, userId, itemData.is_public || false);
+            await sequenceSupabaseService.updateSequenceChildrenVisibility(
+              cardId,
+              userId,
+              itemData.is_public || false
+            )
           } catch (error) {
-            console.warn('Failed to update children visibility:', error);
+            console.warn('Failed to update children visibility:', error)
           }
         }
-        
+
         // Clear cache for parent if card moved
-        if (parentId) childrenCache.delete(parentId);
+        if (parentId) childrenCache.delete(parentId)
       } else {
         // Create new card
-        const newItem = await sequenceSupabaseService.createCard(itemData);
-        cardId = newItem?.id || '';
+        const newItem = await sequenceSupabaseService.createCard(itemData)
+        cardId = newItem?.id || ''
         // Clear cache for parent since we added a child
-        if (parentId) childrenCache.delete(parentId);
+        if (parentId) childrenCache.delete(parentId)
       }
-
 
       // Save translations if provided
       if (cardId && translations && translations.length > 0) {
-        const translationsToSave: Record<string, { name?: string; content?: string }> = {};
+        const translationsToSave: Record<string, { name?: string; content?: string }> = {}
 
         translations.forEach(t => {
           translationsToSave[t.locale] = {
             name: t.name,
-            content: t.content
-          };
-        });
+            content: t.content,
+          }
+        })
 
-        await ItemTranslationService.saveMultipleTranslations(cardId, translationsToSave);
+        await ItemTranslationService.saveMultipleTranslations(cardId, translationsToSave)
       }
 
       return cardId
     } catch (error) {
-      console.error('Failed to save card:', error);
-      return null;
+      console.error('Failed to save card:', error)
+      return null
     }
   },
 
   async deleteCard(cardId: string): Promise<boolean> {
     try {
-      await sequenceSupabaseService.deleteCard(cardId);
+      await sequenceSupabaseService.deleteCard(cardId)
       // Clear all cache on delete (we don't know the parent)
-      childrenCache.clear();
-      return true;
+      childrenCache.clear()
+      return true
     } catch (error) {
-      console.error('Failed to delete card:', error);
-      return false;
+      console.error('Failed to delete card:', error)
+      return false
     }
   },
 
@@ -379,29 +410,29 @@ export const sequenceService = {
       // Update order_index for each card
       const updatePromises = cardIds.map((id, index) =>
         sequenceSupabaseService.updateCard(id, { order_index: index })
-      );
+      )
 
-      await Promise.all(updatePromises);
-      return true;
+      await Promise.all(updatePromises)
+      return true
     } catch (error) {
-      console.error('Failed to reorder sequence:', error);
-      return false;
+      console.error('Failed to reorder sequence:', error)
+      return false
     }
   },
 
   async getCard(cardId: string): Promise<CardTile | null> {
     try {
-      const authStore = useAuthStore();
-      const userId = authStore.user?.id;
+      const authStore = useAuthStore()
+      const userId = authStore.user?.id
       if (!userId) {
-        console.warn('No authenticated user found');
-        return null;
+        console.warn('No authenticated user found')
+        return null
       }
 
-      const item = await sequenceSupabaseService.getCard(cardId);
-      if (!item) return null;
+      const item = await sequenceSupabaseService.getCard(cardId)
+      if (!item) return null
 
-      const metadata = item.metadata as CardMetadata;
+      const metadata = item.metadata as CardMetadata
       return {
         id: item.id,
         title: item.name,
@@ -417,48 +448,52 @@ export const sequenceService = {
         ownerId: item.user_id,
         user_id: item.user_id,
         rewardAnimation: metadata?.rewardAnimation,
-      } as CardTile;
+      } as CardTile
     } catch (error) {
-      console.error('Failed to get card:', error);
-      return null;
+      console.error('Failed to get card:', error)
+      return null
     }
   },
 
   async getCardPath(cardId: string): Promise<Array<{ id: string; title: string }>> {
-    const path: Array<{ id: string; title: string }> = [];
-    let currentId: string | null = cardId;
+    const path: Array<{ id: string; title: string }> = []
+    let currentId: string | null = cardId
 
     while (currentId) {
-      const card = await this.getCard(currentId);
-      if (!card) break;
+      const card = await this.getCard(currentId)
+      if (!card) break
 
-      path.unshift({ id: card.id, title: card.title });
-      currentId = card.parentId || null;
+      path.unshift({ id: card.id, title: card.title })
+      currentId = card.parentId || null
     }
 
-    return path;
+    return path
   },
 
-  async createSequence(sequenceData: {
-    title: string;
-    color: string;
-    image?: { url: string; alt: string } | null;
-    isPublic?: boolean;
-    rewardAnimation?: string;
-    items: Array<{
-      title: string;
-      color: string;
-      image?: { url: string; alt: string } | null;
-      speak?: string;
-      orderIndex: number;
-    }>;
-  }, parentId?: string, index?: number): Promise<string | null> {
+  async createSequence(
+    sequenceData: {
+      title: string
+      color: string
+      image?: { url: string; alt: string } | null
+      isPublic?: boolean
+      rewardAnimation?: string
+      items: Array<{
+        title: string
+        color: string
+        image?: { url: string; alt: string } | null
+        speak?: string
+        orderIndex: number
+      }>
+    },
+    parentId?: string,
+    index?: number
+  ): Promise<string | null> {
     try {
-      const authStore = useAuthStore();
-      const userId = authStore.user?.id;
+      const authStore = useAuthStore()
+      const userId = authStore.user?.id
       if (!userId) {
-        console.error('No authenticated user found');
-        return null;
+        console.error('No authenticated user found')
+        return null
       }
 
       // First create the sequence
@@ -469,17 +504,18 @@ export const sequenceService = {
         type: 'sequence',
         index: index || 0,
         isPublic: sequenceData.isPublic || false,
-        rewardAnimation: sequenceData.rewardAnimation === '' ? undefined : sequenceData.rewardAnimation
-      };
+        rewardAnimation:
+          sequenceData.rewardAnimation === '' ? undefined : sequenceData.rewardAnimation,
+      }
 
-      const sequenceId = await this.saveCard(sequenceCard, parentId, index);
+      const sequenceId = await this.saveCard(sequenceCard, parentId, index)
       if (!sequenceId) {
-        throw new Error('Failed to create sequence');
+        throw new Error('Failed to create sequence')
       }
 
       // Then create all the sequence items - inherit public status from parent sequence
-      const parentIsPublic = sequenceData.isPublic || false;
-      
+      const parentIsPublic = sequenceData.isPublic || false
+
       for (const item of sequenceData.items) {
         const itemCard: Partial<CardTile> = {
           title: item.title,
@@ -490,45 +526,48 @@ export const sequenceService = {
           type: 'sequence-item',
           parentId: sequenceId,
           index: item.orderIndex,
-          isPublic: parentIsPublic // Inherit public status from parent sequence
-        };
+          isPublic: parentIsPublic, // Inherit public status from parent sequence
+        }
 
-        await this.saveCard(itemCard, sequenceId, item.orderIndex);
+        await this.saveCard(itemCard, sequenceId, item.orderIndex)
       }
 
-      return sequenceId;
+      return sequenceId
     } catch (error) {
-      console.error('Error creating sequence:', error);
-      throw error;
+      console.error('Error creating sequence:', error)
+      throw error
     }
   },
 
-  async updateSequence(sequenceId: string, sequenceData: {
-    title: string;
-    color: string;
-    image?: { url: string; alt: string } | null;
-    isPublic?: boolean;
-    rewardAnimation?: string;
-    items: Array<{
-      id?: string;
-      title: string;
-      color: string;
-      image?: { url: string; alt: string } | null;
-      speak?: string;
-      orderIndex: number;
-    }>;
-  }): Promise<void> {
+  async updateSequence(
+    sequenceId: string,
+    sequenceData: {
+      title: string
+      color: string
+      image?: { url: string; alt: string } | null
+      isPublic?: boolean
+      rewardAnimation?: string
+      items: Array<{
+        id?: string
+        title: string
+        color: string
+        image?: { url: string; alt: string } | null
+        speak?: string
+        orderIndex: number
+      }>
+    }
+  ): Promise<void> {
     try {
       // Update the sequence itself (preserve existing index and parent)
-      const authStore = useAuthStore();
-      const userId = authStore.user?.id;
+      const authStore = useAuthStore()
+      const userId = authStore.user?.id
       if (!userId) {
-        throw new Error('No authenticated user found');
+        throw new Error('No authenticated user found')
       }
 
       // Get the existing sequence to preserve index and parent
-      const existingSequence = await sequenceSupabaseService.getItemById(userId, sequenceId);
-      
+      const existingSequence = await sequenceSupabaseService.getItemById(userId, sequenceId)
+
       const sequenceCard: Partial<CardTile> = {
         id: sequenceId,
         title: sequenceData.title,
@@ -538,19 +577,24 @@ export const sequenceService = {
         index: existingSequence?.order_index, // Preserve existing index
         parentId: existingSequence?.parent_id, // Preserve existing parent
         isPublic: sequenceData.isPublic ?? existingSequence?.is_public ?? false,
-        rewardAnimation: sequenceData.rewardAnimation === '' ? undefined : sequenceData.rewardAnimation
-      };
+        rewardAnimation:
+          sequenceData.rewardAnimation === '' ? undefined : sequenceData.rewardAnimation,
+      }
 
-      await this.saveCard(sequenceCard, existingSequence?.parent_id, existingSequence?.order_index);
+      await this.saveCard(sequenceCard, existingSequence?.parent_id, existingSequence?.order_index)
 
       // Get existing items
-      const existingItems = await this.loadSequence(sequenceId);
-      const existingItemsMap = new Map(existingItems.map(item => [item.id, item]));
-      const newItemIds = new Set(sequenceData.items.filter(item => item.id && !item.id.startsWith('temp-')).map(item => item.id));
+      const existingItems = await this.loadSequence(sequenceId)
+      const existingItemsMap = new Map(existingItems.map(item => [item.id, item]))
+      const newItemIds = new Set(
+        sequenceData.items
+          .filter(item => item.id && !item.id.startsWith('temp-'))
+          .map(item => item.id)
+      )
 
       // Update or create items - inherit public status from parent sequence
-      const parentIsPublic = sequenceData.isPublic ?? existingSequence?.is_public ?? false;
-      
+      const parentIsPublic = sequenceData.isPublic ?? existingSequence?.is_public ?? false
+
       for (const item of sequenceData.items) {
         // Check if this is a new item
         if (!item.id || item.id.startsWith('temp-')) {
@@ -564,23 +608,24 @@ export const sequenceService = {
             type: 'sequence-item',
             parentId: sequenceId,
             index: item.orderIndex,
-            isPublic: parentIsPublic
-          };
-          
-          console.log('[updateSequence] Creating new item:', item.title);
-          await this.saveCard(itemCard, sequenceId, item.orderIndex);
+            isPublic: parentIsPublic,
+          }
+
+          console.log('[updateSequence] Creating new item:', item.title)
+          await this.saveCard(itemCard, sequenceId, item.orderIndex)
         } else {
           // Check if existing item has changed
-          const existingItem = existingItemsMap.get(item.id);
-          
-          const hasChanged = !existingItem || 
+          const existingItem = existingItemsMap.get(item.id)
+
+          const hasChanged =
+            !existingItem ||
             existingItem.title !== item.title ||
             existingItem.color !== item.color ||
             existingItem.image !== (item.image?.url || '') ||
             existingItem.speak !== item.speak ||
             existingItem.index !== item.orderIndex ||
-            existingItem.isPublic !== parentIsPublic;
-          
+            existingItem.isPublic !== parentIsPublic
+
           if (hasChanged) {
             // Update existing item only if it changed
             const itemCard: Partial<CardTile> = {
@@ -593,50 +638,58 @@ export const sequenceService = {
               type: 'sequence-item',
               parentId: sequenceId,
               index: item.orderIndex,
-              isPublic: parentIsPublic
-            };
-            
-            console.log('[updateSequence] Updating changed item:', item.id, item.title);
-            await this.saveCard(itemCard, sequenceId, item.orderIndex);
+              isPublic: parentIsPublic,
+            }
+
+            console.log('[updateSequence] Updating changed item:', item.id, item.title)
+            await this.saveCard(itemCard, sequenceId, item.orderIndex)
           } else {
-            console.log('[updateSequence] Skipping unchanged item:', item.id, item.title);
+            console.log('[updateSequence] Skipping unchanged item:', item.id, item.title)
           }
         }
       }
 
       // Delete removed items
-      const deletedIds = [...existingItemsMap.keys()].filter(id => !newItemIds.has(id));
+      const deletedIds = [...existingItemsMap.keys()].filter(id => !newItemIds.has(id))
       for (const deletedId of deletedIds) {
-        console.log('[updateSequence] Deleting removed item:', deletedId);
-        await this.deleteCard(deletedId);
+        console.log('[updateSequence] Deleting removed item:', deletedId)
+        await this.deleteCard(deletedId)
       }
     } catch (error) {
-      console.error('Error updating sequence:', error);
-      throw error;
+      console.error('Error updating sequence:', error)
+      throw error
     }
   },
 
   // Public Item Methods
-  async loadPublicItems(type?: 'card' | 'sequence' | 'all', includeCurated: boolean = true): Promise<CardTile[]> {
+  async loadPublicItems(
+    type?: 'card' | 'sequence' | 'all',
+    includeCurated: boolean = true
+  ): Promise<CardTile[]> {
     try {
-      const authStore = useAuthStore();
-      const userId = authStore.user?.id;
+      const authStore = useAuthStore()
+      const userId = authStore.user?.id
       if (!userId) {
-        console.warn('No authenticated user found');
-        return [];
+        console.warn('No authenticated user found')
+        return []
       }
 
-      const { currentLocale } = useI18n();
-      const locale = currentLocale.value;
+      const { currentLocale } = useI18n()
+      const locale = currentLocale.value
 
       // Load public items with custom ordering
-      const publicItems = await sequenceSupabaseService.getPublicItems(userId, locale, type, includeCurated);
-      
+      const publicItems = await sequenceSupabaseService.getPublicItems(
+        userId,
+        locale,
+        type,
+        includeCurated
+      )
+
       return publicItems.map(item => {
-        const metadata = item.metadata as CardMetadata;
+        const metadata = item.metadata as CardMetadata
         // Use custom_index if available, otherwise use original order_index
-        const orderIndex = item.custom_index ?? item.order_index;
-        
+        const orderIndex = item.custom_index ?? item.order_index
+
         return {
           id: item.id,
           title: item.name,
@@ -655,61 +708,72 @@ export const sequenceService = {
           isPublic: item.is_public,
           isCurated: item.is_curated,
           rewardAnimation: metadata?.rewardAnimation,
-        };
-      });
+        }
+      })
     } catch (error) {
-      console.error('Error loading public sequences:', error);
-      return [];
+      console.error('Error loading public sequences:', error)
+      return []
     }
   },
 
   async saveCustomOrder(itemId: string, customIndex: number): Promise<void> {
     try {
-      const authStore = useAuthStore();
-      const userId = authStore.user?.id;
+      const authStore = useAuthStore()
+      const userId = authStore.user?.id
       if (!userId) {
-        throw new Error('No authenticated user');
+        throw new Error('No authenticated user')
       }
 
-      await sequenceSupabaseService.saveUserItemOrder(userId, itemId, customIndex);
+      await sequenceSupabaseService.saveUserItemOrder(userId, itemId, customIndex)
     } catch (error) {
-      console.error('Error saving custom order:', error);
-      throw error;
+      console.error('Error saving custom order:', error)
+      throw error
     }
   },
 
   async toggleItemVisibility(itemId: string, isPublic: boolean): Promise<void> {
     try {
-      const authStore = useAuthStore();
-      const userId = authStore.user?.id;
+      const authStore = useAuthStore()
+      const userId = authStore.user?.id
       if (!userId) {
-        throw new Error('No authenticated user');
+        throw new Error('No authenticated user')
       }
 
-      await sequenceSupabaseService.updateSequenceVisibility(itemId, userId, isPublic);
+      await sequenceSupabaseService.updateSequenceVisibility(itemId, userId, isPublic)
     } catch (error) {
-      console.error('Error toggling item visibility:', error);
-      throw error;
+      console.error('Error toggling item visibility:', error)
+      throw error
     }
   },
 
-  async searchPublicItems(query: string, type?: 'card' | 'sequence' | 'all', locale?: string, includeCurated: boolean = true): Promise<CardTile[]> {
+  async searchPublicItems(
+    query: string,
+    type?: 'card' | 'sequence' | 'all',
+    locale?: string,
+    includeCurated: boolean = true
+  ): Promise<CardTile[]> {
     try {
-      const authStore = useAuthStore();
-      const userId = authStore.user?.id;
+      const authStore = useAuthStore()
+      const userId = authStore.user?.id
       if (!userId) {
-        return [];
+        return []
       }
 
-      const { currentLocale } = useI18n();
-      const searchLocale = locale || currentLocale.value;
+      const { currentLocale } = useI18n()
+      const searchLocale = locale || currentLocale.value
 
-      const results = await sequenceSupabaseService.searchPublicItems(query, searchLocale, userId, type, includeCurated);
-      
+      const results = await sequenceSupabaseService.searchPublicItems(
+        query,
+        searchLocale,
+        userId,
+        type,
+        includeCurated
+      )
+
       return results.map(item => {
-        const metadata = item.metadata as CardMetadata;
-        const orderIndex = item.custom_index ?? item.order_index;
-        
+        const metadata = item.metadata as CardMetadata
+        const orderIndex = item.custom_index ?? item.order_index
+
         return {
           id: item.id,
           title: item.name,
@@ -727,11 +791,11 @@ export const sequenceService = {
           isPublic: item.is_public,
           isCurated: item.is_curated,
           rewardAnimation: metadata?.rewardAnimation,
-        };
-      });
+        }
+      })
     } catch (error) {
-      console.error('Error searching public items:', error);
-      return [];
+      console.error('Error searching public items:', error)
+      return []
     }
-  }
-};
+  },
+}

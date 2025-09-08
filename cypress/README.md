@@ -40,6 +40,7 @@ pnpm test:e2e:auth
 ## Test Coverage
 
 ### Magic Link Authentication (`magic-link.cy.ts`)
+
 - ✅ Complete magic link flow
 - ✅ Expired link handling
 - ✅ Session persistence
@@ -47,6 +48,7 @@ pnpm test:e2e:auth
 - ✅ Logout functionality
 
 ### OTP Code Authentication (`otp-code.cy.ts`)
+
 - ✅ Complete OTP flow
 - ✅ Invalid code handling
 - ✅ Code resend functionality
@@ -101,16 +103,19 @@ Add to your GitHub Actions workflow:
 ## Troubleshooting
 
 ### Tests timing out waiting for email
+
 - Check Mailosaur credentials are correct
 - Ensure the test email domain matches your Mailosaur server
 - Check Supabase is configured to send emails
 
 ### Authentication not persisting
+
 - Check localStorage is not being cleared
 - Verify session tokens are valid
 - Check for console errors in the browser
 
 ### Rate limiting errors
+
 - Add delays between tests
 - Use different email addresses for each test
 - Clear Supabase rate limit cache if needed

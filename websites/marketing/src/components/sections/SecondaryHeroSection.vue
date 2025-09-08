@@ -169,7 +169,7 @@ onMounted(async () => {
   }
 
   &__title {
-    font-size: clamp(4em, 5vw, 8em);
+    font-size: clamp(2.5em, 5vw, 8em);
     line-height: 1;
     font-family: var(--header-font-family);
     color: var(--color-light);

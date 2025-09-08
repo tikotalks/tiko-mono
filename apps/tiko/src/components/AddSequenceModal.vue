@@ -5,11 +5,11 @@
 </template>
 
 <script setup lang="ts">
-// Placeholder for add sequence modal
+  // Placeholder for add sequence modal
 </script>
 
 <style>
-.add-sequence-modal {
-  padding: 1rem;
-}
+  .add-sequence-modal {
+    padding: 1rem;
+  }
 </style>

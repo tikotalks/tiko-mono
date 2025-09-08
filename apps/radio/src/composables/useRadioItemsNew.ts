@@ -1,6 +1,6 @@
 /**
  * New Radio Items Composable using the generic item service
- * 
+ *
  * This replaces the old useRadioItems that used direct Supabase calls
  */
 
@@ -27,16 +27,16 @@ export interface UpdateRadioItemPayload {
 
 export function useRadioItems() {
   const radio = useRadio()
-  
+
   // Additional state for compatibility
   const isCreating = ref(false)
   const isDeleting = ref(false)
-  
+
   // Transform methods to match old API
   const fetchItems = async () => {
     await radio.refreshItems()
   }
-  
+
   const createItem = async (payload: CreateRadioItemPayload) => {
     isCreating.value = true
     try {
@@ -53,18 +53,18 @@ export function useRadioItems() {
       isCreating.value = false
     }
   }
-  
+
   const updateItem = async (itemId: string, payload: UpdateRadioItemPayload) => {
     const item = await radio.updateRadioItem(itemId, {
       name: payload.name,
       content: payload.url, // URL stored in content
       icon: payload.icon,
       color: payload.color,
-      metadata: payload.video_metadata ? { video: payload.video_metadata } : undefined
+      metadata: payload.video_metadata ? { video: payload.video_metadata } : undefined,
     })
     return item
   }
-  
+
   const deleteItem = async (itemId: string) => {
     isDeleting.value = true
     try {
@@ -74,15 +74,15 @@ export function useRadioItems() {
       isDeleting.value = false
     }
   }
-  
+
   const toggleFavorite = async (itemId: string) => {
     return radio.toggleFavorite(itemId)
   }
-  
+
   const reorderItems = async (itemIds: string[]) => {
     return radio.reorderItems(itemIds)
   }
-  
+
   return {
     // State
     items: radio.radioItems,
@@ -90,13 +90,13 @@ export function useRadioItems() {
     error: radio.error,
     isCreating,
     isDeleting,
-    
+
     // Methods
     fetchItems,
     createItem,
     updateItem,
     deleteItem,
     toggleFavorite,
-    reorderItems
+    reorderItems,
   }
 }

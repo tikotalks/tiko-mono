@@ -60,7 +60,8 @@ export const cardTranslations = {
     'sequence.showCuratedItems': 'Show Curated Items',
     'sequence.showCuratedItemsDescription': 'Include administrator-curated sequences in your list',
     'sequence.showHiddenItems': 'Show Hidden Items',
-    'sequence.showHiddenItemsDescription': 'Display hidden items with reduced opacity instead of hiding them completely',
+    'sequence.showHiddenItemsDescription':
+      'Display hidden items with reduced opacity instead of hiding them completely',
     'sequence.hiddenSequences': 'Hidden Sequences',
     'sequence.manageHiddenSequences': 'Manage Hidden Sequences',
     'sequence.noHiddenSequences': 'No hidden sequences',
@@ -73,5 +74,5 @@ export const cardTranslations = {
     'sequence.itemDuplicated': 'Item duplicated successfully',
     'sequence.sequence': 'Sequence',
     'sequence.item': 'Item',
-  }
-};
+  },
+}

@@ -1,0 +1,28 @@
+{
+  "name": "media-cache-worker",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "sh scripts/deploy.sh production",
+    "deploy:dev": "sh scripts/deploy.sh development",
+    "deploy:staging": "sh scripts/deploy.sh staging",
+    "deploy:production": "sh scripts/deploy.sh production",
+    "setup:kv": "sh scripts/setup-kv.sh",
+    "tail": "wrangler tail",
+    "tail:staging": "wrangler tail --env staging",
+    "tail:production": "wrangler tail --env production",
+    "test": "sh scripts/test.sh production",
+    "test:dev": "sh scripts/test.sh development",
+    "test:staging": "sh scripts/test.sh staging",
+    "test:production": "sh scripts/test.sh production"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240117.0",
+    "typescript": "^5.3.3",
+    "wrangler": "^4.34.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.3"
+  }
+}

@@ -57,5 +57,5 @@ export const cardTranslations = {
     'sequence.curatedNote': 'This sequence has been curated by administrators',
     'sequence.selectSequenceImage': 'Select Sequence Image',
     'sequence.selectItemImage': 'Select Item Image',
-  }
-};
+  },
+}

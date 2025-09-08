@@ -1,10 +1,14 @@
 <template>
   <div :class="bemm()">
     <TForm @submit.prevent="handleSubmit" :class="bemm('form')">
-
       <!-- Translations toggle button (only when editing) -->
       <div v-if="isEditing" :class="bemm('translations-toggle')">
-        <TButton type="outline" color="primary" :icon="Icons.SPEECH_BALLOON" @click="toggleTranslations">
+        <TButton
+          type="outline"
+          color="primary"
+          :icon="Icons.SPEECH_BALLOON"
+          @click="toggleTranslations"
+        >
           {{ t('cards.translations') }}
           <span v-if="form.translations.length > 0" :class="bemm('translations-count')">
             ({{ form.translations.length }})
@@ -12,634 +16,683 @@
         </TButton>
       </div>
 
-        <!-- Left Column: Main Form Fields -->
-        <section :class="bemm('section', ['', 'main'])">
-          <TFormGroup>
+      <!-- Left Column: Main Form Fields -->
+      <section :class="bemm('section', ['', 'main'])">
+        <TFormGroup>
+          <!-- Title -->
+          <TFormField :label="t('common.title')" name="title" required>
+            <TInputText v-model="form.title" :placeholder="t('cards.enterCardTitle')" max="50" />
+          </TFormField>
 
-            <!-- Title -->
-            <TFormField :label="t('common.title')" name="title" required>
-              <TInputText v-model="form.title" :placeholder="t('cards.enterCardTitle')" max="50" />
-            </TFormField>
+          <!-- Speech Text -->
+          <TFormField
+            label="Speech Text"
+            name="speech"
+            help="Text to be spoken when the tile is clicked"
+          >
+            <TTextarea
+              v-model="form.speech"
+              placeholder="Enter text to be spoken"
+              rows="3"
+              max="500"
+              @input="speechManuallyEdited = true"
+            />
+          </TFormField>
 
-
-            <!-- Speech Text -->
-            <TFormField label="Speech Text" name="speech" help="Text to be spoken when the tile is clicked">
-              <TTextarea v-model="form.speech" placeholder="Enter text to be spoken" rows="3" max="500"
-                @input="speechManuallyEdited = true" />
-            </TFormField>
-
-            <!-- Image Selection -->
-            <TFormField :label="t('common.image')" name="image">
-              <div :class="bemm('image-field')">
-                <div v-if="form.image" :class="bemm('image-preview')"
-                  :style="`--current-color: var(--color-${form.color})`" @click="openImageSelector" :aria-label="'Click to change image'"
-                >
-                  <img :src="form.image" :alt="form.title || 'Selected image'" />
-                  <div :class="bemm('image-actions')">
-                    <TButton :icon="Icons.IMAGE" size="small" type="outline" color="primary" @click="openImageSelector"
-                      :aria-label="'Change image'" />
-                    <TButton :icon="Icons.MULTIPLY_M" size="small" type="ghost" color="error"
-                      @click="() => { form.image = ''; searchForSuggestions(form.title); }"
-                      :aria-label="'Remove image'" />
-                  </div>
+          <!-- Image Selection -->
+          <TFormField :label="t('common.image')" name="image">
+            <div :class="bemm('image-field')">
+              <div
+                v-if="form.image"
+                :class="bemm('image-preview')"
+                :style="`--current-color: var(--color-${form.color})`"
+                @click="openImageSelector"
+                :aria-label="'Click to change image'"
+              >
+                <img :src="form.image" :alt="form.title || 'Selected image'" />
+                <div :class="bemm('image-actions')">
+                  <TButton
+                    :icon="Icons.IMAGE"
+                    size="small"
+                    type="outline"
+                    color="primary"
+                    @click="openImageSelector"
+                    :aria-label="'Change image'"
+                  />
+                  <TButton
+                    :icon="Icons.MULTIPLY_M"
+                    size="small"
+                    type="ghost"
+                    color="error"
+                    @click="
+                      () => {
+                        form.image = ''
+                        searchForSuggestions(form.title)
+                      }
+                    "
+                    :aria-label="'Remove image'"
+                  />
                 </div>
-                <div v-else>
-                  <TButton icon="image" type="outline" color="secondary" @click="openImageSelector">
-                    {{ t('common.selectImage') }}
-                  </TButton>
+              </div>
+              <div v-else>
+                <TButton icon="image" type="outline" color="secondary" @click="openImageSelector">
+                  {{ t('common.selectImage') }}
+                </TButton>
 
-                  <!-- Image suggestions based on title -->
-                  <div v-if="imageSuggestions.length > 0 && form.title && !form.image" :class="bemm('suggestions')">
-                    <p :class="bemm('suggestions-label')">Suggested images based on "{{ form.title }}":</p>
-                    <div :class="bemm('suggestions-grid')">
-                      <div v-for="suggestion in imageSuggestions" :key="suggestion.id" :class="bemm('suggestion')"
-                        @click="selectSuggestion(suggestion)">
-                        <img :src="suggestion.thumbnail" :alt="suggestion.title" />
-                        <span>{{ suggestion.title }}</span>
-                      </div>
+                <!-- Image suggestions based on title -->
+                <div
+                  v-if="imageSuggestions.length > 0 && form.title && !form.image"
+                  :class="bemm('suggestions')"
+                >
+                  <p :class="bemm('suggestions-label')">
+                    Suggested images based on "{{ form.title }}":
+                  </p>
+                  <div :class="bemm('suggestions-grid')">
+                    <div
+                      v-for="suggestion in imageSuggestions"
+                      :key="suggestion.id"
+                      :class="bemm('suggestion')"
+                      @click="selectSuggestion(suggestion)"
+                    >
+                      <img :src="suggestion.thumbnail" :alt="suggestion.title" />
+                      <span>{{ suggestion.title }}</span>
                     </div>
                   </div>
                 </div>
               </div>
-            </TFormField>
+            </div>
+          </TFormField>
 
+          <!-- Color Selection -->
+          <TFormField :label="t('common.color')" name="color">
+            <TColorPicker v-model="form.color" :colors="availableColors" />
+          </TFormField>
 
-
-            <!-- Color Selection -->
-            <TFormField :label="t('common.color')" name="color">
-              <TColorPicker v-model="form.color" :colors="availableColors" />
-            </TFormField>
-
-            <!-- Visibility toggle -->
-            <TFormField v-if="showVisibilityToggle && isOwner" :label="t('common.visibility')" name="visibility">
-              <div :class="bemm('visibility-options')">
-                <TInputCheckbox
-                  v-model="form.isPublic"
-                  :label="t('common.makePublic')"
-                  :help="t('common.publicDescription')"
-                />
-                <p v-if="form.isPublic" :class="bemm('visibility-note')">
-                  {{ t('common.publicNote') }}
-                </p>
-                <p v-if="form.isCurated" :class="bemm('visibility-note', 'curated')">
-                  <TIcon name="star" size="small" />
-                  {{ t('common.curatedNote') }}
-                </p>
-              </div>
-            </TFormField>
-
-          </TFormGroup>
-
-        </section>
-
-
+          <!-- Visibility toggle -->
+          <TFormField
+            v-if="showVisibilityToggle && isOwner"
+            :label="t('common.visibility')"
+            name="visibility"
+          >
+            <div :class="bemm('visibility-options')">
+              <TInputCheckbox
+                v-model="form.isPublic"
+                :label="t('common.makePublic')"
+                :help="t('common.publicDescription')"
+              />
+              <p v-if="form.isPublic" :class="bemm('visibility-note')">
+                {{ t('common.publicNote') }}
+              </p>
+              <p v-if="form.isCurated" :class="bemm('visibility-note', 'curated')">
+                <TIcon name="star" size="small" />
+                {{ t('common.curatedNote') }}
+              </p>
+            </div>
+          </TFormField>
+        </TFormGroup>
+      </section>
     </TForm>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, watch, inject, ref, onMounted } from 'vue';
-import { useBemm } from 'bemm';
-import {
-  TForm,
-  TFormField,
-  TFormActions,
-  TTextarea,
-  TButton,
-  TButtonGroup,
-  TColorPicker,
-  BaseColors,
-  TInputText,
-  TMediaSelector,
-  TIcon,
-  TInputCheckbox,
-  debounce,
-  ButtonType,
-  TFormGroup,
-  ConfirmDialog,
-} from '@tiko/ui';
-import { useI18n } from '@tiko/core';
-import type { TCardTile as CardTile } from '@tiko/ui';
-import { mediaService, useImages, useImageUrl, useAuthStore } from '@tiko/core';
-import CardTranslations from './CardTranslations/CardTranslations.vue';
-import type { ItemTranslation } from '../models/ItemTranslation.model';
-import { Icons } from 'open-icon';
+  import { computed, reactive, watch, inject, ref, onMounted } from 'vue'
+  import { useBemm } from 'bemm'
+  import {
+    TForm,
+    TFormField,
+    TFormActions,
+    TTextarea,
+    TButton,
+    TButtonGroup,
+    TColorPicker,
+    BaseColors,
+    TInputText,
+    TMediaSelector,
+    TIcon,
+    TInputCheckbox,
+    debounce,
+    ButtonType,
+    TFormGroup,
+    ConfirmDialog,
+  } from '@tiko/ui'
+  import { useI18n } from '@tiko/core'
+  import type { TCardTile as CardTile } from '@tiko/ui'
+  import { mediaService, useImages, useImageUrl, useAuthStore } from '@tiko/core'
+  import CardTranslations from './CardTranslations/CardTranslations.vue'
+  import type { ItemTranslation } from '../models/ItemTranslation.model'
+  import { Icons } from 'open-icon'
 
-const bemm = useBemm('card-form');
-const popupService = inject<any>('popupService');
-const { imageList, filteredImages, searchImages, loadImages } = useImages();
-const { getImageVariants } = useImageUrl();
-const { t, currentLocale } = useI18n();
-const authStore = useAuthStore();
+  const bemm = useBemm('card-form')
+  const popupService = inject<any>('popupService')
+  const { imageList, filteredImages, searchImages, loadImages } = useImages()
+  const { getImageVariants } = useImageUrl()
+  const { t, currentLocale } = useI18n()
+  const authStore = useAuthStore()
 
-const props = defineProps<{
-  card?: CardTile;
-  index?: number;
-  hasChildren?: boolean;
-  translations?: ItemTranslation[];
-  showVisibilityToggle?: boolean;
-  isOwner?: boolean;
-  onMounted?: (instance: any) => void;
-}>();
+  const props = defineProps<{
+    card?: CardTile
+    index?: number
+    hasChildren?: boolean
+    translations?: ItemTranslation[]
+    showVisibilityToggle?: boolean
+    isOwner?: boolean
+    onMounted?: (instance: any) => void
+  }>()
 
-const emit = defineEmits<{
-  submit: [card: Partial<CardTile>, index: number, translations: ItemTranslation[]];
-  cancel: [];
-  delete: [];
-  translationsGenerated: [];
-}>();
+  const emit = defineEmits<{
+    submit: [card: Partial<CardTile>, index: number, translations: ItemTranslation[]]
+    cancel: []
+    delete: []
+    translationsGenerated: []
+  }>()
 
-const isEditing = computed(() => !!props.card && !props.card.id.startsWith('empty-'));
+  const isEditing = computed(() => !!props.card && !props.card.id.startsWith('empty-'))
 
-const availableColors = Object.values(BaseColors).sort();
+  const availableColors = Object.values(BaseColors).sort()
 
-// Image suggestions state
-const imageSuggestions = ref<any[]>([]);
-const isLoadingSuggestions = ref(false);
+  // Image suggestions state
+  const imageSuggestions = ref<any[]>([])
+  const isLoadingSuggestions = ref(false)
 
-const form = reactive({
-  title: props.card?.title || '',
-  color: props.card?.color || 'primary',
-  image: props.card?.image || '',
-  speech: props.card?.speech || '',
-  base_locale: props.card?.base_locale || currentLocale.value.split('-')[0], // Use language code, not locale
-  translations: props.translations || [] as ItemTranslation[],
-  isPublic: props.card?.isPublic || false,
-  isCurated: props.card?.isCurated || false,
-});
+  const form = reactive({
+    title: props.card?.title || '',
+    color: props.card?.color || 'primary',
+    image: props.card?.image || '',
+    speech: props.card?.speech || '',
+    base_locale: props.card?.base_locale || currentLocale.value.split('-')[0], // Use language code, not locale
+    translations: props.translations || ([] as ItemTranslation[]),
+    isPublic: props.card?.isPublic || false,
+    isCurated: props.card?.isCurated || false,
+  })
 
-// Track if user has manually edited speech
-const speechManuallyEdited = ref(false);
+  // Track if user has manually edited speech
+  const speechManuallyEdited = ref(false)
 
-// Toggle translations visibility - opens popup
-const toggleTranslations = () => {
-  openTranslationsPopup();
-};
+  // Toggle translations visibility - opens popup
+  const toggleTranslations = () => {
+    openTranslationsPopup()
+  }
 
-// Open translations in popup
-const openTranslationsPopup = () => {
-  if (!popupService) return;
-  
-  popupService.open({
-    component: CardTranslations,
-    title: t('cards.translations'),
-    props: {
-      modelValue: form.translations,
-      itemId: props.card?.id,
-      baseTitle: form.title,
-      baseSpeech: form.speech,
-      baseLocale: form.base_locale || currentLocale.value.split('-')[0],
-      'onUpdate:modelValue': (translations: ItemTranslation[]) => {
-        form.translations = translations;
+  // Open translations in popup
+  const openTranslationsPopup = () => {
+    if (!popupService) return
+
+    popupService.open({
+      component: CardTranslations,
+      title: t('cards.translations'),
+      props: {
+        modelValue: form.translations,
+        itemId: props.card?.id,
+        baseTitle: form.title,
+        baseSpeech: form.speech,
+        baseLocale: form.base_locale || currentLocale.value.split('-')[0],
+        'onUpdate:modelValue': (translations: ItemTranslation[]) => {
+          form.translations = translations
+        },
+        'onUpdate:baseTitle': (title: string) => {
+          form.title = title
+        },
+        'onUpdate:baseSpeech': (speech: string) => {
+          form.speech = speech
+          speechManuallyEdited.value = true
+        },
+        onTranslationsGenerated: () => {
+          emit('translationsGenerated')
+        },
       },
-      'onUpdate:baseTitle': (title: string) => {
-        form.title = title;
-      },
-      'onUpdate:baseSpeech': (speech: string) => {
-        form.speech = speech;
-        speechManuallyEdited.value = true;
-      },
-      onTranslationsGenerated: () => {
-        emit('translationsGenerated');
+    })
+  }
+
+  // Auto-populate speech field when title changes
+  watch(
+    () => form.title,
+    newTitle => {
+      // Only auto-populate if we're creating a new card and user hasn't manually edited speech
+      if (!isEditing.value && !speechManuallyEdited.value) {
+        form.speech = newTitle
       }
     }
-  });
-};
+  )
 
-
-// Auto-populate speech field when title changes
-watch(() => form.title, (newTitle) => {
-  // Only auto-populate if we're creating a new card and user hasn't manually edited speech
-  if (!isEditing.value && !speechManuallyEdited.value) {
-    form.speech = newTitle;
-  }
-});
-
-// Search for image suggestions based on title
-const searchForSuggestions = debounce(async (searchTerm: string) => {
-  if (!searchTerm || searchTerm.length < 2) {
-    imageSuggestions.value = [];
-    return;
-  }
-
-  isLoadingSuggestions.value = true;
-  try {
-    // Set the search query
-    searchImages(searchTerm);
-
-    // Wait a bit for the reactive search to update
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    // Get the filtered results and find best matches
-    if (filteredImages.value.length > 0) {
-      const searchTermLower = searchTerm.toLowerCase();
-      const results = [...filteredImages.value];
-
-      // Sort by relevance
-      results.sort((a, b) => {
-        const aTitle = ((a as any).title || (a as any).original_filename || '').toLowerCase();
-        const bTitle = ((b as any).title || (b as any).original_filename || '').toLowerCase();
-
-        // Exact matches first
-        if (aTitle === searchTermLower && bTitle !== searchTermLower) return -1;
-        if (bTitle === searchTermLower && aTitle !== searchTermLower) return 1;
-
-        // Then word boundary matches
-        const aWordMatch = new RegExp(`\\b${searchTermLower}\\b`).test(aTitle);
-        const bWordMatch = new RegExp(`\\b${searchTermLower}\\b`).test(bTitle);
-        if (aWordMatch && !bWordMatch) return -1;
-        if (bWordMatch && !aWordMatch) return 1;
-
-        // Then by title length (shorter is better for partial matches)
-        return aTitle.length - bTitle.length;
-      });
-
-      // Take top 6 suggestions
-      imageSuggestions.value = results.slice(0, 6).map(img => ({
-        id: img.id,
-        title: (img as any).title || (img as any).original_filename || 'Untitled',
-        thumbnail: getImageVariants(img.original_url || (img as any).url).thumbnail || img.original_url || (img as any).url,
-        url: img.original_url || (img as any).url
-      }));
-    } else {
-      imageSuggestions.value = [];
+  // Search for image suggestions based on title
+  const searchForSuggestions = debounce(async (searchTerm: string) => {
+    if (!searchTerm || searchTerm.length < 2) {
+      imageSuggestions.value = []
+      return
     }
-  } catch (error) {
-    console.error('Failed to load image suggestions:', error);
-    imageSuggestions.value = [];
-  } finally {
-    isLoadingSuggestions.value = false;
-  }
-}, 500);
 
-// Watch title changes to trigger image search
-watch(() => form.title, (newTitle) => {
-  if (!form.image) { // Only search if no image is already selected
-    searchForSuggestions(newTitle);
-  }
-});
+    isLoadingSuggestions.value = true
+    try {
+      // Set the search query
+      searchImages(searchTerm)
 
-// Select a suggested image
-const selectSuggestion = (suggestion: any) => {
-  form.image = suggestion.url;
-  imageSuggestions.value = []; // Clear suggestions after selection
-};
+      // Wait a bit for the reactive search to update
+      await new Promise(resolve => setTimeout(resolve, 100))
 
-const isValid = computed(() => {
-  return form.title.trim().length > 0;
-});
+      // Get the filtered results and find best matches
+      if (filteredImages.value.length > 0) {
+        const searchTermLower = searchTerm.toLowerCase()
+        const results = [...filteredImages.value]
 
-// Check if user owns the card
-const isOwner = computed(() => {
-  return props.isOwner !== undefined ? props.isOwner : true;
-});
+        // Sort by relevance
+        results.sort((a, b) => {
+          const aTitle = ((a as any).title || (a as any).original_filename || '').toLowerCase()
+          const bTitle = ((b as any).title || (b as any).original_filename || '').toLowerCase()
 
-// Check if we should show visibility toggle
-const showVisibilityToggle = computed(() => {
-  return props.showVisibilityToggle !== undefined ? props.showVisibilityToggle : false;
-});
+          // Exact matches first
+          if (aTitle === searchTermLower && bTitle !== searchTermLower) return -1
+          if (bTitle === searchTermLower && aTitle !== searchTermLower) return 1
 
-const handleSubmit = () => {
-  if (!isValid.value) return;
+          // Then word boundary matches
+          const aWordMatch = new RegExp(`\\b${searchTermLower}\\b`).test(aTitle)
+          const bWordMatch = new RegExp(`\\b${searchTermLower}\\b`).test(bTitle)
+          if (aWordMatch && !bWordMatch) return -1
+          if (bWordMatch && !aWordMatch) return 1
 
-  const cardData: Partial<CardTile> = {
-    title: form.title?.trim() || '',
-    color: form.color as any,
-    image: form.image?.trim() || '',
-    speech: form.speech?.trim() || '',
-    icon: 'square',
-    base_locale: form.base_locale, // Store the base locale
-    isPublic: form.isPublic,
-    isCurated: form.isCurated,
-  };
+          // Then by title length (shorter is better for partial matches)
+          return aTitle.length - bTitle.length
+        })
 
-  emit('submit', cardData, props.index || 0, form.translations);
-};
+        // Take top 6 suggestions
+        imageSuggestions.value = results.slice(0, 6).map(img => ({
+          id: img.id,
+          title: (img as any).title || (img as any).original_filename || 'Untitled',
+          thumbnail:
+            getImageVariants(img.original_url || (img as any).url).thumbnail ||
+            img.original_url ||
+            (img as any).url,
+          url: img.original_url || (img as any).url,
+        }))
+      } else {
+        imageSuggestions.value = []
+      }
+    } catch (error) {
+      console.error('Failed to load image suggestions:', error)
+      imageSuggestions.value = []
+    } finally {
+      isLoadingSuggestions.value = false
+    }
+  }, 500)
 
-// Trigger save method that can be called from popup actions
-const triggerSave = () => {
-  console.log('CardForm triggerSave called, isValid:', isValid.value);
-  handleSubmit();
-};
-
-const handleCancel = () => {
-  emit('cancel');
-};
-
-const handleDelete = () => {
-  const message = props.hasChildren
-    ? t('cards.confirmDeleteGroup')
-    : t('cards.confirmDeleteCard');
-
-  popupService.open({
-    component: ConfirmDialog,
-    props: {
-      title: t('cards.deleteCard'),
-      message: message,
-      confirmText: t('common.delete'),
-      cancelText: t('common.cancel'),
-      confirmColor: 'error',
-      onConfirm: () => {
-        emit('delete');
-        popupService.close();
-      },
-      onCancel: () => {
-        popupService.close();
+  // Watch title changes to trigger image search
+  watch(
+    () => form.title,
+    newTitle => {
+      if (!form.image) {
+        // Only search if no image is already selected
+        searchForSuggestions(newTitle)
       }
     }
-  });
-};
+  )
 
-// Load images when component mounts
-onMounted(async () => {
-  await loadImages();
-});
+  // Select a suggested image
+  const selectSuggestion = (suggestion: any) => {
+    form.image = suggestion.url
+    imageSuggestions.value = [] // Clear suggestions after selection
+  }
 
-const openImageSelector = async () => {
-  popupService.open({
-    component: TMediaSelector,
-    title: 'Select Image from Tiko Library',
-    props: {
-      multiple: false,
-      selectedIds: form.image ? [form.image] : [],
-      onConfirm: (selectedItems: any[]) => {
-        if (selectedItems.length > 0) {
-          const item = selectedItems[0];
-          console.log('Selected item:', item); // Debug log
-          // Handle both MediaItem (original_url) and UserMedia (url) types
-          const imageUrl = item.original_url || item.url || '';
-          console.log('Setting image to:', imageUrl); // Debug log
-          form.image = imageUrl;
-          imageSuggestions.value = []; // Clear suggestions after selection
-        }
-        popupService.close();
+  const isValid = computed(() => {
+    return form.title.trim().length > 0
+  })
+
+  // Check if user owns the card
+  const isOwner = computed(() => {
+    return props.isOwner !== undefined ? props.isOwner : true
+  })
+
+  // Check if we should show visibility toggle
+  const showVisibilityToggle = computed(() => {
+    return props.showVisibilityToggle !== undefined ? props.showVisibilityToggle : false
+  })
+
+  const handleSubmit = () => {
+    if (!isValid.value) return
+
+    const cardData: Partial<CardTile> = {
+      title: form.title?.trim() || '',
+      color: form.color as any,
+      image: form.image?.trim() || '',
+      speech: form.speech?.trim() || '',
+      icon: 'square',
+      base_locale: form.base_locale, // Store the base locale
+      isPublic: form.isPublic,
+      isCurated: form.isCurated,
+    }
+
+    emit('submit', cardData, props.index || 0, form.translations)
+  }
+
+  // Trigger save method that can be called from popup actions
+  const triggerSave = () => {
+    console.log('CardForm triggerSave called, isValid:', isValid.value)
+    handleSubmit()
+  }
+
+  const handleCancel = () => {
+    emit('cancel')
+  }
+
+  const handleDelete = () => {
+    const message = props.hasChildren ? t('cards.confirmDeleteGroup') : t('cards.confirmDeleteCard')
+
+    popupService.open({
+      component: ConfirmDialog,
+      props: {
+        title: t('cards.deleteCard'),
+        message: message,
+        confirmText: t('common.delete'),
+        cancelText: t('common.cancel'),
+        confirmColor: 'error',
+        onConfirm: () => {
+          emit('delete')
+          popupService.close()
+        },
+        onCancel: () => {
+          popupService.close()
+        },
       },
-      onCancel: () => {
-        popupService.close();
+    })
+  }
+
+  // Load images when component mounts
+  onMounted(async () => {
+    await loadImages()
+  })
+
+  const openImageSelector = async () => {
+    popupService.open({
+      component: TMediaSelector,
+      title: 'Select Image from Tiko Library',
+      props: {
+        multiple: false,
+        selectedIds: form.image ? [form.image] : [],
+        onConfirm: (selectedItems: any[]) => {
+          if (selectedItems.length > 0) {
+            const item = selectedItems[0]
+            console.log('Selected item:', item) // Debug log
+            // Handle both MediaItem (original_url) and UserMedia (url) types
+            const imageUrl = item.original_url || item.url || ''
+            console.log('Setting image to:', imageUrl) // Debug log
+            form.image = imageUrl
+            imageSuggestions.value = [] // Clear suggestions after selection
+          }
+          popupService.close()
+        },
+        onCancel: () => {
+          popupService.close()
+        },
       },
+    })
+  }
+
+  const openTranslationsPanel = () => {
+    popupService.open({
+      component: CardTranslations,
+      title: t('cards.manageTranslations'),
+      size: 'large',
+      position: 'right', // Show as sidepanel
+      props: {
+        modelValue: form.translations,
+        itemId: props.card?.id,
+        baseTitle: form.title,
+        baseSpeech: form.speech,
+        baseLocale: currentLocale.value,
+        'onUpdate:modelValue': (translations: ItemTranslation[]) => {
+          form.translations = translations
+        },
+      },
+    })
+  }
+
+  // Watch for prop changes
+  watch(
+    () => props.card,
+    newCard => {
+      if (newCard) {
+        form.title = newCard.title || ''
+        form.color = newCard.color || 'primary'
+        form.image = newCard.image || ''
+        form.speech = newCard.speech || ''
+        // Reset manual edit flag when loading a new card
+        speechManuallyEdited.value = isEditing.value
+      }
     },
-  });
-};
+    { immediate: true }
+  )
 
-const openTranslationsPanel = () => {
-  popupService.open({
-    component: CardTranslations,
-    title: t('cards.manageTranslations'),
-    size: 'large',
-    position: 'right', // Show as sidepanel
-    props: {
-      modelValue: form.translations,
-      itemId: props.card?.id,
-      baseTitle: form.title,
-      baseSpeech: form.speech,
-      baseLocale: currentLocale.value,
-      'onUpdate:modelValue': (translations: ItemTranslation[]) => {
-        form.translations = translations;
-      },
+  // Watch for translation prop changes
+  watch(
+    () => props.translations,
+    newTranslations => {
+      if (newTranslations) {
+        form.translations = [...newTranslations]
+      }
     },
-  });
-};
+    { immediate: true }
+  )
 
-// Watch for prop changes
-watch(() => props.card, (newCard) => {
-  if (newCard) {
-    form.title = newCard.title || '';
-    form.color = newCard.color || 'primary';
-    form.image = newCard.image || '';
-    form.speech = newCard.speech || '';
-    // Reset manual edit flag when loading a new card
-    speechManuallyEdited.value = isEditing.value;
-  }
-}, { immediate: true });
+  // Expose methods for parent components
+  defineExpose({
+    isValid,
+    formData: form,
+    triggerSave,
+    save: triggerSave, // Keep backward compatibility
+  })
 
-// Watch for translation prop changes
-watch(() => props.translations, (newTranslations) => {
-  if (newTranslations) {
-    form.translations = [...newTranslations];
-  }
-}, { immediate: true });
-
-// Expose methods for parent components
-defineExpose({
-  isValid,
-  formData: form,
-  triggerSave,
-  save: triggerSave // Keep backward compatibility
-});
-
-// Call onMounted when component is ready
-onMounted(() => {
-  console.log('CardForm mounted, calling onMounted callback');
-  if (props.onMounted) {
-    props.onMounted({
-      triggerSave,
-      isValid,
-      formData: form
-    });
-  }
-});
+  // Call onMounted when component is ready
+  onMounted(() => {
+    console.log('CardForm mounted, calling onMounted callback')
+    if (props.onMounted) {
+      props.onMounted({
+        triggerSave,
+        isValid,
+        formData: form,
+      })
+    }
+  })
 </script>
 
 <style lang="scss">
-.card-form {
-  width: 100%;
-
-  &__form {
+  .card-form {
     width: 100%;
-  }
 
-  &__section {
-    &--main {
-      // Main form column styles
+    &__form {
+      width: 100%;
     }
 
-    &--translations {
-      background: var(--color-background);
-      padding: var(--space);
+    &__section {
+      &--main {
+        // Main form column styles
+      }
+
+      &--translations {
+        background: var(--color-background);
+        padding: var(--space);
+        border-radius: var(--border-radius);
+        border: 1px solid var(--color-primary);
+        position: absolute;
+        left: 100%;
+      }
+    }
+
+    &__section-title {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+    }
+
+    &__translations-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space);
+    }
+
+    &__translations-content {
+      // Content styles
+    }
+
+    &__translations-count {
+      font-size: 0.8rem;
+      color: var(--color-text-secondary);
+      margin-left: var(--space-xs);
+    }
+
+    &__translations-toggle {
+      margin-bottom: var(--space);
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    &__image-field {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+
+    &__image-preview {
+      position: relative;
+      width: 150px;
+      height: 150px;
       border-radius: var(--border-radius);
-      border: 1px solid var(--color-primary);
-      position: absolute;
-      left: 100%;
-    }
-  }
-
-  &__section-title {
-    margin: 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--color-text-secondary);
-  }
-
-  &__translations-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space);
-  }
-
-  &__translations-content {
-    // Content styles
-  }
-
-  &__translations-count {
-    font-size: 0.8rem;
-    color: var(--color-text-secondary);
-    margin-left: var(--space-xs);
-  }
-
-  &__translations-toggle {
-    margin-bottom: var(--space);
-    display: flex;
-    justify-content: flex-end;
-  }
-
-  &__image-field {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-  }
-
-  &__image-preview {
-    position: relative;
-    width: 150px;
-    height: 150px;
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    border: 1px solid var(--color-accent);
-background-color: var(--current-color);
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-  }
-
-  &__image-actions {
-    position: absolute;
-    top: var(--space-xs);
-    right: var(--space-xs);
-    display: flex;
-    gap: var(--space-xs);
-  }
-
-  &__suggestions {
-    margin-top: var(--space);
-    padding: var(--space);
-    background: var(--color-background-secondary);
-    border-radius: var(--border-radius);
-    border: 1px solid var(--color-accent);
-  }
-
-  &__suggestions-label {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
-    margin: 0 0 var(--space-s) 0;
-  }
-
-  &__suggestions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: var(--space-s);
-  }
-
-  &__suggestion {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-xs);
-    padding: var(--space-xs);
-    background: var(--color-background);
-    border-radius: var(--border-radius-sm);
-    border: 1px solid var(--color-accent);
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover {
-      border-color: var(--color-primary);
-      transform: translateY(-2px);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    img {
-      width: 80px;
-      height: 80px;
-      object-fit: cover;
-      border-radius: var(--border-radius-xs);
-    }
-
-    span {
-      font-size: var(--font-size-xs);
-      text-align: center;
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      width: 100%;
-      max-width: 90px;
-    }
-  }
-
-  &__suggestions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: var(--space-xs);
-  }
-
-  &__suggestion {
-    cursor: pointer;
-    text-align: center;
-    transition: transform 0.2s ease;
-
-    &:hover {
-      transform: scale(1.05);
+      border: 1px solid var(--color-accent);
+      background-color: var(--current-color);
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
     }
 
-    img {
-      width: 100%;
-      height: 60px;
-      object-fit: cover;
+    &__image-actions {
+      position: absolute;
+      top: var(--space-xs);
+      right: var(--space-xs);
+      display: flex;
+      gap: var(--space-xs);
+    }
+
+    &__suggestions {
+      margin-top: var(--space);
+      padding: var(--space);
+      background: var(--color-background-secondary);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--color-accent);
+    }
+
+    &__suggestions-label {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      margin: 0 0 var(--space-s) 0;
+    }
+
+    &__suggestions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: var(--space-s);
+    }
+
+    &__suggestion {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: var(--space-xs);
+      background: var(--color-background);
       border-radius: var(--border-radius-sm);
       border: 1px solid var(--color-accent);
-      margin-bottom: var(--space-xs);
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        border-color: var(--color-primary);
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: var(--border-radius-xs);
+      }
+
+      span {
+        font-size: var(--font-size-xs);
+        text-align: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 100%;
+        max-width: 90px;
+      }
     }
 
-    span {
-      font-size: var(--font-size-xs);
-      color: var(--color-text-muted);
-      display: block;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    &__suggestions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: var(--space-xs);
     }
-  }
 
-  &__main-actions {
-    display: flex;
-    gap: var(--space);
-  }
+    &__suggestion {
+      cursor: pointer;
+      text-align: center;
+      transition: transform 0.2s ease;
 
-  &__delete-button {
-    margin-right: auto;
-  }
+      &:hover {
+        transform: scale(1.05);
+      }
 
-  // Visibility options styles
-  &__visibility-options {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
+      img {
+        width: 100%;
+        height: 60px;
+        object-fit: cover;
+        border-radius: var(--border-radius-sm);
+        border: 1px solid var(--color-accent);
+        margin-bottom: var(--space-xs);
+      }
 
-  &__visibility-note {
-    margin: 0.5rem 0 0 0;
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
-    line-height: 1.4;
+      span {
+        font-size: var(--font-size-xs);
+        color: var(--color-text-muted);
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
 
-    &--curated {
-      color: goldenrod;
+    &__main-actions {
       display: flex;
-      align-items: center;
-      gap: 0.25rem;
+      gap: var(--space);
+    }
+
+    &__delete-button {
+      margin-right: auto;
+    }
+
+    // Visibility options styles
+    &__visibility-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    &__visibility-note {
+      margin: 0.5rem 0 0 0;
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+      line-height: 1.4;
+
+      &--curated {
+        color: goldenrod;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
     }
   }
-}
 </style>

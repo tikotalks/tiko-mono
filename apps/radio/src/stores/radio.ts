@@ -14,19 +14,19 @@ export const useRadioStore = defineStore('radio', () => {
     defaultVolume: 0.8,
     sleepTimerMinutes: 30,
     shuffleMode: false,
-    repeatMode: 'none'
+    repeatMode: 'none',
   }
 
   // State
   const loading = ref(false)
   const error = ref<string | null>(null)
-  
+
   // Sleep timer state
   const sleepTimer = ref<SleepTimer>({
     enabled: false,
     minutes: 30,
     startTime: null,
-    endTime: null
+    endTime: null,
   })
 
   // Computed settings - merge defaults with stored settings
@@ -119,7 +119,7 @@ export const useRadioStore = defineStore('radio', () => {
         enabled: false,
         minutes: 30,
         startTime: null,
-        endTime: null
+        endTime: null,
       }
       return
     }
@@ -129,7 +129,7 @@ export const useRadioStore = defineStore('radio', () => {
       enabled: true,
       minutes,
       startTime: now,
-      endTime: now + (minutes * 60 * 1000)
+      endTime: now + minutes * 60 * 1000,
     }
   }
 
@@ -141,7 +141,7 @@ export const useRadioStore = defineStore('radio', () => {
       enabled: false,
       minutes: sleepTimer.value.minutes,
       startTime: null,
-      endTime: null
+      endTime: null,
     }
   }
 
@@ -193,6 +193,6 @@ export const useRadioStore = defineStore('radio', () => {
     cancelSleepTimer,
     checkSleepTimer,
     toggleShuffle,
-    toggleRepeat
+    toggleRepeat,
   }
 })

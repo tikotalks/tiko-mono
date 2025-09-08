@@ -1,47 +1,47 @@
 /// <reference types="vite/client" />
 
-declare module "*.vue" {
-  import type { DefineComponent } from "vue"
+declare module '*.vue' {
+  import type { DefineComponent } from 'vue'
   const component: DefineComponent<{}, {}, any>
   export default component
 }
 
-declare module "*.mp4" {
+declare module '*.mp4' {
   const src: string
   export default src
 }
 
-declare module "*.webm" {
+declare module '*.webm' {
   const src: string
   export default src
 }
 
-declare module "*.svg" {
+declare module '*.svg' {
   const src: string
   export default src
 }
 
-declare module "*.png" {
+declare module '*.png' {
   const src: string
   export default src
 }
 
-declare module "*.jpg" {
+declare module '*.jpg' {
   const src: string
   export default src
 }
 
-declare module "*.jpeg" {
+declare module '*.jpeg' {
   const src: string
   export default src
 }
 
-declare module "*.gif" {
+declare module '*.gif' {
   const src: string
   export default src
 }
 
-declare module "*.webp" {
+declare module '*.webp' {
   const src: string
   export default src
 }

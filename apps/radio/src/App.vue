@@ -18,11 +18,7 @@
       </TButton>
 
       <!-- Settings -->
-      <TButton
-        type="ghost"
-        icon="settings"
-        @click="handleSettingsClick"
-      />
+      <TButton type="ghost" icon="settings" @click="handleSettingsClick" />
     </template>
 
     <router-view />
@@ -30,74 +26,74 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, inject, onMounted } from 'vue'
-import { TFramework, TButton, type FrameworkConfig, useParentMode } from '@tiko/ui'
-import { useI18n, useEventBus } from '@tiko/core';
-import tikoConfig from '../tiko.config'
-import backgroundImage from './assets/app-icon-radio.png'
-import { initializeTranslations } from '@tiko/core'
+  import { computed, ref, inject, onMounted } from 'vue'
+  import { TFramework, TButton, type FrameworkConfig, useParentMode } from '@tiko/ui'
+  import { useI18n, useEventBus } from '@tiko/core'
+  import tikoConfig from '../tiko.config'
+  import backgroundImage from './assets/app-icon-radio.png'
+  import { initializeTranslations } from '@tiko/core'
 
-// Loading state - start with true while translations load
-const loading = ref(true)
+  // Loading state - start with true while translations load
+  const loading = ref(true)
 
-// Initialize translations on mount
-onMounted(async () => {
-  await initializeTranslations()
-  loading.value = false
-})
+  // Initialize translations on mount
+  onMounted(async () => {
+    await initializeTranslations()
+    loading.value = false
+  })
 
-// Parent mode for radio app
-const parentMode = useParentMode('radio')
+  // Parent mode for radio app
+  const parentMode = useParentMode('radio')
 
-// Event bus for communication with RadioView
-const eventBus = useEventBus()
+  // Event bus for communication with RadioView
+  const eventBus = useEventBus()
 
-// I18n
-const { t, keys } = useI18n()
+  // I18n
+  const { t, keys } = useI18n()
 
-// Get injected services (will be available after TFramework mounts)
-let popupService: any
-let toastService: any
+  // Get injected services (will be available after TFramework mounts)
+  let popupService: any
+  let toastService: any
 
-// Handle search from topbar
-const handleSearch = (query: string) => {
-  eventBus.emit('radio:search', { query })
-}
-
-// Handle add button click
-const handleAddClick = () => {
-  eventBus.emit('radio:add-item')
-}
-
-// Handle settings button click
-const handleSettingsClick = () => {
-  eventBus.emit('radio:show-settings')
-}
-
-// Framework configuration
-const frameworkConfig = computed<FrameworkConfig>(() => ({
-  ...tikoConfig,
-  topBar: {
-    showUser: true,
-    showTitle: true,
-    showSubtitle: false,
-    showSearch: true,
-    searchPlaceholder: t('radio.searchAudio')
-  },
-  settings: {
-    enabled: true,
-    sections: [
-      {
-        id: 'radio-settings',
-        title: t('radio.radioSettings'),
-        icon: 'music',
-        order: 10
-      }
-    ]
+  // Handle search from topbar
+  const handleSearch = (query: string) => {
+    eventBus.emit('radio:search', { query })
   }
-}))
+
+  // Handle add button click
+  const handleAddClick = () => {
+    eventBus.emit('radio:add-item')
+  }
+
+  // Handle settings button click
+  const handleSettingsClick = () => {
+    eventBus.emit('radio:show-settings')
+  }
+
+  // Framework configuration
+  const frameworkConfig = computed<FrameworkConfig>(() => ({
+    ...tikoConfig,
+    topBar: {
+      showUser: true,
+      showTitle: true,
+      showSubtitle: false,
+      showSearch: true,
+      searchPlaceholder: t('radio.searchAudio'),
+    },
+    settings: {
+      enabled: true,
+      sections: [
+        {
+          id: 'radio-settings',
+          title: t('radio.radioSettings'),
+          icon: 'music',
+          order: 10,
+        },
+      ],
+    },
+  }))
 </script>
 
 <style lang="scss">
-@use '@tiko/ui/styles/app.scss';
+  @use '@tiko/ui/styles/app.scss';
 </style>

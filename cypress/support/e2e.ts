@@ -18,22 +18,22 @@ declare global {
        * Login with magic link
        */
       loginWithMagicLink(email: string): Chainable<void>
-      
+
       /**
        * Get the last email sent to an address
        */
       getLastEmail(email: string): Chainable<any>
-      
+
       /**
        * Extract magic link from email
        */
       extractMagicLink(emailContent: string): Chainable<string>
-      
+
       /**
        * Wait for email to arrive
        */
       waitForEmail(email: string, timeout?: number): Chainable<any>
-      
+
       /**
        * Create a test email address
        */

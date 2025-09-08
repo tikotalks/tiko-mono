@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       target:
-        description: 'Target worker to deploy (i18n-translator, media-upload, sentence-engine, report-issue, user-removal, or all)'
+        description: 'Target worker to deploy (i18n-translator, media-upload, media-cache, sentence-engine, report-issue, user-removal, or all)'
         required: true
         default: 'all'
         type: choice
@@ -16,6 +16,7 @@ on:
           - all
           - i18n-translator
           - media-upload
+          - media-cache
           - sentence-engine
           - report-issue
           - user-removal
@@ -34,6 +35,7 @@ jobs:
       should-build: ${{ steps.check.outputs.should-build }}
       build-i18n: ${{ steps.check.outputs.build-i18n }}
       build-media: ${{ steps.check.outputs.build-media }}
+      build-media-cache: ${{ steps.check.outputs.build-media-cache }}
       build-sentence: ${{ steps.check.outputs.build-sentence }}
       build-report-issue: ${{ steps.check.outputs.build-report-issue }}
       build-user-removal: ${{ steps.check.outputs.build-user-removal }}
@@ -41,7 +43,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
-          
+
       - name: Check triggers
         id: check
         run: |
@@ -49,10 +51,11 @@ jobs:
           echo "should-build=false" >> $GITHUB_OUTPUT
           echo "build-i18n=false" >> $GITHUB_OUTPUT
           echo "build-media=false" >> $GITHUB_OUTPUT
+          echo "build-media-cache=false" >> $GITHUB_OUTPUT
           echo "build-sentence=false" >> $GITHUB_OUTPUT
           echo "build-report-issue=false" >> $GITHUB_OUTPUT
           echo "build-user-removal=false" >> $GITHUB_OUTPUT
-          
+
           # Handle workflow_dispatch trigger
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             TARGET="${{ github.event.inputs.target }}"
@@ -62,6 +65,7 @@ jobs:
               echo "should-build=true" >> $GITHUB_OUTPUT
               echo "build-i18n=true" >> $GITHUB_OUTPUT
               echo "build-media=true" >> $GITHUB_OUTPUT
+              echo "build-media-cache=true" >> $GITHUB_OUTPUT
               echo "build-sentence=true" >> $GITHUB_OUTPUT
               echo "build-report-issue=true" >> $GITHUB_OUTPUT
               echo "build-user-removal=true" >> $GITHUB_OUTPUT
@@ -70,6 +74,9 @@ jobs:
               echo "should-build=true" >> $GITHUB_OUTPUT
             elif [[ "$TARGET" == "media-upload" ]]; then
               echo "build-media=true" >> $GITHUB_OUTPUT
+              echo "should-build=true" >> $GITHUB_OUTPUT
+            elif [[ "$TARGET" == "media-cache" ]]; then
+              echo "build-media-cache=true" >> $GITHUB_OUTPUT
               echo "should-build=true" >> $GITHUB_OUTPUT
             elif [[ "$TARGET" == "sentence-engine" ]]; then
               echo "build-sentence=true" >> $GITHUB_OUTPUT
@@ -83,7 +90,7 @@ jobs:
             fi
             exit 0
           fi
-          
+
           # For develop branch, check changed files instead of commit message
           if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
             echo "Develop branch detected - checking changed files..."
@@ -100,6 +107,10 @@ jobs:
             fi
             if echo "$CHANGED_FILES" | grep -E "^workers/media-upload/" > /dev/null; then
               echo "build-media=true" >> $GITHUB_OUTPUT
+              echo "should-build=true" >> $GITHUB_OUTPUT
+            fi
+            if echo "$CHANGED_FILES" | grep -E "^workers/media-cache/" > /dev/null; then
+              echo "build-media-cache=true" >> $GITHUB_OUTPUT
               echo "should-build=true" >> $GITHUB_OUTPUT
             fi
             if echo "$CHANGED_FILES" | grep -E "^workers/sentence-engine/" > /dev/null; then
@@ -121,18 +132,19 @@ jobs:
           # For master branch, handle push trigger - check commit message
           COMMIT_MSG='${{ github.event.head_commit.message }}'
           echo "Commit message: $COMMIT_MSG"
-          
+
           # Check for build all triggers
           if [[ "$COMMIT_MSG" == *"[build:all]"* ]] || [[ "$COMMIT_MSG" == *"[build:workers]"* ]]; then
             echo "should-build=true" >> $GITHUB_OUTPUT
             echo "build-i18n=true" >> $GITHUB_OUTPUT
             echo "build-media=true" >> $GITHUB_OUTPUT
+            echo "build-media-cache=true" >> $GITHUB_OUTPUT
             echo "build-sentence=true" >> $GITHUB_OUTPUT
             echo "build-report-issue=true" >> $GITHUB_OUTPUT
             echo "build-user-removal=true" >> $GITHUB_OUTPUT
             exit 0
           fi
-          
+
           # Check for specific worker triggers
           if [[ "$COMMIT_MSG" == *"[build:i18n-translator]"* ]]; then
             echo "build-i18n=true" >> $GITHUB_OUTPUT
@@ -140,6 +152,10 @@ jobs:
           fi
           if [[ "$COMMIT_MSG" == *"[build:media-upload]"* ]]; then
             echo "build-media=true" >> $GITHUB_OUTPUT
+            echo "should-build=true" >> $GITHUB_OUTPUT
+          fi
+          if [[ "$COMMIT_MSG" == *"[build:media-cache]"* ]]; then
+            echo "build-media-cache=true" >> $GITHUB_OUTPUT
             echo "should-build=true" >> $GITHUB_OUTPUT
           fi
           if [[ "$COMMIT_MSG" == *"[build:sentence-engine]"* ]]; then
@@ -177,26 +193,26 @@ jobs:
     name: Deploy Workers (${{ needs.determine-environment.outputs.environment }})
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: pnpm/action-setup@v2
         with:
           version: 8
-          
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-          
+
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
-        
+
       - name: Build workers
         run: |
           cd workers
           pnpm --filter=@tiko/i18n-translator-worker build
           pnpm --filter=@tiko/media-upload-worker build
           pnpm --filter=@tiko/sentence-engine-worker build
-          
+
       - name: Deploy i18n-translator worker
         if: needs.check-triggers.outputs.build-i18n == 'true'
         uses: cloudflare/wrangler-action@v3
@@ -206,7 +222,7 @@ jobs:
           workingDirectory: 'workers/i18n-translator'
           command: deploy --env ${{ needs.determine-environment.outputs.environment }}
           wranglerVersion: 'latest'
-          
+
       - name: Deploy media-upload worker
         if: needs.check-triggers.outputs.build-media == 'true'
         uses: cloudflare/wrangler-action@v3
@@ -216,7 +232,20 @@ jobs:
           workingDirectory: 'workers/media-upload'
           command: deploy --env ${{ needs.determine-environment.outputs.environment }}
           wranglerVersion: 'latest'
-          
+
+      - name: Deploy media-cache worker
+        if: needs.check-triggers.outputs.build-media-cache == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: dc2b7d14a69351375cab6de9a13ddee9
+          workingDirectory: 'workers/media-cache'
+          command: deploy --env ${{ needs.determine-environment.outputs.environment }}
+          wranglerVersion: 'latest'
+          secrets: |
+            SUPABASE_URL
+            SUPABASE_SERVICE_KEY
+
       - name: Deploy sentence-engine worker
         if: needs.check-triggers.outputs.build-sentence == 'true'
         uses: cloudflare/wrangler-action@v3
@@ -226,7 +255,7 @@ jobs:
           workingDirectory: 'workers/sentence-engine'
           command: deploy --env ${{ needs.determine-environment.outputs.environment }}
           wranglerVersion: 'latest'
-          
+
       - name: Deploy report-issue worker
         if: needs.check-triggers.outputs.build-report-issue == 'true'
         uses: cloudflare/wrangler-action@v3

@@ -228,7 +228,7 @@ onMounted(async () => {
   }
 
   &__title {
-    font-size: clamp(3em, 4vw, 6em);
+    font-size: clamp(2em, 4vw, 6em);
     line-height: 1;
     font-family: var(--header-font-family);
     color: color-mix(in srgb, var(--section-color), var(--color-foreground) 50%);

@@ -50,7 +50,7 @@ export const useTypeStore = defineStore('type', () => {
     keyboardLayout: 'qwerty',
     funLetters: false,
     speakWordByWord: true,
-    playTypingSounds: false
+    playTypingSounds: false,
   }
 
   // Speech synthesis reference
@@ -70,8 +70,8 @@ export const useTypeStore = defineStore('type', () => {
     return availableVoices.value.length > 0
   })
 
-  const currentWords = computed(()=>{
-    return currentText.value.split(' ');
+  const currentWords = computed(() => {
+    return currentText.value.split(' ')
   })
 
   const recentHistory = computed(() => {
@@ -147,7 +147,7 @@ export const useTypeStore = defineStore('type', () => {
         currentUtterance = null
       }
 
-      currentUtterance.onerror = (event) => {
+      currentUtterance.onerror = event => {
         console.error('Speech synthesis error:', event.error)
         isSpeaking.value = false
         currentUtterance = null
@@ -169,7 +169,7 @@ export const useTypeStore = defineStore('type', () => {
   // Speak text word by word using AI-generated audio
   const speakWordByWord = async (text?: string) => {
     const { speak, currentAudio, isPlaying } = useSpeak()
-    
+
     if (isSpeaking.value) {
       stop()
       return
@@ -183,38 +183,38 @@ export const useTypeStore = defineStore('type', () => {
     if (words.length === 0) return
 
     isSpeaking.value = true
-    
+
     try {
       // Speak each word and wait for it to finish
       for (let i = 0; i < words.length; i++) {
         if (!isSpeaking.value) break // Check if stopped
-        
+
         const word = words[i]
-        
+
         // Use AI-generated audio for each word
         await speak(word)
-        
+
         // Wait for the audio to finish playing
         if (currentAudio.value) {
-          await new Promise<void>((resolve) => {
+          await new Promise<void>(resolve => {
             const audio = currentAudio.value
             if (!audio) {
               resolve()
               return
             }
-            
+
             // Check if already finished
             if (audio.ended || audio.paused) {
               resolve()
               return
             }
-            
+
             // Wait for audio to end
             audio.addEventListener('ended', () => resolve(), { once: true })
             audio.addEventListener('error', () => resolve(), { once: true })
           })
         }
-        
+
         // Add a small pause between words (100ms instead of 200ms for more natural flow)
         if (i < words.length - 1 && isSpeaking.value) {
           await new Promise(resolve => setTimeout(resolve, 100))
@@ -271,7 +271,7 @@ export const useTypeStore = defineStore('type', () => {
       id: crypto.randomUUID(),
       text,
       timestamp: Date.now(),
-      voice: selectedVoice.value?.name
+      voice: selectedVoice.value?.name,
     }
 
     history.value.unshift(historyItem)
@@ -310,7 +310,7 @@ export const useTypeStore = defineStore('type', () => {
   const saveHistory = async () => {
     await appStore.updateAppSettings('type', {
       ...settings.value,
-      history: history.value
+      history: history.value,
     })
   }
 
@@ -364,6 +364,6 @@ export const useTypeStore = defineStore('type', () => {
     speakFromHistory,
     updateSettings,
     loadState,
-    cleanup
+    cleanup,
   }
 })

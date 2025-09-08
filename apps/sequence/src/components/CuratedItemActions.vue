@@ -62,140 +62,140 @@
 </template>
 
 <script setup lang="ts">
-import { useBemm } from 'bemm'
-import { TButton, TIcon } from '@tiko/ui'
-import { Icons } from 'open-icon'
-import { useI18n } from '@tiko/core';
-import type { TCardTile } from '@tiko/ui'
+  import { useBemm } from 'bemm'
+  import { TButton, TIcon } from '@tiko/ui'
+  import { Icons } from 'open-icon'
+  import { useI18n } from '@tiko/core'
+  import type { TCardTile } from '@tiko/ui'
 
-interface Props {
-  sequence: TCardTile
-  onHide?: (sequenceId: string) => void
-  onDuplicate?: (sequence: TCardTile) => void
-}
-
-const props = defineProps<Props>()
-const bemm = useBemm('curated-item-actions')
-const { t } = useI18n()
-
-const handleHide = () => {
-  if (props.onHide) {
-    props.onHide(props.sequence.id)
+  interface Props {
+    sequence: TCardTile
+    onHide?: (sequenceId: string) => void
+    onDuplicate?: (sequence: TCardTile) => void
   }
-}
 
-const handleDuplicate = () => {
-  if (props.onDuplicate) {
-    props.onDuplicate(props.sequence)
+  const props = defineProps<Props>()
+  const bemm = useBemm('curated-item-actions')
+  const { t } = useI18n()
+
+  const handleHide = () => {
+    if (props.onHide) {
+      props.onHide(props.sequence.id)
+    }
   }
-}
+
+  const handleDuplicate = () => {
+    if (props.onDuplicate) {
+      props.onDuplicate(props.sequence)
+    }
+  }
 </script>
 
 <style lang="scss">
-.curated-item-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  padding: 0.5rem;
-
-  &__info {
+  .curated-item-actions {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-  }
+    gap: 1.5rem;
+    padding: 0.5rem;
 
-  &__item-preview {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  &__item-icon {
-    width: 3rem;
-    height: 3rem;
-    border-radius: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    &__info {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
     }
 
-    .icon {
-      color: white;
-      font-size: 1.5rem;
+    &__item-preview {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
-  }
 
-  &__item-details {
-    flex: 1;
-  }
+    &__item-icon {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
 
-  &__item-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin: 0 0 0.25rem;
-    color: var(--color-text);
-  }
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
 
-  &__item-type {
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
-    margin: 0;
-  }
+      .icon {
+        color: white;
+        font-size: 1.5rem;
+      }
+    }
 
-  &__curated-badge {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: linear-gradient(135deg, #ffd700, #ffa500);
-    color: #8b4513;
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    align-self: flex-start;
-  }
+    &__item-details {
+      flex: 1;
+    }
 
-  &__explanation {
-    background: var(--color-background-secondary);
-    border: 1px solid var(--color-accent);
-    border-radius: 0.75rem;
-    padding: 1rem;
+    &__item-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0 0 0.25rem;
+      color: var(--color-text);
+    }
 
-    p {
-      margin: 0;
+    &__item-type {
+      font-size: 0.875rem;
       color: var(--color-text-secondary);
-      line-height: 1.5;
+      margin: 0;
+    }
+
+    &__curated-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: linear-gradient(135deg, #ffd700, #ffa500);
+      color: #8b4513;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      align-self: flex-start;
+    }
+
+    &__explanation {
+      background: var(--color-background-secondary);
+      border: 1px solid var(--color-accent);
+      border-radius: 0.75rem;
+      padding: 1rem;
+
+      p {
+        margin: 0;
+        color: var(--color-text-secondary);
+        line-height: 1.5;
+      }
+    }
+
+    &__actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    &__action-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    &__action-description {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+
+      .icon {
+        color: var(--color-text-muted);
+      }
     }
   }
-
-  &__actions {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  &__action-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  &__action-description {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
-
-    .icon {
-      color: var(--color-text-muted);
-    }
-  }
-}
 </style>

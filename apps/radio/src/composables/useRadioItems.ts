@@ -6,56 +6,52 @@
 import { ref, computed } from 'vue'
 import { useAuthStore, itemService } from '@tiko/core'
 import type { BaseItem } from '@tiko/core'
-import type { 
-  RadioItem, 
-  CreateRadioItemPayload, 
-  UpdateRadioItemPayload, 
+import type {
+  RadioItem,
+  CreateRadioItemPayload,
+  UpdateRadioItemPayload,
   RadioItemRow,
-  VideoMetadata 
+  VideoMetadata,
 } from '../types/radio.types'
 
 /**
  * Radio items management composable
- * 
+ *
  * Provides CRUD operations for radio items using the Items service.
  * Handles data transformation between UI models and BaseItem format.
- * 
+ *
  * @returns Radio items interface with CRUD methods and state
- * 
+ *
  * @example
  * const radioItems = useRadioItems()
- * 
+ *
  * // Load user's radio items
  * await radioItems.fetchItems()
- * 
+ *
  * // Add new item
  * await radioItems.addItem({
  *   title: 'My Audio',
  *   videoUrl: 'https://youtube.com/watch?v=...',
  *   description: 'Great audio track'
  * })
- * 
+ *
  * // Update existing item
  * await radioItems.updateItem(itemId, { title: 'New Title' })
  */
 export function useRadioItems() {
   const authStore = useAuthStore()
-  
+
   // State
   const items = ref<RadioItem[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
-  
+
   // Computed
-  const sortedItems = computed(() => 
-    [...items.value].sort((a, b) => a.sortOrder - b.sortOrder)
-  )
-  
-  const favoriteItems = computed(() => 
-    items.value.filter(item => item.isFavorite)
-  )
-  
-  const recentItems = computed(() => 
+  const sortedItems = computed(() => [...items.value].sort((a, b) => a.sortOrder - b.sortOrder))
+
+  const favoriteItems = computed(() => items.value.filter(item => item.isFavorite))
+
+  const recentItems = computed(() =>
     [...items.value]
       .filter(item => item.lastPlayedAt)
       .sort((a, b) => {
@@ -82,10 +78,12 @@ export function useRadioItems() {
     tags: item.tags || [],
     isFavorite: item.is_favorite || false,
     playCount: item.metadata?.play_count || 0,
-    lastPlayedAt: item.metadata?.last_played_at ? new Date(item.metadata.last_played_at) : undefined,
+    lastPlayedAt: item.metadata?.last_played_at
+      ? new Date(item.metadata.last_played_at)
+      : undefined,
     sortOrder: item.order_index,
     createdAt: new Date(item.created_at),
-    updatedAt: new Date(item.updated_at)
+    updatedAt: new Date(item.updated_at),
   })
 
   /**
@@ -93,7 +91,7 @@ export function useRadioItems() {
    */
   const fetchItems = async (): Promise<void> => {
     console.log('Fetching radio items for user:', authStore.user?.id)
-    
+
     if (!authStore.user) {
       error.value = 'User not authenticated'
       console.error('No authenticated user found')
@@ -107,7 +105,7 @@ export function useRadioItems() {
       console.log('Querying radio items...')
       const baseItems = await itemService.getItems(authStore.user.id, {
         app_name: 'radio',
-        type: 'radio_item'
+        type: 'radio_item',
       })
 
       console.log('Items service fetch result:', baseItems)
@@ -138,11 +136,11 @@ export function useRadioItems() {
     try {
       console.log('Adding radio item for user:', authStore.user.id)
       console.log('Item data received:', itemData)
-      
+
       // Extract video metadata if possible
       const metadata = await extractVideoMetadata(itemData.videoUrl || '')
       console.log('Extracted metadata:', metadata)
-      
+
       const payload = {
         app_name: 'radio',
         type: 'radio_item',
@@ -155,11 +153,11 @@ export function useRadioItems() {
           custom_thumbnail_url: itemData.customThumbnailUrl,
           duration_seconds: metadata.durationSeconds,
           play_count: 0,
-          last_played_at: null
+          last_played_at: null,
         },
         tags: itemData.tags || [],
         is_favorite: false,
-        order_index: items.value.length
+        order_index: items.value.length,
       }
 
       console.log('Payload being sent to itemService:', payload)
@@ -174,7 +172,7 @@ export function useRadioItems() {
 
       const newItem = transformFromBaseItem(result.data)
       items.value.push(newItem)
-      
+
       console.log('Successfully added item:', newItem)
       return newItem
     } catch (err) {
@@ -206,7 +204,7 @@ export function useRadioItems() {
 
       // Transform updates to BaseItem format
       const baseItemUpdates: any = {}
-      
+
       if (updates.title !== undefined) baseItemUpdates.name = updates.title
       if (updates.description !== undefined) baseItemUpdates.content = updates.description
       if (updates.tags !== undefined) baseItemUpdates.tags = updates.tags
@@ -214,8 +212,12 @@ export function useRadioItems() {
       if (updates.sort_order !== undefined) baseItemUpdates.order_index = updates.sort_order
 
       // Handle metadata updates
-      if (updates.video_url !== undefined || updates.custom_thumbnail_url !== undefined || 
-          updates.play_count !== undefined || updates.last_played_at !== undefined) {
+      if (
+        updates.video_url !== undefined ||
+        updates.custom_thumbnail_url !== undefined ||
+        updates.play_count !== undefined ||
+        updates.last_played_at !== undefined
+      ) {
         baseItemUpdates.metadata = {
           ...existingItem,
           video_url: updates.video_url ?? existingItem.videoUrl,
@@ -224,7 +226,7 @@ export function useRadioItems() {
           custom_thumbnail_url: updates.custom_thumbnail_url ?? existingItem.customThumbnailUrl,
           duration_seconds: existingItem.durationSeconds,
           play_count: updates.play_count ?? existingItem.playCount,
-          last_played_at: updates.last_played_at ?? existingItem.lastPlayedAt?.toISOString()
+          last_played_at: updates.last_played_at ?? existingItem.lastPlayedAt?.toISOString(),
         }
       }
 
@@ -271,7 +273,7 @@ export function useRadioItems() {
 
       // Update local state
       items.value = items.value.filter(item => item.id !== id)
-      
+
       return true
     } catch (err) {
       console.error('Failed to delete radio item:', err)
@@ -309,8 +311,8 @@ export function useRadioItems() {
           custom_thumbnail_url: item.customThumbnailUrl,
           duration_seconds: item.durationSeconds,
           play_count: item.playCount + 1,
-          last_played_at: new Date().toISOString()
-        }
+          last_played_at: new Date().toISOString(),
+        },
       })
 
       if (!result.success || !result.data) {
@@ -373,10 +375,11 @@ export function useRadioItems() {
     if (!query.trim()) return items.value
 
     const lowerQuery = query.toLowerCase()
-    return items.value.filter(item =>
-      item.title.toLowerCase().includes(lowerQuery) ||
-      item.description?.toLowerCase().includes(lowerQuery) ||
-      item.tags.some(tag => tag.toLowerCase().includes(lowerQuery))
+    return items.value.filter(
+      item =>
+        item.title.toLowerCase().includes(lowerQuery) ||
+        item.description?.toLowerCase().includes(lowerQuery) ||
+        item.tags.some(tag => tag.toLowerCase().includes(lowerQuery))
     )
   }
 
@@ -386,9 +389,7 @@ export function useRadioItems() {
   const filterByTags = (tags: string[]): RadioItem[] => {
     if (tags.length === 0) return items.value
 
-    return items.value.filter(item =>
-      tags.some(tag => item.tags.includes(tag))
-    )
+    return items.value.filter(item => tags.some(tag => item.tags.includes(tag)))
   }
 
   /**
@@ -421,7 +422,7 @@ export function useRadioItems() {
     lastPlayedAt: row.last_played_at ? new Date(row.last_played_at) : undefined,
     sortOrder: row.sort_order,
     createdAt: new Date(row.created_at),
-    updatedAt: new Date(row.updated_at)
+    updatedAt: new Date(row.updated_at),
   })
 
   /**
@@ -429,7 +430,7 @@ export function useRadioItems() {
    */
   const extractVideoMetadata = async (url: string): Promise<VideoMetadata> => {
     const metadata: VideoMetadata = {
-      videoType: 'url'
+      videoType: 'url',
     }
 
     try {
@@ -439,7 +440,7 @@ export function useRadioItems() {
         metadata.videoType = 'youtube'
         const videoId = youtubeMatch[1]
         metadata.thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
-        
+
         // Note: In a real implementation, you'd use YouTube API to get title and duration
         // For now, we'll leave these undefined and let the user fill them in
       }
@@ -450,7 +451,6 @@ export function useRadioItems() {
         metadata.videoType = 'vimeo'
         // Note: In a real implementation, you'd use Vimeo API for metadata
       }
-
     } catch (err) {
       console.warn('Failed to extract video metadata:', err)
     }
@@ -463,11 +463,11 @@ export function useRadioItems() {
     items: sortedItems,
     loading,
     error,
-    
+
     // Computed
     favoriteItems,
     recentItems,
-    
+
     // Actions
     fetchItems,
     addItem,
@@ -478,6 +478,6 @@ export function useRadioItems() {
     reorderItems,
     searchItems,
     filterByTags,
-    getAllTags
+    getAllTags,
   }
 }

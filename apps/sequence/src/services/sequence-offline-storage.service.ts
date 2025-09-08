@@ -25,13 +25,13 @@ class SequenceOfflineStorageService {
       stores: [
         {
           name: CARDS_STORE,
-          keyPath: 'key'
+          keyPath: 'key',
         },
         {
           name: METADATA_STORE,
-          keyPath: 'key'
-        }
-      ]
+          keyPath: 'key',
+        },
+      ],
     })
   }
 
@@ -59,7 +59,7 @@ class SequenceOfflineStorageService {
     await this.storage.store(CARDS_STORE, key, sequence, {
       parentId,
       locale,
-      userId
+      userId,
     })
   }
 
@@ -84,7 +84,7 @@ class SequenceOfflineStorageService {
     const metadata: CardSyncMetadata = {
       userId,
       lastSync: Date.now(),
-      totalSequence
+      totalSequence,
     }
     await this.storage.store(METADATA_STORE, userId, metadata)
   }

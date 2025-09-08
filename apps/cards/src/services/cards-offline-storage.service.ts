@@ -25,13 +25,13 @@ class CardsOfflineStorageService {
       stores: [
         {
           name: CARDS_STORE,
-          keyPath: 'key'
+          keyPath: 'key',
         },
         {
           name: METADATA_STORE,
-          keyPath: 'key'
-        }
-      ]
+          keyPath: 'key',
+        },
+      ],
     })
   }
 
@@ -39,28 +39,26 @@ class CardsOfflineStorageService {
    * Generate a storage key for cards
    */
   private getCardsKey(userId: string, parentId?: string, locale: string = 'en'): string {
-    return parentId 
-      ? `cards_${userId}_${parentId}_${locale}`
-      : `cards_${userId}_root_${locale}`
+    return parentId ? `cards_${userId}_${parentId}_${locale}` : `cards_${userId}_root_${locale}`
   }
 
   /**
    * Store cards data
    */
   async storeCards(
-    userId: string, 
-    cards: CardTile[], 
-    parentId?: string, 
+    userId: string,
+    cards: CardTile[],
+    parentId?: string,
     locale: string = 'en'
   ): Promise<void> {
     try {
       const key = this.getCardsKey(userId, parentId, locale)
-      
+
       // Store the cards with metadata
       await this.storage.store(CARDS_STORE, key, cards, {
         parentId,
         locale,
-        userId
+        userId,
       })
     } catch (error) {
       console.error('[CardsOfflineStorage] Failed to store cards:', error)
@@ -72,8 +70,8 @@ class CardsOfflineStorageService {
    * Retrieve cards data
    */
   async getCards(
-    userId: string, 
-    parentId?: string, 
+    userId: string,
+    parentId?: string,
     locale: string = 'en'
   ): Promise<CardTile[] | null> {
     const key = this.getCardsKey(userId, parentId, locale)
@@ -89,12 +87,12 @@ class CardsOfflineStorageService {
     try {
       const metadataKey = `metadata_${userId}`
       const metadata = {
-        key: metadataKey,  // Add the key field required by IndexedDB
+        key: metadataKey, // Add the key field required by IndexedDB
         userId,
         lastSync: Date.now(),
-        totalCards
+        totalCards,
       }
-      
+
       await this.storage.store(METADATA_STORE, metadataKey, metadata)
     } catch (error) {
       console.error('[CardsOfflineStorage] Failed to update sync metadata:', error)
@@ -130,14 +128,14 @@ class CardsOfflineStorageService {
   async clearUserData(userId: string): Promise<void> {
     // Get all cards for this user
     const allData = await this.storage.getAll<CardTile[]>(CARDS_STORE)
-    
+
     // Delete each card entry for this user
     for (const item of allData) {
       if (item.metadata?.userId === userId) {
         await this.storage.delete(CARDS_STORE, item.key)
       }
     }
-    
+
     // Delete metadata
     const metadataKey = `metadata_${userId}`
     await this.storage.delete(METADATA_STORE, metadataKey)

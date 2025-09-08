@@ -3,15 +3,18 @@
 ## Required Secrets
 
 ### For All Apps
+
 - `CLOUDFLARE_API_TOKEN` - Your Cloudflare API token with Pages:Edit permission
 - `VITE_SUPABASE_URL` - Your Supabase project URL
 - `VITE_SUPABASE_ANON_KEY` - Your Supabase anonymous key
 
 ### For Specific Apps (Optional)
+
 - `VITE_TTS_WORKER_URL` - https://tts.tikoapi.org (for apps using TTS)
 - `VITE_TTS_CDN_URL` - https://tts.tikocdn.org (for apps using TTS)
 
 ### Per-App Site URLs (Add these as GitHub Variables, not Secrets)
+
 - `VITE_SITE_URL_CARDS` - https://tiko-cards.pages.dev
 - `VITE_SITE_URL_SEQUENCE` - https://tiko-sequence.pages.dev
 - `VITE_SITE_URL_RADIO` - https://tiko-radio.pages.dev

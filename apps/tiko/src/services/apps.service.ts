@@ -1,22 +1,22 @@
 /**
  * Apps Service
- * 
+ *
  * Manages application metadata for the Tiko dashboard.
  * Currently uses static data but can be extended to use the content management system.
  */
 
-import type { TCardTile } from '@tiko/ui';
+import type { TCardTile } from '@tiko/ui'
 
 export interface TikoApp {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  color: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info';
-  url: string;
-  isActive: boolean;
-  order: number;
-  image?: string;
+  id: string
+  name: string
+  description: string
+  icon: string
+  color: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info'
+  url: string
+  isActive: boolean
+  order: number
+  image?: string
 }
 
 export class AppsService {
@@ -29,7 +29,7 @@ export class AppsService {
       color: 'primary',
       url: 'https://cards.tikoapps.org',
       isActive: true,
-      order: 1
+      order: 1,
     },
     {
       id: 'timer',
@@ -39,7 +39,7 @@ export class AppsService {
       color: 'success',
       url: 'https://timer.tikoapps.org',
       isActive: true,
-      order: 2
+      order: 2,
     },
     {
       id: 'yesno',
@@ -49,7 +49,7 @@ export class AppsService {
       color: 'warning',
       url: 'https://yesno.tikoapps.org',
       isActive: true,
-      order: 3
+      order: 3,
     },
     {
       id: 'radio',
@@ -59,7 +59,7 @@ export class AppsService {
       color: 'error',
       url: 'https://radio.tikoapps.org',
       isActive: true,
-      order: 4
+      order: 4,
     },
     {
       id: 'todo',
@@ -69,7 +69,7 @@ export class AppsService {
       color: 'info',
       url: 'https://todo.tikoapps.org',
       isActive: true,
-      order: 5
+      order: 5,
     },
     {
       id: 'type',
@@ -79,7 +79,7 @@ export class AppsService {
       color: 'secondary',
       url: 'https://type.tikoapps.org',
       isActive: true,
-      order: 6
+      order: 6,
     },
     {
       id: 'sequence',
@@ -89,28 +89,26 @@ export class AppsService {
       color: 'primary',
       url: 'https://sequence.tikoapps.org',
       isActive: true,
-      order: 7
-    }
-  ];
+      order: 7,
+    },
+  ]
 
   /**
    * Get all available apps
    */
   static async getAllApps(): Promise<TikoApp[]> {
     // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    return this.apps
-      .filter(app => app.isActive)
-      .sort((a, b) => a.order - b.order);
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    return this.apps.filter(app => app.isActive).sort((a, b) => a.order - b.order)
   }
 
   /**
    * Get apps formatted as TCardTile for use in TCardGrid
    */
   static async getAppsAsCards(): Promise<TCardTile[]> {
-    const apps = await this.getAllApps();
-    
+    const apps = await this.getAllApps()
+
     return apps.map((app, index) => ({
       id: app.id,
       title: app.name,
@@ -121,16 +119,16 @@ export class AppsService {
       speech: '',
       type: 'app' as any,
       index,
-      url: app.url
-    }));
+      url: app.url,
+    }))
   }
 
   /**
    * Get a specific app by ID
    */
   static async getApp(id: string): Promise<TikoApp | null> {
-    const apps = await this.getAllApps();
-    return apps.find(app => app.id === id) || null;
+    const apps = await this.getAllApps()
+    return apps.find(app => app.id === id) || null
   }
 
   /**
@@ -138,14 +136,14 @@ export class AppsService {
    * Appends authentication token if user is authenticated
    */
   static generateSSOUrl(app: TikoApp, accessToken?: string): string {
-    const url = new URL(app.url);
-    
+    const url = new URL(app.url)
+
     if (accessToken) {
-      url.searchParams.set('sso_token', accessToken);
-      url.searchParams.set('return_url', window.location.origin);
+      url.searchParams.set('sso_token', accessToken)
+      url.searchParams.set('return_url', window.location.origin)
     }
-    
-    return url.toString();
+
+    return url.toString()
   }
 
   /**
@@ -156,13 +154,13 @@ export class AppsService {
     try {
       // Validate the token and log the user in
       // This would integrate with the auth service
-      console.log('Handling SSO return with token:', token, 'from app:', returnApp);
-      
+      console.log('Handling SSO return with token:', token, 'from app:', returnApp)
+
       // For now, just return success
-      return true;
+      return true
     } catch (error) {
-      console.error('SSO return handling failed:', error);
-      return false;
+      console.error('SSO return handling failed:', error)
+      return false
     }
   }
 
@@ -175,8 +173,8 @@ export class AppsService {
     // const contentService = new ContentService();
     // const appItems = await contentService.getItemsByType('app');
     // return appItems.map(item => this.mapCMSItemToApp(item));
-    
-    return [];
+
+    return []
   }
 
   /**
@@ -192,10 +190,10 @@ export class AppsService {
       url: cmsItem.fields.url,
       isActive: cmsItem.fields.isActive !== false,
       order: cmsItem.fields.order || 0,
-      image: cmsItem.fields.image
-    };
+      image: cmsItem.fields.image,
+    }
   }
 }
 
 // Export singleton instance
-export const appsService = AppsService;
+export const appsService = AppsService

@@ -15,16 +15,16 @@ export default defineConfig({
     tertiary: BaseColors.RED,
   },
   auth: {
-    skipAuth: true
+    skipAuth: true,
   },
   splash: {
     show: true,
     appName: 'Yes-No',
     color: ColorValue.BLUE_DARK,
     themeColor: ColorValue.PURPLE,
-    loadingText: 'Loading Yes-No...'
+    loadingText: 'Loading Yes-No...',
   },
   i18n: {
-    categories: ['common', 'yesno']
-  }
+    categories: ['common', 'yesno'],
+  },
 })

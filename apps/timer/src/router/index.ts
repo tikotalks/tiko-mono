@@ -6,9 +6,9 @@ const router = createAppRouter({
     {
       path: '/',
       name: 'Timer',
-      component: TimerView
-    }
-  ]
+      component: TimerView,
+    },
+  ],
 })
 
 export default router

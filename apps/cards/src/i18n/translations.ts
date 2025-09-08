@@ -23,5 +23,5 @@ export const cardTranslations = {
     'cards.itemHidden': 'Item hidden from view',
     'cards.itemDuplicated': 'Item duplicated successfully',
     'cards.createCard': 'Create Card',
-  }
-};
+  },
+}

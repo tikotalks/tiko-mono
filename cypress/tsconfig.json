@@ -7,8 +7,5 @@
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "include": [
-    "**/*.ts",
-    "**/*.cy.ts"
-  ]
+  "include": ["**/*.ts", "**/*.cy.ts"]
 }

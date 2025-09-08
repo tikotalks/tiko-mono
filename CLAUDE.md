@@ -5,6 +5,7 @@
 **NEVER include "Co-Authored-By: Claude" in commit messages.** The user does not want Claude credited as a co-author in commits.
 
 **DO NOT COMMIT CHANGES WITHOUT EXPLICIT USER PERMISSION.** Only commit when:
+
 - The user explicitly tells you to "commit"
 - The user asks you to "deploy" (which requires a commit)
 - Otherwise, make all changes but DO NOT run git commit or git push
@@ -12,6 +13,7 @@
 ## Development Principles
 
 **IMPORTANT: Do not try to make workarounds when errors occur - try to fix the error.**
+
 - Figure out why the error happens, do not just make a workaround
 - Investigate the root cause of issues before implementing solutions
 - Workarounds often hide deeper problems that need proper fixes
@@ -19,6 +21,7 @@
 ## Commands to Run After Code Changes
 
 When making changes to the Cards app:
+
 ```bash
 cd apps/cards
 npm run typecheck  # Check TypeScript types
@@ -28,6 +31,7 @@ npm run lint       # Run ESLint
 ## Translation System Rules
 
 **CRITICAL: DO NOT EDIT LANGUAGE FILES OR FIX i18n ERRORS**
+
 - NEVER edit any files in `packages/ui/src/i18n/generated/` directories
 - Translation keys are managed in the database, not in code files
 - When encountering missing translation keys, use direct string literals (e.g., `t('yesno.buttonSize')`) in the code
@@ -38,10 +42,12 @@ npm run lint       # Run ESLint
 - These errors are related to the auto-generation process and will be resolved by the user
 
 **When providing translation keys to user:**
+
 - Format as `key : value` with each key on a new line
 - Always provide values in English
 - Do not use quotes (") in the values
 - Example format:
+
 ```
 yesno.buttonSize : Button Size
 yesno.small : Small
@@ -61,15 +67,19 @@ The OpenAI TTS integration has been implemented with the following components:
 3. **Worker** (`workers/tts-generation/`): Cloudflare Worker that interfaces with OpenAI API and caches audio in R2
 
 ### Environment Variables Required
+
 - `VITE_TTS_WORKER_URL`: URL of the deployed TTS worker
 
 ### Worker Secrets Required
+
 - `OPENAI_API_KEY`: OpenAI API key for TTS generation
 - `SUPABASE_URL`: Supabase project URL
 - `SUPABASE_SERVICE_KEY`: Supabase service role key
 
 ### Language Fallbacks
+
 The system automatically handles unsupported languages by:
+
 1. Checking if OpenAI supports the language
 2. Falling back to browser TTS if available
 3. Using a mapped fallback language (e.g., Maltese → English)
@@ -92,6 +102,7 @@ Apps are deployed to Cloudflare Pages when pushing to the `master` branch with t
 - `[build:all]` or `[build:apps]` - Deploy all apps
 
 Example:
+
 ```bash
 git commit -m "feat: add new feature to cards app [build:cards]"
 git push origin master
@@ -103,6 +114,7 @@ Workers are deployed to Cloudflare Workers with these triggers:
 
 - `[build:i18n-translator]` - Deploy only the i18n translator worker
 - `[build:media-upload]` - Deploy only the media upload worker
+- `[build:media-cache]` - Deploy only the media cache worker
 - `[build:sentence-engine]` - Deploy only the sentence engine worker
 - `[build:report-issue]` - Deploy only the report issue worker
 - `[build:all]` or `[build:workers]` - Deploy all workers
@@ -110,6 +122,7 @@ Workers are deployed to Cloudflare Workers with these triggers:
 ### Multiple Deployments
 
 You can trigger multiple deployments in a single commit:
+
 ```bash
 git commit -m "fix: update cards and i18n system [build:cards] [build:i18n-translator]"
 ```
@@ -117,6 +130,7 @@ git commit -m "fix: update cards and i18n system [build:cards] [build:i18n-trans
 ### Manual Deployments
 
 Deployments can also be triggered manually via GitHub Actions:
+
 1. Go to the Actions tab in the repository
 2. Select either "Deploy Apps to Cloudflare Pages" or "Deploy Cloudflare Workers"
 3. Click "Run workflow"
@@ -125,6 +139,7 @@ Deployments can also be triggered manually via GitHub Actions:
 ### Deployment URLs
 
 After successful deployment:
+
 - **Apps**: Available at `https://tiko-{app-name}.pages.dev` (e.g., `https://tiko-cards.pages.dev`)
 - **Workers**: Available via their configured routes on `tikoapi.org`
 

@@ -3,24 +3,24 @@ import { useTimerStore } from '../stores/timer'
 
 /**
  * Timer composable that delegates to the timer store
- * 
+ *
  * Provides a convenient interface to the timer store for
  * timer functionality and settings management.
- * 
+ *
  * @returns Timer interface with state and methods
- * 
+ *
  * @example
  * const timer = useTimer()
- * 
+ *
  * // Start the timer
  * timer.start()
- * 
+ *
  * // Update settings
  * await timer.updateSettings({ soundEnabled: false })
  */
 export function useTimer() {
   const store = useTimerStore()
-  
+
   // Extract refs from store
   const {
     currentTime,
@@ -33,7 +33,7 @@ export function useTimer() {
     progress,
     isExpired,
     timeLeft,
-    formattedTime
+    formattedTime,
   } = storeToRefs(store)
 
   // Delegate methods to store
@@ -47,7 +47,7 @@ export function useTimer() {
     setTime,
     updateSettings,
     loadState,
-    saveState
+    saveState,
   } = store
 
   return {
@@ -76,6 +76,6 @@ export function useTimer() {
     setTime,
     updateSettings,
     loadState,
-    saveState
+    saveState,
   }
 }

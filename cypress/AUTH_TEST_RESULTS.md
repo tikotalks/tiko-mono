@@ -1,6 +1,7 @@
 # Authentication Flow Test Results
 
 ## Summary
+
 - **Total Tests**: 12
 - **Passing**: 8 (67%)
 - **Failing**: 4 (33%)
@@ -8,43 +9,53 @@
 ## ✅ Working Features
 
 ### OTP Authentication
+
 - ✅ Complete OTP flow from email to verification
 - ✅ Invalid OTP code error handling
 - ✅ OTP verification with proper JWT tokens
 
 ### Session Management
+
 - ✅ Session persistence across page reloads
 - ✅ User settings preservation during authentication
 
 ### Error Handling
+
 - ✅ Rate limit error display (shows "For security purposes...")
 - ✅ Network error handling
 
 ### Registration
+
 - ✅ Registration form with optional name field
 - ✅ Email verification after registration
 
 ### Magic Link
+
 - ✅ Malformed token rejection (stays on login screen)
 
 ## ❌ Issues to Fix
 
 ### 1. Magic Link Hash Not Clearing
+
 **Issue**: After magic link authentication, the hash remains in URL
 **Expected**: `location.hash` should be empty after processing
 **Actual**: Hash stays as `#access_token=...&refresh_token=...`
 
 ### 2. Session Logout Not Redirecting
+
 **Issue**: After clearing localStorage, app doesn't redirect to login
 **Expected**: Should show login form after session clear
 **Actual**: Stays on authenticated view
 
 ### 3. UI Text Mismatches
+
 **Issue**: Button/form texts don't match expected values
+
 - "Use a different email" button might have different text
 - "Create Account" header might be different
 
 ### 4. Registration Toggle
+
 **Issue**: Toggle between login/register not working as expected
 **Expected**: Click "Register" to see registration form
 **Actual**: Registration form not displaying

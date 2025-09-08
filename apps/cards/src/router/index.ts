@@ -6,14 +6,14 @@ const router = createAppRouter({
     {
       path: '/',
       name: 'Home',
-      component: CardsView
+      component: CardsView,
     },
     {
       path: '/:cardId',
       name: 'Card',
-      component: CardsView
-    }
-  ]
+      component: CardsView,
+    },
+  ],
 })
 
 export default router

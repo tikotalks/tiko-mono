@@ -1,16 +1,10 @@
 <template>
-  <article :class="bemm()">
-    <!-- Hero Section with Image -->
-    <div v-if="article.image_url" :class="bemm('hero')">
-      <img
-        :src="article.image_url"
-        :alt="article.title"
-        :class="bemm('hero-image')"
-      />
-    </div>
+  <!-- Article Content -->
+  <article v-if="article && Object.keys(article).length > 0" :class="bemm()">
 
     <!-- Article Header -->
-    <header :class="bemm('header')">
+    <header :class="bemm('header', ['', article.image_url ? 'has-background' : ''])"
+      :style="`--background-url: ${article.image_url}`">
       <div :class="bemm('container')">
         <!-- Breadcrumb -->
         <nav :class="bemm('breadcrumb')">
@@ -22,7 +16,7 @@
             {{ parentPageTitle }}
           </router-link>
           <span :class="bemm('breadcrumb-separator')">/</span>
-          <span :class="bemm('breadcrumb-current')">{{ article.title }}</span>
+          <span :class="bemm('breadcrumb-link',['','current'])">{{ article.title }}</span>
         </nav>
 
         <!-- Article Meta -->
@@ -45,11 +39,7 @@
 
         <!-- Tags -->
         <div v-if="article.tags?.length" :class="bemm('tags')">
-          <span
-            v-for="tag in article.tags"
-            :key="tag"
-            :class="bemm('tag')"
-          >
+          <span v-for="tag in article.tags" :key="tag" :class="bemm('tag')">
             #{{ tag }}
           </span>
         </div>
@@ -58,26 +48,32 @@
 
     <!-- Main Content -->
     <div :class="bemm('content')">
-      <div :class="bemm('container', 'narrow')">
-        <TMarkdownRenderer
-          :content="article.content"
-          :class="bemm('body')"
-        />
+      <div :class="bemm('container', ['', 'content'])">
+        <TMarkdownRenderer :content="article.content" :class="bemm('body')" />
       </div>
     </div>
 
     <!-- Footer Actions -->
     <footer :class="bemm('footer')">
       <div :class="bemm('container')">
-        <router-link
-          :to="`/${parentPageSlug}`"
-          :class="bemm('back-link')"
-        >
+        <router-link :to="`/${parentPageSlug}`" :class="bemm('back-link')">
           ← {{ t('common.backTo', { page: parentPageTitle }) }}
         </router-link>
       </div>
     </footer>
+
   </article>
+
+  <!-- No Article Found -->
+  <div v-else :class="bemm('no-article')">
+    <div :class="bemm('container')">
+      <h2>{{ t('errors.articleNotFound') }}</h2>
+      <p>{{ t('errors.articleNotFoundDescription') }}</p>
+      <router-link :to="`/${parentPageSlug}`" :class="bemm('back-link')">
+        ← {{ t('common.backTo', { page: parentPageTitle }) }}
+      </router-link>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -121,26 +117,29 @@ const parentPageTitle = computed(() => {
     case 'blog':
       return t('pages.blog');
     default:
-      return parentPageSlug.value.charAt(0).toUpperCase() + parentPageSlug.value.slice(1);
+      return (
+        parentPageSlug.value.charAt(0).toUpperCase() +
+        parentPageSlug.value.slice(1)
+      );
   }
 });
 
 // Format date based on locale
 function formatDate(dateString: string): string {
   if (!dateString) return '';
-  
+
   try {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) {
       return '';
     }
-    
+
     const options: Intl.DateTimeFormatOptions = {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     };
-    
+
     return date.toLocaleDateString(locale.value, options);
   } catch (err) {
     return '';
@@ -156,6 +155,7 @@ function formatDate(dateString: string): string {
     overflow: hidden;
     background: var(--color-background-subtle);
     margin-bottom: var(--space-2xl);
+    border: 1px solid red;
   }
 
   &__hero-image {
@@ -165,17 +165,21 @@ function formatDate(dateString: string): string {
   }
 
   &__header {
-    padding: var(--space-xl) 0;
-    border-bottom: 1px solid var(--color-border);
+    .article-detail__container {
+      padding-top: calc(var(--spacing) + var(--page-header-height, 100px));
+      background-color: color-mix(in srgb, var(--color-foreground), transparent 90%);
+
+    }
   }
 
   &__container {
     max-width: var(--max-width);
     margin: 0 auto;
-    padding: 0 var(--space-m);
+    padding: var(--spacing);
 
-    &--narrow {
-      max-width: 800px;
+    &--content {
+      max-width: 960px;
+      margin: auto;
     }
   }
 
@@ -185,25 +189,28 @@ function formatDate(dateString: string): string {
     gap: var(--space-s);
     font-size: var(--font-size-s);
     margin-bottom: var(--space-m);
+    color: var(--color-tertiary);
   }
 
   &__breadcrumb-link {
-    color: var(--color-text-secondary);
     text-decoration: none;
-    
+    color: var(--color-foreground);
+    opacity: .5;
+
     &:hover {
       color: var(--color-primary);
+      opacity: 1;
     }
+    &--current {
+    opacity:1;
+    font-weight: 500;
+  }
   }
 
   &__breadcrumb-separator {
     color: var(--color-text-subtle);
   }
 
-  &__breadcrumb-current {
-    color: var(--color-text-primary);
-    font-weight: 500;
-  }
 
   &__meta {
     display: flex;
@@ -226,11 +233,10 @@ function formatDate(dateString: string): string {
   }
 
   &__title {
-    font-size: var(--font-size-2xl);
+    font-size: clamp(2em, 4vw, 6em);
     font-weight: 700;
-    color: var(--color-text-primary);
-    margin: 0 0 var(--space-l) 0;
-    line-height: 1.3;
+    color: var(--color-primary);
+    line-height: 1;
   }
 
   &__excerpt {
@@ -256,88 +262,25 @@ function formatDate(dateString: string): string {
   }
 
   &__content {
-    padding: var(--space-2xl) 0;
+    margin: auto;
   }
 
+
+
   &__body {
-    font-size: var(--font-size-m);
-    line-height: 1.8;
-    color: var(--color-text-primary);
-
-    h1, h2, h3, h4, h5, h6 {
-      margin: var(--space-xl) 0 var(--space-m) 0;
-      font-weight: 600;
-      line-height: 1.3;
-    }
-
-    h2 { font-size: var(--font-size-xl); }
-    h3 { font-size: var(--font-size-l); }
-    h4 { font-size: var(--font-size-m); }
-
-    p {
-      margin: 0 0 var(--space-m) 0;
-    }
-
-    ul, ol {
-      margin: 0 0 var(--space-m) var(--space-l);
-      padding: 0;
-    }
-
-    li {
-      margin-bottom: var(--space-s);
-    }
-
-    blockquote {
-      margin: var(--space-l) 0;
-      padding: var(--space-m) var(--space-l);
-      border-left: 4px solid var(--color-primary);
-      background: var(--color-background-subtle);
-      font-style: italic;
-    }
-
-    code {
-      padding: 2px 6px;
-      background: var(--color-background-subtle);
-      border-radius: var(--border-radius-xs);
-      font-family: var(--font-family-mono);
-      font-size: 0.9em;
-    }
-
-    pre {
-      margin: var(--space-l) 0;
-      padding: var(--space-m);
-      background: var(--color-background-subtle);
-      border-radius: var(--border-radius-m);
-      overflow-x: auto;
-
-      code {
-        padding: 0;
-        background: transparent;
-      }
-    }
-
-    img {
-      max-width: 100%;
-      height: auto;
-      border-radius: var(--border-radius-m);
-      margin: var(--space-l) 0;
-    }
-
-    a {
-      color: var(--color-primary);
-      text-decoration: underline;
-    }
-
-    hr {
-      margin: var(--space-2xl) 0;
-      border: none;
-      border-top: 1px solid var(--color-border);
-    }
+    font-size: var(--font-size);
+    line-height: 1.75;
+    color: var(--color-foreground);
   }
 
   &__footer {
-    padding: var(--space-xl) 0;
-    border-top: 1px solid var(--color-border);
+    padding: var(--space);
+
+    .article-detail__container {
+      border-radius: var(--border-radius);
+      background-color: color-mix(in srgb, var(--color-foreground), transparent 90%);
+      padding: var(--space-xl);
+    }
   }
 
   &__back-link {
@@ -346,6 +289,23 @@ function formatDate(dateString: string): string {
     color: var(--color-primary);
     text-decoration: none;
     font-weight: 500;
+  }
+
+  &__no-article {
+    padding: var(--space-3xl) 0;
+    text-align: center;
+
+    h2 {
+      font-size: var(--font-size-2xl);
+      color: var(--color-danger);
+      margin-bottom: var(--space-m);
+    }
+
+    p {
+      font-size: var(--font-size-l);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-xl);
+    }
   }
 }
 </style>

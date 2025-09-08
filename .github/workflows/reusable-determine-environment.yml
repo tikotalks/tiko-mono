@@ -33,7 +33,7 @@ jobs:
             echo "url-suffix=" >> $GITHUB_OUTPUT
             echo "branch-suffix=" >> $GITHUB_OUTPUT
           fi
-          
+
           echo "🚀 Deployment Configuration:"
           echo "  Environment: $(grep ^environment= $GITHUB_OUTPUT | cut -d'=' -f2)"
           echo "  URL suffix: $(grep ^url-suffix= $GITHUB_OUTPUT | cut -d'=' -f2)"

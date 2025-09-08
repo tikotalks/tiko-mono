@@ -10,7 +10,7 @@ export interface TimerSettings {
 
 export const useTimerStore = defineStore('timer', () => {
   const appStore = useAppStore()
-  
+
   // State
   const currentTime = ref<number>(0) // seconds
   const targetTime = ref<number>(300) // 5 minutes default
@@ -24,7 +24,7 @@ export const useTimerStore = defineStore('timer', () => {
   const defaultSettings: TimerSettings = {
     soundEnabled: true,
     vibrationEnabled: true,
-    defaultTime: 300 // 5 minutes
+    defaultTime: 300, // 5 minutes
   }
 
   // Getters
@@ -34,7 +34,8 @@ export const useTimerStore = defineStore('timer', () => {
   })
 
   const displayTime = computed(() => {
-    const time = mode.value === 'down' ? Math.max(0, targetTime.value - currentTime.value) : currentTime.value
+    const time =
+      mode.value === 'down' ? Math.max(0, targetTime.value - currentTime.value) : currentTime.value
     const minutes = Math.floor(time / 60)
     const seconds = time % 60
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
@@ -62,7 +63,8 @@ export const useTimerStore = defineStore('timer', () => {
   })
 
   const formattedTime = computed(() => {
-    const time = mode.value === 'down' ? Math.max(0, targetTime.value - currentTime.value) : currentTime.value
+    const time =
+      mode.value === 'down' ? Math.max(0, targetTime.value - currentTime.value) : currentTime.value
     const minutes = Math.floor(time / 60)
     const seconds = time % 60
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
@@ -77,7 +79,7 @@ export const useTimerStore = defineStore('timer', () => {
 
     isRunning.value = true
     hasExpired.value = false
-    startTime.value = performance.now() - (pausedTime.value * 1000)
+    startTime.value = performance.now() - pausedTime.value * 1000
 
     timerInterval = window.setInterval(() => {
       const elapsed = Math.floor((performance.now() - startTime.value) / 1000)
@@ -166,7 +168,7 @@ export const useTimerStore = defineStore('timer', () => {
   const updateSettings = async (newSettings: Partial<TimerSettings>) => {
     const currentSettings = settings.value
     const updatedSettings = { ...currentSettings, ...newSettings }
-    
+
     await appStore.updateAppSettings('timer', updatedSettings)
   }
 
@@ -174,13 +176,13 @@ export const useTimerStore = defineStore('timer', () => {
     await appStore.updateAppSettings('timer', {
       ...settings.value,
       targetTime: targetTime.value,
-      mode: mode.value
+      mode: mode.value,
     })
   }
 
   const loadState = async () => {
     await appStore.loadAppSettings('timer')
-    
+
     const appSettings = appStore.getAppSettings('timer')
     if (appSettings.targetTime) {
       targetTime.value = appSettings.targetTime
@@ -205,7 +207,7 @@ export const useTimerStore = defineStore('timer', () => {
     mode,
     isRunning,
     hasExpired,
-    
+
     // Getters
     settings,
     displayTime,
@@ -213,7 +215,7 @@ export const useTimerStore = defineStore('timer', () => {
     isExpired,
     timeLeft,
     formattedTime,
-    
+
     // Actions
     start,
     pause,
@@ -225,6 +227,6 @@ export const useTimerStore = defineStore('timer', () => {
     updateSettings,
     saveState,
     loadState,
-    cleanup
+    cleanup,
   }
 })

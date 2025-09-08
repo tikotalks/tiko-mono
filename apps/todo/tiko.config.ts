@@ -10,7 +10,7 @@ export default defineConfig({
     color: BaseColors.ORANGE,
   },
   auth: {
-    skipAuth: true
+    skipAuth: true,
   },
   theme: {
     primary: BaseColors.ORANGE,
@@ -22,9 +22,9 @@ export default defineConfig({
     appName: 'To Do',
     color: BaseColors.ORANGE,
     themeColor: ColorValue.ORANGE,
-    loadingText: 'Loading To DO...'
+    loadingText: 'Loading To DO...',
   },
   i18n: {
-    categories: ['common', 'todo']
-  }
+    categories: ['common', 'todo'],
+  },
 })

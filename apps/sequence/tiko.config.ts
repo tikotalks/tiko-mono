@@ -5,7 +5,7 @@ export default defineConfig({
   id: 'sequence',
   name: 'Sequence',
   icon: {
-    mediaId:'c2e7188c-1ac4-41d6-a29c-2b122ec812e8',
+    mediaId: 'c2e7188c-1ac4-41d6-a29c-2b122ec812e8',
     color: BaseColors.GREEN,
   },
   description: 'Sequence App',
@@ -16,7 +16,7 @@ export default defineConfig({
   },
   auth: {
     skipAuth: true, // Allow using the app without login
-    showLoginButton: true // Show login button in skip auth mode
+    showLoginButton: true, // Show login button in skip auth mode
   },
   topBar: {
     show: true,
@@ -26,6 +26,6 @@ export default defineConfig({
     appName: 'Sequence',
     color: BaseColors.ORANGE,
     themeColor: ColorValue.BLACK,
-    loadingText: 'Loading Sequence...'
-  }
+    loadingText: 'Loading Sequence...',
+  },
 })

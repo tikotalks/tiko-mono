@@ -1,221 +1,230 @@
-import { useAuthStore } from '@tiko/core';
-import type { ItemTranslation } from '../models/ItemTranslation.model';
+import { useAuthStore } from '@tiko/core'
+import type { ItemTranslation } from '../models/ItemTranslation.model'
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
 
 interface CardItem {
-  id: string;
-  user_id: string;
-  app_name: string;
-  type: string;
-  name: string;
-  content?: string;
-  metadata?: any;
-  parent_id?: string;
-  order_index: number;
-  icon?: string;
-  color?: string;
-  base_locale?: string;
-  effective_locale?: string;
-  created_at: string;
-  updated_at: string;
+  id: string
+  user_id: string
+  app_name: string
+  type: string
+  name: string
+  content?: string
+  metadata?: any
+  parent_id?: string
+  order_index: number
+  icon?: string
+  color?: string
+  base_locale?: string
+  effective_locale?: string
+  created_at: string
+  updated_at: string
   // Public sequence fields
-  owner_id?: string;
-  is_public?: boolean;
-  is_curated?: boolean;
-  custom_index?: number; // From user_sequence_order join
+  owner_id?: string
+  is_public?: boolean
+  is_curated?: boolean
+  custom_index?: number // From user_sequence_order join
 }
 
 interface UserSequenceOrder {
-  id: string;
-  user_id: string;
-  sequence_id: string;
-  custom_index: number;
-  created_at: string;
-  updated_at: string;
+  id: string
+  user_id: string
+  sequence_id: string
+  custom_index: number
+  created_at: string
+  updated_at: string
 }
 
 class SequenceSupabaseService {
   private getAuthToken(): string | null {
-    const sessionData = localStorage.getItem('tiko_auth_session');
-    if (!sessionData) return null;
+    const sessionData = localStorage.getItem('tiko_auth_session')
+    if (!sessionData) return null
 
     try {
-      const session = JSON.parse(sessionData);
-      return session.access_token;
+      const session = JSON.parse(sessionData)
+      return session.access_token
     } catch {
-      return null;
+      return null
     }
   }
 
   private async apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const token = this.getAuthToken();
+    const token = this.getAuthToken()
 
     const response = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
-        'apikey': SUPABASE_KEY,
-        'Authorization': token ? `Bearer ${token}` : '',
-        'Prefer': 'return=representation',
-        ...options.headers
-      }
-    });
+        apikey: SUPABASE_KEY,
+        Authorization: token ? `Bearer ${token}` : '',
+        Prefer: 'return=representation',
+        ...options.headers,
+      },
+    })
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(`API request failed: ${JSON.stringify(errorData)}`);
+      const errorData = await response.json().catch(() => null)
+      throw new Error(`API request failed: ${JSON.stringify(errorData)}`)
     }
 
-    return response.json();
+    return response.json()
   }
 
   async getSequence(userId: string, parentId?: string): Promise<CardItem[]> {
-    const params = new URLSearchParams();
+    const params = new URLSearchParams()
 
     // Try with app_name filter first
-    params.append('app_name', 'eq.sequence');
+    params.append('app_name', 'eq.sequence')
 
     if (parentId === undefined || parentId === null) {
       // For top level, get user's own sequences AND curated public sequences
-      params.append('parent_id', 'is.null');
-      params.append('type', 'eq.sequence');
-      params.append('or', `(user_id.eq.${userId},and(is_curated.eq.true,is_public.eq.true,user_id.neq.${userId}))`);
+      params.append('parent_id', 'is.null')
+      params.append('type', 'eq.sequence')
+      params.append(
+        'or',
+        `(user_id.eq.${userId},and(is_curated.eq.true,is_public.eq.true,user_id.neq.${userId}))`
+      )
     } else {
       // For children, we need to get items regardless of owner (for curated sequences)
-      params.append('parent_id', `eq.${parentId}`);
+      params.append('parent_id', `eq.${parentId}`)
       // For curated sequences, only load public children that other users can see
-      params.append('or', `(user_id.eq.${userId},is_public.eq.true)`);
+      params.append('or', `(user_id.eq.${userId},is_public.eq.true)`)
     }
 
     // Use correct PostgREST syntax for ordering
-    params.append('order', 'order_index.asc');
+    params.append('order', 'order_index.asc')
 
-    const url = `items?${params.toString()}`;
-    console.log('[getSequence] Fetching from:', url);
+    const url = `items?${params.toString()}`
+    console.log('[getSequence] Fetching from:', url)
 
     try {
-      let result = await this.apiRequest<CardItem[]>(url);
-      console.log('[getSequence] Result with app_name filter:', result.length, 'items found');
+      let result = await this.apiRequest<CardItem[]>(url)
+      console.log('[getSequence] Result with app_name filter:', result.length, 'items found')
 
       // Debug: Log details about what we found when loading children
       if (parentId && result.length === 0) {
-        console.warn(`[getSequence] WARNING: No children found for parentId ${parentId}`);
-        console.log('[getSequence] Query URL was:', url);
+        console.warn(`[getSequence] WARNING: No children found for parentId ${parentId}`)
+        console.log('[getSequence] Query URL was:', url)
 
         // Try a more permissive query to see if items exist but aren't being returned
-        const debugParams = new URLSearchParams();
-        debugParams.append('parent_id', `eq.${parentId}`);
-        const debugUrl = `items?${debugParams.toString()}`;
-        console.log('[getSequence] Trying debug query without filters:', debugUrl);
+        const debugParams = new URLSearchParams()
+        debugParams.append('parent_id', `eq.${parentId}`)
+        const debugUrl = `items?${debugParams.toString()}`
+        console.log('[getSequence] Trying debug query without filters:', debugUrl)
 
         try {
-          const debugResult = await this.apiRequest<CardItem[]>(debugUrl);
-          console.log('[getSequence] Debug query found:', debugResult.length, 'items');
+          const debugResult = await this.apiRequest<CardItem[]>(debugUrl)
+          console.log('[getSequence] Debug query found:', debugResult.length, 'items')
           if (debugResult.length > 0) {
-            console.log('[getSequence] Debug items:', debugResult.map(r => ({
-              id: r.id,
-              name: r.name,
-              user_id: r.user_id,
-              app_name: r.app_name,
-              type: r.type,
-              parent_id: r.parent_id
-            })));
+            console.log(
+              '[getSequence] Debug items:',
+              debugResult.map(r => ({
+                id: r.id,
+                name: r.name,
+                user_id: r.user_id,
+                app_name: r.app_name,
+                type: r.type,
+                parent_id: r.parent_id,
+              }))
+            )
           }
         } catch (debugError) {
-          console.error('[getSequence] Debug query failed:', debugError);
+          console.error('[getSequence] Debug query failed:', debugError)
         }
       }
       if (result.length > 0) {
-        console.log('[getSequence] First few results:', result.slice(0, 3).map(r => ({
-          id: r.id,
-          name: r.name,
-          type: r.type,
-          parent_id: r.parent_id,
-          app_name: r.app_name
-        })));
+        console.log(
+          '[getSequence] First few results:',
+          result.slice(0, 3).map(r => ({
+            id: r.id,
+            name: r.name,
+            type: r.type,
+            parent_id: r.parent_id,
+            app_name: r.app_name,
+          }))
+        )
       }
 
       // If no results with app_name filter, try without it (backwards compatibility)
       if (result.length === 0 && parentId) {
-        console.log('[getSequence] No sequence found with app_name filter, trying without...');
+        console.log('[getSequence] No sequence found with app_name filter, trying without...')
 
-        const fallbackParams = new URLSearchParams();
-        fallbackParams.append('user_id', `eq.${userId}`);
-        fallbackParams.append('parent_id', `eq.${parentId}`);
+        const fallbackParams = new URLSearchParams()
+        fallbackParams.append('user_id', `eq.${userId}`)
+        fallbackParams.append('parent_id', `eq.${parentId}`)
         // fallbackParams.append('type', 'eq.sequence-item');
-        fallbackParams.append('order', 'order_index.asc');
+        fallbackParams.append('order', 'order_index.asc')
 
-        const fallbackUrl = `items?${fallbackParams.toString()}`;
-        console.log('[getSequence] Fallback fetch from:', fallbackUrl);
+        const fallbackUrl = `items?${fallbackParams.toString()}`
+        console.log('[getSequence] Fallback fetch from:', fallbackUrl)
 
-        result = await this.apiRequest<CardItem[]>(fallbackUrl);
-        console.log('[getSequence] Fallback result:', result.length, 'sequence found');
+        result = await this.apiRequest<CardItem[]>(fallbackUrl)
+        console.log('[getSequence] Fallback result:', result.length, 'sequence found')
       }
 
-      return result;
+      return result
     } catch (error) {
-      console.error('[getSequence] Error fetching sequence:', error);
-      throw error;
+      console.error('[getSequence] Error fetching sequence:', error)
+      throw error
     }
   }
 
   async getAllSequence(userId: string, includeCurated = false): Promise<CardItem[]> {
     // If includeCurated is true, we need to fetch both user's items and curated public items
     if (includeCurated) {
-      console.log('[getAllSequence] Fetching user sequences AND curated public sequences');
+      console.log('[getAllSequence] Fetching user sequences AND curated public sequences')
 
       // Fetch user's own sequences
-      const userParams = new URLSearchParams();
-      userParams.append('user_id', `eq.${userId}`);
-      userParams.append('app_name', 'eq.sequence');
-      userParams.append('order', 'order_index.asc');
+      const userParams = new URLSearchParams()
+      userParams.append('user_id', `eq.${userId}`)
+      userParams.append('app_name', 'eq.sequence')
+      userParams.append('order', 'order_index.asc')
 
       // Fetch curated public sequences (not owned by user)
-      const curatedParams = new URLSearchParams();
-      curatedParams.append('app_name', 'eq.sequence');
-      curatedParams.append('is_public', 'eq.true');
-      curatedParams.append('is_curated', 'eq.true');
-      curatedParams.append('user_id', `neq.${userId}`); // Exclude user's own items
-      curatedParams.append('order', 'order_index.asc');
+      const curatedParams = new URLSearchParams()
+      curatedParams.append('app_name', 'eq.sequence')
+      curatedParams.append('is_public', 'eq.true')
+      curatedParams.append('is_curated', 'eq.true')
+      curatedParams.append('user_id', `neq.${userId}`) // Exclude user's own items
+      curatedParams.append('order', 'order_index.asc')
 
       try {
         // Fetch both in parallel
         const [userSequences, curatedSequences] = await Promise.all([
           this.apiRequest<CardItem[]>(`items?${userParams.toString()}`),
-          this.apiRequest<CardItem[]>(`items?${curatedParams.toString()}`)
-        ]);
+          this.apiRequest<CardItem[]>(`items?${curatedParams.toString()}`),
+        ])
 
-        console.log('[getAllSequence] Found', userSequences.length, 'user sequences');
-        console.log('[getAllSequence] Found', curatedSequences.length, 'curated public sequences');
+        console.log('[getAllSequence] Found', userSequences.length, 'user sequences')
+        console.log('[getAllSequence] Found', curatedSequences.length, 'curated public sequences')
 
         // Combine and return all sequences
-        const allSequences = [...userSequences, ...curatedSequences];
-        console.log('[getAllSequence] Total sequences:', allSequences.length);
+        const allSequences = [...userSequences, ...curatedSequences]
+        console.log('[getAllSequence] Total sequences:', allSequences.length)
 
-        return allSequences;
+        return allSequences
       } catch (error) {
-        console.error('[getAllSequence] Error fetching sequences:', error);
-        throw error;
+        console.error('[getAllSequence] Error fetching sequences:', error)
+        throw error
       }
     } else {
       // Original behavior - only user's sequences
-      const params = new URLSearchParams();
-      params.append('user_id', `eq.${userId}`);
-      params.append('app_name', 'eq.sequence');
-      params.append('order', 'order_index.asc');
+      const params = new URLSearchParams()
+      params.append('user_id', `eq.${userId}`)
+      params.append('app_name', 'eq.sequence')
+      params.append('order', 'order_index.asc')
 
-      const url = `items?${params.toString()}`;
-      console.log('[getAllSequence] Fetching ALL sequence from:', url);
+      const url = `items?${params.toString()}`
+      console.log('[getAllSequence] Fetching ALL sequence from:', url)
 
       try {
-        const result = await this.apiRequest<CardItem[]>(url);
-        console.log('[getAllSequence] Found', result.length, 'total sequence');
-        return result;
+        const result = await this.apiRequest<CardItem[]>(url)
+        console.log('[getAllSequence] Found', result.length, 'total sequence')
+        return result
       } catch (error) {
-        console.error('[getAllSequence] Error fetching all sequence:', error);
-        throw error;
+        console.error('[getAllSequence] Error fetching all sequence:', error)
+        throw error
       }
     }
   }
@@ -223,420 +232,501 @@ class SequenceSupabaseService {
   async createCard(data: Partial<CardItem>): Promise<CardItem> {
     const response = await this.apiRequest<CardItem[]>('items', {
       method: 'POST',
-      body: JSON.stringify(data)
-    });
-    return response[0];
+      body: JSON.stringify(data),
+    })
+    return response[0]
   }
 
   async updateCard(id: string, data: Partial<CardItem>): Promise<CardItem> {
     const response = await this.apiRequest<CardItem[]>(`items?id=eq.${id}`, {
       method: 'PATCH',
-      body: JSON.stringify(data)
-    });
-    return response[0];
+      body: JSON.stringify(data),
+    })
+    return response[0]
   }
 
   async deleteCard(id: string): Promise<void> {
     await this.apiRequest(`items?id=eq.${id}`, {
-      method: 'DELETE'
-    });
+      method: 'DELETE',
+    })
   }
 
   async getCard(id: string): Promise<CardItem | null> {
-    const params = new URLSearchParams();
-    params.append('id', `eq.${id}`);
+    const params = new URLSearchParams()
+    params.append('id', `eq.${id}`)
 
-    const response = await this.apiRequest<CardItem[]>(`items?${params.toString()}`);
-    return response[0] || null;
+    const response = await this.apiRequest<CardItem[]>(`items?${params.toString()}`)
+    return response[0] || null
   }
 
   // Get sequence with translations for the current locale
-  async getSequenceWithTranslations(userId: string, parentId?: string, locale?: string): Promise<CardItem[]> {
-    console.log('[getSequenceWithTranslations] Called with:', { userId, parentId, locale });
+  async getSequenceWithTranslations(
+    userId: string,
+    parentId?: string,
+    locale?: string
+  ): Promise<CardItem[]> {
+    console.log('[getSequenceWithTranslations] Called with:', { userId, parentId, locale })
 
     // First get the sequence
-    const sequence = await this.getSequence(userId, parentId);
-    console.log('[getSequenceWithTranslations] Found sequence:', sequence.length, sequence.map(c => ({ id: c.id, name: c.name })));
+    const sequence = await this.getSequence(userId, parentId)
+    console.log(
+      '[getSequenceWithTranslations] Found sequence:',
+      sequence.length,
+      sequence.map(c => ({ id: c.id, name: c.name }))
+    )
 
-    if (sequence.length === 0) return sequence;
+    if (sequence.length === 0) return sequence
 
     // Get translations for all sequence
-    const cardIds = sequence.map(c => c.id);
-    let translations: ItemTranslation[] = [];
+    const cardIds = sequence.map(c => c.id)
+    let translations: ItemTranslation[] = []
 
     if (locale) {
       // First try exact locale match (e.g., nl-nl)
-      const exactParams = new URLSearchParams();
-      exactParams.append('item_id', `in.(${cardIds.join(',')})`);
-      exactParams.append('locale', `eq.${locale}`);
-      console.log('[getSequenceWithTranslations] Looking for exact locale match:', locale);
+      const exactParams = new URLSearchParams()
+      exactParams.append('item_id', `in.(${cardIds.join(',')})`)
+      exactParams.append('locale', `eq.${locale}`)
+      console.log('[getSequenceWithTranslations] Looking for exact locale match:', locale)
 
-      const exactUrl = `item_translations?${exactParams.toString()}`;
-      console.log('[getSequenceWithTranslations] Exact translation request URL:', exactUrl);
+      const exactUrl = `item_translations?${exactParams.toString()}`
+      console.log('[getSequenceWithTranslations] Exact translation request URL:', exactUrl)
 
-      translations = await this.apiRequest<ItemTranslation[]>(exactUrl);
-      console.log('[getSequenceWithTranslations] Found exact locale translations:', translations.length, translations);
+      translations = await this.apiRequest<ItemTranslation[]>(exactUrl)
+      console.log(
+        '[getSequenceWithTranslations] Found exact locale translations:',
+        translations.length,
+        translations
+      )
 
       // If no exact match and locale has region (e.g., nl-nl), try base language (e.g., nl)
       if (translations.length === 0 && locale.includes('-')) {
-        const baseLanguage = locale.split('-')[0];
-        const baseParams = new URLSearchParams();
-        baseParams.append('item_id', `in.(${cardIds.join(',')})`);
-        baseParams.append('locale', `eq.${baseLanguage}`);
-        console.log('[getSequenceWithTranslations] No exact match, trying base language:', baseLanguage);
+        const baseLanguage = locale.split('-')[0]
+        const baseParams = new URLSearchParams()
+        baseParams.append('item_id', `in.(${cardIds.join(',')})`)
+        baseParams.append('locale', `eq.${baseLanguage}`)
+        console.log(
+          '[getSequenceWithTranslations] No exact match, trying base language:',
+          baseLanguage
+        )
 
-        const baseUrl = `item_translations?${baseParams.toString()}`;
-        console.log('[getSequenceWithTranslations] Base language request URL:', baseUrl);
+        const baseUrl = `item_translations?${baseParams.toString()}`
+        console.log('[getSequenceWithTranslations] Base language request URL:', baseUrl)
 
-        translations = await this.apiRequest<ItemTranslation[]>(baseUrl);
-        console.log('[getSequenceWithTranslations] Found base language translations:', translations.length, translations);
+        translations = await this.apiRequest<ItemTranslation[]>(baseUrl)
+        console.log(
+          '[getSequenceWithTranslations] Found base language translations:',
+          translations.length,
+          translations
+        )
 
         // If still no match, try with lowercase locale (e.g., nl-NL -> nl-nl)
         if (translations.length === 0) {
-          const lowercaseLocale = locale.toLowerCase();
-          const lowercaseParams = new URLSearchParams();
-          lowercaseParams.append('item_id', `in.(${cardIds.join(',')})`);
-          lowercaseParams.append('locale', `eq.${lowercaseLocale}`);
-          console.log('[getSequenceWithTranslations] No base language match, trying lowercase locale:', lowercaseLocale);
+          const lowercaseLocale = locale.toLowerCase()
+          const lowercaseParams = new URLSearchParams()
+          lowercaseParams.append('item_id', `in.(${cardIds.join(',')})`)
+          lowercaseParams.append('locale', `eq.${lowercaseLocale}`)
+          console.log(
+            '[getSequenceWithTranslations] No base language match, trying lowercase locale:',
+            lowercaseLocale
+          )
 
-          const lowercaseUrl = `item_translations?${lowercaseParams.toString()}`;
-          console.log('[getSequenceWithTranslations] Lowercase locale request URL:', lowercaseUrl);
+          const lowercaseUrl = `item_translations?${lowercaseParams.toString()}`
+          console.log('[getSequenceWithTranslations] Lowercase locale request URL:', lowercaseUrl)
 
-          translations = await this.apiRequest<ItemTranslation[]>(lowercaseUrl);
-          console.log('[getSequenceWithTranslations] Found lowercase locale translations:', translations.length, translations);
+          translations = await this.apiRequest<ItemTranslation[]>(lowercaseUrl)
+          console.log(
+            '[getSequenceWithTranslations] Found lowercase locale translations:',
+            translations.length,
+            translations
+          )
         }
       }
     } else {
       // Get all translations if no locale specified
-      const allParams = new URLSearchParams();
-      allParams.append('item_id', `in.(${cardIds.join(',')})`);
-      translations = await this.apiRequest<ItemTranslation[]>(`item_translations?${allParams.toString()}`);
-      console.log('[getSequenceWithTranslations] Found all translations (no locale specified):', translations.length);
+      const allParams = new URLSearchParams()
+      allParams.append('item_id', `in.(${cardIds.join(',')})`)
+      translations = await this.apiRequest<ItemTranslation[]>(
+        `item_translations?${allParams.toString()}`
+      )
+      console.log(
+        '[getSequenceWithTranslations] Found all translations (no locale specified):',
+        translations.length
+      )
     }
 
     // Map translations to sequence
-    const translationMap = new Map<string, ItemTranslation>();
+    const translationMap = new Map<string, ItemTranslation>()
     translations.forEach(t => {
-      translationMap.set(t.item_id, t);
-      console.log('[getSequenceWithTranslations] Mapping translation for item:', t.item_id, { name: t.name, content: t.content, locale: t.locale });
-    });
+      translationMap.set(t.item_id, t)
+      console.log('[getSequenceWithTranslations] Mapping translation for item:', t.item_id, {
+        name: t.name,
+        content: t.content,
+        locale: t.locale,
+      })
+    })
 
     // Apply translations to sequence
     const result = sequence.map(card => {
-      const translation = translationMap.get(card.id);
+      const translation = translationMap.get(card.id)
       if (translation) {
         console.log('[getSequenceWithTranslations] Applying translation to card:', card.id, {
           original: { name: card.name, content: card.content },
-          translation: { name: translation.name, content: translation.content, locale: translation.locale }
-        });
+          translation: {
+            name: translation.name,
+            content: translation.content,
+            locale: translation.locale,
+          },
+        })
         return {
           ...card,
           name: translation.name || card.name,
           content: translation.content || card.content,
           // When using a translation, the effective locale is the translation's locale
-          effective_locale: translation.locale
-        };
+          effective_locale: translation.locale,
+        }
       }
-      console.log('[getSequenceWithTranslations] No translation found for card:', card.id, card.name);
-      return card;
-    });
+      console.log(
+        '[getSequenceWithTranslations] No translation found for card:',
+        card.id,
+        card.name
+      )
+      return card
+    })
 
-    console.log('[getSequenceWithTranslations] Final result:', result.map(c => ({ id: c.id, name: c.name, effective_locale: c.effective_locale })));
-    return result;
+    console.log(
+      '[getSequenceWithTranslations] Final result:',
+      result.map(c => ({ id: c.id, name: c.name, effective_locale: c.effective_locale }))
+    )
+    return result
   }
 
   // Get ALL sequence - both owned and curated
   async getAllSequence(userId: string, includeCurated = false): Promise<CardItem[]> {
     if (!includeCurated) {
       // Simple case: only user's own items
-      const params = new URLSearchParams();
-      params.append('app_name', 'eq.sequence');
-      params.append('user_id', `eq.${userId}`);
-      params.append('order', 'parent_id.asc.nullsfirst,order_index.asc');
+      const params = new URLSearchParams()
+      params.append('app_name', 'eq.sequence')
+      params.append('user_id', `eq.${userId}`)
+      params.append('order', 'parent_id.asc.nullsfirst,order_index.asc')
 
-      const url = `items?${params.toString()}`;
-      console.log('[getAllSequence] Fetching user items from:', url);
+      const url = `items?${params.toString()}`
+      console.log('[getAllSequence] Fetching user items from:', url)
 
       try {
-        const result = await this.apiRequest<CardItem[]>(url);
-        console.log('[getAllSequence] Found', result.length, 'user items');
-        return result;
+        const result = await this.apiRequest<CardItem[]>(url)
+        console.log('[getAllSequence] Found', result.length, 'user items')
+        return result
       } catch (error) {
-        console.error('[getAllSequence] Error:', error);
-        throw error;
+        console.error('[getAllSequence] Error:', error)
+        throw error
       }
     }
 
     // Complex case: user items + curated items + ALL their children
-    console.log('[getAllSequence] Loading with curated items...');
+    console.log('[getAllSequence] Loading with curated items...')
 
     try {
       // Step 1: Get user's own root sequences
-      const userParams = new URLSearchParams();
-      userParams.append('app_name', 'eq.sequence');
-      userParams.append('user_id', `eq.${userId}`);
-      userParams.append('order', 'parent_id.asc.nullsfirst,order_index.asc');
+      const userParams = new URLSearchParams()
+      userParams.append('app_name', 'eq.sequence')
+      userParams.append('user_id', `eq.${userId}`)
+      userParams.append('order', 'parent_id.asc.nullsfirst,order_index.asc')
 
-      console.log('[getAllSequence] Step 1: Getting user items...');
-      const userItems = await this.apiRequest<CardItem[]>(`items?${userParams.toString()}`);
-      console.log('[getAllSequence] Step 1: Found', userItems.length, 'user items');
+      console.log('[getAllSequence] Step 1: Getting user items...')
+      const userItems = await this.apiRequest<CardItem[]>(`items?${userParams.toString()}`)
+      console.log('[getAllSequence] Step 1: Found', userItems.length, 'user items')
 
       // Step 2: Get curated root sequences (only curated sequences, not their children yet)
-      const curatedParams = new URLSearchParams();
-      curatedParams.append('app_name', 'eq.sequence');
-      curatedParams.append('is_curated', 'eq.true');
-      curatedParams.append('user_id', `neq.${userId}`); // From other users
-      curatedParams.append('parent_id', 'is.null'); // Only root sequences
-      curatedParams.append('type', 'eq.sequence'); // Only sequences, not items
-      curatedParams.append('order', 'order_index.asc');
+      const curatedParams = new URLSearchParams()
+      curatedParams.append('app_name', 'eq.sequence')
+      curatedParams.append('is_curated', 'eq.true')
+      curatedParams.append('user_id', `neq.${userId}`) // From other users
+      curatedParams.append('parent_id', 'is.null') // Only root sequences
+      curatedParams.append('type', 'eq.sequence') // Only sequences, not items
+      curatedParams.append('order', 'order_index.asc')
 
-      console.log('[getAllSequence] Step 2: Getting curated sequences...');
-      const curatedSequences = await this.apiRequest<CardItem[]>(`items?${curatedParams.toString()}`);
-      console.log('[getAllSequence] Step 2: Found', curatedSequences.length, 'curated sequences');
+      console.log('[getAllSequence] Step 2: Getting curated sequences...')
+      const curatedSequences = await this.apiRequest<CardItem[]>(
+        `items?${curatedParams.toString()}`
+      )
+      console.log('[getAllSequence] Step 2: Found', curatedSequences.length, 'curated sequences')
 
       // Step 3: For each curated sequence, get ALL its children (regardless of owner)
-      const allCuratedChildren: CardItem[] = [];
+      const allCuratedChildren: CardItem[] = []
 
       for (const curatedSeq of curatedSequences) {
-        console.log(`[getAllSequence] Step 3: Loading children for curated sequence "${curatedSeq.name}" (${curatedSeq.id})`);
+        console.log(
+          `[getAllSequence] Step 3: Loading children for curated sequence "${curatedSeq.name}" (${curatedSeq.id})`
+        )
 
-        const childParams = new URLSearchParams();
-        childParams.append('app_name', 'eq.sequence');
-        childParams.append('parent_id', `eq.${curatedSeq.id}`);
-        childParams.append('is_public', 'eq.true'); // Only load public children for curated sequences
-        childParams.append('order', 'order_index.asc');
+        const childParams = new URLSearchParams()
+        childParams.append('app_name', 'eq.sequence')
+        childParams.append('parent_id', `eq.${curatedSeq.id}`)
+        childParams.append('is_public', 'eq.true') // Only load public children for curated sequences
+        childParams.append('order', 'order_index.asc')
 
-        const children = await this.apiRequest<CardItem[]>(`items?${childParams.toString()}`);
-        console.log(`[getAllSequence] Step 3: Found ${children.length} children for "${curatedSeq.name}"`);
+        const children = await this.apiRequest<CardItem[]>(`items?${childParams.toString()}`)
+        console.log(
+          `[getAllSequence] Step 3: Found ${children.length} children for "${curatedSeq.name}"`
+        )
 
-        allCuratedChildren.push(...children);
+        allCuratedChildren.push(...children)
       }
 
       // Step 4: Combine everything
-      const allItems = [...userItems, ...curatedSequences, ...allCuratedChildren];
-      console.log('[getAllSequence] Final result:', allItems.length, 'total items');
+      const allItems = [...userItems, ...curatedSequences, ...allCuratedChildren]
+      console.log('[getAllSequence] Final result:', allItems.length, 'total items')
       console.log('[getAllSequence] Breakdown:', {
         userItems: userItems.length,
         curatedSequences: curatedSequences.length,
-        curatedChildren: allCuratedChildren.length
-      });
+        curatedChildren: allCuratedChildren.length,
+      })
 
-      return allItems;
+      return allItems
     } catch (error) {
-      console.error('[getAllSequence] Error in curated loading:', error);
-      throw error;
+      console.error('[getAllSequence] Error in curated loading:', error)
+      throw error
     }
   }
 
   // Get ALL sequence with translations for the current locale
-  async getAllSequenceWithTranslations(userId: string, locale?: string, includeCurated = false): Promise<CardItem[]> {
-    console.log('[getAllSequenceWithTranslations] Called with:', { userId, locale, includeCurated });
+  async getAllSequenceWithTranslations(
+    userId: string,
+    locale?: string,
+    includeCurated = false
+  ): Promise<CardItem[]> {
+    console.log('[getAllSequenceWithTranslations] Called with:', { userId, locale, includeCurated })
 
     // First get ALL sequence
-    const sequence = await this.getAllSequence(userId, includeCurated);
-    console.log('[getAllSequenceWithTranslations] Found total sequence:', sequence.length);
+    const sequence = await this.getAllSequence(userId, includeCurated)
+    console.log('[getAllSequenceWithTranslations] Found total sequence:', sequence.length)
 
-    if (sequence.length === 0) return sequence;
+    if (sequence.length === 0) return sequence
 
     // Get translations for all sequence
-    const cardIds = sequence.map(c => c.id);
-    let translations: ItemTranslation[] = [];
+    const cardIds = sequence.map(c => c.id)
+    let translations: ItemTranslation[] = []
 
     if (locale) {
       // Try to get translations for the locale with fallback logic
-      const exactParams = new URLSearchParams();
-      exactParams.append('item_id', `in.(${cardIds.join(',')})`);
-      exactParams.append('locale', `eq.${locale}`);
+      const exactParams = new URLSearchParams()
+      exactParams.append('item_id', `in.(${cardIds.join(',')})`)
+      exactParams.append('locale', `eq.${locale}`)
 
-      translations = await this.apiRequest<ItemTranslation[]>(`item_translations?${exactParams.toString()}`);
+      translations = await this.apiRequest<ItemTranslation[]>(
+        `item_translations?${exactParams.toString()}`
+      )
 
       // Try base language if no exact match
       if (translations.length === 0 && locale.includes('-')) {
-        const baseLanguage = locale.split('-')[0];
-        const baseParams = new URLSearchParams();
-        baseParams.append('item_id', `in.(${cardIds.join(',')})`);
-        baseParams.append('locale', `eq.${baseLanguage}`);
+        const baseLanguage = locale.split('-')[0]
+        const baseParams = new URLSearchParams()
+        baseParams.append('item_id', `in.(${cardIds.join(',')})`)
+        baseParams.append('locale', `eq.${baseLanguage}`)
 
-        translations = await this.apiRequest<ItemTranslation[]>(`item_translations?${baseParams.toString()}`);
+        translations = await this.apiRequest<ItemTranslation[]>(
+          `item_translations?${baseParams.toString()}`
+        )
       }
     }
 
     // Map translations to sequence
-    const translationMap = new Map<string, ItemTranslation>();
+    const translationMap = new Map<string, ItemTranslation>()
     translations.forEach(t => {
-      translationMap.set(t.item_id, t);
-    });
+      translationMap.set(t.item_id, t)
+    })
 
     // Apply translations to sequence
     const result = sequence.map(card => {
-      const translation = translationMap.get(card.id);
+      const translation = translationMap.get(card.id)
       if (translation) {
         return {
           ...card,
           name: translation.name || card.name,
           content: translation.content || card.content,
-          effective_locale: translation.locale
-        };
+          effective_locale: translation.locale,
+        }
       }
-      return card;
-    });
+      return card
+    })
 
-    console.log('[getAllSequenceWithTranslations] Returning', result.length, 'sequence with translations');
-    return result;
+    console.log(
+      '[getAllSequenceWithTranslations] Returning',
+      result.length,
+      'sequence with translations'
+    )
+    return result
   }
 
   // Translation methods
   async getItemTranslations(itemId: string): Promise<ItemTranslation[]> {
-    const params = new URLSearchParams();
-    params.append('item_id', `eq.${itemId}`);
-    params.append('order', 'locale.asc');
+    const params = new URLSearchParams()
+    params.append('item_id', `eq.${itemId}`)
+    params.append('order', 'locale.asc')
 
-    return this.apiRequest<ItemTranslation[]>(`item_translations?${params.toString()}`);
+    return this.apiRequest<ItemTranslation[]>(`item_translations?${params.toString()}`)
   }
 
   async getItemTranslation(itemId: string, locale: string): Promise<ItemTranslation | null> {
-    const params = new URLSearchParams();
-    params.append('item_id', `eq.${itemId}`);
-    params.append('locale', `eq.${locale}`);
+    const params = new URLSearchParams()
+    params.append('item_id', `eq.${itemId}`)
+    params.append('locale', `eq.${locale}`)
 
-    const response = await this.apiRequest<ItemTranslation[]>(`item_translations?${params.toString()}`);
-    return response[0] || null;
+    const response = await this.apiRequest<ItemTranslation[]>(
+      `item_translations?${params.toString()}`
+    )
+    return response[0] || null
   }
 
   async saveItemTranslation(translation: ItemTranslation): Promise<ItemTranslation> {
-    const { id, ...data } = translation;
+    const { id, ...data } = translation
 
     if (id) {
       // Update existing
       const response = await this.apiRequest<ItemTranslation[]>(`item_translations?id=eq.${id}`, {
         method: 'PATCH',
-        body: JSON.stringify(data)
-      });
-      return response[0];
+        body: JSON.stringify(data),
+      })
+      return response[0]
     } else {
       // Insert new
       const response = await this.apiRequest<ItemTranslation[]>('item_translations', {
         method: 'POST',
-        body: JSON.stringify(data)
-      });
-      return response[0];
+        body: JSON.stringify(data),
+      })
+      return response[0]
     }
   }
 
   async deleteItemTranslation(id: string): Promise<void> {
     await this.apiRequest(`item_translations?id=eq.${id}`, {
-      method: 'DELETE'
-    });
+      method: 'DELETE',
+    })
   }
 
-  async upsertItemTranslations(translations: Omit<ItemTranslation, 'id'>[]): Promise<ItemTranslation[]> {
+  async upsertItemTranslations(
+    translations: Omit<ItemTranslation, 'id'>[]
+  ): Promise<ItemTranslation[]> {
     return this.apiRequest<ItemTranslation[]>('item_translations', {
       method: 'POST',
       headers: {
-        'Prefer': 'resolution=merge-duplicates,return=representation'
+        Prefer: 'resolution=merge-duplicates,return=representation',
       },
-      body: JSON.stringify(translations)
-    });
+      body: JSON.stringify(translations),
+    })
   }
 
-  async upsertSingleTranslation(translation: Omit<ItemTranslation, 'id'>): Promise<ItemTranslation> {
+  async upsertSingleTranslation(
+    translation: Omit<ItemTranslation, 'id'>
+  ): Promise<ItemTranslation> {
     const response = await this.apiRequest<ItemTranslation[]>('item_translations', {
       method: 'POST',
       headers: {
-        'Prefer': 'resolution=merge-duplicates,return=representation'
+        Prefer: 'resolution=merge-duplicates,return=representation',
       },
-      body: JSON.stringify(translation)
-    });
-    return response[0];
+      body: JSON.stringify(translation),
+    })
+    return response[0]
   }
 
   // TTS Audio methods
   async getTTSAudio(textHash: string): Promise<any | null> {
-    const params = new URLSearchParams();
-    params.append('text_hash', `eq.${textHash}`);
+    const params = new URLSearchParams()
+    params.append('text_hash', `eq.${textHash}`)
 
-    const response = await this.apiRequest<any[]>(`tts_audio?${params.toString()}`);
-    return response[0] || null;
+    const response = await this.apiRequest<any[]>(`tts_audio?${params.toString()}`)
+    return response[0] || null
   }
 
   async getItemById(userId: string, itemId: string): Promise<CardItem | null> {
-    const params = new URLSearchParams();
-    params.append('id', `eq.${itemId}`);
-    params.append('user_id', `eq.${userId}`);
+    const params = new URLSearchParams()
+    params.append('id', `eq.${itemId}`)
+    params.append('user_id', `eq.${userId}`)
 
-    const response = await this.apiRequest<CardItem[]>(`items?${params.toString()}`);
-    return response[0] || null;
+    const response = await this.apiRequest<CardItem[]>(`items?${params.toString()}`)
+    return response[0] || null
   }
 
   // Public item methods
-  async getPublicItems(userId: string, locale: string, type?: 'card' | 'sequence' | 'all', includeCurated: boolean = true): Promise<CardItem[]> {
+  async getPublicItems(
+    userId: string,
+    locale: string,
+    type?: 'card' | 'sequence' | 'all',
+    includeCurated: boolean = true
+  ): Promise<CardItem[]> {
     try {
-      const params = new URLSearchParams();
-      params.append('app_name', 'eq.sequence');
+      const params = new URLSearchParams()
+      params.append('app_name', 'eq.sequence')
 
       // Build the OR clause based on includeCurated
       if (includeCurated) {
-        params.append('or', `(is_public.eq.true,is_curated.eq.true,user_id.eq.${userId})`);
+        params.append('or', `(is_public.eq.true,is_curated.eq.true,user_id.eq.${userId})`)
       } else {
-        params.append('or', `(is_public.eq.true,user_id.eq.${userId})`);
-        params.append('is_curated', 'eq.false');
+        params.append('or', `(is_public.eq.true,user_id.eq.${userId})`)
+        params.append('is_curated', 'eq.false')
       }
 
       // Filter by type if specified
       if (type && type !== 'all') {
-        params.append('type', `eq.${type}`);
+        params.append('type', `eq.${type}`)
       }
 
-      params.append('select', '*,user_item_order!left(custom_index)');
-      params.append('order', 'user_item_order(custom_index).asc.nullsfirst,order_index.asc');
+      params.append('select', '*,user_item_order!left(custom_index)')
+      params.append('order', 'user_item_order(custom_index).asc.nullsfirst,order_index.asc')
 
-      const response = await this.apiRequest<any[]>(`items?${params.toString()}`);
+      const response = await this.apiRequest<any[]>(`items?${params.toString()}`)
 
       // Map the response to include custom_index from the join
       return response.map(item => ({
         ...item,
         custom_index: item.user_item_order?.[0]?.custom_index || null,
-        owner_id: item.user_id
-      }));
+        owner_id: item.user_id,
+      }))
     } catch (error) {
-      console.error('Error fetching public items:', error);
-      return [];
+      console.error('Error fetching public items:', error)
+      return []
     }
   }
 
-  async searchPublicItems(query: string, locale: string, userId: string, type?: 'card' | 'sequence' | 'all', includeCurated: boolean = true): Promise<CardItem[]> {
+  async searchPublicItems(
+    query: string,
+    locale: string,
+    userId: string,
+    type?: 'card' | 'sequence' | 'all',
+    includeCurated: boolean = true
+  ): Promise<CardItem[]> {
     try {
-      const params = new URLSearchParams();
-      params.append('app_name', 'eq.sequence');
+      const params = new URLSearchParams()
+      params.append('app_name', 'eq.sequence')
 
       // Build the OR clause based on includeCurated
       if (includeCurated) {
-        params.append('or', `(is_public.eq.true,is_curated.eq.true)`);
+        params.append('or', `(is_public.eq.true,is_curated.eq.true)`)
       } else {
-        params.append('is_public', 'eq.true');
-        params.append('is_curated', 'eq.false');
+        params.append('is_public', 'eq.true')
+        params.append('is_curated', 'eq.false')
       }
 
-      params.append('name', `ilike.%${query}%`);
+      params.append('name', `ilike.%${query}%`)
 
       // Filter by type if specified
       if (type && type !== 'all') {
-        params.append('type', `eq.${type}`);
+        params.append('type', `eq.${type}`)
       }
 
-      params.append('select', '*,user_item_order!left(custom_index)');
-      params.append('order', 'is_curated.desc,name.asc');
+      params.append('select', '*,user_item_order!left(custom_index)')
+      params.append('order', 'is_curated.desc,name.asc')
 
-      const response = await this.apiRequest<any[]>(`items?${params.toString()}`);
+      const response = await this.apiRequest<any[]>(`items?${params.toString()}`)
 
       return response.map(item => ({
         ...item,
         custom_index: item.user_item_order?.[0]?.custom_index || null,
-        owner_id: item.user_id
-      }));
+        owner_id: item.user_id,
+      }))
     } catch (error) {
-      console.error('Error searching public items:', error);
-      return [];
+      console.error('Error searching public items:', error)
+      return []
     }
   }
 
@@ -644,103 +734,121 @@ class SequenceSupabaseService {
   async getPublicSequences(userId: string, locale: string): Promise<CardItem[]> {
     try {
       // Get public sequences with custom ordering if exists
-      const params = new URLSearchParams();
-      params.append('app_name', 'eq.sequence');
-      params.append('or', `(is_public.eq.true,is_curated.eq.true,user_id.eq.${userId})`);
-      params.append('parent_id', 'is.null');
-      params.append('select', '*,user_sequence_order!left(custom_index)');
-      params.append('order', 'user_sequence_order(custom_index).asc.nullsfirst,order_index.asc');
+      const params = new URLSearchParams()
+      params.append('app_name', 'eq.sequence')
+      params.append('or', `(is_public.eq.true,is_curated.eq.true,user_id.eq.${userId})`)
+      params.append('parent_id', 'is.null')
+      params.append('select', '*,user_sequence_order!left(custom_index)')
+      params.append('order', 'user_sequence_order(custom_index).asc.nullsfirst,order_index.asc')
 
-      const response = await this.apiRequest<any[]>(`items?${params.toString()}`);
+      const response = await this.apiRequest<any[]>(`items?${params.toString()}`)
 
       // Map the response to include custom_index from the join
       return response.map(item => ({
         ...item,
         custom_index: item.user_item_order?.[0]?.custom_index || null,
-        owner_id: item.user_id // Map user_id to owner_id for clarity
-      }));
+        owner_id: item.user_id, // Map user_id to owner_id for clarity
+      }))
     } catch (error) {
-      console.error('Error fetching public sequences:', error);
-      return [];
+      console.error('Error fetching public sequences:', error)
+      return []
     }
   }
 
   async searchPublicSequences(query: string, locale: string, userId: string): Promise<CardItem[]> {
     try {
-      const params = new URLSearchParams();
-      params.append('app_name', 'eq.sequence');
-      params.append('or', `(is_public.eq.true,is_curated.eq.true)`);
-      params.append('name', `ilike.%${query}%`);
-      params.append('select', '*,user_sequence_order!left(custom_index)');
-      params.append('order', 'is_curated.desc,name.asc');
+      const params = new URLSearchParams()
+      params.append('app_name', 'eq.sequence')
+      params.append('or', `(is_public.eq.true,is_curated.eq.true)`)
+      params.append('name', `ilike.%${query}%`)
+      params.append('select', '*,user_sequence_order!left(custom_index)')
+      params.append('order', 'is_curated.desc,name.asc')
 
-      const response = await this.apiRequest<any[]>(`items?${params.toString()}`);
+      const response = await this.apiRequest<any[]>(`items?${params.toString()}`)
 
       return response.map(item => ({
         ...item,
         custom_index: item.user_item_order?.[0]?.custom_index || null,
-        owner_id: item.user_id
-      }));
+        owner_id: item.user_id,
+      }))
     } catch (error) {
-      console.error('Error searching public sequences:', error);
-      return [];
+      console.error('Error searching public sequences:', error)
+      return []
     }
   }
 
-  async updateSequenceVisibility(sequenceId: string, userId: string, isPublic: boolean): Promise<void> {
+  async updateSequenceVisibility(
+    sequenceId: string,
+    userId: string,
+    isPublic: boolean
+  ): Promise<void> {
     try {
       // First, update the sequence itself
       await this.apiRequest(`items?id=eq.${sequenceId}&user_id=eq.${userId}`, {
         method: 'PATCH',
-        body: JSON.stringify({ is_public: isPublic })
-      });
+        body: JSON.stringify({ is_public: isPublic }),
+      })
 
       // Then, update all children to have the same visibility
-      await this.updateSequenceChildrenVisibility(sequenceId, userId, isPublic);
+      await this.updateSequenceChildrenVisibility(sequenceId, userId, isPublic)
 
-      console.log(`Updated sequence ${sequenceId} and all its children to ${isPublic ? 'public' : 'private'}`);
+      console.log(
+        `Updated sequence ${sequenceId} and all its children to ${isPublic ? 'public' : 'private'}`
+      )
     } catch (error) {
-      console.error('Error updating sequence visibility:', error);
-      throw error;
+      console.error('Error updating sequence visibility:', error)
+      throw error
     }
   }
 
-  async updateSequenceChildrenVisibility(sequenceId: string, userId: string, isPublic: boolean): Promise<void> {
+  async updateSequenceChildrenVisibility(
+    sequenceId: string,
+    userId: string,
+    isPublic: boolean
+  ): Promise<void> {
     try {
       // When making children non-public, also remove curated status
       // When making children public, leave curated status unchanged
-      const updateData: any = { is_public: isPublic };
+      const updateData: any = { is_public: isPublic }
       if (!isPublic) {
-        updateData.is_curated = false;
+        updateData.is_curated = false
       }
 
       await this.apiRequest(`items?parent_id=eq.${sequenceId}&user_id=eq.${userId}`, {
         method: 'PATCH',
-        body: JSON.stringify(updateData)
-      });
+        body: JSON.stringify(updateData),
+      })
 
-      console.log(`Updated all children of sequence ${sequenceId} to ${isPublic ? 'public' : 'private'}`);
+      console.log(
+        `Updated all children of sequence ${sequenceId} to ${isPublic ? 'public' : 'private'}`
+      )
     } catch (error) {
-      console.error('Error updating sequence children visibility:', error);
-      throw error;
+      console.error('Error updating sequence children visibility:', error)
+      throw error
     }
   }
 
-  async saveUserSequenceOrder(userId: string, sequenceId: string, customIndex: number): Promise<void> {
+  async saveUserSequenceOrder(
+    userId: string,
+    sequenceId: string,
+    customIndex: number
+  ): Promise<void> {
     try {
       // First check if an order record exists
-      const existingParams = new URLSearchParams();
-      existingParams.append('user_id', `eq.${userId}`);
-      existingParams.append('sequence_id', `eq.${sequenceId}`);
+      const existingParams = new URLSearchParams()
+      existingParams.append('user_id', `eq.${userId}`)
+      existingParams.append('sequence_id', `eq.${sequenceId}`)
 
-      const existing = await this.apiRequest<UserSequenceOrder[]>(`user_sequence_order?${existingParams.toString()}`);
+      const existing = await this.apiRequest<UserSequenceOrder[]>(
+        `user_sequence_order?${existingParams.toString()}`
+      )
 
       if (existing.length > 0) {
         // Update existing order
         await this.apiRequest(`user_item_order?id=eq.${existing[0].id}`, {
           method: 'PATCH',
-          body: JSON.stringify({ custom_index: customIndex, updated_at: new Date().toISOString() })
-        });
+          body: JSON.stringify({ custom_index: customIndex, updated_at: new Date().toISOString() }),
+        })
       } else {
         // Create new order
         await this.apiRequest('user_item_order', {
@@ -748,62 +856,62 @@ class SequenceSupabaseService {
           body: JSON.stringify({
             user_id: userId,
             item_id: itemId,
-            custom_index: customIndex
-          })
-        });
+            custom_index: customIndex,
+          }),
+        })
       }
     } catch (error) {
-      console.error('Error saving user item order:', error);
-      throw error;
+      console.error('Error saving user item order:', error)
+      throw error
     }
   }
 
   // Admin methods - ONLY show public items for security
   async getAdminPublicItems(filter: {
-    app: string;
-    type: 'card' | 'sequence' | 'all';
-    visibility: 'all' | 'curated' | 'public-only';
-    search: string;
-    page: number;
-    limit: number;
+    app: string
+    type: 'card' | 'sequence' | 'all'
+    visibility: 'all' | 'curated' | 'public-only'
+    search: string
+    page: number
+    limit: number
   }): Promise<CardItem[]> {
     try {
-      const params = new URLSearchParams();
-      params.append('app_name', `eq.${filter.app}`);
+      const params = new URLSearchParams()
+      params.append('app_name', `eq.${filter.app}`)
 
       // ALWAYS filter by public items only - no access to private items
       if (filter.visibility === 'public-only') {
         // Public but not curated
-        params.append('is_public', 'eq.true');
-        params.append('is_curated', 'eq.false');
+        params.append('is_public', 'eq.true')
+        params.append('is_curated', 'eq.false')
       } else if (filter.visibility === 'curated') {
         // Curated only (which are always public)
-        params.append('is_curated', 'eq.true');
+        params.append('is_curated', 'eq.true')
       } else {
         // 'all' means all public items (including curated)
-        params.append('is_public', 'eq.true');
+        params.append('is_public', 'eq.true')
       }
 
       // Filter by type
       if (filter.type !== 'all') {
-        params.append('type', `eq.${filter.type}`);
+        params.append('type', `eq.${filter.type}`)
       }
 
       // Search
       if (filter.search) {
-        params.append('name', `ilike.%${filter.search}%`);
+        params.append('name', `ilike.%${filter.search}%`)
       }
 
       // Order and pagination
-      params.append('order', 'is_curated.desc,created_at.desc');
-      params.append('limit', filter.limit.toString());
-      params.append('offset', ((filter.page - 1) * filter.limit).toString());
+      params.append('order', 'is_curated.desc,created_at.desc')
+      params.append('limit', filter.limit.toString())
+      params.append('offset', ((filter.page - 1) * filter.limit).toString())
 
-      const response = await this.apiRequest<CardItem[]>(`items?${params.toString()}`);
-      return response;
+      const response = await this.apiRequest<CardItem[]>(`items?${params.toString()}`)
+      return response
     } catch (error) {
-      console.error('Error fetching admin public items:', error);
-      return [];
+      console.error('Error fetching admin public items:', error)
+      return []
     }
   }
 
@@ -811,20 +919,20 @@ class SequenceSupabaseService {
     try {
       // When making an item curated, it must be public
       // When removing curated status, public status remains unchanged
-      const updateData: any = { is_curated: isCurated };
+      const updateData: any = { is_curated: isCurated }
 
       if (isCurated) {
         // Ensure item is public when making it curated
-        updateData.is_public = true;
+        updateData.is_public = true
       }
 
       await this.apiRequest(`items?id=eq.${itemId}&is_public=eq.true`, {
         method: 'PATCH',
-        body: JSON.stringify(updateData)
-      });
+        body: JSON.stringify(updateData),
+      })
     } catch (error) {
-      console.error('Error updating item curated status:', error);
-      throw error;
+      console.error('Error updating item curated status:', error)
+      throw error
     }
   }
 
@@ -840,12 +948,12 @@ class SequenceSupabaseService {
         method: 'PATCH',
         body: JSON.stringify({
           ...updateData,
-          updated_at: new Date().toISOString()
-        })
-      });
+          updated_at: new Date().toISOString(),
+        }),
+      })
     } catch (error) {
-      console.error('Error updating card:', error);
-      throw error;
+      console.error('Error updating card:', error)
+      throw error
     }
   }
 
@@ -856,36 +964,36 @@ class SequenceSupabaseService {
         body: JSON.stringify({
           ...itemData,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-      });
-      return result[0];
+          updated_at: new Date().toISOString(),
+        }),
+      })
+      return result[0]
     } catch (error) {
-      console.error('Error creating card:', error);
-      throw error;
+      console.error('Error creating card:', error)
+      throw error
     }
   }
 
   async getCard(cardId: string): Promise<CardItem | null> {
     try {
-      const result = await this.apiRequest<CardItem[]>(`items?id=eq.${cardId}`);
-      return result[0] || null;
+      const result = await this.apiRequest<CardItem[]>(`items?id=eq.${cardId}`)
+      return result[0] || null
     } catch (error) {
-      console.error('Error getting card:', error);
-      return null;
+      console.error('Error getting card:', error)
+      return null
     }
   }
 
   async deleteCard(cardId: string): Promise<void> {
     try {
       await this.apiRequest(`items?id=eq.${cardId}`, {
-        method: 'DELETE'
-      });
+        method: 'DELETE',
+      })
     } catch (error) {
-      console.error('Error deleting card:', error);
-      throw error;
+      console.error('Error deleting card:', error)
+      throw error
     }
   }
 }
 
-export const sequenceSupabaseService = new SequenceSupabaseService();
+export const sequenceSupabaseService = new SequenceSupabaseService()

@@ -10,39 +10,39 @@ const router = createAppRouter({
     {
       path: '/',
       name: 'Home',
-      component: DashboardView
+      component: DashboardView,
     },
     {
       path: '/admin',
       name: 'AdminDashboard',
       component: AdminDashboard,
-      meta: { requiresAdmin: true }
+      meta: { requiresAdmin: true },
     },
     {
       path: '/admin/public-items',
       name: 'PublicItemsAdmin',
       component: PublicItemsAdmin,
-      meta: { requiresAdmin: true }
+      meta: { requiresAdmin: true },
     },
     {
       path: '/admin/reports',
       name: 'ReportsView',
       component: ReportsView,
-      meta: { requiresAdmin: true }
+      meta: { requiresAdmin: true },
     },
     {
       path: '/reset-pincode',
       name: 'ResetPincode',
       component: ResetPincodeView,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true },
     },
     {
       path: '/sso',
       name: 'SSO',
       component: DashboardView,
-      meta: { ssoCallback: true }
-    }
-  ]
+      meta: { ssoCallback: true },
+    },
+  ],
 })
 
 export default router

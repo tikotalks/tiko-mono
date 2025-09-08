@@ -11,8 +11,8 @@ app.use(createPinia())
 app.use(router)
 
 // Initialize translations with categories from config
-initializeTranslations({ 
-  categories: tikoConfig.i18n?.categories 
+initializeTranslations({
+  categories: tikoConfig.i18n?.categories,
 }).then(() => {
   app.mount('#app')
 })

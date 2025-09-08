@@ -7,18 +7,18 @@ export default defineConfig({
   description: 'Radio streaming app',
   icon: {
     mediaId: '0b59af4c-e3b7-406b-a7f6-45c566d18615',
-    color: BaseColors.YELLOW
+    color: BaseColors.YELLOW,
   },
   theme: {
     primary: BaseColors.YELLOW,
     secondary: BaseColors.BLUE,
-    tertiary: BaseColors.PURPLE
+    tertiary: BaseColors.PURPLE,
   },
   splash: {
     show: true,
     appName: 'Radio',
     color: BaseColors.YELLOW,
     themeColor: ColorValue.ORANGE,
-    loadingText: 'Loading Radio...'
-  }
+    loadingText: 'Loading Radio...',
+  },
 })

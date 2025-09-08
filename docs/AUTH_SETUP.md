@@ -5,6 +5,7 @@ This guide explains how authentication URLs are configured for all Tiko apps.
 ## ✅ Simplified Setup
 
 ### 1. **Root Environment Variables**
+
 Create a `.env` file in the root directory with shared configuration:
 
 ```bash
@@ -18,18 +19,19 @@ VITE_TTS_CDN_URL=https://tts.tikocdn.org
 ```
 
 ### 2. **App-Specific URLs in CI/CD**
+
 Each app gets its own `VITE_SITE_URL` automatically during deployment:
 
-| App | Deployment URL |
-|-----|----------------|
-| Timer | https://timer.tikoapps.org |
-| Yes/No | https://yesno.tikoapps.org |
-| Cards | https://cards.tikoapps.org |
-| Radio | https://radio.tikoapps.org |
-| Todo | https://todo.tikoapps.org |
-| Type | https://type.tikoapps.org |
+| App      | Deployment URL                |
+| -------- | ----------------------------- |
+| Timer    | https://timer.tikoapps.org    |
+| Yes/No   | https://yesno.tikoapps.org    |
+| Cards    | https://cards.tikoapps.org    |
+| Radio    | https://radio.tikoapps.org    |
+| Todo     | https://todo.tikoapps.org     |
+| Type     | https://type.tikoapps.org     |
 | Sequence | https://sequence.tikoapps.org |
-| Admin | https://admin.tikoapps.org |
+| Admin    | https://admin.tikoapps.org    |
 
 ### 3. **Supabase Dashboard Configuration**
 
@@ -38,6 +40,7 @@ Go to your Supabase project → Authentication → URL Configuration:
 1. **Site URL**: Set to your primary domain (e.g., `https://tiko.tikoapps.org`)
 
 2. **Redirect URLs**: Add ALL these URLs:
+
 ```
 https://timer.tikoapps.org/auth/callback
 https://yesno.tikoapps.org/auth/callback
@@ -87,13 +90,16 @@ VITE_SITE_URL=http://localhost:3000
 ## 🔧 Troubleshooting
 
 ### Registration emails going to wrong URL?
+
 - Check the "Site URL" in Supabase Dashboard
 - This is what's used for email confirmations
 
 ### Login redirects working but registration isn't?
-- Login uses dynamic `getAuthRedirectUrl()` 
+
+- Login uses dynamic `getAuthRedirectUrl()`
 - Registration emails use Supabase's Site URL setting
 
 ### App not redirecting properly after auth?
+
 - Ensure the app's callback URL is in Supabase's redirect whitelist
 - Check that `VITE_SITE_URL` is set correctly in deployment

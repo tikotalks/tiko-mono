@@ -77,91 +77,91 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useBemm } from 'bemm'
-import {
-  TAuthWrapper,
-  TAppLayout,
-  TButton,
-  TInputText,
-  TSplashScreen,
-  useParentMode
-} from '@tiko/ui'
+  import { ref, onMounted } from 'vue'
+  import { useBemm } from 'bemm'
+  import {
+    TAuthWrapper,
+    TAppLayout,
+    TButton,
+    TInputText,
+    TSplashScreen,
+    useParentMode,
+  } from '@tiko/ui'
 
-const bemm = useBemm('radio-view')
-const showSplash = ref(true)
-const loading = ref(false)
-const searchQuery = ref('')
-const backgroundImage = ref('')
+  const bemm = useBemm('radio-view')
+  const showSplash = ref(true)
+  const loading = ref(false)
+  const searchQuery = ref('')
+  const backgroundImage = ref('')
 
-// Parent Mode
-const parentMode = useParentMode('radio')
-const canManageContent = parentMode.canManageContent
+  // Parent Mode
+  const parentMode = useParentMode('radio')
+  const canManageContent = parentMode.canManageContent
 
-// Splash screen handling
-const handleSplashComplete = () => {
-  showSplash.value = false
-}
+  // Splash screen handling
+  const handleSplashComplete = () => {
+    showSplash.value = false
+  }
 
-// Event handlers
-const handleProfile = () => {
-  console.log('Profile clicked')
-}
+  // Event handlers
+  const handleProfile = () => {
+    console.log('Profile clicked')
+  }
 
-const handleSettings = () => {
-  console.log('Settings clicked')
-}
+  const handleSettings = () => {
+    console.log('Settings clicked')
+  }
 
-const handleLogout = () => {
-  console.log('Logout clicked')
-}
+  const handleLogout = () => {
+    console.log('Logout clicked')
+  }
 
-const handleSearch = () => {
-  console.log('Search:', searchQuery.value)
-}
+  const handleSearch = () => {
+    console.log('Search:', searchQuery.value)
+  }
 
-const handleSearchInput = () => {
-  console.log('Search input:', searchQuery.value)
-}
+  const handleSearchInput = () => {
+    console.log('Search input:', searchQuery.value)
+  }
 
-const toggleParentMode = () => {
-  parentMode.toggleParentMode()
-}
+  const toggleParentMode = () => {
+    parentMode.toggleParentMode()
+  }
 
-const handleAddClick = () => {
-  console.log('Add audio clicked')
-}
+  const handleAddClick = () => {
+    console.log('Add audio clicked')
+  }
 
-const handleSettingsClick = () => {
-  console.log('Settings clicked')
-}
+  const handleSettingsClick = () => {
+    console.log('Settings clicked')
+  }
 
-onMounted(() => {
-  // Initialize any required data
-})
+  onMounted(() => {
+    // Initialize any required data
+  })
 </script>
 
 <style lang="scss">
-.radio-view {
-  &__content {
-    padding: var(--space);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space);
-  }
+  .radio-view {
+    &__content {
+      padding: var(--space);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space);
+    }
 
-  &__search-input {
-    width: 20em;
-  }
+    &__search-input {
+      width: 20em;
+    }
 
-  &__search {
-    width: 100%;
-  }
+    &__search {
+      width: 100%;
+    }
 
-  &__parent-mode-toggle,
-  &__add-button,
-  &__settings-button {
-    white-space: nowrap;
+    &__parent-mode-toggle,
+    &__add-button,
+    &__settings-button {
+      white-space: nowrap;
+    }
   }
-}
 </style>

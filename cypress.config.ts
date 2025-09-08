@@ -20,7 +20,7 @@ export default defineConfig({
       VITE_MAILOSAUR_API_KEY: process.env.VITE_MAILOSAUR_API_KEY || '',
       VITE_MAILOSAUR_SERVER_ID: process.env.VITE_MAILOSAUR_SERVER_ID || '',
       // Or we can use a test email service
-      TEST_EMAIL_DOMAIN: '@mailosaur.net'
+      TEST_EMAIL_DOMAIN: '@mailosaur.net',
     },
     setupNodeEvents(on, config) {
       // Add email testing tasks
@@ -32,9 +32,9 @@ export default defineConfig({
         log(message: string) {
           console.log(message)
           return null
-        }
+        },
       })
       return config
-    }
-  }
+    },
+  },
 })

@@ -1,7 +1,5 @@
 <template>
   <div :class="bemm()">
-
-
     <!-- Animation Layer -->
     <div :class="bemm('animation')" v-if="!animationCompleted">
       <component
@@ -40,8 +38,8 @@
         </div>
       </div>
     </div>
-      <!-- Close button -->
-      <TButton
+    <!-- Close button -->
+    <TButton
       v-if="!animationCompleted"
       :class="bemm('close-button')"
       :icon="Icons.MULTIPLY_M"
@@ -54,198 +52,203 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, onBeforeMount, shallowRef, onBeforeUnmount, computed } from 'vue'
-import { useBemm } from 'bemm'
-import { TButton } from '@tiko/ui'
-import { useImageResolver, useI18n } from '@tiko/core'
-import { getAnimation, getRandomAnimation, type AnimationImage, type AnimationImageConfig } from '@tiko/animations'
-import { Icons } from 'open-icon';
+  import { onMounted, ref, onBeforeMount, shallowRef, onBeforeUnmount, computed } from 'vue'
+  import { useBemm } from 'bemm'
+  import { TButton } from '@tiko/ui'
+  import { useImageResolver, useI18n } from '@tiko/core'
+  import {
+    getAnimation,
+    getRandomAnimation,
+    type AnimationImage,
+    type AnimationImageConfig,
+  } from '@tiko/animations'
+  import { Icons } from 'open-icon'
 
-const props = defineProps<{
-  animation?: string
-}>()
+  const props = defineProps<{
+    animation?: string
+  }>()
 
-const emit = defineEmits<{
-  restart: []
-  close: []
-}>()
+  const emit = defineEmits<{
+    restart: []
+    close: []
+  }>()
 
-const bemm = useBemm('reward-overlay')
-const { t } = useI18n()
-const { preloadImages } = useImageResolver()
+  const bemm = useBemm('reward-overlay')
+  const { t } = useI18n()
+  const { preloadImages } = useImageResolver()
 
-// Use the animation from props, or select a random one if not specified
-const selectedAnimation = computed(() => {
-  if (props.animation) {
-    return props.animation
+  // Use the animation from props, or select a random one if not specified
+  const selectedAnimation = computed(() => {
+    if (props.animation) {
+      return props.animation
+    }
+    // Get a random animation if none specified
+    const randomAnim = getRandomAnimation()
+    return randomAnim.name
+  })
+
+  // State
+  const animationCompleted = ref(false)
+  const showContent = ref(false)
+  const animationRef = ref<any>(null)
+
+  // Get the animation component
+  const animationComponent = shallowRef(getAnimation(selectedAnimation.value))
+
+  const onAnimationCompleted = () => {
+    animationCompleted.value = true
+    // Show content after a brief delay
+    setTimeout(() => {
+      showContent.value = true
+    }, 200) // Reduced delay for snappier feel
   }
-  // Get a random animation if none specified
-  const randomAnim = getRandomAnimation()
-  return randomAnim.name
-})
 
-// State
-const animationCompleted = ref(false)
-const showContent = ref(false)
-const animationRef = ref<any>(null)
+  const skipAnimation = () => {
+    // Stop the animation and any sounds it's playing
+    if (animationRef.value) {
+      // Call cleanup method if available
+      if (typeof animationRef.value.cleanup === 'function') {
+        animationRef.value.cleanup()
+      }
 
-// Get the animation component
-const animationComponent = shallowRef(getAnimation(selectedAnimation.value))
+      // Stop any audio/sounds
+      if (animationRef.value.audio) {
+        animationRef.value.audio.pause()
+        animationRef.value.audio.currentTime = 0
+      }
 
-const onAnimationCompleted = () => {
-  animationCompleted.value = true
-  // Show content after a brief delay
-  setTimeout(() => {
+      // Stop animation loop if available
+      if (typeof animationRef.value.stopAnimation === 'function') {
+        animationRef.value.stopAnimation()
+      }
+    }
+
+    // Skip the animation and show content immediately
+    animationCompleted.value = true
     showContent.value = true
-  }, 200) // Reduced delay for snappier feel
-}
-
-const skipAnimation = () => {
-  // Stop the animation and any sounds it's playing
-  if (animationRef.value) {
-    // Call cleanup method if available
-    if (typeof animationRef.value.cleanup === 'function') {
-      animationRef.value.cleanup()
-    }
-    
-    // Stop any audio/sounds
-    if (animationRef.value.audio) {
-      animationRef.value.audio.pause()
-      animationRef.value.audio.currentTime = 0
-    }
-    
-    // Stop animation loop if available
-    if (typeof animationRef.value.stopAnimation === 'function') {
-      animationRef.value.stopAnimation()
-    }
   }
-  
-  // Skip the animation and show content immediately
-  animationCompleted.value = true
-  showContent.value = true
-}
 
-// Preload animation images before component mounts
-onBeforeMount(async () => {
-  try {
-    // For now, skip preloading for seasons animation since it uses video
-    console.log(`${selectedAnimation.value} animation selected`)
-  } catch (error) {
-    console.warn('Failed to preload animation images:', error)
-  }
-})
+  // Preload animation images before component mounts
+  onBeforeMount(async () => {
+    try {
+      // For now, skip preloading for seasons animation since it uses video
+      console.log(`${selectedAnimation.value} animation selected`)
+    } catch (error) {
+      console.warn('Failed to preload animation images:', error)
+    }
+  })
 
-onMounted(() => {
-  console.log(`[RewardOverlay] Component mounted! Using ${selectedAnimation.value} animation`)
-  // Trigger haptic feedback when overlay appears
-  if ('vibrate' in navigator) {
-    navigator.vibrate([100, 50, 100, 50, 200])
-  }
-})
+  onMounted(() => {
+    console.log(`[RewardOverlay] Component mounted! Using ${selectedAnimation.value} animation`)
+    // Trigger haptic feedback when overlay appears
+    if ('vibrate' in navigator) {
+      navigator.vibrate([100, 50, 100, 50, 200])
+    }
+  })
 
-// Cleanup on unmount
-onBeforeUnmount(() => {
-  // Ensure animation is properly cleaned up
-  if (animationRef.value) {
-    if (typeof animationRef.value.cleanup === 'function') {
-      animationRef.value.cleanup()
+  // Cleanup on unmount
+  onBeforeUnmount(() => {
+    // Ensure animation is properly cleaned up
+    if (animationRef.value) {
+      if (typeof animationRef.value.cleanup === 'function') {
+        animationRef.value.cleanup()
+      }
+      if (animationRef.value.audio) {
+        animationRef.value.audio.pause()
+        animationRef.value.audio.currentTime = 0
+      }
+      if (typeof animationRef.value.stopAnimation === 'function') {
+        animationRef.value.stopAnimation()
+      }
     }
-    if (animationRef.value.audio) {
-      animationRef.value.audio.pause()
-      animationRef.value.audio.currentTime = 0
-    }
-    if (typeof animationRef.value.stopAnimation === 'function') {
-      animationRef.value.stopAnimation()
-    }
-  }
-})
+  })
 </script>
 
 <style lang="scss">
-.reward-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-
-  &__animation {
+  .reward-overlay {
     position: fixed;
     inset: 0;
-    z-index: 1001;
-  }
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
 
-  &__content {
-    position: fixed;
-    inset: 0;
-    z-index: 1002;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(8px);
-    transition: opacity 0.5s ease-in-out;
-
-    > div {
-      background: var(--color-surface);
-      border-radius: 2rem;
-      padding: 3rem 2rem;
-      text-align: center;
-      max-width: 90%;
-      width: 400px;
-      animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    &__animation {
+      position: fixed;
+      inset: 0;
+      z-index: 1001;
     }
-  }
 
-  &__title {
-    font-size: 2rem;
-    margin: 0 0 0.5rem;
-    color: var(--color-primary);
-  }
-
-  &__message {
-    font-size: 1.125rem;
-    color: var(--color-text-secondary);
-    margin: 0 0 2rem;
-  }
-
-  &__actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  &__close-button {
-    position: fixed !important;
-    top: var(--space);
-    font-size: 1.5em;
-    right: var(--space);
-    z-index: 3000; // Higher than any animation elements
-    pointer-events: auto !important; // Ensure it's clickable
-
-    // Add background for better visibility
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 50%;
-    backdrop-filter: blur(10px);
-
-    &:hover {
+    &__content {
+      position: fixed;
+      inset: 0;
+      z-index: 1002;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
       background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      transition: opacity 0.5s ease-in-out;
+
+      > div {
+        background: var(--color-surface);
+        border-radius: 2rem;
+        padding: 3rem 2rem;
+        text-align: center;
+        max-width: 90%;
+        width: 400px;
+        animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+    }
+
+    &__title {
+      font-size: 2rem;
+      margin: 0 0 0.5rem;
+      color: var(--color-primary);
+    }
+
+    &__message {
+      font-size: 1.125rem;
+      color: var(--color-text-secondary);
+      margin: 0 0 2rem;
+    }
+
+    &__actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    &__close-button {
+      position: fixed !important;
+      top: var(--space);
+      font-size: 1.5em;
+      right: var(--space);
+      z-index: 3000; // Higher than any animation elements
+      pointer-events: auto !important; // Ensure it's clickable
+
+      // Add background for better visibility
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 50%;
+      backdrop-filter: blur(10px);
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.7);
+      }
     }
   }
-}
 
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.8);
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
 </style>

@@ -6,7 +6,7 @@ export default defineConfig({
   name: 'Cards',
   description: 'Cards App',
   icon: {
-    mediaId:'e37943b4-582c-40ee-be3a-c47be7c6e658',
+    mediaId: 'e37943b4-582c-40ee-be3a-c47be7c6e658',
     color: BaseColors.GREEN,
   },
   theme: {
@@ -16,13 +16,13 @@ export default defineConfig({
   },
   auth: {
     skipAuth: true,
-    showLoginButton: true
+    showLoginButton: true,
   },
   splash: {
     show: true,
     appName: 'Cards',
     color: BaseColors.BLUE,
     themeColor: ColorValue.BLACK,
-    loadingText: 'Loading Cards...'
-  }
+    loadingText: 'Loading Cards...',
+  },
 })

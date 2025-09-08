@@ -20,7 +20,7 @@ const USED_ICONS = new Set([
   'plus',
   'volume',
   'volume-2',
-  'x'
+  'x',
 ])
 
 // Cache for loaded icons
@@ -35,18 +35,18 @@ export async function getIcon(name) {
   if (iconCache.has(name)) {
     return iconCache.get(name)
   }
-  
+
   // Load from full library (all icons are bundled anyway by open-icon)
   // But track which ones we're using for optimization insights
   try {
     const { getIcon: originalGetIcon } = await import('open-icon')
     const icon = await originalGetIcon(name)
-    
+
     // Log if we're using an icon not in our optimized set
     if (!USED_ICONS.has(name)) {
       console.info(`📊 Icon "${name}" used dynamically (not in optimized set)`)
     }
-    
+
     iconCache.set(name, icon)
     return icon
   } catch (error) {
@@ -64,7 +64,7 @@ export const ICON_OPTIMIZATION = {
   appName: 'radio',
   optimizedIcons: USED_ICONS,
   totalOptimized: 18,
-  generatedAt: '2025-07-14T11:19:37.508Z'
+  generatedAt: '2025-07-14T11:19:37.508Z',
 }
 
 // Helper to check if an icon is in the optimized set

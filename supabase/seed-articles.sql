@@ -6,11 +6,19 @@ DECLARE
   updates_page_id UUID;
   articles_page_id UUID;
 BEGIN
-  -- Get the updates page ID
-  SELECT id INTO updates_page_id 
-  FROM content_pages 
-  WHERE slug = 'updates' AND project_id = (SELECT id FROM content_projects WHERE slug = 'marketing')
+  -- Get the updates page ID (try 'update' first, then 'updates')
+  SELECT id INTO updates_page_id
+  FROM content_pages
+  WHERE slug = 'update' AND project_id = (SELECT id FROM content_projects WHERE slug = 'marketing')
   LIMIT 1;
+
+  -- If not found, try 'updates'
+  IF updates_page_id IS NULL THEN
+    SELECT id INTO updates_page_id
+    FROM content_pages
+    WHERE slug = 'updates' AND project_id = (SELECT id FROM content_projects WHERE slug = 'marketing')
+    LIMIT 1;
+  END IF;
   
   -- Get the articles page ID (if it exists)
   SELECT id INTO articles_page_id 

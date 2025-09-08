@@ -25,7 +25,7 @@ export const useYesNoStore = defineStore('yesno', () => {
     buttonSize: 'large',
     buttonStyle: 'icons',
     autoSpeak: true,
-    hapticFeedback: true
+    hapticFeedback: true,
   }
 
   // Getters
@@ -40,14 +40,16 @@ export const useYesNoStore = defineStore('yesno', () => {
 
   const recentQuestionItems = computed(() => {
     // Sort with favorites first, then by created date
-    return [...questionItems.value].sort((a, b) => {
-      // Favorites first
-      if (a.is_favorite && !b.is_favorite) return -1
-      if (!a.is_favorite && b.is_favorite) return 1
+    return [...questionItems.value]
+      .sort((a, b) => {
+        // Favorites first
+        if (a.is_favorite && !b.is_favorite) return -1
+        if (!a.is_favorite && b.is_favorite) return 1
 
-      // Then by created date (newest first)
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    }).slice(0, 10)
+        // Then by created date (newest first)
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      })
+      .slice(0, 10)
   })
 
   // Actions
@@ -77,8 +79,8 @@ export const useYesNoStore = defineStore('yesno', () => {
           name: question.trim(),
           metadata: {
             created_from: 'question_input',
-            timestamp: new Date().toISOString()
-          }
+            timestamp: new Date().toISOString(),
+          },
         })
 
         // Reload questions from items
@@ -110,7 +112,11 @@ export const useYesNoStore = defineStore('yesno', () => {
     }
   }
 
-  const handleAnswer = async (answer: 'yes' | 'no', speakFn?: (text: string, options: any) => Promise<void>, translateFn?: (key: string) => string) => {
+  const handleAnswer = async (
+    answer: 'yes' | 'no',
+    speakFn?: (text: string, options: any) => Promise<void>,
+    translateFn?: (key: string) => string
+  ) => {
     // Haptic feedback if enabled
     if (settings.value.hapticFeedback) {
       answer === 'yes' ? haptic.success() : haptic.vibrate(100)
@@ -125,13 +131,16 @@ export const useYesNoStore = defineStore('yesno', () => {
     console.log(`Answer: ${answer} to question: "${currentQuestion.value}"`)
   }
 
-  const speakAnswer = async (answer: 'yes' | 'no', speakFn?: (text: string, options: any) => Promise<void>, translateFn?: (key: string) => string) => {
+  const speakAnswer = async (
+    answer: 'yes' | 'no',
+    speakFn?: (text: string, options: any) => Promise<void>,
+    translateFn?: (key: string) => string
+  ) => {
     try {
       if (speakFn && translateFn) {
         // Get translated answer
-        const translatedAnswer = answer === 'yes'
-          ? translateFn('common.yes')
-          : translateFn('common.no')
+        const translatedAnswer =
+          answer === 'yes' ? translateFn('common.yes') : translateFn('common.no')
 
         // Use enhanced TTS function passed from component
         await speakFn(translatedAnswer, {})
@@ -141,7 +150,10 @@ export const useYesNoStore = defineStore('yesno', () => {
     }
   }
 
-  const speakText = async (text: string, speakFn?: (text: string, options: any) => Promise<void>) => {
+  const speakText = async (
+    text: string,
+    speakFn?: (text: string, options: any) => Promise<void>
+  ) => {
     try {
       if (speakFn) {
         // Use enhanced TTS function passed from component
@@ -162,7 +174,7 @@ export const useYesNoStore = defineStore('yesno', () => {
   const saveState = async () => {
     await appStore.updateAppSettings('yes-no', {
       ...settings.value,
-      currentQuestion: currentQuestion.value
+      currentQuestion: currentQuestion.value,
       // questionHistory is now stored in Items, not in settings
     })
   }
@@ -178,7 +190,7 @@ export const useYesNoStore = defineStore('yesno', () => {
 
       const items = await itemService.getItems(userId, {
         app_name: 'yesno',
-        type: 'question'
+        type: 'question',
       })
       console.log('[YesNoStore] Loaded questions from items:', items.data?.length || 0)
 
@@ -186,11 +198,14 @@ export const useYesNoStore = defineStore('yesno', () => {
       questionItems.value = items.data ?? []
 
       // Sort by created_at and get the last 20
-      const sortedItems = (items.data ?? []).sort((a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      const sortedItems = (items.data ?? []).sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       )
 
-      questionHistory.value = sortedItems.slice(0, 20).map(item => item.name).reverse()
+      questionHistory.value = sortedItems
+        .slice(0, 20)
+        .map(item => item.name)
+        .reverse()
     } catch (error) {
       console.error('[YesNoStore] Failed to load questions from items:', error)
       questionHistory.value = []
@@ -228,7 +243,7 @@ export const useYesNoStore = defineStore('yesno', () => {
       console.log('[YesNoStore] Toggling favorite from', item.is_favorite, 'to', !item.is_favorite)
 
       const result = await itemService.updateItem(itemId, {
-        is_favorite: !item.is_favorite
+        is_favorite: !item.is_favorite,
       })
 
       console.log('[YesNoStore] Update result:', result)
@@ -266,7 +281,7 @@ export const useYesNoStore = defineStore('yesno', () => {
       // Delete all question items for this user
       const items = await itemService.getItems(userId, {
         app_name: 'yesno',
-        type: 'question'
+        type: 'question',
       })
       for (const item of items.data ?? []) {
         await itemService.deleteItem(item.id)
@@ -301,6 +316,6 @@ export const useYesNoStore = defineStore('yesno', () => {
     loadState,
     toggleFavorite,
     deleteQuestion,
-    clearHistory
+    clearHistory,
   }
 })

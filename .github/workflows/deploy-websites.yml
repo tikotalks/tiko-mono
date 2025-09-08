@@ -35,7 +35,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
-          
+
       - name: Check triggers
         id: check
         run: |
@@ -43,7 +43,7 @@ jobs:
           echo "should-build=false" >> $GITHUB_OUTPUT
           echo "build-marketing=false" >> $GITHUB_OUTPUT
           echo "build-media=false" >> $GITHUB_OUTPUT
-          
+
           # Handle workflow_dispatch trigger
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             TARGET="${{ github.event.inputs.target }}"
@@ -62,7 +62,7 @@ jobs:
             fi
             exit 0
           fi
-          
+
           # For develop branch, check changed files instead of commit message
           if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
             echo "Develop branch detected - checking changed files..."
@@ -97,7 +97,7 @@ jobs:
           # For master branch, handle push trigger - check commit message
           COMMIT_MSG='${{ github.event.head_commit.message }}'
           echo "Commit message: $COMMIT_MSG"
-          
+
           # Check for build all triggers
           if [[ "$COMMIT_MSG" == *"[build:all]"* ]] || [[ "$COMMIT_MSG" == *"[build:websites]"* ]]; then
             echo "should-build=true" >> $GITHUB_OUTPUT
@@ -105,13 +105,13 @@ jobs:
             echo "build-media=true" >> $GITHUB_OUTPUT
             exit 0
           fi
-          
+
           # Check for specific website triggers
           if [[ "$COMMIT_MSG" == *"[build:marketing]"* ]]; then
             echo "build-marketing=true" >> $GITHUB_OUTPUT
             echo "should-build=true" >> $GITHUB_OUTPUT
           fi
-          
+
           if [[ "$COMMIT_MSG" == *"[build:media]"* ]]; then
             echo "build-media=true" >> $GITHUB_OUTPUT
             echo "should-build=true" >> $GITHUB_OUTPUT
@@ -130,29 +130,29 @@ jobs:
     name: Deploy Marketing Website (${{ needs.determine-environment.outputs.environment }})
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: pnpm/action-setup@v2
         with:
           version: 8
-          
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-          
+
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
-        
+
       - name: Install Wrangler
         run: pnpm add -w wrangler@3.90.0 --save-dev
-        
+
       - name: Generate i18n translations
         run: pnpm generate:i18n:worker:prod
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-        
+
       - name: Build Marketing website
         run: |
           pnpm --filter=@tiko/ui build
@@ -162,10 +162,10 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-          VITE_USE_CONTENT_WORKER: "true"
-          VITE_CONTENT_API_URL: "https://content.tikoapi.org"
-          VITE_DEPLOYED_VERSION_ID: "v1.0.1"
-          
+          VITE_USE_CONTENT_WORKER: 'true'
+          VITE_CONTENT_API_URL: 'https://content.tikoapi.org'
+          VITE_DEPLOYED_VERSION_ID: 'v1.0.1'
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
@@ -180,29 +180,29 @@ jobs:
     name: Deploy Media Website (${{ needs.determine-environment.outputs.environment }})
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: pnpm/action-setup@v2
         with:
           version: 8
-          
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-          
+
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
-        
+
       - name: Install Wrangler
         run: pnpm add -w wrangler@3.90.0 --save-dev
-        
+
       - name: Generate i18n translations
         run: pnpm generate:i18n:worker:prod
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-        
+
       - name: Build Media website
         run: |
           pnpm --filter=@tiko/ui build
@@ -212,10 +212,10 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-          VITE_USE_CONTENT_WORKER: "true"
-          VITE_CONTENT_API_URL: "https://content.tikoapi.org"
-          VITE_DEPLOYED_VERSION_ID: "v1.0.1"
-          
+          VITE_USE_CONTENT_WORKER: 'true'
+          VITE_CONTENT_API_URL: 'https://content.tikoapi.org'
+          VITE_DEPLOYED_VERSION_ID: 'v1.0.1'
+
       - name: Create Cloudflare Pages project if needed
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -225,7 +225,7 @@ jobs:
             "https://api.cloudflare.com/client/v4/accounts/dc2b7d14a69351375cab6de9a13ddee9/pages/projects/tiko-media${{ needs.determine-environment.outputs.branch-suffix }}" \
             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
             -H "Content-Type: application/json" | jq -r '.success')
-          
+
           if [ "$PROJECT_EXISTS" != "true" ]; then
             echo "Creating Cloudflare Pages project tiko-media${{ needs.determine-environment.outputs.branch-suffix }}..."
             curl -X POST \
@@ -239,7 +239,7 @@ jobs:
           else
             echo "Project tiko-media${{ needs.determine-environment.outputs.branch-suffix }} already exists"
           fi
-      
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:

@@ -11,6 +11,12 @@ importers:
       bemm:
         specifier: ^1.2.2
         version: 1.2.2
+      eslint-config-prettier:
+        specifier: ^10.1.8
+        version: 10.1.8(eslint@8.57.1)
+      eslint-plugin-prettier:
+        specifier: ^5.5.4
+        version: 5.5.4(eslint-config-prettier@10.1.8(eslint@8.57.1))(eslint@8.57.1)(prettier@3.6.2)
       mitt:
         specifier: ^3.0.1
         version: 3.0.1
@@ -41,7 +47,7 @@ importers:
         version: 18.0.0(@babel/traverse@7.28.0)(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17))(@types/node@18.16.9)(js-yaml@4.1.0)(nx@18.0.0(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17)))
       '@nx/eslint-plugin':
         specifier: 18.0.0
-        version: 18.0.0(@babel/traverse@7.28.0)(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17))(@types/node@18.16.9)(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.3.3))(eslint@8.57.1)(nx@18.0.0(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17)))(typescript@5.3.3)
+        version: 18.0.0(@babel/traverse@7.28.0)(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17))(@types/node@18.16.9)(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.3.3))(eslint-config-prettier@10.1.8(eslint@8.57.1))(eslint@8.57.1)(nx@18.0.0(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17)))(typescript@5.3.3)
       '@nx/js':
         specifier: 18.0.0
         version: 18.0.0(@babel/traverse@7.28.0)(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17))(@types/node@18.16.9)(nx@18.0.0(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17)))(typescript@5.3.3)
@@ -428,40 +434,40 @@ importers:
       '@tiko/ui':
         specifier: workspace:*
         version: link:../../packages/ui
-      bemm:
-        specifier: ^1.2.2
-        version: 1.2.2
+      open-icon:
+        specifier: ^1.1.2
+        version: 1.1.2(vue@3.5.18(typescript@5.3.3))
       pinia:
-        specifier: ^2.2.8
-        version: 2.3.1(typescript@5.9.2)(vue@3.5.18(typescript@5.9.2))
+        specifier: ^2.1.7
+        version: 2.3.1(typescript@5.3.3)(vue@3.5.18(typescript@5.3.3))
       vue:
-        specifier: ^3.5.13
-        version: 3.5.18(typescript@5.9.2)
+        specifier: ^3.4.21
+        version: 3.5.18(typescript@5.3.3)
       vue-router:
-        specifier: ^4.5.0
-        version: 4.5.1(vue@3.5.18(typescript@5.9.2))
+        specifier: ^4.3.0
+        version: 4.5.1(vue@3.5.18(typescript@5.3.3))
     devDependencies:
       '@vitejs/plugin-vue':
-        specifier: ^5.2.1
-        version: 5.2.4(vite@5.4.19(@types/node@24.1.0)(sass@1.89.2)(terser@5.43.1))(vue@3.5.18(typescript@5.9.2))
+        specifier: ^4.6.2
+        version: 4.6.2(vite@5.4.19(@types/node@24.1.0)(sass@1.89.2)(terser@5.43.1))(vue@3.5.18(typescript@5.3.3))
+      '@vue/test-utils':
+        specifier: ^2.4.4
+        version: 2.4.6
       sass:
-        specifier: ^1.83.0
+        specifier: ^1.71.1
         version: 1.89.2
       typescript:
-        specifier: ^5.7.3
-        version: 5.9.2
+        specifier: ~5.3.3
+        version: 5.3.3
       vite:
-        specifier: ^5.4.11
+        specifier: ^5.1.4
         version: 5.4.19(@types/node@24.1.0)(sass@1.89.2)(terser@5.43.1)
-      vite-plugin-pwa:
-        specifier: ^0.21.2
-        version: 0.21.2(vite@5.4.19(@types/node@24.1.0)(sass@1.89.2)(terser@5.43.1))(workbox-build@7.3.0(@types/babel__core@7.20.5))(workbox-window@7.3.0)
       vitest:
-        specifier: ^1.6.1
+        specifier: ^1.3.1
         version: 1.6.1(@types/node@24.1.0)(@vitest/ui@1.6.1)(jsdom@22.1.0(canvas@2.11.2))(sass@1.89.2)(terser@5.43.1)
       vue-tsc:
-        specifier: ^2.2.0
-        version: 2.2.12(typescript@5.9.2)
+        specifier: ^1.8.27
+        version: 1.8.27(typescript@5.3.3)
 
   apps/type:
     dependencies:
@@ -471,6 +477,9 @@ importers:
       '@tiko/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      open-icon:
+        specifier: ^1.1.2
+        version: 1.1.2(vue@3.5.18(typescript@5.3.3))
       pinia:
         specifier: ^2.1.7
         version: 2.3.1(typescript@5.3.3)(vue@3.5.18(typescript@5.3.3))
@@ -1032,6 +1041,22 @@ importers:
       wrangler:
         specifier: ^3.24.0
         version: 3.114.12(@cloudflare/workers-types@4.20250802.0)
+
+  workers/media-cache:
+    dependencies:
+      '@supabase/supabase-js':
+        specifier: ^2.39.3
+        version: 2.53.0
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20240117.0
+        version: 4.20250802.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.2
+      wrangler:
+        specifier: ^4.34.0
+        version: 4.34.0(@cloudflare/workers-types@4.20250802.0)
 
   workers/media-upload:
     devDependencies:
@@ -1786,6 +1811,15 @@ packages:
       workerd:
         optional: true
 
+  '@cloudflare/unenv-preset@2.7.2':
+    resolution: {integrity: sha512-JY7Uf8GhWcbOMDZX8ke2czp9f9TijvJN4CpRBs3+WYN9U7jHpj3XaV+HHm78iHkAwTm/JeBHqyQNhq/PizynRA==}
+    peerDependencies:
+      unenv: 2.0.0-rc.20
+      workerd: ^1.20250828.1
+    peerDependenciesMeta:
+      workerd:
+        optional: true
+
   '@cloudflare/workerd-darwin-64@1.20250718.0':
     resolution: {integrity: sha512-FHf4t7zbVN8yyXgQ/r/GqLPaYZSGUVzeR7RnL28Mwj2djyw2ZergvytVc7fdGcczl6PQh+VKGfZCfUqpJlbi9g==}
     engines: {node: '>=16'}
@@ -1794,6 +1828,12 @@ packages:
 
   '@cloudflare/workerd-darwin-64@1.20250803.0':
     resolution: {integrity: sha512-6QciMnJp1p3F1qUiN0LaLfmw7SuZA/gfUBOe8Ft81pw16JYZ3CyiqIKPJvc1SV8jgDx8r+gz/PRi1NwOMt329A==}
+    engines: {node: '>=16'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@cloudflare/workerd-darwin-64@1.20250902.0':
+    resolution: {integrity: sha512-mwC/YEtDUGfnjXdbW5Lya+bgODrpJ5RxxqpaTjtMJycqnjR0RZgVpOqISwGfBHIhseykU3ahPugM5t91XkBKTg==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [darwin]
@@ -1810,6 +1850,12 @@ packages:
     cpu: [arm64]
     os: [darwin]
 
+  '@cloudflare/workerd-darwin-arm64@1.20250902.0':
+    resolution: {integrity: sha512-5Wr6a5/ixoXuMPOvbprN8k9HhAHDBh8f7H5V4DN/Xb4ORoGkI9AbC5QPpYV0wa3Ncf+CRSGobdmZNyO24hRccA==}
+    engines: {node: '>=16'}
+    cpu: [arm64]
+    os: [darwin]
+
   '@cloudflare/workerd-linux-64@1.20250718.0':
     resolution: {integrity: sha512-5+eb3rtJMiEwp08Kryqzzu8d1rUcK+gdE442auo5eniMpT170Dz0QxBrqkg2Z48SFUPYbj+6uknuA5tzdRSUSg==}
     engines: {node: '>=16'}
@@ -1818,6 +1864,12 @@ packages:
 
   '@cloudflare/workerd-linux-64@1.20250803.0':
     resolution: {integrity: sha512-mYdz4vNWX3+PoqRjssepVQqgh42IBiSrl+wb7vbh7VVWUVzBnQKtW3G+UFiBF62hohCLexGIEi7L0cFfRlcKSQ==}
+    engines: {node: '>=16'}
+    cpu: [x64]
+    os: [linux]
+
+  '@cloudflare/workerd-linux-64@1.20250902.0':
+    resolution: {integrity: sha512-1yJGt56VQBuG01nrhkRGoa1FGz7xQwJTrgewxt/MRRtigZTf84qJQiPQxyM7PQWCLREKa+JS7G8HFqvOwK7kZA==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [linux]
@@ -1834,6 +1886,12 @@ packages:
     cpu: [arm64]
     os: [linux]
 
+  '@cloudflare/workerd-linux-arm64@1.20250902.0':
+    resolution: {integrity: sha512-ArDodWzfo0BVqMQGUgaOGV5Mzf8wEMUX8TJonExpGbYavoVXVDbp2rTLFRJg1vkFGpmw1teCtSoOjSDisFZQMg==}
+    engines: {node: '>=16'}
+    cpu: [arm64]
+    os: [linux]
+
   '@cloudflare/workerd-windows-64@1.20250718.0':
     resolution: {integrity: sha512-dY16RXKffmugnc67LTbyjdDHZn5NoTF1yHEf2fN4+OaOnoGSp3N1x77QubTDwqZ9zECWxgQfDLjddcH8dWeFhg==}
     engines: {node: '>=16'}
@@ -1842,6 +1900,12 @@ packages:
 
   '@cloudflare/workerd-windows-64@1.20250803.0':
     resolution: {integrity: sha512-uLV8gdudz36o9sUaAKbBxxTwZwLFz1KyW7QpBvOo4+r3Ib8yVKXGiySIMWGD7A0urSMrjf3e5LlLcJKgZUOjMA==}
+    engines: {node: '>=16'}
+    cpu: [x64]
+    os: [win32]
+
+  '@cloudflare/workerd-windows-64@1.20250902.0':
+    resolution: {integrity: sha512-DT/o8ZSkmze1YGI7vgVt4ST+VYGb3tNChiFnOM9Z8YOejqKqbVvATB4gi/xMSnNR9CsKFqH4hHWDDtz+wf4uZg==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [win32]
@@ -2864,6 +2928,10 @@ packages:
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
+
+  '@pkgr/core@0.2.9':
+    resolution: {integrity: sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA==}
+    engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
 
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
@@ -4824,6 +4892,12 @@ packages:
     engines: {node: '>=6.0'}
     hasBin: true
 
+  eslint-config-prettier@10.1.8:
+    resolution: {integrity: sha512-82GZUjRS0p/jganf6q1rEO25VSoHH0hKPCTrgillPjdI/3bgBhAE1QzHrHTizjpRvy6pGAvKjDJtk2pF9NDq8w==}
+    hasBin: true
+    peerDependencies:
+      eslint: '>=7.0.0'
+
   eslint-config-prettier@8.10.2:
     resolution: {integrity: sha512-/IGJ6+Dka158JnP5n5YFMOszjDWrXggGz1LaK/guZq9vZTmniaKlHcsscvkAhn9y4U+BU3JuUdYvtAMcv30y4A==}
     hasBin: true
@@ -4843,6 +4917,20 @@ packages:
       eslint-config-prettier: '*'
       prettier: '>=2.0.0'
     peerDependenciesMeta:
+      eslint-config-prettier:
+        optional: true
+
+  eslint-plugin-prettier@5.5.4:
+    resolution: {integrity: sha512-swNtI95SToIz05YINMA6Ox5R057IMAmWZ26GqPxusAp1TZzj+IdY9tXNWWD3vkF/wEqydCONcwjTFpxybBqZsg==}
+    engines: {node: ^14.18.0 || >=16.0.0}
+    peerDependencies:
+      '@types/eslint': '>=8.0.0'
+      eslint: '>=8.0.0'
+      eslint-config-prettier: '>= 7.0.0 <10.0.0 || >=10.1.0'
+      prettier: '>=3.0.0'
+    peerDependenciesMeta:
+      '@types/eslint':
+        optional: true
       eslint-config-prettier:
         optional: true
 
@@ -6137,6 +6225,11 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
+  miniflare@4.20250902.0:
+    resolution: {integrity: sha512-QHjI17yVDxDXsjDvX6GNRySx2uYsQJyiZ2MRBAsA0CFpAI2BcHd4oz0FIjbqgpZK+4Fhm7OKht/AfBNCd234Zg==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
+
   minimatch@10.0.3:
     resolution: {integrity: sha512-IPZ167aShDZZUMdRk66cyQAW3qr0WzbHkPdMYa8bzZhlHhO3jALbKdxcaak7W9FfT2rZNpQuUu4Od7ILEpXSaw==}
     engines: {node: 20 || >=22}
@@ -7311,6 +7404,10 @@ packages:
   symbol-tree@3.2.4:
     resolution: {integrity: sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==}
 
+  synckit@0.11.11:
+    resolution: {integrity: sha512-MeQTA1r0litLUf0Rp/iisCaL8761lKAZHaimlbGK4j0HysC4PLfqygQj9srcs0m2RdtDYnF8UuYyKpbjHYp7Jw==}
+    engines: {node: ^14.18.0 || >=16.0.0}
+
   table@5.4.6:
     resolution: {integrity: sha512-wmEc8m4fjnob4gt5riFRtTu/6+4rSe12TpAELNSqHMfF3IqnA+CH37USM6/YR3qRZv7e56kAEAtd6nKZaxe0Ug==}
     engines: {node: '>=6.0.0'}
@@ -7617,6 +7714,9 @@ packages:
   unenv@2.0.0-rc.19:
     resolution: {integrity: sha512-t/OMHBNAkknVCI7bVB9OWjUUAwhVv9vsPIAGnNUxnu3FxPQN11rjh0sksLMzc3g7IlTgvHmOTl4JM7JHpcv5wA==}
 
+  unenv@2.0.0-rc.20:
+    resolution: {integrity: sha512-8tn4tAl9vD5nWoggAAPz28vf0FY8+pQAayhU94qD+ZkIbVKCBAH/E1MWEEmhb9Whn5EgouYVfBJB20RsTLRDdg==}
+
   unicode-canonical-property-names-ecmascript@2.0.1:
     resolution: {integrity: sha512-dA8WbNeb2a6oQzAQ55YlT5vQAWGV9WXOsi3SskE3bcCdM0P4SDd+24zS/OCacdRq5BkdsRj9q3Pg6YyQoxIGqg==}
     engines: {node: '>=4'}
@@ -7724,18 +7824,6 @@ packages:
       vite: '*'
     peerDependenciesMeta:
       vite:
-        optional: true
-
-  vite-plugin-pwa@0.21.2:
-    resolution: {integrity: sha512-vFhH6Waw8itNu37hWUJxL50q+CBbNcMVzsKaYHQVrfxTt3ihk3PeLO22SbiP1UNWzcEPaTQv+YVxe4G0KOjAkg==}
-    engines: {node: '>=16.0.0'}
-    peerDependencies:
-      '@vite-pwa/assets-generator': ^0.2.6
-      vite: ^3.1.0 || ^4.0.0 || ^5.0.0 || ^6.0.0
-      workbox-build: ^7.3.0
-      workbox-window: ^7.3.0
-    peerDependenciesMeta:
-      '@vite-pwa/assets-generator':
         optional: true
 
   vite-plugin-pwa@1.0.2:
@@ -8005,6 +8093,11 @@ packages:
     engines: {node: '>=16'}
     hasBin: true
 
+  workerd@1.20250902.0:
+    resolution: {integrity: sha512-rM+8ARYoy9gWJNPW89ERWyjbp7+m1hu6PFbehiP8FW9Hm5kNVo71lXFrkCP2HSsTP1OLfIU/IwanYOijJ0mQDw==}
+    engines: {node: '>=16'}
+    hasBin: true
+
   wrangler@3.114.12:
     resolution: {integrity: sha512-30xfynTSL6klM1x2ENooMvfTULvkdRWuwdcAVjr6BqufXKL6lyHpeHhbiZOa+hUCHENqssk/R5P/JZgYJCVn4A==}
     engines: {node: '>=16.17.0'}
@@ -8021,6 +8114,16 @@ packages:
     hasBin: true
     peerDependencies:
       '@cloudflare/workers-types': ^4.20250803.0
+    peerDependenciesMeta:
+      '@cloudflare/workers-types':
+        optional: true
+
+  wrangler@4.34.0:
+    resolution: {integrity: sha512-iU+T8klWX6M/oN9y2PG8HrekoHwlBs/7wNMouyRToCJGn5EFtVl98a1fxxPCgkuUNZ2sKLrCyx/TlhgilIlqpQ==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
+    peerDependencies:
+      '@cloudflare/workers-types': ^4.20250902.0
     peerDependenciesMeta:
       '@cloudflare/workers-types':
         optional: true
@@ -9001,10 +9104,19 @@ snapshots:
     optionalDependencies:
       workerd: 1.20250803.0
 
+  '@cloudflare/unenv-preset@2.7.2(unenv@2.0.0-rc.20)(workerd@1.20250902.0)':
+    dependencies:
+      unenv: 2.0.0-rc.20
+    optionalDependencies:
+      workerd: 1.20250902.0
+
   '@cloudflare/workerd-darwin-64@1.20250718.0':
     optional: true
 
   '@cloudflare/workerd-darwin-64@1.20250803.0':
+    optional: true
+
+  '@cloudflare/workerd-darwin-64@1.20250902.0':
     optional: true
 
   '@cloudflare/workerd-darwin-arm64@1.20250718.0':
@@ -9013,10 +9125,16 @@ snapshots:
   '@cloudflare/workerd-darwin-arm64@1.20250803.0':
     optional: true
 
+  '@cloudflare/workerd-darwin-arm64@1.20250902.0':
+    optional: true
+
   '@cloudflare/workerd-linux-64@1.20250718.0':
     optional: true
 
   '@cloudflare/workerd-linux-64@1.20250803.0':
+    optional: true
+
+  '@cloudflare/workerd-linux-64@1.20250902.0':
     optional: true
 
   '@cloudflare/workerd-linux-arm64@1.20250718.0':
@@ -9025,10 +9143,16 @@ snapshots:
   '@cloudflare/workerd-linux-arm64@1.20250803.0':
     optional: true
 
+  '@cloudflare/workerd-linux-arm64@1.20250902.0':
+    optional: true
+
   '@cloudflare/workerd-windows-64@1.20250718.0':
     optional: true
 
   '@cloudflare/workerd-windows-64@1.20250803.0':
+    optional: true
+
+  '@cloudflare/workerd-windows-64@1.20250902.0':
     optional: true
 
   '@cloudflare/workers-types@4.20250802.0': {}
@@ -9803,9 +9927,9 @@ snapshots:
     transitivePeerDependencies:
       - nx
 
-  '@nrwl/eslint-plugin-nx@18.0.0(@babel/traverse@7.28.0)(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17))(@types/node@18.16.9)(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.3.3))(eslint@8.57.1)(nx@18.0.0(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17)))(typescript@5.3.3)':
+  '@nrwl/eslint-plugin-nx@18.0.0(@babel/traverse@7.28.0)(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17))(@types/node@18.16.9)(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.3.3))(eslint-config-prettier@10.1.8(eslint@8.57.1))(eslint@8.57.1)(nx@18.0.0(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17)))(typescript@5.3.3)':
     dependencies:
-      '@nx/eslint-plugin': 18.0.0(@babel/traverse@7.28.0)(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17))(@types/node@18.16.9)(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.3.3))(eslint@8.57.1)(nx@18.0.0(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17)))(typescript@5.3.3)
+      '@nx/eslint-plugin': 18.0.0(@babel/traverse@7.28.0)(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17))(@types/node@18.16.9)(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.3.3))(eslint-config-prettier@10.1.8(eslint@8.57.1))(eslint@8.57.1)(nx@18.0.0(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17)))(typescript@5.3.3)
     transitivePeerDependencies:
       - '@babel/traverse'
       - '@swc-node/register'
@@ -9922,9 +10046,9 @@ snapshots:
       tslib: 2.8.1
       yargs-parser: 21.1.1
 
-  '@nx/eslint-plugin@18.0.0(@babel/traverse@7.28.0)(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17))(@types/node@18.16.9)(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.3.3))(eslint@8.57.1)(nx@18.0.0(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17)))(typescript@5.3.3)':
+  '@nx/eslint-plugin@18.0.0(@babel/traverse@7.28.0)(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17))(@types/node@18.16.9)(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.3.3))(eslint-config-prettier@10.1.8(eslint@8.57.1))(eslint@8.57.1)(nx@18.0.0(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17)))(typescript@5.3.3)':
     dependencies:
-      '@nrwl/eslint-plugin-nx': 18.0.0(@babel/traverse@7.28.0)(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17))(@types/node@18.16.9)(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.3.3))(eslint@8.57.1)(nx@18.0.0(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17)))(typescript@5.3.3)
+      '@nrwl/eslint-plugin-nx': 18.0.0(@babel/traverse@7.28.0)(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17))(@types/node@18.16.9)(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.3.3))(eslint-config-prettier@10.1.8(eslint@8.57.1))(eslint@8.57.1)(nx@18.0.0(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17)))(typescript@5.3.3)
       '@nx/devkit': 18.0.0(nx@18.0.0(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17)))
       '@nx/js': 18.0.0(@babel/traverse@7.28.0)(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17))(@types/node@18.16.9)(nx@18.0.0(@swc-node/register@1.6.8(@swc/core@1.3.107(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.3.3))(@swc/core@1.3.107(@swc/helpers@0.5.17)))(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.57.1)(typescript@5.3.3)
@@ -9935,6 +10059,8 @@ snapshots:
       jsonc-eslint-parser: 2.4.0
       semver: 7.7.2
       tslib: 2.8.1
+    optionalDependencies:
+      eslint-config-prettier: 10.1.8(eslint@8.57.1)
     transitivePeerDependencies:
       - '@babel/traverse'
       - '@swc-node/register'
@@ -10209,6 +10335,8 @@ snapshots:
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
+
+  '@pkgr/core@0.2.9': {}
 
   '@polka/url@1.0.0-next.29': {}
 
@@ -11089,7 +11217,7 @@ snapshots:
       pathe: 1.1.2
       picocolors: 1.1.1
       sirv: 2.0.4
-      vitest: 1.6.1(@types/node@20.19.9)(@vitest/ui@1.6.1)(jsdom@22.1.0(canvas@2.11.2))(sass@1.89.2)(terser@5.43.1)
+      vitest: 1.6.1(@types/node@18.16.9)(@vitest/ui@1.6.1)(jsdom@22.1.0(canvas@2.11.2))(sass@1.89.2)(terser@5.43.1)
 
   '@vitest/utils@1.6.1':
     dependencies:
@@ -12488,6 +12616,10 @@ snapshots:
     optionalDependencies:
       source-map: 0.6.1
 
+  eslint-config-prettier@10.1.8(eslint@8.57.1):
+    dependencies:
+      eslint: 8.57.1
+
   eslint-config-prettier@8.10.2(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
@@ -12504,6 +12636,15 @@ snapshots:
       prettier-linter-helpers: 1.0.0
     optionalDependencies:
       eslint-config-prettier: 8.10.2(eslint@8.57.1)
+
+  eslint-plugin-prettier@5.5.4(eslint-config-prettier@10.1.8(eslint@8.57.1))(eslint@8.57.1)(prettier@3.6.2):
+    dependencies:
+      eslint: 8.57.1
+      prettier: 3.6.2
+      prettier-linter-helpers: 1.0.0
+      synckit: 0.11.11
+    optionalDependencies:
+      eslint-config-prettier: 10.1.8(eslint@8.57.1)
 
   eslint-plugin-vue@9.33.0(eslint@8.57.1):
     dependencies:
@@ -14124,6 +14265,24 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
+  miniflare@4.20250902.0:
+    dependencies:
+      '@cspotcode/source-map-support': 0.8.1
+      acorn: 8.14.0
+      acorn-walk: 8.3.2
+      exit-hook: 2.2.1
+      glob-to-regexp: 0.4.1
+      sharp: 0.33.5
+      stoppable: 1.1.0
+      undici: 7.13.0
+      workerd: 1.20250902.0
+      ws: 8.18.0
+      youch: 4.1.0-beta.10
+      zod: 3.22.3
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
   minimatch@10.0.3:
     dependencies:
       '@isaacs/brace-expansion': 5.0.0
@@ -15477,6 +15636,10 @@ snapshots:
 
   symbol-tree@3.2.4: {}
 
+  synckit@0.11.11:
+    dependencies:
+      '@pkgr/core': 0.2.9
+
   table@5.4.6:
     dependencies:
       ajv: 6.12.6
@@ -15812,6 +15975,14 @@ snapshots:
       pathe: 2.0.3
       ufo: 1.6.1
 
+  unenv@2.0.0-rc.20:
+    dependencies:
+      defu: 6.1.4
+      exsolve: 1.0.7
+      ohash: 2.0.11
+      pathe: 2.0.3
+      ufo: 1.6.1
+
   unicode-canonical-property-names-ecmascript@2.0.1: {}
 
   unicode-match-property-ecmascript@2.0.0:
@@ -15968,17 +16139,6 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
       - rollup
-      - supports-color
-
-  vite-plugin-pwa@0.21.2(vite@5.4.19(@types/node@24.1.0)(sass@1.89.2)(terser@5.43.1))(workbox-build@7.3.0(@types/babel__core@7.20.5))(workbox-window@7.3.0):
-    dependencies:
-      debug: 4.4.1(supports-color@8.1.1)
-      pretty-bytes: 6.1.1
-      tinyglobby: 0.2.14
-      vite: 5.4.19(@types/node@24.1.0)(sass@1.89.2)(terser@5.43.1)
-      workbox-build: 7.3.0(@types/babel__core@7.20.5)
-      workbox-window: 7.3.0
-    transitivePeerDependencies:
       - supports-color
 
   vite-plugin-pwa@1.0.2(vite@5.4.19(@types/node@18.16.9)(sass@1.89.2)(terser@5.43.1))(workbox-build@7.3.0(@types/babel__core@7.20.5))(workbox-window@7.3.0):
@@ -16454,6 +16614,14 @@ snapshots:
       '@cloudflare/workerd-linux-arm64': 1.20250803.0
       '@cloudflare/workerd-windows-64': 1.20250803.0
 
+  workerd@1.20250902.0:
+    optionalDependencies:
+      '@cloudflare/workerd-darwin-64': 1.20250902.0
+      '@cloudflare/workerd-darwin-arm64': 1.20250902.0
+      '@cloudflare/workerd-linux-64': 1.20250902.0
+      '@cloudflare/workerd-linux-arm64': 1.20250902.0
+      '@cloudflare/workerd-windows-64': 1.20250902.0
+
   wrangler@3.114.12(@cloudflare/workers-types@4.20250802.0):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.3.4
@@ -16485,6 +16653,23 @@ snapshots:
       unenv: 2.0.0-rc.19
       workerd: 1.20250803.0
     optionalDependencies:
+      fsevents: 2.3.3
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
+  wrangler@4.34.0(@cloudflare/workers-types@4.20250802.0):
+    dependencies:
+      '@cloudflare/kv-asset-handler': 0.4.0
+      '@cloudflare/unenv-preset': 2.7.2(unenv@2.0.0-rc.20)(workerd@1.20250902.0)
+      blake3-wasm: 2.1.5
+      esbuild: 0.25.4
+      miniflare: 4.20250902.0
+      path-to-regexp: 6.3.0
+      unenv: 2.0.0-rc.20
+      workerd: 1.20250902.0
+    optionalDependencies:
+      '@cloudflare/workers-types': 4.20250802.0
       fsevents: 2.3.3
     transitivePeerDependencies:
       - bufferutil

@@ -103,12 +103,12 @@ async function loadContent() {
 
     // Track loading time to detect cache hits
     const startTime = Date.now();
-    
+
     // Use different method for article pages
-    const page = props.articleSlug 
+    const page = props.articleSlug
       ? await content.getPageWithArticle(pageSlug.value, props.articleSlug, languageCode)
       : await content.getPage(pageSlug.value, languageCode, false);
-      
+
     const loadTime = Date.now() - startTime;
 
 
@@ -142,10 +142,10 @@ watch(() => locale.value, () => {
   loadContent();
 });
 
-// Reload content when page slug changes
-watch(pageSlug, () => {
-  loadContent();
-});
+watch([pageSlug, () => props.articleSlug], () => {
+       loadContent();
+     });
+
 </script>
 
 <style lang="scss">

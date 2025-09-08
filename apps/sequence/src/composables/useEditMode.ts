@@ -1,24 +1,24 @@
-import { ref, computed } from 'vue';
+import { ref, computed } from 'vue'
 
-const isEditMode = ref(false);
+const isEditMode = ref(false)
 
 export const useEditMode = () => {
   const toggleEditMode = () => {
-    isEditMode.value = !isEditMode.value;
-  };
+    isEditMode.value = !isEditMode.value
+  }
 
   const enableEditMode = () => {
-    isEditMode.value = true;
-  };
+    isEditMode.value = true
+  }
 
   const disableEditMode = () => {
-    isEditMode.value = false;
-  };
+    isEditMode.value = false
+  }
 
   return {
     isEditMode: computed(() => isEditMode.value),
     toggleEditMode,
     enableEditMode,
     disableEditMode,
-  };
-};
+  }
+}

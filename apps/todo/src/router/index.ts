@@ -7,14 +7,14 @@ const router = createAppRouter({
     {
       path: '/',
       name: 'Home',
-      component: HomeView
+      component: HomeView,
     },
     {
       path: '/todo/:id',
       name: 'Todo',
-      component: TodoView
-    }
-  ]
+      component: TodoView,
+    },
+  ],
 })
 
 export default router

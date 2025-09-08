@@ -9,17 +9,17 @@ vi.mock('@tiko/core', () => ({
     getAppSettings: vi.fn(() => ({})),
     setAppSettings: vi.fn(() => Promise.resolve(true)),
     updateAppSettings: vi.fn(() => Promise.resolve(true)),
-    loadAppSettings: vi.fn(() => Promise.resolve(true))
+    loadAppSettings: vi.fn(() => Promise.resolve(true)),
   })),
   useAuthStore: vi.fn(() => ({
-    user: { id: 'test-user-id' }
+    user: { id: 'test-user-id' },
   })),
   itemService: {
     getItems: vi.fn(() => Promise.resolve([])),
     createItem: vi.fn(() => Promise.resolve({ data: null, error: null })),
     updateItem: vi.fn(() => Promise.resolve({ data: null, error: null })),
-    deleteItem: vi.fn(() => Promise.resolve({ data: null, error: null }))
-  }
+    deleteItem: vi.fn(() => Promise.resolve({ data: null, error: null })),
+  },
 }))
 
 describe('useYesNoStore', () => {
@@ -77,9 +77,9 @@ describe('useYesNoStore', () => {
           updated_at: new Date().toISOString(),
           is_favorite: false,
           order_index: 0,
-          metadata: {}
-        }
-      ]
+          metadata: {},
+        },
+      ],
     })
 
     await store.setQuestion('Test question')

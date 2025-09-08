@@ -5,11 +5,11 @@
 </template>
 
 <script setup lang="ts">
-// Placeholder for bulk card creator
+  // Placeholder for bulk card creator
 </script>
 
 <style>
-.bulk-card-creator {
-  padding: 1rem;
-}
+  .bulk-card-creator {
+    padding: 1rem;
+  }
 </style>

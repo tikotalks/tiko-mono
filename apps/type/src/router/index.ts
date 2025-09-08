@@ -6,9 +6,9 @@ const router = createAppRouter({
     {
       path: '/',
       name: 'Type',
-      component: TypeView
-    }
-  ]
+      component: TypeView,
+    },
+  ],
 })
 
 export default router

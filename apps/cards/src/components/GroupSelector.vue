@@ -11,7 +11,7 @@
         :class="bemm('group', { depth: group.depth || 0 })"
         :style="{
           '--group-color': `var(--color-${group.color})`,
-          '--depth-indent': `${(group.depth || 0) * 20}px`
+          '--depth-indent': `${(group.depth || 0) * 20}px`,
         }"
         @click="selectGroup(group)"
       >
@@ -27,97 +27,95 @@
     </div>
 
     <TFormActions>
-      <TButton type="outline" color="secondary" @click="cancel">
-        Cancel
-      </TButton>
+      <TButton type="outline" color="secondary" @click="cancel"> Cancel </TButton>
     </TFormActions>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useBemm } from 'bemm';
-import { TButton, TFormActions, TIcon } from '@tiko/ui';
-import type { TCardTile as CardTile } from '@tiko/ui';
+  import { useBemm } from 'bemm'
+  import { TButton, TFormActions, TIcon } from '@tiko/ui'
+  import type { TCardTile as CardTile } from '@tiko/ui'
 
-const bemm = useBemm('group-selector');
+  const bemm = useBemm('group-selector')
 
-const props = defineProps<{
-  groups: CardTile[];
-  selectedCount: number;
-}>();
+  const props = defineProps<{
+    groups: CardTile[]
+    selectedCount: number
+  }>()
 
-const emit = defineEmits<{
-  select: [group: CardTile];
-  cancel: [];
-}>();
+  const emit = defineEmits<{
+    select: [group: CardTile]
+    cancel: []
+  }>()
 
-const availableGroups = props.groups.filter(g => !g.id.startsWith('empty-'));
+  const availableGroups = props.groups.filter(g => !g.id.startsWith('empty-'))
 
-const selectGroup = (group: CardTile) => {
-  emit('select', group);
-};
+  const selectGroup = (group: CardTile) => {
+    emit('select', group)
+  }
 
-const cancel = () => {
-  emit('cancel');
-};
+  const cancel = () => {
+    emit('cancel')
+  }
 </script>
 
 <style lang="scss">
-.group-selector {
-  padding: var(--space);
-  min-width: 300px;
-
-  &__message {
-    margin-bottom: var(--space);
-    color: var(--color-text-muted);
-  }
-
-  &__groups {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-    margin-bottom: var(--space);
-    max-height: 400px;
-    overflow-y: auto;
-  }
-
-  &__group {
+  .group-selector {
     padding: var(--space);
-    background: color-mix(in srgb, var(--group-color), transparent 90%);
-    border: 1px solid var(--color-accent);
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    margin-left: var(--depth-indent, 0);
+    min-width: 300px;
 
-    &:hover {
-      background: color-mix(in srgb, var(--group-color), transparent 80%);
-      transform: translateX(4px);
+    &__message {
+      margin-bottom: var(--space);
+      color: var(--color-text-muted);
     }
 
-    &--depth-1 {
-      border-left: 3px solid var(--color-accent-strong);
+    &__groups {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+      margin-bottom: var(--space);
+      max-height: 400px;
+      overflow-y: auto;
     }
 
-    &--depth-2 {
-      border-left: 3px solid var(--color-primary);
+    &__group {
+      padding: var(--space);
+      background: color-mix(in srgb, var(--group-color), transparent 90%);
+      border: 1px solid var(--color-accent);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-left: var(--depth-indent, 0);
+
+      &:hover {
+        background: color-mix(in srgb, var(--group-color), transparent 80%);
+        transform: translateX(4px);
+      }
+
+      &--depth-1 {
+        border-left: 3px solid var(--color-accent-strong);
+      }
+
+      &--depth-2 {
+        border-left: 3px solid var(--color-primary);
+      }
+
+      &--depth-3 {
+        border-left: 3px solid var(--color-secondary);
+      }
     }
 
-    &--depth-3 {
-      border-left: 3px solid var(--color-secondary);
+    &__group-content {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+
+    &__empty {
+      padding: var(--space-xl);
+      text-align: center;
+      color: var(--color-text-muted);
     }
   }
-
-  &__group-content {
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs);
-  }
-
-  &__empty {
-    padding: var(--space-xl);
-    text-align: center;
-    color: var(--color-text-muted);
-  }
-}
 </style>

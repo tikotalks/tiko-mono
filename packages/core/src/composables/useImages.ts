@@ -2,6 +2,7 @@ import { ref, computed, onMounted, onUnmounted, type Ref } from 'vue'
 import type { MediaItem } from '../services/media.service'
 import type { UserMedia } from '../services/user-media.service'
 import { mediaService, userMediaService } from '../services'
+import { mediaCacheService } from '../services/media-cache.service'
 import { useEventBus } from './useEventBus'
 import { useAuthStore } from '../stores/auth'
 import { logger } from '../utils/logger'
@@ -169,7 +170,20 @@ export function useImages(options: UseImagesOptions = {}): UseImagesReturn {
         try {
           switch(libraryType){
             case ImageLibraryType.PUBLIC:
-              publicImages.value = await mediaService.getPublicMediaList()
+              // Try to use the cache worker first for public images
+              try {
+                const isWorkerAvailable = await mediaCacheService.isAvailable()
+                if (isWorkerAvailable) {
+                  logger.debug('[useImages] Using media cache worker')
+                  publicImages.value = await mediaCacheService.getPublicMedia()
+                } else {
+                  logger.debug('[useImages] Media cache worker not available, using direct fetch')
+                  publicImages.value = await mediaService.getPublicMediaList()
+                }
+              } catch (cacheErr) {
+                logger.warn('[useImages] Media cache worker failed, falling back to direct fetch:', cacheErr)
+                publicImages.value = await mediaService.getPublicMediaList()
+              }
               break;
             default:
               publicImages.value = await mediaService.getMediaList()

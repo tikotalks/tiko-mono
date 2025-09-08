@@ -240,19 +240,9 @@ export class ContentServiceWrapper {
     const pageIdentifier = pageIdOrSlug || id || slug;
     
     try {
-      // If no projectId is provided, try to look up the marketing project
+      // Don't enforce project ID for page lookup - let pages be found across projects
+      // This allows the marketing site to show pages from any project
       let actualProjectId = projectId;
-      if (!actualProjectId) {
-        const { data: project } = await this.supabase
-          .from('content_projects')
-          .select('id')
-          .eq('slug', 'marketing')
-          .single();
-        
-        if (project) {
-          actualProjectId = project.id;
-        }
-      }
       
       // Step 1: Get the page (1 query)
       let page = null;
@@ -282,8 +272,7 @@ export class ContentServiceWrapper {
             template:content_page_templates(*)
           `)
           .eq('slug', pageIdentifier)
-          .eq('language_code', language || 'en')
-          .eq('is_published', true);
+          .eq('language_code', language || 'en');
           
         if (actualProjectId) {
           query = query.eq('project_id', actualProjectId);
@@ -1444,6 +1433,8 @@ export class ContentServiceWrapper {
     }
 
     const { data, error } = await query;
+    
+    // The view now handles automatic short extraction, so we don't need to process it here
     return { data, error: error?.message };
   }
 
@@ -1487,6 +1478,7 @@ export class ContentServiceWrapper {
     }
 
     const { data, error } = await query;
+    // The view now handles automatic short extraction
     return { data, error: error?.message };
   }
 
@@ -1507,6 +1499,7 @@ export class ContentServiceWrapper {
     }
 
     const { data, error } = await query;
+    // The view now handles automatic short extraction
     return { data, error: error?.message };
   }
 

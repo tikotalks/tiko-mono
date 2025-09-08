@@ -6,9 +6,9 @@ const router = createAppRouter({
     {
       path: '/',
       name: 'YesNo',
-      component: YesNoView
-    }
-  ]
+      component: YesNoView,
+    },
+  ],
 })
 
 export default router

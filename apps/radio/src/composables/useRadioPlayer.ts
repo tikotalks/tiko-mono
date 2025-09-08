@@ -8,21 +8,21 @@ import type { RadioItem, AudioPlayerState } from '../types/radio.types'
 
 /**
  * Radio player management composable
- * 
+ *
  * Provides centralized player state and controls for audio playback.
  * Handles playlist management, current track, and playback controls.
- * 
+ *
  * @returns Radio player interface with state and control methods
- * 
+ *
  * @example
  * const player = useRadioPlayer()
- * 
+ *
  * // Set up playlist
  * player.setPlaylist(['item1', 'item2', 'item3'])
- * 
+ *
  * // Play specific item
  * await player.playItem(radioItem)
- * 
+ *
  * // Control playback
  * player.togglePlay()
  * player.nextTrack()
@@ -41,7 +41,7 @@ export function useRadioPlayer() {
     buffered: 0,
     ended: false,
     error: null,
-    canPlay: false
+    canPlay: false,
   })
 
   // Computed properties
@@ -65,7 +65,7 @@ export function useRadioPlayer() {
    */
   const setPlaylist = (itemIds: string[]) => {
     playlist.value = itemIds
-    
+
     // Reset current index if current item is not in new playlist
     if (currentItem.value) {
       const newIndex = itemIds.indexOf(currentItem.value.id)
@@ -85,11 +85,11 @@ export function useRadioPlayer() {
    */
   const playItem = (item: RadioItem) => {
     currentItem.value = item
-    
+
     // Update current index in playlist
     const index = playlist.value.indexOf(item.id)
     currentIndex.value = index >= 0 ? index : 0
-    
+
     // Reset player state for new item
     playerState.value = {
       ...playerState.value,
@@ -98,7 +98,7 @@ export function useRadioPlayer() {
       duration: 0,
       ended: false,
       error: null,
-      canPlay: false
+      canPlay: false,
     }
   }
 
@@ -135,7 +135,7 @@ export function useRadioPlayer() {
 
     const nextItemId = playlist.value[nextIndex]
     const nextItem = allItems.value.find(item => item.id === nextItemId)
-    
+
     if (nextItem) {
       playItem(nextItem)
     }
@@ -158,7 +158,7 @@ export function useRadioPlayer() {
 
     const prevItemId = playlist.value[prevIndex]
     const prevItem = allItems.value.find(item => item.id === prevItemId)
-    
+
     if (prevItem) {
       playItem(prevItem)
     }
@@ -177,7 +177,7 @@ export function useRadioPlayer() {
       duration: 0,
       ended: false,
       error: null,
-      canPlay: false
+      canPlay: false,
     }
   }
 
@@ -249,11 +249,11 @@ export function useRadioPlayer() {
     if (playlist.value.length <= 1) return
 
     const shuffled = [...playlist.value]
-    
+
     // Fisher-Yates shuffle algorithm
     for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
     }
 
     playlist.value = shuffled
@@ -270,10 +270,8 @@ export function useRadioPlayer() {
    */
   const resetPlaylistOrder = () => {
     // This would need the original order - for now, just use all items order
-    const orderedIds = allItems.value
-      .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map(item => item.id)
-    
+    const orderedIds = allItems.value.sort((a, b) => a.sortOrder - b.sortOrder).map(item => item.id)
+
     setPlaylist(orderedIds)
   }
 
@@ -288,11 +286,11 @@ export function useRadioPlayer() {
     volume,
     error,
     canPlay,
-    
+
     // Computed
     hasPrevious,
     hasNext,
-    
+
     // Actions
     setPlaylist,
     setAllItems,
@@ -307,7 +305,7 @@ export function useRadioPlayer() {
     shufflePlaylist,
     resetPlaylistOrder,
     getCurrentPlaylistItem,
-    
+
     // State updates (for components)
     updateCurrentTime,
     updateDuration,
@@ -316,6 +314,6 @@ export function useRadioPlayer() {
     updateCanPlay,
     updateBuffered,
     setError,
-    markEnded
+    markEnded,
   }
 }

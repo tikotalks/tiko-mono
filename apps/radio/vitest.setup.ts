@@ -9,7 +9,7 @@ process.env.VITE_SUPABASE_PUBLISHABLE_KEY = 'test-anon-key'
 global.navigator = {
   ...global.navigator,
   onLine: true,
-  vibrate: vi.fn()
+  vibrate: vi.fn(),
 }
 
 // Mock window location
@@ -20,8 +20,8 @@ global.window = {
     href: 'http://localhost:3000',
     pathname: '/',
     search: '',
-    hash: ''
-  }
+    hash: '',
+  },
 }
 
 // Mock localStorage
@@ -29,12 +29,12 @@ const localStorageMock = {
   getItem: vi.fn(),
   setItem: vi.fn(),
   clear: vi.fn(),
-  removeItem: vi.fn()
+  removeItem: vi.fn(),
 }
 global.localStorage = localStorageMock
 
 // Configure Vue Test Utils
 config.global.stubs = {
   transition: false,
-  'transition-group': false
+  'transition-group': false,
 }

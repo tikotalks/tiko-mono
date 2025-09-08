@@ -11,7 +11,7 @@ describe('Critical Authentication Flows', () => {
       // Step 1: Submit email
       cy.intercept('POST', '**/auth/v1/otp', {
         statusCode: 200,
-        body: { message: 'OTP sent' }
+        body: { message: 'OTP sent' },
       }).as('sendOTP')
 
       cy.get('input[type="email"]').type('test@example.com')
@@ -19,23 +19,24 @@ describe('Critical Authentication Flows', () => {
       cy.wait('@sendOTP')
 
       // Step 2: Verify we're on verification screen
-      cy.contains('We\'ve sent you an email').should('be.visible')
+      cy.contains("We've sent you an email").should('be.visible')
       cy.contains('test@example.com').should('be.visible')
 
       // Step 3: Submit verification code
       cy.intercept('POST', '**/auth/v1/verify', {
         statusCode: 200,
         body: {
-          access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE5MTYyMzkwMjJ9.4Adcj3UFYzPUVaVF43FmMab6RlaQD8A9V8wFzzht-KQ',
+          access_token:
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE5MTYyMzkwMjJ9.4Adcj3UFYzPUVaVF43FmMab6RlaQD8A9V8wFzzht-KQ',
           refresh_token: 'refresh_token_123',
           expires_in: 3600,
           token_type: 'bearer',
           user: {
             id: 'user123',
             email: 'test@example.com',
-            user_metadata: {}
-          }
-        }
+            user_metadata: {},
+          },
+        },
       }).as('verifyOTP')
 
       cy.get('input[placeholder*="6-digit"]').type('123456')
@@ -59,8 +60,8 @@ describe('Critical Authentication Flows', () => {
         statusCode: 400,
         body: {
           error: 'invalid_grant',
-          error_description: 'Invalid OTP code'
-        }
+          error_description: 'Invalid OTP code',
+        },
       }).as('verifyError')
 
       cy.get('input[placeholder*="6-digit"]').type('999999')
@@ -76,17 +77,20 @@ describe('Critical Authentication Flows', () => {
 
   describe('Magic Link Authentication', () => {
     it('should authenticate via magic link', () => {
-      const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE5MTYyMzkwMjJ9.4Adcj3UFYzPUVaVF43FmMab6RlaQD8A9V8wFzzht-KQ'
+      const accessToken =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE5MTYyMzkwMjJ9.4Adcj3UFYzPUVaVF43FmMab6RlaQD8A9V8wFzzht-KQ'
       const refreshToken = 'refresh_token_123'
 
-      cy.visit(`/#access_token=${accessToken}&refresh_token=${refreshToken}&expires_in=3600&token_type=bearer`)
+      cy.visit(
+        `/#access_token=${accessToken}&refresh_token=${refreshToken}&expires_in=3600&token_type=bearer`
+      )
 
       // Should process magic link and show authenticated content
       cy.contains('Timer', { timeout: 10000 }).should('be.visible')
-      
+
       // Hash should be cleared
       cy.location('hash').should('be.empty')
-      
+
       // Should not show login form
       cy.get('input[type="email"]').should('not.exist')
     })
@@ -94,7 +98,7 @@ describe('Critical Authentication Flows', () => {
     it('should handle invalid magic link tokens', () => {
       // Visit with invalid token structure
       cy.visit('/#access_token=invalid&refresh_token=invalid')
-      
+
       // Should still show login form (auth failed)
       cy.contains('Login to your account', { timeout: 5000 }).should('be.visible')
       cy.get('input[type="email"]').should('be.visible')
@@ -104,13 +108,16 @@ describe('Critical Authentication Flows', () => {
   describe('Session Persistence', () => {
     it('should maintain session across page reloads', () => {
       // Authenticate first
-      const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE5MTYyMzkwMjJ9.4Adcj3UFYzPUVaVF43FmMab6RlaQD8A9V8wFzzht-KQ'
-      cy.visit(`/#access_token=${accessToken}&refresh_token=refresh_123&expires_in=3600&token_type=bearer`)
+      const accessToken =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE5MTYyMzkwMjJ9.4Adcj3UFYzPUVaVF43FmMab6RlaQD8A9V8wFzzht-KQ'
+      cy.visit(
+        `/#access_token=${accessToken}&refresh_token=refresh_123&expires_in=3600&token_type=bearer`
+      )
       cy.contains('Timer', { timeout: 10000 }).should('be.visible')
 
       // Reload page
       cy.reload()
-      
+
       // Should still be authenticated
       cy.contains('Timer', { timeout: 10000 }).should('be.visible')
       cy.get('input[type="email"]').should('not.exist')
@@ -118,17 +125,20 @@ describe('Critical Authentication Flows', () => {
 
     it('should clear session after logout', () => {
       // First authenticate
-      const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE5MTYyMzkwMjJ9.4Adcj3UFYzPUVaVF43FmMab6RlaQD8A9V8wFzzht-KQ'
-      cy.visit(`/#access_token=${accessToken}&refresh_token=refresh_123&expires_in=3600&token_type=bearer`)
+      const accessToken =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE5MTYyMzkwMjJ9.4Adcj3UFYzPUVaVF43FmMab6RlaQD8A9V8wFzzht-KQ'
+      cy.visit(
+        `/#access_token=${accessToken}&refresh_token=refresh_123&expires_in=3600&token_type=bearer`
+      )
       cy.contains('Timer', { timeout: 10000 }).should('be.visible')
 
       // Clear auth data (simulate logout)
-      cy.window().then((win) => {
+      cy.window().then(win => {
         win.localStorage.clear()
       })
-      
+
       cy.reload()
-      
+
       // Should show login form
       cy.contains('Login to your account', { timeout: 5000 }).should('be.visible')
       cy.get('input[type="email"]').should('be.visible')
@@ -138,26 +148,32 @@ describe('Critical Authentication Flows', () => {
   describe('User Settings Persistence', () => {
     it('should preserve user settings through authentication', () => {
       // Set settings before auth
-      cy.window().then((win) => {
-        win.localStorage.setItem('tiko_user_settings', JSON.stringify({
-          theme: 'dark',
-          language: 'nl-NL',
-          someAppSetting: 'value'
-        }))
+      cy.window().then(win => {
+        win.localStorage.setItem(
+          'tiko_user_settings',
+          JSON.stringify({
+            theme: 'dark',
+            language: 'nl-NL',
+            someAppSetting: 'value',
+          })
+        )
       })
 
       // Authenticate
-      const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE5MTYyMzkwMjJ9.4Adcj3UFYzPUVaVF43FmMab6RlaQD8A9V8wFzzht-KQ'
-      cy.visit(`/#access_token=${accessToken}&refresh_token=refresh_123&expires_in=3600&token_type=bearer`)
+      const accessToken =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE5MTYyMzkwMjJ9.4Adcj3UFYzPUVaVF43FmMab6RlaQD8A9V8wFzzht-KQ'
+      cy.visit(
+        `/#access_token=${accessToken}&refresh_token=refresh_123&expires_in=3600&token_type=bearer`
+      )
       cy.contains('Timer', { timeout: 10000 }).should('be.visible')
 
       // Verify settings are preserved
-      cy.window().then((win) => {
+      cy.window().then(win => {
         const settings = JSON.parse(win.localStorage.getItem('tiko_user_settings') || '{}')
         expect(settings).to.deep.include({
           theme: 'dark',
           language: 'nl-NL',
-          someAppSetting: 'value'
+          someAppSetting: 'value',
         })
       })
     })
@@ -170,8 +186,8 @@ describe('Critical Authentication Flows', () => {
         body: {
           code: 429,
           error_code: 'over_email_send_rate_limit',
-          msg: 'For security purposes, you can only request this after 60 seconds.'
-        }
+          msg: 'For security purposes, you can only request this after 60 seconds.',
+        },
       }).as('rateLimited')
 
       cy.get('input[type="email"]').type('test@example.com')

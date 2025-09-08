@@ -115,6 +115,7 @@ const renderedMarkdown = computed(() => {
 .t-markdown-renderer {
   line-height: 1.6;
 
+
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--header-font-family);
     margin-top: var(--space-l);
@@ -360,6 +361,12 @@ const renderedMarkdown = computed(() => {
     background-color: var(--color-background-secondary);
     border-radius: 0 var(--border-radius) var(--border-radius) 0;
     padding: var(--space);
+  }
+
+  p, ul,ol,blockquote, img {
+    &+&{
+      margin-top: 1em;
+    }
   }
 }
 </style>

@@ -59,24 +59,11 @@
         {{ t('timer.start') }}
       </TButton>
 
-      <TButton
-        v-else
-        type="default"
-        color="warning"
-        icon="pause"
-        @click="pause"
-        size="large"
-      >
+      <TButton v-else type="default" color="warning" icon="pause" @click="pause" size="large">
         {{ t('timer.pause') }}
       </TButton>
 
-      <TButton
-        type="ghost"
-        color="secondary"
-        icon="refresh-cw"
-        @click="reset"
-        size="large"
-      >
+      <TButton type="ghost" color="secondary" icon="refresh-cw" @click="reset" size="large">
         {{ t('timer.reset') }}
       </TButton>
     </div>
@@ -103,161 +90,164 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { useBemm } from 'bemm'
-import { useI18n } from '@tiko/core'
-import { TButton, TInput } from '@tiko/ui'
+  import { ref, computed, watch } from 'vue'
+  import { useBemm } from 'bemm'
+  import { useI18n } from '@tiko/core'
+  import { TButton, TInput } from '@tiko/ui'
 
-interface Props {
-  targetTime: number
-  mode: 'up' | 'down'
-  isRunning: boolean
-}
+  interface Props {
+    targetTime: number
+    mode: 'up' | 'down'
+    isRunning: boolean
+  }
 
-const props = defineProps<Props>()
-const bemm = useBemm('timer-controls')
-const { t } = useI18n()
+  const props = defineProps<Props>()
+  const bemm = useBemm('timer-controls')
+  const { t } = useI18n()
 
-const emit = defineEmits<{
-  setTime: [minutes: number, seconds: number]
-  setMode: [mode: 'up' | 'down']
-  start: []
-  pause: []
-  reset: []
-}>()
+  const emit = defineEmits<{
+    setTime: [minutes: number, seconds: number]
+    setMode: [mode: 'up' | 'down']
+    start: []
+    pause: []
+    reset: []
+  }>()
 
-// Local state for time inputs
-const minutes = ref(0)
-const seconds = ref(0)
+  // Local state for time inputs
+  const minutes = ref(0)
+  const seconds = ref(0)
 
-// Quick time presets
-const quickTimes = [
-  { label: '1 min', seconds: 60 },
-  { label: '5 min', seconds: 300 },
-  { label: '10 min', seconds: 600 },
-  { label: '15 min', seconds: 900 },
-  { label: '30 min', seconds: 1800 }
-]
+  // Quick time presets
+  const quickTimes = [
+    { label: '1 min', seconds: 60 },
+    { label: '5 min', seconds: 300 },
+    { label: '10 min', seconds: 600 },
+    { label: '15 min', seconds: 900 },
+    { label: '30 min', seconds: 1800 },
+  ]
 
-// Update local state when target time changes
-watch(() => props.targetTime, (newTime) => {
-  minutes.value = Math.floor(newTime / 60)
-  seconds.value = newTime % 60
-}, { immediate: true })
+  // Update local state when target time changes
+  watch(
+    () => props.targetTime,
+    newTime => {
+      minutes.value = Math.floor(newTime / 60)
+      seconds.value = newTime % 60
+    },
+    { immediate: true }
+  )
 
-// Methods
-const updateTime = () => {
-  const mins = Math.max(0, Math.min(59, Number(minutes.value) || 0))
-  const secs = Math.max(0, Math.min(59, Number(seconds.value) || 0))
+  // Methods
+  const updateTime = () => {
+    const mins = Math.max(0, Math.min(59, Number(minutes.value) || 0))
+    const secs = Math.max(0, Math.min(59, Number(seconds.value) || 0))
 
-  minutes.value = mins
-  seconds.value = secs
+    minutes.value = mins
+    seconds.value = secs
 
-  emit('setTime', mins, secs)
-}
+    emit('setTime', mins, secs)
+  }
 
-const toggleMode = () => {
-  emit('setMode', props.mode === 'down' ? 'up' : 'down')
-}
+  const toggleMode = () => {
+    emit('setMode', props.mode === 'down' ? 'up' : 'down')
+  }
 
-const start = () => {
-  emit('start')
-}
+  const start = () => {
+    emit('start')
+  }
 
-const pause = () => {
-  emit('pause')
-}
+  const pause = () => {
+    emit('pause')
+  }
 
-const reset = () => {
-  emit('reset')
-}
+  const reset = () => {
+    emit('reset')
+  }
 
-const setQuickTime = (totalSeconds: number) => {
-  const mins = Math.floor(totalSeconds / 60)
-  const secs = totalSeconds % 60
+  const setQuickTime = (totalSeconds: number) => {
+    const mins = Math.floor(totalSeconds / 60)
+    const secs = totalSeconds % 60
 
-  minutes.value = mins
-  seconds.value = secs
+    minutes.value = mins
+    seconds.value = secs
 
-  emit('setTime', mins, secs)
-}
+    emit('setTime', mins, secs)
+  }
 </script>
 
 <style lang="scss">
-/**
+  /**
  * TimerControls component styles following Tiko design system standards
  * - Uses em units and CSS custom properties for spacing
  * - Uses flex + gap for layout instead of margins
  * - Uses semantic colors for theming
  * - Follows BEM methodology
  */
-.timer-controls {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-lg, 2em);
-  padding: var(--space, 1.5em);
-  background: var(--color-background);
-  border-radius: var(--radius-lg, 1em);
-  box-shadow: 0 2px 4px color-mix(in srgb, var(--color-foreground), transparent 90%);
-
-  &__time-setting {
+  .timer-controls {
     display: flex;
     flex-direction: column;
-    gap: var(--space-s, 1em);
-  }
+    gap: var(--space-lg, 2em);
+    padding: var(--space, 1.5em);
+    background: var(--color-background);
+    border-radius: var(--radius-lg, 1em);
+    box-shadow: 0 2px 4px color-mix(in srgb, var(--color-foreground), transparent 90%);
 
-  &__title {
-    font-size: 1.125em;
-    font-weight: 600;
-    color: var(--color-foreground);
-    text-align: center;
-  }
+    &__time-setting {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-s, 1em);
+    }
 
-  &__subtitle {
-    font-size: 1em;
-    font-weight: 500;
-    color: var(--color-foreground);
-    text-align: center;
-  }
+    &__title {
+      font-size: 1.125em;
+      font-weight: 600;
+      color: var(--color-foreground);
+      text-align: center;
+    }
 
-  &__time-inputs {
-    display: flex;
-    align-items: end;
-    gap: var(--space-xs, 0.5em);
-    justify-content: center;
-  }
+    &__subtitle {
+      font-size: 1em;
+      font-weight: 500;
+      color: var(--color-foreground);
+      text-align: center;
+    }
 
-  &__separator {
-    font-size: 2em;
-    font-weight: 700;
-    color: var(--color-foreground);
-    align-self: center;
-  }
+    &__time-inputs {
+      display: flex;
+      align-items: end;
+      gap: var(--space-xs, 0.5em);
+      justify-content: center;
+    }
 
-  &__mode {
-    display: flex;
-    justify-content: center;
-  }
+    &__separator {
+      font-size: 2em;
+      font-weight: 700;
+      color: var(--color-foreground);
+      align-self: center;
+    }
 
-  &__buttons {
-    display: flex;
-    gap: var(--space-s, 1em);
-    justify-content: center;
-    flex-wrap: wrap;
-  }
+    &__mode {
+      display: flex;
+      justify-content: center;
+    }
 
-  &__quick-times {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-s, 1em);
-  }
+    &__buttons {
+      display: flex;
+      gap: var(--space-s, 1em);
+      justify-content: center;
+      flex-wrap: wrap;
+    }
 
-  &__quick-buttons {
-    display: flex;
-    gap: var(--space-xs, 0.5em);
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-}
+    &__quick-times {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-s, 1em);
+    }
 
+    &__quick-buttons {
+      display: flex;
+      gap: var(--space-xs, 0.5em);
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+  }
 </style>

@@ -19,11 +19,13 @@ The Tiko mono repository now supports automatic deployment to different environm
 ## How It Works
 
 ### Master Branch
+
 - Uses commit message triggers (e.g., `[build:cards]`, `[build:all]`)
 - Deploys to production URLs
 - Manual control over what gets deployed
 
 ### Develop Branch
+
 - Automatically detects changed files
 - Deploys affected apps without needing commit message triggers
 - If UI or Core packages change, all apps are redeployed
@@ -34,6 +36,7 @@ The Tiko mono repository now supports automatic deployment to different environm
 For each app, you'll need TWO Cloudflare Pages projects:
 
 ### Production Projects
+
 - `tiko-timer` → `timer.tikoapps.org`
 - `tiko-cards` → `cards.tikoapps.org`
 - `tiko-sequence` → `sequence.tikoapps.org`
@@ -43,6 +46,7 @@ For each app, you'll need TWO Cloudflare Pages projects:
 - `tiko-yes-no` → `yesno.tikoapps.org`
 
 ### Development Projects
+
 - `tiko-timer-develop` → `develop.timer.tikoapps.org`
 - `tiko-cards-develop` → `develop.cards.tikoapps.org`
 - `tiko-sequence-develop` → `develop.sequence.tikoapps.org`
@@ -63,6 +67,7 @@ For each app, you'll need TWO Cloudflare Pages projects:
 ## GitHub Actions Configuration
 
 The workflows automatically:
+
 1. Detect the current branch
 2. Set the appropriate URL prefix and project suffix
 3. Deploy to the correct Cloudflare Pages project
@@ -71,6 +76,7 @@ The workflows automatically:
 ## Environment Variables
 
 The same secrets are used for both environments:
+
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
 - `VITE_SUPABASE_PUBLISHABLE_KEY`
@@ -82,6 +88,7 @@ The same secrets are used for both environments:
 ## Deployment Behavior
 
 ### Production (master branch)
+
 ```bash
 # Deploy specific app
 git commit -m "fix: update cards logic [build:cards]"
@@ -91,6 +98,7 @@ git commit -m "feat: update UI components [build:all]"
 ```
 
 ### Development (develop branch)
+
 ```bash
 # Just commit - affected apps deploy automatically
 git commit -m "fix: update cards logic"
@@ -102,6 +110,7 @@ git commit -m "feat: update UI components"
 ## Manual Deployments
 
 You can still trigger manual deployments via GitHub Actions:
+
 1. Go to Actions tab
 2. Select "Deploy Apps to Cloudflare Pages"
 3. Click "Run workflow"

@@ -46,61 +46,61 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useBemm } from 'bemm'
-import { TInput } from '@tiko/ui'
-import InputText from '@tiko/ui/src/components/TForm/InputText.vue'
-import TInputText from '@tiko/ui/src/components/TForm/TInputText.vue'
+  import { ref } from 'vue'
+  import { useBemm } from 'bemm'
+  import { TInput } from '@tiko/ui'
+  import InputText from '@tiko/ui/src/components/TForm/InputText.vue'
+  import TInputText from '@tiko/ui/src/components/TForm/TInputText.vue'
 
-const bemm = useBemm('input-demo')
+  const bemm = useBemm('input-demo')
 
-const tikoInput = ref('')
-const textInput = ref('')
-const newTextInput = ref('')
+  const tikoInput = ref('')
+  const textInput = ref('')
+  const newTextInput = ref('')
 </script>
 
 <style lang="scss">
-.input-demo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-lg, 2em);
-  padding: var(--space-md, 1em);
-  background: var(--color-background);
-  border: 1px solid color-mix(in srgb, var(--color-foreground), transparent 80%);
-  border-radius: var(--border-radius, 0.5em);
-
-  &__title,
-  &__subtitle {
-    font-weight: 600;
-    color: var(--color-foreground);
-  }
-
-  &__title {
-    font-size: 1.25em;
-    text-align: center;
-  }
-
-  &__subtitle {
-    font-size: 1em;
-    margin-bottom: var(--space-s, 0.75em);
-  }
-
-  &__section {
+  .input-demo {
     display: flex;
     flex-direction: column;
-    gap: var(--space-s, 0.75em);
+    gap: var(--space-lg, 2em);
     padding: var(--space-md, 1em);
-    background: color-mix(in srgb, var(--color-primary), transparent 95%);
-    border-radius: var(--border-radius, 0.25em);
-  }
+    background: var(--color-background);
+    border: 1px solid color-mix(in srgb, var(--color-foreground), transparent 80%);
+    border-radius: var(--border-radius, 0.5em);
 
-  &__value {
-    font-size: 0.875em;
-    color: color-mix(in srgb, var(--color-foreground), transparent 30%);
-    font-family: monospace;
-    background: color-mix(in srgb, var(--color-foreground), transparent 95%);
-    padding: var(--space-xs, 0.5em);
-    border-radius: var(--radius-xs, 0.125em);
+    &__title,
+    &__subtitle {
+      font-weight: 600;
+      color: var(--color-foreground);
+    }
+
+    &__title {
+      font-size: 1.25em;
+      text-align: center;
+    }
+
+    &__subtitle {
+      font-size: 1em;
+      margin-bottom: var(--space-s, 0.75em);
+    }
+
+    &__section {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-s, 0.75em);
+      padding: var(--space-md, 1em);
+      background: color-mix(in srgb, var(--color-primary), transparent 95%);
+      border-radius: var(--border-radius, 0.25em);
+    }
+
+    &__value {
+      font-size: 0.875em;
+      color: color-mix(in srgb, var(--color-foreground), transparent 30%);
+      font-family: monospace;
+      background: color-mix(in srgb, var(--color-foreground), transparent 95%);
+      padding: var(--space-xs, 0.5em);
+      border-radius: var(--radius-xs, 0.125em);
+    }
   }
-}
 </style>

@@ -2,7 +2,10 @@
   <section :class="bemm()">
     <div :class="bemm('container')">
       <!-- Section Header -->
-      <div v-if="content?.title || content?.description" :class="bemm('header')">
+      <div
+        v-if="content?.title || content?.description"
+        :class="bemm('header')"
+      >
         <h2 v-if="content?.title" :class="bemm('title')">
           {{ content.title }}
         </h2>
@@ -60,7 +63,11 @@
 
             <!-- Meta Info -->
             <div :class="bemm('meta')">
-              <time v-if="formatDate(article.published_at)" :class="bemm('date')" :datetime="article.published_at">
+              <time
+                v-if="formatDate(article.published_at)"
+                :class="bemm('date')"
+                :datetime="article.published_at"
+              >
                 {{ formatDate(article.published_at) }}
               </time>
 
@@ -169,13 +176,17 @@ const filteredArticles = computed(() => {
 
   // Filter by category if specified
   if (props.content?.category) {
-    filtered = filtered.filter(article => article.category === props.content.category);
+    filtered = filtered.filter(
+      (article) => article.category === props.content.category,
+    );
   }
 
   // Filter by tags if specified
   if (props.content?.tags && Array.isArray(props.content.tags)) {
-    filtered = filtered.filter(article =>
-      article.tags && article.tags.some(tag => props.content.tags.includes(tag))
+    filtered = filtered.filter(
+      (article) =>
+        article.tags &&
+        article.tags.some((tag) => props.content.tags.includes(tag)),
     );
   }
 
@@ -202,7 +213,7 @@ function formatDate(dateString: string): string {
     const options: Intl.DateTimeFormatOptions = {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     };
 
     return date.toLocaleDateString(locale.value, options);
@@ -217,13 +228,17 @@ function navigateToArticle(article: Article) {
   const pageSlug = article.page_slug || currentPageSlug.value;
 
   if (!pageSlug || !article.slug) {
-    console.error('Cannot navigate: missing page slug or article slug', { pageSlug, articleSlug: article.slug });
+    console.error('Cannot navigate: missing page slug or article slug', {
+      pageSlug,
+      articleSlug: article.slug,
+    });
     return;
   }
 
-  router.push(`/${pageSlug}/${article.slug}`);
+  // Ensure we use the correct page slug (handle 'update' vs 'updates' mismatch)
+  const correctedPageSlug = pageSlug === 'updates' ? 'update' : pageSlug;
+  router.push(`/${correctedPageSlug}/${article.slug}`);
 }
-
 </script>
 
 <style lang="scss">
@@ -269,7 +284,8 @@ function navigateToArticle(article: Article) {
   &__skeleton-image {
     width: 100%;
     height: 240px;
-    background: linear-gradient(90deg,
+    background: linear-gradient(
+      90deg,
       var(--color-background-subtle) 25%,
       var(--color-background) 50%,
       var(--color-background-subtle) 75%
@@ -284,7 +300,8 @@ function navigateToArticle(article: Article) {
 
   &__skeleton-title {
     height: 28px;
-    background: linear-gradient(90deg,
+    background: linear-gradient(
+      90deg,
       var(--color-background-subtle) 25%,
       var(--color-background) 50%,
       var(--color-background-subtle) 75%
@@ -297,7 +314,8 @@ function navigateToArticle(article: Article) {
 
   &__skeleton-text {
     height: 18px;
-    background: linear-gradient(90deg,
+    background: linear-gradient(
+      90deg,
       var(--color-background-subtle) 25%,
       var(--color-background) 50%,
       var(--color-background-subtle) 75%

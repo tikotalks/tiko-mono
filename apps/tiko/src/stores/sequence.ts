@@ -41,7 +41,6 @@ export const useSequenceStore = defineStore('sequence', () => {
   const hasOfflineData = ref(false)
   const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000 // 7 days - cache is cleared on refresh anyway
 
-
   // Play state
   const playState = ref<PlayState>({
     currentSequenceId: null,
@@ -49,7 +48,7 @@ export const useSequenceStore = defineStore('sequence', () => {
     selectedItems: [],
     correctOrder: [],
     isPlaying: false,
-    isComplete: false
+    isComplete: false,
   })
 
   // Settings with defaults
@@ -58,7 +57,7 @@ export const useSequenceStore = defineStore('sequence', () => {
     showHints: false,
     hapticFeedback: true,
     showCuratedItems: true,
-    hiddenItems: []
+    hiddenItems: [],
   }
 
   // Getters
@@ -96,10 +95,9 @@ export const useSequenceStore = defineStore('sequence', () => {
 
   const saveState = async () => {
     await appStore.updateAppSettings('sequence', {
-      ...settings.value
+      ...settings.value,
     })
   }
-
 
   const loadState = async () => {
     console.log('[SequenceStore] Loading state...')
@@ -129,7 +127,11 @@ export const useSequenceStore = defineStore('sequence', () => {
     return !isExpired && !isLocaleMismatch
   }
 
-  const loadSequence = async (parentId?: string, locale?: string, forceRefresh = false): Promise<CardTile[]> => {
+  const loadSequence = async (
+    parentId?: string,
+    locale?: string,
+    forceRefresh = false
+  ): Promise<CardTile[]> => {
     const cacheKey = getCacheKey(parentId, locale)
     const cache = cardCache.value
     const userId = authStore.user?.id
@@ -155,9 +157,11 @@ export const useSequenceStore = defineStore('sequence', () => {
         }
       } else {
         // Cache is expired but still return the data while we refresh in background
-        console.log(`[SequenceStore] Cache expired for ${cacheKey}, returning stale data while refreshing`)
+        console.log(
+          `[SequenceStore] Cache expired for ${cacheKey}, returning stale data while refreshing`
+        )
         // Don't await - let it refresh in background
-        loadSequence(parentId, locale, true).catch(err => 
+        loadSequence(parentId, locale, true).catch(err =>
           console.error(`[SequenceStore] Background refresh failed for ${cacheKey}:`, err)
         )
         // Only filter out hidden items for ROOT level, not for children
@@ -175,14 +179,16 @@ export const useSequenceStore = defineStore('sequence', () => {
     // If all sequence are loaded and this is not a parent request, return empty
     // But don't cache empty arrays for parent requests as they might have data
     if (allSequenceLoaded.value && !forceRefresh && parentId) {
-      console.log(`[SequenceStore] All sequence loaded, cache miss for child ${cacheKey}. This sequence likely has no items.`)
+      console.log(
+        `[SequenceStore] All sequence loaded, cache miss for child ${cacheKey}. This sequence likely has no items.`
+      )
       // Only cache empty result for child sequences, not for root level
       const newCache = new Map(cache)
       newCache.set(cacheKey, {
         parentId,
         sequence: [],
         timestamp: Date.now(),
-        locale: locale || 'default'
+        locale: locale || 'default',
       })
       cardCache.value = newCache
       return []
@@ -193,11 +199,12 @@ export const useSequenceStore = defineStore('sequence', () => {
       console.log('[SequenceStore] Already loading sequence, waiting...')
       // Wait for the current load to complete with a reasonable timeout
       let waitCount = 0
-      while (isLoadingSequence.value && waitCount < 60) { // Reduced from 100 to 60 (3 seconds max)
+      while (isLoadingSequence.value && waitCount < 60) {
+        // Reduced from 100 to 60 (3 seconds max)
         await new Promise(resolve => setTimeout(resolve, 50))
         waitCount++
       }
-      
+
       // If still loading after timeout, proceed anyway to avoid deadlock
       if (isLoadingSequence.value) {
         console.warn('[SequenceStore] Loading timeout exceeded, proceeding anyway')
@@ -233,14 +240,15 @@ export const useSequenceStore = defineStore('sequence', () => {
 
         // Store in offline storage for future use
         await offlineStorageService.storeSequence(userId, sequence, parentId, locale)
-
       } catch (error) {
         console.warn('[SequenceStore] Failed to load from API, trying offline storage:', error)
 
         // Try to load from offline storage
         const offlineSequence = await offlineStorageService.getSequence(userId, parentId, locale)
         if (offlineSequence) {
-          console.log(`[SequenceStore] Loaded ${offlineSequence.length} sequence from offline storage`)
+          console.log(
+            `[SequenceStore] Loaded ${offlineSequence.length} sequence from offline storage`
+          )
           sequence = offlineSequence
         } else {
           throw new Error('No offline data available')
@@ -253,21 +261,23 @@ export const useSequenceStore = defineStore('sequence', () => {
         parentId,
         sequence,
         timestamp: Date.now(),
-        locale: locale || 'default'
+        locale: locale || 'default',
       })
       cardCache.value = newCache
 
       console.log(`[SequenceStore] Cached ${sequence.length} sequence for ${cacheKey}`)
-      
+
       // Only filter out hidden items for ROOT level, not for children
       if (!parentId) {
         const hiddenItems = settings.value.hiddenItems || []
         const filteredSequence = sequence.filter(item => !hiddenItems.includes(item.id))
-        
+
         if (filteredSequence.length !== sequence.length) {
-          console.log(`[SequenceStore] Filtered out ${sequence.length - filteredSequence.length} hidden items`)
+          console.log(
+            `[SequenceStore] Filtered out ${sequence.length - filteredSequence.length} hidden items`
+          )
         }
-        
+
         return filteredSequence
       } else {
         // For children, return all items (don't filter)
@@ -297,7 +307,9 @@ export const useSequenceStore = defineStore('sequence', () => {
       // Load ALL sequence in a single API call, including curated items if enabled in settings
       const includeCurated = settings.value.showCuratedItems
       const allSequence = await sequenceService.loadAllSequence(includeCurated)
-      console.log(`[SequenceStore] Loaded ${allSequence.length} sequence in single call (includeCurated: ${includeCurated})`)
+      console.log(
+        `[SequenceStore] Loaded ${allSequence.length} sequence in single call (includeCurated: ${includeCurated})`
+      )
 
       // Build cache structure from all sequence
       const sequenceByParent = new Map<string, CardTile[]>()
@@ -325,7 +337,7 @@ export const useSequenceStore = defineStore('sequence', () => {
           parentId,
           sequence,
           timestamp: Date.now(),
-          locale: locale || 'default'
+          locale: locale || 'default',
         })
       }
 
@@ -338,7 +350,9 @@ export const useSequenceStore = defineStore('sequence', () => {
       // Update sync metadata
       await offlineStorageService.updateSyncMetadata(userId, allSequence.length)
 
-      console.log(`[SequenceStore] Cached all sequence. Total sequence: ${allSequence.length}, Total cache entries: ${cardCache.value.size}`)
+      console.log(
+        `[SequenceStore] Cached all sequence. Total sequence: ${allSequence.length}, Total cache entries: ${cardCache.value.size}`
+      )
     } finally {
       isLoadingSequence.value = false
     }
@@ -407,7 +421,9 @@ export const useSequenceStore = defineStore('sequence', () => {
 
       const metadata = await offlineStorageService.getSyncMetadata(userId)
       if (metadata) {
-        console.log(`[SequenceStore] Offline sync complete. Last sync: ${new Date(metadata.lastSync).toLocaleString()}`)
+        console.log(
+          `[SequenceStore] Offline sync complete. Last sync: ${new Date(metadata.lastSync).toLocaleString()}`
+        )
       }
     } catch (error) {
       console.error('[SequenceStore] Failed to sync offline data:', error)
@@ -447,7 +463,7 @@ export const useSequenceStore = defineStore('sequence', () => {
         newCache.set(cacheKey, {
           ...entry,
           sequence: newSequence,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         })
         cardCache.value = newCache
 
@@ -485,7 +501,7 @@ export const useSequenceStore = defineStore('sequence', () => {
       newCache.set(cacheKey, {
         ...entry,
         sequence: newSequence,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
       cardCache.value = newCache
 
@@ -502,26 +518,32 @@ export const useSequenceStore = defineStore('sequence', () => {
   }
 
   // Replace entire cache for a parent (useful for bulk updates)
-  const replaceCacheForParent = async (sequence: CardTile[], parentId?: string, locale?: string) => {
+  const replaceCacheForParent = async (
+    sequence: CardTile[],
+    parentId?: string,
+    locale?: string
+  ) => {
     const userId = authStore.user?.id
     if (!userId) return
 
     const cacheKey = getCacheKey(parentId, locale)
-    
+
     // Update memory cache
     const newCache = new Map(cardCache.value)
     newCache.set(cacheKey, {
       parentId,
       sequence,
       timestamp: Date.now(),
-      locale: locale || 'default'
+      locale: locale || 'default',
     })
     cardCache.value = newCache
 
     // Update offline storage
     await offlineStorageService.storeSequence(userId, sequence, parentId, locale)
-    
-    console.log(`[SequenceStore] Replaced cache for parent ${parentId} with ${sequence.length} items`)
+
+    console.log(
+      `[SequenceStore] Replaced cache for parent ${parentId} with ${sequence.length} items`
+    )
   }
 
   // Remove a card from caches
@@ -542,7 +564,7 @@ export const useSequenceStore = defineStore('sequence', () => {
       newCache.set(cacheKey, {
         ...entry,
         sequence: newSequence,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
       cardCache.value = newCache
 
@@ -558,22 +580,27 @@ export const useSequenceStore = defineStore('sequence', () => {
     }
   }
 
-  // Game Logic Functions  
+  // Game Logic Functions
   const startPlay = async (sequenceId: string) => {
     try {
       // Get current locale
       const { currentLocale } = useI18n()
-      
+
       // Load the items that belong to this sequence (children)
-      console.log(`[SequenceStore] Loading sequence items for ${sequenceId} with locale ${currentLocale.value}`)
+      console.log(
+        `[SequenceStore] Loading sequence items for ${sequenceId} with locale ${currentLocale.value}`
+      )
       const sequence = await loadSequence(sequenceId, currentLocale.value)
-      console.log(`[SequenceStore] Starting play for sequence ${sequenceId}, found ${sequence.length} items:`, sequence.map(item => ({ 
-        id: item.id, 
-        title: item.title, 
-        type: item.type,
-        parentId: item.parentId 
-      })))
-      
+      console.log(
+        `[SequenceStore] Starting play for sequence ${sequenceId}, found ${sequence.length} items:`,
+        sequence.map(item => ({
+          id: item.id,
+          title: item.title,
+          type: item.type,
+          parentId: item.parentId,
+        }))
+      )
+
       if (!sequence || sequence.length === 0) {
         console.warn(`[SequenceStore] No items found for sequence ${sequenceId}`)
         return
@@ -581,58 +608,66 @@ export const useSequenceStore = defineStore('sequence', () => {
 
       // Sort by index to get correct order (index is the orderIndex from the form)
       const sortedItems = [...sequence].sort((a, b) => (a.index || 0) - (b.index || 0))
-      console.log(`[SequenceStore] Sorted items by correct order:`, sortedItems.map(item => ({ id: item.id, title: item.title, index: item.index })))
-      
+      console.log(
+        `[SequenceStore] Sorted items by correct order:`,
+        sortedItems.map(item => ({ id: item.id, title: item.title, index: item.index }))
+      )
+
       // Create a shuffled copy for visual display
       let shuffled = [...sortedItems]
       let isInOriginalOrder = true
       let attempts = 0
       const maxAttempts = 10
-      
+
       // Keep shuffling until we get a different order (or max attempts reached)
       while (isInOriginalOrder && attempts < maxAttempts) {
         // Fisher-Yates shuffle
         for (let i = shuffled.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+          const j = Math.floor(Math.random() * (i + 1))
+          ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
         }
-        
+
         // Check if the order is different from the original
         isInOriginalOrder = shuffled.every((item, index) => item.id === sortedItems[index].id)
         attempts++
-        
+
         if (isInOriginalOrder && attempts < maxAttempts) {
-          console.log(`[SequenceStore] Shuffle attempt ${attempts} resulted in original order, reshuffling...`)
+          console.log(
+            `[SequenceStore] Shuffle attempt ${attempts} resulted in original order, reshuffling...`
+          )
         }
       }
-      
+
       // If we couldn't get a different order (e.g., only 1 or 2 items), force a swap
       if (isInOriginalOrder && shuffled.length >= 2) {
         // Swap first two items to ensure different order
-        [shuffled[0], shuffled[1]] = [shuffled[1], shuffled[0]]
+        ;[shuffled[0], shuffled[1]] = [shuffled[1], shuffled[0]]
         console.log(`[SequenceStore] Forced swap to ensure different order`)
       }
-      
-      console.log(`[SequenceStore] After shuffle (visual order):`, shuffled.map((item, visualPos) => ({ 
-        arrayPosition: visualPos,
-        id: item.id, 
-        title: item.title, 
-        originalIndex: item.index
-      })))
-      
+
+      console.log(
+        `[SequenceStore] After shuffle (visual order):`,
+        shuffled.map((item, visualPos) => ({
+          arrayPosition: visualPos,
+          id: item.id,
+          title: item.title,
+          originalIndex: item.index,
+        }))
+      )
+
       playState.value = {
         currentSequenceId: sequenceId,
         shuffledItems: shuffled,
         selectedItems: [],
         correctOrder: sortedItems.map(item => item.id),
         isPlaying: true,
-        isComplete: false
+        isComplete: false,
       }
-      
+
       console.log(`[SequenceStore] Play state set:`, {
         currentSequenceId: playState.value.currentSequenceId,
         shuffledItemsCount: playState.value.shuffledItems.length,
-        isPlaying: playState.value.isPlaying
+        isPlaying: playState.value.isPlaying,
       })
     } catch (error) {
       console.error(`[SequenceStore] Error starting play:`, error)
@@ -641,34 +676,34 @@ export const useSequenceStore = defineStore('sequence', () => {
 
   const selectItem = async (itemId: string): Promise<boolean> => {
     if (!playState.value.isPlaying) return false
-    
+
     const item = playState.value.shuffledItems.find(i => i.id === itemId)
     if (!item) return false
-    
+
     // Check if item is already selected
     if (playState.value.selectedItems.some(i => i.id === itemId)) {
       return false
     }
-    
+
     // Check if this is the correct next item in the sequence
     // correctOrder contains item IDs in the order they should be selected
     const nextIndex = playState.value.selectedItems.length
     const expectedItemId = playState.value.correctOrder[nextIndex]
     const isCorrect = expectedItemId === itemId
-    
+
     console.log(`[SequenceStore] Item clicked:`, {
       clickedId: itemId,
       clickedTitle: item.title,
       clickedOrderIndex: item.index,
       expectedId: expectedItemId,
       nextPosition: nextIndex + 1,
-      isCorrect
+      isCorrect,
     })
-    
+
     if (isCorrect) {
       // Add to selected items
       playState.value.selectedItems.push(item)
-      
+
       // Play TTS if enabled
       if (settings.value.autoSpeak && item.speak) {
         // Get current language for TTS
@@ -676,7 +711,7 @@ export const useSequenceStore = defineStore('sequence', () => {
         const language = currentLocale.value.split('-')[0] // Convert 'en-GB' to 'en'
         await speakText(item.speak, language)
       }
-      
+
       // Check if sequence is complete
       if (playState.value.selectedItems.length === playState.value.correctOrder.length) {
         console.log('[SequenceStore] Sequence complete! Setting isComplete to true')
@@ -684,10 +719,10 @@ export const useSequenceStore = defineStore('sequence', () => {
         playState.value.isPlaying = false
         console.log('[SequenceStore] Play state after completion:', playState.value)
       }
-      
+
       return true
     }
-    
+
     return false
   }
 
@@ -698,55 +733,58 @@ export const useSequenceStore = defineStore('sequence', () => {
       selectedItems: [],
       correctOrder: [],
       isPlaying: false,
-      isComplete: false
+      isComplete: false,
     }
   }
 
   const restartPlay = () => {
     if (!playState.value.currentSequenceId) return
-    
+
     // Get all items in their correct order first
-    const itemsInCorrectOrder = [...playState.value.correctOrder].map(id => 
-      playState.value.shuffledItems.find(item => item.id === id)!
+    const itemsInCorrectOrder = [...playState.value.correctOrder].map(
+      id => playState.value.shuffledItems.find(item => item.id === id)!
     )
-    
+
     // Create a new shuffled array for visual display
     let shuffled = [...itemsInCorrectOrder]
     let isInOriginalOrder = true
     let attempts = 0
     const maxAttempts = 10
-    
+
     // Keep shuffling until we get a different order
     while (isInOriginalOrder && attempts < maxAttempts) {
       // Fisher-Yates shuffle
       for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
       }
-      
+
       // Check if the order is different from the original
       isInOriginalOrder = shuffled.every((item, index) => item.id === itemsInCorrectOrder[index].id)
       attempts++
     }
-    
+
     // If we couldn't get a different order, force a swap
     if (isInOriginalOrder && shuffled.length >= 2) {
-      [shuffled[0], shuffled[1]] = [shuffled[1], shuffled[0]]
+      ;[shuffled[0], shuffled[1]] = [shuffled[1], shuffled[0]]
     }
-    
-    console.log(`[SequenceStore] Restart - new visual order:`, shuffled.map((item, idx) => ({ 
-      position: idx, 
-      id: item.id, 
-      title: item.title,
-      correctOrder: item.index 
-    })))
-    
+
+    console.log(
+      `[SequenceStore] Restart - new visual order:`,
+      shuffled.map((item, idx) => ({
+        position: idx,
+        id: item.id,
+        title: item.title,
+        correctOrder: item.index,
+      }))
+    )
+
     playState.value = {
       ...playState.value,
       shuffledItems: shuffled,
       selectedItems: [],
       isPlaying: true,
-      isComplete: false
+      isComplete: false,
     }
   }
 
@@ -777,11 +815,11 @@ export const useSequenceStore = defineStore('sequence', () => {
     addCardToCache,
     replaceCacheForParent,
     removeCardFromCache,
-    
+
     // Game actions
     startPlay,
     selectItem,
     resetPlay,
     restartPlay,
-   }
+  }
 })

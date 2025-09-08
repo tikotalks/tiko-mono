@@ -21,21 +21,21 @@ const pwaConfig = {
       {
         src: 'pwa-192x192.png',
         sizes: '192x192',
-        type: 'image/png'
-      },
-      {
-        src: 'pwa-512x512.png',
-        sizes: '512x512',
-        type: 'image/png'
+        type: 'image/png',
       },
       {
         src: 'pwa-512x512.png',
         sizes: '512x512',
         type: 'image/png',
-        purpose: 'any maskable'
-      }
-    ]
-  }
+      },
+      {
+        src: 'pwa-512x512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'any maskable',
+      },
+    ],
+  },
 }
 
 export default createViteConfig({
@@ -43,5 +43,5 @@ export default createViteConfig({
   port: 3005,
   pwaConfig,
   appName: 'radio',
-  appId: 'radio'
+  appId: 'radio',
 })

@@ -1,0 +1,32 @@
+name = "media-cache"
+main = "src/index.ts"
+compatibility_date = "2024-01-15"
+node_compat = true
+
+# Development KV namespace (will be created by wrangler)
+kv_namespaces = [
+  { binding = "MEDIA_CACHE", id = "a26659698dbb44c48de3d06e100e5c78", preview_id = "a26659698dbb44c48de3d06e100e5c78" }
+]
+
+# Environment variables (set via wrangler secret)
+# SUPABASE_URL
+# SUPABASE_SERVICE_KEY
+# DEPLOYMENT_VERSION (optional, defaults to timestamp)
+
+[env.staging]
+name = "media-cache-staging"
+kv_namespaces = [
+  { binding = "MEDIA_CACHE", id = "da4fddfde76b49b189c859bcd3292975" }
+]
+routes = [
+  { pattern = "staging-tikoapi.org/media/cache", zone_name = "tikoapi.org" }
+]
+
+[env.production]
+name = "media-cache"
+kv_namespaces = [
+  { binding = "MEDIA_CACHE", id = "REPLACE_WITH_PRODUCTION_KV_NAMESPACE_ID" }
+]
+routes = [
+  { pattern = "tikoapi.org/media/cache", zone_name = "tikoapi.org" }
+]

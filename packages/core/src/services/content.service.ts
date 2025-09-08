@@ -1430,6 +1430,7 @@ class ContentService {
       query += `&page_id=eq.${pageId}`
     }
     
+    // The view now handles automatic short extraction when the short field is empty
     return this.makeRequest(query)
   }
 
@@ -1472,6 +1473,7 @@ class ContentService {
       query += `&language_code=eq.${languageCode}`
     }
     
+    // The view now handles automatic short extraction when the short field is empty
     return this.makeRequest(query)
   }
 
@@ -1486,6 +1488,7 @@ class ContentService {
       query += `&language_code=eq.${languageCode}`
     }
     
+    // The view now handles automatic short extraction when the short field is empty
     return this.makeRequest(query)
   }
 

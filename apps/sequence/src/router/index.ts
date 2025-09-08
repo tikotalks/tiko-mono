@@ -11,19 +11,19 @@ const router = createAppRouter({
     {
       path: '/',
       name: 'Home',
-      component: SequenceView
+      component: SequenceView,
     },
     {
       path: '/play/:sequenceId',
       name: 'Play',
-      component: PlayView
+      component: PlayView,
     },
     {
       path: '/test-animations',
       name: 'AnimationTest',
-      component: AnimationTestView
-    }
-  ]
+      component: AnimationTestView,
+    },
+  ],
 })
 
 export default router
