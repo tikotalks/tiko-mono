@@ -70,8 +70,8 @@
           </button>
         </div>
 
-        <!-- Fourth row (spacebar, etc.) -->
-        <div :class="bemm('row')">
+        <!-- Fourth row (spacebar, etc.) - only show for non-numbers layouts -->
+        <div v-if="!isNumbersLayout" :class="bemm('row')">
           <button
             :class="bemm('key', ['', 'space'])"
             @click="handleKeyPress(specialKeys.space)"
@@ -149,6 +149,10 @@
 
   const currentLayout = computed(() => {
     return getKeyboardLayout(props.layout)
+  })
+
+  const isNumbersLayout = computed(() => {
+    return props.layout === 'numbers'
   })
 
   const getKeyDisplay = (key: KeyboardKey): string => {
@@ -430,9 +434,6 @@
       justify-content: center;
       align-items: center;
       width: 100%;
-      padding: var(--space);
-      background: color-mix(in srgb, var(--color-background), transparent 50%);
-      backdrop-filter: blur(4px);
       position: relative;
       z-index: 20; /* Ensure it's above other elements */
 
@@ -456,7 +457,6 @@
       color: var(--color-text-secondary);
       background: var(--color-background);
       padding: var(--space-xs) var(--space-s);
-      border-radius: var(--border-radius);
       animation: pulse 1.5s ease-in-out infinite;
 
       @keyframes pulse {
@@ -477,6 +477,10 @@
       width: 100%;
       max-width: 1200px;
       margin: 0 auto;
+      padding: var(--space);
+      border-radius: var(--border-radius);
+      background: color-mix(in srgb, var(--color-background), transparent 50%);
+      backdrop-filter: blur(4px);
 
       /* Ensure keyboard fits on iPad landscape */
       @media screen and (orientation: landscape) and (max-height: 850px) {
@@ -500,6 +504,10 @@
         var(--color-dark) 50%
       );
 
+      /* iOS touch highlight fix */
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+
       width: var(--keyboard-key-size);
       aspect-ratio: var(--keyboard-key-aspect-ratio, 1);
       display: flex;
@@ -515,7 +523,7 @@
         inset;
       border: none;
       border-radius: var(--keyboard-radius);
-      font-size: clamp(1.5rem, 2.5vw, 3rem);
+      font-size: clamp(1.5rem, 3vw, 3rem);
       font-weight: 600;
       color: var(--color-foreground);
       cursor: pointer;
@@ -532,11 +540,6 @@
         box-shadow: 0 calc((var(--keyboard-shadow-size) * -1) / 2) 0 0
           var(--keyboard-key-color-shadow) inset;
       }
-
-      /* iOS touch highlight fix */
-      -webkit-tap-highlight-color: transparent;
-      -webkit-touch-callout: none;
-
       &:disabled {
         opacity: 0.5;
         cursor: not-allowed;

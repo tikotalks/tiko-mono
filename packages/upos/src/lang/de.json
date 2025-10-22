@@ -1,0 +1,12 @@
+{
+  "det": ["der", "die", "das", "ein", "eine", "einer", "eines", "einem", "dieser", "jener", "mein", "dein", "sein", "ihr", "unser", "euer", "ihr"],
+  "pron": ["ich", "mich", "mir", "du", "dich", "dir", "er", "sie", "ihn", "ihr", "es", "wir", "uns", "ihr", "euch", "sie", "wem", "wer"],
+  "adp": ["in", "auf", "an", "bei", "für", "zu", "von", "mit", "über", "unter", "zwischen", "gegen", "ohne", "während", "vor", "nach"],
+  "cconj": ["und", "oder", "aber", "denn"],
+  "sconj": ["dass", "weil", "obwohl", "während", "wenn", "als", "bevor", "nachdem"],
+  "aux": ["sein", "bin", "bist", "ist", "sind", "seid", "war", "waren", "werden", "wird", "wurden", "haben", "habe", "hat", "hatte", "hatten", "kann", "können", "soll", "sollen", "muss", "müssen", "dürfen", "will", "wollen"],
+  "part": ["nicht", "zu"],
+  "intj": ["ach", "oh", "hey", "hallo"],
+  "adv": ["hier", "dort", "jetzt", "dann", "sehr", "auch", "nur", "schon"],
+  "punctuation": [",", ".", "!", "?", ";", ":", "(", ")", "\"", "'", "…", "—", "-"]
+}

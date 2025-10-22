@@ -1,7 +1,7 @@
-import { ref } from 'vue';
-import type { Icons } from 'open-icon';
-import type { ToastPosition, ToastType } from './TToast.model';
-import { ToastSettings } from './TToast.model';
+import { ref } from 'vue'
+import type { Icons } from 'open-icon'
+import type { ToastPosition, ToastType } from './TToast.model'
+import { ToastSettings } from './TToast.model'
 
 export interface ToastOptions {
 	message: string;
@@ -11,8 +11,8 @@ export interface ToastOptions {
 	position?: ToastPosition;
 	type?: ToastType;
 	dismissible?: boolean;
-	onClose?: () => void;
-	id?: string;
+	onClose?: () => void
+	id?: string
 }
 
 const defaultToastOptions: Partial<ToastOptions> = {

@@ -208,7 +208,7 @@
 <script setup lang="ts">
   import { ref, computed, onMounted, watch, inject } from 'vue'
   import { useBemm } from 'bemm'
-  import { TButton, TIcon, useParentMode } from '@tiko/ui'
+  import { TButton, TIcon, useParentMode, type PopupService, type ToastService } from '@tiko/ui'
   import { useI18n, useEventBus } from '@tiko/core'
   import RadioCard from '../components/RadioCard.vue'
   import RadioPlayer from '../components/RadioPlayer.vue'
@@ -225,8 +225,8 @@
   const bemm = useBemm('radio-view')
   const parentMode = useParentMode('radio')
   const radioStore = useRadioStore()
-  const popupService = inject('popupService')!
-  const toastService = inject('toastService')!
+  const popupService = inject<PopupService>('popupService')!
+  const toastService = inject<ToastService>('toastService')!
   const eventBus = useEventBus()
   const { t, keys } = useI18n()
 

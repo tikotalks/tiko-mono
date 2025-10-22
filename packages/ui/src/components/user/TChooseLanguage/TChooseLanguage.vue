@@ -38,8 +38,8 @@
           </span>
         </button>
 
-        <!-- Region buttons for multi-variant languages OR single variant with region -->
-        <div v-if="group.variants.length > 1 || (group.variants.length === 1 && group.variants[0].regionCode)" :class="bemm('item-regions')">
+        <!-- Region buttons for multi-variant languages only -->
+        <div v-if="group.variants.length > 1" :class="bemm('item-regions')">
           <TButton
             v-for="variant in group.variants"
             size="small"

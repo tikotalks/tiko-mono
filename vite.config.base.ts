@@ -161,6 +161,7 @@ export const createViteConfig = (args: {
         '@': path.resolve(dirname, './src'),
         '@tiko/ui': path.resolve(dirname, '../../packages/ui/src'),
         '@tiko/core': path.resolve(dirname, '../../packages/core/src'),
+        '@tiko/upos': path.resolve(dirname, '../../packages/upos/src'),
         'bemm': path.resolve(dirname, '../../node_modules/bemm/dist/index.mjs')
       }
     },
@@ -199,7 +200,8 @@ export const createViteConfig = (args: {
       }
     },
     optimizeDeps: {
-      include: ['vue', 'vue-router', 'pinia', '@tiko/ui', '@tiko/core', 'open-icon', 'bemm']
+      include: ['vue', 'vue-router', 'pinia', '@tiko/ui', '@tiko/core', 'open-icon', 'bemm'],
+      exclude: ['@tiko/upos']
     },
     define: {
       __VUE_OPTIONS_API__: true,

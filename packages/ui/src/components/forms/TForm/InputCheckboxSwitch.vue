@@ -76,7 +76,7 @@
 
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
-import InputBase from './/InputBase.vue';
+import InputBase from './InputBase.vue';
 
 const model = defineModel<boolean>({
 	default: undefined,

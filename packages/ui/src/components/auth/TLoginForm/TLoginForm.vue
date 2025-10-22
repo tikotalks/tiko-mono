@@ -71,15 +71,12 @@
           <div :class="bemm('verification-info')" data-cy="verification-info">
             <TIcon name="mail" :class="bemm('verification-icon')" />
             <p :class="bemm('verification-text')" data-cy="verification-message">
-              We've sent you an email with two options:<br />
+              We've sent you a verification code to:<br />
               <strong data-cy="verification-email">{{ email }}</strong>
             </p>
             <div :class="bemm('verification-options')">
               <p :class="bemm('option')">
-                {{ t('auth.option1MagicLink') }}
-              </p>
-              <p :class="bemm('option')">
-                {{ t('auth.option2EnterCode', { codeLength }) }}
+                {{ t('auth.verificationCodeInstructions', { codeLength }) }}
               </p>
             </div>
           </div>

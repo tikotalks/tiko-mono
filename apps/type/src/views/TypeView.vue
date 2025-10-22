@@ -23,16 +23,11 @@
         <div :class="bemm('display-area')">
           <div :class="bemm('text-display')">
             <div :class="bemm('text-content', ['', currentText ? 'has-text' : 'no-text'])">
-              <ul :class="bemm('word-list')" v-if="currentWords">
-                <li
-                  :class="bemm('word-item')"
-                  v-for="(word, index) in currentWords"
-                  :key="index"
-                  @click="speakWord(word)"
-                >
-                  {{ word }}
-                </li>
-              </ul>
+              <TWordList
+                v-if="currentTokens"
+                :tokens="currentTokens"
+                @item-click="token => speakWord(token.text)"
+              />
               <template v-else>
                 {{ currentText || t(keys.type.typeToSpeak) }}
               </template>
@@ -52,9 +47,9 @@
                 color="primary"
                 size="large"
                 @click="toggleKeyboardMode"
-                :aria-label="keyboardMode === 'letters' ? 'Switch to numbers' : 'Switch to letters'"
+                :aria-label="getKeyboardModeLabel()"
               >
-                {{ keyboardMode === 'letters' ? '123' : 'ABC' }}
+                {{ getKeyboardModeButton() }}
               </TButton>
               <TButton
                 :icon="isSpeaking ? Icons.PLAYBACK_STOP : Icons.PLAYBACK_PLAY"
@@ -74,9 +69,9 @@
         <!-- Virtual Keyboard Area -->
         <div :class="bemm('keyboard-area')">
           <VirtualKeyboard
-            :layout="keyboardMode === 'letters' ? settings.keyboardLayout : 'numbers'"
+            :layout="getKeyboardLayout()"
             :disabled="isSpeaking"
-            :uppercase="isUppercase"
+            :uppercase="keyboardMode === 'capitals'"
             :haptic-feedback="settings.hapticFeedback"
             :fun-letters="settings.funLetters"
             :speak-on-type="settings.speakOnType"
@@ -100,6 +95,7 @@
     TButton,
     TAppLayout,
     TAuthWrapper,
+    TWordList,
     TInputRange,
     TInputCheckbox,
     TInputSelect,
@@ -134,7 +130,7 @@
   const showSettings = ref(false)
   const showHistory = ref(true)
   const selectedVoiceIndex = ref(-1)
-  const keyboardMode = ref<'letters' | 'numbers'>('letters')
+  const keyboardMode = ref<'letters' | 'capitals' | 'numbers'>('letters')
   const isUppercase = ref(false)
 
   // Local settings copy for immediate UI updates
@@ -157,6 +153,7 @@
   const {
     currentText,
     currentWords,
+    currentTokens,
     isSpeaking,
     isLoading,
     availableVoices,
@@ -206,7 +203,46 @@
   }
 
   const toggleKeyboardMode = () => {
-    keyboardMode.value = keyboardMode.value === 'letters' ? 'numbers' : 'letters'
+    if (keyboardMode.value === 'letters') {
+      keyboardMode.value = 'capitals'
+    } else if (keyboardMode.value === 'capitals') {
+      keyboardMode.value = 'numbers'
+    } else {
+      keyboardMode.value = 'letters'
+    }
+  }
+
+  const getKeyboardLayout = () => {
+    if (keyboardMode.value === 'numbers') {
+      return 'numbers'
+    }
+    return settings.value.keyboardLayout
+  }
+
+  const getKeyboardModeButton = () => {
+    switch (keyboardMode.value) {
+      case 'letters':
+        return 'ABC'
+      case 'capitals':
+        return '123'
+      case 'numbers':
+        return 'abc'
+      default:
+        return 'ABC'
+    }
+  }
+
+  const getKeyboardModeLabel = () => {
+    switch (keyboardMode.value) {
+      case 'letters':
+        return 'Switch to capitals'
+      case 'capitals':
+        return 'Switch to numbers'
+      case 'numbers':
+        return 'Switch to letters'
+      default:
+        return 'Switch to capitals'
+    }
   }
 
   const handleVirtualKeyPress = (key: string) => {
@@ -224,8 +260,7 @@
     typeStore.appendText(' ')
 
     if (currentWords.value.length) {
-      const lastWord = currentWords.value[currentWords.value.length - 2]
-      console.log(lastWord, currentWords.value)
+      const lastWord = currentWords.value[currentWords.value.length - 1]
       if (lastWord) speak(lastWord)
     }
   }
@@ -483,6 +518,75 @@
       &:hover {
         background-color: color-mix(in srgb, var(--color-primary), transparent 60%);
         border: 1px solid color-mix(in srgb, var(--color-primary), transparent 30%);
+      }
+
+      &--noun {
+        background-color: color-mix(in srgb, var(--upos-noun, #4c78ff), transparent 85%);
+        border-color: color-mix(in srgb, var(--upos-noun, #4c78ff), transparent 50%);
+      }
+      &--verb {
+        background-color: color-mix(in srgb, var(--upos-verb, #ff6b6b), transparent 85%);
+        border-color: color-mix(in srgb, var(--upos-verb, #ff6b6b), transparent 50%);
+      }
+      &--adj {
+        background-color: color-mix(in srgb, var(--upos-adj, #ffb74d), transparent 85%);
+        border-color: color-mix(in srgb, var(--upos-adj, #ffb74d), transparent 50%);
+      }
+      &--adv {
+        background-color: color-mix(in srgb, var(--upos-adv, #64b5f6), transparent 85%);
+        border-color: color-mix(in srgb, var(--upos-adv, #64b5f6), transparent 50%);
+      }
+      &--pron {
+        background-color: color-mix(in srgb, var(--upos-pron, #9575cd), transparent 85%);
+        border-color: color-mix(in srgb, var(--upos-pron, #9575cd), transparent 50%);
+      }
+      &--det {
+        background-color: color-mix(in srgb, var(--upos-det, #4db6ac), transparent 85%);
+        border-color: color-mix(in srgb, var(--upos-det, #4db6ac), transparent 50%);
+      }
+      &--adp {
+        background-color: color-mix(in srgb, var(--upos-adp, #90a4ae), transparent 85%);
+        border-color: color-mix(in srgb, var(--upos-adp, #90a4ae), transparent 50%);
+      }
+      &--cconj {
+        background-color: color-mix(in srgb, var(--upos-cconj, #81c784), transparent 85%);
+        border-color: color-mix(in srgb, var(--upos-cconj, #81c784), transparent 50%);
+      }
+      &--sconj {
+        background-color: color-mix(in srgb, var(--upos-sconj, #aed581), transparent 85%);
+        border-color: color-mix(in srgb, var(--upos-sconj, #aed581), transparent 50%);
+      }
+      &--aux {
+        background-color: color-mix(in srgb, var(--upos-aux, #f06292), transparent 85%);
+        border-color: color-mix(in srgb, var(--upos-aux, #f06292), transparent 50%);
+      }
+      &--part {
+        background-color: color-mix(in srgb, var(--upos-part, #ba68c8), transparent 85%);
+        border-color: color-mix(in srgb, var(--upos-part, #ba68c8), transparent 50%);
+      }
+      &--propn {
+        background-color: color-mix(in srgb, var(--upos-propn, #26a69a), transparent 85%);
+        border-color: color-mix(in srgb, var(--upos-propn, #26a69a), transparent 50%);
+      }
+      &--num {
+        background-color: color-mix(in srgb, var(--upos-num, #26c6da), transparent 85%);
+        border-color: color-mix(in srgb, var(--upos-num, #26c6da), transparent 50%);
+      }
+      &--intj {
+        background-color: color-mix(in srgb, var(--upos-intj, #ff8a65), transparent 85%);
+        border-color: color-mix(in srgb, var(--upos-intj, #ff8a65), transparent 50%);
+      }
+      &--sym {
+        background-color: color-mix(in srgb, var(--upos-sym, #8d6e63), transparent 85%);
+        border-color: color-mix(in srgb, var(--upos-sym, #8d6e63), transparent 50%);
+      }
+      &--punct {
+        background-color: color-mix(in srgb, var(--upos-punct, #bdbdbd), transparent 85%);
+        border-color: color-mix(in srgb, var(--upos-punct, #bdbdbd), transparent 50%);
+      }
+      &--x {
+        background-color: color-mix(in srgb, var(--upos-x, #b0bec5), transparent 85%);
+        border-color: color-mix(in srgb, var(--upos-x, #b0bec5), transparent 50%);
       }
     }
 

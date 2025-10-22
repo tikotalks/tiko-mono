@@ -141,6 +141,11 @@ const router = createAppRouter({
           component: I18nStatus
         },
         {
+          path: 'i18n/export',
+          name: 'I18nExport',
+          component: () => import('../views/ExportTranslations.vue')
+        },
+        {
           path: 'content/projects',
           name: 'ContentProjects',
           component: ContentProjectsView

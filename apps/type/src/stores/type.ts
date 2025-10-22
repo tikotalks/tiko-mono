@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useAppStore, useSpeak } from '@tiko/core'
+import { useAppStore, useSpeak, useI18n } from '@tiko/core'
+import { useUpos, UPOSTag } from '@tiko/upos'
+import type { LangCode } from '@tiko/upos'
 
 export interface TypeSettings {
   voice: string | null
@@ -27,6 +29,8 @@ export interface TypeHistory {
 
 export const useTypeStore = defineStore('type', () => {
   const appStore = useAppStore()
+  const { locale } = useI18n()
+  const { upos } = useUpos()
 
   // State
   const currentText = ref<string>('')
@@ -70,8 +74,23 @@ export const useTypeStore = defineStore('type', () => {
     return availableVoices.value.length > 0
   })
 
+  const supportedLangs: LangCode[] = ['en', 'nl', 'de', 'fr', 'es', 'mt']
+  const langFromLocale = (loc: string | undefined): LangCode | string => {
+    if (!loc) return 'en'
+    const code = loc.split('-')[0].toLowerCase()
+    return supportedLangs.includes(code as LangCode) ? (code as LangCode) : code
+  }
+
+  const currentTokens = computed(() => {
+    const lang = langFromLocale(locale?.value as string)
+    return upos(currentText.value, lang as any)
+  })
+
   const currentWords = computed(() => {
-    return currentText.value.split(' ')
+    // Display only non-punctuation tokens as "words"
+    return currentTokens.value
+      .filter(t => t.tag !== UPOSTag.PUNCT)
+      .map(t => t.text)
   })
 
   const recentHistory = computed(() => {
@@ -178,8 +197,11 @@ export const useTypeStore = defineStore('type', () => {
     const textToSpeak = text || currentText.value.trim()
     if (!textToSpeak) return
 
-    // Split text into words
-    const words = textToSpeak.split(/\s+/).filter(word => word.length > 0)
+    // Tokenize using UPOS and skip punctuation
+    const lang = langFromLocale(locale?.value as string)
+    const words = upos(textToSpeak, lang as any)
+      .filter(tok => tok.tag !== UPOSTag.PUNCT)
+      .map(tok => tok.text)
     if (words.length === 0) return
 
     isSpeaking.value = true
@@ -335,6 +357,7 @@ export const useTypeStore = defineStore('type', () => {
     // State
     currentText,
     currentWords,
+    currentTokens,
     isSpeaking,
     isLoading,
     availableVoices,

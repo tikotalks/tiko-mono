@@ -1,0 +1,12 @@
+{
+  "det": ["il", "l'", "dan", "dik", "dawn", "dak", "xi", "kull"],
+  "pron": ["jien", "inti", "hu", "hi", "ahna", "intom", "huma"],
+  "adp": ["fuq", "għal", "ma", "mingħajr", "ta", "bil", "bħal", "bejn", "wara", "qabel"],
+  "cconj": ["u", "jew", "imma"],
+  "sconj": ["li", "meta", "billi"],
+  "aux": ["kien", "huma", "jien", "int", "huwa", "hija", "se", "jagħmel", "għandu"],
+  "part": ["mhux", "ma"],
+  "intj": ["ara", "ajma", "uha"],
+  "adv": ["hawn", "hemm", "issa", "diġà"],
+  "punctuation": [",", ".", "!", "?", ";", ":", "(", ")", "\"", "'", "…", "—", "-"]
+}

@@ -36,7 +36,7 @@
 <script lang="ts" setup>
 import { useBemm } from 'bemm';
 import { ref, computed, watch, type PropType } from 'vue';
-import InputBase from './../InputBase.vue';
+import InputBase from '../InputBase.vue';
 import { isEmail, errors } from '../validation/validation';
 import { debounce } from '../Form.utils';
 

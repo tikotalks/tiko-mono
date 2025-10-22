@@ -1,0 +1,12 @@
+{
+  "det": ["el", "la", "los", "las", "un", "una", "unos", "unas", "este", "esta", "estos", "estas", "ese", "esa", "esos", "esas", "mi", "tu", "su", "nuestro", "nuestra", "sus", "cada"],
+  "pron": ["yo", "me", "mí", "tú", "te", "él", "ella", "ello", "nosotros", "nosotras", "vosotros", "vosotras", "ellos", "ellas", "quien", "quienes", "cual", "cuales"],
+  "adp": ["en", "a", "de", "con", "por", "para", "sin", "sobre", "entre", "hasta", "desde", "contra", "tras", "bajo", "durante"],
+  "cconj": ["y", "o", "pero", "ni"],
+  "sconj": ["que", "si", "aunque", "mientras", "cuando", "como", "porque", "ya que"],
+  "aux": ["ser", "soy", "eres", "es", "somos", "sois", "son", "estar", "estoy", "estás", "está", "estamos", "están", "haber", "he", "has", "ha", "hemos", "han", "ir", "voy", "vas", "va", "vamos", "van", "poder", "deber", "soler"],
+  "part": ["no", "ya"],
+  "intj": ["ay", "oh", "hola", "eh"],
+  "adv": ["muy", "también", "solo", "aquí", "allí", "ya", "aún", "entonces", "ahora"],
+  "punctuation": [",", ".", "!", "?", ";", ":", "(", ")", "\"", "'", "…", "—", "-"]
+}

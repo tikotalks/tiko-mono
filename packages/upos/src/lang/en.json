@@ -1,0 +1,12 @@
+{
+  "det": ["the", "a", "an", "this", "that", "these", "those", "my", "your", "his", "her", "its", "our", "their", "some", "any", "no", "each", "every", "either", "neither", "which", "what"],
+  "pron": ["i", "me", "you", "he", "him", "she", "her", "it", "we", "us", "they", "them", "myself", "yourself", "himself", "herself", "itself", "ourselves", "themselves", "who", "whom", "whose"],
+  "adp": ["in", "on", "at", "by", "for", "to", "from", "with", "about", "as", "into", "through", "after", "over", "between", "out", "against", "during", "without", "before", "under", "around", "among"],
+  "cconj": ["and", "or", "but", "nor", "so", "yet"],
+  "sconj": ["if", "because", "that", "though", "although", "while", "since", "unless", "whereas"],
+  "aux": ["be", "am", "is", "are", "was", "were", "been", "being", "do", "does", "did", "done", "having", "have", "has", "had", "will", "would", "shall", "should", "can", "could", "may", "might", "must"],
+  "part": ["not", "n't", "to"],
+  "intj": ["oh", "wow", "hey", "hi", "hello", "oops", "ugh", "ah"],
+  "adv": ["very", "too", "quite", "just", "only", "really", "also", "here", "there", "now", "then", "so"],
+  "punctuation": [",", ".", "!", "?", ";", ":", "(", ")", "\"", "'", "…", "—", "-"]
+}

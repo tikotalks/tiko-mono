@@ -1,0 +1,12 @@
+{
+  "det": ["le", "la", "les", "un", "une", "des", "ce", "cet", "cette", "ces", "mon", "ton", "son", "notre", "votre", "leur", "chaque", "tout"],
+  "pron": ["je", "me", "moi", "tu", "te", "toi", "il", "lui", "elle", "nous", "vous", "ils", "elles", "qui", "que", "quoi", "dont"],
+  "adp": ["à", "de", "dans", "sur", "pour", "par", "avec", "sans", "sous", "chez", "entre", "contre", "après", "avant", "pendant"],
+  "cconj": ["et", "ou", "mais"],
+  "sconj": ["que", "quand", "comme", "si", "lorsque", "puisque", "bien que", "quoique"],
+  "aux": ["être", "suis", "es", "est", "sommes", "êtes", "sont", "avoir", "ai", "as", "a", "avons", "avez", "ont", "aller", "vais", "vas", "va", "allons", "allez", "vont"],
+  "part": ["ne", "n'", "pas", "plus", "jamais"],
+  "intj": ["oh", "ah", "hé", "allo"],
+  "adv": ["très", "aussi", "seulement", "déjà", "ici", "là", "maintenant", "alors"],
+  "punctuation": [",", ".", "!", "?", ";", ":", "(", ")", "\"", "'", "…", "—", "-"]
+}

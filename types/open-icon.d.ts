@@ -29,6 +29,9 @@ declare module 'open-icon' {
   export * from 'open-icon/lib/icons/index';
   export * from 'open-icon/dist/icons/types';
   
+  // Export the Icons type directly for convenience
+  export type { Icons } from 'open-icon/dist/icons/types';
+  
   // Override the searchIcon function to resolve the typing issue
   export function searchIcon(
     term: string, 

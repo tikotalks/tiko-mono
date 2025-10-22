@@ -130,6 +130,7 @@
 
       background-color: var(--yes-no-button__background, transparent);
       width: 100%;
+      max-width: 25vw;
       aspect-ratio: 1/1;
       display: block;
     }

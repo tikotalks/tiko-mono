@@ -25,30 +25,8 @@ onMounted(async () => {
   try {
     statusMessage.value = 'Processing authentication...'
 
-    // Check if we have magic link tokens in the URL hash or route hash
-    const hash = route.hash || window.location.hash
-    const hashParams = new URLSearchParams(hash.substring(1))
-    const accessToken = hashParams.get('access_token')
-    const refreshToken = hashParams.get('refresh_token')
-
-    if (accessToken && refreshToken) {
-      // Process the magic link
-      const result = await authStore.handleMagicLinkCallback()
-
-      if (result.success) {
-        statusMessage.value = 'Authentication successful! Redirecting...'
-        setTimeout(() => {
-          router.push('/')
-        }, 1000)
-        return
-      } else {
-        statusMessage.value = 'Authentication failed. Redirecting to login...'
-        setTimeout(() => {
-          router.push('/')
-        }, 2000)
-        return
-      }
-    }
+    // Note: Magic link processing has been disabled
+    // Only OAuth callbacks and existing session processing is now supported
 
     // Otherwise, check for OAuth callback or existing session
     // Give auth time to process any OAuth callbacks

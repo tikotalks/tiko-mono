@@ -128,7 +128,8 @@
       "Bash(npx deadfile:*)",
       "Bash(npm search:*)",
       "Bash(open http://localhost:5001/updates)",
-      "Bash(open http://localhost:3003)"
+      "Bash(open http://localhost:3003)",
+      "Bash(npx sass:*)"
     ],
     "deny": []
   }

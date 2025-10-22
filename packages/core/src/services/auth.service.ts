@@ -141,7 +141,8 @@ export interface AuthService {
   signUpWithEmail(email: string, password: string, fullName?: string): Promise<AuthResult>
 
   /**
-   * Send a magic link for passwordless authentication
+   * Send a verification code for passwordless authentication
+   * Note: Magic link redirects have been disabled, only OTP codes are sent
    *
    * @param {string} email - User's email address
    * @param {string} [fullName] - Full name for new users (optional)
@@ -151,7 +152,7 @@ export interface AuthService {
    * ```typescript
    * const result = await authService.signInWithMagicLink('user@example.com')
    * if (result.success) {
-   *   console.log('Check your email for the magic link!')
+   *   console.log('Check your email for the verification code!')
    * }
    * ```
    */
@@ -368,7 +369,8 @@ export class ManualAuthService implements AuthService {
         email,
         create_user: true,
         data: fullName ? { full_name: fullName } : undefined,
-        emailRedirectTo: this.getAuthRedirectUrl()
+        // Note: Magic link redirects have been disabled
+        // emailRedirectTo: this.getAuthRedirectUrl()
       }
 
       console.log('[AuthService] Sending POST request to:', url)
@@ -388,7 +390,7 @@ export class ManualAuthService implements AuthService {
       console.log('[AuthService] Response data:', data)
 
       if (!response.ok) {
-        return { success: false, error: data.error_description || data.msg || 'Failed to send magic link' }
+        return { success: false, error: data.error_description || data.msg || 'Failed to send verification code' }
       }
 
       return { success: true }

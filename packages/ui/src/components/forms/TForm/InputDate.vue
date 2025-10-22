@@ -80,7 +80,7 @@
 <script lang="ts" setup>
 import { ref, computed, watch } from 'vue';
 import { useBemm } from 'bemm';
-import InputBase from './/InputBase.vue';
+import InputBase from './InputBase.vue';
 
 const model = defineModel<string>({
 	default: undefined,

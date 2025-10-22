@@ -45,7 +45,7 @@
 import { useBemm } from 'bemm';
 import { ref, computed, watch, onMounted } from 'vue';
 import { Icons } from 'open-icon';
-import InputBase from './../InputBase.vue';
+import InputBase from '../InputBase.vue';
 import Icon from '../../Icon.vue';
 
 const block = 'input-password';

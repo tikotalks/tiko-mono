@@ -40,6 +40,6 @@ const pwaConfig = {
 
 export default createViteConfig({
   dirname: __dirname,
-  por: 3002,
+  port: 3002,
   pwaConfig,
 })

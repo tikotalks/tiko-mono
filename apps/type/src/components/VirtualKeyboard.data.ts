@@ -98,6 +98,7 @@ export const keyboardLayouts: Record<string, KeyboardLayout> = {
         { key: '8', display: '8' },
         { key: '9', display: '9' },
         { key: '0', display: '0' },
+        { key: 'Backspace', display: '⌫' },
       ],
     ],
   },

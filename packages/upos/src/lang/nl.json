@@ -1,0 +1,12 @@
+{
+  "det": ["de", "het", "een", "dit", "dat", "die", "deze", "ons", "onze", "mijn", "jouw", "zijn", "haar", "hun", "ieder", "elk", "welk"],
+  "pron": ["ik", "mij", "me", "jij", "je", "u", "hij", "hem", "zij", "ze", "haar", "het", "wij", "we", "ons", "jullie", "hen", "hun", "wie", "die", "dat"],
+  "adp": ["in", "op", "aan", "bij", "voor", "naar", "van", "met", "over", "onder", "tussen", "tegen", "door", "zonder", "achter", "tijdens"],
+  "cconj": ["en", "of", "maar"],
+  "sconj": ["dat", "omdat", "terwijl", "hoewel", "als", "toen", "nadat", "voordat"],
+  "aux": ["zijn", "ben", "is", "zijn", "was", "waren", "worden", "werd", "werden", "hebben", "heb", "heeft", "hadden", "zal", "zullen", "zou"],
+  "part": ["niet", "te"],
+  "intj": ["hè", "hmm", "oh", "hoi", "dag", "hallo"],
+  "adv": ["hier", "daar", "nu", "toen", "zeer", "erg", "ook", "alleen", "al"],
+  "punctuation": [",", ".", "!", "?", ";", ":", "(", ")", "\"", "'", "…", "—", "-"]
+}
