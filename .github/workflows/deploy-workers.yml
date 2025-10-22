@@ -221,7 +221,7 @@ jobs:
           accountId: dc2b7d14a69351375cab6de9a13ddee9
           workingDirectory: 'workers/i18n-translator'
           command: deploy --env ${{ needs.determine-environment.outputs.environment }}
-          wranglerVersion: 'latest'
+          wranglerVersion: '3.101.0'
 
       - name: Deploy media-upload worker
         if: needs.check-triggers.outputs.build-media == 'true'
@@ -231,7 +231,7 @@ jobs:
           accountId: dc2b7d14a69351375cab6de9a13ddee9
           workingDirectory: 'workers/media-upload'
           command: deploy --env ${{ needs.determine-environment.outputs.environment }}
-          wranglerVersion: 'latest'
+          wranglerVersion: '3.101.0'
 
       - name: Deploy media-cache worker
         if: needs.check-triggers.outputs.build-media-cache == 'true'
@@ -241,7 +241,7 @@ jobs:
           accountId: dc2b7d14a69351375cab6de9a13ddee9
           workingDirectory: 'workers/media-cache'
           command: deploy --env ${{ needs.determine-environment.outputs.environment }}
-          wranglerVersion: 'latest'
+          wranglerVersion: '3.101.0'
           secrets: |
             SUPABASE_URL
             SUPABASE_SERVICE_KEY
@@ -254,7 +254,7 @@ jobs:
           accountId: dc2b7d14a69351375cab6de9a13ddee9
           workingDirectory: 'workers/sentence-engine'
           command: deploy --env ${{ needs.determine-environment.outputs.environment }}
-          wranglerVersion: 'latest'
+          wranglerVersion: '3.101.0'
 
       - name: Deploy report-issue worker
         if: needs.check-triggers.outputs.build-report-issue == 'true'
@@ -264,7 +264,7 @@ jobs:
           accountId: dc2b7d14a69351375cab6de9a13ddee9
           workingDirectory: 'workers/report-issue'
           command: deploy --env ${{ needs.determine-environment.outputs.environment }}
-          wranglerVersion: 'latest'
+          wranglerVersion: '3.101.0'
           secrets: |
             VITE_RESEND_KEY
             VITE_SUPABASE_URL
@@ -278,7 +278,7 @@ jobs:
           accountId: dc2b7d14a69351375cab6de9a13ddee9
           workingDirectory: 'workers/user-removal'
           command: deploy --env ${{ needs.determine-environment.outputs.environment }}
-          wranglerVersion: 'latest'
+          wranglerVersion: '3.101.0'
           secrets: |
             VITE_SUPABASE_URL
             VITE_SUPABASE_SERVICE_KEY
