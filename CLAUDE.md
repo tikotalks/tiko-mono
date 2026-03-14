@@ -151,4 +151,14 @@ The following translation keys need to be added to the database:
 sequence.play : Play
 sequence.playMode : Play Mode
 sequence.restart : Restart
+group.createGroup : Create Group
+group.editGroup : Edit Group
+group.name : Group Name
+group.namePlaceholder : Enter group name
+group.icon : Icon
+group.color : Color
+group.sequences : Sequences
+group.noSequences : No sequences in this group
+group.sequence : sequence
+group.sequences : sequences
 ```

@@ -129,7 +129,8 @@
       "Bash(npm search:*)",
       "Bash(open http://localhost:5001/updates)",
       "Bash(open http://localhost:3003)",
-      "Bash(npx sass:*)"
+      "Bash(npx sass:*)",
+      "Bash(npx prettier:*)"
     ],
     "deny": []
   }
