@@ -65,7 +65,7 @@
   import { useBemm } from 'bemm'
   import { TButton, TIcon } from '@tiko/ui'
   import { Icons } from 'open-icon'
-  import { useI18n } from '@tiko/core'
+  import { useI18nSimple as useI18n } from '@tiko/core'
   import type { TCardTile } from '@tiko/ui'
 
   interface Props {

@@ -34,6 +34,16 @@
           :placeholder="t('sequence.selectRewardAnimation')"
         />
 
+        <!-- Group Selector -->
+        <TInputSelect
+          :inline="true"
+          :label="t('sequence.parentGroup')"
+          v-model="form.parentId"
+          :options="groupOptions"
+          :placeholder="t('sequence.selectParentGroup')"
+          :clearable="true"
+        />
+
         <!-- Visibility toggle -->
         <template v-if="props.showVisibilityToggle">
           <TInputCheckbox
@@ -138,7 +148,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, watch, computed, onMounted } from 'vue'
+  import { ref, watch, computed, onMounted, inject } from 'vue'
   import { useBemm } from 'bemm'
   import {
     TButton,
@@ -176,6 +186,7 @@
     isPublic?: boolean
     isCurated?: boolean // Read-only, shown for info
     rewardAnimation?: string
+    parentId?: string | null // Parent group ID
   }
 
   const props = defineProps<{
@@ -185,7 +196,7 @@
     showVisibilityToggle?: boolean
     onClose?: () => void
     onSave?: (data: SequenceForm) => void
-    onMounted?: (instance: any) => void
+    onComponentMounted?: (instance: any) => void
   }>()
 
   // Debug props
@@ -208,6 +219,9 @@
   const sequenceStore = useSequenceStore()
   const authStore = useAuthStore()
 
+  // Get toast service
+  const toastService = inject<any>('toastService')
+
   // Available colors
   const availableColors = Object.values(BaseColors)
 
@@ -219,19 +233,40 @@
     items: [],
     isPublic: false,
     isCurated: false,
-    rewardAnimation: '',
+    rewardAnimation: 'random', // Default to random animation
+    parentId: null,
   })
 
   // Available animations
   const availableAnimations = computed(() => {
     return [
-      { value: '', label: t('sequence.randomAnimation') },
+      { value: 'random', label: 'Random' },
+      { value: 'none', label: 'No animation' },
       ...animations.map(anim => ({
         value: anim.name,
         label: anim.displayName,
       })),
     ]
   })
+
+  // Group options for parent group selector
+  const groupOptions = computed(() => {
+    const options = [
+      { value: '', label: t('sequence.noGroup') },
+      ...getAllGroups().map(group => ({
+        value: group.id,
+        label: group.title,
+      })),
+    ]
+    return options
+  })
+
+  // Get all groups from the store
+  const getAllGroups = () => {
+    // Get root level sequences and filter for groups
+    const rootSequences = sequenceStore.getSequenceForParent() || []
+    return rootSequences.filter(card => card.type === 'group')
+  }
 
   // Load sequence data when editing
   watch(
@@ -245,7 +280,8 @@
           items: [],
           isPublic: false,
           isCurated: false,
-          rewardAnimation: '',
+          rewardAnimation: 'random',
+          parentId: null,
         }
         return
       }
@@ -258,7 +294,8 @@
           items: [],
           isPublic: false,
           isCurated: false,
-          rewardAnimation: '',
+          rewardAnimation: 'random',
+          parentId: newSequence.parentId || null,
         }
       } else {
         // Load existing sequence items
@@ -282,7 +319,7 @@
           if (rewardAnimation === undefined || rewardAnimation === null) {
             const sequenceMetadata = await sequenceStore.getCardById(newSequence.id)
             console.log('[SequenceForm] Loaded sequence metadata:', sequenceMetadata)
-            rewardAnimation = (sequenceMetadata as any)?.rewardAnimation || ''
+            rewardAnimation = (sequenceMetadata as any)?.rewardAnimation || 'random'
           } else {
             console.log(
               '[SequenceForm] Using rewardAnimation from passed sequence:',
@@ -297,7 +334,7 @@
             items: formattedItems,
             isPublic: newSequence.isPublic || false,
             isCurated: newSequence.isCurated || false,
-            rewardAnimation: rewardAnimation || '',
+            rewardAnimation: rewardAnimation || 'random',
           }
 
           console.log('[SequenceForm] Form value after loading:', form.value)
@@ -312,7 +349,7 @@
             items: [],
             isPublic: newSequence.isPublic || false,
             isCurated: newSequence.isCurated || false,
-            rewardAnimation: '',
+            rewardAnimation: 'random',
           }
         }
       }
@@ -395,34 +432,71 @@
   // Note: Image selection is now handled by TImageInput components
 
   // Form validation
-  const isValid = computed(() => {
+  const validationErrors = computed(() => {
+    const errors: string[] = []
+
     // Must have title
-    if (!form.value.title.trim()) return false
+    if (!form.value.title.trim()) {
+      errors.push('Sequence title is required')
+    }
 
     // Must have at least 2 items for a sequence
-    if (form.value.items.length < 2) return false
+    if (form.value.items.length === 0) {
+      errors.push('No sequence items yet')
+    } else if (form.value.items.length === 1) {
+      errors.push('Sequences need at least 2 items')
+    }
 
-    // All items must have titles
-    return form.value.items.every(item => item.title.trim())
+    // Check for empty items
+    const emptyItems = form.value.items.filter(item => !item.title.trim())
+    if (emptyItems.length > 0) {
+      errors.push('All items must have titles')
+    }
+
+    // Check if reward animation is selected
+    if (!form.value.rewardAnimation) {
+      errors.push('Please select a reward animation')
+    }
+
+    return errors
+  })
+
+  const isValid = computed(() => {
+    return validationErrors.value.length === 0
   })
 
   // Trigger save method that can be called from popup actions
   const triggerSave = () => {
     console.log('triggerSave called, isValid:', isValid.value)
-    if (isValid.value && props.onSave) {
+    if (!isValid.value) {
+      // Show validation errors as toast notifications
+      const errors = validationErrors.value
+      errors.forEach((error: string) => {
+        if (toastService && typeof toastService.show === 'function') {
+          toastService.show({
+            message: error,
+            type: 'error',
+            duration: 5000,
+            dismissible: true
+          })
+        } else {
+          console.error('Validation error:', error)
+        }
+      })
+      return
+    }
+
+    if (props.onSave) {
       props.onSave(form.value)
     } else {
-      console.warn('Form is not valid or onSave not provided:', {
-        isValid: isValid.value,
-        hasOnSave: !!props.onSave,
-        formData: form.value,
-      })
+      console.warn('onSave callback not provided')
     }
   }
 
   // Expose validation and form data for parent components
   defineExpose({
     isValid,
+    validationErrors,
     formData: form,
     triggerSave,
     save: triggerSave, // Keep backward compatibility
@@ -431,10 +505,11 @@
   // Call onMounted when component is ready
   onMounted(() => {
     console.log('SequenceForm mounted, calling onMounted callback')
-    if (props.onMounted) {
-      props.onMounted({
+    if (props.onComponentMounted) {
+      props.onComponentMounted({
         triggerSave,
         isValid,
+        validationErrors,
         formData: form,
       })
     }

@@ -8,7 +8,11 @@ $alignments: start, center, end;
 @mixin responsive-group {
 
   @each $breakpoint in ('', tablet, mobile) {
-    $suffix: if($breakpoint =='', '', '-#{$breakpoint}');
+    $suffix: '';
+
+    @if $breakpoint != '' {
+      $suffix: '-#{$breakpoint}';
+    }
 
     @if $breakpoint =='' {
       @include generate-classes($suffix);

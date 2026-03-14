@@ -2,64 +2,124 @@
   <component
     :is="contextMenu && contextMenu.length > 0 && !isEmpty ? TContextMenu : 'div'"
     :class="bemm('container')"
-    v-bind="contextMenu && contextMenu.length > 0 && !isEmpty ? {
-      config: { menu: contextMenu, position: contextMenuPosition }
-    } : {}"
+    v-bind="
+      contextMenu && contextMenu.length > 0 && !isEmpty
+        ? {
+            config: { menu: contextMenu, position: contextMenuPosition },
+          }
+        : {}
+    "
     @menu-open="$emit('menu-open')"
     @menu-close="$emit('menu-close')"
   >
-    <div ref="wrapperEl" :class="bemm('wrapper', ['',
-      isDragging ? 'dragging' : '',
-      canDrag ? 'can-drag' : '',
-      isDragReady ? 'drag-ready' : '',
-      isSelected ? 'selected' : '',
-      selectionMode ? 'selection-mode' : '',
-      isImageLoaded && displayImage && imageUrl ? 'image-loaded' : '',
-      props.customState || ''
-    ])" @click.stop="handleClick" @mousedown.stop="handleMouseDown" @mouseup.stop="handleMouseUp"
-      @touchstart.stop="handleTouchStart" @touchend.stop="handleTouchEnd" @touchmove.stop="handleTouchMove"
-      @touchcancel.stop="handleTouchEnd" :draggable="canDrag" @dragstart.stop="handleDragStart"
-      @dragend.stop="handleDragEnd" @dragover.stop="handleDragOver" @dragleave.stop="handleDragLeave"
-      @drop.stop="handleDrop">
-
-      <article :class="tileClasses" @pointermove="setPointerPosition" :style="!isEmpty && card?.color ? {
-        '--card-color': `var(--color-${card.color})`,
-        '--card-text': `var(--color-${card.color}-text)`,
-        '--x': `${pointer.x}`,
-        '--y': `${pointer.y}`
-      } : undefined" tabindex="0">
+    <div
+      ref="wrapperEl"
+      :class="
+        bemm('wrapper', [
+          '',
+          isDragging ? 'dragging' : '',
+          canDrag ? 'can-drag' : '',
+          isDragReady ? 'drag-ready' : '',
+          isSelected ? 'selected' : '',
+          selectionMode ? 'selection-mode' : '',
+          isImageLoaded && displayImage && imageUrl ? 'image-loaded' : '',
+          props.customState || '',
+        ])
+      "
+      @click.stop="handleClick"
+      @mousedown.stop="handleMouseDown"
+      @mouseup.stop="handleMouseUp"
+      @touchstart.stop="handleTouchStart"
+      @touchend.stop="handleTouchEnd"
+      @touchmove.stop="handleTouchMove"
+      @touchcancel.stop="handleTouchEnd"
+      :draggable="canDrag"
+      @dragstart.stop="handleDragStart"
+      @dragend.stop="handleDragEnd"
+      @dragover.stop="handleDragOver"
+      @dragleave.stop="handleDragLeave"
+      @drop.stop="handleDrop"
+    >
+      <article
+        :class="tileClasses"
+        @pointermove="setPointerPosition"
+        :style="
+          !isEmpty && card?.color
+            ? {
+                '--card-color': `var(--color-${card.color})`,
+                '--card-text': `var(--color-${card.color}-text)`,
+                '--x': `${pointer.x}`,
+                '--y': `${pointer.y}`,
+              }
+            : undefined
+        "
+        tabindex="0"
+      >
         <div v-if="isEmpty && editMode" :class="bemm('empty-state')">
           <TIcon name="plus" size="large" />
         </div>
         <div v-else :class="bemm('container')">
           <div :class="bemm('status')" v-if="showStatus && (isPublic || isCurated)">
-            <TIcon v-if="isCurated" :name="Icons.STAR_M" :tooltip="t('common.curated')"></TIcon>
-            <TIcon v-else-if="isPublic" :name="Icons.ACCESSIBILITY_PERSON" :tooltip="t('common.public')"></TIcon>
+            <TIcon
+              v-if="isCurated"
+              :name="Icons.STAR_M"
+              :tooltip="t('common.curated')"
+            ></TIcon>
+            <TIcon
+              v-else-if="isPublic"
+              :name="Icons.ACCESSIBILITY_PERSON"
+              :tooltip="t('common.public')"
+            ></TIcon>
           </div>
 
           <!-- Show mini grid for groups with children -->
           <div v-if="hasChildren && children?.length" :class="bemm('mini-grid')">
             <!-- Background image -->
-            <div v-if="displayImage && imageUrl" :class="bemm('mini-grid-bg')"
-              :style="{ backgroundImage: `url(${imageUrl})` }" />
+            <div
+              v-if="displayImage && imageUrl"
+              :class="bemm('mini-grid-bg')"
+              :style="{ backgroundImage: `url(${imageUrl})` }"
+            />
 
             <!-- Mini tiles -->
             <div :class="bemm('mini-tiles')">
-              <div v-for="(child, idx) in children.slice(0, 9)" :key="`mini-${child.id}-${idx}`" :class="bemm('mini-tile')"
-                :style="child.color ? { backgroundColor: `var(--color-${child.color})` } : undefined">
-                <img v-if="child.image" :src="getThumbnailUrl(child.image)" :alt="child.title" />
+              <div
+                v-for="(child, idx) in children.slice(0, 9)"
+                :key="`mini-${child.id}-${idx}`"
+                :class="bemm('mini-tile')"
+                :style="
+                  child.color
+                    ? { backgroundColor: `var(--color-${child.color})` }
+                    : undefined
+                "
+              >
+                <img
+                  v-if="child.image"
+                  :src="getThumbnailUrl(child.image)"
+                  :alt="child.title"
+                />
               </div>
             </div>
           </div>
 
           <!-- Regular tile content for non-groups -->
           <template v-else>
-            <figure v-if="displayImage && imageUrl && isImageLoaded" :class="bemm('figure')">
-              <img :src="imageUrl" :alt="card.title" :class="bemm('image')" draggable="false" />
+            <figure
+              v-if="displayImage && imageUrl && isImageLoaded"
+              :class="bemm('figure')"
+            >
+              <img
+                :src="imageUrl"
+                :alt="card.title"
+                :class="bemm('image')"
+                draggable="false"
+              />
             </figure>
           </template>
 
-          <h3 v-if="displayTitle && card?.title" :class="bemm('title')">{{ card.title }}</h3>
+          <h3 v-if="displayTitle && card?.title" :class="bemm('title')">
+            {{ card.title }}
+          </h3>
         </div>
 
         <!-- Selection indicator -->
@@ -71,20 +131,19 @@
   </component>
 </template>
 <script lang="ts" setup>
-import { useBemm } from 'bemm';
-import { ref, computed, watch, onMounted } from 'vue';
-import { Icons } from 'open-icon';
-import { useImageUrl, useI18n, useHaptic } from '@tiko/core';
+import { useBemm } from "bemm";
+import { ref, computed, watch, onMounted } from "vue";
+import { Icons } from "open-icon";
+import { useImageUrl, useI18n, useHaptic } from "@tiko/core";
 
-import type { TCardTile, TCardTileProps } from './TCardTile.model';
-import { TIcon } from '../../ui-elements/TIcon';
-import { TContextMenu } from '../../navigation/TContextMenu';
+import type { TCardTile, TCardTileProps } from "./TCardTile.model";
+import { TIcon } from "../../ui-elements/TIcon";
+import { TContextMenu } from "../../navigation/TContextMenu";
 
+const { t } = useI18n();
+const haptic = useHaptic();
 
-const { t } = useI18n()
-const haptic = useHaptic()
-
-const bemm = useBemm('t-card-tile');
+const bemm = useBemm("t-card-tile");
 const { getImageVariants } = useImageUrl();
 
 // Template refs
@@ -103,8 +162,8 @@ const emit = defineEmits<{
   dragover: [event: DragEvent];
   dragleave: [event: DragEvent];
   drop: [event: DragEvent];
-  'menu-open': [];
-  'menu-close': [];
+  "menu-open": [];
+  "menu-close": [];
 }>();
 
 const isDragging = ref(false);
@@ -123,26 +182,26 @@ const showStatus = computed(() => props.showStatus !== false);
 // Computed property for context menu position based on grid position
 const contextMenuPosition = computed(() => {
   if (!props.gridPosition) {
-    return 'bottom-right'; // Default position
+    return "bottom-right"; // Default position
   }
 
   const { isRight, isBottom } = props.gridPosition;
 
   // Determine the best position based on card's grid position
   if (isBottom && isRight) {
-    return 'top-left';
+    return "top-left";
   } else if (isBottom) {
-    return 'top-right';
+    return "top-right";
   } else if (isRight) {
-    return 'bottom-left';
+    return "bottom-left";
   } else {
-    return 'bottom-right'; // Default for cards not on edges
+    return "bottom-right"; // Default for cards not on edges
   }
 });
 
 // Computed property to get the correct image URL
 const imageUrl = computed(() => {
-  if (!props.card?.image) return '';
+  if (!props.card?.image) return "";
 
   // Try to get image variants if available
   try {
@@ -157,14 +216,14 @@ const imageUrl = computed(() => {
 
 const isCurated = computed(() => {
   return props.card.isCurated;
-})
+});
 const isPublic = computed(() => {
   return props.card.isPublic;
-})
+});
 
 // Get thumbnail URL for mini tiles
 const getThumbnailUrl = (imageUrl: string): string => {
-  if (!imageUrl) return '';
+  if (!imageUrl) return "";
 
   try {
     const variants = getImageVariants(imageUrl);
@@ -173,6 +232,14 @@ const getThumbnailUrl = (imageUrl: string): string => {
   } catch {
     return imageUrl;
   }
+};
+
+const titleSize = (total: number) => {
+  if (total < 3) return "xlarge";
+  if (total < 6) return "large";
+  if (total < 10) return "medium";
+  if (total < 13) return "small";
+  return "xsmall";
 };
 
 // Image loading logic
@@ -199,11 +266,15 @@ const loadImage = (url: string) => {
 };
 
 // Watch for image URL changes
-watch(imageUrl, (newUrl) => {
-  if (newUrl && displayImage.value) {
-    loadImage(newUrl);
-  }
-}, { immediate: true });
+watch(
+  imageUrl,
+  (newUrl) => {
+    if (newUrl && displayImage.value) {
+      loadImage(newUrl);
+    }
+  },
+  { immediate: true }
+);
 
 // Long press handling
 const startLongPress = () => {
@@ -265,7 +336,7 @@ const handleTouchEnd = (_event: TouchEvent) => {
 const handleClick = (_event: MouseEvent) => {
   // Only emit click if not drag ready
   if (!isDragReady.value) {
-    emit('click');
+    emit("click");
     // Add haptic feedback after emitting click to avoid any timing issues
     setTimeout(() => {
       haptic.tap();
@@ -278,57 +349,57 @@ const handleDragStart = (event: DragEvent) => {
   if (!canDrag.value) return;
 
   isDragging.value = true;
-  emit('dragstart', event, props.card);
+  emit("dragstart", event, props.card);
 };
 
 const handleDragEnd = () => {
   isDragging.value = false;
   isDragReady.value = false;
-  emit('dragend');
+  emit("dragend");
 };
 
 const handleDragOver = (event: DragEvent) => {
-  emit('dragover', event);
+  emit("dragover", event);
 };
 
 const handleDragLeave = (event: DragEvent) => {
-  emit('dragleave', event);
+  emit("dragleave", event);
 };
 
 const handleDrop = (event: DragEvent) => {
-  emit('drop', event);
+  emit("drop", event);
 };
 
 const tileClasses = computed(() => {
-  return bemm('', [
-    '',
-    props.isEmpty ? 'empty' : 'filled',
-    props.editMode ? 'edit-mode' : 'non-edit-mode',
-    displayImage.value && imageUrl.value ? 'has-image' : 'no-image',
-    isImageLoaded.value && displayImage.value && imageUrl.value ? 'pop-in' : '',
-    props.card?.isHidden ? 'hidden' : ''
-  ])
+  return bemm("", [
+    "",
+    `title-${titleSize(props.card.title.length)}`,
+    props.isEmpty ? "empty" : "filled",
+    props.editMode ? "edit-mode" : "non-edit-mode",
+    displayImage.value && imageUrl.value ? "has-image" : "no-image",
+    isImageLoaded.value && displayImage.value && imageUrl.value ? "pop-in" : "",
+    props.card?.isHidden ? "hidden" : "",
+  ]);
 });
-
 
 const pointer = ref({
   x: 0,
-  y: 0
-})
+  y: 0,
+});
 
 const setPointerPosition = (e: PointerEvent) => {
-  const target = e.currentTarget as HTMLElement
-  if (!target) return
+  const target = e.currentTarget as HTMLElement;
+  if (!target) return;
 
-  const rect = target.getBoundingClientRect()
-  const x = ((e.clientX - rect.left) / rect.width) * 100
-  const y = ((e.clientY - rect.top) / rect.height) * 100
+  const rect = target.getBoundingClientRect();
+  const x = ((e.clientX - rect.left) / rect.width) * 100;
+  const y = ((e.clientY - rect.top) / rect.height) * 100;
 
   pointer.value = {
     x: Math.round(Math.max(0, Math.min(100, x)) * 100) / 100,
-    y: Math.round(Math.max(0, Math.min(100, y)) * 100) / 100
-  }
-}
+    y: Math.round(Math.max(0, Math.min(100, y)) * 100) / 100,
+  };
+};
 </script>
 
 <style lang="scss">
@@ -340,16 +411,13 @@ const setPointerPosition = (e: PointerEvent) => {
   // transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
   color: var(--card-text);
-  transition: all .2s ease-in-out;
+  transition: all 0.2s ease-in-out;
   transform: scale(1);
   animation: tile-no-hover 0.2s ease-in-out forwards;
   z-index: 1;
   transform-style: preserve-3d;
-  transform:
-    rotateX(calc(var(--rx, 0deg) * 0.5))
-    rotateY(calc(var(--ry, 0deg) * 0.5))
-    translateZ(calc(var(--tz, 0px) * 0.5))
-    scale(1);
+  transform: rotateX(calc(var(--rx, 0deg) * 0.5)) rotateY(calc(var(--ry, 0deg) * 0.5))
+    translateZ(calc(var(--tz, 0px) * 0.5)) scale(1);
 
   &::before {
     --shine-color: color-mix(in srgb, var(--card-color), white 50%);
@@ -364,20 +432,22 @@ const setPointerPosition = (e: PointerEvent) => {
 
     border-radius: var(--border-radius);
     z-index: -2;
-    background-image: radial-gradient(circle at calc(var(--x) * 1%) calc(var(--y) * 1%), var(--shine-color) 0%, rgba(0, 0, 0, 0) 50%);
+    background-image: radial-gradient(
+      circle at calc(var(--x) * 1%) calc(var(--y) * 1%),
+      var(--shine-color) 0%,
+      rgba(0, 0, 0, 0) 50%
+    );
   }
-
 
   &:hover {
     animation: tile-hover 0.2s ease-in-out forwards;
 
     .t-card-tile__image {
-      transform: scale(1.1);
-
+      --image-scale: 1.1;
     }
 
     .t-card-tile__mini-grid {
-      transform: scale(1.05);
+      --image-scale-mini: 1.05;
     }
   }
 
@@ -419,15 +489,14 @@ const setPointerPosition = (e: PointerEvent) => {
     right: var(--space-xs);
     background-color: var(--card-color);
     border-radius: var(--border-radius);
-    opacity: .5;
-    transition: .3s ease-in-out;
+    opacity: 0.5;
+    transition: 0.3s ease-in-out;
     z-index: 2; // Ensure status appears above mini-grid
 
     &:hover {
       z-index: 100;
       opacity: 1;
     }
-
   }
 
   @keyframes tile-focus {
@@ -438,7 +507,7 @@ const setPointerPosition = (e: PointerEvent) => {
     }
 
     100% {
-      transform: scale(.95);
+      transform: scale(0.95);
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
       opacity: 1;
     }
@@ -455,9 +524,7 @@ const setPointerPosition = (e: PointerEvent) => {
     &--selected {
       article {
         transform: scale(0.92);
-        box-shadow:
-          0 0 0 4px var(--color-primary),
-          0 8px 16px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 0 0 4px var(--color-primary), 0 8px 16px rgba(0, 0, 0, 0.2);
       }
     }
 
@@ -471,6 +538,27 @@ const setPointerPosition = (e: PointerEvent) => {
     --card-title-bottom: 50%;
     // --card-title-font-size: clamp(.75em, 3vw, 1.125em);
     --card-title-transform: translateY(50%);
+    --card-title-background: transparent;
+
+    --card-title-sizing: var(--sizing);
+    --card-title-padding: 0;
+    --card-title-border-radius: 0;
+  }
+
+  &--title-xsmall {
+    --sizing: 0.75;
+  }
+  &--title-small {
+    --sizing: 1;
+  }
+  &--title-medium {
+    --sizing: 1.25;
+  }
+  &--title-large {
+    --sizing: 2;
+  }
+  &--title-xlarge {
+    --sizing: 3;
   }
 
   &__container {
@@ -483,8 +571,11 @@ const setPointerPosition = (e: PointerEvent) => {
     height: 100%;
     border-radius: inherit;
     position: relative;
-    background-image: radial-gradient(circle at calc(var(--x) * 1%) calc(var(--y) * 1%), var(--card-color) 0%, color-mix(in srgb, var(--card-color), var(--color-background) 25%) 100%);
-
+    background-image: radial-gradient(
+      circle at calc(var(--x) * 1%) calc(var(--y) * 1%),
+      var(--card-color) 0%,
+      color-mix(in srgb, var(--card-color), var(--color-background) 25%) 100%
+    );
   }
 
   &__mini-grid {
@@ -494,7 +585,7 @@ const setPointerPosition = (e: PointerEvent) => {
     overflow: hidden;
     border-radius: var(--border-radius);
     transform: scale(1);
-    transition: .2s ease-in-out;
+    transition: 0.2s ease-in-out;
     pointer-events: none;
   }
 
@@ -559,13 +650,16 @@ const setPointerPosition = (e: PointerEvent) => {
     user-select: none;
     -webkit-user-drag: none;
     pointer-events: none;
-    transform: scale(1);
-    transition: transform 0.2s ease-in-out;
+    // transition: transform 0.2s ease-in-out;
+
+    // --figure-x: calc(var(--x, 0%) + 50%);
+    --figure-x: calc(((var(--x, 0%) - 50) * 1%) / 8);
+    --figure-y: calc(((var(--y, 0%) - 50) * 1%) / 8);
+    transform: translate(var(--figure-x), var(--figure-y)) scale(var(--image-scale, 1));
   }
 
   &__title {
-
-    --font-size: calc((var(--tile-size) / 10 * 1px));
+    --font-size: calc((var(--tile-size) / 10 * 1px) * var(--card-title-sizing, 1));
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     font-size: clamp(0.75rem, 2vw, 1rem);
@@ -581,9 +675,9 @@ const setPointerPosition = (e: PointerEvent) => {
     bottom: var(--card-title-bottom, var(--space-s));
     transform: var(--card-title-transform, translateY(0%));
     margin: auto;
-    padding: .25em .5em;
-    background-color: var(--card-color);
-    border-radius: var(--border-radius);
+    padding: var(--card-title-padding, 0.25em 0.5em);
+    background-color: var(--card-title-background, var(--card-color));
+    border-radius: var(--card-title-border-radius, var(--border-radius));
     word-break: break-word;
     max-width: calc(100% - var(--space));
   }
@@ -601,7 +695,6 @@ const setPointerPosition = (e: PointerEvent) => {
       &:hover {
         // background-color: var(--color-gray);
         border-color: color-mix(in srgb, var(--color-foreground), transparent 25%);
-
       }
     }
   }
@@ -677,7 +770,6 @@ const setPointerPosition = (e: PointerEvent) => {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       }
     }
-
 
     &--can-drag {
       .t-card-tile--edit-mode {

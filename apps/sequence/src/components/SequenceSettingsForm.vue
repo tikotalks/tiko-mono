@@ -46,6 +46,35 @@
         <p :class="bemm('description')">{{ t('sequence.showHiddenItemsDescription') }}</p>
       </div>
 
+      <!-- Animations Section -->
+      <div :class="bemm('item')">
+        <TInputCheckbox
+          v-model="form.enableAnimations"
+          :label="t('sequence.enableAnimations')"
+          :class="bemm('checkbox')"
+        />
+        <p :class="bemm('description')">{{ t('sequence.enableAnimationsDescription') }}</p>
+      </div>
+
+      <div :class="bemm('item')">
+        <TInputCheckbox
+          v-model="form.enableRewardAnimations"
+          :label="t('sequence.enableRewardAnimations')"
+          :class="bemm('checkbox')"
+        />
+        <p :class="bemm('description')">{{ t('sequence.enableRewardAnimationsDescription') }}</p>
+      </div>
+
+      <!-- Sounds Section -->
+      <div :class="bemm('item')">
+        <TInputCheckbox
+          v-model="form.enableSounds"
+          :label="t('sequence.enableSounds')"
+          :class="bemm('checkbox')"
+        />
+        <p :class="bemm('description')">{{ t('sequence.enableSoundsDescription') }}</p>
+      </div>
+
       <!-- Hidden Sequences Button -->
       <div v-if="hiddenItemsCount > 0" :class="bemm('item')">
         <TButton
@@ -64,7 +93,7 @@
 
 <script setup lang="ts">
   import { ref, watch, computed, inject } from 'vue'
-  import { useI18n } from '@tiko/core'
+  import { useI18nSimple as useI18n } from '@tiko/core'
   import { TInputCheckbox, TInputSwitch, TButton } from '@tiko/ui'
   import { useBemm } from 'bemm'
   import { Icons } from 'open-icon'
@@ -78,6 +107,9 @@
     showCuratedItems: boolean
     showHiddenItems: boolean
     hiddenItems?: string[]
+    enableAnimations: boolean
+    enableSounds: boolean
+    enableRewardAnimations: boolean
   }
 
   const props = defineProps<{
@@ -97,6 +129,9 @@
     showCuratedItems: props.settings?.showCuratedItems ?? true,
     showHiddenItems: props.settings?.showHiddenItems ?? false,
     hiddenItems: props.settings?.hiddenItems ?? [],
+    enableAnimations: props.settings?.enableAnimations ?? true,
+    enableSounds: props.settings?.enableSounds ?? true,
+    enableRewardAnimations: props.settings?.enableRewardAnimations ?? true,
   })
 
   // Computed property for hidden items count

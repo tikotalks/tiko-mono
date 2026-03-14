@@ -95,8 +95,8 @@ const selectColor = (color: string) => {
 
 
   &__grid {
-    display: grid;
-    grid-template-columns: repeat(6, minmax(var(--color-size), 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: var(--space-xs);
     max-width: 100%;
   }

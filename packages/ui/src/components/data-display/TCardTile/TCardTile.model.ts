@@ -4,7 +4,8 @@ import { Colors } from "../../../types/color";
 export const CardTileType = {
   RESPONSE: 'response',
   QUESTION: 'question',
-  GHOST: 'ghost'
+  GHOST: 'ghost',
+  GROUP: 'group'
 } as const;
 export type CardTileType = (typeof CardTileType)[keyof typeof CardTileType];
 
@@ -27,6 +28,9 @@ export interface TCardTile {
   updated_at?: string; // Timestamp for tracking recent modifications
   ownerId?: string; // ID of the user who owns this card
   user_id?: string; // Legacy field for compatibility
+  // Group-specific fields
+  sequences?: string[]; // Array of sequence IDs in this group
+  sequenceCount?: number; // Number of sequences in the group
 }
 
 export interface GridPosition {

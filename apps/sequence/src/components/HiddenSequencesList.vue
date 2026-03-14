@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
   import { ref, computed, onMounted } from 'vue'
-  import { useI18n } from '@tiko/core'
+  import { useI18nSimple as useI18n } from '@tiko/core'
   import { TButton, TIcon, TCardTile, type TCardTile as CardTileType } from '@tiko/ui'
   import { useBemm } from 'bemm'
   import { Icons } from 'open-icon'

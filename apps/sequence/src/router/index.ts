@@ -14,6 +14,11 @@ const router = createAppRouter({
       component: SequenceView,
     },
     {
+      path: '/group/:groupId',
+      name: 'Group',
+      component: SequenceView,
+    },
+    {
       path: '/play/:sequenceId',
       name: 'Play',
       component: PlayView,

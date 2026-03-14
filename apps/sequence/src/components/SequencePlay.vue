@@ -39,7 +39,7 @@
 <script setup lang="ts">
   import { computed, watch, nextTick, ref } from 'vue'
   import { useBemm } from 'bemm'
-  import { useI18n } from '@tiko/core'
+  import { useI18nSimple as useI18n } from '@tiko/core'
   import { TCardTile, TButton, TCardFlowGrid } from '@tiko/ui'
   import type { TCardTile as CardTileType } from '@tiko/ui'
   import { useSequenceStore } from '../stores/sequence'

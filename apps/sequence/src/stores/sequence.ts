@@ -10,7 +10,7 @@ type CardTile = BaseCardTile & {
   rewardAnimation?: string
   speak?: string
 }
-import { useI18n } from '@tiko/core'
+import { useI18nSimple as useI18n } from '@tiko/core'
 
 export interface SequenceSettings {
   autoSpeak: boolean
@@ -19,6 +19,9 @@ export interface SequenceSettings {
   showCuratedItems: boolean
   showHiddenItems: boolean // Show hidden items with opacity
   hiddenItems: string[] // Array of item IDs that user has hidden
+  enableAnimations: boolean // Enable/disable animations globally
+  enableSounds: boolean // Enable/disable sounds globally
+  enableRewardAnimations: boolean // Enable/disable reward animations specifically
 }
 
 interface CardCacheEntry {
@@ -68,6 +71,9 @@ export const useSequenceStore = defineStore('sequence', () => {
     showCuratedItems: true,
     showHiddenItems: false,
     hiddenItems: [],
+    enableAnimations: true,
+    enableSounds: true,
+    enableRewardAnimations: true,
   }
 
   // Getters

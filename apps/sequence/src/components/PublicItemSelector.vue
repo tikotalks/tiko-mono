@@ -65,7 +65,7 @@
 <script setup lang="ts">
   import { ref, computed, onMounted } from 'vue'
   import { useBemm } from 'bemm'
-  import { useI18n } from '@tiko/core'
+  import { useI18nSimple as useI18n } from '@tiko/core'
   import { TButton, TInput, TIcon, TCardTile } from '@tiko/ui'
   import { useAuthStore } from '@tiko/core'
   import { Icons } from 'open-icon'

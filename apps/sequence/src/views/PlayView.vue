@@ -50,7 +50,7 @@
   import { useRoute, useRouter } from 'vue-router'
   import { TButton, TAppLayout, TIcon } from '@tiko/ui'
   import { Icons } from 'open-icon'
-  import { useI18n } from '@tiko/core'
+  import { useI18nSimple as useI18n } from '@tiko/core'
   import { useSequenceStore } from '../stores/sequence'
   import { sequenceService } from '../services/sequence.service'
   import SequencePlay from '../components/SequencePlay.vue'
@@ -68,9 +68,37 @@
   const sequenceTitle = ref(t('sequence.sequenceTitle'))
 
   const handleBack = async () => {
-    // Exit play mode and go back to the home view
+    // Exit play mode
     sequenceStore.resetPlay()
-    await router.push('/')
+    
+    // Check if the sequence belongs to a group and navigate back appropriately
+    if (sequenceId.value) {
+      try {
+        const sequence = await sequenceStore.getCardById(sequenceId.value)
+        console.log('[PlayView] Sequence parent info:', {
+          sequenceId: sequenceId.value,
+          parentId: sequence?.parentId,
+          sequenceTitle: sequence?.title
+        })
+        
+        if (sequence?.parentId) {
+          // Navigate back to the parent group
+          console.log('[PlayView] Navigating back to group:', sequence.parentId)
+          await router.push(`/group/${sequence.parentId}`)
+        } else {
+          // Navigate to root if no parent group
+          console.log('[PlayView] Navigating back to root (no parent group)')
+          await router.push('/')
+        }
+      } catch (error) {
+        console.error('[PlayView] Error getting sequence info:', error)
+        // Fallback to root navigation
+        await router.push('/')
+      }
+    } else {
+      // Fallback to root navigation
+      await router.push('/')
+    }
   }
 
   const handleRestart = () => {

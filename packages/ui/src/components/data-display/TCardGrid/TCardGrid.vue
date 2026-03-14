@@ -154,8 +154,10 @@ const LAYOUT_SPACING = {
 
 // Swipe gesture constants
 const SWIPE_CONFIG = {
-  THRESHOLD_PERCENTAGE: 0.2, // 20% of panel width to trigger page change
-  TRANSITION_DURATION: 300, // milliseconds
+  THRESHOLD_PERCENTAGE: 0.15, // Reduced to 15% for iOS (more responsive)
+  TRANSITION_DURATION: 250, // Reduced to 250ms for iOS (snappier)
+  MOMENTUM_THRESHOLD: 5, // Minimum velocity for momentum swipe on iOS
+  DEBOUNCE_MS: 16, // ~1 frame at 60fps for iOS performance
 } as const;
 
 // Configuration for tile calculation
@@ -477,10 +479,14 @@ const goToPage = (page: number) => {
     isTransitioning.value = true;
     updateTranslateX();
 
+    // Optimized animation timing for iOS
+    const animationDelay = isIOS ? SWIPE_CONFIG.TRANSITION_DURATION * 0.3 : SWIPE_CONFIG.TRANSITION_DURATION / 2;
+    const animationDuration = isIOS ? 800 : 1000; // Shorter duration for iOS
+    
     // Trigger animation for the new page
     setTimeout(() => {
       animatePage(page);
-    }, SWIPE_CONFIG.TRANSITION_DURATION / 2);
+    }, animationDelay);
 
     setTimeout(() => {
       isTransitioning.value = false;
@@ -492,13 +498,31 @@ const nextPage = () => goToPage(currentPage.value + 1);
 const previousPage = () => goToPage(currentPage.value - 1);
 
 // Touch/Mouse handling for swipe
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+const lastTouchTime = ref(0);
+const isMomentumSwipe = ref(false);
+const touchVelocity = ref(0);
+const lastTouchX = ref(0);
+let touchStartTime = 0;
+
 const handleStart = (clientX: number) => {
   // Don't start panel dragging if a tile is being dragged
   if (props.isTileDragging) return;
 
+  // Debounce rapid touches for iOS
+  const now = Date.now();
+  if (isIOS && now - lastTouchTime.value < SWIPE_CONFIG.DEBOUNCE_MS) {
+    return;
+  }
+  lastTouchTime.value = now;
+  
   isDragging.value = true;
   startX.value = clientX;
   currentX.value = clientX;
+  lastTouchX.value = clientX;
+  isMomentumSwipe.value = false;
+  touchVelocity.value = 0;
+  touchStartTime = now;
   isTransitioning.value = false;
 };
 
@@ -506,6 +530,18 @@ const handleMove = (clientX: number) => {
   if (!isDragging.value) return;
 
   currentX.value = clientX;
+  
+  // Calculate velocity for iOS momentum detection
+  if (isIOS) {
+    const now = Date.now();
+    const timeDiff = now - touchStartTime;
+    if (timeDiff > 0) {
+      touchVelocity.value = (clientX - lastTouchX.value) / timeDiff;
+      lastTouchX.value = clientX;
+      touchStartTime = now;
+    }
+  }
+  
   const diff = currentX.value - startX.value;
   translateX.value = -currentPage.value * panelWidth.value + diff;
 };
@@ -516,8 +552,33 @@ const handleEnd = () => {
   isDragging.value = false;
   const diff = currentX.value - startX.value;
   const threshold = panelWidth.value * SWIPE_CONFIG.THRESHOLD_PERCENTAGE;
+  
+  let shouldChangePage = false;
+  
+  if (isIOS) {
+    // iOS-specific momentum handling
+    const absVelocity = Math.abs(touchVelocity.value);
+    const absDiff = Math.abs(diff);
+    
+    // Check for momentum swipe or distance threshold
+    if (absVelocity > SWIPE_CONFIG.MOMENTUM_THRESHOLD) {
+      // Momentum detected - use velocity direction
+      shouldChangePage = true;
+      isMomentumSwipe.value = true;
+      console.log('[CardGrid] iOS momentum swipe detected, velocity:', absVelocity);
+    } else if (absDiff > threshold) {
+      // Distance-based swipe
+      shouldChangePage = true;
+    }
+    
+    // Reset velocity tracking
+    touchVelocity.value = 0;
+  } else {
+    // Standard swipe logic for non-iOS devices
+    shouldChangePage = Math.abs(diff) > threshold;
+  }
 
-  if (Math.abs(diff) > threshold) {
+  if (shouldChangePage) {
     if (diff > 0 && currentPage.value > 0) {
       previousPage();
     } else if (diff < 0 && currentPage.value < totalPages.value - 1) {
@@ -532,17 +593,41 @@ const handleEnd = () => {
     isTransitioning.value = true;
     updateTranslateX();
   }
+  
+  // iOS-specific: Clear any pending momentum
+  if (isIOS) {
+    isMomentumSwipe.value = false;
+  }
 };
 
 // Touch events
 const handleTouchStart = (e: TouchEvent) => {
   if (props.isTileDragging) return;
+  
+  // iOS-specific: Prevent default to enable smooth scrolling and stop browser bounce
+  if (isIOS) {
+    e.preventDefault();
+  }
+  
   handleStart(e.touches[0].clientX);
 };
+
 const handleTouchMove = (e: TouchEvent) => {
   if (props.isTileDragging) return;
+  
+  // iOS-specific: Allow momentum scrolling but prevent default browser behavior
+  if (isIOS) {
+    // Only prevent default if we're actually swiping horizontally
+    const touch = e.touches[0];
+    const diff = Math.abs(touch.clientX - startX.value);
+    if (diff > 10) {
+      e.preventDefault();
+    }
+  }
+  
   handleMove(e.touches[0].clientX);
 };
+
 const handleTouchEnd = () => {
   if (props.isTileDragging) return;
   handleEnd();
@@ -988,6 +1073,16 @@ watch(() => props.cards, (newCards) => {
     height: 100%;
     overflow: hidden;
     cursor: grab;
+    -webkit-touch-callout: none; /* Disable iOS callout */
+    -webkit-user-select: none; /* Disable iOS text selection */
+    user-select: none;
+    
+    // iOS-specific scrolling improvements
+    @supports (-webkit-touch-callout: none) {
+      -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+      overscroll-behavior-x: contain; /* Prevent bounce scroll */
+      touch-action: pan-x; /* Optimize for horizontal panning */
+    }
 
     &:active {
       cursor: grabbing;
@@ -998,6 +1093,17 @@ watch(() => props.cards, (newCards) => {
     display: flex;
     height: 100%;
     will-change: transform;
+    
+    // iOS-specific performance optimizations
+    @supports (-webkit-touch-callout: none) {
+      // iOS Safari specific optimizations
+      -webkit-transform: translateZ(0); /* Force hardware acceleration */
+      transform: translateZ(0);
+      -webkit-backface-visibility: hidden; /* Reduce flicker */
+      backface-visibility: hidden;
+      -webkit-perspective: 1000; /* Improve 3D performance */
+      perspective: 1000;
+    }
   }
 
   &__panel {

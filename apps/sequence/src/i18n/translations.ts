@@ -74,5 +74,13 @@ export const cardTranslations = {
     'sequence.itemDuplicated': 'Item duplicated successfully',
     'sequence.sequence': 'Sequence',
     'sequence.item': 'Item',
+    'sequence.errors.titleRequired': 'Sequence title is required',
+    'sequence.errors.noItems': 'No sequence items yet',
+    'sequence.errors.minItems': 'Sequences need at least 2 items',
+    'sequence.errors.emptyItemTitles': 'All items must have titles',
+    'sequence.errors.noAnimation': 'Please select a reward animation',
+    'sequence.sequenceCreated': 'Sequence created successfully',
+    'sequence.sequenceUpdated': 'Sequence updated successfully',
+    'sequence.failedToSaveSequence': 'Failed to save sequence',
   },
 }

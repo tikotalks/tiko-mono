@@ -1,6 +1,6 @@
 <template>
   <TAppLayout
-    :title="t('sequence.sequenceTitle')"
+    :title="pageTitle"
     :show-header="true"
     app-name="sequence"
     @profile="handleProfile"
@@ -8,7 +8,16 @@
     @logout="handleLogout"
   >
     <template #app-controls>
-      <!-- Remove back button since we only show root sequences -->
+      <!-- Back button (only visible when viewing a group) -->
+      <TButton
+        v-if="currentGroupId"
+        :icon="Icons.ARROW_LEFT"
+        type="outline"
+        color="secondary"
+        @click="goBackToParent"
+        :aria-label="t('common.back')"
+        :tooltip="t('common.back')"
+      />
 
       <!-- Edit mode toggle (only visible in parent mode) -->
       <TButton
@@ -31,6 +40,9 @@
         :aria-label="t('sequence.bulkAdd')"
         :tooltip="t('sequence.bulkAdd')"
       />
+
+      <!-- Create Group button (only in edit mode) -->
+      <CreateGroupButton v-if="isEditMode" ref="createGroupButtonRef" />
 
       <!-- App settings button (only visible in parent mode) -->
       <TButton
@@ -55,8 +67,6 @@
     </template>
 
     <div :class="bemm('container')">
-      <!-- Remove breadcrumbs since we only show root sequences -->
-
       <!-- Main display -->
       <div :class="bemm('main')">
         <TCardGrid
@@ -78,6 +88,18 @@
           @update:tile-dragging="isTileDragging = $event"
         />
       </div>
+      <!-- Breadcrumbs (show when viewing a group or have breadcrumb path) -->
+      <div v-if="breadcrumbs.length > 0" :class="bemm('breadcrumbs')">
+        <TButton
+          v-for="(breadcrumb, index) in breadcrumbs"
+          :key="breadcrumb.id || 'home'"
+          :class="bemm('breadcrumb')"
+          @click="navigateToBreadcrumb(index)"
+          :icon="breadcrumb.id === undefined ? Icons.HOME_GARDEN : Icons.FOLDER"
+        >
+          <span>{{ breadcrumb.title }}</span>
+        </TButton>
+      </div>
     </div>
 
     <!-- Selection Status Bar -->
@@ -87,7 +109,7 @@
           <TIcon :name="Icons.CHECK_M" />
           <span>
             {{ selectedTileIds.size }}
-            {{ selectedTileIds.size === 1 ? 'card' : 'sequence' }} selected
+            {{ selectedTileIds.size === 1 ? "card" : "sequence" }} selected
           </span>
         </div>
 
@@ -121,7 +143,9 @@
               Delete
             </TButton>
 
-            <TButton size="small" type="ghost" @click="clearSelection"> Clear Selection </TButton>
+            <TButton size="small" type="ghost" @click="clearSelection">
+              Clear Selection
+            </TButton>
           </TButtonGroup>
         </div>
       </div>
@@ -146,7 +170,9 @@
     popupRefs,
     Status,
   } from '@tiko/ui'
-  import { useI18n } from '@tiko/core'
+  import  { type TCardTile } from '@tiko/ui'
+
+  import { useI18nSimple as useI18n } from '@tiko/core'
   import { useSequenceStore } from '../stores/sequence'
   import SequenceSettingsForm from '../components/SequenceSettingsForm.vue'
   import { TCardGrid } from '@tiko/ui'
@@ -154,7 +180,8 @@
   import CuratedItemActions from '../components/CuratedItemActions.vue'
   import GroupSelector from '../components/GroupSelector.vue'
   import AddSequenceModal from '../components/AddSequenceModal.vue'
-  import type { TCardTile } from '@tiko/ui'
+  import CreateGroupButton from '../components/CreateGroupButton.vue'
+  import CreateGroupForm from '../components/CreateGroupForm.vue'
   import { useEditMode } from '../composables/useEditMode'
   import { useSpeak, useEventBus, useAuthStore, useTextToSpeech } from '@tiko/core'
   import { sequenceService } from '../services/sequence.service'
@@ -235,12 +262,101 @@
   const currentGroupId = ref<string | undefined>(undefined)
   const breadcrumbs = ref<Array<{ id?: string; title: string }>>([])
 
+  // Build breadcrumbs from current card (defined before watchers to prevent temporal dead zone)
+  const buildBreadcrumbs = async (cardId: string | undefined) => {
+    console.log('[SequenceView] buildBreadcrumbs called with cardId:', cardId)
+
+    if (!cardId) {
+      console.log('[SequenceView] No cardId provided, resetting to home')
+      breadcrumbs.value = []
+      currentGroupId.value = undefined
+      return
+    }
+
+    try {
+      // Get the full path from root to current card
+      const cardPath = await sequenceService.getCardPath(cardId)
+      console.log('[SequenceView] Card path:', cardPath)
+
+      // Build breadcrumbs with Home as root
+      const path: Array<{ id?: string; title: string }> = [{ id: undefined, title: 'Home' }]
+
+      // Add all sequence in the path
+      path.push(...cardPath)
+
+      breadcrumbs.value = path
+      currentGroupId.value = cardId
+
+      console.log('[SequenceView] Breadcrumbs set:', breadcrumbs.value)
+      console.log('[SequenceView] currentGroupId set to:', currentGroupId.value)
+    } catch (error) {
+      console.error('Failed to build breadcrumbs:', error)
+      // Fallback to just showing current card
+      breadcrumbs.value = [
+        { id: undefined, title: 'Home' },
+        { id: cardId, title: 'Loading...' },
+      ]
+      currentGroupId.value = cardId
+    }
+  }
+
+  // Set currentGroupId based on route
+  const setGroupIdFromRoute = () => {
+    console.log('[SequenceView] setGroupIdFromRoute called:', {
+      routeName: route.name,
+      routeParams: route.params,
+      currentGroupId: currentGroupId.value
+    })
+
+    if (route.name === 'Group' && route.params.groupId) {
+      currentGroupId.value = route.params.groupId as string
+      console.log('[SequenceView] Set currentGroupId to:', currentGroupId.value)
+    } else {
+      currentGroupId.value = undefined
+      console.log('[SequenceView] Cleared currentGroupId')
+    }
+  }
+
+  // Initialize group ID from route and watch for changes
+  setGroupIdFromRoute()
+  watch(() => [route.name, route.params.groupId], setGroupIdFromRoute, { immediate: true })
+
+  // Note: Breadcrumbs will be built after buildBreadcrumbs function is defined below
+
   // Multi-select state
   const selectionMode = ref(false)
   const selectedTileIds = ref<Set<string>>(new Set())
 
+// Create group button ref
+  const createGroupButtonRef = ref<InstanceType<typeof CreateGroupButton>>()
+
   // Loading state - use store's loading state instead of local state
   const isLoading = computed(() => sequenceStore.isLoadingSequence)
+
+  // Group title for header
+  const groupTitle = ref<string>('')
+
+  // Page title - shows group name when viewing a group, default title otherwise
+  const pageTitle = computed(() => {
+    if (currentGroupId.value) {
+      return groupTitle.value || t('sequence.sequenceTitle')
+    }
+    return t('sequence.sequenceTitle')
+  })
+
+  // Load group title when currentGroupId changes
+  const loadGroupTitle = async (groupId: string) => {
+    try {
+      const groupCard = await sequenceStore.getCardById(groupId)
+      if (groupCard) {
+        groupTitle.value = groupCard.title
+        console.log('[SequenceView] Loaded group title:', groupCard.title)
+      }
+    } catch (error) {
+      console.error('[SequenceView] Failed to load group title:', error)
+      groupTitle.value = ''
+    }
+  }
 
   // Toggle selection mode
   const toggleSelectionMode = () => {
@@ -271,6 +387,7 @@
     selectedTileIds.value.clear()
     selectionMode.value = false
   }
+
 
   // Generate ghost sequence for loading state
   const generateGhostSequence = (): SequenceTile[] => {
@@ -953,6 +1070,92 @@
   const openCardEditForm = async (card: SequenceTile, index: number) => {
     const isNewCard = card.id.startsWith('empty-')
 
+    // If it's a group, use CreateGroupForm for editing
+    if (card.type === 'group' && !isNewCard) {
+      console.log('[SequenceView] Opening group edit form for:', card.title)
+
+      // Load the actual sequence objects from the group's sequence IDs
+      const groupSequences: SequenceTile[] = []
+      if (card.sequences && Array.isArray(card.sequences)) {
+        for (const sequenceId of card.sequences) {
+          try {
+            const sequenceCard = await sequenceStore.getCardById(sequenceId)
+            if (sequenceCard) {
+              groupSequences.push(sequenceCard)
+            }
+          } catch (error) {
+            console.error(`[SequenceView] Failed to load sequence ${sequenceId}:`, error)
+          }
+        }
+      }
+
+      console.log('[SequenceView] Loaded group sequences:', groupSequences.length, 'items')
+
+      const actions = [
+        {
+          id: 'cancel',
+          label: t('common.cancel'),
+          type: 'outline',
+          color: 'secondary',
+          action: () => popupService.close(),
+        },
+        {
+          id: 'save',
+          label: t('common.save'),
+          type: 'default',
+          color: 'primary',
+          action: async () => {
+            console.log('Group save action')
+            // Handle group save here
+            popupService.close()
+          },
+        },
+      ]
+
+      popupService.open({
+        component: CreateGroupForm,
+        title: t('group.editGroup') || 'Edit Group',
+        actions: actions,
+        props: {
+          group: card,
+          sequences: groupSequences,
+          onFormChange: (data: any) => {
+            console.log('Group form changed:', data)
+          },
+          onSave: async (groupData: any) => {
+            try {
+              console.log('Saving group:', groupData)
+
+              // Update the group with new data
+              const updatedGroup = {
+                ...card,
+                title: groupData.title,
+                color: groupData.color,
+                image: groupData.image,
+                sequences: groupData.sequences || [],
+                sequenceCount: (groupData.sequences || []).length,
+              }
+
+              await sequenceService.saveCard(updatedGroup, card.parentId, card.index)
+
+              // Update the store cache
+              await sequenceStore.addCardToCache(updatedGroup, card.parentId, currentLocale.value)
+
+              // Reload the current view
+              await loadSequence()
+
+              console.log('Group updated successfully')
+              popupService.close()
+            } catch (error) {
+              console.error('Failed to update group:', error)
+              // Don't close popup on error
+            }
+          },
+        },
+      })
+      return
+    }
+
     // Load translations if editing existing card (for potential future use)
     if (!isNewCard) {
       try {
@@ -1013,9 +1216,8 @@
         type: 'default',
         color: 'primary',
         status: isSaving.value ? 'loading' : 'default',
-        action: async () => {
+        action: () => {
           if (formComponentRef?.triggerSave) {
-            console.log('Calling triggerSave on component')
             formComponentRef.triggerSave()
           } else {
             console.error('No triggerSave method available on component', formComponentRef)
@@ -1034,7 +1236,7 @@
         isOwner: isOwner,
         showVisibilityToggle: true,
         // Pass a ref callback to get the component instance
-        onMounted: (componentInstance: any) => {
+        onComponentMounted: (componentInstance: any) => {
           console.log('Form component mounted with instance:', componentInstance)
           formComponentRef = componentInstance
         },
@@ -1043,8 +1245,12 @@
             isSaving.value = true
             await handleSaveSequence(formData, card, isNewCard, index)
             popupService.close()
+            toastService.success(
+              isNewCard ? 'Sequence created successfully' : 'Sequence updated successfully'
+            )
           } catch (error) {
             console.error('Failed to save sequence:', error)
+            toastService.error('Failed to save sequence')
             // Don't close popup on error so user can retry
           } finally {
             isSaving.value = false
@@ -1130,14 +1336,20 @@
           cardType: card.type,
         })
 
-        if (hasChildren || card.type === 'sequence') {
+        if (card.type === 'group') {
+          // Navigate to group view
+          console.log(
+            `[SequenceView] Navigating to group view for group ${card.id} (${card.title})`
+          )
+          await router.push(`/group/${card.id}`)
+        } else if (hasChildren || card.type === 'sequence') {
           // Navigate to play mode to view the sequence
           console.log(
             `[SequenceView] Navigating to play mode for sequence ${card.id} (${card.title})`
           )
           await router.push(`/play/${card.id}`)
         } else {
-          console.log(`[SequenceView] Card ${card.id} has no action (not a sequence)`)
+          console.log(`[SequenceView] Card ${card.id} has no action (not a sequence or group)`)
         }
       }
     }
@@ -1183,15 +1395,40 @@
     await router.push(`/play/${tile.id}`)
   }
 
-  // Remove breadcrumb navigation since we're only showing root sequences
+  // Navigate to breadcrumb (handles group navigation)
   const navigateToBreadcrumb = async (index: number) => {
-    // Always go back to root
-    await router.push('/')
+    if (index === 0) {
+      // Home breadcrumb - go to root
+      await router.push('/')
+    } else if (breadcrumbs.value[index]) {
+      // Group breadcrumb - navigate to that group
+      const breadcrumb = breadcrumbs.value[index]
+      if (breadcrumb.id) {
+        await router.push(`/group/${breadcrumb.id}`)
+      }
+    }
   }
 
   const handleBack = async () => {
     // Always go back to root since we only show top-level sequences
     await router.push('/')
+  }
+
+  const goBackToParent = async () => {
+    if (currentGroupId.value) {
+      // Find the parent group of the current group
+      const currentGroup = await sequenceStore.getCardById(currentGroupId.value)
+      if (currentGroup?.parentId) {
+        // Navigate to the parent group
+        await router.push(`/group/${currentGroup.parentId}`)
+      } else {
+        // If no parent, go to root
+        await router.push('/')
+      }
+    } else {
+      // If no current group, go to root
+      await router.push('/')
+    }
   }
 
   // Text-to-Speech is already initialized above with other composables
@@ -1256,6 +1493,24 @@
     // Don't allow dropping on empty sequence - this should be handled by handleCardReorder
     if (targetCard.id.startsWith('empty-')) {
       console.log('Cannot drop on empty placeholder')
+      return
+    }
+
+    // Check if both cards are sequences (not groups) and we should create a new group
+    const bothAreSequences =
+      droppedCard.type !== 'group' &&
+      targetCard.type !== 'group' &&
+      droppedCard.type !== 'ghost' &&
+      targetCard.type !== 'ghost' &&
+      !droppedCard.id.startsWith('empty-') &&
+      !targetCard.id.startsWith('empty-')
+
+    if (bothAreSequences) {
+      // Use CreateGroupButton to create group with sequences
+      // Pass targetCard as the target sequence (the one we dropped onto)
+      if (createGroupButtonRef.value) {
+        createGroupButtonRef.value.createGroupWithSequences([droppedCard, targetCard], targetCard)
+      }
       return
     }
 
@@ -1685,7 +1940,9 @@
     }
   }
 
-  // Find first empty position in the grid
+  // Group creation is now handled by CreateGroupButton component
+
+  // Find first empty position in the grid (needed for bulk add)
   const findFirstEmptyPosition = (): number => {
     // Get all occupied positions
     const occupiedPositions = new Set(
@@ -1815,43 +2072,28 @@
     })
   }
 
-  // Build breadcrumbs from current card
-  const buildBreadcrumbs = async (cardId: string | undefined) => {
-    console.log('[SequenceView] buildBreadcrumbs called with cardId:', cardId)
-
-    if (!cardId) {
-      console.log('[SequenceView] No cardId provided, resetting to home')
+  // Build breadcrumbs when currentGroupId changes (now that function is defined)
+  watch(currentGroupId, (newGroupId) => {
+    if (newGroupId) {
+      buildBreadcrumbs(newGroupId)
+    } else {
       breadcrumbs.value = []
-      currentGroupId.value = undefined
-      return
     }
+  }, { immediate: true })
 
-    try {
-      // Get the full path from root to current card
-      const cardPath = await sequenceService.getCardPath(cardId)
-      console.log('[SequenceView] Card path:', cardPath)
-
-      // Build breadcrumbs with Home as root
-      const path: Array<{ id?: string; title: string }> = [{ id: undefined, title: 'Home' }]
-
-      // Add all sequence in the path
-      path.push(...cardPath)
-
-      breadcrumbs.value = path
-      currentGroupId.value = cardId
-
-      console.log('[SequenceView] Breadcrumbs set:', breadcrumbs.value)
-      console.log('[SequenceView] currentGroupId set to:', currentGroupId.value)
-    } catch (error) {
-      console.error('Failed to build breadcrumbs:', error)
-      // Fallback to just showing current card
-      breadcrumbs.value = [
-        { id: undefined, title: 'Home' },
-        { id: cardId, title: 'Loading...' },
-      ]
-      currentGroupId.value = cardId
+  // Reload sequence when currentGroupId changes
+  watch(currentGroupId, async (newGroupId, oldGroupId) => {
+    console.log('[SequenceView] currentGroupId changed from', oldGroupId, 'to', newGroupId)
+    
+    // Load group title if we have a group ID
+    if (newGroupId) {
+      await loadGroupTitle(newGroupId)
+    } else {
+      groupTitle.value = ''
     }
-  }
+    
+    await loadSequence()
+  }, { immediate: true })
 
   // Watch edit mode changes - clear selection when edit mode is disabled
   watch(
@@ -2010,21 +2252,16 @@
       sequence.value = generateGhostSequence()
 
       try {
-        // Reset to root (no group)
-        currentGroupId.value = undefined
-        breadcrumbs.value = []
-
-        // Load the root sequence
+        // Load the sequence (root or group based on currentGroupId)
         await loadSequence()
 
-        console.log('[SequenceView] Root sequence loaded')
+        console.log('[SequenceView] Sequence loaded for group:', currentGroupId.value)
       } catch (error) {
         console.error('[SequenceView] Error loading root sequence:', error)
         // Show empty state on error
         sequence.value = []
       } finally {
-        // Clear loading state
-        isLoading.value = false
+        // Loading state is managed by the sequence store
       }
 
       console.log('[SequenceView] Initialization complete')
@@ -2041,138 +2278,138 @@
 </script>
 
 <style lang="scss">
-  // Override TAppLayout's problematic styles
-  :deep(.app-layout) {
-    width: 100%;
-    height: 100vh;
-    overflow: hidden;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    -webkit-overflow-scrolling: touch;
-  }
+// Override TAppLayout's problematic styles
+:deep(.app-layout) {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  -webkit-overflow-scrolling: touch;
+}
 
-  :deep(.app-layout--is-app) {
-    overflow: hidden; // Override the auto
-  }
+:deep(.app-layout--is-app) {
+  overflow: hidden; // Override the auto
+}
 
-  :deep(.app-layout--is-app .app-layout__header) {
-    position: static; // Override fixed positioning
-    width: 100%;
-    left: 0;
-  }
+:deep(.app-layout--is-app .app-layout__header) {
+  position: static; // Override fixed positioning
+  width: 100%;
+  left: 0;
+}
 
-  :deep(.app-layout--is-app .app-layout__content) {
-    // Calculate height minus header
-    height: calc(100vh - var(--top-bar-height, 60px));
-    overflow: hidden;
-  }
+:deep(.app-layout--is-app .app-layout__content) {
+  // Calculate height minus header
+  height: calc(100vh - var(--top-bar-height, 60px));
+  overflow: hidden;
+}
 
-  :deep(.app-layout__content) {
+:deep(.app-layout__content) {
+  display: flex;
+  flex-direction: column;
+}
+
+// Prevent body/html scrolling on mobile devices
+:global(html, body) {
+  overflow: hidden;
+  height: 100vh;
+  -webkit-overflow-scrolling: touch;
+  -webkit-user-select: none;
+  user-select: none;
+
+  // Prevent pull-to-refresh and overscroll effects on iOS
+  overscroll-behavior: none;
+  -webkit-overscroll-behavior: none;
+}
+
+.sequence-view {
+  &__container {
     display: flex;
     flex-direction: column;
-  }
-
-  // Prevent body/html scrolling on mobile devices
-  :global(html, body) {
-    overflow: hidden;
     height: 100vh;
-    -webkit-overflow-scrolling: touch;
-    -webkit-user-select: none;
-    user-select: none;
-
-    // Prevent pull-to-refresh and overscroll effects on iOS
-    overscroll-behavior: none;
-    -webkit-overscroll-behavior: none;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
   }
 
-  .sequence-view {
-    &__container {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      width: 100%;
-      position: relative;
-      overflow: hidden;
-    }
+  &__main {
+    flex: 1;
+    min-height: 0; // Important for flex children
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
 
-    &__main {
-      flex: 1;
-      min-height: 0; // Important for flex children
-      position: relative;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-    }
+  &__breadcrumbs {
+    display: flex;
+    align-items: center;
+    padding: var(--space) var(--space);
+    background-color: var(--color-background-secondary);
+    border-bottom: 2px solid var(--color-accent);
+    gap: var(--space-xs);
+    overflow-x: auto;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
-    &__breadcrumbs {
-      display: flex;
-      align-items: center;
-      padding: var(--space) var(--space);
-      background-color: var(--color-background-secondary);
-      border-bottom: 2px solid var(--color-accent);
-      gap: var(--space-xs);
-      overflow-x: auto;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-      &::-webkit-scrollbar {
-        height: 4px;
-      }
-    }
-
-    &__breadcrumb {
-      display: flex;
-      align-items: center;
-      gap: var(--space-xs);
-      padding: var(--space-xs) var(--space);
-      background: var(--color-background);
-      border: 1px solid var(--color-accent);
-      border-radius: var(--border-radius-sm);
-      color: var(--color-text-muted);
-      font-size: var(--font-size);
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      white-space: nowrap;
-
-      &:hover {
-        color: var(--color-text);
-        background-color: var(--color-background-alt);
-        transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-
-      &:last-child {
-        color: var(--color-text);
-        background-color: var(--color-primary-light);
-        border-color: var(--color-primary);
-        font-weight: 600;
-      }
-
-      .icon {
-        opacity: 0.5;
-      }
-    }
-
-    &__selection-status {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-    }
-
-    &__selection-info {
-      display: flex;
-      align-items: center;
-      gap: var(--space-xs);
-      font-weight: 500;
-    }
-
-    &__selection-actions {
-      display: flex;
-      gap: var(--space);
+    &::-webkit-scrollbar {
+      height: 4px;
     }
   }
+
+  &__breadcrumb {
+    // display: flex;
+    // align-items: center;
+    // gap: var(--space-xs);
+    // padding: var(--space-xs) var(--space);
+    // background: var(--color-background);
+    // border: 1px solid var(--color-accent);
+    // border-radius: var(--border-radius-sm);
+    // color: var(--color-text-muted);
+    // font-size: var(--font-size);
+    // font-weight: 500;
+    // cursor: pointer;
+    // transition: all 0.2s ease;
+    // white-space: nowrap;
+
+    // &:hover {
+    //   color: var(--color-text);
+    //   background-color: var(--color-background-alt);
+    //   transform: translateY(-1px);
+    //   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    // }
+
+    // &:last-child {
+    //   color: var(--color-text);
+    //   background-color: var(--color-primary-light);
+    //   border-color: var(--color-primary);
+    //   font-weight: 600;
+    // }
+
+    // .icon {
+    //   opacity: 0.5;
+    // }
+  }
+
+  &__selection-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  &__selection-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-weight: 500;
+  }
+
+  &__selection-actions {
+    display: flex;
+    gap: var(--space);
+  }
+}
 </style>
