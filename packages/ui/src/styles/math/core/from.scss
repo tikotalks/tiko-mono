@@ -24,7 +24,11 @@
 		$is-bracketed: list.is-bracketed($value);
 		$value: to-string($value, $type);
 
-		@return if($is-bracketed, '[' + $value + ']', '(' + $value + ')');
+		@if $is-bracketed {
+			@return '[' + $value + ']';
+		}
+
+		@return '(' + $value + ')';
 	}
 	@if $type == 'function' {
 		$value: meta.inspect($value);
