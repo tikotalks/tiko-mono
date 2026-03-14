@@ -1,7 +1,12 @@
-import { useAuthStore, unifiedItemService, type BaseItem, type ItemLoadOptions } from '@tiko/core'
+import {
+  itemService,
+  publicItemService,
+  useAuthStore,
+  unifiedItemService,
+  type BaseItem,
+} from '@tiko/core'
 import { useI18n } from '@tiko/core'
 import type { TCardTile as CardTile } from '@tiko/ui'
-import { cardsSupabaseService } from './supabase-cards.service'
 import { ItemTranslationService } from './item-translation.service'
 import type { ItemTranslation } from '../models/ItemTranslation.model'
 
@@ -316,7 +321,7 @@ export const cardsService = {
 
       if (card.id && !card.id.startsWith('empty-')) {
         // Update existing card
-        await cardsSupabaseService.updateCard(card.id, itemData)
+        await itemService.updateItem(card.id, itemData)
         cardId = card.id
 
         // If this is a group being updated and public status changed, cascade to children
@@ -332,7 +337,7 @@ export const cardsService = {
         if (parentId) childrenCache.delete(parentId)
       } else {
         // Create new card
-        const newItem = await cardsSupabaseService.createCard(itemData)
+        const newItem = await itemService.createItem(itemData)
         cardId = newItem?.id || ''
         // Clear cache for parent since we added a child
         if (parentId) childrenCache.delete(parentId)
@@ -367,7 +372,7 @@ export const cardsService = {
 
   async deleteCard(cardId: string): Promise<boolean> {
     try {
-      await cardsSupabaseService.deleteCard(cardId)
+      await itemService.deleteItem(cardId)
       // Clear all cache on delete (we don't know the parent)
       childrenCache.clear()
       return true
@@ -381,7 +386,7 @@ export const cardsService = {
     try {
       // Update order_index for each card
       const updatePromises = cardIds.map((id, index) =>
-        cardsSupabaseService.updateCard(id, { order_index: index })
+        itemService.updateItem(id, { order_index: index })
       )
 
       await Promise.all(updatePromises)
@@ -401,7 +406,7 @@ export const cardsService = {
         return null
       }
 
-      const item = await cardsSupabaseService.getCard(cardId)
+      const item = await itemService.loadItemById(cardId, { includeChildren: false })
       if (!item) return null
 
       return {
@@ -442,19 +447,7 @@ export const cardsService = {
     isPublic: boolean
   ): Promise<void> {
     try {
-      // Get all children of this group
-      const children = await cardsSupabaseService.getCards(userId, groupId)
-
-      // Update each child's visibility
-      const updatePromises = children.map(child =>
-        cardsSupabaseService.updateCard(child.id, {
-          is_public: isPublic,
-          // When making items non-public, also remove curated status
-          is_curated: isPublic ? undefined : false,
-        })
-      )
-
-      await Promise.all(updatePromises)
+      await publicItemService.updateChildrenVisibility(groupId, userId, isPublic)
 
       // Clear cache for this group
       childrenCache.delete(groupId)

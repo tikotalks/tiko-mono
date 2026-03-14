@@ -1,0 +1,14 @@
+{
+  "admin": {
+    "i18n": {
+      "addKey": {
+        "description": "Kirjeldus",
+        "descriptionPlaceholder": "Võtme kirjeldus",
+        "keyDetails": "Võtmeelemendid",
+        "keyName": "Võtme nimi",
+        "title": "Pealkiri",
+        "translationPlaceholder": "Teie tõlge"
+      }
+    }
+  }
+}

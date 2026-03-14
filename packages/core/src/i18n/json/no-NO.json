@@ -1,0 +1,14 @@
+{
+  "admin": {
+    "i18n": {
+      "addKey": {
+        "description": "Beskrivelse",
+        "descriptionPlaceholder": "En beskrivelse av nøkkelen",
+        "keyDetails": "Nøkkeldetaljer",
+        "keyName": "Nøkkelnavn",
+        "title": "Tittel",
+        "translationPlaceholder": "Din oversettelse"
+      }
+    }
+  }
+}

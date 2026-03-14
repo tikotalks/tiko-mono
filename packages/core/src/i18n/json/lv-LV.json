@@ -1,0 +1,14 @@
+{
+  "admin": {
+    "i18n": {
+      "addKey": {
+        "description": "Apraksts",
+        "descriptionPlaceholder": "Apraksts atslēgai",
+        "keyDetails": "Galvenā informācija",
+        "keyName": "Atslēgas nosaukums",
+        "title": "Nosaukums",
+        "translationPlaceholder": "Jūsu tulkojums"
+      }
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "@tiko/auth-service-worker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Central authentication worker for all tikoapps.org apps",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "db:apply:core:local": "wrangler d1 execute AUTH_DB --file=./schema/better-auth-core.sql --local",
+    "db:apply:core:remote": "wrangler d1 execute AUTH_DB --file=./schema/better-auth-core.sql --remote --yes",
+    "db:apply:app:local": "wrangler d1 execute AUTH_DB --file=./schema/app-auth-support.sql --local",
+    "db:apply:app:remote": "wrangler d1 execute AUTH_DB --file=./schema/app-auth-support.sql --remote --yes",
+    "db:apply:all:local": "pnpm db:apply:core:local && pnpm db:apply:app:local",
+    "db:apply:all:remote": "pnpm db:apply:core:remote && pnpm db:apply:app:remote"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240512.0",
+    "typescript": "^5.0.0",
+    "wrangler": "^3.0.0"
+  },
+  "dependencies": {
+    "@better-auth/drizzle-adapter": "^1.5.4",
+    "better-auth": "^1.5.4",
+    "drizzle-orm": "^0.45.1"
+  }
+}

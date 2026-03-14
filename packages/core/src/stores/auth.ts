@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { authService } from '../services'
 import { authSyncService } from '../services/auth-sync.service'
+import { resolveAuthBaseUrl } from '../services/auth.service'
 import type { AuthUser, AuthSession } from '../services/auth.service'
 
 // User profile settings interface (for auth store)
@@ -25,6 +26,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Storage key for settings
   const SETTINGS_STORAGE_KEY = 'tiko-user-settings'
+  const shouldSyncWithSupabase = () => resolveAuthBaseUrl().includes('supabase.co')
 
   // Getters
   const isAuthenticated = computed(() => !!user.value && !!session.value)
@@ -94,8 +96,9 @@ export const useAuthStore = defineStore('auth', () => {
       }
       if (result.session) {
         session.value = result.session
-        // Sync with Supabase for RLS
-        await authSyncService.syncWithSupabase(result.session)
+        if (shouldSyncWithSupabase()) {
+          await authSyncService.syncWithSupabase(result.session)
+        }
         // Fetch user role after successful login
         await fetchUserRole()
       }
@@ -198,8 +201,9 @@ export const useAuthStore = defineStore('auth', () => {
       }
       if (result.session) {
         session.value = result.session
-        // Sync with Supabase for RLS
-        await authSyncService.syncWithSupabase(result.session)
+        if (shouldSyncWithSupabase()) {
+          await authSyncService.syncWithSupabase(result.session)
+        }
         // Fetch user role after successful login
         await fetchUserRole()
       }
@@ -253,8 +257,9 @@ export const useAuthStore = defineStore('auth', () => {
       if (!result.success) {
         console.warn('Logout error:', result.error)
       }
-      // Clear Supabase session
-      await authSyncService.clearSupabaseSession()
+      if (shouldSyncWithSupabase()) {
+        await authSyncService.clearSupabaseSession()
+      }
     } catch (err) {
       console.warn('Logout failed:', err)
     } finally {
@@ -366,21 +371,9 @@ export const useAuthStore = defineStore('auth', () => {
     if (!user.value?.id) return
 
     try {
-      const response = await fetch('https://kejvhvszhevfwgsztedf.supabase.co/rest/v1/rpc/get_my_role', {
-        method: 'POST',
-        headers: {
-          'apikey': import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlanZodnN6aGV2Zndnc3p0ZWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4ODg2MTIsImV4cCI6MjA2NzQ2NDYxMn0.xUYXxNodJTpTwChlKbuBSojVJqX9CDW87aVISEUc2rE',
-          'Authorization': `Bearer ${session.value?.access_token}`,
-          'Content-Type': 'application/json'
-        },
-        body: '{}'
-      })
-
-      if (response.ok) {
-        const role = await response.json()
-        userRole.value = role
-        console.log('[Auth Store] User role:', role)
-      }
+      const role = await authService.getUserRole()
+      userRole.value = role
+      console.log('[Auth Store] User role:', role)
     } catch (err) {
       console.error('[Auth Store] Failed to fetch user role:', err)
     }
@@ -412,8 +405,9 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = currentSession.user
         session.value = currentSession
 
-        // Sync with Supabase for RLS
-        await authSyncService.syncWithSupabase(currentSession)
+        if (shouldSyncWithSupabase()) {
+          await authSyncService.syncWithSupabase(currentSession)
+        }
 
         // Fetch user role
         await fetchUserRole()
@@ -454,6 +448,19 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const setupAuthListener = () => {
+    const syncSessionFromServer = async () => {
+      const currentSession = await authService.getSession()
+
+      if (!currentSession) {
+        user.value = null
+        session.value = null
+        return
+      }
+
+      user.value = currentSession.user
+      session.value = currentSession
+    }
+
     // Listen for storage events to handle external session changes
     window.addEventListener('storage', (e) => {
       if (e.key === 'tiko_auth_session') {
@@ -473,7 +480,17 @@ export const useAuthStore = defineStore('auth', () => {
       }
     })
 
-    // Also check for session changes periodically (for same-tab changes)
+    window.addEventListener('focus', () => {
+      void syncSessionFromServer()
+    })
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        void syncSessionFromServer()
+      }
+    })
+
+    // Also check for session changes periodically across subdomains.
     setInterval(() => {
       const storedSession = localStorage.getItem('tiko_auth_session')
       if (!storedSession && session.value) {
@@ -481,7 +498,8 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = null
         session.value = null
       }
-    }, 1000)
+      void syncSessionFromServer()
+    }, 30000)
   }
 
   const updateUserMetadata = async (metadata: Record<string, any>) => {

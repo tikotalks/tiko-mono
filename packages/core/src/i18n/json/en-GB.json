@@ -1,0 +1,9 @@
+{
+  "admin": {
+    "i18n": {
+      "addKey": {
+        "keyName": "Key name"
+      }
+    }
+  }
+}

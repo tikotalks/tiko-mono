@@ -1,10 +1,15 @@
-import { useAuthStore } from '@tiko/core'
-import { useI18n } from '@tiko/core'
+import {
+  itemService,
+  itemTranslationService,
+  publicItemService,
+  useAuthStore,
+  useI18n,
+  unifiedItemService,
+  type BaseItem,
+} from '@tiko/core'
 import type { TCardTile as CardTile } from '@tiko/ui'
-import { sequenceSupabaseService } from './supabase-sequence.service'
 import { ItemTranslationService } from './item-translation.service'
 import type { ItemTranslation } from '../models/ItemTranslation.model'
-import type { PublicItem, UserItemOrder } from '../models/PublicItem.model'
 
 const APP_NAME = 'sequence'
 
@@ -17,6 +22,64 @@ interface CardMetadata {
 
 // Cache for hasChildren checks
 const childrenCache = new Map<string, boolean>()
+
+async function loadSequenceItems(
+  userId: string,
+  parentId?: string,
+  locale?: string
+): Promise<BaseItem[]> {
+  if (!parentId) {
+    const items = await unifiedItemService.loadRootItems(userId, APP_NAME, {
+      includeCurated: true,
+      includeChildren: false,
+      locale,
+    })
+
+    const rootSequences = items.filter(item => item.type === 'sequence')
+    return itemTranslationService.getItemsWithTranslations(rootSequences, locale)
+  }
+
+  const parentItem = await itemService.loadItemById(parentId, { includeChildren: false })
+  if (!parentItem) {
+    return []
+  }
+
+  const isParentAccessible = parentItem.user_id === userId || parentItem.is_curated === true
+  if (!isParentAccessible) {
+    return []
+  }
+
+  const items = await unifiedItemService.loadItemsByParentId(parentId, {
+    includeCurated: true,
+    includeChildren: false,
+    locale,
+  })
+
+  return itemTranslationService.getItemsWithTranslations(items, locale)
+}
+
+async function loadAllSequenceItems(
+  userId: string,
+  locale?: string,
+  includeCurated = false
+): Promise<BaseItem[]> {
+  const items = await unifiedItemService.loadItemsByUserAndApp(userId, APP_NAME, {
+    includeCurated,
+    includeChildren: false,
+    locale,
+  })
+
+  return itemTranslationService.getItemsWithTranslations(items, locale)
+}
+
+async function loadOwnedSequenceItem(userId: string, itemId: string): Promise<BaseItem | null> {
+  const item = await itemService.loadItemById(itemId, { includeChildren: false })
+  if (!item || item.user_id !== userId) {
+    return null
+  }
+
+  return item
+}
 
 export const sequenceService = {
   async loadSequence(parentId?: string): Promise<(typeof CardTile)[]> {
@@ -38,11 +101,7 @@ export const sequenceService = {
       console.log(
         `[loadSequence] Calling getSequenceWithTranslations with parentId: ${parentId}, locale: ${locale}`
       )
-      const items = await sequenceSupabaseService.getSequenceWithTranslations(
-        userId,
-        parentId,
-        locale
-      )
+      const items = await loadSequenceItems(userId, parentId, locale)
       console.log(
         '[loadSequence] Items returned from getSequenceWithTranslations:',
         items.length,
@@ -145,11 +204,7 @@ export const sequenceService = {
       )
 
       // Load ALL sequence with translations for current locale
-      const items = await sequenceSupabaseService.getAllSequenceWithTranslations(
-        userId,
-        locale,
-        includeCurated
-      )
+      const items = await loadAllSequenceItems(userId, locale, includeCurated)
       console.log('[loadAllSequence] Total items loaded:', items.length)
 
       return items.map(item => {
@@ -198,7 +253,7 @@ export const sequenceService = {
         return false
       }
 
-      const children = await sequenceSupabaseService.getSequence(userId, parentId)
+      const children = await loadSequenceItems(userId, parentId)
       const hasChildren = children.length > 0
 
       // Cache the result
@@ -262,17 +317,13 @@ export const sequenceService = {
 
       if (card.id && !card.id.startsWith('empty-') && !card.id.startsWith('temp-')) {
         // Update existing card
-        await sequenceSupabaseService.updateCard(card.id, itemData)
+        await itemService.updateItem(card.id, itemData)
         cardId = card.id
 
         // If this is a sequence being updated, cascade visibility to children
         if (card.type === 'sequence') {
           try {
-            await sequenceSupabaseService.updateSequenceChildrenVisibility(
-              cardId,
-              userId,
-              itemData.is_public || false
-            )
+            await publicItemService.updateChildrenVisibility(cardId, userId, itemData.is_public || false)
           } catch (error) {
             console.warn('Failed to update children visibility:', error)
           }
@@ -282,7 +333,7 @@ export const sequenceService = {
         if (parentId) childrenCache.delete(parentId)
       } else {
         // Create new card
-        const newItem = await sequenceSupabaseService.createCard(itemData)
+        const newItem = await itemService.createItem(itemData)
         cardId = newItem?.id || ''
         // Clear cache for parent since we added a child
         if (parentId) childrenCache.delete(parentId)
@@ -311,7 +362,7 @@ export const sequenceService = {
 
   async deleteCard(cardId: string): Promise<boolean> {
     try {
-      await sequenceSupabaseService.deleteCard(cardId)
+      await itemService.deleteItem(cardId)
       // Clear all cache on delete (we don't know the parent)
       childrenCache.clear()
       return true
@@ -325,7 +376,7 @@ export const sequenceService = {
     try {
       // Update order_index for each card
       const updatePromises = cardIds.map((id, index) =>
-        sequenceSupabaseService.updateCard(id, { order_index: index })
+        itemService.updateItem(id, { order_index: index })
       )
 
       await Promise.all(updatePromises)
@@ -345,7 +396,7 @@ export const sequenceService = {
         return null
       }
 
-      const item = await sequenceSupabaseService.getCard(cardId)
+      const item = await itemService.loadItemById(cardId, { includeChildren: false })
       if (!item) return null
 
       return {
@@ -472,7 +523,7 @@ export const sequenceService = {
       }
 
       // Get the existing sequence to preserve index and parent
-      const existingSequence = await sequenceSupabaseService.getItemById(userId, sequenceId)
+      const existingSequence = await loadOwnedSequenceItem(userId, sequenceId)
 
       const sequenceCard: Partial<CardTile> = {
         id: sequenceId,
@@ -539,16 +590,13 @@ export const sequenceService = {
         return []
       }
 
-      const { currentLocale } = useI18n()
-      const locale = currentLocale.value
-
       // Load public items with custom ordering
-      const publicItems = await sequenceSupabaseService.getPublicItems(
+      const publicItems = await publicItemService.getPublicItems({
+        appName: APP_NAME,
         userId,
-        locale,
         type,
-        includeCurated
-      )
+        includeCurated,
+      })
 
       return publicItems.map(item => {
         const metadata = item.metadata as CardMetadata
@@ -588,7 +636,7 @@ export const sequenceService = {
         throw new Error('No authenticated user')
       }
 
-      await sequenceSupabaseService.saveUserItemOrder(userId, itemId, customIndex)
+      await publicItemService.saveUserItemOrder(userId, itemId, customIndex)
     } catch (error) {
       console.error('Error saving custom order:', error)
       throw error
@@ -603,7 +651,9 @@ export const sequenceService = {
         throw new Error('No authenticated user')
       }
 
-      await sequenceSupabaseService.updateSequenceVisibility(itemId, userId, isPublic)
+      await publicItemService.updateItemVisibility(itemId, userId, isPublic, {
+        cascadeChildren: true,
+      })
     } catch (error) {
       console.error('Error toggling item visibility:', error)
       throw error
@@ -623,16 +673,13 @@ export const sequenceService = {
         return []
       }
 
-      const { currentLocale } = useI18n()
-      const searchLocale = locale || currentLocale.value
-
-      const results = await sequenceSupabaseService.searchPublicItems(
-        query,
-        searchLocale,
+      const results = await publicItemService.searchPublicItems({
+        appName: APP_NAME,
         userId,
+        query,
         type,
-        includeCurated
-      )
+        includeCurated,
+      })
 
       return results.map(item => {
         const metadata = item.metadata as CardMetadata

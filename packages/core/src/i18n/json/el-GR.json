@@ -1,0 +1,13 @@
+{
+  "admin": {
+    "i18n": {
+      "addKey": {
+        "description": "Περιγραφή",
+        "descriptionPlaceholder": "Μια περιγραφή του κλειδιού",
+        "keyDetails": "Κύριες Λεπτομέρειες",
+        "keyName": "Όνομα κλειδιού",
+        "translationPlaceholder": "Η μετάφρασή σας"
+      }
+    }
+  }
+}

@@ -205,30 +205,8 @@
 </template>
 
 <script setup lang="ts">
-  import { formatDate, formatTime } from '@tiko/core'
+  import { formatDate, formatTime, issueReportsService, type IssueReport } from '@tiko/core'
   import { ref, onMounted, computed } from 'vue'
-
-  interface IssueReport {
-    id: string
-    app_name: string
-    issue_type: 'bug' | 'feature' | 'improvement' | 'other'
-    description: string
-    user_email?: string
-    build_info?: {
-      version?: string
-      buildNumber?: string
-      environment?: string
-    }
-    user_agent: string
-    metadata?: {
-      url?: string
-      referrer?: string
-      screenResolution?: string
-      timezone?: string
-    }
-    created_at: string
-    updated_at: string
-  }
 
   // State
   const reports = ref<IssueReport[]>([])
@@ -288,22 +266,7 @@
     error.value = null
 
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-      const supabaseKey = import.meta.env.VITE_SUPABASE_SERVICE_KEY
-
-      const response = await fetch(`${supabaseUrl}/rest/v1/issue_reports?order=created_at.desc`, {
-        headers: {
-          apikey: supabaseKey,
-          Authorization: `Bearer ${supabaseKey}`,
-          'Content-Type': 'application/json',
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch reports: ${response.status}`)
-      }
-
-      reports.value = await response.json()
+      reports.value = await issueReportsService.getReports()
       console.log(`Loaded ${reports.value.length} issue reports`)
 
       // Reset to first page when filters change

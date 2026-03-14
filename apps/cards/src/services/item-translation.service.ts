@@ -1,9 +1,8 @@
+import { itemTranslationService } from '@tiko/core'
 import type {
   ItemTranslation,
-  TranslationRequest,
   TranslationResponse,
 } from '../models/ItemTranslation.model'
-import { cardsSupabaseService } from './supabase-cards.service'
 
 export class ItemTranslationService {
   /**
@@ -11,7 +10,7 @@ export class ItemTranslationService {
    */
   static async getTranslations(itemId: string): Promise<ItemTranslation[]> {
     try {
-      return await cardsSupabaseService.getItemTranslations(itemId)
+      return await itemTranslationService.getTranslations(itemId)
     } catch (error) {
       console.error('Error fetching translations:', error)
       throw error
@@ -23,16 +22,7 @@ export class ItemTranslationService {
    */
   static async getTranslation(itemId: string, locale: string): Promise<ItemTranslation | null> {
     try {
-      // First try exact locale match
-      let translation = await cardsSupabaseService.getItemTranslation(itemId, locale)
-
-      // If no exact match and locale has region (e.g., en-GB), try base language (e.g., en)
-      if (!translation && locale.includes('-')) {
-        const baseLanguage = locale.split('-')[0]
-        translation = await cardsSupabaseService.getItemTranslation(itemId, baseLanguage)
-      }
-
-      return translation
+      return await itemTranslationService.getTranslation(itemId, locale)
     } catch (error) {
       console.error('Error fetching translation:', error)
       throw error
@@ -44,9 +34,7 @@ export class ItemTranslationService {
    */
   static async saveTranslation(translation: ItemTranslation): Promise<ItemTranslation> {
     try {
-      // Use upsert to handle duplicate key errors
-      const { id, ...translationData } = translation
-      return await cardsSupabaseService.upsertSingleTranslation(translationData)
+      return await itemTranslationService.saveTranslation(translation)
     } catch (error) {
       console.error('Error saving translation:', error)
       throw error
@@ -58,7 +46,7 @@ export class ItemTranslationService {
    */
   static async deleteTranslation(id: string): Promise<void> {
     try {
-      await cardsSupabaseService.deleteItemTranslation(id)
+      await itemTranslationService.deleteTranslation(id)
     } catch (error) {
       console.error('Error deleting translation:', error)
       throw error
@@ -182,7 +170,7 @@ export class ItemTranslationService {
     )
 
     try {
-      return await cardsSupabaseService.upsertItemTranslations(translationRecords)
+      return await itemTranslationService.upsertTranslations(translationRecords)
     } catch (error) {
       console.error('Error saving multiple translations:', error)
       throw error

@@ -73,3 +73,6 @@ export { useHaptic } from './composables/useHaptic'
 export type { HapticOptions } from './composables/useHaptic'
 export { defineConfig } from './utils/defineConfig'
 export type { TikoConfig, TikoThemeColors } from './utils/defineConfig'
+
+// vue-i18n lightweight runtime (JSON-based) for apps that opt-in
+export { installI18n as installI18nJson, setI18nLocale, useI18nSimple } from './i18n/vue-i18n'

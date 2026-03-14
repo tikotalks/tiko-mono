@@ -80,7 +80,7 @@
           :class="bemm('button-group')"
           :buttons="[
             {
-              label: t(keys.common.cancel),
+              label: t('common.cancel'),
               type: 'ghost',
               action: handleClosePopup,
             },
@@ -94,7 +94,7 @@
           ]"
         >
           <TButton type="outline" @click="handleClosePopup">
-            {{ t(keys.common.cancel) }}
+            {{ t('common.cancel') }}
           </TButton>
 
           <TButton
@@ -146,7 +146,7 @@ const emit = defineEmits<{
 }>();
 
 const bemm = useBemm('parent-mode-pin-input');
-const { t, keys } = useI18n();
+const { t } = useI18n();
 
 // Refs
 const pinInputRef = ref<InstanceType<typeof TPinInput> | null>(null);

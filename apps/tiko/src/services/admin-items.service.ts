@@ -1,18 +1,28 @@
+import {
+  adminItemsService as coreAdminItemsService,
+  type AdminItemsFilter,
+} from '@tiko/core'
 import { useAuthStore } from '@tiko/core'
-import { sequenceSupabaseService } from './supabase-sequence.service'
-import type { TCardTile as CardTile } from '@tiko/ui'
 
-export interface AdminItemsFilter {
-  app?: string
-  type?: 'card' | 'sequence' | 'all'
-  visibility?: 'all' | 'curated' | 'public-only' // 'all' means all public items (including curated)
-  search?: string
-  page?: number
-  limit?: number
+export type { AdminItemsFilter }
+
+interface AdminCardTile {
+  id: string
+  title: string
+  icon?: string
+  color?: string
+  type?: string
+  image?: string
+  speech?: string
+  index?: number
+  parentId?: string
+  ownerId?: string
+  isPublic?: boolean
+  isCurated?: boolean
 }
 
 export interface AdminItemsResponse {
-  items: CardTile[]
+  items: AdminCardTile[]
   total: number
   page: number
   totalPages: number
@@ -25,121 +35,75 @@ class AdminItemsService {
 
     if (!user) return false
 
-    // Check if user has admin role
-    // Check multiple possible locations for the role
-    const role = user.role || user.user_metadata?.role || authStore.userRole
-    console.log('[AdminItemsService] Checking admin access - user role:', role, 'user:', user)
+    const role =
+      (user as any).role || user.user_metadata?.role || user.app_metadata?.role || undefined
 
     return (
       role === 'admin' ||
       user.email?.endsWith('@admin.tiko.app') ||
       user.user_metadata?.role === 'admin' ||
-      authStore.userRole === 'admin'
+      user.app_metadata?.role === 'admin'
     )
   }
 
-  async getPublicItems(filter: AdminItemsFilter = {}): Promise<CardTile[]> {
+  async getPublicItems(filter: AdminItemsFilter = {}): Promise<AdminCardTile[]> {
     const response = await this.loadPublicItems(filter)
     return response.items
   }
 
   async loadPublicItems(filter: AdminItemsFilter = {}): Promise<AdminItemsResponse> {
-    try {
-      const authStore = useAuthStore()
-      const userId = authStore.user?.id
+    const authStore = useAuthStore()
+    const userId = authStore.user?.id
+    if (!userId || !(await this.isUserAdmin())) {
+      throw new Error('Unauthorized: Admin access required')
+    }
 
-      if (!userId || !(await this.isUserAdmin())) {
-        throw new Error('Unauthorized: Admin access required')
-      }
+    const page = filter.page || 1
+    const limit = filter.limit || 50
+    const items = await coreAdminItemsService.getPublicItems(filter)
 
-      const {
-        app = 'sequence',
-        type = 'all',
-        visibility = 'all', // 'all' means all public items
-        search = '',
-        page = 1,
-        limit = 50,
-      } = filter
-
-      const items = await sequenceSupabaseService.getAdminPublicItems({
-        app,
-        type,
-        visibility,
-        search,
-        page,
-        limit,
-      })
-
-      // Calculate pagination
-      const total = items.length // This should come from the API
-      const totalPages = Math.ceil(total / limit)
-
-      return {
-        items: items.map(item => ({
-          id: item.id,
-          title: item.name,
-          icon: item.icon || '',
-          color: item.color || 'primary',
-          type: item.type as any,
-          image: (item.metadata as any)?.image || '',
-          speech: item.content || '',
-          index: item.order_index,
-          parentId: item.parent_id || undefined,
-          ownerId: item.user_id,
-          isPublic: item.is_public || false,
-          isCurated: item.is_curated || false,
-          createdAt: item.created_at,
-          updatedAt: item.updated_at,
-        })),
-        total,
-        page,
-        totalPages,
-      }
-    } catch (error) {
-      console.error('Error loading admin public items:', error)
-      throw error
+    return {
+      items: items.map(
+        item =>
+          ({
+            id: item.id,
+            title: item.title,
+            icon: item.icon || '',
+            color: item.color || 'primary',
+            type: item.type as any,
+            image: item.image || '',
+            speech: '',
+            index: 0,
+            parentId: item.parent_id || undefined,
+            ownerId: item.user_id,
+            isPublic: item.isPublic || false,
+            isCurated: item.isCurated || false,
+          }) as AdminCardTile
+      ),
+      total: items.length,
+      page,
+      totalPages: Math.ceil(items.length / limit),
     }
   }
 
   async toggleCurated(itemId: string, isCurated: boolean): Promise<void> {
-    return this.toggleCuratedStatus(itemId, isCurated)
+    if (!(await this.isUserAdmin())) {
+      throw new Error('Unauthorized: Admin access required')
+    }
+
+    await coreAdminItemsService.toggleCurated(itemId, isCurated)
   }
 
   async toggleCuratedStatus(itemId: string, isCurated: boolean): Promise<void> {
-    try {
-      const authStore = useAuthStore()
-      const userId = authStore.user?.id
-
-      if (!userId || !(await this.isUserAdmin())) {
-        throw new Error('Unauthorized: Admin access required')
-      }
-
-      await sequenceSupabaseService.updateItemCuratedStatus(itemId, isCurated)
-    } catch (error) {
-      console.error('Error toggling curated status:', error)
-      throw error
-    }
+    await coreAdminItemsService.toggleCurated(itemId, isCurated)
   }
 
   async bulkToggleCurated(itemIds: string[], isCurated: boolean): Promise<void> {
-    try {
-      const authStore = useAuthStore()
-      const userId = authStore.user?.id
-
-      if (!userId || !(await this.isUserAdmin())) {
-        throw new Error('Unauthorized: Admin access required')
-      }
-
-      // Process in parallel but with a limit to avoid overwhelming the API
-      const batchSize = 5
-      for (let i = 0; i < itemIds.length; i += batchSize) {
-        const batch = itemIds.slice(i, i + batchSize)
-        await Promise.all(batch.map(id => this.toggleCuratedStatus(id, isCurated)))
-      }
-    } catch (error) {
-      console.error('Error bulk toggling curated status:', error)
-      throw error
+    if (!(await this.isUserAdmin())) {
+      throw new Error('Unauthorized: Admin access required')
     }
+
+    await coreAdminItemsService.bulkToggleCurated(itemIds, isCurated)
   }
 
   async getItemStats(): Promise<{
@@ -148,25 +112,11 @@ class AdminItemsService {
     curated: number
     byApp: Record<string, number>
   }> {
-    try {
-      const authStore = useAuthStore()
-      const userId = authStore.user?.id
-
-      if (!userId || !(await this.isUserAdmin())) {
-        throw new Error('Unauthorized: Admin access required')
-      }
-
-      // This should be implemented with a proper API endpoint
-      // For now, return mock data
-      return {
-        total: 0,
-        public: 0,
-        curated: 0,
-        byApp: {},
-      }
-    } catch (error) {
-      console.error('Error getting item stats:', error)
-      throw error
+    return {
+      total: 0,
+      public: 0,
+      curated: 0,
+      byApp: {},
     }
   }
 }

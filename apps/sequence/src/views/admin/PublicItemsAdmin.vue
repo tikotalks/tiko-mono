@@ -208,7 +208,7 @@
     TCardTile,
     type ToastService,
   } from '@tiko/ui'
-  import { useI18n } from '@tiko/core'
+  import { useI18nSimple as useI18n } from '@tiko/core'
   import { Icons } from 'open-icon'
   import { debounce } from 'lodash-es'
   import { adminItemsService } from '../../services/admin-items.service'

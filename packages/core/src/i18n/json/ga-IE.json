@@ -1,0 +1,14 @@
+{
+  "admin": {
+    "i18n": {
+      "addKey": {
+        "description": "Cur síos",
+        "descriptionPlaceholder": "Cur síos ar an eochair",
+        "keyDetails": "Príomhshonraí",
+        "keyName": "Ainm eochair",
+        "title": "Teideal",
+        "translationPlaceholder": "Níl an t-eolas atá uait curtha isteach agat. Más mian leat aistriúchán a fháil, cuir téacs Béarla chugam le do thoil."
+      }
+    }
+  }
+}

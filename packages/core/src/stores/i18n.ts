@@ -245,12 +245,21 @@ export const useI18nStore = defineStore('i18n', () => {
       return
     }
 
-    // Force reload by removing from loadedTranslations first
-    delete loadedTranslations.value[localeToUse]
-    delete keysCache.value[localeToUse]
-    console.log(`[i18n-store] Removed ${localeToUse} from cache`)
+    // Check if locale is already loaded
+    if (loadedTranslations.value[localeToUse]) {
+      console.log(`[i18n-store] Locale ${localeToUse} already loaded, switching immediately`)
+      currentLocale.value = localeToUse
 
-    // Always force load the locale
+      // Persist to localStorage
+      if (persistLocale.value && typeof localStorage !== 'undefined') {
+        localStorage.setItem(storageKey.value, localeToUse)
+      }
+
+      console.log(`[i18n-store] Locale set to: ${localeToUse} (from cache)`)
+      return
+    }
+
+    // Load locale if not already cached
     const success = await loadLocale(localeToUse)
     if (success) {
       currentLocale.value = localeToUse

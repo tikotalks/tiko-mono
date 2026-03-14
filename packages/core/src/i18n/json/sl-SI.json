@@ -1,0 +1,14 @@
+{
+  "admin": {
+    "i18n": {
+      "addKey": {
+        "description": "Opis",
+        "descriptionPlaceholder": "Opis ključa",
+        "keyDetails": "Ključni podatki",
+        "keyName": "Ime ključa",
+        "title": "Naslov",
+        "translationPlaceholder": "Vaš prevod"
+      }
+    }
+  }
+}

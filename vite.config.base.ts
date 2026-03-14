@@ -42,10 +42,11 @@ export const createViteConfig = (args: {
   i18nConfig: {
     excludeSections?: string[],
   },
-  base?: string
+  base?: string,
+  disableI18nWorker?: boolean
 }) => {
 
-  const { dirname, port, pwaConfig, appName, i18nConfig, base } = args
+  const { dirname, port, pwaConfig, appName, i18nConfig, base, disableI18nWorker } = args
 
 
   let buildInfo = null;
@@ -79,7 +80,7 @@ export const createViteConfig = (args: {
 
   // Add i18n generation plugin ONLY for production/CI builds
   // In development, use manually generated translations via pnpm i18n
-  if (appName && (process.env.NODE_ENV === 'production' || process.env.CI === 'true')) {
+  if (!disableI18nWorker && appName && (process.env.NODE_ENV === 'production' || process.env.CI === 'true')) {
     const i18nOptions = {
       app: appName,
       environment: 'production',
@@ -120,6 +121,32 @@ export const createViteConfig = (args: {
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 60 * 60 * 24 // 1 day
+              }
+            }
+          },
+          {
+            // Cache Supabase Storage images (public/signed)
+            urlPattern: /^https:\/\/[^/]+\.supabase\.co\/storage\/v1\/object\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'image-storage-cache',
+              cacheableResponse: { statuses: [0, 200] },
+              expiration: {
+                maxEntries: 300,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              }
+            }
+          },
+          {
+            // Generic remote images cache (jpg/png/webp/avif/svg)
+            urlPattern: /\.(?:png|jpg|jpeg|gif|webp|avif|svg)(?:\?.*)?$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'image-cache',
+              cacheableResponse: { statuses: [0, 200] },
+              expiration: {
+                maxEntries: 400,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
               }
             }
           },
@@ -200,8 +227,9 @@ export const createViteConfig = (args: {
       }
     },
     optimizeDeps: {
-      include: ['vue', 'vue-router', 'pinia', '@tiko/ui', '@tiko/core', 'open-icon', 'bemm'],
-      exclude: ['@tiko/upos']
+      // Avoid prebundling @tiko/core during dev so local source exports are always fresh
+      include: ['vue', 'vue-router', 'pinia', '@tiko/ui', 'open-icon', 'bemm', 'vue-i18n'],
+      exclude: ['@tiko/core', '@tiko/upos']
     },
     define: {
       __VUE_OPTIONS_API__: true,

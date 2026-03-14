@@ -1,0 +1,14 @@
+{
+  "admin": {
+    "i18n": {
+      "addKey": {
+        "description": "Описание",
+        "descriptionPlaceholder": "Описание на ключа",
+        "keyDetails": "Основни детайли",
+        "keyName": "Име на ключ",
+        "title": "Заглавие",
+        "translationPlaceholder": "Преводът ви"
+      }
+    }
+  }
+}

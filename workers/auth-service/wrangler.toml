@@ -1,0 +1,24 @@
+name = "tiko-auth-service"
+main = "src/index.ts"
+compatibility_date = "2024-01-17"
+compatibility_flags = ["nodejs_compat"]
+routes = [
+  { pattern = "auth.tikoapps.org/*", zone_name = "tikoapps.org" }
+]
+
+[vars]
+BETTER_AUTH_URL = "https://auth.tikoapps.org"
+COOKIE_DOMAIN = ".tikoapps.org"
+ALLOWED_APP_ORIGINS = "https://tiko.tikoapps.org,https://sequence.tikoapps.org,https://cards.tikoapps.org,https://yes-no.tikoapps.org,https://type.tikoapps.org,https://timer.tikoapps.org,https://todo.tikoapps.org,https://radio.tikoapps.org,https://marketing.tikoapps.org,https://media.tikoapps.org"
+
+[[d1_databases]]
+binding = "AUTH_DB"
+database_name = "tiko-auth"
+database_id = "dd37ed38-751c-46c4-866d-73294974e33b"
+
+# Secrets to add in Cloudflare:
+# BETTER_AUTH_SECRET
+# AUTH_GOOGLE_CLIENT_ID
+# AUTH_GOOGLE_CLIENT_SECRET
+# RESEND_API_KEY
+# RESEND_FROM_EMAIL

@@ -1,0 +1,14 @@
+{
+  "admin": {
+    "i18n": {
+      "addKey": {
+        "description": "Aprašymas",
+        "descriptionPlaceholder": "Aprašymas rakto",
+        "keyDetails": "Pagrindinės detalės",
+        "keyName": "Rakto pavadinimas",
+        "title": "Pavadinimas",
+        "translationPlaceholder": "Jūsų vertimas"
+      }
+    }
+  }
+}

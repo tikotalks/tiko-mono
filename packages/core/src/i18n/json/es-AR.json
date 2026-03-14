@@ -1,0 +1,14 @@
+{
+  "admin": {
+    "i18n": {
+      "addKey": {
+        "description": "Descripción",
+        "descriptionPlaceholder": "Una descripción de la clave",
+        "keyDetails": "Detalles clave",
+        "keyName": "Nombre de la clave",
+        "title": "Título",
+        "translationPlaceholder": "Tu traducción"
+      }
+    }
+  }
+}

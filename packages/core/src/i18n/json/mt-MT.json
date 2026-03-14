@@ -1,0 +1,14 @@
+{
+  "admin": {
+    "i18n": {
+      "addKey": {
+        "description": "Deskrizzjoni",
+        "descriptionPlaceholder": "Deskrizzjoni tal-ċavetta",
+        "keyDetails": "Dettalji Ewlenin",
+        "keyName": "Isem tal-ċavetta",
+        "title": "Titlu",
+        "translationPlaceholder": "It-traduzzjoni tiegħek"
+      }
+    }
+  }
+}

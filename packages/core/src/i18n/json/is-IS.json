@@ -1,0 +1,14 @@
+{
+  "admin": {
+    "i18n": {
+      "addKey": {
+        "description": "Lýsing",
+        "descriptionPlaceholder": "Lýsing á lyklinum",
+        "keyDetails": "Lykilatriði",
+        "keyName": "Lykilnafn",
+        "title": "Titill",
+        "translationPlaceholder": "Þýðing þín"
+      }
+    }
+  }
+}

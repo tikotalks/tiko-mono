@@ -1,0 +1,14 @@
+{
+  "admin": {
+    "i18n": {
+      "addKey": {
+        "description": "Popis",
+        "descriptionPlaceholder": "Popis kľúča",
+        "keyDetails": "Kľúčové detaily",
+        "keyName": "Názov kľúča",
+        "title": "Názov",
+        "translationPlaceholder": "Vaš preklad"
+      }
+    }
+  }
+}

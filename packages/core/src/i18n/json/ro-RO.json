@@ -1,0 +1,14 @@
+{
+  "admin": {
+    "i18n": {
+      "addKey": {
+        "description": "Descriere",
+        "descriptionPlaceholder": "O descriere a cheii",
+        "keyDetails": "Detalii importante",
+        "keyName": "Nume cheie",
+        "title": "Titlu",
+        "translationPlaceholder": "Traducerea dvs."
+      }
+    }
+  }
+}

@@ -196,7 +196,7 @@
     BaseColors,
     useParentMode,
     ToolTipPosition,
-    ConfirmDialog,
+    FormModal,
   } from '@tiko/ui'
   import { useI18n } from '@tiko/core'
   import { useCardStore } from '../stores/cards'
@@ -879,14 +879,13 @@
       : t('cards.deleteThisCard')
 
     popupService.open({
-      component: ConfirmDialog,
+      component: FormModal,
+      title: t('cards.deleteCard'),
+      subtitle: message,
+      submitLabel: t('common.delete'),
+      cancelLabel: t('common.cancel'),
       props: {
-        title: t('cards.deleteCard'),
-        message: message,
-        confirmText: t('common.delete'),
-        cancelText: t('common.cancel'),
-        confirmColor: 'error',
-        onConfirm: async () => {
+        onSubmit: async () => {
           // Store original state for rollback
           const originalCards = [...cards.value]
           const originalHasChildren = tilesWithChildren.value.has(card.id)
@@ -1614,14 +1613,13 @@
       : t('cards.confirmDeleteMultiple', { count: selectedCount })
 
     popupService.open({
-      component: ConfirmDialog,
+      component: FormModal,
+      title: t('cards.deleteSelectedCards'),
+      subtitle: message,
+      submitLabel: t('common.delete'),
+      cancelLabel: t('common.cancel'),
       props: {
-        title: t('cards.deleteSelectedCards'),
-        message: message,
-        confirmText: t('common.delete'),
-        cancelText: t('common.cancel'),
-        confirmColor: 'error',
-        onConfirm: async () => {
+        onSubmit: async () => {
           await deleteSelectedCards()
           popupService.close()
         },

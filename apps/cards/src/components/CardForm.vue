@@ -154,7 +154,7 @@
     debounce,
     ButtonType,
     TFormGroup,
-    ConfirmDialog,
+    FormModal,
   } from '@tiko/ui'
   import { useI18n } from '@tiko/core'
   import type { TCardTile as CardTile } from '@tiko/ui'
@@ -377,14 +377,13 @@
     const message = props.hasChildren ? t('cards.confirmDeleteGroup') : t('cards.confirmDeleteCard')
 
     popupService.open({
-      component: ConfirmDialog,
+      component: FormModal,
+      title: t('cards.deleteCard'),
+      subtitle: message,
+      submitLabel: t('common.delete'),
+      cancelLabel: t('common.cancel'),
       props: {
-        title: t('cards.deleteCard'),
-        message: message,
-        confirmText: t('common.delete'),
-        cancelText: t('common.cancel'),
-        confirmColor: 'error',
-        onConfirm: () => {
+        onSubmit: () => {
           emit('delete')
           popupService.close()
         },

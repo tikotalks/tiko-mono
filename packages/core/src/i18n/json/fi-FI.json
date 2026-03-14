@@ -1,0 +1,14 @@
+{
+  "admin": {
+    "i18n": {
+      "addKey": {
+        "description": "Kuvaus",
+        "descriptionPlaceholder": "Avaimen kuvaus",
+        "keyDetails": "Avainkohdat",
+        "keyName": "Avaimen nimi",
+        "title": "Otsikko",
+        "translationPlaceholder": "Käännöksesi"
+      }
+    }
+  }
+}

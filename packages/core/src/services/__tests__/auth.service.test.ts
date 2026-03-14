@@ -1,420 +1,232 @@
 /**
- * Authentication Service Tests
- * 
- * @module services/__tests__/auth.service.test
- * @description
- * Comprehensive test suite for the authentication service.
- * Tests all authentication flows including sign in, sign up, magic links, and session management.
+ * @vitest-environment jsdom
  */
-
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ManualAuthService } from '../auth.service'
-import type { AuthService, AuthResult, AuthSession, AuthUser } from '../auth.service'
+import type { AuthSession, AuthUser } from '../auth.service'
 
-// Mock fetch globally
 const mockFetch = vi.fn()
-global.fetch = mockFetch
-
-// Mock crypto.subtle.digest for JWT decoding
-Object.defineProperty(global, 'crypto', {
-  value: {
-    subtle: {
-      digest: vi.fn()
-    }
-  },
-  writable: true
-})
 
 describe('AuthService', () => {
-  let authService: AuthService
-  let mockLocalStorage: Record<string, string>
+  let authService: ManualAuthService
+  let storage: Record<string, string>
 
   beforeEach(() => {
-    authService = new ManualAuthService()
-    mockLocalStorage = {}
-    
-    // Mock localStorage
-    global.localStorage = {
-      getItem: vi.fn((key) => mockLocalStorage[key] || null),
-      setItem: vi.fn((key, value) => { mockLocalStorage[key] = value }),
-      removeItem: vi.fn((key) => { delete mockLocalStorage[key] }),
-      clear: vi.fn(() => { mockLocalStorage = {} }),
-      length: 0,
-      key: vi.fn()
-    } as any
+    authService = new ManualAuthService('https://auth.tikoapps.org')
+    storage = {}
+    vi.stubGlobal('fetch', mockFetch)
 
-    // Reset fetch mock
+    Object.defineProperty(window, 'localStorage', {
+      value: {
+        getItem: vi.fn((key: string) => storage[key] ?? null),
+        setItem: vi.fn((key: string, value: string) => {
+          storage[key] = value
+        }),
+        removeItem: vi.fn((key: string) => {
+          delete storage[key]
+        })
+      },
+      writable: true
+    })
+
     mockFetch.mockReset()
   })
 
   afterEach(() => {
-    vi.clearAllMocks()
+    vi.unstubAllGlobals()
   })
 
-  describe('signInWithEmail', () => {
-    it('should sign in successfully with valid credentials', async () => {
-      const mockResponse = {
-        access_token: 'mock-access-token',
-        refresh_token: 'mock-refresh-token',
-        expires_in: 3600,
-        user: {
-          id: 'user-123',
-          email: 'test@example.com',
-          email_verified: true
+  it('sends an OTP request through the central auth worker', async () => {
+    mockFetch.mockResolvedValueOnce(
+      new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json'
         }
-      }
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse
       })
+    )
 
-      const result = await authService.signInWithEmail('test@example.com', 'password123')
+    const result = await authService.signInWithMagicLink('test@example.com', 'Jane Doe')
 
-      expect(result.success).toBe(true)
-      expect(result.session).toBeDefined()
-      expect(result.user?.email).toBe('test@example.com')
-      expect(mockLocalStorage['tiko_auth_session']).toBeDefined()
-    })
-
-    it('should handle invalid credentials', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({
-          error_description: 'Invalid login credentials'
-        })
+    expect(result).toEqual({ success: true })
+    expect(storage['tiko_pending_auth_email']).toBe('test@example.com')
+    expect(storage['tiko_pending_auth_name']).toBe('Jane Doe')
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://auth.tikoapps.org/email-otp/send',
+      expect.objectContaining({
+        method: 'POST',
+        credentials: 'include'
       })
-
-      const result = await authService.signInWithEmail('test@example.com', 'wrong-password')
-
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Invalid login credentials')
-      expect(result.session).toBeUndefined()
-    })
-
-    it('should handle network errors', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'))
-
-      const result = await authService.signInWithEmail('test@example.com', 'password123')
-
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Network error occurred')
-    })
+    )
   })
 
-  describe('signUpWithEmail', () => {
-    it('should sign up successfully', async () => {
-      const mockResponse = {
-        user: {
-          id: 'user-123',
-          email: 'new@example.com',
-          email_verified: false
-        }
-      }
+  it('verifies an OTP and resolves the shared session', async () => {
+    storage['tiko_pending_auth_name'] = 'Jane Doe'
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse
-      })
-
-      const result = await authService.signUpWithEmail('new@example.com', 'password123', 'John Doe')
-
-      expect(result.success).toBe(true)
-      expect(result.user?.email).toBe('new@example.com')
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/signup'),
-        expect.objectContaining({
-          method: 'POST',
-          body: JSON.stringify({
-            email: 'new@example.com',
-            password: 'password123',
-            data: { full_name: 'John Doe' }
-          })
-        })
-      )
-    })
-
-    it('should handle duplicate email error', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({
-          msg: 'User already registered'
-        })
-      })
-
-      const result = await authService.signUpWithEmail('existing@example.com', 'password123')
-
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('User already registered')
-    })
-  })
-
-  describe('signInWithMagicLink', () => {
-    it('should send magic link successfully', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({})
-      })
-
-      const result = await authService.signInWithMagicLink('test@example.com')
-
-      expect(result.success).toBe(true)
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/otp'),
-        expect.objectContaining({
-          method: 'POST',
-          body: JSON.stringify({
-            email: 'test@example.com',
-            create_user: true,
-            data: undefined
-          })
-        })
-      )
-    })
-
-    it('should include full name for new users', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({})
-      })
-
-      await authService.signInWithMagicLink('test@example.com', 'Jane Doe')
-
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          body: JSON.stringify({
-            email: 'test@example.com',
-            create_user: true,
-            data: { full_name: 'Jane Doe' }
-          })
-        })
-      )
-    })
-  })
-
-  describe('verifyOtp', () => {
-    it('should verify OTP successfully', async () => {
-      const mockResponse = {
-        access_token: 'mock-access-token',
-        refresh_token: 'mock-refresh-token',
-        expires_in: 3600,
-        user: {
-          id: 'user-123',
-          email: 'test@example.com'
-        }
-      }
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse
-      })
-
-      const result = await authService.verifyOtp('test@example.com', '123456')
-
-      expect(result.success).toBe(true)
-      expect(result.session).toBeDefined()
-      expect(mockLocalStorage['tiko_auth_session']).toBeDefined()
-    })
-
-    it('should handle invalid OTP', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({
-          error_description: 'Invalid OTP'
-        })
-      })
-
-      const result = await authService.verifyOtp('test@example.com', '000000')
-
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Invalid OTP')
-    })
-  })
-
-  describe('getSession', () => {
-    it('should return stored session if valid', async () => {
-      const mockSession: AuthSession = {
-        access_token: 'mock-access-token',
-        refresh_token: 'mock-refresh-token',
-        expires_at: Math.floor(Date.now() / 1000) + 3600,
-        expires_in: 3600,
-        token_type: 'bearer',
-        user: {
-          id: 'user-123',
-          email: 'test@example.com',
-          email_verified: true,
-          phone_verified: false,
-          app_metadata: {},
-          user_metadata: {},
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      }
-
-      mockLocalStorage['tiko_auth_session'] = JSON.stringify(mockSession)
-
-      const session = await authService.getSession()
-
-      expect(session).toEqual(mockSession)
-    })
-
-    it('should return null if no session stored', async () => {
-      const session = await authService.getSession()
-      expect(session).toBeNull()
-    })
-
-    it('should refresh expired session if refresh token available', async () => {
-      const expiredSession: AuthSession = {
-        access_token: 'old-token',
-        refresh_token: 'refresh-token',
-        expires_at: Math.floor(Date.now() / 1000) - 100, // Expired
-        expires_in: 3600,
-        token_type: 'bearer',
-        user: {} as AuthUser
-      }
-
-      mockLocalStorage['tiko_auth_session'] = JSON.stringify(expiredSession)
-
-      const newSession = {
-        access_token: 'new-token',
-        refresh_token: 'new-refresh-token',
-        expires_in: 3600,
-        user: { id: 'user-123', email: 'test@example.com' }
-      }
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => newSession
-      })
-
-      const session = await authService.getSession()
-
-      expect(session?.access_token).toBe('new-token')
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('refresh_token'),
-        expect.any(Object)
-      )
-    })
-
-    it('should return null if refresh fails', async () => {
-      const expiredSession: AuthSession = {
-        access_token: 'old-token',
-        refresh_token: 'invalid-refresh-token',
-        expires_at: Math.floor(Date.now() / 1000) - 100,
-        expires_in: 3600,
-        token_type: 'bearer',
-        user: {} as AuthUser
-      }
-
-      mockLocalStorage['tiko_auth_session'] = JSON.stringify(expiredSession)
-
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({ error: 'Invalid refresh token' })
-      })
-
-      const session = await authService.getSession()
-
-      expect(session).toBeNull()
-      expect(mockLocalStorage['tiko_auth_session']).toBeUndefined()
-    })
-  })
-
-  describe('signOut', () => {
-    it('should clear all auth data', async () => {
-      mockLocalStorage['tiko_auth_session'] = 'session-data'
-      mockLocalStorage['supabase.auth.token'] = 'token-data'
-      mockLocalStorage['tiko_pending_auth_email'] = 'email@example.com'
-
-      const result = await authService.signOut()
-
-      expect(result.success).toBe(true)
-      expect(mockLocalStorage['tiko_auth_session']).toBeUndefined()
-      expect(mockLocalStorage['supabase.auth.token']).toBeUndefined()
-      expect(mockLocalStorage['tiko_pending_auth_email']).toBeUndefined()
-    })
-  })
-
-  describe('updateUser', () => {
-    it('should update user profile successfully', async () => {
-      const mockSession: AuthSession = {
-        access_token: 'mock-token',
-        refresh_token: 'refresh-token',
-        expires_at: Math.floor(Date.now() / 1000) + 3600,
-        expires_in: 3600,
-        token_type: 'bearer',
-        user: {} as AuthUser
-      }
-
-      mockLocalStorage['tiko_auth_session'] = JSON.stringify(mockSession)
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          user: {
-            id: 'user-123',
-            email: 'test@example.com',
-            full_name: 'Updated Name'
+    mockFetch
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json'
           }
         })
-      })
-
-      const result = await authService.updateUser({ full_name: 'Updated Name' })
-
-      expect(result.success).toBe(true)
-      expect(result.user?.full_name).toBe('Updated Name')
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/user'),
-        expect.objectContaining({
-          method: 'PUT',
-          headers: expect.objectContaining({
-            'Authorization': 'Bearer mock-token'
-          })
-        })
       )
-    })
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            authenticated: true,
+            user: createUser({
+              full_name: 'Jane Doe'
+            }),
+            session: {
+              id: 'session-123',
+              token: 'session-token',
+              expiresAt: '2030-01-01T00:00:00.000Z'
+            }
+          }),
+          {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        )
+      )
 
-    it('should fail if not authenticated', async () => {
-      const result = await authService.updateUser({ full_name: 'New Name' })
+    const result = await authService.verifyOtp('test@example.com', '123456')
 
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Not authenticated')
-    })
+    expect(result.success).toBe(true)
+    expect(result.session?.access_token).toBe('session-token')
+    expect(result.user?.full_name).toBe('Jane Doe')
+    expect(storage['tiko_pending_auth_email']).toBeUndefined()
+    expect(storage['tiko_pending_auth_name']).toBeUndefined()
+    expect(storage['tiko_auth_session']).toContain('session-token')
   })
 
-  describe('updateUserMetadata', () => {
-    it('should update user metadata successfully', async () => {
-      const mockSession: AuthSession = {
-        access_token: 'mock-token',
-        refresh_token: 'refresh-token',
-        expires_at: Math.floor(Date.now() / 1000) + 3600,
-        expires_in: 3600,
-        token_type: 'bearer',
-        user: {} as AuthUser
-      }
+  it('builds the shared Google sign-in URL on the auth domain', async () => {
+    const url = authService.getGoogleSignInUrl('https://tiko.tikoapps.org/auth/callback')
 
-      mockLocalStorage['tiko_auth_session'] = JSON.stringify(mockSession)
+    expect(url).toBe(
+      'https://auth.tikoapps.org/oauth/google?callbackURL=https%3A%2F%2Ftiko.tikoapps.org%2Fauth%2Fcallback'
+    )
+  })
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          user: {
-            id: 'user-123',
-            user_metadata: { theme: 'dark', language: 'en' }
+  it('returns null when the central auth worker reports no session', async () => {
+    mockFetch.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          authenticated: false,
+          user: null,
+          session: null
+        }),
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json'
           }
-        })
-      })
-
-      const result = await authService.updateUserMetadata({ theme: 'dark', language: 'en' })
-
-      expect(result.success).toBe(true)
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          body: JSON.stringify({ data: { theme: 'dark', language: 'en' } })
-        })
+        }
       )
+    )
+
+    const session = await authService.getSession()
+
+    expect(session).toBeNull()
+  })
+
+  it('falls back to the cached session when the auth worker is unavailable', async () => {
+    const cachedSession = createSession()
+    storage['tiko_auth_session'] = JSON.stringify(cachedSession)
+    mockFetch.mockRejectedValueOnce(new Error('Network failure'))
+
+    const session = await authService.getSession()
+
+    expect(session).toEqual(cachedSession)
+  })
+
+  it('updates cached user metadata after a profile metadata write', async () => {
+    const cachedSession = createSession()
+    storage['tiko_auth_session'] = JSON.stringify(cachedSession)
+
+    mockFetch.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          success: true,
+          user: createUser({
+            user_metadata: {
+              settings: {
+                theme: 'dark'
+              }
+            }
+          })
+        }),
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+    )
+
+    const result = await authService.updateUserMetadata({
+      settings: {
+        theme: 'dark'
+      }
     })
+
+    expect(result.success).toBe(true)
+    expect(result.user?.user_metadata.settings.theme).toBe('dark')
+    expect(storage['tiko_auth_session']).toContain('"theme":"dark"')
+  })
+
+  it('clears the mirrored session on sign out', async () => {
+    storage['tiko_auth_session'] = JSON.stringify(createSession())
+    storage['supabase.auth.token'] = JSON.stringify(createSession())
+
+    mockFetch.mockResolvedValueOnce(
+      new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+    )
+
+    const result = await authService.signOut()
+
+    expect(result.success).toBe(true)
+    expect(storage['tiko_auth_session']).toBeUndefined()
+    expect(storage['supabase.auth.token']).toBeUndefined()
   })
 })
+
+function createUser(overrides: Partial<AuthUser> = {}): AuthUser {
+  return {
+    id: 'user-123',
+    email: 'test@example.com',
+    full_name: 'Test User',
+    avatar_url: '',
+    email_verified: true,
+    phone_verified: false,
+    app_metadata: {
+      role: 'user'
+    },
+    user_metadata: {},
+    created_at: '2025-01-01T00:00:00.000Z',
+    updated_at: '2025-01-01T00:00:00.000Z',
+    ...overrides
+  }
+}
+
+function createSession(overrides: Partial<AuthSession> = {}): AuthSession {
+  return {
+    access_token: 'session-token',
+    refresh_token: '',
+    expires_at: Math.floor(Date.now() / 1000) + 3600,
+    expires_in: 3600,
+    token_type: 'bearer',
+    user: createUser(),
+    ...overrides
+  }
+}

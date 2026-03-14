@@ -1,0 +1,14 @@
+{
+  "admin": {
+    "i18n": {
+      "addKey": {
+        "description": "Disgrifiad",
+        "descriptionPlaceholder": "Disgrifiad o'r allwedd",
+        "keyDetails": "Manylion Allweddol",
+        "keyName": "Enw allwedd",
+        "title": "Teitl",
+        "translationPlaceholder": "Eich cyfieithiad"
+      }
+    }
+  }
+}

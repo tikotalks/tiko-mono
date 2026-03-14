@@ -4,7 +4,7 @@
     <div :class="bemm('search')">
       <TInputText
         v-model="searchQuery"
-        :placeholder="t(keys.common.search)"
+        :placeholder="t('common.search')"
         :icon="Icons.SEARCH_M"
         :class="bemm('search-input')"
       />
@@ -56,7 +56,7 @@
 
         <!-- No results message -->
         <div v-if="filteredLanguageGroups.length === 0" :class="bemm('no-results')">
-          {{ t(keys.radio.noResultsFound) }}
+          {{ t('common.noResultsFound') }}
         </div>
       </template>
     </div>

@@ -49,4 +49,5 @@ export default createViteConfig({
   appName: 'Sequence',
   appId: 'sequence',
   i18nConfig,
+  disableI18nWorker: true,
 })

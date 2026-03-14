@@ -1,0 +1,14 @@
+{
+  "admin": {
+    "i18n": {
+      "addKey": {
+        "description": "Նկարագրություն",
+        "descriptionPlaceholder": "Բանալիի նկարագրությունը",
+        "keyDetails": "Բանալի մանրամասներ",
+        "keyName": "Բանալիի անուն",
+        "title": "Վերնագիր",
+        "translationPlaceholder": "Թարգմանությունը Ձեր տվյալն է։"
+      }
+    }
+  }
+}

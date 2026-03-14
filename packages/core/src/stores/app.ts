@@ -6,6 +6,7 @@ import { useAuthStore } from './auth'
 
 export const useAppStore = defineStore('app', () => {
   const authStore = useAuthStore()
+  const LOCAL_SETTINGS_USER_ID = 'local'
 
   // State
   const appSettings = ref<Record<string, AppSettings>>({})
@@ -22,14 +23,14 @@ export const useAppStore = defineStore('app', () => {
     return appSettings.value[appName]?.settings || {}
   }
 
+  const resolveSettingsUserId = (): string => {
+    return authStore.user?.id || LOCAL_SETTINGS_USER_ID
+  }
+
   const updateAppSettings = async (appName: string, settings: Record<string, any>) => {
     const settingsId = `${appName}_settings`
-    const userId = authStore.user?.id
-    
-    if (!userId) {
-      console.warn('No user ID available for settings update')
-      return
-    }
+    const userId = resolveSettingsUserId()
+    const isLocalOnlyMode = !authStore.user?.id
     
     // Optimistically update local state
     appSettings.value[appName] = {
@@ -39,6 +40,15 @@ export const useAppStore = defineStore('app', () => {
       settings,
       createdAt: new Date(),
       updatedAt: new Date()
+    }
+
+    // Guest/skip-auth mode: persist directly to localStorage-backed settings service.
+    if (isLocalOnlyMode) {
+      const result = await userSettingsService.saveSettings(userId, appName, settings)
+      if (!result.success) {
+        console.error('[AppStore] Failed to save local app settings:', result.error)
+      }
+      return
     }
 
     // Add to sync queue
@@ -119,14 +129,7 @@ export const useAppStore = defineStore('app', () => {
       isAuthenticated: authStore.isAuthenticated
     })
     
-    const userId = authStore.user?.id
-    if (!userId) {
-      console.error('[AppStore] ❌ Cannot load settings - No user ID available')
-      console.error('[AppStore] User object:', authStore.user)
-      console.error('[AppStore] Session object:', authStore.session)
-      console.error('[AppStore] Is authenticated:', authStore.isAuthenticated)
-      return
-    }
+    const userId = resolveSettingsUserId()
     
     console.log(`[AppStore] ✅ User ID found: ${userId}`)
     console.log(`[AppStore] Starting database query...`)
@@ -186,15 +189,7 @@ export const useAppStore = defineStore('app', () => {
   const loadAllAppSettings = async () => {
     console.log('[AppStore] ========== LOADING ALL APP SETTINGS ==========')
     
-    const userId = authStore.user?.id
-    if (!userId) {
-      console.warn('[AppStore] ❌ No user ID available for loading all settings')
-      console.warn('[AppStore] Auth state:', {
-        user: authStore.user,
-        isAuthenticated: authStore.isAuthenticated
-      })
-      return
-    }
+    const userId = resolveSettingsUserId()
 
     console.log(`[AppStore] Loading all settings for user: ${userId}`)
 
