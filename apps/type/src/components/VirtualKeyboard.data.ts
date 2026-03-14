@@ -10,6 +10,27 @@ export interface KeyboardLayout {
   rows: KeyboardKey[][]
 }
 
+export interface KeyboardLayoutOption {
+  value: string
+  label: string
+}
+
+export interface KeyboardCharacterSetOption {
+  value: string
+  label: string
+}
+
+export interface KeyboardLanguageOption {
+  value: string
+  label: string
+}
+
+export interface ResolvedKeyboardSelection {
+  language: string
+  layout: string
+  characterSet: string
+}
+
 export const funKeyboardIds = {
   a: '541e7ae2-b00c-45e5-933a-a2f6c6737ea8',
   b: 'fb53c93b-0de1-4824-89a4-e285ee7e73e8',
@@ -75,6 +96,9 @@ export const keyboardLayouts: Record<string, KeyboardLayout> = {
         { key: 'b', display: 'b' },
         { key: 'n', display: 'n' },
         { key: 'm', display: 'm' },
+        { key: ',', display: ',' },
+        { key: '.', display: '.' },
+        { key: '!', display: '!' },
         { key: '?', display: '?' },
       ],
     ],
@@ -137,6 +161,9 @@ export const keyboardLayouts: Record<string, KeyboardLayout> = {
         { key: 'v', display: 'v' },
         { key: 'b', display: 'b' },
         { key: 'n', display: 'n' },
+        { key: ',', display: ',' },
+        { key: '.', display: '.' },
+        { key: '!', display: '!' },
         { key: '?', display: '?' },
       ],
     ],
@@ -176,6 +203,240 @@ export const keyboardLayouts: Record<string, KeyboardLayout> = {
         { key: 'b', display: 'b' },
         { key: 'n', display: 'n' },
         { key: 'm', display: 'm' },
+        { key: ',', display: ',' },
+        { key: '.', display: '.' },
+        { key: '!', display: '!' },
+        { key: '?', display: '?' },
+      ],
+    ],
+  },
+
+  russian: {
+    name: 'Russian',
+    rows: [
+      [
+        { key: 'й', display: 'й' },
+        { key: 'ц', display: 'ц' },
+        { key: 'у', display: 'у' },
+        { key: 'к', display: 'к' },
+        { key: 'е', display: 'е' },
+        { key: 'н', display: 'н' },
+        { key: 'г', display: 'г' },
+        { key: 'ш', display: 'ш' },
+        { key: 'щ', display: 'щ' },
+        { key: 'з', display: 'з' },
+        { key: 'х', display: 'х' },
+        { key: 'ъ', display: 'ъ' },
+      ],
+      [
+        { key: 'ф', display: 'ф' },
+        { key: 'ы', display: 'ы' },
+        { key: 'в', display: 'в' },
+        { key: 'а', display: 'а' },
+        { key: 'п', display: 'п' },
+        { key: 'р', display: 'р' },
+        { key: 'о', display: 'о' },
+        { key: 'л', display: 'л' },
+        { key: 'д', display: 'д' },
+        { key: 'ж', display: 'ж' },
+        { key: 'э', display: 'э' },
+      ],
+      [
+        { key: 'я', display: 'я' },
+        { key: 'ч', display: 'ч' },
+        { key: 'с', display: 'с' },
+        { key: 'м', display: 'м' },
+        { key: 'и', display: 'и' },
+        { key: 'т', display: 'т' },
+        { key: 'ь', display: 'ь' },
+        { key: 'б', display: 'б' },
+        { key: 'ю', display: 'ю' },
+        { key: ',', display: ',' },
+        { key: '.', display: '.' },
+        { key: '!', display: '!' },
+        { key: '?', display: '?' },
+      ],
+    ],
+  },
+
+  greek: {
+    name: 'Greek',
+    rows: [
+      [
+        { key: ';', display: ';' },
+        { key: 'ς', display: 'ς' },
+        { key: 'ε', display: 'ε' },
+        { key: 'ρ', display: 'ρ' },
+        { key: 'τ', display: 'τ' },
+        { key: 'υ', display: 'υ' },
+        { key: 'θ', display: 'θ' },
+        { key: 'ι', display: 'ι' },
+        { key: 'ο', display: 'ο' },
+        { key: 'π', display: 'π' },
+      ],
+      [
+        { key: 'α', display: 'α' },
+        { key: 'σ', display: 'σ' },
+        { key: 'δ', display: 'δ' },
+        { key: 'φ', display: 'φ' },
+        { key: 'γ', display: 'γ' },
+        { key: 'η', display: 'η' },
+        { key: 'ξ', display: 'ξ' },
+        { key: 'κ', display: 'κ' },
+        { key: 'λ', display: 'λ' },
+      ],
+      [
+        { key: 'ζ', display: 'ζ' },
+        { key: 'χ', display: 'χ' },
+        { key: 'ψ', display: 'ψ' },
+        { key: 'ω', display: 'ω' },
+        { key: 'β', display: 'β' },
+        { key: 'ν', display: 'ν' },
+        { key: 'μ', display: 'μ' },
+        { key: ',', display: ',' },
+        { key: '.', display: '.' },
+        { key: '!', display: '!' },
+        { key: '?', display: '?' },
+      ],
+    ],
+  },
+
+  armenian: {
+    name: 'Armenian',
+    rows: [
+      [
+        { key: 'է', display: 'է' },
+        { key: 'թ', display: 'թ' },
+        { key: 'փ', display: 'փ' },
+        { key: 'ձ', display: 'ձ' },
+        { key: 'ջ', display: 'ջ' },
+        { key: 'ր', display: 'ր' },
+        { key: 'չ', display: 'չ' },
+        { key: 'ճ', display: 'ճ' },
+        { key: 'ժ', display: 'ժ' },
+      ],
+      [
+        { key: 'ք', display: 'ք' },
+        { key: 'ո', display: 'ո' },
+        { key: 'ե', display: 'ե' },
+        { key: 'ռ', display: 'ռ' },
+        { key: 'տ', display: 'տ' },
+        { key: 'ը', display: 'ը' },
+        { key: 'ւ', display: 'ւ' },
+        { key: 'ի', display: 'ի' },
+        { key: 'օ', display: 'օ' },
+        { key: 'պ', display: 'պ' },
+      ],
+      [
+        { key: 'ա', display: 'ա' },
+        { key: 'ս', display: 'ս' },
+        { key: 'դ', display: 'դ' },
+        { key: 'ֆ', display: 'ֆ' },
+        { key: 'գ', display: 'գ' },
+        { key: 'հ', display: 'հ' },
+        { key: 'յ', display: 'յ' },
+        { key: 'կ', display: 'կ' },
+        { key: 'լ', display: 'լ' },
+        { key: 'խ', display: 'խ' },
+        { key: 'ծ', display: 'ծ' },
+        { key: ',', display: ',' },
+        { key: '.', display: '.' },
+        { key: '!', display: '!' },
+        { key: '?', display: '?' },
+      ],
+    ],
+  },
+
+  persian: {
+    name: 'Persian',
+    rows: [
+      [
+        { key: 'ض', display: 'ض' },
+        { key: 'ص', display: 'ص' },
+        { key: 'ث', display: 'ث' },
+        { key: 'ق', display: 'ق' },
+        { key: 'ف', display: 'ف' },
+        { key: 'غ', display: 'غ' },
+        { key: 'ع', display: 'ع' },
+        { key: 'ه', display: 'ه' },
+        { key: 'خ', display: 'خ' },
+        { key: 'ح', display: 'ح' },
+        { key: 'ج', display: 'ج' },
+        { key: 'چ', display: 'چ' },
+      ],
+      [
+        { key: 'ش', display: 'ش' },
+        { key: 'س', display: 'س' },
+        { key: 'ی', display: 'ی' },
+        { key: 'ب', display: 'ب' },
+        { key: 'ل', display: 'ل' },
+        { key: 'ا', display: 'ا' },
+        { key: 'ت', display: 'ت' },
+        { key: 'ن', display: 'ن' },
+        { key: 'م', display: 'م' },
+        { key: 'ک', display: 'ک' },
+        { key: 'گ', display: 'گ' },
+      ],
+      [
+        { key: 'ظ', display: 'ظ' },
+        { key: 'ط', display: 'ط' },
+        { key: 'ز', display: 'ز' },
+        { key: 'ر', display: 'ر' },
+        { key: 'ذ', display: 'ذ' },
+        { key: 'د', display: 'د' },
+        { key: 'پ', display: 'پ' },
+        { key: 'و', display: 'و' },
+        { key: 'ژ', display: 'ژ' },
+        { key: ',', display: ',' },
+        { key: '.', display: '.' },
+        { key: '!', display: '!' },
+        { key: '?', display: '?' },
+      ],
+    ],
+  },
+
+  maltese: {
+    name: 'Maltese',
+    rows: [
+      [
+        { key: 'q', display: 'q' },
+        { key: 'w', display: 'w' },
+        { key: 'e', display: 'e' },
+        { key: 'r', display: 'r' },
+        { key: 't', display: 't' },
+        { key: 'y', display: 'y' },
+        { key: 'u', display: 'u' },
+        { key: 'i', display: 'i' },
+        { key: 'o', display: 'o' },
+        { key: 'p', display: 'p' },
+        { key: 'għ', display: 'għ' },
+      ],
+      [
+        { key: 'a', display: 'a' },
+        { key: 's', display: 's' },
+        { key: 'd', display: 'd' },
+        { key: 'f', display: 'f' },
+        { key: 'g', display: 'g' },
+        { key: 'h', display: 'h' },
+        { key: 'j', display: 'j' },
+        { key: 'k', display: 'k' },
+        { key: 'l', display: 'l' },
+        { key: 'ħ', display: 'ħ' },
+        { key: 'ċ', display: 'ċ' },
+      ],
+      [
+        { key: 'z', display: 'z' },
+        { key: 'x', display: 'x' },
+        { key: 'c', display: 'c' },
+        { key: 'v', display: 'v' },
+        { key: 'b', display: 'b' },
+        { key: 'n', display: 'n' },
+        { key: 'm', display: 'm' },
+        { key: 'ż', display: 'ż' },
+        { key: 'ġ', display: 'ġ' },
+        { key: ',', display: ',' },
+        { key: '.', display: '.' },
+        { key: '!', display: '!' },
         { key: '?', display: '?' },
       ],
     ],
@@ -232,13 +493,169 @@ export const specialKeys = {
   caps: { key: 'CapsLock', display: '⇪', modifier: true },
 }
 
-// Get available layout names for settings
-export const availableLayouts = Object.keys(keyboardLayouts).map(key => ({
-  value: key,
-  label: keyboardLayouts[key].name,
-}))
+const defaultAlphabet = 'abcdefghijklmnopqrstuvwxyz'.split('')
+
+const localeAlphabets: Record<string, string[]> = {
+  bg: 'абвгдежзийклмнопрстуфхцчшщъьюя'.split(''),
+  de: [...defaultAlphabet, 'ä', 'ö', 'ü', 'ß'],
+  el: 'αβγδεζηθικλμνξοπρστυφχψω'.split(''),
+  es: [...defaultAlphabet, 'ñ'],
+  fa: 'اآبپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی'.split(''),
+  fr: [...defaultAlphabet, 'à', 'â', 'æ', 'ç', 'é', 'è', 'ê', 'ë', 'î', 'ï', 'ô', 'œ', 'ù', 'û', 'ü', 'ÿ'],
+  hy: 'աբգդեզէըթժիլխծկհձղճմյնշոչպջռսվտրցւփքօֆ'.split(''),
+  it: [...defaultAlphabet, 'à', 'è', 'é', 'ì', 'ò', 'ù'],
+  mt: [...defaultAlphabet, 'ċ', 'ġ', 'għ', 'ħ', 'ż'],
+  pt: [...defaultAlphabet, 'á', 'à', 'â', 'ã', 'ç', 'é', 'ê', 'í', 'ó', 'ô', 'õ', 'ú'],
+  ru: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'.split(''),
+}
+
+const characterSetLabels: Record<string, string> = {
+  auto: 'Match App Language',
+  en: 'English',
+  de: 'German',
+  el: 'Greek',
+  fa: 'Persian',
+  fr: 'French',
+  hy: 'Armenian',
+  mt: 'Maltese',
+  ru: 'Russian',
+}
+
+const keyboardLanguageLabels: Record<string, string> = {
+  auto: 'Match App Language',
+  en: 'English',
+  fr: 'French',
+  de: 'German',
+  ru: 'Russian',
+  hy: 'Armenian',
+  el: 'Greek',
+  fa: 'Persian',
+  mt: 'Maltese',
+}
+
+const nativeKeyboardLayoutByLanguage: Record<string, string> = {
+  en: 'qwerty',
+  fr: 'azerty',
+  de: 'qwertz',
+  ru: 'russian',
+  hy: 'armenian',
+  el: 'greek',
+  fa: 'persian',
+  mt: 'maltese',
+}
+
+const selectableLayoutKeys = ['qwerty', 'azerty', 'qwertz', 'alphabet'] as const
+
+function getLocaleCode(locale: string): string {
+  return (locale || 'en').toLowerCase().split('-')[0]
+}
+
+function getAlphabetForLocale(locale: string): string[] {
+  const localeCode = getLocaleCode(locale)
+  return localeAlphabets[localeCode] || defaultAlphabet
+}
+
+function getAlphabetForCharacterSet(characterSet: string, locale: string): string[] {
+  if (!characterSet || characterSet === 'auto') {
+    return getAlphabetForLocale(locale)
+  }
+
+  return localeAlphabets[characterSet] || getAlphabetForLocale(locale)
+}
+
+function splitIntoRows<T>(items: T[], rowCount: number): T[][] {
+  const rows: T[][] = []
+  let remaining = items.length
+  let index = 0
+
+  for (let rowsLeft = rowCount; rowsLeft > 0; rowsLeft -= 1) {
+    const currentRowSize = Math.ceil(remaining / rowsLeft)
+    rows.push(items.slice(index, index + currentRowSize))
+    index += currentRowSize
+    remaining -= currentRowSize
+  }
+
+  return rows
+}
+
+function getAlphabetLayout(locale: string, characterSet = 'auto'): KeyboardLayout {
+  const alphabetKeys: KeyboardKey[] = [
+    ...getAlphabetForCharacterSet(characterSet, locale).map(letter => ({ key: letter, display: letter })),
+    { key: ',', display: ',' },
+    { key: '.', display: '.' },
+    { key: '!', display: '!' },
+    { key: '?', display: '?' },
+  ]
+
+  return {
+    name: 'Alphabet',
+    rows: splitIntoRows(alphabetKeys, 3),
+  }
+}
+
+export function getAvailableLayouts(_locale = 'en'): KeyboardLayoutOption[] {
+  return selectableLayoutKeys.map(layoutKey => {
+    if (layoutKey === 'alphabet') {
+      return {
+        value: 'alphabet',
+        label: 'Alphabet',
+      }
+    }
+
+    return {
+      value: layoutKey,
+      label: keyboardLayouts[layoutKey].name,
+    }
+  })
+}
+
+export function getAvailableCharacterSets(locale = 'en'): KeyboardCharacterSetOption[] {
+  const localeCode = getLocaleCode(locale)
+  const autoLabelSuffix = characterSetLabels[localeCode] || localeCode.toUpperCase()
+
+  return Object.entries(characterSetLabels).map(([value, label]) => ({
+    value,
+    label: value === 'auto' ? `${label} (${autoLabelSuffix})` : label,
+  }))
+}
+
+export function getAvailableKeyboardLanguages(locale = 'en'): KeyboardLanguageOption[] {
+  const localeCode = getLocaleCode(locale)
+  const autoLabelSuffix = keyboardLanguageLabels[localeCode] || localeCode.toUpperCase()
+
+  return Object.entries(keyboardLanguageLabels).map(([value, label]) => ({
+    value,
+    label: value === 'auto' ? `${label} (${autoLabelSuffix})` : label,
+  }))
+}
+
+export function resolveKeyboardSelection(
+  language = 'auto',
+  alphabetical = false,
+  locale = 'en'
+): ResolvedKeyboardSelection {
+  const resolvedLanguage = language === 'auto' ? getLocaleCode(locale) : language
+  const nativeLayout = nativeKeyboardLayoutByLanguage[resolvedLanguage] || 'qwerty'
+
+  return {
+    language: resolvedLanguage,
+    layout: alphabetical ? 'alphabet' : nativeLayout,
+    characterSet: resolvedLanguage,
+  }
+}
+
+// Backward-compatible default export for existing settings forms.
+export const availableLayouts = getAvailableLayouts()
 
 // Helper to get layout
-export function getKeyboardLayout(layoutName: string): KeyboardLayout {
+export function getKeyboardLayout(
+  layoutName: string,
+  locale = 'en',
+  characterSet = 'auto'
+): KeyboardLayout {
+  if (layoutName === 'alphabet') {
+    return getAlphabetLayout(locale, characterSet)
+  }
+
   return keyboardLayouts[layoutName] || keyboardLayouts.qwerty
 }

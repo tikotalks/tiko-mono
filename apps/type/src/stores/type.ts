@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useAppStore, useSpeak, useI18n } from '@tiko/core'
 import { useUpos, UPOSTag } from '@tiko/upos'
 import type { LangCode } from '@tiko/upos'
+import { resolveKeyboardSelection } from '../components/VirtualKeyboard.data'
 
 export interface TypeSettings {
   voice: string | null
@@ -14,7 +15,10 @@ export interface TypeSettings {
   hapticFeedback: boolean
   speakOnType: boolean
   keyboardTheme: string
+  keyboardLanguage: string
+  keyboardAlphabetical: boolean
   keyboardLayout: string
+  keyboardCharacterSet: string
   funLetters: boolean
   speakWordByWord: boolean
   playTypingSounds: boolean
@@ -25,6 +29,66 @@ export interface TypeHistory {
   text: string
   timestamp: number
   voice?: string
+}
+
+function inferKeyboardLanguage(
+  keyboardLayout: string | undefined,
+  keyboardCharacterSet: string | undefined
+): string {
+  if (keyboardCharacterSet && keyboardCharacterSet !== 'auto') {
+    return keyboardCharacterSet
+  }
+
+  switch (keyboardLayout) {
+    case 'azerty':
+      return 'fr'
+    case 'qwertz':
+      return 'de'
+    case 'russian':
+      return 'ru'
+    case 'armenian':
+      return 'hy'
+    case 'greek':
+      return 'el'
+    case 'persian':
+      return 'fa'
+    case 'maltese':
+      return 'mt'
+    default:
+      return 'auto'
+  }
+}
+
+function normalizeTypeSettings(
+  settings: Partial<TypeSettings>,
+  locale: string | undefined
+): TypeSettings {
+  const keyboardLanguage =
+    settings.keyboardLanguage || inferKeyboardLanguage(settings.keyboardLayout, settings.keyboardCharacterSet)
+  const keyboardAlphabetical =
+    typeof settings.keyboardAlphabetical === 'boolean'
+      ? settings.keyboardAlphabetical
+      : settings.keyboardLayout === 'alphabet'
+  const resolvedKeyboard = resolveKeyboardSelection(keyboardLanguage, keyboardAlphabetical, locale || 'en')
+
+  return {
+    voice: settings.voice ?? null,
+    rate: settings.rate ?? 1,
+    pitch: settings.pitch ?? 1,
+    volume: settings.volume ?? 1,
+    autoSave: settings.autoSave ?? true,
+    historyLimit: settings.historyLimit ?? 50,
+    hapticFeedback: settings.hapticFeedback ?? true,
+    speakOnType: settings.speakOnType ?? true,
+    keyboardTheme: settings.keyboardTheme ?? 'default',
+    keyboardLanguage,
+    keyboardAlphabetical,
+    keyboardLayout: resolvedKeyboard.layout,
+    keyboardCharacterSet: resolvedKeyboard.characterSet,
+    funLetters: settings.funLetters ?? false,
+    speakWordByWord: settings.speakWordByWord ?? true,
+    playTypingSounds: settings.playTypingSounds ?? false,
+  }
 }
 
 export const useTypeStore = defineStore('type', () => {
@@ -51,7 +115,10 @@ export const useTypeStore = defineStore('type', () => {
     hapticFeedback: true,
     speakOnType: true,
     keyboardTheme: 'default',
+    keyboardLanguage: 'auto',
+    keyboardAlphabetical: false,
     keyboardLayout: 'qwerty',
+    keyboardCharacterSet: 'auto',
     funLetters: false,
     speakWordByWord: true,
     playTypingSounds: false,
@@ -63,7 +130,7 @@ export const useTypeStore = defineStore('type', () => {
   // Getters
   const settings = computed((): TypeSettings => {
     const appSettings = appStore.getAppSettings('type')
-    return { ...defaultSettings, ...appSettings }
+    return normalizeTypeSettings({ ...defaultSettings, ...appSettings }, locale?.value as string)
   })
 
   const canSpeak = computed(() => {

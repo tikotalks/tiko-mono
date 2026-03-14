@@ -9,6 +9,28 @@ vi.mock('@tiko/core', () => ({
     setAppSettings: vi.fn(() => Promise.resolve(true)),
     updateAppSettings: vi.fn(() => Promise.resolve(true)),
   })),
+  useI18n: vi.fn(() => ({
+    locale: { value: 'en-US' },
+  })),
+  useSpeak: vi.fn(() => ({
+    speak: vi.fn(() => Promise.resolve()),
+    currentAudio: { value: null },
+    isPlaying: { value: false },
+  })),
+}))
+
+vi.mock('@tiko/upos', () => ({
+  UPOSTag: {
+    PUNCT: 'PUNCT',
+  },
+  useUpos: vi.fn(() => ({
+    upos: vi.fn((text: string) =>
+      text
+        .split(/\s+/)
+        .filter(Boolean)
+        .map(token => ({ text: token, tag: 'WORD' }))
+    ),
+  })),
 }))
 
 describe('useTypeStore', () => {
@@ -94,6 +116,9 @@ describe('useTypeStore', () => {
     expect(store.settings.pitch).toBe(1)
     expect(store.settings.volume).toBe(1)
     expect(store.settings.autoSave).toBe(true)
+    expect(store.settings.keyboardLanguage).toBe('auto')
+    expect(store.settings.keyboardAlphabetical).toBe(false)
+    expect(store.settings.keyboardCharacterSet).toBe('en')
   })
 
   it('can set voice', async () => {

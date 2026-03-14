@@ -1,5 +1,5 @@
 <template>
-  <TFramework :config="frameworkConfig" :loading="loading">
+  <TFramework :config="frameworkConfig" :loading="loading" @settings-change="handleSettingsChange">
     <router-view />
   </TFramework>
 </template>
@@ -10,9 +10,12 @@
   import { TFramework, type FrameworkConfig } from '@tiko/ui'
   import tikoConfig from '../tiko.config'
   import { initializeTranslations } from '@tiko/core'
+  import { useTypeStore, type TypeSettings } from './stores/type'
+  import { TypeKeyboardSettingsSection } from './components/TypeKeyboardSettingsSection'
 
   const loading = ref(true)
   const { t, keys } = useI18n()
+  const typeStore = useTypeStore()
 
   // Initialize translations on mount
   onMounted(async () => {
@@ -34,14 +37,22 @@
       sections: [
         {
           id: 'type-settings',
-          title: t(keys.type.typeGameSettings),
+          title: t(keys.value?.type?.typeGameSettings ?? 'type.typeGameSettings'),
           icon: 'keyboard',
           order: 10,
-          // component: TypeSettings // Add custom settings component if needed
+          component: TypeKeyboardSettingsSection,
         },
       ],
     },
   }))
+
+  const handleSettingsChange = async (section: string, value: unknown) => {
+    if (section !== 'type-settings' || !value || typeof value !== 'object') {
+      return
+    }
+
+    await typeStore.updateSettings(value as Partial<TypeSettings>)
+  }
 </script>
 
 <style lang="scss">

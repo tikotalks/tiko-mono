@@ -8,14 +8,14 @@
       @logout="handleLogout"
     >
       <template #app-controls>
-        <!-- App settings button (only visible in parent mode) -->
         <TButton
-          v-if="isParentModeUnlocked"
-          :icon="Icons.SETTINGS"
+          :icon="requiresParentUnlock ? Icons.SHIELD : Icons.SETTINGS"
           type="outline"
           color="secondary"
           @click="handleSettings"
-          :aria-label="t('type.typeSettings')"
+          :aria-label="
+            requiresParentUnlock ? t('parentMode.parentMode') || 'Parent mode' : t('type.typeSettings')
+          "
         />
       </template>
       <div :class="bemm()">
@@ -26,6 +26,7 @@
               <TWordList
                 v-if="currentTokens"
                 :tokens="currentTokens"
+                :show-punct="true"
                 @item-click="token => speakWord(token.text)"
               />
               <template v-else>
@@ -53,7 +54,6 @@
               </TButton>
               <TButton
                 :icon="isSpeaking ? Icons.PLAYBACK_STOP : Icons.PLAYBACK_PLAY"
-                :size="'large'"
                 type="default"
                 :color="isSpeaking ? 'error' : 'primary'"
                 @click="toggleSpeak"
@@ -70,6 +70,7 @@
         <div :class="bemm('keyboard-area')">
           <VirtualKeyboard
             :layout="getKeyboardLayout()"
+            :character-set="resolvedKeyboardSelection.characterSet"
             :disabled="isSpeaking"
             :uppercase="keyboardMode === 'capitals'"
             :haptic-feedback="settings.hapticFeedback"
@@ -101,18 +102,19 @@
     TInputSelect,
     PopupService,
     useParentMode,
+    TParentModePinInput,
   } from '@tiko/ui'
   import { Icons } from 'open-icon'
   import { useTypeStore } from '../stores/type'
   import VirtualKeyboard from '../components/VirtualKeyboard.vue'
   import TypeSettingsForm from '../components/TypeSettingsForm.vue'
-  import { availableLayouts } from '../components/VirtualKeyboard.data'
+  import { resolveKeyboardSelection } from '../components/VirtualKeyboard.data'
   import backgroundVideoUrl from '../assets/login-background.mp4'
 
   const bemm = useBemm('type-view')
 
   const typeStore = useTypeStore()
-  const { t, keys } = useI18n()
+  const { t, keys, locale } = useI18n()
   const { speak } = useSpeak()
   const popupService = inject<PopupService>('popupService')
   const parentMode = useParentMode()
@@ -120,6 +122,14 @@
   // Parent mode computed state
   const isParentModeUnlocked = computed(() => {
     return parentMode?.isUnlocked.value ?? false
+  })
+
+  const isSkipAuthMode = computed(() => {
+    return sessionStorage.getItem('tiko_skip_auth') === 'true'
+  })
+
+  const requiresParentUnlock = computed(() => {
+    return !isSkipAuthMode.value && !isParentModeUnlocked.value
   })
 
   const speakWord = (word: string) => {
@@ -144,7 +154,10 @@
     hapticFeedback: true,
     speakOnType: false,
     keyboardTheme: 'default',
+    keyboardLanguage: 'auto',
+    keyboardAlphabetical: false,
     keyboardLayout: 'qwerty',
+    keyboardCharacterSet: 'auto',
     funLetters: false,
     playTypingSounds: false,
   })
@@ -212,11 +225,19 @@
     }
   }
 
+  const resolvedKeyboardSelection = computed(() => {
+    return resolveKeyboardSelection(
+      settings.value.keyboardLanguage,
+      settings.value.keyboardAlphabetical,
+      locale.value
+    )
+  })
+
   const getKeyboardLayout = () => {
     if (keyboardMode.value === 'numbers') {
       return 'numbers'
     }
-    return settings.value.keyboardLayout
+    return resolvedKeyboardSelection.value.layout
   }
 
   const getKeyboardModeButton = () => {
@@ -299,6 +320,42 @@
     })
   }
 
+  const requestParentModeAccess = () => {
+    if (!popupService || !parentMode) {
+      console.warn('Unable to request parent mode access: popup or parent mode unavailable')
+      return
+    }
+
+    const isParentModeEnabled = parentMode.isEnabled?.value ?? false
+    const mode = isParentModeEnabled ? 'unlock' : 'setup'
+
+    popupService.open({
+      component: TParentModePinInput,
+      title: isParentModeEnabled
+        ? t('parentMode.enterParentPin')
+        : t('parentMode.setUpParentMode'),
+      description: isParentModeEnabled
+        ? t('parentMode.enterPinDescription')
+        : t('parentMode.createPinDescription'),
+      props: {
+        mode,
+        onPinEntered: async (pin: string) => {
+          const result =
+            mode === 'unlock' ? await parentMode.unlock(pin) : await parentMode.enable(pin)
+
+          if (result.success) {
+            popupService.close()
+            showAppSettingsPopup()
+            return
+          }
+
+          console.error('Parent mode authentication failed:', result.error)
+        },
+        onClose: () => popupService.close(),
+      },
+    })
+  }
+
   const speakFromHistory = (item: any) => {
     typeStore.speakFromHistory(item)
   }
@@ -318,7 +375,12 @@
   }
 
   const handleSettings = () => {
-    showAppSettingsPopup()
+    if (isSkipAuthMode.value || isParentModeUnlocked.value) {
+      showAppSettingsPopup()
+      return
+    }
+
+    requestParentModeAccess()
   }
 
   const handleLogout = () => {

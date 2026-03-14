@@ -56,13 +56,22 @@
     <!-- </div> -->
 
     <div :class="bemm('section')">
-      <!-- Keyboard Layout -->
       <div :class="bemm('group')">
         <TInputSelect
-          v-model="localSettings.keyboardLayout"
-          label="Keyboard Layout"
-          :options="availableLayouts"
+          v-model="localSettings.keyboardLanguage"
+          label="Keyboard Language"
+          :options="languageOptions"
         />
+      </div>
+
+      <div :class="bemm('group')">
+        <TInputCheckbox
+          v-model="localSettings.keyboardAlphabetical"
+          label="Alphabetical Layout"
+        />
+        <p :class="bemm('hint')">
+          Turn this off to use the language's native keyboard layout.
+        </p>
       </div>
 
       <!-- Haptic Feedback -->
@@ -114,8 +123,8 @@
   import { ref, computed, watch } from 'vue'
   import { useBemm } from 'bemm'
   import { useI18n } from '@tiko/core'
-  import { TButton, TInputRange, TInputCheckbox, TInputSelect, TFormActions } from '@tiko/ui'
-  import { availableLayouts } from './VirtualKeyboard.data'
+  import { TButton, TInputCheckbox, TInputSelect, TFormActions } from '@tiko/ui'
+  import { getAvailableKeyboardLanguages, resolveKeyboardSelection } from './VirtualKeyboard.data'
   import type { TypeSettings } from '../stores/type'
 
   interface Props {
@@ -129,12 +138,14 @@
   const props = defineProps<Props>()
 
   const bemm = useBemm('type-settings-form')
-  const { t, keys } = useI18n()
+  const { t, locale } = useI18n()
 
   // Local copy of settings
   const localSettings = ref<TypeSettings>({
     ...props.settings,
   })
+
+  const languageOptions = computed(() => getAvailableKeyboardLanguages(locale.value))
 
   // Voice selection
   const selectedVoiceIndex = ref(-1)
@@ -154,6 +165,21 @@
         const index = props.availableVoices.findIndex(v => v.name === voice.name)
         selectedVoiceIndex.value = index
       }
+    },
+    { immediate: true }
+  )
+
+  watch(
+    () => [localSettings.value.keyboardLanguage, localSettings.value.keyboardAlphabetical],
+    ([keyboardLanguage, keyboardAlphabetical]) => {
+      const resolvedKeyboard = resolveKeyboardSelection(
+        keyboardLanguage,
+        keyboardAlphabetical,
+        locale.value
+      )
+
+      localSettings.value.keyboardLayout = resolvedKeyboard.layout
+      localSettings.value.keyboardCharacterSet = resolvedKeyboard.characterSet
     },
     { immediate: true }
   )
@@ -200,6 +226,12 @@
       display: flex;
       flex-direction: column;
       gap: var(--space-xs);
+    }
+
+    &__hint {
+      margin: 0;
+      color: var(--color-foreground-secondary);
+      font-size: var(--font-size-sm);
     }
   }
 </style>

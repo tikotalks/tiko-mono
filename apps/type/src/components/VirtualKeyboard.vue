@@ -8,7 +8,7 @@
 
       <div :class="bemm('keyboard')">
         <!-- First row -->
-        <div :class="bemm('row')">
+        <div :class="bemm('row')" :style="getRowStyle(currentLayout.rows[0])">
           <button
             v-for="key in currentLayout.rows[0]"
             :key="key.key"
@@ -29,7 +29,7 @@
         </div>
 
         <!-- Second row -->
-        <div :class="bemm('row')">
+        <div :class="bemm('row')" :style="getRowStyle(currentLayout.rows[1])">
           <button
             v-for="key in currentLayout.rows[1]"
             :key="key.key"
@@ -50,7 +50,7 @@
         </div>
 
         <!-- Third row -->
-        <div :class="bemm('row')">
+        <div :class="bemm('row')" :style="getRowStyle(currentLayout.rows[2])">
           <button
             v-for="key in currentLayout.rows[2]"
             :key="key.key"
@@ -106,10 +106,11 @@
     type KeyboardKey,
     type KeyboardLayout,
   } from './VirtualKeyboard.data'
-  import { useImageResolver, useSpeak, usePlaySound, SOUNDS } from '@tiko/core'
+  import { useImageResolver, useSpeak, usePlaySound, SOUNDS, useI18n } from '@tiko/core'
 
   interface Props {
     layout?: string
+    characterSet?: string
     disabled?: boolean
     theme?: string
     uppercase?: boolean
@@ -122,6 +123,7 @@
 
   const props = withDefaults(defineProps<Props>(), {
     layout: 'qwerty',
+    characterSet: 'auto',
     disabled: false,
     theme: 'default',
     uppercase: false,
@@ -140,6 +142,7 @@
 
   const bemm = useBemm('virtual-keyboard')
   const { speak, preloadAudio } = useSpeak()
+  const { locale } = useI18n()
   const { resolveAssetUrl } = useImageResolver()
   const { playSound, preloadSounds } = usePlaySound()
 
@@ -148,7 +151,7 @@
   const preloadedKeys = ref<Set<string>>(new Set())
 
   const currentLayout = computed(() => {
-    return getKeyboardLayout(props.layout)
+    return getKeyboardLayout(props.layout, locale.value, props.characterSet)
   })
 
   const isNumbersLayout = computed(() => {
@@ -158,6 +161,12 @@
   const getKeyDisplay = (key: KeyboardKey): string => {
     const display = key.display || key.key
     return props.uppercase ? display.toUpperCase() : display
+  }
+
+  const getRowStyle = (keys: KeyboardKey[]) => {
+    return {
+      '--keyboard-keys-in-row': `${Math.max(keys.length, 1)}`,
+    }
   }
 
   // Fun letters
@@ -289,6 +298,26 @@
     () => {
       preloadLayoutAudio()
       loadFunLetterData()
+    }
+  )
+
+  watch(
+    () => props.characterSet,
+    () => {
+      if (props.layout === 'alphabet') {
+        preloadLayoutAudio()
+        loadFunLetterData()
+      }
+    }
+  )
+
+  watch(
+    () => locale.value,
+    () => {
+      if (props.layout === 'alphabet') {
+        preloadLayoutAudio()
+        loadFunLetterData()
+      }
     }
   )
 
@@ -489,7 +518,11 @@
     }
 
     &__row {
-      --keyboard-key-size: calc((100% - 20%) / 10);
+      --keyboard-keys-in-row: 10;
+      --keyboard-key-size: calc(
+        (100% - ((var(--keyboard-keys-in-row) - 1) * var(--keyboard-gap))) /
+          var(--keyboard-keys-in-row)
+      );
 
       display: flex;
       justify-content: center;
