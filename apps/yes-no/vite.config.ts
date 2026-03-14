@@ -47,7 +47,7 @@ const i18nConfig = {
 
 export default createViteConfig({
   dirname: __dirname,
-  port: 3000,
+  port: 3006,
   pwaConfig,
   appName: 'yes-no',
   appId: 'yes-no',

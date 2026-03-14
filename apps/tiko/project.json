@@ -15,7 +15,7 @@
       "executor": "@nx/vite:dev-server",
       "options": {
         "buildTarget": "tiko:build",
-        "port": 3003
+        "port": 3008
       }
     },
     "preview": {

@@ -41,7 +41,7 @@ const pwaConfig = {
 // Disable PWA for development to avoid caching issues
 export default createViteConfig({
   dirname: __dirname,
-  port: 5000,
+  port: 3009,
   pwaConfig: process.env.NODE_ENV === 'production' ? pwaConfig : null,
   appName: 'ui-docs',
   i18nConfig: {

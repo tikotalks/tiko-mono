@@ -44,7 +44,7 @@ const i18nConfig = {
 
 export default createViteConfig({
   dirname: __dirname,
-  port: 3003,
+  port: 3008,
   pwaConfig,
   appName: 'Tiko',
   appId: 'tiko',

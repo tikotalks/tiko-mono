@@ -27,7 +27,8 @@
       "executor": "@nx/vite:dev-server",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "ui-docs:build"
+        "buildTarget": "ui-docs:build",
+        "port": 3009
       },
       "configurations": {
         "development": {
