@@ -1,118 +1,150 @@
 <template>
   <div :class="bemm()">
-    <!-- <div :class="bemm('section')"> -->
-    <!-- <h3 :class="bemm('section-title')">{{ t('type.voiceSettings') }}</h3> -->
+    <div :class="bemm('intro')">
+      <p :class="bemm('eyebrow')">Typing experience</p>
+      <p :class="bemm('intro-text')">
+        Choose how the keyboard looks, sounds, and responds while someone types.
+      </p>
+    </div>
 
-    <!-- Voice Selection -->
-    <!-- <div :class="bemm('group')">
-        <TInputSelect
-          label="Voice"
-          :options="voiceOptions"
-          :model-value="selectedVoiceIndex.toString()"
-          @update:model-value="(value) => { selectedVoiceIndex = parseInt(value); handleVoiceChange() }"
-        />
-      </div> -->
+    <section :class="bemm('section')">
+      <div :class="bemm('section-header')">
+        <p :class="bemm('section-kicker')">Keyboard</p>
+        <h3 :class="bemm('section-title')">Layout and language</h3>
+        <p :class="bemm('section-description')">
+          Start by choosing which keyboard appears and whether it follows the usual layout or
+          simple A-Z order.
+        </p>
+      </div>
 
-    <!-- Speech Rate -->
-    <!-- <div :class="bemm('group')">
-        <TInputRange
-          v-model="localSettings.rate"
-          :label="t(keys.type.speechRate)"
-          :min="0.1"
-          :max="3"
-          :step="0.1"
-        />
-      </div> -->
+      <div :class="[bemm('setting-card'), bemm('setting-card', 'select')]">
+        <div :class="bemm('setting-copy')">
+          <h4 :class="bemm('setting-title')">Keyboard language</h4>
+          <p :class="bemm('setting-description')">
+            Pick the language shown on the onscreen keyboard.
+          </p>
+        </div>
 
-    <!-- Pitch -->
-    <!-- <div :class="bemm('group')">
-        <TInputRange
-          v-model="localSettings.pitch"
-          :label="t(keys.type.pitch)"
-          :min="0"
-          :max="2"
-          :step="0.1"
-        />
-      </div> -->
-
-    <!-- Volume -->
-    <!-- <div :class="bemm('group')">
-        <TInputRange
-          v-model="localSettings.volume"
-          :label="t(keys.type.volume)"
-          :min="0"
-          :max="1"
-          :step="0.1"
-        />
-      </div> -->
-
-    <!-- Auto Save -->
-    <!-- <div :class="bemm('group')">
-        <TInputCheckbox
-          v-model="localSettings.autoSave"
-          :label="t(keys.type.saveToHistoryAutomatically)"
-        />
-      </div> -->
-    <!-- </div> -->
-
-    <div :class="bemm('section')">
-      <div :class="bemm('group')">
         <TInputSelect
           v-model="localSettings.keyboardLanguage"
+          :class="bemm('language-select')"
+          data-test="Keyboard Language"
           label="Keyboard Language"
           :options="languageOptions"
         />
       </div>
 
-      <div :class="bemm('group')">
-        <TInputCheckbox
+      <div :class="bemm('setting-card')">
+        <div :class="bemm('setting-copy')">
+          <h4 :class="bemm('setting-title')">Alphabetical layout</h4>
+          <p :class="bemm('setting-description')">
+            Show letters in A-Z order instead of the language&apos;s standard keyboard layout.
+          </p>
+        </div>
+
+        <TInputToggle
           v-model="localSettings.keyboardAlphabetical"
+          :class="bemm('setting-toggle')"
+          data-test="Alphabetical Layout"
           label="Alphabetical Layout"
+          :show-icon="false"
         />
-        <p :class="bemm('hint')">
-          Turn this off to use the language's native keyboard layout.
+      </div>
+    </section>
+
+    <section :class="bemm('section')">
+      <div :class="bemm('section-header')">
+        <p :class="bemm('section-kicker')">Feedback</p>
+        <h3 :class="bemm('section-title')">Sound and response</h3>
+        <p :class="bemm('section-description')">
+          Turn on the cues that help the typer hear or feel each keypress.
         </p>
       </div>
 
-      <!-- Haptic Feedback -->
-      <div :class="bemm('group')">
-        <TInputCheckbox v-model="localSettings.hapticFeedback" label="Haptic Feedback" />
-      </div>
+      <div :class="bemm('setting-card')">
+        <div :class="bemm('setting-copy')">
+          <h4 :class="bemm('setting-title')">Speak letters when typing</h4>
+          <p :class="bemm('setting-description')">
+            Read each letter aloud as soon as it is tapped.
+          </p>
+        </div>
 
-      <!-- Speak on Type -->
-      <div :class="bemm('group')">
-        <TInputCheckbox v-model="localSettings.speakOnType" label="Speak Letters When Typing" />
-      </div>
-
-      <!-- Keyboard Theme -->
-      <!-- <div :class="bemm('group')">
-        <TInputSelect
-          v-model="localSettings.keyboardTheme"
-          label="Keyboard Theme"
-          :options="[
-            { value: 'default', label: 'Default' },
-            { value: 'dark', label: 'Dark' },
-            { value: 'colorful', label: 'Colorful' }
-          ]"
+        <TInputToggle
+          v-model="localSettings.speakOnType"
+          :class="bemm('setting-toggle')"
+          data-test="Speak Letters When Typing"
+          label="Speak Letters When Typing"
+          :show-icon="false"
         />
-      </div> -->
-
-      <!-- Fun Letters -->
-      <div :class="bemm('group')">
-        <TInputCheckbox v-model="localSettings.funLetters" label="Fun Letters (Images)" />
       </div>
 
-      <!-- Play Typing Sounds -->
-      <div :class="bemm('group')">
-        <TInputCheckbox v-model="localSettings.playTypingSounds" label="Play Typing Sounds" />
+      <div :class="bemm('setting-card')">
+        <div :class="bemm('setting-copy')">
+          <h4 :class="bemm('setting-title')">Play typing sounds</h4>
+          <p :class="bemm('setting-description')">
+            Play a short sound for every keypress.
+          </p>
+        </div>
+
+        <TInputToggle
+          v-model="localSettings.playTypingSounds"
+          :class="bemm('setting-toggle')"
+          data-test="Play Typing Sounds"
+          label="Play Typing Sounds"
+          :show-icon="false"
+        />
       </div>
-    </div>
+
+      <div :class="bemm('setting-card')">
+        <div :class="bemm('setting-copy')">
+          <h4 :class="bemm('setting-title')">Haptic feedback</h4>
+          <p :class="bemm('setting-description')">
+            Add vibration feedback on supported devices when keys are pressed.
+          </p>
+        </div>
+
+        <TInputToggle
+          v-model="localSettings.hapticFeedback"
+          :class="bemm('setting-toggle')"
+          data-test="Haptic Feedback"
+          label="Haptic Feedback"
+          :show-icon="false"
+        />
+      </div>
+    </section>
+
+    <section :class="bemm('section')">
+      <div :class="bemm('section-header')">
+        <p :class="bemm('section-kicker')">Fun</p>
+        <h3 :class="bemm('section-title')">Visual extras</h3>
+        <p :class="bemm('section-description')">
+          Add playful visuals when you want the keyboard to feel more engaging.
+        </p>
+      </div>
+
+      <div :class="bemm('setting-card')">
+        <div :class="bemm('setting-copy')">
+          <h4 :class="bemm('setting-title')">Fun letters</h4>
+          <p :class="bemm('setting-description')">
+            Replace plain letters with playful image-based visuals.
+          </p>
+        </div>
+
+        <TInputToggle
+          v-model="localSettings.funLetters"
+          :class="bemm('setting-toggle')"
+          data-test="Fun Letters (Images)"
+          label="Fun Letters (Images)"
+          :show-icon="false"
+        />
+      </div>
+    </section>
 
     <TFormActions>
-      <TButton type="outline" @click="handleCancel">
+      <TButton :class="bemm('action')" type="outline" @click="handleCancel">
         {{ t('common.cancel') }}
       </TButton>
-      <TButton color="primary" @click="handleApply">
+      <TButton :class="bemm('action')" color="primary" @click="handleApply">
         {{ t('common.apply') }}
       </TButton>
     </TFormActions>
@@ -120,10 +152,10 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, watch } from 'vue'
+  import { reactive, computed, watch } from 'vue'
   import { useBemm } from 'bemm'
   import { useI18n } from '@tiko/core'
-  import { TButton, TInputCheckbox, TInputSelect, TFormActions } from '@tiko/ui'
+  import { TButton, TInputSelect, TInputToggle, TFormActions } from '@tiko/ui'
   import { getAvailableKeyboardLanguages, resolveKeyboardSelection } from './VirtualKeyboard.data'
   import type { TypeSettings } from '../stores/type'
 
@@ -140,37 +172,22 @@
   const bemm = useBemm('type-settings-form')
   const { t, locale } = useI18n()
 
-  // Local copy of settings
-  const localSettings = ref<TypeSettings>({
+  const localSettings = reactive<TypeSettings>({
     ...props.settings,
   })
 
   const languageOptions = computed(() => getAvailableKeyboardLanguages(locale.value))
 
-  // Voice selection
-  const selectedVoiceIndex = ref(-1)
-  const voiceOptions = computed(() => {
-    if (!props.availableVoices) return []
-    return props.availableVoices.map((voice, index) => ({
-      label: `${voice.name} (${voice.lang})`,
-      value: index.toString(),
-    }))
-  })
-
-  // Set initial voice selection
   watch(
-    () => props.selectedVoice,
-    voice => {
-      if (voice && props.availableVoices) {
-        const index = props.availableVoices.findIndex(v => v.name === voice.name)
-        selectedVoiceIndex.value = index
-      }
+    () => props.settings,
+    newSettings => {
+      Object.assign(localSettings, newSettings)
     },
-    { immediate: true }
+    { deep: true }
   )
 
   watch(
-    () => [localSettings.value.keyboardLanguage, localSettings.value.keyboardAlphabetical],
+    () => [localSettings.keyboardLanguage, localSettings.keyboardAlphabetical] as const,
     ([keyboardLanguage, keyboardAlphabetical]) => {
       const resolvedKeyboard = resolveKeyboardSelection(
         keyboardLanguage,
@@ -178,25 +195,18 @@
         locale.value
       )
 
-      localSettings.value.keyboardLayout = resolvedKeyboard.layout
-      localSettings.value.keyboardCharacterSet = resolvedKeyboard.characterSet
+      localSettings.keyboardLayout = resolvedKeyboard.layout
+      localSettings.keyboardCharacterSet = resolvedKeyboard.characterSet
     },
     { immediate: true }
   )
-
-  const handleVoiceChange = () => {
-    if (selectedVoiceIndex.value >= 0 && props.availableVoices) {
-      const voice = props.availableVoices[selectedVoiceIndex.value]
-      localSettings.value.voice = voice.name
-    }
-  }
 
   const handleCancel = () => {
     props.onClose?.()
   }
 
   const handleApply = async () => {
-    await props.onApply(localSettings.value)
+    await props.onApply({ ...localSettings })
     props.onClose?.()
   }
 </script>
@@ -205,7 +215,32 @@
   .type-settings-form {
     display: flex;
     flex-direction: column;
-    gap: var(--space-lg);
+    gap: var(--space-xl);
+    width: min(100%, 42rem);
+
+    &__intro {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+
+    &__eyebrow,
+    &__section-kicker {
+      margin: 0;
+      color: var(--color-primary);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    &__intro-text,
+    &__section-description,
+    &__setting-description {
+      margin: 0;
+      color: color-mix(in srgb, var(--color-foreground), transparent 22%);
+      line-height: 1.5;
+    }
 
     &__section {
       display: flex;
@@ -213,25 +248,115 @@
       gap: var(--space);
     }
 
-    &__section-title {
-      font-size: var(--font-size-lg);
-      font-weight: 600;
-      color: var(--color-primary);
-      margin: 0 0 var(--space-s) 0;
-      padding-bottom: var(--space-xs);
-      border-bottom: 1px solid var(--color-accent);
+    &__section-header {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xxs, 0.35rem);
     }
 
-    &__group {
+    &__section-title {
+      margin: 0;
+      font-size: clamp(1.1rem, 2vw, 1.35rem);
+      font-weight: 700;
+      color: var(--color-foreground);
+    }
+
+    &__setting-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: var(--space-l);
+      align-items: center;
+      padding: var(--space-l);
+      border-radius: calc(var(--border-radius) * 1.5);
+      border: 1px solid color-mix(in srgb, var(--color-primary), transparent 80%);
+      background:
+        linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--color-primary), transparent 92%),
+          color-mix(in srgb, var(--color-background), transparent 8%)
+        ),
+        var(--color-background);
+      box-shadow: 0 1.25rem 2.5rem color-mix(in srgb, black, transparent 88%);
+    }
+
+    &__setting-card--select {
+      grid-template-columns: 1fr;
+      align-items: stretch;
+    }
+
+    &__setting-copy {
       display: flex;
       flex-direction: column;
       gap: var(--space-xs);
     }
 
-    &__hint {
+    &__setting-title {
       margin: 0;
-      color: var(--color-foreground-secondary);
-      font-size: var(--font-size-sm);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--color-foreground);
+    }
+
+    &__language-select {
+      width: 100%;
+      --input-control-font-size: 1.1rem;
+      --input-border-radius: calc(var(--border-radius) * 1.25);
+
+      > .input-select__label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      .input-select__control {
+        min-height: 3.5rem;
+      }
+    }
+
+    &__setting-toggle {
+      flex-shrink: 0;
+      --input-checkbox-height: 2.2rem;
+      --input-checkbox-space: 0.25rem;
+      --input-checkbox-dot-color--active: var(--color-primary);
+
+      > .input-toggle__label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    }
+
+    &__action {
+      min-width: 9rem;
+    }
+
+    @media (max-width: 640px) {
+      width: 100%;
+
+      &__setting-card {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+      }
+
+      &__setting-toggle {
+        justify-self: flex-start;
+      }
+
+      &__action {
+        width: 100%;
+      }
     }
   }
 </style>

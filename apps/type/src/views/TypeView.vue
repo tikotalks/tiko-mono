@@ -14,7 +14,9 @@
           color="secondary"
           @click="handleSettings"
           :aria-label="
-            requiresParentUnlock ? t('parentMode.parentMode') || 'Parent mode' : t('type.typeSettings')
+            requiresParentUnlock
+              ? t('parentMode.parentMode') || 'Parent mode'
+              : t('type.typeGameSettings')
           "
         />
       </template>
@@ -296,7 +298,7 @@
   const showAppSettingsPopup = () => {
     popupService?.open({
       component: TypeSettingsForm,
-      title: t('type.typeSettings'),
+      title: t('type.typeGameSettings'),
       props: {
         settings: settings.value,
         availableVoices: availableVoices.value,

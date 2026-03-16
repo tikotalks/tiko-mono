@@ -42,12 +42,13 @@ describe('TypeSettingsForm', () => {
             name: 'TInputSelect',
             props: ['modelValue', 'options', 'label', 'disabled'],
             template:
-              '<select :data-test="label" :disabled="disabled"><option v-for="option in options" :key="option.value" :value="option.value">{{ option.label }}</option></select>',
+              '<select :data-test="$attrs[\'data-test\'] || label" :disabled="disabled"><option v-for="option in options" :key="option.value" :value="option.value">{{ option.label }}</option></select>',
           },
-          TInputCheckbox: {
-            name: 'TInputCheckbox',
+          TInputToggle: {
+            name: 'TInputToggle',
             props: ['modelValue', 'label'],
-            template: '<input type="checkbox" :data-test="label" :checked="modelValue" />',
+            template:
+              '<input type="checkbox" :data-test="$attrs[\'data-test\'] || label" :checked="modelValue" />',
           },
           TButton: true,
           TFormActions: { template: '<div><slot /></div>' },
@@ -74,14 +75,14 @@ describe('TypeSettingsForm', () => {
             props: ['modelValue', 'options', 'label', 'disabled'],
             emits: ['update:model-value'],
             template:
-              '<select :data-test="label" :value="modelValue" :disabled="disabled" @change="$emit(\'update:model-value\', $event.target.value)"><option v-for="option in options" :key="option.value" :value="option.value">{{ option.label }}</option></select>',
+              '<select :data-test="$attrs[\'data-test\'] || label" :value="modelValue" :disabled="disabled" @change="$emit(\'update:model-value\', $event.target.value)"><option v-for="option in options" :key="option.value" :value="option.value">{{ option.label }}</option></select>',
           },
-          TInputCheckbox: {
-            name: 'TInputCheckbox',
+          TInputToggle: {
+            name: 'TInputToggle',
             props: ['modelValue', 'label'],
             emits: ['update:model-value'],
             template:
-              '<input type="checkbox" :data-test="label" :checked="modelValue" @change="$emit(\'update:model-value\', $event.target.checked)" />',
+              '<input type="checkbox" :data-test="$attrs[\'data-test\'] || label" :checked="modelValue" @change="$emit(\'update:model-value\', $event.target.checked)" />',
           },
           TButton: {
             props: ['type', 'color'],
@@ -126,14 +127,14 @@ describe('TypeSettingsForm', () => {
             props: ['modelValue', 'options', 'label', 'disabled'],
             emits: ['update:model-value'],
             template:
-              '<select :data-test="label" :value="modelValue" :disabled="disabled" @change="$emit(\'update:model-value\', $event.target.value)"><option v-for="option in options" :key="option.value" :value="option.value">{{ option.label }}</option></select>',
+              '<select :data-test="$attrs[\'data-test\'] || label" :value="modelValue" :disabled="disabled" @change="$emit(\'update:model-value\', $event.target.value)"><option v-for="option in options" :key="option.value" :value="option.value">{{ option.label }}</option></select>',
           },
-          TInputCheckbox: {
-            name: 'TInputCheckbox',
+          TInputToggle: {
+            name: 'TInputToggle',
             props: ['modelValue', 'label'],
             emits: ['update:model-value'],
             template:
-              '<input type="checkbox" :data-test="label" :checked="modelValue" @change="$emit(\'update:model-value\', $event.target.checked)" />',
+              '<input type="checkbox" :data-test="$attrs[\'data-test\'] || label" :checked="modelValue" @change="$emit(\'update:model-value\', $event.target.checked)" />',
           },
           TButton: {
             props: ['type', 'color'],
@@ -146,7 +147,7 @@ describe('TypeSettingsForm', () => {
     })
 
     wrapper.getComponent({ name: 'TInputSelect' }).vm.$emit('update:model-value', 'hy')
-    wrapper.getComponent({ name: 'TInputCheckbox' }).vm.$emit('update:model-value', true)
+    wrapper.getComponent({ name: 'TInputToggle' }).vm.$emit('update:model-value', true)
     await nextTick()
 
     const buttons = wrapper.findAll('button')

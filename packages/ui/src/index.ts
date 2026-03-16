@@ -79,6 +79,7 @@ export { default as TInputSelect } from './components/forms/TForm/inputs/TInputS
 export { default as TInputCheckbox } from './components/forms/TForm/inputs/TInputCheckbox/TInputCheckbox.vue';
 export { default as TInputRadio } from './components/forms/TForm/inputs/TInputRadio/TInputRadio.vue';
 export { default as TInputSwitch } from './components/forms/TForm/inputs/TInputSwitch/TInputSwitch.vue';
+export { default as TInputToggle } from './components/forms/TForm/inputs/TInputToggle/TInputToggle.vue';
 export { default as TTextArea } from './components/forms/TForm/inputs/TInputTextArea/TInputTextArea.vue';
 export { default as TFormGroup } from './components/forms/TForm/TFormGroup.vue';
 export { default as TFormField } from './components/forms/TForm/TFormField.vue';
