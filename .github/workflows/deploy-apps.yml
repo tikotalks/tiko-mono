@@ -89,6 +89,20 @@ jobs:
             exit 0
           fi
 
+          # For master branch, always build all apps for production deployments
+          if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+            echo "Master branch detected - deploying all apps"
+            echo "build-all-apps=true" >> $GITHUB_OUTPUT
+            echo "build-timer=true" >> $GITHUB_OUTPUT
+            echo "build-yes-no=true" >> $GITHUB_OUTPUT
+            echo "build-cards=true" >> $GITHUB_OUTPUT
+            echo "build-sequence=true" >> $GITHUB_OUTPUT
+            echo "build-radio=true" >> $GITHUB_OUTPUT
+            echo "build-todo=true" >> $GITHUB_OUTPUT
+            echo "build-type=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           # For develop branch, check changed files instead of commit message
           if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
             echo "Develop branch detected - checking changed files..."
@@ -135,45 +149,6 @@ jobs:
             fi
             
             exit 0
-          fi
-
-          # For master branch, handle push trigger - check commit message
-          COMMIT_MSG='${{ github.event.head_commit.message }}'
-          echo "Commit message: $COMMIT_MSG"
-
-          # Check for build all triggers
-          if [[ "$COMMIT_MSG" == *"[build:all]"* ]] || [[ "$COMMIT_MSG" == *"[build:apps]"* ]]; then
-            echo "build-timer=true" >> $GITHUB_OUTPUT
-            echo "build-yes-no=true" >> $GITHUB_OUTPUT
-            echo "build-cards=true" >> $GITHUB_OUTPUT
-            echo "build-sequence=true" >> $GITHUB_OUTPUT
-            echo "build-radio=true" >> $GITHUB_OUTPUT
-            echo "build-todo=true" >> $GITHUB_OUTPUT
-            echo "build-type=true" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          # Check for specific app triggers
-          if [[ "$COMMIT_MSG" == *"[build:timer]"* ]]; then
-            echo "build-timer=true" >> $GITHUB_OUTPUT
-          fi
-          if [[ "$COMMIT_MSG" == *"[build:cards]"* ]]; then
-            echo "build-cards=true" >> $GITHUB_OUTPUT
-          fi
-          if [[ "$COMMIT_MSG" == *"[build:sequence]"* ]]; then
-            echo "build-sequence=true" >> $GITHUB_OUTPUT
-          fi
-          if [[ "$COMMIT_MSG" == *"[build:radio]"* ]]; then
-            echo "build-radio=true" >> $GITHUB_OUTPUT
-          fi
-          if [[ "$COMMIT_MSG" == *"[build:todo]"* ]]; then
-            echo "build-todo=true" >> $GITHUB_OUTPUT
-          fi
-          if [[ "$COMMIT_MSG" == *"[build:yes-no]"* ]]; then
-            echo "build-yes-no=true" >> $GITHUB_OUTPUT
-          fi
-          if [[ "$COMMIT_MSG" == *"[build:type]"* ]]; then
-            echo "build-type=true" >> $GITHUB_OUTPUT
           fi
 
   check-environment:

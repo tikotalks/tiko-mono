@@ -63,6 +63,15 @@ jobs:
             exit 0
           fi
 
+          # For master branch, always build all tools for production deployments
+          if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+            echo "Master branch detected - deploying all tools"
+            echo "should-build=true" >> $GITHUB_OUTPUT
+            echo "build-admin=true" >> $GITHUB_OUTPUT
+            echo "build-ui-docs=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           # For develop branch, check changed files instead of commit message
           if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
             echo "Develop branch detected - checking changed files..."
@@ -92,28 +101,6 @@ jobs:
             fi
             
             exit 0
-          fi
-
-          # For master branch, handle push trigger - check commit message
-          COMMIT_MSG='${{ github.event.head_commit.message }}'
-          echo "Commit message: $COMMIT_MSG"
-
-          # Check for build all triggers
-          if [[ "$COMMIT_MSG" == *"[build:all]"* ]] || [[ "$COMMIT_MSG" == *"[build:tools]"* ]]; then
-            echo "should-build=true" >> $GITHUB_OUTPUT
-            echo "build-admin=true" >> $GITHUB_OUTPUT
-            echo "build-ui-docs=true" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          # Check for specific tool triggers
-          if [[ "$COMMIT_MSG" == *"[build:admin]"* ]]; then
-            echo "build-admin=true" >> $GITHUB_OUTPUT
-            echo "should-build=true" >> $GITHUB_OUTPUT
-          fi
-          if [[ "$COMMIT_MSG" == *"[build:ui-docs]"* ]]; then
-            echo "build-ui-docs=true" >> $GITHUB_OUTPUT
-            echo "should-build=true" >> $GITHUB_OUTPUT
           fi
 
   check-environment:
