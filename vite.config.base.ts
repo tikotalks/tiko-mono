@@ -184,13 +184,25 @@ export const createViteConfig = (args: {
     plugins,
     base: base || '/',
     resolve: {
-      alias: {
-        '@': path.resolve(dirname, './src'),
-        '@tiko/ui': path.resolve(dirname, '../../packages/ui/src'),
-        '@tiko/core': path.resolve(dirname, '../../packages/core/src'),
-        '@tiko/upos': path.resolve(dirname, '../../packages/upos/src'),
-        'bemm': path.resolve(dirname, '../../node_modules/bemm/dist/index.mjs')
-      }
+      alias: [
+        { find: '@', replacement: path.resolve(dirname, './src') },
+        { find: /^@tiko\/ui$/, replacement: path.resolve(dirname, '../../packages/ui/src') },
+        {
+          find: /^@tiko\/ui\/(.*)$/,
+          replacement: path.resolve(dirname, '../../packages/ui/src') + '/$1'
+        },
+        { find: /^@tiko\/core$/, replacement: path.resolve(dirname, '../../packages/core/src') },
+        {
+          find: /^@tiko\/core\/(.*)$/,
+          replacement: path.resolve(dirname, '../../packages/core/src') + '/$1'
+        },
+        { find: /^@tiko\/upos$/, replacement: path.resolve(dirname, '../../packages/upos/src') },
+        {
+          find: /^@tiko\/upos\/(.*)$/,
+          replacement: path.resolve(dirname, '../../packages/upos/src') + '/$1'
+        },
+        { find: 'bemm', replacement: path.resolve(dirname, '../../node_modules/bemm/dist/index.mjs') }
+      ]
     },
     css: {
       preprocessorOptions: {

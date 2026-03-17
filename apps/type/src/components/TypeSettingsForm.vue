@@ -155,7 +155,8 @@
   import { reactive, computed, watch } from 'vue'
   import { useBemm } from 'bemm'
   import { useI18n } from '@tiko/core'
-  import { TButton, TInputSelect, TInputToggle, TFormActions } from '@tiko/ui'
+  import { TButton, TInputSelect, TFormActions } from '@tiko/ui'
+  import TInputToggle from '@tiko/ui/components/forms/TForm/inputs/TInputToggle/TInputToggle.vue'
   import { getAvailableKeyboardLanguages, resolveKeyboardSelection } from './VirtualKeyboard.data'
   import type { TypeSettings } from '../stores/type'
 
