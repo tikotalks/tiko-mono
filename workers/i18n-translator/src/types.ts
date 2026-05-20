@@ -1,9 +1,9 @@
 /// <reference types="@cloudflare/workers-types" />
 
 export interface Env {
-  OPENAI_API_KEY: string
-  SUPABASE_URL: string
-  SUPABASE_SERVICE_KEY: string
+  LEZU_API_KEY: string
+  LEZU_PROJECT_ID?: string
+  LEZU_API_BASE?: string
   TRANSLATION_CACHE: KVNamespace
 }
 
@@ -22,8 +22,8 @@ export interface TranslationResponse {
   errors?: string[]
   metadata?: {
     timestamp: string
-    model: string
-    tokensUsed?: number
+    provider: string
+    projectId: string
   }
 }
 
@@ -33,34 +33,23 @@ export interface TranslationResult {
   confidence?: number
 }
 
-export interface OpenAITranslationResponse {
-  choices: Array<{
-    message: {
-      content: string
-    }
-  }>
-  usage?: {
-    total_tokens: number
-  }
-}
-
 export interface DatabaseLanguage {
-  id: number
+  id: string
   code: string
   name: string
-  native_name: string
+  native_name?: string
   is_active: boolean
 }
 
 export interface DatabaseKey {
-  id: number
+  id: string
   key: string
   description?: string
   category?: string
 }
 
 export interface DatabaseTranslation {
-  key_id: number
+  key_id: string
   language_code: string
   value: string
   version: number

@@ -18,12 +18,12 @@ id = "19e053c7a4c94f16a1ee4a436bfac34a"
 [[d1_databases]]
 binding = "CONTENT_DB"
 database_name = "tiko-content"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "e3bd6a85-fd96-4666-8026-2b6592557be4"
 
 [[env.staging.d1_databases]]
 binding = "CONTENT_DB"
 database_name = "tiko-content-staging"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "2412c370-9e7c-4991-9995-6eea10b38d90"
 
 # Environment variables
 [vars]

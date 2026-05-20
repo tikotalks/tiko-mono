@@ -10,7 +10,7 @@ MAGIC_LINK_BASE_URL = "https://identity.tikoapps.org/api/identity/verify-magic-l
 [[d1_databases]]
 binding = "IDENTITY_DB"
 database_name = "tiko-identity"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "036a1726-ac16-48a9-ab76-22c3a88ca7ae"
 
 [[kv_namespaces]]
 binding = "IDENTITY_SESSION_CACHE"

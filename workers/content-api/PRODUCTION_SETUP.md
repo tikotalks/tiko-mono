@@ -61,7 +61,7 @@ const page = await content.getPage('home', 'en')
 ## Performance Benefits
 
 1. **Reduced Latency**: Content served from Cloudflare's edge network
-2. **Lower Database Load**: Cached queries reduce Supabase usage
+2. **Lower Database Load**: Cached queries reduce D1 usage
 3. **Cost Savings**: Fewer database queries = lower costs
 4. **Global Distribution**: Content cached in 300+ edge locations
 
@@ -79,7 +79,7 @@ Monitor:
 ## Security
 
 - CORS enabled for all origins
-- Supabase credentials stored as encrypted secrets
+- D1 bindings stored as encrypted secrets
 - Rate limiting applied by Cloudflare
 - DDoS protection included
 

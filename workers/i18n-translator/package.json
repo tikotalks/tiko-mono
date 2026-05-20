@@ -2,7 +2,7 @@
   "name": "@tiko/i18n-translator-worker",
   "version": "1.0.0",
   "private": true,
-  "description": "i18n translation worker for Tiko",
+  "description": "Lezu-backed i18n translation worker for Tiko",
   "main": "dist/index.js",
   "scripts": {
     "dev": "wrangler dev src/index.ts",

@@ -4,21 +4,21 @@ compatibility_date = "2023-05-18"
 
 [[d1_databases]]
 binding = "REPORTS_DB"
-database_name = "tiko-reports"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_name = "tiko-db"
+database_id = "f99b61ae-6a78-4670-bb9c-cdc4f634264a"
 
 [env.production]
 name = "report-issue"
 
 [[env.production.d1_databases]]
 binding = "REPORTS_DB"
-database_name = "tiko-reports"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_name = "tiko-db"
+database_id = "f99b61ae-6a78-4670-bb9c-cdc4f634264a"
 
 [env.development]
 name = "report-issue-dev"
 
 [[env.development.d1_databases]]
 binding = "REPORTS_DB"
-database_name = "tiko-reports-dev"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_name = "tiko-db"
+database_id = "f99b61ae-6a78-4670-bb9c-cdc4f634264a"

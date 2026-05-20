@@ -17,7 +17,7 @@ bucket_name = "tiko-assets"
 [[d1_databases]]
 binding = "ASSETS_DB"
 database_name = "tiko-assets"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "4287b238-934f-4dd8-8559-7facb9ff39ef"
 
 [env.development]
 name = "assets-upload-dev"
@@ -31,4 +31,4 @@ bucket_name = "tiko-assets-dev"
 [[env.development.d1_databases]]
 binding = "ASSETS_DB"
 database_name = "tiko-assets-dev"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "85e07dfc-d7d5-4b95-9489-268a50a95f3a"

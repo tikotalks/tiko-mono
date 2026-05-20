@@ -14,8 +14,8 @@ preview_bucket_name = "tiko-tts-audio-preview"
 
 [[d1_databases]]
 binding = "TTS_DB"
-database_name = "tiko-tts"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_name = "tiko-db"
+database_id = "f99b61ae-6a78-4670-bb9c-cdc4f634264a"
 
 [vars]
 ENVIRONMENT = "development"
@@ -30,8 +30,8 @@ preview_bucket_name = "tiko-tts-audio-preview"
 
 [[env.production.d1_databases]]
 binding = "TTS_DB"
-database_name = "tiko-tts"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_name = "tiko-db"
+database_id = "f99b61ae-6a78-4670-bb9c-cdc4f634264a"
 
 # Secrets to be set:
 # OPENAI_API_KEY - OpenAI API key

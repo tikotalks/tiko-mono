@@ -281,7 +281,7 @@ async function removeUserCompletely(userId: string, env: Env): Promise<RemovalRe
   results.userSettings = await deleteByUserId(env.USER_REMOVAL_DB, 'user_settings', userId)
   results.appSettings = await deleteByUserId(env.USER_REMOVAL_DB, 'app_settings', userId)
 
-  // Step 5: Remove identity rows. Tiko identity is D1-backed; there is no Supabase Auth account.
+  // Step 5: Remove identity rows from the D1-backed identity store.
   await logRemovalProgress(env, userId, {
     step: 'removing_identity',
     status: 'in_progress',

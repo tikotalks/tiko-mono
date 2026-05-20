@@ -4,8 +4,8 @@ compatibility_date = "2023-12-01"
 
 [[d1_databases]]
 binding = "USER_REMOVAL_DB"
-database_name = "tiko-user-removal"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_name = "tiko-auth"
+database_id = "dd37ed38-751c-46c4-866d-73294974e33b"
 
 [env.production]
 route = { pattern = "tikoapi.org/user-removal/*", zone_name = "tikoapi.org" }
@@ -16,8 +16,8 @@ id = "your_kv_namespace_id"
 
 [[env.production.d1_databases]]
 binding = "USER_REMOVAL_DB"
-database_name = "tiko-user-removal-production"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_name = "tiko-auth"
+database_id = "dd37ed38-751c-46c4-866d-73294974e33b"
 
 [vars]
 ENVIRONMENT = "production"

@@ -1,319 +1,130 @@
-import type { DatabaseLanguage, DatabaseKey, DatabaseTranslation, TranslationData } from './types'
+import type { DatabaseKey, DatabaseLanguage, DatabaseTranslation, Env, TranslationData } from './types'
 
-export async function fetchAllTranslationData(supabaseUrl: string, supabaseKey: string): Promise<TranslationData> {
-  // Fetch all active languages
-  const languages = await fetchActiveLanguages(supabaseUrl, supabaseKey)
-  
-  // Fetch all translation keys
-  const keys = await fetchAllKeys(supabaseUrl, supabaseKey)
-  
-  // Fetch all published translations
-  const allTranslations = await fetchAllTranslations(supabaseUrl, supabaseKey)
-  
-  // Organize translations by language and key
-  const translations: Record<string, Record<string, string>> = {}
-  
-  // Initialize translation structure
-  for (const language of languages) {
-    translations[language.code] = {}
-  }
-  
-  // Group translations by language
-  for (const translation of allTranslations) {
-    if (translation.key && translations[translation.language_code]) {
-      translations[translation.language_code][translation.key] = translation.value
-    }
-  }
-  
-  return {
-    keys,
-    languages,
-    translations
-  }
+const DEFAULT_PROJECT_ID = 'project_a2a9847c-edbd-499e-874f-5a58c0cca80c'
+const DEFAULT_API_BASE = 'https://api.lezu.app'
+
+function projectId(env: Env): string {
+  return env.LEZU_PROJECT_ID || DEFAULT_PROJECT_ID
 }
 
-export async function fetchAppTranslationData(appName: string, supabaseUrl: string, supabaseKey: string): Promise<TranslationData> {
-  // Fetch all active languages
-  const languages = await fetchActiveLanguages(supabaseUrl, supabaseKey)
-  
-  // Fetch translation keys for specific app (keys starting with appName.)
-  const keys = await fetchAppKeys(appName, supabaseUrl, supabaseKey)
-  
-  // Fetch published translations for these keys
-  const allTranslations = await fetchAppTranslations(appName, supabaseUrl, supabaseKey)
-  
-  // Organize translations by language and key
-  const translations: Record<string, Record<string, string>> = {}
-  
-  // Initialize translation structure
-  for (const language of languages) {
-    translations[language.code] = {}
-  }
-  
-  // Group translations by language
-  for (const translation of allTranslations) {
-    if (translation.key && translations[translation.language_code]) {
-      translations[translation.language_code][translation.key] = translation.value
-    }
-  }
-  
-  return {
-    keys,
-    languages,
-    translations
-  }
+function apiBase(env: Env): string {
+  return (env.LEZU_API_BASE || DEFAULT_API_BASE).replace(/\/$/, '')
 }
 
-export async function fetchActiveLanguages(supabaseUrl: string, supabaseKey: string): Promise<DatabaseLanguage[]> {
-  const response = await fetch(`${supabaseUrl}/rest/v1/i18n_languages?is_active=eq.true&order=code.asc`, {
+async function lezu<T>(env: Env, path: string, init: RequestInit = {}): Promise<T> {
+  if (!env.LEZU_API_KEY) throw new Error('LEZU_API_KEY is not configured')
+
+  const response = await fetch(`${apiBase(env)}${path}`, {
+    ...init,
     headers: {
-      'apikey': supabaseKey,
-      'Authorization': `Bearer ${supabaseKey}`
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      Authorization: `ApiKey ${env.LEZU_API_KEY}`,
+      ...(init.headers || {})
     }
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch languages: ${response.status} ${response.statusText}`)
+    const text = await response.text()
+    throw new Error(`Lezu API ${response.status}: ${text || response.statusText}`)
   }
 
   return response.json()
 }
 
-export async function fetchAllKeys(supabaseUrl: string, supabaseKey: string): Promise<DatabaseKey[]> {
-  let allKeys: DatabaseKey[] = []
-  let offset = 0
-  const limit = 1000
-  let hasMore = true
-
-  while (hasMore) {
-    const response = await fetch(
-      `${supabaseUrl}/rest/v1/i18n_keys?order=key.asc&limit=${limit}&offset=${offset}`,
-      {
-        headers: {
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`
-        }
-      }
-    )
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch keys: ${response.status} ${response.statusText}`)
-    }
-
-    const batch = await response.json() as any[]
-    allKeys.push(...batch)
-    
-    // If we got less than the limit, we're done
-    hasMore = batch.length === limit
-    offset += limit
-
-    // Safety break to avoid infinite loops
-    if (offset > 10000) {
-      console.warn('Stopping key pagination at 10,000 records')
-      break
-    }
-  }
-
-  return allKeys
+function unwrap<T>(response: unknown, key: string): T {
+  const root = response as { data?: Record<string, unknown> }
+  return (root.data?.[key] ?? root.data ?? response) as T
 }
 
-async function fetchAppKeys(appName: string, supabaseUrl: string, supabaseKey: string): Promise<DatabaseKey[]> {
-  // Fetch keys that start with the app name or are common keys (e.g., common.*, shared.*)
+function flattenMessages(value: unknown, prefix = '', out: Record<string, string> = {}): Record<string, string> {
+  if (typeof value === 'string') {
+    if (prefix) out[prefix] = value
+    return out
+  }
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    for (const [key, nested] of Object.entries(value as Record<string, unknown>)) {
+      flattenMessages(nested, prefix ? `${prefix}.${key}` : key, out)
+    }
+  }
+  return out
+}
+
+function filterMessages(messages: Record<string, string>, appName?: string): Record<string, string> {
+  if (!appName) return messages
   const commonPrefixes = ['common', 'shared', 'global', 'auth', 'errors', 'validation']
-  
-  let allKeys: DatabaseKey[] = []
-  let offset = 0
-  const limit = 1000
-  let hasMore = true
-
-  while (hasMore) {
-    const response = await fetch(
-      `${supabaseUrl}/rest/v1/i18n_keys?or=(key.like.${appName}.%,${commonPrefixes.map(prefix => `key.like.${prefix}.%`).join(',')})&order=key.asc&limit=${limit}&offset=${offset}`,
-      {
-        headers: {
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`
-        }
-      }
+  return Object.fromEntries(
+    Object.entries(messages).filter(([key]) =>
+      key.startsWith(`${appName}.`) || commonPrefixes.some(prefix => key.startsWith(`${prefix}.`))
     )
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch app keys: ${response.status} ${response.statusText}`)
-    }
-
-    const batch = await response.json() as any[]
-    allKeys.push(...batch)
-    
-    // If we got less than the limit, we're done
-    hasMore = batch.length === limit
-    offset += limit
-
-    // Safety break to avoid infinite loops
-    if (offset > 10000) {
-      console.warn(`Stopping app keys pagination for ${appName} at 10,000 records`)
-      break
-    }
-  }
-
-  return allKeys
-}
-
-async function fetchAllTranslations(supabaseUrl: string, supabaseKey: string): Promise<DatabaseTranslation[]> {
-  let allTranslations: any[] = []
-  let offset = 0
-  const limit = 1000
-  let hasMore = true
-
-  while (hasMore) {
-    const response = await fetch(
-      `${supabaseUrl}/rest/v1/i18n_translations?select=*,i18n_keys(key)&is_published=eq.true&order=language_code.asc,key_id.asc&limit=${limit}&offset=${offset}`,
-      {
-        headers: {
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`
-        }
-      }
-    )
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch translations: ${response.status} ${response.statusText}`)
-    }
-
-    const batch = await response.json() as any[]
-    allTranslations.push(...batch)
-    
-    // If we got less than the limit, we're done
-    hasMore = batch.length === limit
-    offset += limit
-
-    // Safety break to avoid infinite loops
-    if (offset > 50000) {
-      console.warn('Stopping pagination at 50,000 records')
-      break
-    }
-  }
-  
-  // Transform the response to include the key field from the join
-  return allTranslations.map((translation: any) => ({
-    ...translation,
-    key: translation.i18n_keys?.key
-  }))
-}
-
-async function fetchAppTranslations(appName: string, supabaseUrl: string, supabaseKey: string): Promise<DatabaseTranslation[]> {
-  // First get the key IDs for the app
-  const keys = await fetchAppKeys(appName, supabaseUrl, supabaseKey)
-  const keyIds = keys.map(key => key.id)
-  
-  if (keyIds.length === 0) {
-    return []
-  }
-  
-  // Fetch translations for these keys
-  const response = await fetch(
-    `${supabaseUrl}/rest/v1/i18n_translations?select=*,i18n_keys(key)&key_id=in.(${keyIds.join(',')})&is_published=eq.true&order=language_code.asc,key_id.asc`,
-    {
-      headers: {
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`
-      }
-    }
   )
+}
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch app translations: ${response.status} ${response.statusText}`)
-  }
+export async function fetchActiveLanguages(env: Env): Promise<DatabaseLanguage[]> {
+  const response = await lezu<unknown>(env, `/v1/i18n/projects/${projectId(env)}/locales`)
+  const locales = unwrap<Array<{ id: string; code: string; name: string; enabled?: boolean; isSource?: boolean }>>(response, 'locales')
+  return locales
+    .filter(locale => locale.enabled !== false)
+    .map(locale => ({
+      id: locale.id,
+      code: locale.code,
+      name: locale.name,
+      native_name: locale.name,
+      is_active: locale.enabled !== false
+    }))
+}
 
-  const rawTranslations = await response.json() as any[]
-  
-  // Transform the response to include the key field from the join
-  return rawTranslations.map((translation: any) => ({
-    ...translation,
-    key: translation.i18n_keys?.key
+export async function fetchAllKeys(env: Env, appName?: string): Promise<DatabaseKey[]> {
+  const response = await lezu<unknown>(env, `/v1/i18n/projects/${projectId(env)}/keys`)
+  const keys = unwrap<Array<{ id: string; key: string; description?: string; namespace?: string; createdAt?: string }>>(response, 'keys')
+  return keys
+    .filter(item => !appName || filterMessages({ [item.key]: '' }, appName)[item.key] !== undefined)
+    .map(item => ({
+      id: item.id,
+      key: item.key,
+      description: item.description,
+      category: item.namespace || item.key.split('.')[0],
+      created_at: item.createdAt
+    }))
+}
+
+export async function fetchBundle(env: Env, localeCode: string, appName?: string): Promise<Record<string, string>> {
+  const response = await lezu<unknown>(env, `/v1/i18n/bundles/${projectId(env)}/production/${localeCode}`)
+  const bundle = unwrap<{ messages?: unknown }>(response, 'bundle')
+  return filterMessages(flattenMessages(bundle.messages || {}), appName)
+}
+
+export async function fetchTranslationsForLanguage(languageCode: string, env: Env, appName?: string): Promise<DatabaseTranslation[]> {
+  const messages = await fetchBundle(env, languageCode, appName)
+  return Object.entries(messages).map(([key, value]) => ({
+    id: `${languageCode}:${key}`,
+    key_id: key,
+    language_code: languageCode,
+    value,
+    version: 1,
+    is_published: true,
+    key
   }))
 }
 
-// New debug functions - with pagination
-export async function fetchAllTranslationsRaw(supabaseUrl: string, supabaseKey: string): Promise<DatabaseTranslation[]> {
-  let allTranslations: any[] = []
-  let offset = 0
-  const limit = 1000
-  let hasMore = true
-
-  while (hasMore) {
-    const response = await fetch(
-      `${supabaseUrl}/rest/v1/i18n_translations?select=*,i18n_keys(key)&order=language_code.asc,key_id.asc&limit=${limit}&offset=${offset}`,
-      {
-        headers: {
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`
-        }
-      }
-    )
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch translations: ${response.status} ${response.statusText}`)
-    }
-
-    const batch = await response.json() as any[]
-    allTranslations.push(...batch)
-    
-    // If we got less than the limit, we're done
-    hasMore = batch.length === limit
-    offset += limit
-
-    // Safety break to avoid infinite loops
-    if (offset > 50000) {
-      console.warn('Stopping pagination at 50,000 records')
-      break
-    }
-  }
-  
-  // Transform the response to include the key field from the join
-  return allTranslations.map((translation: any) => ({
-    ...translation,
-    key: translation.i18n_keys?.key
-  }))
+export async function fetchAllTranslationsRaw(env: Env, appName?: string): Promise<DatabaseTranslation[]> {
+  const languages = await fetchActiveLanguages(env)
+  const all = await Promise.all(languages.map(language => fetchTranslationsForLanguage(language.code, env, appName)))
+  return all.flat()
 }
 
-export async function fetchTranslationsForLanguage(languageCode: string, supabaseUrl: string, supabaseKey: string): Promise<DatabaseTranslation[]> {
-  let allTranslations: any[] = []
-  let offset = 0
-  const limit = 1000
-  let hasMore = true
+export async function fetchAllTranslationData(env: Env, appName?: string): Promise<TranslationData> {
+  const languages = await fetchActiveLanguages(env)
+  const keys = await fetchAllKeys(env, appName)
+  const translations: Record<string, Record<string, string>> = {}
 
-  while (hasMore) {
-    const response = await fetch(
-      `${supabaseUrl}/rest/v1/i18n_translations?select=*,i18n_keys(key)&language_code=eq.${languageCode}&is_published=eq.true&order=key_id.asc&limit=${limit}&offset=${offset}`,
-      {
-        headers: {
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`
-        }
-      }
-    )
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch translations for ${languageCode}: ${response.status} ${response.statusText}`)
-    }
-
-    const batch = await response.json() as any[]
-    allTranslations.push(...batch)
-    
-    // If we got less than the limit, we're done
-    hasMore = batch.length === limit
-    offset += limit
-
-    // Safety break to avoid infinite loops per language
-    if (offset > 10000) {
-      console.warn(`Stopping pagination for ${languageCode} at 10,000 records`)
-      break
-    }
+  for (const language of languages) {
+    translations[language.code] = await fetchBundle(env, language.code, appName)
   }
-  
-  // Transform the response to include the key field from the join
-  return allTranslations.map((translation: any) => ({
-    ...translation,
-    key: translation.i18n_keys?.key
-  }))
+
+  return { keys, languages, translations }
+}
+
+export async function fetchAppTranslationData(appName: string, env: Env): Promise<TranslationData> {
+  return fetchAllTranslationData(env, appName)
 }

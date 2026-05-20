@@ -13,8 +13,8 @@ bucket_name = "user-media"
 
 [[d1_databases]]
 binding = "USER_MEDIA_DB"
-database_name = "tiko-user-media"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_name = "tiko-db"
+database_id = "f99b61ae-6a78-4670-bb9c-cdc4f634264a"
 
 [env.development]
 name = "user-media-upload-dev"
@@ -26,5 +26,5 @@ bucket_name = "user-media-dev"
 
 [[env.development.d1_databases]]
 binding = "USER_MEDIA_DB"
-database_name = "tiko-user-media-dev"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_name = "tiko-db"
+database_id = "f99b61ae-6a78-4670-bb9c-cdc4f634264a"

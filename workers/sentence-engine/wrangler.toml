@@ -5,8 +5,8 @@ account_id = "dc2b7d14a69351375cab6de9a13ddee9"
 
 [[d1_databases]]
 binding = "SENTENCE_DB"
-database_name = "tiko-sentence-engine"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_name = "tiko-db"
+database_id = "f99b61ae-6a78-4670-bb9c-cdc4f634264a"
 
 [env.production]
 routes = [
@@ -15,8 +15,8 @@ routes = [
 
 [[env.production.d1_databases]]
 binding = "SENTENCE_DB"
-database_name = "tiko-sentence-engine-production"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_name = "tiko-db"
+database_id = "f99b61ae-6a78-4670-bb9c-cdc4f634264a"
 
 # Secrets should be set via wrangler secret:
 # OPENAI_API_KEY - Set via: wrangler secret put OPENAI_API_KEY

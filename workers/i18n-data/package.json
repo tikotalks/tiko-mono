@@ -1,7 +1,7 @@
 {
   "name": "i18n-data-worker",
   "version": "1.0.0",
-  "description": "Cloudflare Worker for fetching i18n translation data from Supabase",
+  "description": "Cloudflare Worker for fetching Tiko translation data from Lezu",
   "main": "src/index.ts",
   "scripts": {
     "deploy": "wrangler deploy",

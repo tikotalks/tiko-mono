@@ -1,14 +1,14 @@
 name = "i18n-data"
 main = "src/index.ts"
 compatibility_date = "2024-05-07"
+account_id = "dc2b7d14a69351375cab6de9a13ddee9"
+
+[vars]
+LEZU_PROJECT_ID = "project_a2a9847c-edbd-499e-874f-5a58c0cca80c"
+LEZU_API_BASE = "https://api.lezu.app"
 
 [env.production]
-vars = { ENVIRONMENT = "production" }
+vars = { ENVIRONMENT = "production", LEZU_PROJECT_ID = "project_a2a9847c-edbd-499e-874f-5a58c0cca80c", LEZU_API_BASE = "https://api.lezu.app" }
 
-# Environment variables (to be set via wrangler secret)
-# SUPABASE_URL - The Supabase project URL
-# SUPABASE_SERVICE_KEY - The Supabase service role key
-
-# To set secrets:
-# wrangler secret put SUPABASE_URL
-# wrangler secret put SUPABASE_SERVICE_KEY
+# Required secret:
+# LEZU_API_KEY - Set via: wrangler secret put LEZU_API_KEY

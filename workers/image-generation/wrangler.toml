@@ -13,7 +13,7 @@ bucket_name = "user-media"
 [[d1_databases]]
 binding = "IMAGE_DB"
 database_name = "tiko-image-generation"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "ab7cdbd1-e50a-4862-b8eb-681d263c3f66"
 
 [vars]
 ENVIRONMENT = "development"
@@ -33,7 +33,7 @@ bucket_name = "user-media"
 [[env.production.d1_databases]]
 binding = "IMAGE_DB"
 database_name = "tiko-image-generation"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "ab7cdbd1-e50a-4862-b8eb-681d263c3f66"
 
 [env.production.vars]
 ENVIRONMENT = "production"

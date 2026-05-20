@@ -10,7 +10,7 @@ kv_namespaces = [
 [[d1_databases]]
 binding = "MEDIA_DB"
 database_name = "tiko-media"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "f984707d-04a1-4266-bf9d-012164ccde85"
 
 # Environment variables:
 # DEPLOYMENT_VERSION (optional, defaults to date)
@@ -26,8 +26,8 @@ routes = [
 
 [[env.staging.d1_databases]]
 binding = "MEDIA_DB"
-database_name = "tiko-media-staging"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_name = "tiko-media"
+database_id = "f984707d-04a1-4266-bf9d-012164ccde85"
 
 [env.production]
 name = "media-cache"
@@ -41,4 +41,4 @@ routes = [
 [[env.production.d1_databases]]
 binding = "MEDIA_DB"
 database_name = "tiko-media"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "f984707d-04a1-4266-bf9d-012164ccde85"

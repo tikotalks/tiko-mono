@@ -1,47 +1,48 @@
+/// <reference types="@cloudflare/workers-types" />
+
 export interface Env {
-  SUPABASE_URL: string
-  SUPABASE_SERVICE_KEY: string
+  LEZU_API_KEY: string
+  LEZU_PROJECT_ID?: string
+  LEZU_API_BASE?: string
 }
 
 export interface DatabaseLanguage {
-  id: number
+  id: string | number
   code: string
   name: string
   native_name?: string
   is_active: boolean
-  created_at: string
+  created_at?: string
 }
 
 export interface DatabaseKey {
-  id: number
+  id: string
   key: string
   description?: string
   category?: string
-  created_at: string
+  created_at?: string
 }
 
 export interface DatabaseTranslation {
-  id: number
-  key_id: number
+  id: string
+  key_id: string
   language_code: string
   value: string
   version: number
   is_published: boolean
-  created_at: string
+  created_at?: string
   notes?: string
-  // Joined fields when fetching with key info
   key?: string
-  key_description?: string
 }
 
 export interface TranslationDataRequest {
-  app?: string // Optional app filter
+  app?: string
 }
 
 export interface TranslationData {
   keys: DatabaseKey[]
   languages: DatabaseLanguage[]
-  translations: Record<string, Record<string, string>> // language_code -> key -> value
+  translations: Record<string, Record<string, string>>
 }
 
 export interface TranslationDataResponse {
