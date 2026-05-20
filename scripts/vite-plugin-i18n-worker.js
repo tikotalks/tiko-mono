@@ -44,10 +44,20 @@ export function i18nWorkerPlugin(userConfig = {}) {
         console.warn('⚠️ [i18n-worker] Failed to fetch translations from worker:', error.message)
         console.warn('⚠️ [i18n-worker] Using existing translation files if available')
         
-        // Check if existing files are available
-        if (!fs.existsSync(path.join(outputDir, 'index.ts'))) {
+        // Check if existing files are available. The clean rebuild currently
+        // ships JSON fallbacks in packages/core/src/i18n/json, while the older
+        // generator wrote TypeScript files to packages/core/src/i18n/generated.
+        const generatedIndexExists = fs.existsSync(path.join(outputDir, 'index.ts'))
+        const jsonFallbackDir = path.resolve(outputDir, '../json')
+        const jsonFallbackExists = fs.existsSync(path.join(jsonFallbackDir, 'en.json'))
+
+        if (!generatedIndexExists && !jsonFallbackExists) {
           console.error('❌ [i18n-worker] No existing translation files found. Build may fail.')
           throw new Error('Translation files are required but could not be generated or found')
+        }
+
+        if (jsonFallbackExists && !generatedIndexExists) {
+          console.warn(`⚠️ [i18n-worker] Falling back to checked-in JSON translations from ${jsonFallbackDir}`)
         }
       }
     }

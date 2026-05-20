@@ -21,7 +21,7 @@ export * from './composables/useEventBus'
 export * from './composables/useI18n'
 
 // I18n types
-export type { TranslationKey } from './i18n/generated/types'
+export type { TranslationKey } from './i18n/types'
 export { useSSO } from './composables/useSSO'
 export type { SSOOptions } from './composables/useSSO'
 export { useEditMode } from './composables/useEditMode'
