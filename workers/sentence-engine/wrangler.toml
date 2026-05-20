@@ -3,12 +3,20 @@ main = "src/index.ts"
 compatibility_date = "2024-08-02"
 account_id = "dc2b7d14a69351375cab6de9a13ddee9"
 
+[[d1_databases]]
+binding = "SENTENCE_DB"
+database_name = "tiko-sentence-engine"
+database_id = "00000000-0000-0000-0000-000000000000"
+
 [env.production]
 routes = [
   { pattern = "tikoapi.org/sentence/*", zone_name = "tikoapi.org" }
 ]
 
-# Secrets should be set via wrangler secret or GitHub secrets:
+[[env.production.d1_databases]]
+binding = "SENTENCE_DB"
+database_name = "tiko-sentence-engine-production"
+database_id = "00000000-0000-0000-0000-000000000000"
+
+# Secrets should be set via wrangler secret:
 # OPENAI_API_KEY - Set via: wrangler secret put OPENAI_API_KEY
-# SUPABASE_URL - Set via: wrangler secret put SUPABASE_URL
-# SUPABASE_SERVICE_KEY - Set via: wrangler secret put SUPABASE_SERVICE_KEY

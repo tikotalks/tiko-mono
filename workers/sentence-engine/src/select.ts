@@ -34,8 +34,7 @@ export async function handleSelect(
         selected_word: body.choice,
         user_id: body.userId
       },
-      env.SUPABASE_URL,
-      env.SUPABASE_SERVICE_KEY
+      env.SENTENCE_DB
     )
 
     // Update pattern scores if path exists
@@ -44,8 +43,7 @@ export async function handleSelect(
         body.lang,
         pathKey,
         body.choice,
-        env.SUPABASE_URL,
-        env.SUPABASE_SERVICE_KEY
+        env.SENTENCE_DB
       )
     }
 

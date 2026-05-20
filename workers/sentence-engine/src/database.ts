@@ -1,136 +1,158 @@
 import type { SentencePattern, InitialCards, SentenceUsage, Prediction } from './types'
 
-export async function getActiveLanguages(supabaseUrl: string, supabaseKey: string): Promise<string[]> {
-  const response = await fetch(
-    `${supabaseUrl}/rest/v1/i18n_languages?is_active=eq.true&code=not.like.*-*&select=code`,
-    {
-      headers: {
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`
-      }
-    }
-  )
+type SentencePatternRow = Omit<SentencePattern, 'path' | 'predictions'> & {
+  path: string
+  predictions: string
+}
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch languages: ${response.status}`)
+type InitialCardsRow = Omit<InitialCards, 'cards'> & {
+  cards: string
+}
+
+function parseJsonArray<T>(value: string | null | undefined, fallback: T[]): T[] {
+  if (!value) {
+    return fallback
   }
 
-  const languages: Array<{ code: string }> = await response.json()
-  return languages.map((lang) => lang.code)
+  try {
+    const parsed = JSON.parse(value)
+    return Array.isArray(parsed) ? parsed as T[] : fallback
+  } catch {
+    return fallback
+  }
+}
+
+function mapPattern(row: SentencePatternRow): SentencePattern {
+  return {
+    ...row,
+    path: parseJsonArray<string>(row.path, []),
+    predictions: parseJsonArray<Prediction>(row.predictions, [])
+  }
+}
+
+function mapInitialCards(row: InitialCardsRow): InitialCards {
+  return {
+    ...row,
+    cards: parseJsonArray<InitialCards['cards'][number]>(row.cards, [])
+  }
+}
+
+export async function getActiveLanguages(db: D1Database): Promise<string[]> {
+  const result = await db
+    .prepare(
+      `SELECT code
+       FROM sentence_languages
+       WHERE is_active = 1
+         AND code NOT LIKE '%-%'
+       ORDER BY code`
+    )
+    .all<{ code: string }>()
+
+  return result.results.map((lang) => lang.code)
 }
 
 export async function getInitialCards(
   languageCode: string,
-  supabaseUrl: string,
-  supabaseKey: string
+  db: D1Database
 ): Promise<InitialCards | null> {
-  const response = await fetch(
-    `${supabaseUrl}/rest/v1/sentence_initial_cards?language_code=eq.${languageCode}`,
-    {
-      headers: {
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`
-      }
-    }
-  )
+  const row = await db
+    .prepare(
+      `SELECT id, language_code, cards, created_at
+       FROM sentence_initial_cards
+       WHERE language_code = ?`
+    )
+    .bind(languageCode)
+    .first<InitialCardsRow>()
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch initial cards: ${response.status}`)
-  }
-
-  const results: InitialCards[] = await response.json()
-  return results.length > 0 ? results[0] : null
+  return row ? mapInitialCards(row) : null
 }
 
 export async function getSentencePattern(
   languageCode: string,
   pathKey: string,
-  supabaseUrl: string,
-  supabaseKey: string
+  db: D1Database
 ): Promise<SentencePattern | null> {
-  const response = await fetch(
-    `${supabaseUrl}/rest/v1/sentence_patterns?language_code=eq.${languageCode}&path_key=eq.${pathKey}`,
-    {
-      headers: {
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`
-      }
-    }
-  )
+  const row = await db
+    .prepare(
+      `SELECT id, language_code, path, path_key, predictions, usage_count, created_at, updated_at
+       FROM sentence_patterns
+       WHERE language_code = ? AND path_key = ?`
+    )
+    .bind(languageCode, pathKey)
+    .first<SentencePatternRow>()
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch pattern: ${response.status}`)
-  }
-
-  const results: SentencePattern[] = await response.json()
-  return results.length > 0 ? results[0] : null
+  return row ? mapPattern(row) : null
 }
 
 export async function upsertSentencePattern(
   pattern: SentencePattern,
-  supabaseUrl: string,
-  supabaseKey: string
+  db: D1Database
 ): Promise<void> {
-  const response = await fetch(
-    `${supabaseUrl}/rest/v1/sentence_patterns`,
-    {
-      method: 'POST',
-      headers: {
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates'
-      },
-      body: JSON.stringify({
-        language_code: pattern.language_code,
-        path: pattern.path,
-        path_key: pattern.path_key,
-        predictions: pattern.predictions,
-        usage_count: pattern.usage_count,
-        updated_at: new Date().toISOString()
-      })
-    }
-  )
+  const now = new Date().toISOString()
 
-  if (!response.ok) {
-    const error = await response.text()
-    throw new Error(`Failed to upsert pattern: ${response.status} - ${error}`)
-  }
+  await db
+    .prepare(
+      `INSERT INTO sentence_patterns (
+         language_code,
+         path,
+         path_key,
+         predictions,
+         usage_count,
+         created_at,
+         updated_at
+       )
+       VALUES (?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(language_code, path_key) DO UPDATE SET
+         path = excluded.path,
+         predictions = excluded.predictions,
+         usage_count = excluded.usage_count,
+         updated_at = excluded.updated_at`
+    )
+    .bind(
+      pattern.language_code,
+      JSON.stringify(pattern.path),
+      pattern.path_key,
+      JSON.stringify(pattern.predictions),
+      pattern.usage_count,
+      pattern.created_at ?? now,
+      now
+    )
+    .run()
 }
 
 export async function recordUsage(
   usage: SentenceUsage,
-  supabaseUrl: string,
-  supabaseKey: string
+  db: D1Database
 ): Promise<void> {
-  const response = await fetch(
-    `${supabaseUrl}/rest/v1/sentence_usage`,
-    {
-      method: 'POST',
-      headers: {
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(usage)
-    }
-  )
-
-  if (!response.ok) {
-    const error = await response.text()
-    throw new Error(`Failed to record usage: ${response.status} - ${error}`)
-  }
+  await db
+    .prepare(
+      `INSERT INTO sentence_usage (
+         language_code,
+         path,
+         selected_word,
+         user_id,
+         created_at
+       )
+       VALUES (?, ?, ?, ?, ?)`
+    )
+    .bind(
+      usage.language_code,
+      JSON.stringify(usage.path),
+      usage.selected_word,
+      usage.user_id ?? null,
+      usage.created_at ?? new Date().toISOString()
+    )
+    .run()
 }
 
 export async function updatePatternScores(
   languageCode: string,
   pathKey: string,
   selectedWord: string,
-  supabaseUrl: string,
-  supabaseKey: string
+  db: D1Database
 ): Promise<void> {
   // Get current pattern
-  const pattern = await getSentencePattern(languageCode, pathKey, supabaseUrl, supabaseKey)
+  const pattern = await getSentencePattern(languageCode, pathKey, db)
   
   if (!pattern) {
     return
@@ -157,36 +179,28 @@ export async function updatePatternScores(
       predictions: updatedPredictions,
       usage_count: pattern.usage_count + 1
     },
-    supabaseUrl,
-    supabaseKey
+    db
   )
 }
 
 export async function storeInitialCards(
   languageCode: string,
   cards: InitialCards['cards'],
-  supabaseUrl: string,
-  supabaseKey: string
+  db: D1Database
 ): Promise<void> {
-  const response = await fetch(
-    `${supabaseUrl}/rest/v1/sentence_initial_cards`,
-    {
-      method: 'POST',
-      headers: {
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates'
-      },
-      body: JSON.stringify({
-        language_code: languageCode,
-        cards: cards
-      })
-    }
-  )
+  const now = new Date().toISOString()
 
-  if (!response.ok) {
-    const error = await response.text()
-    throw new Error(`Failed to store initial cards: ${response.status} - ${error}`)
-  }
+  await db
+    .prepare(
+      `INSERT INTO sentence_initial_cards (
+         language_code,
+         cards,
+         created_at
+       )
+       VALUES (?, ?, ?)
+       ON CONFLICT(language_code) DO UPDATE SET
+         cards = excluded.cards`
+    )
+    .bind(languageCode, JSON.stringify(cards), now)
+    .run()
 }

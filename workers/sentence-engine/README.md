@@ -4,7 +4,7 @@ A Cloudflare Worker that provides intelligent word predictions to help kids buil
 
 ## Features
 
-- 🌍 Multi-language support (all languages from i18n_languages)
+- 🌍 Multi-language support (all active languages from D1)
 - 🤖 AI-powered prediction generation
 - 📊 Score-based ranking that improves with usage
 - 💾 Caching of predictions for performance
@@ -74,18 +74,21 @@ Record that a user selected a specific word. This helps improve predictions over
 4. **Learning**: Each selection updates scores to improve future predictions
 5. **Caching**: All generated predictions are stored for fast retrieval
 
-## Environment Variables
+## Environment Variables and Bindings
 
-Set these using `wrangler secret put`:
+Set this secret using `wrangler secret put`:
 
 - `OPENAI_API_KEY` - Your OpenAI API key for generating predictions
-- `SUPABASE_URL` - Your Supabase project URL
-- `SUPABASE_SERVICE_KEY` - Your Supabase service role key
+
+The worker also requires this D1 binding from `wrangler.toml`:
+
+- `SENTENCE_DB` - Stores active languages, generated initial cards, path prediction patterns, and usage records
 
 ## Database Schema
 
-The worker uses three main tables:
+The worker uses the D1 schema in `schema.sql` with these tables:
 
+- `sentence_languages` - Stores active language codes supported by the engine
 - `sentence_patterns` - Stores prediction patterns for word sequences
 - `sentence_initial_cards` - Stores initial word cards for each language
 - `sentence_usage` - Tracks word selections for improving predictions
@@ -169,7 +172,7 @@ const {
 
 ## Deployment
 
-The worker is automatically deployed via GitHub Actions when changes are pushed to the master branch.
+The worker deploys through Wrangler after the `SENTENCE_DB` D1 database is provisioned and the placeholder database IDs in `wrangler.toml` are replaced.
 
 ## Performance
 

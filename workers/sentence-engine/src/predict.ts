@@ -26,7 +26,7 @@ export async function handlePredict(
     }
 
     // Validate language is supported
-    const supportedLanguages = await getActiveLanguages(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY)
+    const supportedLanguages = await getActiveLanguages(env.SENTENCE_DB)
     if (!supportedLanguages.includes(lang)) {
       return new Response(
         JSON.stringify({
@@ -70,7 +70,7 @@ export async function handlePredict(
 
 async function handleInitialCards(lang: string, env: Env): Promise<Response> {
   // Check database for initial cards
-  let initialCards = await getInitialCards(lang, env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY)
+  let initialCards = await getInitialCards(lang, env.SENTENCE_DB)
 
   if (!initialCards) {
     // Generate with AI
@@ -88,7 +88,7 @@ async function handleInitialCards(lang: string, env: Env): Promise<Response> {
       icon: p.icon
     }))
 
-    await storeInitialCards(lang, cards, env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY)
+    await storeInitialCards(lang, cards, env.SENTENCE_DB)
 
     return new Response(
       JSON.stringify({
@@ -133,7 +133,7 @@ async function handlePathPredictions(
   const pathKey = path.map(w => w.toLowerCase()).join('_')
 
   // Check database for existing pattern
-  let pattern = await getSentencePattern(lang, pathKey, env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY)
+  let pattern = await getSentencePattern(lang, pathKey, env.SENTENCE_DB)
 
   if (!pattern) {
     // Generate with AI
@@ -153,7 +153,7 @@ async function handlePathPredictions(
       usage_count: 0
     }
 
-    await upsertSentencePattern(pattern, env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY)
+    await upsertSentencePattern(pattern, env.SENTENCE_DB)
 
     return new Response(
       JSON.stringify({

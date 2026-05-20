@@ -2,8 +2,7 @@
 
 export interface Env {
   OPENAI_API_KEY: string
-  SUPABASE_URL: string
-  SUPABASE_SERVICE_KEY: string
+  SENTENCE_DB: D1Database
 }
 
 export interface PredictRequest {
