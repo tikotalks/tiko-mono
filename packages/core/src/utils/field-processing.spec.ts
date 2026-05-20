@@ -111,7 +111,7 @@ describe('field-processing', () => {
   })
 
   describe('processContentFields', () => {
-    it('should process all fields based on their types', () => {
+    it('should process all fields based on their types', async () => {
       const content = {
         title: 'My Title',
         languages: 'en : 🇬🇧\nfr : 🇫🇷',
@@ -128,7 +128,7 @@ describe('field-processing', () => {
         { field_key: 'items', field_type: 'items' }
       ]
 
-      const result = processContentFields(content, fields)
+      const result = await processContentFields(content, fields)
 
       expect(result).toEqual({
         title: 'My Title',
@@ -142,7 +142,7 @@ describe('field-processing', () => {
       })
     })
 
-    it('should keep untyped fields as-is', () => {
+    it('should keep untyped fields as-is', async () => {
       const content = {
         typed: 'en : 🇬🇧',
         untyped: 'keep as is'
@@ -152,7 +152,7 @@ describe('field-processing', () => {
         { field_key: 'typed', field_type: 'list' }
       ]
 
-      const result = processContentFields(content, fields)
+      const result = await processContentFields(content, fields)
 
       expect(result).toEqual({
         typed: [{ key: 'en', value: '🇬🇧' }],

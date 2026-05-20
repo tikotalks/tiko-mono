@@ -51,6 +51,9 @@ export class UnifiedContentService {
     this.worker = new ContentWorkerService(config)
   }
 
+  getCacheStats(): { enabled: boolean; size: number } { return { enabled: false, size: 0 } }
+  clearCache(): void {}
+
   async getProjects(_options: QueryOptions = {}): Promise<any[]> { return this.worker.getProjects() }
   async getProject(projectId: string, _options: QueryOptions = {}): Promise<any> { return this.worker.getProject(projectId) }
   async getPages(options: QueryOptions = {}): Promise<any[]> { return this.worker.getPages(options.projectId, options.language, options.parentId) }

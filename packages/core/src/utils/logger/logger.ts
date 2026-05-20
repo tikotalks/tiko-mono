@@ -23,6 +23,9 @@ export const logger = {
 	warning: (...args: any[]) => {
 		console.warn(...formatMessage(chalk.yellow('WARNING'), args));
 	},
+	warn: (...args: any[]) => {
+		console.warn(...formatMessage(chalk.yellow('WARNING'), args));
+	},
 	error: (...args: any[]) => {
 		console.error(...formatMessage(chalk.red('ERROR'), args));
 	},

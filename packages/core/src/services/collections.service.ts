@@ -134,7 +134,7 @@ export interface CollectionsService {
   isUserAdmin(): Promise<boolean>
 }
 
-class LocalCollectionsService implements CollectionsService {
+export class LocalStorageCollectionsService implements CollectionsService {
   private readonly storageKey = 'tiko_collections'
   private readonly likesKey = 'tiko_collection_likes'
 
@@ -269,4 +269,4 @@ class LocalCollectionsService implements CollectionsService {
   }
 }
 
-export const collectionsService: CollectionsService = new LocalCollectionsService()
+export const collectionsService: CollectionsService = new LocalStorageCollectionsService()
