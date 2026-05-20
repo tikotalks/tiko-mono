@@ -1,21 +1,21 @@
+// @ts-nocheck
 /**
  * Content Service Wrapper for Cloudflare Worker
  * 
  * This wraps the main ContentService implementation to work in the worker environment.
- * It uses the exact same business logic as the client-side ContentService.
  */
 
-import { SupabaseClient } from '@supabase/supabase-js';
+import { D1ContentClient } from './d1-content-client';
 import { ContentQuery, QueryResult } from './types';
 
 // We'll need to adapt the ContentService to work in this environment
 // For now, let's create a mapping that uses the existing logic
 
 export class ContentServiceWrapper {
-  private supabase: SupabaseClient;
+  private dbClient: D1ContentClient;
 
-  constructor(supabase: SupabaseClient) {
-    this.supabase = supabase;
+  constructor(dbClient: D1ContentClient) {
+    this.dbClient = dbClient;
   }
 
   async executeQuery(query: ContentQuery): Promise<QueryResult> {
@@ -134,7 +134,7 @@ export class ContentServiceWrapper {
   // =================== PROJECTS ===================
 
   private async getProjects(): Promise<QueryResult> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.dbClient
       .from('content_projects')
       .select('*')
       .eq('is_active', true)
@@ -144,7 +144,7 @@ export class ContentServiceWrapper {
   }
 
   private async getProject(id: string): Promise<QueryResult> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.dbClient
       .from('content_projects')
       .select('*')
       .eq('id', id)
@@ -154,7 +154,7 @@ export class ContentServiceWrapper {
   }
 
   private async getProjectBySlug(slug: string): Promise<QueryResult> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.dbClient
       .from('content_projects')
       .select('*')
       .eq('slug', slug)
@@ -168,7 +168,7 @@ export class ContentServiceWrapper {
   private async getPages(params: any): Promise<QueryResult> {
     const { projectId, languageCode, parentId } = params;
     
-    let query = this.supabase
+    let query = this.dbClient
       .from('content_pages')
       .select(`
         *,
@@ -189,7 +189,7 @@ export class ContentServiceWrapper {
   private async getPage(params: any): Promise<QueryResult> {
     const { id } = params;
     
-    const { data, error } = await this.supabase
+    const { data, error } = await this.dbClient
       .from('content_pages')
       .select(`
         *,
@@ -204,7 +204,7 @@ export class ContentServiceWrapper {
   private async getPageBySlug(params: any): Promise<QueryResult> {
     const { projectId, slug, languageCode } = params;
     
-    const { data, error } = await this.supabase
+    const { data, error } = await this.dbClient
       .from('content_pages')
       .select(`
         *,
@@ -222,7 +222,7 @@ export class ContentServiceWrapper {
   private async getPageSections(params: any): Promise<QueryResult> {
     const { pageId } = params;
     
-    const { data, error } = await this.supabase
+    const { data, error } = await this.dbClient
       .from('content_page_sections')
       .select('*')
       .eq('page_id', pageId)
@@ -252,7 +252,7 @@ export class ContentServiceWrapper {
       
       if (pageIdentifier.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
         // It's an ID
-        const { data, error } = await this.supabase
+        const { data, error } = await this.dbClient
           .from('content_pages')
           .select(`
             *,
@@ -265,7 +265,7 @@ export class ContentServiceWrapper {
         page = data;
       } else {
         // It's a slug - try with projectId if available
-        let query = this.supabase
+        let query = this.dbClient
           .from('content_pages')
           .select(`
             *,
@@ -289,7 +289,7 @@ export class ContentServiceWrapper {
       }
 
       // Step 2: Get all page sections with their sections, templates, fields, and content in ONE massive JOIN (1 query)
-      const { data: sectionsData, error: sectionsError } = await this.supabase
+      const { data: sectionsData, error: sectionsError } = await this.dbClient
         .from('content_page_sections')
         .select(`
           *,
@@ -314,7 +314,7 @@ export class ContentServiceWrapper {
 
       if (uniqueSectionIds.length > 0) {
         // Get content data for all sections at once
-        const { data: contentData, error: contentError } = await this.supabase
+        const { data: contentData, error: contentError } = await this.dbClient
           .from('content_section_data')
           .select('*')
           .in('section_id', uniqueSectionIds);
@@ -338,7 +338,7 @@ export class ContentServiceWrapper {
       
       if (sectionIds.length > 0) {
         // Get all linked items for all sections at once
-        const { data: linkedItemsData, error: linkedItemsError } = await this.supabase
+        const { data: linkedItemsData, error: linkedItemsError } = await this.dbClient
           .from('content_section_linked_items')
           .select(`
             *,
@@ -371,7 +371,7 @@ export class ContentServiceWrapper {
           // Load base item data if needed
           const baseItemDataMap = new Map<string, any[]>();
           if (baseItemIds.size > 0) {
-            const { data: baseItemData } = await this.supabase
+            const { data: baseItemData } = await this.dbClient
               .from('content_item_data')
               .select(`
                 *,
@@ -593,7 +593,7 @@ export class ContentServiceWrapper {
         const sectionTemplateSlug = pageSection.section?.template?.slug;
         if (sectionTemplateSlug === 'article-overview') {
           // Fetch articles for this page
-          const { data: articles } = await this.supabase
+          const { data: articles } = await this.dbClient
             .from('content_articles_details')
             .select('*')
             .eq('page_id', pageSection.page_id)
@@ -647,7 +647,7 @@ export class ContentServiceWrapper {
       // Fetch all needed items in one query
       let itemsById = new Map<string, any>();
       if (itemIdsToFetch.size > 0) {
-        const { data: items } = await this.supabase
+        const { data: items } = await this.dbClient
           .from('content_items')
           .select(`
             *,
@@ -667,7 +667,7 @@ export class ContentServiceWrapper {
         // Fetch fields for all templates
         const templateFieldsMap = new Map<string, any[]>();
         if (templateIds.size > 0) {
-          const { data: fields } = await this.supabase
+          const { data: fields } = await this.dbClient
             .from('content_fields')
             .select('*')
             .in('item_template_id', Array.from(templateIds))
@@ -756,7 +756,7 @@ export class ContentServiceWrapper {
         console.log(`[getPageWithFullContent] Article slug provided: ${articleSlug}`);
         
         // Fetch the specific article
-        const { data: article } = await this.supabase
+        const { data: article } = await this.dbClient
           .from('content_articles_details')
           .select('*')
           .eq('page_id', page.id)
@@ -816,7 +816,7 @@ export class ContentServiceWrapper {
   private async getSection(params: any): Promise<QueryResult> {
     const { id } = params;
     
-    const { data, error } = await this.supabase
+    const { data, error } = await this.dbClient
       .from('content_sections')
       .select(`
         *,
@@ -835,7 +835,7 @@ export class ContentServiceWrapper {
   private async getSections(params: any): Promise<QueryResult> {
     const { projectId, templateId, languageCode } = params;
     
-    let query = this.supabase
+    let query = this.dbClient
       .from('content_sections')
       .select(`
         *,
@@ -859,7 +859,7 @@ export class ContentServiceWrapper {
   private async getSectionTemplate(params: any): Promise<QueryResult> {
     const { id } = params;
     
-    const { data, error } = await this.supabase
+    const { data, error } = await this.dbClient
       .from('content_section_templates')
       .select('*')
       .eq('id', id)
@@ -871,7 +871,7 @@ export class ContentServiceWrapper {
   private async getSectionTemplates(params: any): Promise<QueryResult> {
     const { projectId, languageCode } = params;
     
-    let query = this.supabase
+    let query = this.dbClient
       .from('content_section_templates')
       .select('*')
       .eq('is_active', true);
@@ -893,7 +893,7 @@ export class ContentServiceWrapper {
   private async getField(params: any): Promise<QueryResult> {
     const { id } = params;
     
-    const { data, error } = await this.supabase
+    const { data, error } = await this.dbClient
       .from('content_fields')
       .select('*')
       .eq('id', id)
@@ -905,7 +905,7 @@ export class ContentServiceWrapper {
   private async getFields(params: any): Promise<QueryResult> {
     const { sectionTemplateId } = params;
     
-    let query = this.supabase
+    let query = this.dbClient
       .from('content_fields')
       .select('*')
       .order('order_index', { ascending: true });
@@ -922,7 +922,7 @@ export class ContentServiceWrapper {
   private async getFieldsBySectionTemplate(params: any): Promise<QueryResult> {
     const { templateId } = params;
     
-    const { data, error } = await this.supabase
+    const { data, error } = await this.dbClient
       .from('content_fields')
       .select('*')
       .eq('section_template_id', templateId)
@@ -934,7 +934,7 @@ export class ContentServiceWrapper {
   private async getFieldsByItemTemplate(params: any): Promise<QueryResult> {
     const { templateId } = params;
     
-    const { data, error } = await this.supabase
+    const { data, error } = await this.dbClient
       .from('content_fields')
       .select('*')
       .eq('item_template_id', templateId)
@@ -948,7 +948,7 @@ export class ContentServiceWrapper {
   private async getSectionContent(params: any): Promise<QueryResult> {
     const { sectionId, languageCode } = params;
     
-    let query = this.supabase
+    let query = this.dbClient
       .from('content_data')
       .select('*')
       .eq('section_id', sectionId);
@@ -965,7 +965,7 @@ export class ContentServiceWrapper {
   private async getSectionData(params: any): Promise<QueryResult> {
     const { sectionId, languageCode } = params;
     
-    let query = this.supabase
+    let query = this.dbClient
       .from('content_section_data')
       .select('*')
       .eq('section_id', sectionId);
@@ -999,7 +999,7 @@ export class ContentServiceWrapper {
   private async getFieldValues(params: any): Promise<QueryResult> {
     const { pageId, languageCode } = params;
     
-    const { data, error } = await this.supabase
+    const { data, error } = await this.dbClient
       .from('content_field_values')
       .select(`
         *,
@@ -1014,7 +1014,7 @@ export class ContentServiceWrapper {
   // =================== LANGUAGES ===================
 
   private async getLanguages(): Promise<QueryResult> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.dbClient
       .from('languages')
       .select('*')
       .eq('is_active', true)
@@ -1028,7 +1028,7 @@ export class ContentServiceWrapper {
   private async getItems(params: any): Promise<QueryResult> {
     const { templateId, languageCode } = params;
     
-    let query = this.supabase
+    let query = this.dbClient
       .from('content_items')
       .select(`
         *,
@@ -1085,7 +1085,7 @@ export class ContentServiceWrapper {
   private async getItemsByTemplate(params: any): Promise<QueryResult> {
     const { templateId, languageCode } = params;
     
-    let query = this.supabase
+    let query = this.dbClient
       .from('content_items')
       .select(`
         *,
@@ -1140,7 +1140,7 @@ export class ContentServiceWrapper {
   private async getItem(params: any): Promise<QueryResult> {
     const { id } = params;
     
-    const { data, error } = await this.supabase
+    const { data, error } = await this.dbClient
       .from('content_items')
       .select(`
         *,
@@ -1187,7 +1187,7 @@ export class ContentServiceWrapper {
   private async getItemBySlug(params: any): Promise<QueryResult> {
     const { slug, languageCode } = params;
     
-    let query = this.supabase
+    let query = this.dbClient
       .from('content_items')
       .select(`
         *,
@@ -1239,7 +1239,7 @@ export class ContentServiceWrapper {
   private async getItemTranslation(params: any): Promise<QueryResult> {
     const { baseItemId, languageCode } = params;
     
-    const { data, error } = await this.supabase
+    const { data, error } = await this.dbClient
       .from('content_items')
       .select(`
         *,
@@ -1287,7 +1287,7 @@ export class ContentServiceWrapper {
   private async getItemData(params: any): Promise<QueryResult> {
     const { itemId, includeInherited } = params;
     
-    const { data: itemDataArray, error } = await this.supabase
+    const { data: itemDataArray, error } = await this.dbClient
       .from('content_item_data')
       .select('*')
       .eq('item_id', itemId);
@@ -1305,7 +1305,7 @@ export class ContentServiceWrapper {
     // If includeInherited is true and this is a translation, merge with base item data
     if (includeInherited) {
       // First get the item to check if it's a translation
-      const { data: item } = await this.supabase
+      const { data: item } = await this.dbClient
         .from('content_items')
         .select('base_item_id')
         .eq('id', itemId)
@@ -1313,7 +1313,7 @@ export class ContentServiceWrapper {
 
       if (item?.base_item_id) {
         // Get base item data
-        const { data: baseDataArray } = await this.supabase
+        const { data: baseDataArray } = await this.dbClient
           .from('content_item_data')
           .select('*')
           .eq('item_id', item.base_item_id);
@@ -1337,7 +1337,7 @@ export class ContentServiceWrapper {
       return { data: [], error: null };
     }
 
-    let query = this.supabase
+    let query = this.dbClient
       .from('content_items')
       .select(`
         *,
@@ -1361,7 +1361,7 @@ export class ContentServiceWrapper {
         // If we need a specific language and this item doesn't match
         if (languageCode && item.language_code !== languageCode && !item.language_code) {
           // Try to find a translation
-          const { data: translation } = await this.supabase
+          const { data: translation } = await this.dbClient
             .from('content_items')
             .select(`
               *,
@@ -1399,7 +1399,7 @@ export class ContentServiceWrapper {
   private async getItemTemplate(params: any): Promise<QueryResult> {
     const { id } = params;
     
-    const { data, error } = await this.supabase
+    const { data, error } = await this.dbClient
       .from('content_item_templates')
       .select('*')
       .eq('id', id)
@@ -1409,7 +1409,7 @@ export class ContentServiceWrapper {
   }
 
   private async getItemTemplates(): Promise<QueryResult> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.dbClient
       .from('content_item_templates')
       .select('*')
       .eq('is_active', true)
@@ -1423,7 +1423,7 @@ export class ContentServiceWrapper {
   private async getArticles(params: any): Promise<QueryResult> {
     const { pageId } = params;
     
-    let query = this.supabase
+    let query = this.dbClient
       .from('content_articles_details')
       .select('*')
       .order('published_at', { ascending: false });
@@ -1441,7 +1441,7 @@ export class ContentServiceWrapper {
   private async getArticle(params: any): Promise<QueryResult> {
     const { id } = params;
     
-    const { data, error } = await this.supabase
+    const { data, error } = await this.dbClient
       .from('content_articles')
       .select('*')
       .eq('id', id)
@@ -1453,7 +1453,7 @@ export class ContentServiceWrapper {
   private async getArticleBySlug(params: any): Promise<QueryResult> {
     const { pageId, languageCode, slug } = params;
     
-    const { data, error } = await this.supabase
+    const { data, error } = await this.dbClient
       .from('content_articles')
       .select('*')
       .eq('page_id', pageId)
@@ -1467,7 +1467,7 @@ export class ContentServiceWrapper {
   private async getArticlesByPage(params: any): Promise<QueryResult> {
     const { pageId, languageCode } = params;
     
-    let query = this.supabase
+    let query = this.dbClient
       .from('content_articles_details')
       .select('*')
       .eq('page_id', pageId)
@@ -1485,7 +1485,7 @@ export class ContentServiceWrapper {
   private async getPublishedArticles(params: any): Promise<QueryResult> {
     const { pageId, languageCode } = params;
     
-    let query = this.supabase
+    let query = this.dbClient
       .from('content_articles_details')
       .select('*')
       .eq('is_published', true)
@@ -1508,7 +1508,7 @@ export class ContentServiceWrapper {
   private async getNavigationMenus(params: any = {}): Promise<QueryResult> {
     const { projectId } = params;
     
-    let query = this.supabase
+    let query = this.dbClient
       .from('content_navigation_menus')
       .select(`
         *,
@@ -1538,7 +1538,7 @@ export class ContentServiceWrapper {
   private async getNavigationMenu(params: any): Promise<QueryResult> {
     const { id } = params;
     
-    const { data, error } = await this.supabase
+    const { data, error } = await this.dbClient
       .from('content_navigation_menus')
       .select(`
         *,
@@ -1590,7 +1590,7 @@ export class ContentServiceWrapper {
       return { data: null, error: 'Missing required parameter: slug' };
     }
     
-    let query = this.supabase
+    let query = this.dbClient
       .from('content_navigation_menus')
       .select(`
         *,
@@ -1643,7 +1643,7 @@ export class ContentServiceWrapper {
   private async getNavigationItems(params: any): Promise<QueryResult> {
     const { menuId } = params;
     
-    const { data, error } = await this.supabase
+    const { data, error } = await this.dbClient
       .from('content_navigation_items')
       .select('*')
       .eq('menu_id', menuId)

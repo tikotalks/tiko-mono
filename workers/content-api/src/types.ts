@@ -1,10 +1,11 @@
+/// <reference types="@cloudflare/workers-types" />
+
 export interface Env {
   // KV Namespace for caching
   CONTENT_CACHE: KVNamespace;
   
-  // Environment variables and secrets
-  SUPABASE_URL: string;
-  SUPABASE_SECRET: string;
+  // D1 database and environment variables
+  CONTENT_DB: D1Database;
   CACHE_TTL: string;
   
   // Optional: R2 bucket for large content

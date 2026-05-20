@@ -1,7 +1,7 @@
 import { Env, ContentQuery, QueryResult } from './types';
 import { CacheManager } from './cache';
 import { ContentService } from './content-service';
-import { getSupabaseClient } from './supabase-client';
+import { getContentDbClient } from './d1-content-client';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -82,8 +82,8 @@ async function handleContentQuery(request: Request, env: Env): Promise<Response>
 
     // Initialize services
     const cacheManager = new CacheManager(env);
-    const supabase = getSupabaseClient(env);
-    const contentService = new ContentService(supabase);
+    const dbClient = getContentDbClient(env);
+    const contentService = new ContentService(dbClient);
 
     let result: QueryResult;
     let cached = false;

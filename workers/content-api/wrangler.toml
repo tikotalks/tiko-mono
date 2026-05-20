@@ -15,14 +15,19 @@ routes = [
 binding = "CONTENT_CACHE"
 id = "19e053c7a4c94f16a1ee4a436bfac34a"
 
+[[d1_databases]]
+binding = "CONTENT_DB"
+database_name = "tiko-content"
+database_id = "00000000-0000-0000-0000-000000000000"
+
+[[env.staging.d1_databases]]
+binding = "CONTENT_DB"
+database_name = "tiko-content-staging"
+database_id = "00000000-0000-0000-0000-000000000000"
+
 # Environment variables
 [vars]
 CACHE_TTL = "86400" # 24 hours in seconds
-SUPABASE_URL = "https://kejvhvszhevfwgsztedf.supabase.co"
-
-# Secret must be set as worker secret:
-# In Cloudflare Dashboard: Workers & Pages > tiko-content-api > Settings > Variables
-# Add Secret: SUPABASE_SECRET with the new Supabase secret key (sb_secret_...)
 
 # Durable Objects for advanced caching (optional)
 # [[durable_objects.bindings]]

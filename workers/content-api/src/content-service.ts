@@ -1,12 +1,12 @@
-import { SupabaseClient } from '@supabase/supabase-js';
+import { D1ContentClient } from './d1-content-client';
 import { ContentQuery, QueryResult } from './types';
 import { ContentServiceWrapper } from './content-service-wrapper';
 
 export class ContentService {
   private wrapper: ContentServiceWrapper;
 
-  constructor(supabase: SupabaseClient) {
-    this.wrapper = new ContentServiceWrapper(supabase);
+  constructor(dbClient: D1ContentClient) {
+    this.wrapper = new ContentServiceWrapper(dbClient);
   }
 
   async executeQuery(query: ContentQuery): Promise<QueryResult> {
