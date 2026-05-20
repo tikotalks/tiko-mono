@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const repoRoot = resolve(__dirname, '../../..')
-const defaultApps = ['timer', 'todo']
+const defaultApps = ['cards', 'sequence', 'type', 'yes-no', 'radio', 'tiko', 'timer', 'todo']
 const args = process.argv.slice(2)
 const buildOnly = args.includes('--build-only')
 const requestedApps = args.filter((arg) => !arg.startsWith('--'))

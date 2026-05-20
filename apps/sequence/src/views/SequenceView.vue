@@ -2313,7 +2313,8 @@
 }
 
 // Prevent body/html scrolling on mobile devices
-:global(html, body) {
+:global(html),
+:global(body) {
   overflow: hidden;
   height: 100vh;
   -webkit-overflow-scrolling: touch;

@@ -4,12 +4,18 @@ Shared smoke-test harness for the Tiko clean rebuild. It gives every app the sam
 
 ## Default apps
 
-The default harness covers two apps immediately:
+The default harness covers every app currently in `apps/`:
 
+- `cards`
+- `sequence`
+- `type`
+- `yes-no`
+- `radio`
+- `tiko`
 - `timer`
 - `todo`
 
-More apps can be passed as positional arguments once their rebuild state is ready.
+Pass positional app names to narrow a local run to one or more apps.
 
 ## Commands
 
@@ -18,7 +24,8 @@ From the repository root:
 ```bash
 pnpm --dir tools/smoke-harness test
 pnpm --dir tools/smoke-harness smoke:build
-pnpm --dir tools/smoke-harness smoke timer todo
+pnpm --dir tools/smoke-harness smoke
+pnpm --dir tools/smoke-harness smoke:build sequence tiko
 ```
 
 What `smoke` does:
@@ -34,7 +41,7 @@ Use `smoke:build` in constrained environments that cannot install or run Playwri
 ## Shared configs
 
 - `vitest.config.ts` — shared Node-based harness tests.
-- `playwright.config.ts` — shared E2E smoke config for `timer` and `todo`.
+- `playwright.config.ts` — shared E2E smoke config for all Tiko apps on deterministic ports.
 - `templates/app-smoke.spec.ts` — copy/adapt for product-specific app checks.
 - `ci/github-actions-smoke.yml` — workflow template for CI integration.
 

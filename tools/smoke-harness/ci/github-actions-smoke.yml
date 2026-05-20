@@ -19,4 +19,4 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --dir tools/smoke-harness exec playwright install --with-deps chromium
-      - run: pnpm --dir tools/smoke-harness smoke timer todo
+      - run: pnpm --dir tools/smoke-harness smoke

@@ -32,10 +32,7 @@
             :key="type.value"
             :type="filters.type === type.value ? 'default' : 'outline'"
             size="small"
-            @click="
-              filters.type = type.value
-              loadItems()
-            "
+            @click="setTypeFilter(type.value)"
           >
             {{ type.label }}
           </TButton>
@@ -51,10 +48,7 @@
             :key="vis.value"
             :type="filters.visibility === vis.value ? 'default' : 'outline'"
             size="small"
-            @click="
-              filters.visibility = vis.value
-              loadItems()
-            "
+            @click="setVisibilityFilter(vis.value)"
           >
             {{ vis.label }}
           </TButton>
@@ -287,6 +281,18 @@
     } catch (error) {
       console.error('Failed to load stats:', error)
     }
+  }
+
+  const setTypeFilter = (type: AdminItemsFilter['type']) => {
+    filters.type = type
+    currentPage.value = 1
+    void loadItems()
+  }
+
+  const setVisibilityFilter = (visibility: AdminItemsFilter['visibility']) => {
+    filters.visibility = visibility
+    currentPage.value = 1
+    void loadItems()
   }
 
   const toggleSelection = (itemId: string) => {

@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-const defaultApps = ['timer', 'todo']
+const defaultApps = ['cards', 'sequence', 'type', 'yes-no', 'radio', 'tiko', 'timer', 'todo']
 
 describe('smoke harness defaults', () => {
-  it('covers at least two apps by default', () => {
-    expect(defaultApps).toContain('timer')
-    expect(defaultApps).toContain('todo')
-    expect(defaultApps.length).toBeGreaterThanOrEqual(2)
+  it('covers every Tiko app by default', () => {
+    expect(defaultApps).toEqual(['cards', 'sequence', 'type', 'yes-no', 'radio', 'tiko', 'timer', 'todo'])
   })
 })
