@@ -56,11 +56,6 @@
           <p>No fields defined yet.</p>
         </div>
 
-        <div v-else style="margin-bottom: 1em; padding: 1em; background: #f0f0f0;">
-          <strong>Debug: Found {{ fields.length }} fields</strong>
-          <pre>{{ JSON.stringify(fields, null, 2) }}</pre>
-        </div>
-
         <TList
           v-else
           :columns="[
