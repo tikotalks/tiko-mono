@@ -83,29 +83,11 @@ const settings = await userSettingsService.getSettings(userId, 'timer')
 
 ## Current Implementations
 
-Due to issues with the Supabase SDK hanging, we have two implementations for each service:
+The active parent-mode and user-settings service implementations are local-first and do not expose Supabase alternates:
 
-### localStorage Implementations (Currently Active)
 - `LocalStorageParentModeService` - Stores in browser localStorage
 - `LocalStorageUserSettingsService` - Stores in browser localStorage
-- `ManualAuthService` - Uses direct API calls for auth, localStorage for sessions
-
-### Supabase Implementations (Available)
-- `SupabaseParentModeService` - Stores in Supabase database via direct API
-- `SupabaseUserSettingsService` - Stores in Supabase database via direct API
-
-## Switching Implementations
-
-To switch from localStorage to Supabase implementations:
-
-```typescript
-// In packages/core/src/services/parent-mode.service.ts
-// Change:
-export const parentModeService = new LocalStorageParentModeService()
-// To:
-import { SupabaseParentModeService } from './parent-mode-supabase.service'
-export const parentModeService = new SupabaseParentModeService()
-```
+- `CentralAuthService` - Uses Tiko identity APIs and `tiko_auth_session`
 
 ## Adding a New Backend
 

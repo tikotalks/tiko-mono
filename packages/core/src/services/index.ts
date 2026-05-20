@@ -58,9 +58,6 @@ export {
   type NavigationItem
 } from './content.service'
 
-// Export Supabase implementations
-export { SupabaseParentModeService } from './parent-mode-supabase.service'
-export { SupabaseUserSettingsService } from './user-settings-supabase.service'
 export { SupabaseItemService } from './item-supabase.service'
 export { SupabaseMediaService } from './media-supabase.service'
 export { collectionsSupabaseService } from './collections-supabase.service'
@@ -132,8 +129,4 @@ export { initializeTranslations } from './translation-init.service'
 export { adminItemsService } from './admin-items.service'
 export type { AdminItemsFilter, AdminItem } from './admin-items.service'
 
-// Alternative: Export Supabase implementations
-// import { SupabaseParentModeService } from './parent-mode-supabase.service'
-// import { SupabaseUserSettingsService } from './user-settings-supabase.service'
-// export const parentModeService = new SupabaseParentModeService()
-// export const userSettingsService = new SupabaseUserSettingsService()
+
