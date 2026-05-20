@@ -70,14 +70,14 @@ Current auth/session code lives mainly in:
 
 - [packages/core/src/services/auth.service.ts](/Users/silvandiepen/Repositories/_tiko/tiko-mono/packages/core/src/services/auth.service.ts)
 - [packages/core/src/stores/auth.ts](/Users/silvandiepen/Repositories/_tiko/tiko-mono/packages/core/src/stores/auth.ts)
-- [packages/core/src/lib/supabase-lazy.ts](/Users/silvandiepen/Repositories/_tiko/tiko-mono/packages/core/src/lib/supabase-lazy.ts)
-- [packages/core/src/services/auth-sync.service.ts](/Users/silvandiepen/Repositories/_tiko/tiko-mono/packages/core/src/services/auth-sync.service.ts)
+- [packages/core/src/lib/supabase-lazy.ts](/Users/silvandiepen/Repositories/_tiko/tiko-mono/packages/core/src/lib/supabase-lazy.ts) — still used by non-auth Supabase data/media services
 
 Key coupling points:
 
-- session state is stored locally and then mirrored into Supabase
-- `auth-sync.service` explicitly syncs the custom session back into Supabase so `auth.uid()` and RLS keep working
-- multiple services still expect a Supabase-style bearer token
+- session state is stored locally for Tiko identity, no longer mirrored into Supabase from the auth store or auth service
+- the former `auth-sync.service` Supabase session bridge has been removed
+- `auth.service.ts` no longer writes or clears the legacy `supabase.auth.token` localStorage key
+- multiple non-auth services still expect a Supabase-style bearer token
 
 ### Existing SSO/Tiko app coupling
 

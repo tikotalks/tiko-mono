@@ -561,7 +561,7 @@ export class CentralAuthService implements AuthService {
     }
 
     localStorage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(cleanSession))
-    localStorage.setItem(SUPABASE_COMPAT_STORAGE_KEY, JSON.stringify(cleanSession))
+    localStorage.removeItem(SUPABASE_COMPAT_STORAGE_KEY)
   }
 
   private clearSessionMirror(): void {

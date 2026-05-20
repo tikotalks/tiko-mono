@@ -1,97 +1,221 @@
-// Direct Supabase Auth API implementation
-const SUPABASE_URL = 'https://kejvhvszhevfwgsztedf.supabase.co'
-const ANON_KEY = import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlanZodnN6aGV2Zndnc3p0ZWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4ODg2MTIsImV4cCI6MjA2NzQ2NDYxMn0.xUYXxNodJTpTwChlKbuBSojVJqX9CDW87aVISEUc2rE'
+// Tiko device-first identity API client.
+// This replaces the previous direct Supabase Auth REST calls. Apps should talk to
+// the Cloudflare identity origin and store only Tiko session bundles locally.
 
 export interface AuthSession {
   access_token: string
-  refresh_token: string
-  expires_in: number
+  refresh_token?: string
+  expires_in?: number
   expires_at: number
   token_type: string
-  user: any
+  user: AuthUser
 }
 
 export interface AuthUser {
   id: string
-  email: string
+  email: string | null
   created_at: string
   updated_at: string
-  user_metadata?: any
+  user_metadata?: Record<string, unknown>
+  app_metadata?: Record<string, unknown>
 }
 
-class AuthAPI {
-  private async apiCall(endpoint: string, options: RequestInit = {}) {
-    const response = await fetch(`${SUPABASE_URL}${endpoint}`, {
+interface IdentityApiUser {
+  id: string
+  primaryEmail: string | null
+  createdAt: string
+  updatedAt: string
+  lastSeenAt: string | null
+}
+
+interface IdentitySessionBundle {
+  user: IdentityApiUser
+  device?: unknown
+  session: {
+    id: string
+    userId: string
+    deviceId: string
+    expiresAt: string
+  }
+  sessionToken?: string
+}
+
+interface IdentityApiSuccess<T> {
+  ok: true
+  data: T
+}
+
+interface IdentityApiError {
+  ok: false
+  error: {
+    code: string
+    message: string
+  }
+}
+
+type IdentityApiBody<T> = IdentityApiSuccess<T> | IdentityApiError
+
+export interface AuthAPIOptions {
+  baseUrl?: string
+  fetchImpl?: typeof fetch
+  appId?: string
+}
+
+const SESSION_STORAGE_KEY = 'tiko_auth_session'
+
+function resolveIdentityBaseUrl(): string {
+  const globalConfig = globalThis as typeof globalThis & {
+    __TIKO_IDENTITY_URL__?: string
+    __TIKO_CONFIG__?: { identityUrl?: string }
+  }
+
+  return (
+    globalConfig.__TIKO_IDENTITY_URL__ ||
+    globalConfig.__TIKO_CONFIG__?.identityUrl ||
+    'https://id.tiko.mt'
+  ).replace(/\/+$/, '')
+}
+
+export class AuthAPI {
+  private readonly baseUrl: string
+  private readonly fetchImpl: typeof fetch
+  private readonly appId?: string
+
+  constructor(options: AuthAPIOptions = {}) {
+    this.baseUrl = (options.baseUrl || resolveIdentityBaseUrl()).replace(/\/+$/, '')
+    this.fetchImpl = options.fetchImpl || fetch
+    this.appId = options.appId
+  }
+
+  private async apiCall<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const response = await this.fetchImpl(`${this.baseUrl}${endpoint}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
-        'apikey': ANON_KEY,
         ...options.headers
       }
     })
 
-    const data = await response.json()
+    const body = (await response.json()) as IdentityApiBody<T>
 
     if (!response.ok) {
-      throw new Error(data.msg || data.error || 'API call failed')
+      if (body.ok === false) {
+        throw new Error(body.error.message)
+      }
+      throw new Error('Identity API call failed')
     }
 
-    return data
+    if (body.ok === false) {
+      throw new Error(body.error.message)
+    }
+
+    return body.data
   }
 
   async sendMagicLink(email: string): Promise<void> {
-    console.log('[AuthAPI] Sending magic link to:', email)
+    const session = await this.ensureSession()
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${session.access_token}`
+    }
 
-    const response = await this.apiCall('/auth/v1/otp', {
+    await this.apiCall('/api/identity/email', {
       method: 'POST',
-      body: JSON.stringify({
-        email,
-        create_user: true,
-        options: {
-          email_redirect_to: `${window.location.origin}/auth/callback`,
-          should_create_user: true
-        }
-      })
+      headers,
+      body: JSON.stringify({ email })
     })
-
-    console.log('[AuthAPI] Magic link sent, response:', response)
   }
 
   async getUser(accessToken: string): Promise<AuthUser> {
-    console.log('[AuthAPI] Getting user data')
-
-    const data = await this.apiCall('/auth/v1/user', {
+    const bundle = await this.apiCall<IdentitySessionBundle>('/api/identity/session', {
       headers: {
-        'Authorization': `Bearer ${accessToken}`
+        Authorization: `Bearer ${accessToken}`
       }
     })
 
-    return data
+    return toAuthUser(bundle.user)
   }
 
   getStoredSession(): AuthSession | null {
-    const stored = localStorage.getItem('tiko_auth_session')
+    const stored = localStorage.getItem(SESSION_STORAGE_KEY)
     if (!stored) return null
 
     try {
-      const session = JSON.parse(stored)
-      // Check if expired
+      const session = JSON.parse(stored) as AuthSession
       if (session.expires_at && session.expires_at < Date.now() / 1000) {
-        localStorage.removeItem('tiko_auth_session')
+        localStorage.removeItem(SESSION_STORAGE_KEY)
         return null
       }
       return session
     } catch {
+      localStorage.removeItem(SESSION_STORAGE_KEY)
       return null
     }
   }
 
   storeSession(session: AuthSession): void {
-    localStorage.setItem('tiko_auth_session', JSON.stringify(session))
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session))
+  }
+
+  storeIdentityBundle(bundle: IdentitySessionBundle): void {
+    const expiresAt = Math.floor(new Date(bundle.session.expiresAt).getTime() / 1000)
+    this.storeSession({
+      access_token: bundle.sessionToken || '',
+      expires_at: expiresAt,
+      token_type: 'Bearer',
+      user: toAuthUser(bundle.user)
+    })
   }
 
   clearSession(): void {
-    localStorage.removeItem('tiko_auth_session')
+    localStorage.removeItem(SESSION_STORAGE_KEY)
+  }
+
+  private async ensureSession(): Promise<AuthSession> {
+    const existingSession = this.getStoredSession()
+    if (existingSession?.access_token) {
+      return existingSession
+    }
+
+    const bundle = await this.apiCall<IdentitySessionBundle>('/api/identity/device', {
+      method: 'POST',
+      body: JSON.stringify({ appId: this.resolveAppId() })
+    })
+    this.storeIdentityBundle(bundle)
+
+    const session = this.getStoredSession()
+    if (!session?.access_token) {
+      throw new Error('Identity API did not return a usable session token')
+    }
+
+    return session
+  }
+
+  private resolveAppId(): string {
+    if (this.appId) {
+      return this.appId
+    }
+
+    if (typeof window === 'undefined') {
+      return 'tiko'
+    }
+
+    const hostname = window.location.hostname
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'local'
+    }
+
+    return hostname.split('.')[0] || 'tiko'
+  }
+}
+
+function toAuthUser(user: IdentityApiUser): AuthUser {
+  return {
+    id: user.id,
+    email: user.primaryEmail,
+    created_at: user.createdAt,
+    updated_at: user.updatedAt,
+    user_metadata: {},
+    app_metadata: {}
   }
 }
 

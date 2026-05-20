@@ -69,7 +69,6 @@ export { collectionsSupabaseService } from './collections-supabase.service'
 // Currently using localStorage implementations due to Supabase SDK issues
 // To switch to Supabase, uncomment the Supabase imports and comment out localStorage ones
 export { authService } from './auth.service'
-export { authSyncService } from './auth-sync.service'
 export { parentModeService } from './parent-mode.service'
 export { userSettingsService } from './user-settings.service'
 export { itemService, unifiedItemService } from './item.service'

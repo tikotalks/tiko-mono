@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { authService } from '../services'
-import { authSyncService } from '../services/auth-sync.service'
-import { resolveAuthBaseUrl } from '../services/auth.service'
 import type { AuthUser, AuthSession } from '../services/auth.service'
 
 // User profile settings interface (for auth store)
@@ -26,7 +24,6 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Storage key for settings
   const SETTINGS_STORAGE_KEY = 'tiko-user-settings'
-  const shouldSyncWithSupabase = () => resolveAuthBaseUrl().includes('supabase.co')
 
   // Getters
   const isAuthenticated = computed(() => !!user.value && !!session.value)
@@ -39,13 +36,13 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     // Fallback checks for other places where admin role might be stored
-    // 1. Check user_metadata (Supabase user metadata)
+    // 1. Check user metadata
     if (user.value?.user_metadata?.role === 'admin' ||
         user.value?.user_metadata?.is_admin === true) {
       return true;
     }
 
-    // 2. Check app_metadata (Supabase app metadata - set by backend)
+    // 2. Check app metadata set by backend
     if (user.value?.app_metadata?.role === 'admin' ||
         user.value?.app_metadata?.is_admin === true) {
       return true;
@@ -96,9 +93,6 @@ export const useAuthStore = defineStore('auth', () => {
       }
       if (result.session) {
         session.value = result.session
-        if (shouldSyncWithSupabase()) {
-          await authSyncService.syncWithSupabase(result.session)
-        }
         // Fetch user role after successful login
         await fetchUserRole()
       }
@@ -201,9 +195,6 @@ export const useAuthStore = defineStore('auth', () => {
       }
       if (result.session) {
         session.value = result.session
-        if (shouldSyncWithSupabase()) {
-          await authSyncService.syncWithSupabase(result.session)
-        }
         // Fetch user role after successful login
         await fetchUserRole()
       }
@@ -256,9 +247,6 @@ export const useAuthStore = defineStore('auth', () => {
       const result = await authService.signOut()
       if (!result.success) {
         console.warn('Logout error:', result.error)
-      }
-      if (shouldSyncWithSupabase()) {
-        await authSyncService.clearSupabaseSession()
       }
     } catch (err) {
       console.warn('Logout failed:', err)
@@ -404,10 +392,6 @@ export const useAuthStore = defineStore('auth', () => {
       if (currentSession) {
         user.value = currentSession.user
         session.value = currentSession
-
-        if (shouldSyncWithSupabase()) {
-          await authSyncService.syncWithSupabase(currentSession)
-        }
 
         // Fetch user role
         await fetchUserRole()
