@@ -92,7 +92,7 @@ Current behavior is token/query/localStorage based, not cookie-session based.
 Migration implication:
 
 - this flow should be replaced, not ported
-- the central auth origin should expose session endpoints and set shared cookies for `.tikoapps.org`
+- the central identity origin should expose session endpoints and use explicit app-scoped identity handshakes rather than shared-cookie assumptions
 - apps should use `credentials: 'include'` and ask the auth origin for session state on boot
 
 ## Data Domains
@@ -120,7 +120,7 @@ Migration implication:
 
 ### Target
 
-- Better Auth user/session tables in D1
+- Custom Tiko identity user/session/device tables in D1
 - D1 `user_profiles`
 - D1 `user_settings`
 - D1 role model instead of JWT/RLS-based Supabase role checks
