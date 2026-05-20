@@ -77,6 +77,7 @@ Key coupling points:
 - session state is stored locally for Tiko identity, no longer mirrored into Supabase from the auth store or auth service
 - the former `auth-sync.service` Supabase session bridge has been removed
 - `auth.service.ts` no longer writes or clears the legacy `supabase.auth.token` localStorage key
+- `translation-versioned.service.ts` reads only the Tiko identity session and no longer falls back to `supabase.auth.token`
 - multiple non-auth services still expect a Supabase-style bearer token
 
 ### Existing SSO/Tiko app coupling

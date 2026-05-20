@@ -53,17 +53,9 @@ class TranslationVersionedService {
    */
   private getSession() {
     try {
-      // Try the new auth session format first
       const authData = localStorage.getItem('tiko_auth_session');
       if (authData) {
         const parsed = JSON.parse(authData);
-        return parsed?.access_token || null;
-      }
-
-      // Fallback to Supabase format
-      const supabaseData = localStorage.getItem('supabase.auth.token');
-      if (supabaseData) {
-        const parsed = JSON.parse(supabaseData);
         return parsed?.access_token || null;
       }
 
