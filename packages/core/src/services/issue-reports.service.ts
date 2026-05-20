@@ -1,3 +1,5 @@
+import { coreApiRequest, getServiceBaseUrl } from './internal-api'
+
 export interface IssueReport {
   id: string
   app_name: string
@@ -28,30 +30,9 @@ export interface IssueReportsFilter {
 
 class IssueReportsService {
   private async apiRequest<T>(endpoint: string): Promise<T> {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-    const supabaseKey =
-      import.meta.env?.VITE_SUPABASE_SERVICE_KEY ||
-      import.meta.env?.VITE_SUPABASE_SECRET ||
-      import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY
+    const baseUrl = getServiceBaseUrl('VITE_ISSUE_REPORTS_API_URL', 'https://issues.tikoapi.org')
 
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Issue report credentials missing')
-    }
-
-    const response = await fetch(`${supabaseUrl}/rest/v1/${endpoint}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: supabaseKey,
-        Authorization: `Bearer ${supabaseKey}`,
-      },
-    })
-
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => '')
-      throw new Error(`Issue report request failed: ${response.status} ${errorText}`)
-    }
-
-    return response.json()
+    return coreApiRequest<T>(baseUrl, `/rest/v1/${endpoint}`)
   }
 
   async getReports(filter: IssueReportsFilter = {}): Promise<IssueReport[]> {

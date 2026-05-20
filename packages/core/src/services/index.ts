@@ -5,7 +5,7 @@
  * It provides a clean API that can be easily swapped out when changing backends.
  * 
  * Current implementation uses localStorage and direct API calls to bypass
- * the broken Supabase SDK, but can be easily replaced with any other backend.
+ * Cloudflare Worker APIs and local fallbacks, but can be easily replaced with any other backend.
  * 
  * @see {@link file://./README.md} for detailed documentation
  */
@@ -58,18 +58,14 @@ export {
   type NavigationItem
 } from './content.service'
 
-export { SupabaseItemService } from './item-supabase.service'
-export { SupabaseMediaService } from './media-supabase.service'
-
 // Export active service instances
-// Currently using localStorage implementations due to Supabase SDK issues
-// To switch to Supabase, uncomment the Supabase imports and comment out localStorage ones
 export { authService } from './auth.service'
+export { authSyncService } from './auth-sync.service'
 export { parentModeService } from './parent-mode.service'
 export { userSettingsService } from './user-settings.service'
 export { itemService, unifiedItemService } from './item.service'
 export { fileService } from './file.service'
-export { mediaService } from './media-supabase.service'
+export { mediaService } from './media.service'
 export { mediaAnalysisService } from './media-analysis.service'
 export { mediaCacheService } from './media-cache.service'
 export { mediaSourceService } from './media-source.service'
@@ -79,7 +75,7 @@ export { translationService } from './translation.service'
 export { itemTranslationService } from './item-translation.service'
 export type { ItemTranslation } from './item-translation.service'
 export { gptTranslationService } from './gpt-translation.service'
-export { collectionsService, LocalStorageCollectionsService } from './collections.service'
+export { collectionsService } from './collections.service'
 export { userMediaService } from './user-media.service'
 export { contentService } from './content.service'
 export { publicItemService } from './public-items.service'
@@ -87,45 +83,19 @@ export type { PublicItemsFilter, PublicItemSearchFilter } from './public-items.s
 export { issueReportsService } from './issue-reports.service'
 export type { IssueReport, IssueReportsFilter } from './issue-reports.service'
 export { sentenceService } from './sentence.service'
-export type {
-  SentencePrediction,
-  SentencePredictResponse,
-  SentenceSelectRequest,
-  SentenceSelectResponse
-} from './sentence.service'
+export type { SentencePrediction, SentencePredictResponse, SentenceSelectRequest, SentenceSelectResponse } from './sentence.service'
 export * from './tts'
 export { ttsService } from './tts'
 export { deploymentService } from './deployment.service'
-export type {
-  DeploymentTarget,
-  DeploymentHistory,
-  GitHubWorkflowRun
-} from './deployment.service'
+export type { DeploymentTarget, DeploymentHistory, GitHubWorkflowRun } from './deployment.service'
 export { backupService } from './backup.service'
-export type {
-  DatabaseBackup
-} from './backup.service'
+export type { DatabaseBackup } from './backup.service'
 export { ContentWorkerService } from './content-worker.service'
 export type { ContentWorkerConfig } from './content-worker.service'
 export { UnifiedContentService } from './unified-content.service'
 export type { UnifiedContentConfig, QueryOptions, FullPageContent, FullSectionContent, FullItemContent, ContentField } from './unified-content.service'
-
-// Offline Storage Service
-export { 
-  OfflineStorageService, 
-  createOfflineStorage 
-} from './offline-storage.service'
-export type { 
-  StoredData, 
-  SyncMetadata, 
-  OfflineStorageConfig 
-} from './offline-storage.service'
-
-// Translation Initialization Service
+export { OfflineStorageService, createOfflineStorage } from './offline-storage.service'
+export type { StoredData, SyncMetadata, OfflineStorageConfig } from './offline-storage.service'
 export { initializeTranslations } from './translation-init.service'
-
-// Admin Items Service
 export { adminItemsService } from './admin-items.service'
 export type { AdminItemsFilter, AdminItem } from './admin-items.service'
-
-

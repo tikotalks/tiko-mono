@@ -88,12 +88,10 @@ interface SpeakOptions {
 1. **Database Migration**: Run the `tts_audio` table migration
 2. **Environment Variables**:
    - `VITE_TTS_WORKER_URL`: Worker endpoint
-   - `VITE_SUPABASE_URL`: Supabase project URL
-   - `VITE_SUPABASE_ANON_KEY`: Supabase anonymous key
+   - `VITE_TTS_METADATA_API_URL`: TTS metadata API endpoint
 3. **Worker Secrets**:
    - `OPENAI_API_KEY`: OpenAI API key
-   - `SUPABASE_URL`: Supabase project URL  
-   - `SUPABASE_SERVICE_KEY`: Supabase service role key
+   - D1 binding for persisted TTS metadata
 
 ## Examples
 

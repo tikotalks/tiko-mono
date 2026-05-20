@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { authService } from '../services'
+import { authSyncService } from '../services/auth-sync.service'
 import type { AuthUser, AuthSession } from '../services/auth.service'
 
 // User profile settings interface (for auth store)
@@ -36,13 +37,13 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     // Fallback checks for other places where admin role might be stored
-    // 1. Check user metadata
+    // 1. Check user_metadata (auth worker user metadata)
     if (user.value?.user_metadata?.role === 'admin' ||
         user.value?.user_metadata?.is_admin === true) {
       return true;
     }
 
-    // 2. Check app metadata set by backend
+    // 2. Check app_metadata (auth worker app metadata - set by backend)
     if (user.value?.app_metadata?.role === 'admin' ||
         user.value?.app_metadata?.is_admin === true) {
       return true;
@@ -93,6 +94,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
       if (result.session) {
         session.value = result.session
+        await authSyncService.syncSession(result.session)
         // Fetch user role after successful login
         await fetchUserRole()
       }
@@ -195,6 +197,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
       if (result.session) {
         session.value = result.session
+        await authSyncService.syncSession(result.session)
         // Fetch user role after successful login
         await fetchUserRole()
       }
@@ -248,6 +251,7 @@ export const useAuthStore = defineStore('auth', () => {
       if (!result.success) {
         console.warn('Logout error:', result.error)
       }
+      await authSyncService.clearSession()
     } catch (err) {
       console.warn('Logout failed:', err)
     } finally {
@@ -392,6 +396,8 @@ export const useAuthStore = defineStore('auth', () => {
       if (currentSession) {
         user.value = currentSession.user
         session.value = currentSession
+
+        await authSyncService.syncSession(currentSession)
 
         // Fetch user role
         await fetchUserRole()

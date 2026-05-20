@@ -1,3 +1,4 @@
+import { coreApiRequest, getServiceBaseUrl } from './internal-api'
 import type { BaseItem } from './item.service'
 
 export interface ItemTranslation {
@@ -30,32 +31,21 @@ class ItemTranslationService {
   }
 
   private async apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-    const supabaseKey =
-      import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY
+    const baseUrl = getServiceBaseUrl('VITE_ITEMS_API_URL', 'https://items.tikoapi.org')
     const token = this.getAuthToken()
+    const headers = new Headers(options.headers || {})
 
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Supabase credentials missing')
+    if (token && !headers.has('Authorization')) {
+      headers.set('Authorization', `Bearer ${token}`)
+    }
+    if (!headers.has('Prefer')) {
+      headers.set('Prefer', 'return=representation')
     }
 
-    const response = await fetch(`${supabaseUrl}/rest/v1/${endpoint}`, {
+    return coreApiRequest<T>(baseUrl, `/rest/v1/${endpoint}`, {
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: supabaseKey,
-        Authorization: token ? `Bearer ${token}` : '',
-        Prefer: 'return=representation',
-        ...options.headers,
-      },
+      headers,
     })
-
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => '')
-      throw new Error(`Translation request failed: ${response.status} ${errorText}`)
-    }
-
-    return response.json()
   }
 
   private buildLocaleFallbacks(locale?: string): string[] {

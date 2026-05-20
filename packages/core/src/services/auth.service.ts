@@ -564,6 +564,7 @@ export class CentralAuthService implements AuthService {
 
   private clearSessionMirror(): void {
     localStorage.removeItem(AUTH_SESSION_STORAGE_KEY)
+    localStorage.removeItem('tiko_auth_session_legacy')
   }
 }
 

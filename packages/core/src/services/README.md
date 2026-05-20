@@ -2,7 +2,7 @@
 
 ## Overview
 
-The services layer provides a clean abstraction between the UI components and the backend implementation. This allows us to easily switch between different backends (Supabase, Firebase, custom API, etc.) without changing any UI code.
+The services layer provides a clean abstraction between the UI components and the backend implementation. This allows us to easily switch between different backends (custom D1-backed APIs, localStorage, or other backends) without changing any UI code.
 
 ## Architecture
 
@@ -11,7 +11,7 @@ UI Components (Vue)
         ↓
    Services Layer (interfaces)
         ↓
-   Implementation (Supabase/localStorage/etc.)
+   Implementation (D1 API/localStorage/etc.)
 ```
 
 ## Available Services
@@ -83,45 +83,16 @@ const settings = await userSettingsService.getSettings(userId, 'timer')
 
 ## Current Implementations
 
-The active parent-mode and user-settings service implementations are local-first and do not expose Supabase alternates:
+The runtime services now use D1-backed APIs or local storage implementations:
 
+### localStorage Implementations (Currently Active)
 - `LocalStorageParentModeService` - Stores in browser localStorage
 - `LocalStorageUserSettingsService` - Stores in browser localStorage
-- `CentralAuthService` - Uses Tiko identity APIs and `tiko_auth_session`
-
-## Adding a New Backend
-
-To add support for a new backend (e.g., Firebase):
-
-1. Create a new implementation file:
-```typescript
-// firebase-auth.service.ts
-import type { AuthService } from './auth.service'
-
-export class FirebaseAuthService implements AuthService {
-  async signInWithEmail(email: string, password: string) {
-    // Firebase implementation
-  }
-  // ... implement all interface methods
-}
-```
-
-2. Update the export:
-```typescript
-export const authService = new FirebaseAuthService()
-```
-
-## Benefits
-
-1. **Backend Agnostic** - UI components don't know or care about the backend
-2. **Easy Testing** - Can create mock implementations for tests
-3. **Gradual Migration** - Can switch backends one service at a time
-4. **Type Safety** - All implementations must follow the interface contract
-5. **Fallback Support** - Implementations can fall back to localStorage if API fails
+- `ManualAuthService` - Uses direct API calls for auth, localStorage for sessions
 
 ## Database Schema Required
 
-For Supabase implementations to work, these tables are needed:
+For remote implementations to work, these D1 tables are needed:
 
 ### user_profiles table
 ```sql

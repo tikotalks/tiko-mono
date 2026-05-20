@@ -252,15 +252,13 @@ class ContentService {
   private baseUrl: string
 
   constructor() {
-    this.baseUrl = import.meta.env.VITE_SUPABASE_URL + '/rest/v1'
+    this.baseUrl = ((import.meta as any).env?.VITE_CONTENT_API_URL || 'https://content.tikoapi.org').replace(/\/$/, '') + '/rest/v1'
   }
 
   private async makeRequest(endpoint: string, options: RequestInit = {}) {
     try {
       const session = await authService.getSession()
       const token = session?.access_token || null
-
-      const apiKey = import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY
 
       const url = `${this.baseUrl}${endpoint}`
       console.log(`[ContentService] Making request to: ${url}`)
@@ -269,7 +267,6 @@ class ContentService {
         ...options,
         headers: {
           'Content-Type': 'application/json',
-          'apikey': apiKey,
           'Authorization': token ? `Bearer ${token}` : '',
           'Prefer': 'return=representation',
           ...options.headers,

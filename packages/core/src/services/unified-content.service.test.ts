@@ -5,10 +5,10 @@
 
 import { UnifiedContentService } from './unified-content.service'
 
-// Mock Supabase config (you'll need to use real values for testing)
+// Mock API config (you'll need to use real values for testing)
 const mockConfig = {
-  supabaseUrl: process.env.SUPABASE_URL || 'https://example.supabase.co',
-  supabaseKey: process.env.SUPABASE_ANON_KEY || 'mock-key',
+  apiUrl: process.env.API_URL || 'https://example.tikoapi.org',
+  apiToken: process.env.API_TOKEN || 'mock-key',
   defaultLanguage: 'en',
   cacheEnabled: true
 }

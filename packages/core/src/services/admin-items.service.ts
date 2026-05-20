@@ -1,166 +1,74 @@
 /**
  * Admin Items Service
- * 
- * Provides administrative functions for managing public items
- * Uses the core item service for all operations
+ *
+ * Administrative item operations are now routed through Worker APIs. The core
+ * package keeps this thin facade so admin UI imports stay stable.
  */
 
-import { SupabaseItemService } from './item-supabase.service'
-import { userService } from './user.service'
-import type { BaseItem, ItemFilters } from './item.service'
-
 export interface AdminItemsFilter {
-  app?: string;
-  type?: 'card' | 'sequence' | 'all';
-  visibility?: 'all' | 'curated' | 'public-only';
-  search?: string;
-  page?: number;
-  limit?: number;
+  app?: string
+  type?: 'card' | 'sequence' | 'all'
+  visibility?: 'all' | 'curated' | 'public-only'
+  search?: string
+  page?: number
+  limit?: number
 }
 
 export interface AdminItem {
-  id: string;
-  title: string;
-  type: string;
-  app_name: string;
-  parent_id?: string | null;
-  icon?: string;
-  color?: string;
-  image?: string;
-  isPublic?: boolean;
-  isCurated?: boolean;
-  user_id: string;
-  created_at?: string;
-  updated_at?: string;
-  user_email?: string;
+  id: string
+  title: string
+  type: string
+  app_name: string
+  parent_id?: string | null
+  icon?: string
+  color?: string
+  image?: string
+  isPublic?: boolean
+  isCurated?: boolean
+  user_id: string
+  created_at?: string
+  updated_at?: string
+  user_email?: string
 }
 
 class AdminItemsService {
-  private itemService = new SupabaseItemService()
-  private userService = userService
+  private readonly apiUrl = stripTrailingSlash((import.meta as any).env?.VITE_CONTENT_API_URL || 'https://content.tikoapi.org')
 
   async getPublicItems(filter: AdminItemsFilter = {}): Promise<AdminItem[]> {
-    try {
-      // Build filters for the core item service
-      const itemFilters: ItemFilters & { is_curated?: boolean } = {
-        is_public: true
-      }
-      
-      if (filter.app && filter.app !== 'all') {
-        itemFilters.app_name = filter.app
-      }
-      
-      if (filter.type && filter.type !== 'all') {
-        itemFilters.type = filter.type
-      }
-      
-      if (filter.visibility === 'curated') {
-        itemFilters.is_curated = true
-      } else if (filter.visibility === 'public-only') {
-        itemFilters.is_curated = false
-      }
-      
-      if (filter.search) {
-        itemFilters.search = filter.search
-      }
+    const params = new URLSearchParams()
+    Object.entries(filter).forEach(([key, value]) => {
+      if (value !== undefined) params.set(key, String(value))
+    })
+    return this.request<AdminItem[]>(`/admin/items?${params}`)
+  }
 
-      // Get public items using the core service
-      const items = await this.itemService.getPublicItems(itemFilters)
-      
-      // Debug: Log a few items to see what fields are available
-      console.log('AdminItems: First few items from service:', items.slice(0, 3).map(item => ({
-        id: item.id,
-        name: item.name,
-        parent_id: item.parent_id,
-        app_name: item.app_name,
-        type: item.type
-      })))
-      
-      // Get unique user IDs
-      const userIds = Array.from(new Set(items.map(item => item.user_id).filter(Boolean))) as string[]
-      
-      // Fetch user profiles for these items
-      let userMap = new Map<string, string>()
-      if (userIds.length > 0) {
-        try {
-          // Use the user service to get users by their IDs
-          const userProfiles = await this.userService.getUsersByIds(userIds)
-          
-          // Create a map of user IDs to emails
-          userProfiles.forEach(user => {
-            userMap.set(user.id, user.email) // user.id is already mapped from user_id in the service
-          })
-        } catch (error) {
-          console.error('Failed to fetch user profiles:', error)
-        }
-      }
-      
-      // Map the items to our admin format
-      const adminItems = items.map((item: BaseItem): AdminItem => {
-        const adminItem = {
-          id: item.id,
-          title: item.name || 'Untitled',
-          type: item.type,
-          app_name: item.app_name,
-          parent_id: item.parent_id,
-          icon: item.icon,
-          color: item.color,
-          image: item.metadata?.image,
-          isPublic: item.is_public,
-          isCurated: item.is_curated,
-          user_id: item.user_id,
-          user_email: userMap.get(item.user_id) || undefined,
-          created_at: item.created_at,
-          updated_at: item.updated_at,
-        }
-        
-        // Debug: Log items with parent_id
-        if (item.parent_id) {
-          console.log('AdminItems: Item with parent_id found:', {
-            id: item.id,
-            name: item.name,
-            parent_id: item.parent_id,
-            mapped_parent_id: adminItem.parent_id
-          })
-        }
-        
-        return adminItem
-      })
-      
-      console.log('AdminItems: Total items:', adminItems.length, 'with parent_id:', adminItems.filter(item => item.parent_id).length)
-      
-      return adminItems
-    } catch (error) {
-      console.error('Error loading public items:', error)
-      throw error
-    }
-  }
-  
   async toggleCurated(itemId: string, isCurated: boolean): Promise<void> {
-    try {
-      const result = await this.itemService.toggleItemCurated(itemId, isCurated)
-      
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to toggle curated status')
-      }
-    } catch (error) {
-      console.error('Error toggling curated status:', error)
-      throw error
-    }
+    await this.request<void>(`/admin/items/${encodeURIComponent(itemId)}/curated`, {
+      method: 'PATCH',
+      body: JSON.stringify({ isCurated })
+    })
   }
-  
+
   async bulkToggleCurated(itemIds: string[], isCurated: boolean): Promise<void> {
-    try {
-      const result = await this.itemService.bulkToggleCurated(itemIds, isCurated)
-      
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to bulk toggle curated status')
-      }
-    } catch (error) {
-      console.error('Error bulk toggling curated status:', error)
-      throw error
-    }
+    await this.request<void>('/admin/items/curated', {
+      method: 'PATCH',
+      body: JSON.stringify({ itemIds, isCurated })
+    })
   }
+
+  private async request<T>(path: string, init: RequestInit = {}): Promise<T> {
+    const headers = new Headers(init.headers || {})
+    if (!headers.has('Content-Type') && init.body) headers.set('Content-Type', 'application/json')
+    const response = await fetch(`${this.apiUrl}${path}`, { ...init, headers, credentials: 'include' })
+    if (!response.ok) throw new Error(`Admin items request failed: ${response.status}`)
+    if (response.status === 204) return undefined as T
+    const data = await response.json()
+    return (data.items || data) as T
+  }
+}
+
+function stripTrailingSlash(value: string): string {
+  return value.endsWith('/') ? value.slice(0, -1) : value
 }
 
 export const adminItemsService = new AdminItemsService()

@@ -184,7 +184,7 @@ export interface UserSettingsService {
 
 /**
  * Current implementation using localStorage
- * This bypasses the broken Supabase SDK and stores data locally
+ * This bypasses the broken database client and stores data locally
  */
 class LocalStorageUserSettingsService implements UserSettingsService {
   private readonly STORAGE_PREFIX = 'tiko_user_settings_'

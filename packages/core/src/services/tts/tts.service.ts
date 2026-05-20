@@ -22,8 +22,7 @@ class TTSService {
   private azureWorkerUrl: string;
   private cdnUrl: string;
   private browserVoicesCache: SpeechSynthesisVoice[] = [];
-  private supabaseUrl: string;
-  private supabaseKey: string;
+  private metadataApiUrl: string;
   private audioMetadataCache: Map<string, { metadata: AudioMetadata | null; timestamp: number }>;
   private CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
   private preferredProvider: 'openai' | 'azure' | 'auto' = 'openai';
@@ -33,8 +32,7 @@ class TTSService {
     this.workerUrl = import.meta.env.VITE_TTS_WORKER_URL || 'https://tts.tikoapi.org';
     this.azureWorkerUrl = import.meta.env.VITE_AZURE_TTS_WORKER_URL || 'https://azure-tts.tikoapi.org';
     this.cdnUrl = import.meta.env.VITE_TTS_CDN_URL || 'https://tts.tikocdn.org';
-    this.supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-    this.supabaseKey = import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || '';
+    this.metadataApiUrl = ((import.meta as any).env?.VITE_TTS_METADATA_API_URL || 'https://tts.tikoapi.org').replace(/\/$/, '');
     this.audioMetadataCache = new Map();
     this.loadBrowserVoices();
 
@@ -74,12 +72,11 @@ class TTSService {
   private async apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const token = this.getAuthToken();
 
-    const response = await fetch(`${this.supabaseUrl}/rest/v1/${endpoint}`, {
+    const response = await fetch(`${this.metadataApiUrl}/rest/v1/${endpoint}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
-        'apikey': this.supabaseKey,
-        'Authorization': token ? `Bearer ${token}` : '',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         'Prefer': 'return=representation',
         ...options.headers
       }

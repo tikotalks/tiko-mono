@@ -48,12 +48,10 @@ class DeploymentService {
   private readonly GITHUB_OWNER = 'tikotalks'
   private readonly GITHUB_REPO = 'tiko-mono'
   private readonly GITHUB_API_BASE = 'https://api.github.com'
-  private readonly supabaseUrl: string
-  private readonly supabaseKey: string
+  private readonly eventsApiUrl: string
 
   constructor() {
-    this.supabaseUrl = import.meta.env['VITE_SUPABASE_URL'] || ''
-    this.supabaseKey = import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || ''
+    this.eventsApiUrl = ((import.meta as any).env?.VITE_DEPLOYMENT_EVENTS_API_URL || 'https://deployment-events.tikoapi.org').replace(/\/$/, '')
   }
 
   /**
@@ -572,18 +570,11 @@ class DeploymentService {
    * Save deployment event to database for tracking
    */
   async saveDeploymentEvent(targetId: string, status: string, metadata?: any): Promise<void> {
-    if (!this.supabaseUrl || !this.supabaseKey) {
-      console.warn('Supabase credentials not configured, skipping deployment event save')
-      return
-    }
-
     try {
-      const response = await fetch(`${this.supabaseUrl}/rest/v1/deployment_events`, {
+      const response = await fetch(`${this.eventsApiUrl}/rest/v1/deployment_events`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': this.supabaseKey,
-          'Authorization': `Bearer ${this.supabaseKey}`,
           'Prefer': 'return=minimal'
         },
         body: JSON.stringify({
@@ -606,13 +597,8 @@ class DeploymentService {
    * Get recent deployment events from database
    */
   async getDeploymentEvents(targetId?: string, limit = 50): Promise<any[]> {
-    if (!this.supabaseUrl || !this.supabaseKey) {
-      console.warn('Supabase credentials not configured, returning empty deployment events')
-      return []
-    }
-
     try {
-      let url = `${this.supabaseUrl}/rest/v1/deployment_events?select=*&order=created_at.desc&limit=${limit}`
+      let url = `${this.eventsApiUrl}/rest/v1/deployment_events?select=*&order=created_at.desc&limit=${limit}`
 
       if (targetId) {
         url += `&target_id=eq.${targetId}`
@@ -622,8 +608,6 @@ class DeploymentService {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': this.supabaseKey,
-          'Authorization': `Bearer ${this.supabaseKey}`
         }
       })
 

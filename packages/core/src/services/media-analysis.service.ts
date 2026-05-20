@@ -6,7 +6,7 @@
  */
 
 import type { MediaItem } from './media.service'
-import { mediaService } from './media-supabase.service'
+import { mediaService } from './media.service'
 import { logger } from '../utils/logger'
 
 export interface MediaAnalysisResult {

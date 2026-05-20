@@ -15,8 +15,8 @@ describe('publicItemService', () => {
       setItem: vi.fn(),
       removeItem: vi.fn(),
     })
-    vi.stubEnv('VITE_SUPABASE_URL', 'https://example.supabase.co')
-    vi.stubEnv('VITE_SUPABASE_PUBLISHABLE_KEY', 'anon-key')
+    vi.stubEnv('VITE_ITEMS_API_URL', 'https://example.tikoapi.org')
+    vi.stubEnv('VITE_ITEMS_API_TOKEN', 'anon-key')
   })
 
   it('normalizes joined custom order values from user_item_order', async () => {

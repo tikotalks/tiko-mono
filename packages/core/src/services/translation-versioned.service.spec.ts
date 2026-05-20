@@ -59,8 +59,8 @@ describe('translation versioned service auth session selection', () => {
     expect(mockFetch).toHaveBeenCalledWith(
       expect.stringContaining('/i18n_translations?'),
       expect.objectContaining({
-        headers: expect.objectContaining({
-          Authorization: 'Bearer anon-key'
+        headers: expect.not.objectContaining({
+          Authorization: expect.any(String)
         })
       })
     )

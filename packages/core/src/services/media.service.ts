@@ -138,5 +138,50 @@ export interface MediaService {
   ): () => void
 }
 
-// Export the active implementation
-export { mediaService } from './media-supabase.service'
+class WorkerMediaService implements MediaService {
+  private readonly apiUrl = stripTrailingSlash((import.meta as any).env?.VITE_MEDIA_API_URL || 'https://media.tikoapi.org')
+
+  async saveMedia(data: MediaUploadData): Promise<MediaItem> { return this.request<MediaItem>('/media', { method: 'POST', body: JSON.stringify(data) }) }
+  async getMediaList(): Promise<MediaItem[]> { return this.request<MediaItem[]>('/media') }
+  async getPublicMediaList(): Promise<MediaItem[]> { return this.request<MediaItem[]>('/media/public') }
+  async searchMedia(options: MediaSearchOptions): Promise<MediaItem[]> {
+    const params = new URLSearchParams()
+    Object.entries(options).forEach(([key, value]) => {
+      if (Array.isArray(value)) value.forEach(item => params.append(key, item))
+      else if (value !== undefined) params.set(key, String(value))
+    })
+    return this.request<MediaItem[]>(`/media/search?${params}`)
+  }
+  async getMediaById(id: string): Promise<MediaItem | null> {
+    try { return await this.request<MediaItem>(`/media/${encodeURIComponent(id)}`) }
+    catch (error) { if (error instanceof Error && error.message.includes('404')) return null; throw error }
+  }
+  async updateMedia(id: string, updates: Partial<MediaUploadData>): Promise<MediaItem> { return this.request<MediaItem>(`/media/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(updates) }) }
+  async deleteMedia(id: string): Promise<void> { await this.request<void>(`/media/${encodeURIComponent(id)}`, { method: 'DELETE' }) }
+  async getGeneratedMedia(status?: MediaStatus | MediaStatus[], generatedBy?: string): Promise<MediaItem[]> {
+    const params = new URLSearchParams()
+    if (Array.isArray(status)) status.forEach(item => params.append('status', item))
+    else if (status) params.set('status', status)
+    if (generatedBy) params.set('generatedBy', generatedBy)
+    return this.request<MediaItem[]>(`/media/generated?${params}`)
+  }
+  async updateMediaStatus(mediaId: string, status: MediaStatus): Promise<void> { await this.updateMedia(mediaId, { status } as Partial<MediaUploadData>) }
+  async queueImageGeneration(generatedBy: string, items: Array<{ name: string; prompt: string; size?: string; style?: string; category?: string; tags?: string[] }>): Promise<{ success: boolean; queued: number; records: any[] }> {
+    return this.request('/generation/queue', { method: 'POST', body: JSON.stringify({ generatedBy, items }) })
+  }
+  subscribeToGenerationUpdates(_generatedBy: string, _callback: (payload: any) => void): () => void { return () => {} }
+
+  private async request<T>(path: string, init: RequestInit = {}): Promise<T> {
+    const headers = new Headers(init.headers || {})
+    if (!headers.has('Content-Type') && init.body) headers.set('Content-Type', 'application/json')
+    const response = await fetch(`${this.apiUrl}${path}`, { ...init, headers, credentials: 'include' })
+    if (!response.ok) throw new Error(`Media request failed: ${response.status}`)
+    if (response.status === 204) return undefined as T
+    const data = await response.json()
+    return (data.media || data.items || data.records || data) as T
+  }
+}
+
+function stripTrailingSlash(value: string): string { return value.endsWith('/') ? value.slice(0, -1) : value }
+
+export const mediaService: MediaService = new WorkerMediaService()

@@ -122,7 +122,7 @@ export function useContent(options?: UseContentOptions) {
       }
 
       // Fallback to the old method for direct service
-      contentLogger.info('[useContent] Using direct Supabase queries')
+      contentLogger.info('[useContent] Using direct content API queries')
       let page: ContentPage | null = null
       
       // Check if it's a UUID

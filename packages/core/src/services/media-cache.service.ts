@@ -2,7 +2,7 @@
  * Media Cache Service
  * 
  * Fetches public media from a Cloudflare Worker that caches the results
- * to reduce the number of direct Supabase calls.
+ * to reduce the number of direct media service calls.
  */
 
 import { logger } from '../utils/logger';
@@ -16,7 +16,7 @@ interface CachedMediaResponse {
 
 class MediaCacheService {
   private workerUrl: string;
-  private fallbackToSupabase: boolean = true;
+  private fallbackToMediaService: boolean = true;
 
   constructor() {
     // Get worker URL from environment or use default
@@ -25,7 +25,7 @@ class MediaCacheService {
 
   /**
    * Fetch all public media items from the cache worker
-   * Falls back to direct Supabase fetch if the worker fails
+   * Falls back to direct media service fetch if the worker fails
    */
   async getPublicMedia(forceRefresh: boolean = false): Promise<Media[]> {
     try {
@@ -58,10 +58,10 @@ class MediaCacheService {
     } catch (error) {
       logger.error('[MediaCacheService] Failed to fetch from cache worker:', error);
       
-      if (this.fallbackToSupabase) {
-        logger.info('[MediaCacheService] Falling back to direct Supabase fetch');
+      if (this.fallbackToMediaService) {
+        logger.info('[MediaCacheService] Falling back to direct media service fetch');
         // Import dynamically to avoid circular dependencies
-        const { mediaService } = await import('./media-supabase.service');
+        const { mediaService } = await import('./media.service');
         return mediaService.getPublicMediaList();
       }
       

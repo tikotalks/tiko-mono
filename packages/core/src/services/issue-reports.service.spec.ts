@@ -10,8 +10,7 @@ describe('issueReportsService', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', mockFetch)
     mockFetch.mockReset()
-    vi.stubEnv('VITE_SUPABASE_URL', 'https://example.supabase.co')
-    vi.stubEnv('VITE_SUPABASE_SERVICE_KEY', 'service-key')
+    vi.stubEnv('VITE_ISSUE_REPORTS_API_URL', 'https://example.tikoapi.org')
   })
 
   it('requests issue reports through the shared backend layer', async () => {
@@ -33,9 +32,8 @@ describe('issueReportsService', () => {
         '/rest/v1/issue_reports?order=created_at.desc&app_name=eq.sequence&issue_type=eq.bug'
       ),
       expect.objectContaining({
-        headers: expect.objectContaining({
-          apikey: 'service-key',
-        }),
+        credentials: 'include',
+        headers: expect.any(Headers),
       })
     )
   })

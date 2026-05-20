@@ -1,3 +1,5 @@
+import { coreApiRequest, getServiceBaseUrl } from './internal-api'
+
 // ItemService provides a unified interface for all item operations
 // This replaces direct database calls from individual apps
 
@@ -101,31 +103,21 @@ class ItemServiceImpl {
   }
 
   private async apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-    const token = await this.getAuthToken();
+    const baseUrl = getServiceBaseUrl('VITE_ITEMS_API_URL', 'https://items.tikoapi.org')
+    const token = await this.getAuthToken()
+    const headers = new Headers(options.headers || {})
 
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Supabase credentials missing');
+    if (token && !headers.has('Authorization')) {
+      headers.set('Authorization', `Bearer ${token}`)
+    }
+    if (!headers.has('Prefer')) {
+      headers.set('Prefer', 'return=representation')
     }
 
-    const response = await fetch(`${supabaseUrl}/rest/v1/${endpoint}`, {
+    return coreApiRequest<T>(baseUrl, `/rest/v1/${endpoint}`, {
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': supabaseKey,
-        'Authorization': token ? `Bearer ${token}` : '',
-        'Prefer': 'return=representation',
-        ...options.headers
-      }
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(`API request failed: ${JSON.stringify(errorData)}`);
-    }
-
-    return response.json();
+      headers
+    })
   }
 
   /**
@@ -284,7 +276,7 @@ class ItemServiceImpl {
 
       const response = await this.apiRequest<BaseItem[]>('items', {
         method: 'POST',
-        body: JSON.stringify([itemData]) // Supabase expects an array for POST
+        body: JSON.stringify([itemData])
       });
 
       const createdItem = response[0];

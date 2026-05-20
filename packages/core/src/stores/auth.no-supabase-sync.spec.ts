@@ -17,9 +17,9 @@ const authServiceMock = vi.hoisted(() => ({
 }))
 
 const authSyncServiceMock = vi.hoisted(() => ({
-  syncWithSupabase: vi.fn(),
-  clearSupabaseSession: vi.fn(),
-  checkSupabaseSession: vi.fn()
+  syncSession: vi.fn(),
+  clearSession: vi.fn(),
+  hasValidSession: vi.fn()
 }))
 
 vi.mock('../services', () => ({
@@ -68,7 +68,7 @@ describe('AuthStore Supabase removal', () => {
     })
   })
 
-  it('does not sync successful email sign-in sessions into Supabase', async () => {
+  it('syncs successful email sign-in sessions without Supabase APIs', async () => {
     authServiceMock.signInWithEmail.mockResolvedValue({
       success: true,
       user: mockUser,
@@ -81,10 +81,10 @@ describe('AuthStore Supabase removal', () => {
     await store.signInWithEmail('test@example.com', 'unused-password')
 
     expect(store.session).toEqual(mockSession)
-    expect(authSyncServiceMock.syncWithSupabase).not.toHaveBeenCalled()
+    expect(authSyncServiceMock.syncSession).toHaveBeenCalledWith(mockSession)
   })
 
-  it('does not clear Supabase sessions during logout', async () => {
+  it('clears app auth state during logout without Supabase APIs', async () => {
     authServiceMock.signOut.mockResolvedValue({ success: true })
 
     const store = useAuthStore()
@@ -92,6 +92,6 @@ describe('AuthStore Supabase removal', () => {
     await store.logout()
 
     expect(authServiceMock.signOut).toHaveBeenCalledOnce()
-    expect(authSyncServiceMock.clearSupabaseSession).not.toHaveBeenCalled()
+    expect(authSyncServiceMock.clearSession).toHaveBeenCalledOnce()
   })
 })

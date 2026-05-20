@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { collectionsService } from '../services/collections.service'
-import type { MediaCollection, CreateCollectionData, UpdateCollectionData, AddItemToCollectionData } from '../services/collections.service'
+import type { MediaCollection, CollectionItem, CreateCollectionData, UpdateCollectionData, AddItemToCollectionData } from '../services/collections.service'
 import { useAuthStore } from './auth'
 import { logger } from '../utils/logger'
 

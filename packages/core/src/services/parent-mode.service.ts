@@ -187,7 +187,7 @@ interface ParentModeUserSettings {
 
 /**
  * Current implementation using localStorage
- * This bypasses the broken Supabase SDK and stores data locally
+ * This bypasses the broken database client and stores data locally
  */
 class LocalStorageParentModeService implements ParentModeService {
   private readonly STORAGE_KEY = 'tiko_parent_mode_data'

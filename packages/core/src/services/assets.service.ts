@@ -1,83 +1,40 @@
 import type { AssetRecord } from '../stores/assets.store'
-import { getSupabase } from '../lib/supabase-lazy'
 
 class AssetsService {
+  private readonly apiUrl = stripTrailingSlash((import.meta as any).env?.VITE_ASSETS_API_URL || 'https://assets.tikoapi.org')
 
-  /**
-   * Get asset by ID
-   */
   async getAsset(id: string): Promise<AssetRecord | null> {
-    const supabase = getSupabase()
-    const { data, error } = await supabase
-      .from('assets')
-      .select('*')
-      .eq('id', id)
-      .single()
-
-    if (error) {
-      console.error(`[AssetsService] Failed to fetch asset ${id}:`, error)
-      return null
+    try {
+      return await this.request<AssetRecord>(`/assets/${encodeURIComponent(id)}`)
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('404')) return null
+      throw error
     }
-
-    return data as AssetRecord
   }
 
-  /**
-   * Get multiple assets by IDs
-   */
   async getAssets(ids: string[]): Promise<AssetRecord[]> {
-    const supabase = getSupabase()
-    const { data, error } = await supabase
-      .from('assets')
-      .select('*')
-      .in('id', ids)
-
-    if (error) {
-      console.error(`[AssetsService] Failed to fetch assets:`, error)
-      return []
-    }
-
-    return data as AssetRecord[]
+    if (ids.length === 0) return []
+    return this.request<AssetRecord[]>(`/assets?ids=${encodeURIComponent(ids.join(','))}`)
   }
 
-  /**
-   * Search assets
-   */
   async searchAssets(query: string): Promise<AssetRecord[]> {
-    const supabase = getSupabase()
-    const { data, error } = await supabase
-      .from('assets')
-      .select('*')
-      .or(`title.ilike.%${query}%,description.ilike.%${query}%,tags.cs.{${query}}`)
-      .eq('is_public', true)
-
-    if (error) {
-      console.error(`[AssetsService] Failed to search assets:`, error)
-      return []
-    }
-
-    return data as AssetRecord[]
+    return this.request<AssetRecord[]>(`/assets?search=${encodeURIComponent(query)}&public=true`)
   }
 
-  /**
-   * Get all public assets
-   */
   async getPublicAssets(limit: number = 100): Promise<AssetRecord[]> {
-    const supabase = getSupabase()
-    const { data, error } = await supabase
-      .from('assets')
-      .select('*')
-      .eq('is_public', true)
-      .order('created_at', { ascending: false })
-      .limit(limit)
-
-    if (error) {
-      console.error(`[AssetsService] Failed to fetch public assets:`, error)
-      return []
-    }
-
-    return data as AssetRecord[]
+    return this.request<AssetRecord[]>(`/assets?public=true&limit=${limit}`)
   }
+
+  private async request<T>(path: string): Promise<T> {
+    const response = await fetch(`${this.apiUrl}${path}`, { credentials: 'include' })
+    if (!response.ok) throw new Error(`Assets request failed: ${response.status}`)
+    const data = await response.json()
+    return (data.assets || data.asset || data) as T
+  }
+}
+
+function stripTrailingSlash(value: string): string {
+  return value.endsWith('/') ? value.slice(0, -1) : value
 }
 
 export const assetsService = new AssetsService()

@@ -1,19 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { useAuthStoreNew } from './auth-new'
 
-const { authAPI } = vi.hoisted(() => ({
-  authAPI: {
-    sendMagicLink: vi.fn(),
-    verifyMagicLink: vi.fn(),
-    getStoredSession: vi.fn(),
-    getUser: vi.fn(),
-    clearSession: vi.fn()
+const { authService } = vi.hoisted(() => ({
+  authService: {
+    signInWithMagicLink: vi.fn(),
+    getSession: vi.fn(),
+    signOut: vi.fn()
   }
 }))
 
-vi.mock('../lib/auth-api', () => ({
-  authAPI
+vi.mock('../services/auth.service', () => ({
+  authService
 }))
 
 const stored: Record<string, string> = {}
@@ -36,16 +33,17 @@ beforeEach(() => {
 
 describe('useAuthStoreNew', () => {
   it('stores pending email after requesting an identity magic link', async () => {
-    authAPI.sendMagicLink.mockResolvedValue(undefined)
+    authService.signInWithMagicLink.mockResolvedValue({ success: true })
+    const { useAuthStoreNew } = await import('./auth-new')
     const store = useAuthStoreNew()
 
     await store.sendMagicLink('caregiver@example.com')
 
-    expect(authAPI.sendMagicLink).toHaveBeenCalledWith('caregiver@example.com')
+    expect(authService.signInWithMagicLink).toHaveBeenCalledWith('caregiver@example.com')
     expect(stored.tiko_pending_auth_email).toBe('caregiver@example.com')
   })
 
-  it('verifies identity magic-link callback tokens and updates auth state', async () => {
+  it('hydrates auth state from the identity-backed auth service session', async () => {
     const session = {
       access_token: 'verified-session-token',
       expires_at: Math.floor(Date.now() / 1000) + 3600,
@@ -57,16 +55,16 @@ describe('useAuthStoreNew', () => {
         updated_at: 'now'
       }
     }
-    authAPI.verifyMagicLink.mockResolvedValue(session)
+    authService.getSession.mockResolvedValue(session)
+    const { useAuthStoreNew } = await import('./auth-new')
     const store = useAuthStoreNew()
 
-    const result = await store.verifyMagicLink('magic-token')
+    const result = await store.checkSession()
 
-    expect(authAPI.verifyMagicLink).toHaveBeenCalledWith('magic-token')
+    expect(authService.getSession).toHaveBeenCalled()
     expect(result).toBe(true)
     expect(store.session).toEqual(session)
     expect(store.user).toEqual(session.user)
     expect(store.isAuthenticated).toBe(true)
-    expect(stored.tiko_pending_auth_email).toBeUndefined()
   })
 })

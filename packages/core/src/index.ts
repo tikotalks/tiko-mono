@@ -12,9 +12,6 @@ export { useMediaStore } from './stores/media.store'
 export { useI18nStore } from './stores/i18n'
 export { useSpeechStore } from './stores/speech'
 
-// Auth API (excluding types that are already exported from services)
-export { authAPI } from './lib/auth-api'
-
 // Composables
 
 export * from './composables/useEventBus'

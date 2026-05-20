@@ -1,14 +1,11 @@
 /**
  * User Management Service Interface
- *
+ * 
  * Handles user operations for admin users including:
  * - Listing all users
  * - Updating user roles and status
  * - Managing user profiles
  */
-
-import { authAPI } from '../lib/auth-api'
-import type { AuthSession } from '../lib/auth-api'
 
 export interface UserProfile {
   id: string
@@ -74,105 +71,36 @@ export interface UserService {
   searchUsers(query: string): Promise<UserProfile[]>
 
   /**
-   * Get users by their IDs
-   */
-  getUsersByIds(userIds: string[]): Promise<UserProfile[]>
-
-  /**
    * Check if current user is admin
    */
   isCurrentUserAdmin(): Promise<boolean>
 }
 
-const emptyStats = (): UserStats => ({
-  totalUsers: 0,
-  activeUsers: 0,
-  adminUsers: 0,
-  newUsersToday: 0,
-  newUsersThisMonth: 0
-})
-
-const adminEmailDomains = ['@admin.tiko.app', '@tiko.com', '@admin.com']
-
-function isAdminEmail(email?: string | null): boolean {
-  return !!email && adminEmailDomains.some(domain => email.endsWith(domain))
-}
-
-function sessionToProfile(session: AuthSession): UserProfile {
-  const name = typeof session.user.user_metadata?.name === 'string'
-    ? session.user.user_metadata.name
-    : undefined
-
-  const username = typeof session.user.user_metadata?.username === 'string'
-    ? session.user.user_metadata.username
-    : undefined
-
-  const avatarUrl = typeof session.user.user_metadata?.avatar_url === 'string'
-    ? session.user.user_metadata.avatar_url
-    : undefined
-
-  const role = isAdminEmail(session.user.email) ? 'admin' : 'user'
-
-  return {
-    id: session.user.id,
-    email: session.user.email || '',
-    name,
-    username,
-    avatar_url: avatarUrl,
-    role,
-    is_active: true,
-    created_at: session.user.created_at,
-    updated_at: session.user.updated_at,
-    metadata: {
-      ...session.user.user_metadata,
-      app_metadata: session.user.app_metadata
-    }
-  }
-}
-
-class IdentityUserService implements UserService {
-  private getSession(): AuthSession | null {
-    try {
-      return authAPI.getStoredSession()
-    } catch {
-      return null
-    }
-  }
+class AuthWorkerUserService implements UserService {
+  private readonly authBaseUrl = stripTrailingSlash((import.meta as any).env?.VITE_AUTH_BASE_URL || 'https://auth.tikoapps.org')
 
   async getAllUsers(): Promise<UserProfile[]> {
-    const session = this.getSession()
-    if (!session) return []
-    return [sessionToProfile(session)]
+    return this.request<UserProfile[]>('/users')
   }
 
   async getUserById(userId: string): Promise<UserProfile | null> {
-    const session = this.getSession()
-    if (!session || session.user.id !== userId) return null
-    return sessionToProfile(session)
+    try {
+      return await this.request<UserProfile>(`/users/${encodeURIComponent(userId)}`)
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('404')) return null
+      throw error
+    }
   }
 
   async updateUser(userId: string, updates: Partial<UserProfile>): Promise<UserProfile> {
-    const currentUser = await this.getUserById(userId)
-    if (!currentUser) {
-      throw new Error('User not found')
-    }
-
-    return {
-      ...currentUser,
-      ...updates,
-      id: currentUser.id,
-      email: updates.email ?? currentUser.email,
-      updated_at: new Date().toISOString()
-    }
+    return this.request<UserProfile>(`/users/${encodeURIComponent(userId)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates)
+    })
   }
 
   async toggleUserStatus(userId: string): Promise<UserProfile> {
-    const currentUser = await this.getUserById(userId)
-    if (!currentUser) {
-      throw new Error('User not found')
-    }
-
-    return this.updateUser(userId, { is_active: !currentUser.is_active })
+    return this.request<UserProfile>(`/users/${encodeURIComponent(userId)}/toggle-status`, { method: 'POST' })
   }
 
   async updateUserRole(userId: string, role: UserProfile['role']): Promise<UserProfile> {
@@ -180,49 +108,50 @@ class IdentityUserService implements UserService {
   }
 
   async deleteUser(userId: string): Promise<void> {
-    await this.updateUser(userId, {
-      is_active: false,
-      metadata: { deleted_at: new Date().toISOString() }
-    })
+    await this.request<void>(`/users/${encodeURIComponent(userId)}`, { method: 'DELETE' })
   }
 
   async getUserStats(): Promise<UserStats> {
-    const session = this.getSession()
-    if (!session) return emptyStats()
-
-    const user = sessionToProfile(session)
-    return {
-      totalUsers: 1,
-      activeUsers: user.is_active ? 1 : 0,
-      adminUsers: user.role === 'admin' ? 1 : 0,
-      newUsersToday: 0,
-      newUsersThisMonth: 0
-    }
+    return this.request<UserStats>('/users/stats')
   }
 
   async searchUsers(query: string): Promise<UserProfile[]> {
-    const users = await this.getAllUsers()
-    const normalizedQuery = query.trim().toLowerCase()
-    if (!normalizedQuery) return users
-
-    return users.filter(user =>
-      user.email.toLowerCase().includes(normalizedQuery) ||
-      user.name?.toLowerCase().includes(normalizedQuery) ||
-      user.username?.toLowerCase().includes(normalizedQuery)
-    )
-  }
-
-  async getUsersByIds(userIds: string[]): Promise<UserProfile[]> {
-    const users = await this.getAllUsers()
-    const requestedIds = new Set(userIds)
-    return users.filter(user => requestedIds.has(user.id))
+    return this.request<UserProfile[]>(`/users/search?q=${encodeURIComponent(query)}`)
   }
 
   async isCurrentUserAdmin(): Promise<boolean> {
-    const session = this.getSession()
-    return isAdminEmail(session?.user.email)
+    try {
+      const response = await fetch(`${this.authBaseUrl}/user`, { credentials: 'include' })
+      if (!response.ok) return false
+      const data = await response.json() as { user?: { app_metadata?: Record<string, unknown> } }
+      return data.user?.app_metadata?.role === 'admin'
+    } catch {
+      return false
+    }
+  }
+
+  private async request<T>(path: string, init: RequestInit = {}): Promise<T> {
+    const headers = new Headers(init.headers || {})
+    if (!headers.has('Content-Type') && init.body) headers.set('Content-Type', 'application/json')
+
+    const response = await fetch(`${this.authBaseUrl}${path}`, {
+      ...init,
+      headers,
+      credentials: 'include'
+    })
+
+    if (!response.ok) {
+      throw new Error(`User request failed: ${response.status}`)
+    }
+
+    if (response.status === 204) return undefined as T
+    const data = await response.json()
+    return (data.users || data.user || data.stats || data) as T
   }
 }
 
-// Export singleton instance
-export const userService: UserService = new IdentityUserService()
+function stripTrailingSlash(value: string): string {
+  return value.endsWith('/') ? value.slice(0, -1) : value
+}
+
+export const userService: UserService = new AuthWorkerUserService()

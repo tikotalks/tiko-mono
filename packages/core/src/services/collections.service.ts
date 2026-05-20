@@ -134,78 +134,15 @@ export interface CollectionsService {
   isUserAdmin(): Promise<boolean>
 }
 
-const COLLECTIONS_STORAGE_KEY = 'tiko_collections'
-const COLLECTION_LIKES_STORAGE_KEY = 'tiko_collection_likes'
-
-function nowIso(): string {
-  return new Date().toISOString()
-}
-
-function createId(prefix: string): string {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
-    return `${prefix}_${crypto.randomUUID()}`
-  }
-  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2)}`
-}
-
-function storageAvailable(): boolean {
-  return typeof localStorage !== 'undefined'
-}
-
-function readJson<T>(key: string, fallback: T): T {
-  if (!storageAvailable()) return fallback
-  const raw = localStorage.getItem(key)
-  if (!raw) return fallback
-  try {
-    return JSON.parse(raw) as T
-  } catch {
-    return fallback
-  }
-}
-
-function writeJson<T>(key: string, value: T): void {
-  if (!storageAvailable()) return
-  localStorage.setItem(key, JSON.stringify(value))
-}
-
-function getCurrentUserId(): string {
-  const session = readJson<{ user?: { id?: string } } | null>('tiko_auth_session', null)
-  return session?.user?.id || 'anonymous'
-}
-
-function normalizeCollection(collection: MediaCollection): MediaCollection {
-  return {
-    view_count: 0,
-    like_count: 0,
-    is_public: false,
-    is_curated: false,
-    ...collection,
-    items: collection.items || [],
-  }
-}
-
-export class LocalStorageCollectionsService implements CollectionsService {
-  private readCollections(): MediaCollection[] {
-    return readJson<MediaCollection[]>(COLLECTIONS_STORAGE_KEY, []).map(normalizeCollection)
-  }
-
-  private writeCollections(collections: MediaCollection[]): void {
-    writeJson(COLLECTIONS_STORAGE_KEY, collections)
-  }
-
-  private readLikes(): Record<string, string[]> {
-    return readJson<Record<string, string[]>>(COLLECTION_LIKES_STORAGE_KEY, {})
-  }
-
-  private writeLikes(likes: Record<string, string[]>): void {
-    writeJson(COLLECTION_LIKES_STORAGE_KEY, likes)
-  }
+class LocalCollectionsService implements CollectionsService {
+  private readonly storageKey = 'tiko_collections'
+  private readonly likesKey = 'tiko_collection_likes'
 
   async createCollection(data: CreateCollectionData): Promise<MediaCollection> {
-    const timestamp = nowIso()
+    const now = new Date().toISOString()
     const collection: MediaCollection = {
-      id: createId('collection'),
-      user_id: getCurrentUserId(),
+      id: crypto.randomUUID(),
+      user_id: this.getCurrentUserId(),
       name: data.name,
       description: data.description,
       cover_image_url: data.cover_image_url,
@@ -213,137 +150,123 @@ export class LocalStorageCollectionsService implements CollectionsService {
       is_curated: false,
       view_count: 0,
       like_count: 0,
-      created_at: timestamp,
-      updated_at: timestamp,
-      items: [],
-      item_count: 0,
-      is_liked: false,
+      created_at: now,
+      updated_at: now,
+      items: []
     }
-    this.writeCollections([...this.readCollections(), collection])
+    this.saveCollections([...this.loadCollections(), collection])
     return collection
   }
 
   async getUserCollections(): Promise<MediaCollection[]> {
-    const userId = getCurrentUserId()
-    return this.readCollections().filter((collection) => collection.user_id === userId)
+    const userId = this.getCurrentUserId()
+    return this.loadCollections().filter(collection => collection.user_id === userId)
   }
 
   async getCollectionById(id: string): Promise<MediaCollection | null> {
-    const collection = this.readCollections().find((item) => item.id === id)
-    return collection || null
+    return this.loadCollections().find(collection => collection.id === id) || null
   }
 
   async getPublicCollections(): Promise<MediaCollection[]> {
-    return this.readCollections().filter((collection) => collection.is_public)
+    return this.loadCollections().filter(collection => collection.is_public)
   }
 
   async getAllCollections(): Promise<MediaCollection[]> {
-    return this.readCollections()
+    return this.loadCollections()
   }
 
   async updateCollection(id: string, data: UpdateCollectionData): Promise<MediaCollection> {
-    const collections = this.readCollections()
-    const index = collections.findIndex((collection) => collection.id === id)
+    const collections = this.loadCollections()
+    const index = collections.findIndex(collection => collection.id === id)
     if (index === -1) throw new Error('Collection not found')
-
-    const updated = normalizeCollection({
-      ...collections[index],
-      ...data,
-      updated_at: nowIso(),
-    })
+    const updated = { ...collections[index], ...data, updated_at: new Date().toISOString() }
     collections[index] = updated
-    this.writeCollections(collections)
+    this.saveCollections(collections)
     return updated
   }
 
   async deleteCollection(id: string): Promise<void> {
-    this.writeCollections(this.readCollections().filter((collection) => collection.id !== id))
-    const likes = this.readLikes()
-    delete likes[id]
-    this.writeLikes(likes)
+    this.saveCollections(this.loadCollections().filter(collection => collection.id !== id))
   }
 
   async addItemToCollection(collectionId: string, data: AddItemToCollectionData): Promise<CollectionItem> {
-    const collections = this.readCollections()
-    const collection = collections.find((item) => item.id === collectionId)
+    const collections = this.loadCollections()
+    const collection = collections.find(item => item.id === collectionId)
     if (!collection) throw new Error('Collection not found')
-
     const item: CollectionItem = {
-      id: createId('collection_item'),
+      id: crypto.randomUUID(),
       collection_id: collectionId,
       item_id: data.item_id,
       item_type: data.item_type,
       position: data.position ?? collection.items?.length ?? 0,
-      added_at: nowIso(),
+      added_at: new Date().toISOString()
     }
-
     collection.items = [...(collection.items || []), item]
-    collection.item_count = collection.items.length
-    collection.updated_at = nowIso()
-    this.writeCollections(collections)
+    collection.updated_at = new Date().toISOString()
+    this.saveCollections(collections)
     return item
   }
 
   async removeItemFromCollection(collectionId: string, itemId: string, itemType: 'media' | 'user_media'): Promise<void> {
-    const collections = this.readCollections()
-    const collection = collections.find((item) => item.id === collectionId)
+    const collections = this.loadCollections()
+    const collection = collections.find(item => item.id === collectionId)
     if (!collection) return
-
-    collection.items = (collection.items || []).filter((item) => !(item.item_id === itemId && item.item_type === itemType))
-    collection.item_count = collection.items.length
-    collection.updated_at = nowIso()
-    this.writeCollections(collections)
+    collection.items = (collection.items || []).filter(item => item.item_id !== itemId || item.item_type !== itemType)
+    collection.updated_at = new Date().toISOString()
+    this.saveCollections(collections)
   }
 
   async getCollectionItems(collectionId: string): Promise<CollectionItem[]> {
-    const collection = await this.getCollectionById(collectionId)
-    return collection?.items || []
+    return (await this.getCollectionById(collectionId))?.items || []
   }
 
   async getCuratedCollections(): Promise<MediaCollection[]> {
-    return this.readCollections().filter((collection) => collection.is_curated)
+    return this.loadCollections().filter(collection => collection.is_curated && collection.is_public)
   }
 
   async toggleCollectionLike(collectionId: string): Promise<boolean> {
-    const userId = getCurrentUserId()
-    const likes = this.readLikes()
-    const likedBy = new Set(likes[collectionId] || [])
-    const isLiked = !likedBy.has(userId)
-
-    if (isLiked) likedBy.add(userId)
-    else likedBy.delete(userId)
-
-    likes[collectionId] = Array.from(likedBy)
-    this.writeLikes(likes)
-
-    const collections = this.readCollections()
-    const collection = collections.find((item) => item.id === collectionId)
-    if (collection) {
-      collection.like_count = likedBy.size
-      collection.is_liked = isLiked
-      collection.updated_at = nowIso()
-      this.writeCollections(collections)
-    }
-
-    return isLiked
+    const liked = this.loadLikes()
+    const next = !liked.includes(collectionId)
+    const nextLikes = next ? [...liked, collectionId] : liked.filter(id => id !== collectionId)
+    localStorage.setItem(this.likesKey, JSON.stringify(nextLikes))
+    const collection = await this.getCollectionById(collectionId)
+    if (collection) await this.updateCollection(collectionId, { } as UpdateCollectionData)
+    return next
   }
 
   async getCollectionsForMedia(mediaId: string, mediaType: 'media' | 'user_media'): Promise<MediaCollection[]> {
-    return this.readCollections().filter((collection) =>
-      (collection.items || []).some((item) => item.item_id === mediaId && item.item_type === mediaType)
-    )
+    return this.loadCollections().filter(collection => collection.items?.some(item => item.item_id === mediaId && item.item_type === mediaType))
   }
 
   async isCollectionAccessible(collectionId: string): Promise<boolean> {
     const collection = await this.getCollectionById(collectionId)
-    if (!collection) return false
-    return collection.is_public || collection.user_id === getCurrentUserId()
+    return Boolean(collection && (collection.is_public || collection.user_id === this.getCurrentUserId()))
   }
 
-  async isUserAdmin(): Promise<boolean> {
-    const session = readJson<{ user?: { role?: string } } | null>('tiko_auth_session', null)
-    return session?.user?.role === 'admin'
+  async isUserAdmin(): Promise<boolean> { return false }
+
+  private loadCollections(): MediaCollection[] {
+    try { return JSON.parse(localStorage.getItem(this.storageKey) || '[]') as MediaCollection[] }
+    catch { return [] }
+  }
+
+  private saveCollections(collections: MediaCollection[]): void {
+    localStorage.setItem(this.storageKey, JSON.stringify(collections))
+  }
+
+  private loadLikes(): string[] {
+    try { return JSON.parse(localStorage.getItem(this.likesKey) || '[]') as string[] }
+    catch { return [] }
+  }
+
+  private getCurrentUserId(): string {
+    try {
+      const session = JSON.parse(localStorage.getItem('tiko_auth_session') || 'null')
+      return session?.user?.id || 'anonymous'
+    } catch {
+      return 'anonymous'
+    }
   }
 }
 
-export const collectionsService: CollectionsService = new LocalStorageCollectionsService()
+export const collectionsService: CollectionsService = new LocalCollectionsService()

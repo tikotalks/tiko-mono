@@ -68,7 +68,7 @@ class TranslationService {
   private baseUrl: string
 
   constructor() {
-    this.baseUrl = import.meta.env.VITE_SUPABASE_URL + '/rest/v1'
+    this.baseUrl = ((import.meta as any).env?.VITE_TRANSLATIONS_API_URL || 'https://i18n-data.tikoapi.org').replace(/\/$/, '') + '/rest/v1'
   }
 
   private async makeRequest(endpoint: string, options: RequestInit = {}) {
@@ -77,15 +77,12 @@ class TranslationService {
       const session = await authService.getSession()
       const token = session?.access_token || null
 
-      const apiKey = import.meta.env?.VITE_SUPABASE_SECRET || import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY
-
       const url = `${this.baseUrl}${endpoint}`
 
       const response = await fetch(url, {
         ...options,
         headers: {
           'Content-Type': 'application/json',
-          'apikey': apiKey,
           'Authorization': token ? `Bearer ${token}` : '',
           'Prefer': 'return=representation',
           ...options.headers,
@@ -154,7 +151,7 @@ class TranslationService {
   async getTranslationKeys(): Promise<TranslationKey[]> {
     try {
       const allKeys: TranslationKey[] = [];
-      const BATCH_SIZE = 1000; // Supabase default limit
+      const BATCH_SIZE = 1000; // API page size
       let offset = 0;
       let hasMore = true;
 
@@ -294,7 +291,7 @@ class TranslationService {
 
     // Fetch all translations with pagination
     const allTranslations = [];
-    const BATCH_SIZE = 1000; // Supabase default limit
+    const BATCH_SIZE = 1000; // API page size
     let offset = 0;
     let hasMore = true;
 
@@ -583,7 +580,7 @@ class TranslationService {
   async getPendingTranslations(languageCode?: string): Promise<Translation[]> {
     try {
       const allTranslations: Translation[] = [];
-      const BATCH_SIZE = 1000; // Supabase default limit
+      const BATCH_SIZE = 1000; // API page size
       let offset = 0;
       let hasMore = true;
 

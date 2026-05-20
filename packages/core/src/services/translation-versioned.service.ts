@@ -32,20 +32,11 @@ export interface TranslationContributor {
 
 class TranslationVersionedService {
   private readonly API_URL: string;
-  private readonly apiKey: string;
 
   constructor() {
-    const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL;
-    if (!supabaseUrl) {
-      throw new Error('VITE_SUPABASE_URL environment variable is required');
-    }
-    this.API_URL = `${supabaseUrl}/rest/v1`;
-
-    // Use public key for browser compatibility
-    this.apiKey = import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY;
-    if (!this.apiKey) {
-      throw new Error('VITE_SUPABASE_PUBLISHABLE_KEY environment variable is required');
-    }
+    const env = (import.meta as any).env || {};
+    const translationsUrl = env.VITE_TRANSLATIONS_API_URL || 'https://i18n-data.tikoapi.org';
+    this.API_URL = `${translationsUrl.replace(/\/$/, '')}/rest/v1`;
   }
 
   /**
@@ -66,7 +57,7 @@ class TranslationVersionedService {
   }
 
   /**
-   * Make authenticated request to Supabase
+   * Make authenticated request to the translations API
    */
   private async makeRequest(path: string, options: RequestInit = {}) {
     const token = this.getSession();
@@ -74,8 +65,7 @@ class TranslationVersionedService {
     const response = await fetch(`${this.API_URL}${path}`, {
       ...options,
       headers: {
-        'apikey': this.apiKey,
-        'Authorization': token ? `Bearer ${token}` : `Bearer ${this.apiKey}`,
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         'Content-Type': 'application/json',
         'Prefer': 'return=representation',
         ...options.headers,
@@ -92,7 +82,7 @@ class TranslationVersionedService {
   }
 
   /**
-   * Call Supabase RPC functions
+   * Call translation API RPC functions
    */
   private async callRpc(functionName: string, params: any = {}) {
     return this.makeRequest('/rpc/' + functionName, {
@@ -107,7 +97,7 @@ class TranslationVersionedService {
   async getTranslations(locale: string): Promise<Array<{ key: string; value: string; auto_translated?: boolean }>> {
     try {
       const allTranslations: Array<{ key: string; value: string; auto_translated?: boolean }> = [];
-      const BATCH_SIZE = 1000; // Supabase default limit
+      const BATCH_SIZE = 1000; // API page size
       let offset = 0;
       let hasMore = true;
 
@@ -190,7 +180,7 @@ class TranslationVersionedService {
   async getPendingTranslations(locale?: string): Promise<TranslationVersion[]> {
     try {
       const allPending: TranslationVersion[] = [];
-      const BATCH_SIZE = 1000; // Supabase default limit
+      const BATCH_SIZE = 1000; // API page size
       let offset = 0;
       let hasMore = true;
 
@@ -471,7 +461,7 @@ class TranslationVersionedService {
   async getAllKeys(): Promise<string[]> {
     try {
       const allKeys: string[] = [];
-      const BATCH_SIZE = 1000; // Supabase default limit
+      const BATCH_SIZE = 1000; // API page size
       let offset = 0;
       let hasMore = true;
 
@@ -715,7 +705,7 @@ class TranslationVersionedService {
   async getAllUniqueKeys(): Promise<string[]> {
     try {
       const allKeys: string[] = [];
-      const BATCH_SIZE = 1000; // Supabase default limit
+      const BATCH_SIZE = 1000; // API page size
       let offset = 0;
       let hasMore = true;
 
