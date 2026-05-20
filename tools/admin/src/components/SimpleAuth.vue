@@ -58,6 +58,26 @@ const logout = () => {
 }
 
 onMounted(async () => {
+  const searchParams = new URLSearchParams(window.location.search)
+  const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+  const magicToken = searchParams.get('token') || hashParams.get('token')
+
+  if (magicToken) {
+    message.value = 'Verifying magic link...'
+    isError.value = false
+
+    try {
+      await authStore.verifyMagicLink(magicToken)
+      message.value = 'Logged in successfully.'
+      window.history.replaceState({}, document.title, '/')
+      return
+    } catch (err) {
+      message.value = err instanceof Error ? err.message : 'Failed to verify magic link'
+      isError.value = true
+      return
+    }
+  }
+
   await authStore.checkSession()
 })
 </script>

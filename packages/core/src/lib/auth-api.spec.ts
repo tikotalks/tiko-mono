@@ -57,6 +57,36 @@ describe('AuthAPI identity endpoint client', () => {
     }
   })
 
+  it('verifies identity magic-link tokens and stores the returned session bundle', async () => {
+    const expiresAt = Math.floor(Date.now() / 1000) + 3600
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({
+      ok: true,
+      data: {
+        user: { id: 'user_2', primaryEmail: 'verified@example.com', createdAt: 'now', updatedAt: 'now', lastSeenAt: null },
+        device: { id: 'device_2' },
+        session: { id: 'session_2', userId: 'user_2', deviceId: 'device_2', expiresAt: new Date(expiresAt * 1000).toISOString() },
+        sessionToken: 'verified-session-token'
+      }
+    }), { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const api = new AuthAPI({ baseUrl: 'https://id.tiko.mt' })
+    const session = await api.verifyMagicLink('magic-token')
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://id.tiko.mt/api/identity/verify-magic-link?token=magic-token',
+      expect.objectContaining({
+        method: 'GET',
+        headers: expect.objectContaining({ 'Content-Type': 'application/json' })
+      })
+    )
+    expect(session).toMatchObject({
+      access_token: 'verified-session-token',
+      user: { id: 'user_2', email: 'verified@example.com' }
+    })
+    expect(JSON.parse(stored.tiko_auth_session).access_token).toBe('verified-session-token')
+  })
+
   it('validates stored sessions against the Tiko identity API with bearer auth', async () => {
     const expiresAt = Math.floor(Date.now() / 1000) + 3600
     stored.tiko_auth_session = JSON.stringify({

@@ -135,6 +135,25 @@ export class AuthAPI {
     return toAuthUser(bundle.user)
   }
 
+  async verifyMagicLink(token: string): Promise<AuthSession> {
+    const trimmedToken = token.trim()
+    if (!trimmedToken) {
+      throw new Error('Magic link token is required')
+    }
+
+    const bundle = await this.apiCall<IdentitySessionBundle>(`/api/identity/verify-magic-link?token=${encodeURIComponent(trimmedToken)}`, {
+      method: 'GET'
+    })
+    this.storeIdentityBundle(bundle)
+
+    const session = this.getStoredSession()
+    if (!session?.access_token) {
+      throw new Error('Identity API did not return a usable session token')
+    }
+
+    return session
+  }
+
   getStoredSession(): AuthSession | null {
     const stored = localStorage.getItem(SESSION_STORAGE_KEY)
     if (!stored) return null

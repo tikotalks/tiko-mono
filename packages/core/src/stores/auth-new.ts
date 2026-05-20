@@ -30,6 +30,26 @@ export const useAuthStoreNew = defineStore('auth-new', () => {
     }
   }
 
+  const verifyMagicLink = async (token: string) => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const verifiedSession = await authAPI.verifyMagicLink(token)
+      session.value = verifiedSession
+      user.value = verifiedSession.user
+      localStorage.removeItem('tiko_pending_auth_email')
+      return true
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to verify magic link'
+      session.value = null
+      user.value = null
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   const checkSession = async () => {
     console.log('[AuthStoreNew] Checking session...')
     
@@ -73,6 +93,7 @@ export const useAuthStoreNew = defineStore('auth-new', () => {
     
     // Actions
     sendMagicLink,
+    verifyMagicLink,
     checkSession,
     logout
   }
