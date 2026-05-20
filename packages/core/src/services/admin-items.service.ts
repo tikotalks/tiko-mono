@@ -6,7 +6,7 @@
  */
 
 import { SupabaseItemService } from './item-supabase.service'
-import { SupabaseUserService } from './user-supabase.service'
+import { userService } from './user.service'
 import type { BaseItem, ItemFilters } from './item.service'
 
 export interface AdminItemsFilter {
@@ -37,7 +37,7 @@ export interface AdminItem {
 
 class AdminItemsService {
   private itemService = new SupabaseItemService()
-  private userService = new SupabaseUserService()
+  private userService = userService
 
   async getPublicItems(filter: AdminItemsFilter = {}): Promise<AdminItem[]> {
     try {
@@ -77,7 +77,7 @@ class AdminItemsService {
       })))
       
       // Get unique user IDs
-      const userIds = [...new Set(items.map(item => item.user_id).filter(Boolean))]
+      const userIds = Array.from(new Set(items.map(item => item.user_id).filter(Boolean))) as string[]
       
       // Fetch user profiles for these items
       let userMap = new Map<string, string>()

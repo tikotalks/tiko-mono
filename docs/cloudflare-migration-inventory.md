@@ -107,7 +107,8 @@ Migration implication:
 
 ### Current code surfaces
 
-- [packages/core/src/services/user-supabase.service.ts](/Users/silvandiepen/Repositories/_tiko/tiko-mono/packages/core/src/services/user-supabase.service.ts)
+- `user-supabase.service.ts` has been removed; `user.service.ts` now uses the Tiko identity session contract and preserves the existing user service method signatures without importing Supabase.
+
 - `user-settings-supabase.service.ts` and `parent-mode-supabase.service.ts` have been removed; the active shared exports use the non-Supabase service contracts.
 - [packages/core/src/stores/auth.ts](/Users/silvandiepen/Repositories/_tiko/tiko-mono/packages/core/src/stores/auth.ts)
 
