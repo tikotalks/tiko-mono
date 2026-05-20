@@ -1,0 +1,24 @@
+{
+  "name": "@tiko/identity-api-worker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cloudflare Worker API for Tiko device-first identity",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "build": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "db:apply:local": "wrangler d1 execute IDENTITY_DB --file=../../packages/identity/migrations/0001_identity.sql --local",
+    "db:apply:remote": "wrangler d1 execute IDENTITY_DB --file=../../packages/identity/migrations/0001_identity.sql --remote --yes"
+  },
+  "dependencies": {
+    "@tiko/identity": "workspace:*"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240512.0",
+    "typescript": "~5.3.3",
+    "wrangler": "^4.28.1"
+  }
+}

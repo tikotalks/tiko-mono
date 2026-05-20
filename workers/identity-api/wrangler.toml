@@ -1,0 +1,21 @@
+name = "tiko-identity-api"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+[vars]
+IDENTITY_ALLOWED_ORIGINS = "https://tikoapps.org,https://*.tikoapps.org,http://localhost:3000,http://localhost:3008"
+MAGIC_LINK_BASE_URL = "https://identity.tikoapps.org/api/identity/verify-magic-link"
+
+[[d1_databases]]
+binding = "IDENTITY_DB"
+database_name = "tiko-identity"
+database_id = "00000000-0000-0000-0000-000000000000"
+
+[[kv_namespaces]]
+binding = "IDENTITY_SESSION_CACHE"
+id = "00000000000000000000000000000000"
+preview_id = "00000000000000000000000000000000"
+
+[[queues.producers]]
+binding = "MAGIC_LINK_QUEUE"
+queue = "tiko-magic-link-email"
