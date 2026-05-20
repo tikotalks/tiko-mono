@@ -36,13 +36,13 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     // Fallback checks for other places where admin role might be stored
-    // 1. Check user_metadata (Supabase user metadata)
+    // 1. Check user metadata
     if (user.value?.user_metadata?.role === 'admin' ||
         user.value?.user_metadata?.is_admin === true) {
       return true;
     }
 
-    // 2. Check app_metadata (Supabase app metadata - set by backend)
+    // 2. Check app metadata set by backend
     if (user.value?.app_metadata?.role === 'admin' ||
         user.value?.app_metadata?.is_admin === true) {
       return true;

@@ -102,6 +102,7 @@ describe('AuthService', () => {
     expect(storage['tiko_pending_auth_email']).toBeUndefined()
     expect(storage['tiko_pending_auth_name']).toBeUndefined()
     expect(storage['tiko_auth_session']).toContain('session-token')
+    expect(storage['supabase.auth.token']).toBeUndefined()
   })
 
   it('builds the shared Google sign-in URL on the auth domain', async () => {
@@ -180,7 +181,7 @@ describe('AuthService', () => {
     expect(storage['tiko_auth_session']).toContain('"theme":"dark"')
   })
 
-  it('clears the mirrored session on sign out', async () => {
+  it('clears only the Tiko session on sign out', async () => {
     storage['tiko_auth_session'] = JSON.stringify(createSession())
     storage['supabase.auth.token'] = JSON.stringify(createSession())
 
@@ -197,7 +198,7 @@ describe('AuthService', () => {
 
     expect(result.success).toBe(true)
     expect(storage['tiko_auth_session']).toBeUndefined()
-    expect(storage['supabase.auth.token']).toBeUndefined()
+    expect(storage['supabase.auth.token']).toBeDefined()
   })
 })
 
