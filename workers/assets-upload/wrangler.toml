@@ -3,27 +3,32 @@ name = "assets-upload"
 main = "src/index.ts"
 compatibility_date = "2024-01-15"
 compatibility_flags = ["nodejs_compat"]
+workers_dev = true
 
 # Production routes - will be deployed to assets.tikoapi.org
-# Commented out until domain is configured
 # routes = [
 #   { pattern = "assets.tikoapi.org/*", zone_name = "tikoapi.org" }
 # ]
 
-# R2 bucket binding for assets
 [[r2_buckets]]
 binding = "ASSETS_R2_BUCKET"
 bucket_name = "tiko-assets"
 
-# Environment variables (secrets)
-[vars]
-# These should be set via wrangler secret put
-# SUPABASE_URL = ""
-# SUPABASE_SECRET = ""
+[[d1_databases]]
+binding = "ASSETS_DB"
+database_name = "tiko-assets"
+database_id = "00000000-0000-0000-0000-000000000000"
 
-# Workers.dev subdomain (for testing before custom domain is ready)
+[env.development]
+name = "assets-upload-dev"
+routes = []
 workers_dev = true
 
-# For local development
-[env.development]
-routes = []
+[[env.development.r2_buckets]]
+binding = "ASSETS_R2_BUCKET"
+bucket_name = "tiko-assets-dev"
+
+[[env.development.d1_databases]]
+binding = "ASSETS_DB"
+database_name = "tiko-assets-dev"
+database_id = "00000000-0000-0000-0000-000000000000"

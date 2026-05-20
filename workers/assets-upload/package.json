@@ -8,9 +8,6 @@
     "deploy": "wrangler deploy",
     "tail": "wrangler tail"
   },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.39.7"
-  },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240129.0",
     "wrangler": "^3.28.2",

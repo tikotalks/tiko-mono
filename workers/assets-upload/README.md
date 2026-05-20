@@ -5,7 +5,7 @@ Cloudflare Worker for managing asset uploads and metadata operations.
 ## Features
 
 - Upload files to Cloudflare R2 bucket
-- Store metadata in Supabase
+- Store metadata in Cloudflare D1
 - Automatic image dimension detection
 - File type validation
 - CRUD operations for asset metadata
@@ -16,7 +16,7 @@ Cloudflare Worker for managing asset uploads and metadata operations.
 - `POST /upload` - Upload new asset
 - `GET /assets` - List assets with filtering
 - `GET /assets/:id` - Get specific asset
-- `PUT /assets/:id` - Update asset metadata  
+- `PUT /assets/:id` - Update asset metadata
 - `DELETE /assets/:id` - Delete asset
 
 ## Deployment
@@ -26,10 +26,9 @@ Cloudflare Worker for managing asset uploads and metadata operations.
    npm install
    ```
 
-2. **Set up secrets:**
+2. **Apply the D1 schema:**
    ```bash
-   wrangler secret put SUPABASE_URL
-   wrangler secret put SUPABASE_SERVICE_KEY
+   wrangler d1 execute tiko-assets --file schema.sql
    ```
 
 3. **Deploy:**
@@ -37,14 +36,10 @@ Cloudflare Worker for managing asset uploads and metadata operations.
    wrangler deploy
    ```
 
-## Environment Variables
+## Bindings
 
-- `SUPABASE_URL` - Supabase project URL
-- `SUPABASE_SERVICE_KEY` - Supabase service role key
-
-## R2 Bucket Binding
-
-The worker expects an R2 bucket binding named `ASSETS_R2_BUCKET` pointing to the `tiko-assets` bucket.
+- `ASSETS_R2_BUCKET` - R2 bucket for uploaded asset bytes
+- `ASSETS_DB` - D1 database for asset metadata
 
 ## Domain Configuration
 

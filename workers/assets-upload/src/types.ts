@@ -1,7 +1,6 @@
 export interface Env {
   ASSETS_R2_BUCKET: R2Bucket
-  SUPABASE_URL: string
-  SUPABASE_SECRET: string
+  ASSETS_DB: D1Database
 }
 
 export interface UploadRequest {
@@ -51,6 +50,7 @@ export interface AssetRecord {
   duration?: number
   is_public: boolean
   user_id?: string
+  created_at: string
 }
 
 export interface GetAssetResponse {
