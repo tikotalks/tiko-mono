@@ -1,11 +1,14 @@
 name = "tiko-identity-api"
 main = "src/index.ts"
 compatibility_date = "2025-01-01"
-account_id = "8cef251b5fdcf6c6f63db98b7aa49f9a"
+account_id = "dc2b7d14a69351375cab6de9a13ddee9"
+routes = [
+  { pattern = "id.tiko.mt/*", zone_name = "tiko.mt" }
+]
 
 [vars]
-IDENTITY_ALLOWED_ORIGINS = "https://tikoapps.org,https://*.tikoapps.org,http://localhost:3000,http://localhost:3008"
-MAGIC_LINK_BASE_URL = "https://identity.tikoapps.org/api/identity/verify-magic-link"
+IDENTITY_ALLOWED_ORIGINS = "https://tiko.mt,https://*.tiko.mt,https://tikoapps.org,https://*.tikoapps.org,http://localhost:3000,http://localhost:3008"
+MAGIC_LINK_BASE_URL = "https://id.tiko.mt/api/identity/verify-magic-link"
 
 [[d1_databases]]
 binding = "IDENTITY_DB"
@@ -14,8 +17,8 @@ database_id = "036a1726-ac16-48a9-ab76-22c3a88ca7ae"
 
 [[kv_namespaces]]
 binding = "IDENTITY_SESSION_CACHE"
-id = "00000000000000000000000000000000"
-preview_id = "00000000000000000000000000000000"
+id = "32bcc7c6d5074a95a1ea62ee772da3be"
+preview_id = "32bcc7c6d5074a95a1ea62ee772da3be"
 
 [[queues.producers]]
 binding = "MAGIC_LINK_QUEUE"
