@@ -38,16 +38,6 @@ CREATE TABLE IF NOT EXISTS user_settings (
 CREATE INDEX IF NOT EXISTS idx_user_settings_user_id ON user_settings(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_settings_app_name ON user_settings(app_name);
 
-CREATE TABLE IF NOT EXISTS legacy_user_map (
-  legacy_supabase_user_id TEXT PRIMARY KEY,
-  better_auth_user_id TEXT NOT NULL,
-  email TEXT,
-  linked_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX IF NOT EXISTS idx_legacy_user_map_better_auth_user_id ON legacy_user_map(better_auth_user_id);
-CREATE INDEX IF NOT EXISTS idx_legacy_user_map_email ON legacy_user_map(email);
-
 CREATE TABLE IF NOT EXISTS auth_audit_log (
   id TEXT PRIMARY KEY,
   user_id TEXT,
