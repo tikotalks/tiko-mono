@@ -181,7 +181,7 @@ describe('AuthService', () => {
     expect(storage['tiko_auth_session']).toContain('"theme":"dark"')
   })
 
-  it('clears the Tiko session and stale Supabase compatibility session on sign out', async () => {
+  it('clears only the Tiko session on sign out and leaves legacy Supabase storage unmanaged', async () => {
     storage['tiko_auth_session'] = JSON.stringify(createSession())
     storage['supabase.auth.token'] = JSON.stringify(createSession())
 
@@ -198,7 +198,7 @@ describe('AuthService', () => {
 
     expect(result.success).toBe(true)
     expect(storage['tiko_auth_session']).toBeUndefined()
-    expect(storage['supabase.auth.token']).toBeUndefined()
+    expect(storage['supabase.auth.token']).toContain('session-token')
   })
 })
 
