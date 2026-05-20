@@ -12,7 +12,7 @@ describe('AuthService', () => {
   let storage: Record<string, string>
 
   beforeEach(() => {
-    authService = new ManualAuthService('https://auth.tikoapps.org')
+    authService = new ManualAuthService('https://id.tiko.mt')
     storage = {}
     vi.stubGlobal('fetch', mockFetch)
 
@@ -36,105 +36,75 @@ describe('AuthService', () => {
     vi.unstubAllGlobals()
   })
 
-  it('sends an OTP request through the central auth worker', async () => {
-    mockFetch.mockResolvedValueOnce(
-      new Response(JSON.stringify({ success: true }), {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-    )
+  it('creates a device identity before requesting an account magic link', async () => {
+    mockFetch
+      .mockResolvedValueOnce(jsonResponse({ ok: true, data: createIdentityBundle() }, 201))
+      .mockResolvedValueOnce(jsonResponse({ ok: true, data: { magicLinkId: 'link-123', queued: true } }, 202))
 
     const result = await authService.signInWithMagicLink('test@example.com', 'Jane Doe')
 
-    expect(result).toEqual({ success: true })
+    expect(result.success).toBe(true)
+    expect(result.session?.access_token).toBe('identity-session-token')
     expect(storage['tiko_pending_auth_email']).toBe('test@example.com')
     expect(storage['tiko_pending_auth_name']).toBe('Jane Doe')
-    expect(mockFetch).toHaveBeenCalledWith(
-      'https://auth.tikoapps.org/email-otp/send',
+    expect(storage['tiko_auth_session']).toContain('identity-session-token')
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      1,
+      'https://id.tiko.mt/api/identity/device',
       expect.objectContaining({
         method: 'POST',
         credentials: 'include'
       })
     )
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      2,
+      'https://id.tiko.mt/api/identity/email',
+      expect.objectContaining({
+        method: 'POST',
+        credentials: 'include',
+        headers: expect.any(Headers)
+      })
+    )
   })
 
-  it('verifies an OTP and resolves the shared session', async () => {
+  it('verifies a magic-link callback and stores the returned identity session', async () => {
+    history.replaceState({}, '', '/auth/callback?token=magic-token')
     storage['tiko_pending_auth_name'] = 'Jane Doe'
 
-    mockFetch
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ success: true }), {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
-      )
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            authenticated: true,
-            user: createUser({
-              full_name: 'Jane Doe'
-            }),
-            session: {
-              id: 'session-123',
-              token: 'session-token',
-              expiresAt: '2030-01-01T00:00:00.000Z'
-            }
-          }),
-          {
-            status: 200,
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
-        )
-      )
+    mockFetch.mockResolvedValueOnce(
+      jsonResponse({ ok: true, data: createIdentityBundle({ primaryEmail: 'test@example.com' }) })
+    )
 
-    const result = await authService.verifyOtp('test@example.com', '123456')
+    const result = await authService.handleMagicLinkCallback()
 
     expect(result.success).toBe(true)
-    expect(result.session?.access_token).toBe('session-token')
-    expect(result.user?.full_name).toBe('Jane Doe')
+    expect(result.session?.access_token).toBe('identity-session-token')
+    expect(result.user?.email).toBe('test@example.com')
     expect(storage['tiko_pending_auth_email']).toBeUndefined()
     expect(storage['tiko_pending_auth_name']).toBeUndefined()
-    expect(storage['tiko_auth_session']).toContain('session-token')
+    expect(storage['tiko_auth_session']).toContain('identity-session-token')
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://id.tiko.mt/api/identity/verify-magic-link?token=magic-token',
+      expect.objectContaining({ method: 'GET' })
+    )
   })
 
-  it('builds the shared Google sign-in URL on the auth domain', async () => {
+  it('builds the shared Google sign-in URL on the identity domain', async () => {
     const url = authService.getGoogleSignInUrl('https://tiko.tikoapps.org/auth/callback')
 
     expect(url).toBe(
-      'https://auth.tikoapps.org/oauth/google?callbackURL=https%3A%2F%2Ftiko.tikoapps.org%2Fauth%2Fcallback'
+      'https://id.tiko.mt/oauth/google?callbackURL=https%3A%2F%2Ftiko.tikoapps.org%2Fauth%2Fcallback'
     )
   })
 
-  it('returns null when the central auth worker reports no session', async () => {
-    mockFetch.mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({
-          authenticated: false,
-          user: null,
-          session: null
-        }),
-        {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      )
-    )
-
+  it('returns null when no identity session is cached', async () => {
     const session = await authService.getSession()
 
     expect(session).toBeNull()
+    expect(mockFetch).not.toHaveBeenCalled()
   })
 
-  it('falls back to the cached session when the auth worker is unavailable', async () => {
+  it('falls back to the cached session when the identity API is unavailable', async () => {
     const cachedSession = createSession()
     storage['tiko_auth_session'] = JSON.stringify(cachedSession)
     mockFetch.mockRejectedValueOnce(new Error('Network failure'))
@@ -149,24 +119,16 @@ describe('AuthService', () => {
     storage['tiko_auth_session'] = JSON.stringify(cachedSession)
 
     mockFetch.mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({
-          success: true,
-          user: createUser({
-            user_metadata: {
-              settings: {
-                theme: 'dark'
-              }
+      jsonResponse({
+        success: true,
+        user: createUser({
+          user_metadata: {
+            settings: {
+              theme: 'dark'
             }
-          })
-        }),
-        {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json'
           }
-        }
-      )
+        })
+      })
     )
 
     const result = await authService.updateUserMetadata({
@@ -184,14 +146,7 @@ describe('AuthService', () => {
     storage['tiko_auth_session'] = JSON.stringify(createSession())
     storage['tiko_auth_session_legacy'] = JSON.stringify(createSession())
 
-    mockFetch.mockResolvedValueOnce(
-      new Response(JSON.stringify({ success: true }), {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-    )
+    mockFetch.mockResolvedValueOnce(jsonResponse({ ok: true, data: { revoked: true } }))
 
     const result = await authService.signOut()
 
@@ -200,6 +155,51 @@ describe('AuthService', () => {
     expect(storage['tiko_auth_session_legacy']).toBeUndefined()
   })
 })
+
+function jsonResponse(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+}
+
+function createIdentityBundle(overrides: { primaryEmail?: string | null } = {}) {
+  return {
+    user: {
+      id: 'user-123',
+      primaryEmail: overrides.primaryEmail ?? null,
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-01T00:00:00.000Z',
+      lastSeenAt: '2025-01-01T00:00:00.000Z'
+    },
+    device: {
+      id: 'device-123',
+      userId: 'user-123',
+      appId: 'local',
+      deviceKeyHash: null,
+      fingerprintHash: 'fingerprint-hash',
+      displayName: 'Kitchen iPad',
+      trusted: true,
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-01T00:00:00.000Z',
+      lastSeenAt: '2025-01-01T00:00:00.000Z'
+    },
+    session: {
+      id: 'session-123',
+      userId: 'user-123',
+      deviceId: 'device-123',
+      state: 'active',
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-01T00:00:00.000Z',
+      expiresAt: '2030-01-01T00:00:00.000Z',
+      revokedAt: null,
+      lastSeenAt: '2025-01-01T00:00:00.000Z'
+    },
+    sessionToken: 'identity-session-token'
+  }
+}
 
 function createUser(overrides: Partial<AuthUser> = {}): AuthUser {
   return {

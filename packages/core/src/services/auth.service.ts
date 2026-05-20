@@ -27,6 +27,7 @@ export interface AuthSession {
   expires_in: number
   token_type: string
   user: AuthUser
+  identity?: IdentitySessionBundle
 }
 
 export interface AuthResult {
@@ -46,6 +47,7 @@ export interface AuthService {
   resendOtp(email: string): Promise<AuthResult>
   signOut(): Promise<{ success: boolean; error?: string }>
   getSession(): Promise<AuthSession | null>
+  ensureSession(): Promise<AuthSession>
   handleMagicLinkCallback(): Promise<AuthResult>
   refreshSession(refreshToken: string): Promise<AuthResult>
   updateUser(updates: Partial<AuthUser>): Promise<AuthResult>
@@ -72,13 +74,69 @@ interface WorkerUserResponse {
   error?: string
 }
 
-const DEFAULT_AUTH_BASE_URL = 'https://auth.tikoapps.org'
+interface IdentityUser {
+  id: string
+  primaryEmail: string | null
+  createdAt: string
+  updatedAt: string
+  lastSeenAt: string | null
+}
+
+interface IdentityDevice {
+  id: string
+  userId: string
+  appId: string
+  deviceKeyHash: string | null
+  fingerprintHash: string
+  displayName: string | null
+  trusted: boolean
+  createdAt: string
+  updatedAt: string
+  lastSeenAt: string | null
+}
+
+interface IdentitySession {
+  id: string
+  userId: string
+  deviceId: string
+  state: string
+  createdAt: string
+  updatedAt: string
+  expiresAt: string
+  revokedAt: string | null
+  lastSeenAt: string | null
+}
+
+interface IdentitySessionBundle {
+  user: IdentityUser
+  device: IdentityDevice
+  session: IdentitySession
+  sessionToken: string
+}
+
+interface IdentityApiSuccess<T> {
+  ok: true
+  data: T
+}
+
+interface IdentityApiError {
+  ok: false
+  error?: {
+    code?: string
+    message?: string
+  }
+}
+
+type IdentityApiBody<T> = IdentityApiSuccess<T> | IdentityApiError
+
+const DEFAULT_AUTH_BASE_URL = 'https://id.tiko.mt'
 const AUTH_SESSION_STORAGE_KEY = 'tiko_auth_session'
 const PENDING_EMAIL_KEY = 'tiko_pending_auth_email'
 const PENDING_NAME_KEY = 'tiko_pending_auth_name'
 
 export function resolveAuthBaseUrl(): string {
-  const envBaseUrl = import.meta.env?.VITE_AUTH_BASE_URL
+  const env = import.meta.env
+  const envBaseUrl = env?.VITE_IDENTITY_BASE_URL || env?.VITE_AUTH_BASE_URL
 
   return stripTrailingSlash(envBaseUrl || DEFAULT_AUTH_BASE_URL)
 }
@@ -110,25 +168,27 @@ export class CentralAuthService implements AuthService {
   async signInWithMagicLink(email: string, fullName?: string): Promise<AuthResult> {
     try {
       this.storePendingAuthState(email, fullName)
+      const session = await this.ensureSession()
 
-      const response = await this.fetchResponse('/email-otp/send', {
+      const response = await this.fetchResponse('/api/identity/email', {
         method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        },
         body: JSON.stringify({
           email,
-          name: fullName,
-          appId: this.getCurrentAppId(),
-          returnUrl: this.getAuthRedirectUrl()
+          redirectUrl: this.getAuthRedirectUrl()
         })
       })
 
       if (!response.ok) {
         return {
           success: false,
-          error: await this.readErrorMessage(response, 'Failed to send verification code')
+          error: await this.readErrorMessage(response, 'Failed to send magic link')
         }
       }
 
-      return { success: true }
+      return { success: true, session, user: session.user }
     } catch (error) {
       return { success: false, error: 'Network error occurred' }
     }
@@ -199,10 +259,17 @@ export class CentralAuthService implements AuthService {
   }
 
   async signOut(): Promise<{ success: boolean; error?: string }> {
+    const storedSession = this.getStoredSession()
+
     try {
-      await this.fetchResponse('/sign-out', {
-        method: 'POST'
-      })
+      if (storedSession?.access_token) {
+        await this.fetchResponse('/api/identity/session', {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${storedSession.access_token}`
+          }
+        })
+      }
     } catch (error) {
       this.clearSessionMirror()
       this.clearPendingAuthState()
@@ -220,52 +287,122 @@ export class CentralAuthService implements AuthService {
   }
 
   async getSession(): Promise<AuthSession | null> {
+    const storedSession = this.getStoredSession()
+
+    if (!storedSession?.access_token) {
+      return null
+    }
+
     try {
-      const response = await this.fetchResponse('/session', {
-        method: 'GET'
+      const response = await this.fetchResponse('/api/identity/session', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${storedSession.access_token}`
+        }
       })
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch session: ${response.status}`)
-      }
-
-      const payload = (await response.json()) as WorkerSessionPayload
-
-      if (!payload.authenticated || !payload.user || !payload.session) {
         this.clearSessionMirror()
-
         return null
       }
 
-      const session = this.mapWorkerSession(payload)
+      const payload = (await response.json()) as IdentityApiBody<IdentitySessionBundle>
+
+      if (!payload.ok) {
+        this.clearSessionMirror()
+        return null
+      }
+
+      const session = this.mapIdentityBundle(payload.data)
       this.storeSession(session)
 
       return session
     } catch (error) {
-      const storedSession = this.getStoredSession()
-
-      if (storedSession) {
-        return storedSession
-      }
-
-      return null
+      return storedSession
     }
   }
 
-  async handleMagicLinkCallback(): Promise<AuthResult> {
-    const session = await this.getSession()
+  async ensureSession(): Promise<AuthSession> {
+    const currentSession = await this.getSession()
 
-    if (!session) {
+    if (currentSession) {
+      return currentSession
+    }
+
+    return this.createDeviceSession()
+  }
+
+  async createDeviceSession(): Promise<AuthSession> {
+    const response = await this.fetchResponse('/api/identity/device', {
+      method: 'POST',
+      body: JSON.stringify({
+        appId: this.getCurrentAppId(),
+        displayName: this.getDefaultDeviceDisplayName(),
+        fingerprint: this.getDeviceFingerprint()
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error(await this.readErrorMessage(response, 'Failed to create device identity'))
+    }
+
+    const payload = (await response.json()) as IdentityApiBody<IdentitySessionBundle>
+
+    if (!payload.ok) {
+      throw new Error(!payload.ok ? (payload as IdentityApiError).error?.message || 'Failed to create device identity' : 'Failed to create device identity')
+    }
+
+    const session = this.mapIdentityBundle(payload.data)
+    this.storeSession(session)
+
+    return session
+  }
+
+  async handleMagicLinkCallback(): Promise<AuthResult> {
+    const token = new URLSearchParams(window.location.search).get('token')
+
+    if (!token) {
       return {
         success: false,
-        error: 'No authenticated session found'
+        error: 'No magic-link token found'
       }
     }
 
-    return {
-      success: true,
-      session,
-      user: session.user
+    try {
+      const response = await this.fetchResponse(`/api/identity/verify-magic-link?token=${encodeURIComponent(token)}`, {
+        method: 'GET'
+      })
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: await this.readErrorMessage(response, 'Magic link verification failed')
+        }
+      }
+
+      const payload = (await response.json()) as IdentityApiBody<IdentitySessionBundle>
+
+      if (!payload.ok) {
+        return {
+          success: false,
+          error: (payload as IdentityApiError).error?.message || 'Magic link verification failed'
+        }
+      }
+
+      const session = this.mapIdentityBundle(payload.data)
+      this.storeSession(session)
+      this.clearPendingAuthState()
+
+      return {
+        success: true,
+        session,
+        user: session.user
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: 'Network error occurred'
+      }
     }
   }
 
@@ -486,6 +623,39 @@ export class CentralAuthService implements AuthService {
     }
   }
 
+  mapIdentityBundle(bundle: IdentitySessionBundle): AuthSession {
+    const expiresAt = Math.floor(new Date(bundle.session.expiresAt).getTime() / 1000)
+    const displayName = bundle.device.displayName || bundle.user.primaryEmail || 'Tiko user'
+
+    return {
+      access_token: bundle.sessionToken,
+      refresh_token: '',
+      expires_at: expiresAt,
+      expires_in: Math.max(0, expiresAt - Math.floor(Date.now() / 1000)),
+      token_type: 'bearer',
+      identity: bundle,
+      user: {
+        id: bundle.user.id,
+        email: bundle.user.primaryEmail || '',
+        full_name: displayName,
+        avatar_url: '',
+        email_verified: !!bundle.user.primaryEmail,
+        phone_verified: false,
+        app_metadata: {
+          role: 'user'
+        },
+        user_metadata: {
+          name: displayName,
+          deviceId: bundle.device.id,
+          deviceDisplayName: bundle.device.displayName,
+          identityUserId: bundle.user.id
+        },
+        created_at: bundle.user.createdAt,
+        updated_at: bundle.user.updatedAt
+      }
+    }
+  }
+
   private getStoredSession(): AuthSession | null {
     try {
       const stored = localStorage.getItem(AUTH_SESSION_STORAGE_KEY)
@@ -532,6 +702,29 @@ export class CentralAuthService implements AuthService {
     const siteUrl = import.meta.env?.VITE_SITE_URL || window.location.origin
 
     return `${siteUrl}/auth/callback`
+  }
+
+  private getDefaultDeviceDisplayName(): string {
+    const appId = this.getCurrentAppId()
+    const platform = navigator.userAgent.includes('Mobile') ? 'mobile device' : 'device'
+
+    return `${appId} ${platform}`
+  }
+
+  private getDeviceFingerprint(): string {
+    const storageKey = 'tiko_identity_device_fingerprint'
+    const existing = localStorage.getItem(storageKey)
+
+    if (existing) {
+      return existing
+    }
+
+    const fingerprint = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+
+    localStorage.setItem(storageKey, fingerprint)
+    return fingerprint
   }
 
   private getCurrentAppId(): string {

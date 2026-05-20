@@ -388,8 +388,9 @@ export const useAuthStore = defineStore('auth', () => {
         }
       }
 
-      // Then check for authenticated session
-      const currentSession = await authService.getSession()
+      // Always ensure a device-first identity session exists. Child-facing apps
+      // should open immediately instead of falling into a login/skip-auth wall.
+      const currentSession = await authService.ensureSession()
 
       // Session loaded successfully
 

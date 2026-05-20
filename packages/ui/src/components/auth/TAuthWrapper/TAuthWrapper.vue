@@ -1,6 +1,6 @@
 <template>
   <div :class="bemm('',['', tikoConfig?.isApp ? 'is-app' : 'is-website'])" data-cy="auth-wrapper">
-    <div :class="bemm('background')" v-if="!isAuthenticated && requireAuth">
+    <div :class="bemm('background')" v-if="isInitializing && requireAuth">
       <img
         v-if="props.backgroundImage"
         :src="props.backgroundImage"
@@ -24,33 +24,7 @@
       @complete="handleSplashComplete"
     />
 
-    <!-- Login Form within App Layout -->
-    <TAppLayout
-      v-else-if="requireAuth && !isAuthenticated && !isAuthCallbackRoute && !isInitializing"
-      :title="title"
-      :showHeader="false"
-      :class="bemm('login-layout')"
-      data-cy="auth-app-layout"
-    >
-      <div :class="bemm('login')" data-cy="login-container">
-        <TLoginForm
-          :is-loading="authLoading"
-          :error="authError"
-          :app-id="appName"
-          :app-name="title"
-          :enable-sso="true"
-          :allow-skip-auth="allowSkipAuth"
-          @apple-sign-in="handleAppleSignIn"
-          @email-submit="handleEmailSubmit"
-          @verification-submit="handleVerificationSubmit"
-          @resend-code="handleResendCode"
-          @clear-error="clearAuthError"
-          @skip-auth="handleSkipAuth"
-        />
-      </div>
-    </TAppLayout>
-
-    <!-- Authenticated Content or Auth Callback Route or No Auth Required -->
+    <!-- App content renders after device-first identity bootstrap. No login wall. -->
     <div v-else-if="!isInitializing" :class="bemm('app')" data-cy="authenticated-content">
       <slot />
     </div>
@@ -59,12 +33,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
 import { useBemm } from 'bemm'
 import { useAuthStore, useTikoConfig, useI18n } from '@tiko/core'
-import {  } from '@tiko/core';
-import TLoginForm from '../TLoginForm/TLoginForm.vue'
-import TAppLayout from '../../layout/TAppLayout/TAppLayout.vue'
 import TSplashScreen from '../../feedback/TSplashScreen/TSplashScreen.vue'
 import type { TAuthWrapperProps } from './TAuthWrapper.model'
 
@@ -80,9 +50,6 @@ const props = withDefaults(defineProps<TAuthWrapperProps>(), {
 
 // BEM classes
 const bemm = useBemm('auth-wrapper')
-
-// Router
-const route = useRoute()
 
 // i18n
 const { t } = useI18n()
@@ -101,21 +68,6 @@ try {
 
 // Local state
 const isInitializing = ref(true)
-const authLoading = ref(false)
-const authError = ref<string | null>(null)
-
-// Computed
-const isAuthenticated = computed(() => {
-  // Check if user skipped auth
-  if (sessionStorage.getItem('tiko_skip_auth') === 'true') {
-    return true;
-  }
-  if (!authStore) return false;
-  return authStore.isAuthenticated || false;
-});
-
-// Check if we're on the auth callback route
-const isAuthCallbackRoute = computed(() => route?.path === '/auth/callback');
 
 // Splash screen configuration
 const splashConfig = computed(() => {
@@ -145,76 +97,6 @@ const splashConfig = computed(() => {
 });
 
 // Methods
-const handleSkipAuth = () => {
-  // Set a flag in session storage to indicate skip auth mode
-  sessionStorage.setItem('tiko_skip_auth', 'true');
-  // Reload the page to apply skip auth mode
-  window.location.reload();
-}
-
-const handleAppleSignIn = async () => {
-  authLoading.value = true;
-  authError.value = null;
-
-  try {
-    if (!authStore) throw new Error('Auth store not initialized');
-    await authStore.signInWithApple();
-  } catch (error) {
-    authError.value =
-      error instanceof Error ? error.message : t('auth.appleSignInFailed');
-  } finally {
-    authLoading.value = false;
-  }
-};
-
-const handleEmailSubmit = async (email: string, fullName?: string) => {
-  authLoading.value = true;
-  authError.value = null;
-
-  try {
-    if (!authStore) throw new Error('Auth store not initialized');
-    await authStore.signInWithPasswordlessEmail(email, fullName);
-  } catch (error) {
-    authError.value =
-      error instanceof Error
-        ? error.message
-        : t('auth.failedToSendCode');
-  } finally {
-    authLoading.value = false;
-  }
-};
-
-const handleVerificationSubmit = async (email: string, code: string) => {
-  authLoading.value = true;
-  authError.value = null;
-
-  try {
-    if (!authStore) throw new Error('Auth store not initialized');
-    await authStore.verifyEmailOtp(email, code);
-  } catch (error) {
-    authError.value =
-      error instanceof Error ? error.message : t('auth.invalidVerificationCode');
-  } finally {
-    authLoading.value = false;
-  }
-};
-
-const handleResendCode = async (email: string) => {
-  authError.value = null;
-
-  try {
-    if (!authStore) throw new Error('Auth store not initialized');
-    await authStore.resendEmailOtp(email);
-  } catch (error) {
-    authError.value =
-      error instanceof Error ? error.message : t('auth.failedToResendCode');
-  }
-};
-
-const clearAuthError = () => {
-  authError.value = null;
-};
-
 const handleSplashComplete = () => {
   // Splash screen completed, but we continue showing it until auth is ready
   // The splash screen will automatically hide when isInitializing becomes false
