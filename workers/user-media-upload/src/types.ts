@@ -1,13 +1,12 @@
 export interface Env {
   USER_MEDIA_BUCKET: R2Bucket
-  SUPABASE_URL: string
-  SUPABASE_SERVICE_KEY: string
+  USER_MEDIA_DB: D1Database
 }
 
 export interface UploadRequest {
   userId: string
   usageType: 'profile_picture' | 'card_media' | 'general'
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface UploadResponse {
@@ -41,7 +40,7 @@ export interface UserMediaRecord {
   large_url?: string
   width?: number
   height?: number
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
   usage_type: string
   created_at: string
   updated_at: string

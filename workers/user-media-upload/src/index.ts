@@ -30,25 +30,51 @@ async function getImageDimensions(file: File): Promise<{ width?: number; height?
   return { width: undefined, height: undefined }
 }
 
-async function saveToSupabase(env: Env, record: Omit<UserMediaRecord, 'id' | 'created_at' | 'updated_at'>): Promise<string> {
-  const response = await fetch(`${env.SUPABASE_URL}/rest/v1/user_media`, {
-    method: 'POST',
-    headers: {
-      'apikey': env.SUPABASE_SERVICE_KEY,
-      'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=representation'
-    },
-    body: JSON.stringify(record)
-  })
+async function saveToD1(env: Env, record: Omit<UserMediaRecord, 'id' | 'created_at' | 'updated_at'>): Promise<string> {
+  const id = crypto.randomUUID()
+  const now = new Date().toISOString()
 
-  if (!response.ok) {
-    const error = await response.text()
-    throw new Error(`Failed to save to Supabase: ${error}`)
-  }
+  await env.USER_MEDIA_DB.prepare(
+    `INSERT INTO user_media (
+      id,
+      user_id,
+      filename,
+      original_filename,
+      file_size,
+      mime_type,
+      url,
+      thumbnail_url,
+      medium_url,
+      large_url,
+      width,
+      height,
+      metadata,
+      usage_type,
+      created_at,
+      updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  )
+    .bind(
+      id,
+      record.user_id,
+      record.filename,
+      record.original_filename,
+      record.file_size,
+      record.mime_type,
+      record.url,
+      record.thumbnail_url ?? null,
+      record.medium_url ?? null,
+      record.large_url ?? null,
+      record.width ?? null,
+      record.height ?? null,
+      JSON.stringify(record.metadata ?? {}),
+      record.usage_type,
+      now,
+      now,
+    )
+    .run()
 
-  const [data] = await response.json()
-  return data.id
+  return id
 }
 
 async function handleUpload(request: Request, env: Env): Promise<Response> {
@@ -125,8 +151,8 @@ async function handleUpload(request: Request, env: Env): Promise<Response> {
     // Get image dimensions if possible
     const dimensions = await getImageDimensions(file)
 
-    // Save to Supabase
-    const recordId = await saveToSupabase(env, {
+    // Save metadata to D1
+    const recordId = await saveToD1(env, {
       user_id: uploadData.userId,
       filename,
       original_filename: file.name,
