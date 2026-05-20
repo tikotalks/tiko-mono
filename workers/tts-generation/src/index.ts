@@ -4,8 +4,7 @@ import { getOpenAILanguage } from './language-mapping';
 export interface Env {
   AUDIO_BUCKET: R2Bucket;
   OPENAI_API_KEY: string;
-  SUPABASE_URL: string;
-  SUPABASE_SERVICE_KEY: string;
+  TTS_DB: D1Database;
   ENVIRONMENT: string;
 }
 
@@ -17,14 +16,14 @@ interface TTSRequest {
 }
 
 interface AudioMetadata {
-  url: string;
+  audio_url: string;
   provider: 'openai';
   language: string;
   voice: string;
   model: string;
-  generatedAt: string;
+  generated_at: string;
   duration?: number;
-  size: number;
+  file_size_bytes: number;
 }
 
 const CORS_HEADERS = {
@@ -246,8 +245,8 @@ async function handleGetAudio(request: Request, env: Env): Promise<Response> {
     });
   }
 
-  const headers = new Headers(object.httpMetadata || {});
-  headers.set('Content-Type', 'audio/mpeg');
+  const headers = new Headers();
+  headers.set('Content-Type', object.httpMetadata?.contentType || 'audio/mpeg');
   headers.set('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
   Object.entries(CORS_HEADERS).forEach(([key, value]) => {
     headers.set(key, value);
@@ -268,22 +267,16 @@ function generateTextHash(text: string, language: string, voice: string, model: 
   return Math.abs(hash).toString(36);
 }
 
-async function checkExistingAudio(textHash: string, env: Env): Promise<any | null> {
+async function checkExistingAudio(textHash: string, env: Env): Promise<AudioMetadata | null> {
   try {
-    const response = await fetch(`${env.SUPABASE_URL}/rest/v1/tts_audio?text_hash=eq.${textHash}&select=*`, {
-      headers: {
-        'apikey': env.SUPABASE_SERVICE_KEY,
-        'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY}`,
-      }
-    });
-
-    if (!response.ok) {
-      console.error('Failed to check existing audio:', await response.text());
-      return null;
-    }
-
-    const data = await response.json();
-    return data.length > 0 ? data[0] : null;
+    return await env.TTS_DB.prepare(
+      `SELECT audio_url, provider, language, voice, model, generated_at, duration, file_size_bytes
+       FROM tts_audio
+       WHERE text_hash = ?
+       LIMIT 1`,
+    )
+      .bind(textHash)
+      .first<AudioMetadata>()
   } catch (error) {
     console.error('Error checking existing audio:', error);
     return null;
@@ -301,29 +294,26 @@ async function storeAudioInDatabase(audioData: {
   fileSize: number;
 }, env: Env): Promise<void> {
   try {
-    const response = await fetch(`${env.SUPABASE_URL}/rest/v1/tts_audio`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': env.SUPABASE_SERVICE_KEY,
-        'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY}`,
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({
-        text_hash: audioData.textHash,
-        text: audioData.text,
-        language: audioData.language,
-        voice: audioData.voice,
-        model: audioData.model,
-        provider: audioData.provider,
-        audio_url: audioData.audioUrl,
-        file_size_bytes: audioData.fileSize
-      })
-    });
-
-    if (!response.ok) {
-      console.error('Failed to store audio in database:', await response.text());
-    }
+    const now = new Date().toISOString();
+    await env.TTS_DB.prepare(
+      `INSERT INTO tts_audio (
+        id, text_hash, text, language, voice, model, provider,
+        audio_url, file_size_bytes, generated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+      .bind(
+        crypto.randomUUID(),
+        audioData.textHash,
+        audioData.text,
+        audioData.language,
+        audioData.voice,
+        audioData.model,
+        audioData.provider,
+        audioData.audioUrl,
+        audioData.fileSize,
+        now,
+      )
+      .run();
   } catch (error) {
     console.error('Error storing audio in database:', error);
   }

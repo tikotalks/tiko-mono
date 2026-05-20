@@ -7,18 +7,31 @@ routes = [
   { pattern = "https://tts.tikoapi.org/*", zone_name = "tikoapi.org" }
 ]
 
-[env.production]
-vars = { ENVIRONMENT = "production" }
-
 [[r2_buckets]]
 binding = "AUDIO_BUCKET"
 bucket_name = "tiko-tts-audio"
 preview_bucket_name = "tiko-tts-audio-preview"
 
+[[d1_databases]]
+binding = "TTS_DB"
+database_name = "tiko-tts"
+database_id = "00000000-0000-0000-0000-000000000000"
+
 [vars]
 ENVIRONMENT = "development"
 
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+[[env.production.r2_buckets]]
+binding = "AUDIO_BUCKET"
+bucket_name = "tiko-tts-audio"
+preview_bucket_name = "tiko-tts-audio-preview"
+
+[[env.production.d1_databases]]
+binding = "TTS_DB"
+database_name = "tiko-tts"
+database_id = "00000000-0000-0000-0000-000000000000"
+
 # Secrets to be set:
-# OPENAI_API_KEY - Your OpenAI API key
-# SUPABASE_URL - Supabase project URL  
-# SUPABASE_SERVICE_KEY - Supabase service role key
+# OPENAI_API_KEY - OpenAI API key

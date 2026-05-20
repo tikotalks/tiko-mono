@@ -4,11 +4,11 @@ This Cloudflare Worker handles OpenAI Text-to-Speech generation for the Cards ap
 
 ## Features
 
-- Generates high-quality speech using OpenAI's TTS API
+- Generates speech using OpenAI's TTS API
 - Caches generated audio in R2 storage for fast retrieval
 - Supports multiple languages with automatic fallback
 - Deduplicates requests by content hash
-- Stores metadata in Supabase for tracking
+- Stores metadata in Cloudflare D1 for tracking
 
 ## Setup
 
@@ -17,19 +17,16 @@ This Cloudflare Worker handles OpenAI Text-to-Speech generation for the Cards ap
    npm install
    ```
 
-2. **Create R2 bucket:**
+2. **Create resources:**
    ```bash
    wrangler r2 bucket create tiko-tts-audio
+   wrangler d1 create tiko-tts
+   wrangler d1 execute tiko-tts --file schema.sql
    ```
 
 3. **Set secrets:**
    ```bash
-   # OpenAI API key
    wrangler secret put OPENAI_API_KEY
-   
-   # Supabase credentials
-   wrangler secret put SUPABASE_URL
-   wrangler secret put SUPABASE_SERVICE_KEY
    ```
 
 4. **Deploy:**
@@ -40,6 +37,7 @@ This Cloudflare Worker handles OpenAI Text-to-Speech generation for the Cards ap
 ## API Endpoints
 
 ### POST /generate
+
 Generate TTS audio for text.
 
 **Request:**
@@ -48,9 +46,7 @@ Generate TTS audio for text.
   "text": "Hello world",
   "voice": "nova",
   "model": "tts-1",
-  "language": "en",
-  "cardId": "card-123",
-  "userId": "user-456"
+  "language": "en"
 }
 ```
 
@@ -58,20 +54,13 @@ Generate TTS audio for text.
 ```json
 {
   "success": true,
-  "audioUrl": "/audio?key=audio/user-456/abc123.mp3",
-  "metadata": {
-    "url": "/audio?key=audio/user-456/abc123.mp3",
-    "provider": "openai",
-    "language": "en",
-    "voice": "nova",
-    "model": "tts-1",
-    "generatedAt": "2024-01-01T00:00:00Z",
-    "size": 123456
-  }
+  "audioUrl": "/audio?key=audio/abc123.mp3",
+  "cached": false
 }
 ```
 
 ### GET /audio
+
 Retrieve cached audio file.
 
 **Parameters:**
@@ -80,14 +69,12 @@ Retrieve cached audio file.
 **Response:**
 - Audio file (audio/mpeg) with appropriate caching headers
 
-## Configuration
+## Bindings
 
-The worker uses the following environment variables:
-- `OPENAI_API_KEY`: Your OpenAI API key
-- `SUPABASE_URL`: Your Supabase project URL
-- `SUPABASE_SERVICE_KEY`: Supabase service role key
-- `AUDIO_BUCKET`: R2 bucket binding (configured in wrangler.toml)
+- `OPENAI_API_KEY`: OpenAI API key secret
+- `AUDIO_BUCKET`: R2 bucket binding configured in `wrangler.toml`
+- `TTS_DB`: D1 database binding configured in `wrangler.toml`
 
 ## Language Support
 
-The worker supports all OpenAI TTS languages. For unsupported languages, the app will automatically fallback to browser TTS or a supported language mapping.
+The worker supports all OpenAI TTS languages. For unsupported languages, the app can fallback to browser TTS or a supported language mapping.
