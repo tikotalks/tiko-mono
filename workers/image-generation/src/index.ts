@@ -1,32 +1,31 @@
-import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 
 export interface Env {
-  MEDIA_BUCKET: R2Bucket  // For global/public media
-  USER_MEDIA_BUCKET: R2Bucket  // For personal media
+  MEDIA_BUCKET: R2Bucket
+  USER_MEDIA_BUCKET: R2Bucket
+  IMAGE_DB: D1Database
   ANALYTICS?: AnalyticsEngineDataset
   OPENAI_API_KEY: string
-  SUPABASE_URL: string
-  SUPABASE_SERVICE_KEY: string
   ENVIRONMENT: string
 }
 
 interface GenerationRequest {
   userId: string
-  scope: 'personal' | 'global'  // Whether to store in user_media or media table
+  scope: 'personal' | 'global'
   items: Array<{
     name: string
     prompt: string
     size?: '256x256' | '512x512' | '1024x1024' | '1024x1792' | '1792x1024'
     style?: 'vivid' | 'natural'
-    category?: string  // For global media
-    tags?: string[]    // For global media
+    category?: string
+    tags?: string[]
   }>
 }
 
 interface MediaRecord {
   id: string
-  user_id: string
+  user_id?: string
+  generated_by?: string
   filename: string
   original_filename: string
   file_size: number
@@ -35,182 +34,78 @@ interface MediaRecord {
   thumbnail_url?: string
   width?: number
   height?: number
-  metadata: Record<string, any>
-  usage_type: string
+  metadata: Record<string, unknown>
+  usage_type?: string
+  category?: string
+  tags?: string[]
   status: 'queued' | 'generating' | 'generated' | 'published' | 'failed'
-  generation_data?: any
+  generation_data: Record<string, unknown>
   error_message?: string
+  _table: 'media' | 'user_media'
+}
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 }
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url)
-    
-    // CORS headers
-    const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    }
 
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders })
     }
 
     try {
-      // Validate environment variables
-      if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_KEY) {
-        console.error('Missing environment variables:', {
-          SUPABASE_URL: !!env.SUPABASE_URL,
-          SUPABASE_SERVICE_KEY: !!env.SUPABASE_SERVICE_KEY
-        })
-        return new Response(JSON.stringify({ error: 'Server configuration error' }), {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        })
-      }
-
-      // Initialize clients
-      const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY)
       const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY })
 
-      // Route handling
       if (url.pathname === '/generate' && request.method === 'POST') {
         const data: GenerationRequest = await request.json()
-        
+
         if (!data.userId || !data.items || !Array.isArray(data.items)) {
-          return new Response(JSON.stringify({ error: 'Invalid request data' }), {
-            status: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          })
+          return json({ error: 'Invalid request data' }, 400)
         }
-        
-        // Validate userId is a valid UUID
+
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
         if (!uuidRegex.test(data.userId)) {
-          return new Response(JSON.stringify({ 
-            error: 'Invalid user ID format', 
-            details: 'User ID must be a valid UUID'
-          }), {
-            status: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          })
+          return json({ error: 'Invalid user ID format', details: 'User ID must be a valid UUID' }, 400)
         }
 
-        // Insert all items as queued
-        const mediaRecords: any[] = []
-        const tableName = data.scope === 'global' ? 'media' : 'user_media'
-        
-        console.log('Processing generation request:', {
-          userId: data.userId,
-          scope: data.scope,
-          tableName,
-          itemCount: data.items.length
-        })
-        
+        const tableName: 'media' | 'user_media' = data.scope === 'global' ? 'media' : 'user_media'
+        const mediaRecords: MediaRecord[] = []
+
         for (const item of data.items) {
-          const id = crypto.randomUUID()
-          const filename = `${id}-${item.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}.png`
-          
-          const insertData: any = {
-            id,
-            filename,
-            original_filename: `${item.name}.png`,
-            file_size: 0,
-            mime_type: 'image/png',
-            url: '',
-            status: 'queued',
-            generation_data: {
-              prompt: item.prompt,
-              size: item.size || '1024x1024',
-              style: item.style || 'vivid',
-              queued_at: new Date().toISOString()
-            }
-          }
-          
-          // Add table-specific fields
-          if (data.scope === 'global') {
-            insertData.generated_by = data.userId
-            insertData.category = item.category || 'generated'
-            insertData.tags = item.tags || []
-            insertData.metadata = {
-              ai_generated: true,
-              model: 'dall-e-3'
-            }
-          } else {
-            insertData.user_id = data.userId
-            insertData.usage_type = 'generated'
-          }
-          
-          const { data: mediaRecord, error } = await supabase
-            .from(tableName)
-            .insert(insertData)
-            .select()
-            .single()
-
-          if (error) {
-            console.error(`Failed to insert ${tableName} record:`, error)
-            // Return error response instead of silently continuing
-            return new Response(JSON.stringify({ 
-              error: `Failed to insert record: ${error.message}`,
-              details: error
-            }), {
-              status: 500,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            })
-          }
-
-          mediaRecords.push({ ...mediaRecord, _table: tableName })
+          const record = await insertQueuedRecord(env, tableName, data.userId, item)
+          mediaRecords.push(record)
         }
 
-        // Only process if we have records
         if (mediaRecords.length > 0) {
-          // Start processing in the background
-          ctx.waitUntil(processGenerationQueue(mediaRecords, env, supabase, openai))
+          ctx.waitUntil(processGenerationQueue(mediaRecords, env, openai))
         }
 
-        return new Response(JSON.stringify({ 
-          success: mediaRecords.length > 0, 
-          queued: mediaRecords.length,
-          records: mediaRecords 
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        })
+        return json({ success: mediaRecords.length > 0, queued: mediaRecords.length, records: mediaRecords })
       }
 
-      // SSE endpoint for progress updates
       if (url.pathname.startsWith('/progress/') && request.method === 'GET') {
         const userId = url.pathname.split('/')[2]
-        
-        // Set up SSE headers
         const headers = new Headers({
           ...corsHeaders,
           'Content-Type': 'text/event-stream',
           'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
+          Connection: 'keep-alive',
         })
 
-        // Create a readable stream for SSE
         const stream = new ReadableStream({
           async start(controller) {
-            // Send initial data
-            const { data: items } = await supabase
-              .from('user_media')
-              .select('*')
-              .eq('user_id', userId)
-              .in('status', ['queued', 'generating', 'generated', 'failed'])
-              .order('created_at', { ascending: false })
+            const items = await listUserGenerationItems(env, userId)
+            controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ type: 'initial', items })}\n\n`))
 
-            controller.enqueue(new TextEncoder().encode(
-              `data: ${JSON.stringify({ type: 'initial', items })}\n\n`
-            ))
-
-            // Keep connection alive with heartbeat
             const heartbeat = setInterval(() => {
               controller.enqueue(new TextEncoder().encode(': heartbeat\n\n'))
             }, 30000)
 
-            // Clean up on close
             request.signal.addEventListener('abort', () => {
               clearInterval(heartbeat)
               controller.close()
@@ -225,163 +120,290 @@ export default {
     } catch (error) {
       console.error('Worker error:', error)
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      return new Response(JSON.stringify({ 
-        error: 'Internal server error',
-        message: errorMessage,
-        stack: error instanceof Error ? error.stack : undefined
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
+      return json({ error: 'Internal server error', message: errorMessage, stack: error instanceof Error ? error.stack : undefined }, 500)
     }
   },
 }
 
-async function processGenerationQueue(
-  records: any[],
-  env: Env,
-  supabase: any,
-  openai: OpenAI
-) {
-  for (const record of records) {
-    const tableName = record._table || 'user_media'
-    
-    try {
-      // Update status to generating
-      await supabase
-        .from(tableName)
-        .update({ 
-          status: 'generating',
-          generation_data: {
-            ...record.generation_data,
-            started_at: new Date().toISOString()
-          }
-        })
-        .eq('id', record.id)
+function json(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  })
+}
 
-      // Generate image with OpenAI
+async function insertQueuedRecord(
+  env: Env,
+  tableName: 'media' | 'user_media',
+  userId: string,
+  item: GenerationRequest['items'][number],
+): Promise<MediaRecord> {
+  const id = crypto.randomUUID()
+  const filename = `${id}-${item.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}.png`
+  const now = new Date().toISOString()
+  const generationData = {
+    prompt: item.prompt,
+    size: item.size || '1024x1024',
+    style: item.style || 'vivid',
+    queued_at: now,
+  }
+
+  const record: MediaRecord = {
+    id,
+    filename,
+    original_filename: `${item.name}.png`,
+    file_size: 0,
+    mime_type: 'image/png',
+    url: '',
+    status: 'queued',
+    generation_data: generationData,
+    metadata: tableName === 'media' ? { ai_generated: true, model: 'dall-e-3' } : {},
+    _table: tableName,
+    ...(tableName === 'media'
+      ? { generated_by: userId, category: item.category || 'generated', tags: item.tags || [] }
+      : { user_id: userId, usage_type: 'generated' }),
+  }
+
+  if (tableName === 'media') {
+    await env.IMAGE_DB.prepare(
+      `INSERT INTO media (
+        id, generated_by, filename, original_filename, file_size, mime_type, url,
+        thumbnail_url, width, height, metadata, category, tags, status,
+        generation_data, error_message, generated_at, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    )
+      .bind(
+        id,
+        userId,
+        record.filename,
+        record.original_filename,
+        record.file_size,
+        record.mime_type,
+        record.url,
+        null,
+        null,
+        null,
+        JSON.stringify(record.metadata),
+        record.category,
+        JSON.stringify(record.tags || []),
+        record.status,
+        JSON.stringify(record.generation_data),
+        null,
+        null,
+        now,
+        now,
+      )
+      .run()
+  } else {
+    await env.IMAGE_DB.prepare(
+      `INSERT INTO user_media (
+        id, user_id, filename, original_filename, file_size, mime_type, url,
+        thumbnail_url, width, height, metadata, usage_type, status,
+        generation_data, error_message, generated_at, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    )
+      .bind(
+        id,
+        userId,
+        record.filename,
+        record.original_filename,
+        record.file_size,
+        record.mime_type,
+        record.url,
+        null,
+        null,
+        null,
+        JSON.stringify(record.metadata),
+        record.usage_type,
+        record.status,
+        JSON.stringify(record.generation_data),
+        null,
+        null,
+        now,
+        now,
+      )
+      .run()
+  }
+
+  return record
+}
+
+async function listUserGenerationItems(env: Env, userId: string): Promise<MediaRecord[]> {
+  const rows = await env.IMAGE_DB.prepare(
+    `SELECT * FROM user_media
+     WHERE user_id = ? AND status IN ('queued', 'generating', 'generated', 'failed')
+     ORDER BY created_at DESC`,
+  )
+    .bind(userId)
+    .all<Record<string, unknown>>()
+
+  return rows.results.map((row) => rowToMediaRecord(row, 'user_media'))
+}
+
+async function processGenerationQueue(records: MediaRecord[], env: Env, openai: OpenAI) {
+  for (const record of records) {
+    const tableName = record._table
+
+    try {
+      const startedGenerationData = {
+        ...record.generation_data,
+        started_at: new Date().toISOString(),
+      }
+      await updateRecord(env, tableName, record.id, {
+        status: 'generating',
+        generation_data: startedGenerationData,
+      })
+      record.generation_data = startedGenerationData
+
       const response = await openai.images.generate({
         model: 'dall-e-3',
-        prompt: record.generation_data.prompt,
+        prompt: String(record.generation_data.prompt),
         n: 1,
-        size: record.generation_data.size || '1024x1024',
-        style: record.generation_data.style || 'vivid',
-        response_format: 'url'
+        size: (record.generation_data.size as '256x256' | '512x512' | '1024x1024' | '1024x1792' | '1792x1024') || '1024x1024',
+        style: (record.generation_data.style as 'vivid' | 'natural') || 'vivid',
+        response_format: 'url',
       })
 
-      const imageUrl = response.data[0].url
+      const generatedImage = response.data?.[0]
+      const imageUrl = generatedImage?.url
       if (!imageUrl) throw new Error('No image URL returned from OpenAI')
 
-      // Download the image
       const imageResponse = await fetch(imageUrl)
       const imageBlob = await imageResponse.blob()
       const arrayBuffer = await imageBlob.arrayBuffer()
-
-      // Analyze image (basic analysis for now)
       const imageAnalysis = await analyzeImage(arrayBuffer)
 
-      // Upload to R2 - use correct bucket based on scope
-      const userId = record.user_id || record.generated_by
+      const userId = record.user_id || record.generated_by || 'unknown'
       const isGlobal = tableName === 'media'
       const bucket = isGlobal ? env.MEDIA_BUCKET : env.USER_MEDIA_BUCKET
-      const r2Key = isGlobal 
-        ? `generated/${record.filename}`
-        : `${userId}/generated/${record.filename}`
-        
+      const r2Key = isGlobal ? `generated/${record.filename}` : `${userId}/generated/${record.filename}`
+
       await bucket.put(r2Key, arrayBuffer, {
-        httpMetadata: {
-          contentType: 'image/png',
-        },
+        httpMetadata: { contentType: 'image/png' },
         customMetadata: {
-          userId: userId,
-          prompt: record.generation_data.prompt,
+          userId,
+          prompt: String(record.generation_data.prompt),
           generatedAt: new Date().toISOString(),
           scope: isGlobal ? 'global' : 'personal',
-          ...imageAnalysis
-        }
+          width: String(imageAnalysis.width),
+          height: String(imageAnalysis.height),
+          format: imageAnalysis.format,
+        },
       })
 
-      // Generate CDN URL - use correct domain based on scope
-      const cdnUrl = isGlobal 
-        ? `https://media.tikocdn.org/${r2Key}`
-        : `https://user-media.tikocdn.org/${r2Key}`
+      const cdnUrl = isGlobal ? `https://media.tikocdn.org/${r2Key}` : `https://user-media.tikocdn.org/${r2Key}`
+      const completedGenerationData = {
+        ...record.generation_data,
+        completed_at: new Date().toISOString(),
+        revised_prompt: generatedImage.revised_prompt,
+      }
+      const metadata = {
+        ...record.metadata,
+        ...imageAnalysis,
+        revised_prompt: generatedImage.revised_prompt,
+      }
 
-      // Update media record with success
-      const updateData: any = {
+      await updateRecord(env, tableName, record.id, {
         status: 'generated',
         url: cdnUrl,
-        thumbnail_url: cdnUrl, // For now, same as main URL
+        thumbnail_url: cdnUrl,
         file_size: arrayBuffer.byteLength,
         width: imageAnalysis.width,
         height: imageAnalysis.height,
-        metadata: {
-          ...record.metadata,
-          ...imageAnalysis,
-          revised_prompt: response.data[0].revised_prompt
-        },
-        generation_data: {
-          ...record.generation_data,
-          completed_at: new Date().toISOString(),
-          revised_prompt: response.data[0].revised_prompt
-        },
-        generated_at: new Date().toISOString()
-      }
-      
-      await supabase
-        .from(tableName)
-        .update(updateData)
-        .eq('id', record.id)
+        metadata,
+        generation_data: completedGenerationData,
+        generated_at: new Date().toISOString(),
+      })
 
-      // Track analytics (if available)
       if (env.ANALYTICS) {
-        env.ANALYTICS.writeDataPoint({
-          blobs: [userId, 'image_generated', tableName],
-          doubles: [1],
-        })
+        env.ANALYTICS.writeDataPoint({ blobs: [userId, 'image_generated', tableName], doubles: [1] })
       }
-
     } catch (error) {
       console.error(`Failed to generate image for ${record.id}:`, error)
-      
-      // Update status to failed
-      await supabase
-        .from(tableName)
-        .update({
-          status: 'failed',
-          error_message: error.message,
-          generation_data: {
-            ...record.generation_data,
-            failed_at: new Date().toISOString()
-          }
-        })
-        .eq('id', record.id)
+      const failedGenerationData = {
+        ...record.generation_data,
+        failed_at: new Date().toISOString(),
+      }
+      await updateRecord(env, tableName, record.id, {
+        status: 'failed',
+        error_message: error instanceof Error ? error.message : 'Unknown error',
+        generation_data: failedGenerationData,
+      })
 
-      // Track failure (if analytics available)
-      const userId = record.user_id || record.generated_by
+      const userId = record.user_id || record.generated_by || 'unknown'
       if (env.ANALYTICS) {
-        env.ANALYTICS.writeDataPoint({
-          blobs: [userId, 'image_generation_failed', tableName],
-          doubles: [1],
-        })
+        env.ANALYTICS.writeDataPoint({ blobs: [userId, 'image_generation_failed', tableName], doubles: [1] })
       }
     }
   }
 }
 
-async function analyzeImage(arrayBuffer: ArrayBuffer): Promise<any> {
-  // Basic image analysis - in production, you'd use a proper image processing library
-  // For now, we'll return mock data
-  // In reality, you might use the Canvas API or a WASM image library
-  
+async function updateRecord(env: Env, tableName: 'media' | 'user_media', id: string, updates: Record<string, unknown>) {
+  const fields: string[] = []
+  const values: unknown[] = []
+
+  for (const [key, value] of Object.entries(updates)) {
+    fields.push(`${key} = ?`)
+    values.push(typeof value === 'object' && value !== null ? JSON.stringify(value) : value)
+  }
+
+  fields.push('updated_at = ?')
+  values.push(new Date().toISOString(), id)
+
+  await env.IMAGE_DB.prepare(`UPDATE ${tableName} SET ${fields.join(', ')} WHERE id = ?`)
+    .bind(...values)
+    .run()
+}
+
+function rowToMediaRecord(row: Record<string, unknown>, tableName: 'media' | 'user_media'): MediaRecord {
+  return {
+    id: String(row.id),
+    user_id: typeof row.user_id === 'string' ? row.user_id : undefined,
+    generated_by: typeof row.generated_by === 'string' ? row.generated_by : undefined,
+    filename: String(row.filename),
+    original_filename: String(row.original_filename),
+    file_size: Number(row.file_size),
+    mime_type: String(row.mime_type),
+    url: String(row.url),
+    thumbnail_url: typeof row.thumbnail_url === 'string' ? row.thumbnail_url : undefined,
+    width: typeof row.width === 'number' ? row.width : undefined,
+    height: typeof row.height === 'number' ? row.height : undefined,
+    metadata: parseJsonObject(row.metadata),
+    usage_type: typeof row.usage_type === 'string' ? row.usage_type : undefined,
+    category: typeof row.category === 'string' ? row.category : undefined,
+    tags: parseJsonArray(row.tags),
+    status: String(row.status) as MediaRecord['status'],
+    generation_data: parseJsonObject(row.generation_data),
+    error_message: typeof row.error_message === 'string' ? row.error_message : undefined,
+    _table: tableName,
+  }
+}
+
+function parseJsonObject(value: unknown): Record<string, unknown> {
+  if (typeof value !== 'string') return {}
+  try {
+    const parsed = JSON.parse(value)
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}
+  } catch {
+    return {}
+  }
+}
+
+function parseJsonArray(value: unknown): string[] {
+  if (typeof value !== 'string') return []
+  try {
+    const parsed = JSON.parse(value)
+    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+async function analyzeImage(arrayBuffer: ArrayBuffer): Promise<{ width: number; height: number; format: string; analyzed_at: string }> {
   return {
     width: 1024,
     height: 1024,
     format: 'png',
-    colors: {
-      dominant: '#4ECDC4',
-      palette: ['#4ECDC4', '#FFFFFF', '#333333']
-    },
-    // In production, you'd extract actual metadata
-    analyzed_at: new Date().toISOString()
+    analyzed_at: new Date().toISOString(),
   }
 }
