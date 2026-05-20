@@ -1,6 +1,7 @@
 name = "tiko-identity-api"
 main = "src/index.ts"
 compatibility_date = "2025-01-01"
+account_id = "8cef251b5fdcf6c6f63db98b7aa49f9a"
 
 [vars]
 IDENTITY_ALLOWED_ORIGINS = "https://tikoapps.org,https://*.tikoapps.org,http://localhost:3000,http://localhost:3008"
@@ -19,3 +20,21 @@ preview_id = "00000000000000000000000000000000"
 [[queues.producers]]
 binding = "MAGIC_LINK_QUEUE"
 queue = "tiko-magic-link-email"
+
+[env.development.vars]
+IDENTITY_ALLOWED_ORIGINS = "https://tikoapps.org,https://*.tikoapps.org,http://localhost:3000,http://localhost:3008"
+MAGIC_LINK_BASE_URL = "https://tiko-identity-api-development.vandipyan.workers.dev/api/identity/verify-magic-link"
+
+[[env.development.d1_databases]]
+binding = "IDENTITY_DB"
+database_name = "tiko-identity-dev"
+database_id = "3fd392ef-706b-4214-b87a-10ad6f6b59c1"
+
+[[env.development.kv_namespaces]]
+binding = "IDENTITY_SESSION_CACHE"
+id = "b1e6720a1ef54ecebdcd6506ed525af9"
+preview_id = "e8ff58eac24e4c64bce03a5afed42309"
+
+[[env.development.queues.producers]]
+binding = "MAGIC_LINK_QUEUE"
+queue = "tiko-magic-link-email-dev"
