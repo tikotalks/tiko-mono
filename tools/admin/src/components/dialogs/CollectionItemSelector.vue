@@ -53,7 +53,7 @@ import { Icons } from 'open-icon';
 import { useBemm } from 'bemm';
 import {
   useCollectionsStore,
-  collectionsSupabaseService,
+  collectionsService,
   useI18n,
   type CollectionItem
 } from '@tiko/core';
@@ -89,7 +89,7 @@ const loadItems = async () => {
   loading.value = true;
   try {
     // Get collection items
-    const collectionItems = await collectionsSupabaseService.getCollectionItems(props.collectionId);
+    const collectionItems = await collectionsService.getCollectionItems(props.collectionId);
 
     // Transform items to simple format with URLs
     items.value = collectionItems

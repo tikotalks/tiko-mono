@@ -208,7 +208,7 @@ Medium-high. Binary storage is already on Cloudflare in several paths, which hel
 
 ### Current code surfaces
 
-- [packages/core/src/services/collections-supabase.service.ts](/Users/silvandiepen/Repositories/_tiko/tiko-mono/packages/core/src/services/collections-supabase.service.ts)
+- `collections-supabase.service.ts` has been removed; `collections.service.ts` now provides a local-first `collectionsService` that keeps the existing shared service contract without importing Supabase.
 - [packages/core/src/stores/collections.store.ts](/Users/silvandiepen/Repositories/_tiko/tiko-mono/packages/core/src/stores/collections.store.ts)
 - media website views/components under [websites/media/src](/Users/silvandiepen/Repositories/_tiko/tiko-mono/websites/media/src)
 

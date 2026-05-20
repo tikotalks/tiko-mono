@@ -1,7 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest'
 
 const storage: Record<string, string> = {}
-let mockFetch: ReturnType<typeof vi.fn>
+let mockFetch: Mock
 
 const loadService = async () => {
   vi.resetModules()
@@ -11,7 +11,7 @@ const loadService = async () => {
 
 describe('translation versioned service auth session selection', () => {
   beforeEach(() => {
-    mockFetch = vi.fn(async () => new Response(JSON.stringify([]), { status: 200 }))
+    mockFetch = vi.fn().mockResolvedValue(new Response(JSON.stringify([]), { status: 200 }))
     vi.stubGlobal('fetch', mockFetch)
     vi.stubGlobal('localStorage', {
       getItem: vi.fn((key: string) => storage[key] ?? null),

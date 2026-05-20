@@ -60,7 +60,6 @@ export {
 
 export { SupabaseItemService } from './item-supabase.service'
 export { SupabaseMediaService } from './media-supabase.service'
-export { collectionsSupabaseService } from './collections-supabase.service'
 
 // Export active service instances
 // Currently using localStorage implementations due to Supabase SDK issues
@@ -80,7 +79,7 @@ export { translationService } from './translation.service'
 export { itemTranslationService } from './item-translation.service'
 export type { ItemTranslation } from './item-translation.service'
 export { gptTranslationService } from './gpt-translation.service'
-export { collectionsSupabaseService as collectionsService } from './collections-supabase.service'
+export { collectionsService, LocalStorageCollectionsService } from './collections.service'
 export { userMediaService } from './user-media.service'
 export { contentService } from './content.service'
 export { publicItemService } from './public-items.service'

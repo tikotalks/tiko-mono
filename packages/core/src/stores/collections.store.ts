@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import { collectionsSupabaseService } from '../services/collections-supabase.service'
-import type { MediaCollection, CollectionItem, CreateCollectionData, UpdateCollectionData, AddItemToCollectionData } from '../services/collections.service'
+import { collectionsService } from '../services/collections.service'
+import type { MediaCollection, CreateCollectionData, UpdateCollectionData, AddItemToCollectionData } from '../services/collections.service'
 import { useAuthStore } from './auth'
 import { logger } from '../utils/logger'
 
@@ -42,7 +42,7 @@ export const useCollectionsStore = defineStore('collections', () => {
     isLoading.value = true
     error.value = null
     try {
-      collections.value = await collectionsSupabaseService.getUserCollections()
+      collections.value = await collectionsService.getUserCollections()
       logger.info('collections-store', 'Collections loaded', { count: collections.value.length })
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load collections'
@@ -57,7 +57,7 @@ export const useCollectionsStore = defineStore('collections', () => {
     isLoading.value = true
     error.value = null
     try {
-      publicCollections.value = await collectionsSupabaseService.getPublicCollections()
+      publicCollections.value = await collectionsService.getPublicCollections()
       logger.info('collections-store', 'Public collections loaded', { count: publicCollections.value.length })
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load public collections'
@@ -73,7 +73,7 @@ export const useCollectionsStore = defineStore('collections', () => {
     isLoading.value = true
     error.value = null
     try {
-      curatedCollections.value = await collectionsSupabaseService.getCuratedCollections()
+      curatedCollections.value = await collectionsService.getCuratedCollections()
       console.log('loadCuratedCollections - Loaded collections:', curatedCollections.value)
       logger.info('collections-store', 'Curated collections loaded', { count: curatedCollections.value.length })
     } catch (err) {
@@ -91,7 +91,7 @@ export const useCollectionsStore = defineStore('collections', () => {
     isLoading.value = true
     error.value = null
     try {
-      const allCollectionsData = await collectionsSupabaseService.getAllCollections()
+      const allCollectionsData = await collectionsService.getAllCollections()
       allCollections.value = allCollectionsData || []
       logger.info('collections-store', 'All collections loaded', { count: allCollections.value.length })
     } catch (err) {
@@ -110,7 +110,7 @@ export const useCollectionsStore = defineStore('collections', () => {
     if (!authStore.user) throw new Error('User not authenticated')
     
     try {
-      const newCollection = await collectionsSupabaseService.createCollection(data)
+      const newCollection = await collectionsService.createCollection(data)
       
       collections.value = [...collections.value, newCollection]
       if (data.is_public) {
@@ -135,7 +135,7 @@ export const useCollectionsStore = defineStore('collections', () => {
     if (!authStore.user) throw new Error('User not authenticated')
     
     try {
-      const updatedCollection = await collectionsSupabaseService.updateCollection(id, updates)
+      const updatedCollection = await collectionsService.updateCollection(id, updates)
       
       // Update in user collections
       const index = collections.value.findIndex(c => c.id === id)
@@ -182,7 +182,7 @@ export const useCollectionsStore = defineStore('collections', () => {
     if (!authStore.user) throw new Error('User not authenticated')
     
     try {
-      await collectionsSupabaseService.deleteCollection(id)
+      await collectionsService.deleteCollection(id)
       collections.value = collections.value.filter(c => c.id !== id)
       publicCollections.value = publicCollections.value.filter(c => c.id !== id)
       curatedCollections.value = curatedCollections.value.filter(c => c.id !== id)
@@ -199,7 +199,7 @@ export const useCollectionsStore = defineStore('collections', () => {
     if (!authStore.user) throw new Error('User not authenticated')
     
     try {
-      const newItem = await collectionsSupabaseService.addItemToCollection(collectionId, data)
+      const newItem = await collectionsService.addItemToCollection(collectionId, data)
       
       // Update the collection's items array
       const updateCollectionItems = (collection: Collection) => {
@@ -232,7 +232,7 @@ export const useCollectionsStore = defineStore('collections', () => {
     if (!authStore.user) throw new Error('User not authenticated')
     
     try {
-      await collectionsSupabaseService.removeItemFromCollection(collectionId, itemId, itemType)
+      await collectionsService.removeItemFromCollection(collectionId, itemId, itemType)
       
       // Update the collection's items array
       const updateCollectionItems = (collection: Collection) => {
@@ -272,7 +272,7 @@ export const useCollectionsStore = defineStore('collections', () => {
     if (!authStore.user) throw new Error('User not authenticated')
     
     try {
-      const isLiked = await collectionsSupabaseService.toggleCollectionLike(collectionId)
+      const isLiked = await collectionsService.toggleCollectionLike(collectionId)
       
       // Update the like status and count in all collections
       const updateCollectionLike = (collection: Collection) => {
@@ -300,10 +300,10 @@ export const useCollectionsStore = defineStore('collections', () => {
   // Get a single collection with items
   const getCollection = async (id: string, loadItems = true) => {
     try {
-      const collection = await collectionsSupabaseService.getCollectionById(id)
+      const collection = await collectionsService.getCollectionById(id)
       
       if (loadItems && collection) {
-        collection.items = await collectionsSupabaseService.getCollectionItems(id)
+        collection.items = await collectionsService.getCollectionItems(id)
       }
       
       return collection
@@ -316,7 +316,7 @@ export const useCollectionsStore = defineStore('collections', () => {
   // Get collections for a specific media item
   const getCollectionsForMediaItem = async (mediaId: string, mediaType: 'media' | 'user_media') => {
     try {
-      const result = await collectionsSupabaseService.getCollectionsForMedia(mediaId, mediaType)
+      const result = await collectionsService.getCollectionsForMedia(mediaId, mediaType)
       return result
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to get collections for media'

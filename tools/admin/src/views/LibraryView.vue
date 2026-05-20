@@ -426,11 +426,11 @@ const addSelectedToCollection = async () => {
       multipleItems: selectedItems,
       onAdd: async (collectionId: string) => {
         try {
-          const { collectionsSupabaseService } = await import('@tiko/core');
+          const { collectionsService } = await import('@tiko/core');
 
           // Add all selected items to the collection
           const promises = selectedItems.map(media =>
-            collectionsSupabaseService.addItemToCollection(collectionId, {
+            collectionsService.addItemToCollection(collectionId, {
               item_id: media.id,
               item_type: 'media'
             })
@@ -565,8 +565,8 @@ const addToCollection = async (media: MediaItem) => {
       },
       onAdd: async (collectionId: string) => {
         try {
-          const { collectionsSupabaseService } = await import('@tiko/core');
-          await collectionsSupabaseService.addItemToCollection(collectionId, {
+          const { collectionsService } = await import('@tiko/core');
+          await collectionsService.addItemToCollection(collectionId, {
             item_id: media.id,
             item_type: 'media'
           });
