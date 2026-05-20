@@ -11,10 +11,10 @@ function apiBase(env: Env): string {
   return (env.LEZU_API_BASE || DEFAULT_API_BASE).replace(/\/$/, '')
 }
 
-async function lezu<T>(env: Env, path: string, init: RequestInit = {}): Promise<T> {
+async function lezuResponse(env: Env, path: string, init: RequestInit = {}): Promise<Response> {
   if (!env.LEZU_API_KEY) throw new Error('LEZU_API_KEY is not configured')
 
-  const response = await fetch(`${apiBase(env)}${path}`, {
+  return fetch(`${apiBase(env)}${path}`, {
     ...init,
     headers: {
       Accept: 'application/json',
@@ -23,6 +23,10 @@ async function lezu<T>(env: Env, path: string, init: RequestInit = {}): Promise<
       ...(init.headers || {})
     }
   })
+}
+
+async function lezu<T>(env: Env, path: string, init: RequestInit = {}): Promise<T> {
+  const response = await lezuResponse(env, path, init)
 
   if (!response.ok) {
     const text = await response.text()
@@ -50,14 +54,37 @@ function flattenMessages(value: unknown, prefix = '', out: Record<string, string
   return out
 }
 
+function appPrefixes(appName: string): string[] {
+  const normalized = appName.trim().toLowerCase()
+  const withoutHyphens = normalized.replace(/-/g, '')
+  const withoutTikoPrefix = normalized.replace(/^tiko-/, '')
+  const aliases = new Set([normalized, withoutHyphens, withoutTikoPrefix, withoutTikoPrefix.replace(/-/g, '')])
+
+  return Array.from(aliases).filter(Boolean)
+}
+
 function filterMessages(messages: Record<string, string>, appName?: string): Record<string, string> {
   if (!appName) return messages
-  const commonPrefixes = ['common', 'shared', 'global', 'auth', 'errors', 'validation']
+  const commonPrefixes = ['common', 'shared', 'global', 'auth', 'errors', 'validation', 'parentMode']
+  const prefixes = appPrefixes(appName)
   return Object.fromEntries(
     Object.entries(messages).filter(([key]) =>
-      key.startsWith(`${appName}.`) || commonPrefixes.some(prefix => key.startsWith(`${prefix}.`))
+      prefixes.some(prefix => key.startsWith(`${prefix}.`)) ||
+      commonPrefixes.some(prefix => key.startsWith(`${prefix}.`))
     )
   )
+}
+
+async function fetchValuesBundle(env: Env, localeCode: string, appName?: string): Promise<Record<string, string>> {
+  const response = await lezu<unknown>(env, `/v1/i18n/projects/${projectId(env)}/values`)
+  const values = unwrap<Array<{ key?: string; localeCode?: string; value?: string }>>(response, 'values')
+  const messages = Object.fromEntries(
+    values
+      .filter(item => item.localeCode === localeCode && item.key && typeof item.value === 'string')
+      .map(item => [item.key as string, item.value as string])
+  )
+
+  return filterMessages(messages, appName)
 }
 
 export async function fetchActiveLanguages(env: Env): Promise<DatabaseLanguage[]> {
@@ -89,9 +116,27 @@ export async function fetchAllKeys(env: Env, appName?: string): Promise<Database
 }
 
 export async function fetchBundle(env: Env, localeCode: string, appName?: string): Promise<Record<string, string>> {
-  const response = await lezu<unknown>(env, `/v1/i18n/bundles/${projectId(env)}/production/${localeCode}`)
-  const bundle = unwrap<{ messages?: unknown }>(response, 'bundle')
-  return filterMessages(flattenMessages(bundle.messages || {}), appName)
+  const response = await lezuResponse(env, `/v1/i18n/bundles/${projectId(env)}/production/${localeCode}`)
+
+  if (response.status === 404) {
+    console.warn(`Lezu bundle not found for locale ${localeCode}; falling back to values endpoint`)
+    return fetchValuesBundle(env, localeCode, appName)
+  }
+
+  if (!response.ok) {
+    const text = await response.text()
+    throw new Error(`Lezu API ${response.status}: ${text || response.statusText}`)
+  }
+
+  const payload = await response.json()
+  const bundle = unwrap<{ messages?: unknown }>(payload, 'bundle')
+  const messages = filterMessages(flattenMessages(bundle.messages || {}), appName)
+
+  if (Object.keys(messages).length === 0) {
+    return fetchValuesBundle(env, localeCode, appName)
+  }
+
+  return messages
 }
 
 export async function fetchTranslationsForLanguage(languageCode: string, env: Env, appName?: string): Promise<DatabaseTranslation[]> {
