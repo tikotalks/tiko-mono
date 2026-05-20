@@ -1,9 +1,8 @@
-import { createClient } from '@supabase/supabase-js'
+/// <reference types="@cloudflare/workers-types" />
 
 export interface Env {
-  VITE_SUPABASE_URL: string
-  VITE_SUPABASE_SERVICE_KEY: string
   ADMIN_API_KEY: string
+  USER_REMOVAL_DB: D1Database
   USER_REMOVAL_LOG?: KVNamespace
 }
 
@@ -17,6 +16,19 @@ interface UserRemovalProgress {
   status: 'in_progress' | 'completed' | 'failed'
   message: string
   timestamp: string
+}
+
+interface RemovalResults {
+  userItems: number
+  collections: number
+  userMedia: number
+  userProfiles: number
+  userSettings: number
+  appSettings: number
+  sessions: number
+  devices: number
+  magicLinks: number
+  authAccount: boolean
 }
 
 export default {
@@ -77,8 +89,11 @@ async function handleUserRemoval(
   env: Env,
   corsHeaders: Record<string, string>
 ): Promise<Response> {
+  let userId = 'unknown'
+
   try {
     const body: UserRemovalRequest = await request.json()
+    userId = body.userId || userId
 
     // Verify admin key
     if (body.adminKey !== env.ADMIN_API_KEY) {
@@ -107,9 +122,6 @@ async function handleUserRemoval(
       })
     }
 
-    // Initialize Supabase client with service key for admin operations
-    const supabase = createClient(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_SERVICE_KEY)
-
     // Log the removal start
     await logRemovalProgress(env, body.userId, {
       step: 'initiated',
@@ -119,7 +131,7 @@ async function handleUserRemoval(
     })
 
     // Start the removal process
-    const result = await removeUserCompletely(supabase, body.userId, env)
+    const result = await removeUserCompletely(body.userId, env)
 
     // Log completion
     await logRemovalProgress(env, body.userId, {
@@ -144,7 +156,6 @@ async function handleUserRemoval(
   } catch (error) {
     console.error('User removal error:', error)
 
-    const userId = (request.body as any)?.userId || 'unknown'
     await logRemovalProgress(env, userId, {
       step: 'failed',
       status: 'failed',
@@ -214,53 +225,40 @@ async function handleRemovalStatus(
   }
 }
 
-async function removeUserCompletely(supabase: any, userId: string, env: Env) {
-  const results = {
+async function removeUserCompletely(userId: string, env: Env): Promise<RemovalResults> {
+  const results: RemovalResults = {
     userItems: 0,
+    collections: 0,
     userMedia: 0,
     userProfiles: 0,
     userSettings: 0,
+    appSettings: 0,
+    sessions: 0,
+    devices: 0,
+    magicLinks: 0,
     authAccount: false
   }
 
-  // Step 1: Remove all user items from all tables
+  // Step 1: Remove all user app data
   await logRemovalProgress(env, userId, {
     step: 'removing_items',
     status: 'in_progress',
-    message: 'Removing user items and sequences...',
+    message: 'Removing user items and collections...',
     timestamp: new Date().toISOString()
   })
 
-  // Remove from items table (sequences, cards, etc.)
-  const { count: itemsCount } = await supabase
-    .from('items')
-    .delete()
-    .eq('user_id', userId)
-    .select('*', { count: 'exact', head: true })
+  results.userItems = await deleteByUserId(env.USER_REMOVAL_DB, 'items', userId)
+  results.collections = await deleteByUserId(env.USER_REMOVAL_DB, 'collections', userId)
 
-  results.userItems = itemsCount || 0
-
-  // Remove from collections table
-  await supabase
-    .from('collections')
-    .delete()
-    .eq('user_id', userId)
-
-  // Step 2: Remove all user media
+  // Step 2: Remove all user media metadata
   await logRemovalProgress(env, userId, {
     step: 'removing_media',
     status: 'in_progress',
-    message: 'Removing user media files...',
+    message: 'Removing user media metadata...',
     timestamp: new Date().toISOString()
   })
 
-  const { count: mediaCount } = await supabase
-    .from('user_media')
-    .delete()
-    .eq('user_id', userId)
-    .select('*', { count: 'exact', head: true })
-
-  results.userMedia = mediaCount || 0
+  results.userMedia = await deleteByUserId(env.USER_REMOVAL_DB, 'user_media', userId)
 
   // Step 3: Remove user profile data
   await logRemovalProgress(env, userId, {
@@ -270,13 +268,7 @@ async function removeUserCompletely(supabase: any, userId: string, env: Env) {
     timestamp: new Date().toISOString()
   })
 
-  const { count: profileCount } = await supabase
-    .from('user_profiles')
-    .delete()
-    .eq('user_id', userId)
-    .select('*', { count: 'exact', head: true })
-
-  results.userProfiles = profileCount || 0
+  results.userProfiles = await deleteByUserId(env.USER_REMOVAL_DB, 'user_profiles', userId)
 
   // Step 4: Remove user settings
   await logRemovalProgress(env, userId, {
@@ -286,38 +278,42 @@ async function removeUserCompletely(supabase: any, userId: string, env: Env) {
     timestamp: new Date().toISOString()
   })
 
-  const { count: settingsCount } = await supabase
-    .from('user_settings')
-    .delete()
-    .eq('user_id', userId)
-    .select('*', { count: 'exact', head: true })
+  results.userSettings = await deleteByUserId(env.USER_REMOVAL_DB, 'user_settings', userId)
+  results.appSettings = await deleteByUserId(env.USER_REMOVAL_DB, 'app_settings', userId)
 
-  results.userSettings = settingsCount || 0
-
-  // Remove app-specific settings
-  await supabase
-    .from('app_settings')
-    .delete()
-    .eq('user_id', userId)
-
-  // Step 5: Remove authentication account (most critical)
+  // Step 5: Remove identity rows. Tiko identity is D1-backed; there is no Supabase Auth account.
   await logRemovalProgress(env, userId, {
-    step: 'removing_auth',
+    step: 'removing_identity',
     status: 'in_progress',
-    message: 'Removing authentication account...',
+    message: 'Removing identity sessions, devices, magic links, and user row...',
     timestamp: new Date().toISOString()
   })
 
-  // Delete the user from Supabase Auth (requires service key)
-  const { error: authError } = await supabase.auth.admin.deleteUser(userId)
-  
-  if (authError) {
-    throw new Error(`Failed to delete user from auth: ${authError.message}`)
-  }
+  results.sessions = await deleteByUserId(env.USER_REMOVAL_DB, 'sessions', userId)
+  results.devices = await deleteByUserId(env.USER_REMOVAL_DB, 'devices', userId)
+  results.magicLinks = await deleteByUserId(env.USER_REMOVAL_DB, 'magic_links', userId)
 
-  results.authAccount = true
+  const userDelete = await env.USER_REMOVAL_DB
+    .prepare('DELETE FROM users WHERE id = ?')
+    .bind(userId)
+    .run()
+
+  results.authAccount = (userDelete.meta.changes ?? 0) > 0
 
   return results
+}
+
+async function deleteByUserId(db: D1Database, tableName: string, userId: string): Promise<number> {
+  if (!/^[a-z_]+$/.test(tableName)) {
+    throw new Error(`Unsafe table name: ${tableName}`)
+  }
+
+  const result = await db
+    .prepare(`DELETE FROM ${tableName} WHERE user_id = ?`)
+    .bind(userId)
+    .run()
+
+  return result.meta.changes ?? 0
 }
 
 async function logRemovalProgress(

@@ -2,6 +2,11 @@ name = "user-removal"
 main = "src/index.ts"
 compatibility_date = "2023-12-01"
 
+[[d1_databases]]
+binding = "USER_REMOVAL_DB"
+database_name = "tiko-user-removal"
+database_id = "00000000-0000-0000-0000-000000000000"
+
 [env.production]
 route = { pattern = "tikoapi.org/user-removal/*", zone_name = "tikoapi.org" }
 
@@ -9,10 +14,13 @@ route = { pattern = "tikoapi.org/user-removal/*", zone_name = "tikoapi.org" }
 binding = "USER_REMOVAL_LOG"
 id = "your_kv_namespace_id"
 
+[[env.production.d1_databases]]
+binding = "USER_REMOVAL_DB"
+database_name = "tiko-user-removal-production"
+database_id = "00000000-0000-0000-0000-000000000000"
+
 [vars]
 ENVIRONMENT = "production"
 
 # Secrets (set via wrangler secret put)
-# VITE_SUPABASE_URL - Supabase project URL
-# VITE_SUPABASE_SERVICE_KEY - Supabase service role key (for admin operations)
 # ADMIN_API_KEY - Secret key for admin operations

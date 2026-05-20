@@ -8,9 +8,6 @@
     "deploy": "wrangler deploy",
     "build": "tsc"
   },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.38.5"
-  },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20231121.0",
     "@types/node": "^20.10.5",

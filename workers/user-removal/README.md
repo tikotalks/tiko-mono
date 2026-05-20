@@ -20,12 +20,12 @@ The worker removes:
 2. **User Media**: All uploaded media files from storage
 3. **User Profile**: Profile data and preferences
 4. **User Settings**: App-specific settings and configurations
-5. **Authentication Account**: Supabase auth user account
+5. **Authentication Account**: D1 auth user account
 
 ### Security
 
 - Requires `ADMIN_API_KEY` for authentication
-- Uses Supabase service role key for admin operations
+- Uses D1 service role key for admin operations
 - Includes progress logging with automatic expiration
 - CORS headers configured for security
 
@@ -91,8 +91,12 @@ Retrieves removal progress for a user.
 
 Set these via `wrangler secret put`:
 
-- `VITE_SUPABASE_URL` - Supabase project URL
-- `VITE_SUPABASE_SERVICE_KEY` - Supabase service role key (for admin operations)
+- `ADMIN_API_KEY` - Secret key for admin operations
+
+The worker also requires these bindings from `wrangler.toml`:
+
+- `USER_REMOVAL_DB` - D1 database containing identity and app metadata rows to delete
+- `USER_REMOVAL_LOG` - Optional KV namespace for 24-hour removal progress logs
 - `ADMIN_API_KEY` - Secret key for authenticating admin requests
 
 ### KV Namespace
@@ -121,8 +125,6 @@ git commit -m "feat: deploy workers [build:workers]"
 
 ### Set Secrets
 ```bash
-wrangler secret put VITE_SUPABASE_URL --env production
-wrangler secret put VITE_SUPABASE_SERVICE_KEY --env production  
 wrangler secret put ADMIN_API_KEY --env production
 ```
 
@@ -145,7 +147,7 @@ await userRemovalService.removeUserAndAllData(
 ## Security Considerations
 
 1. **Admin Key**: Generate a strong, unique admin API key and store securely
-2. **Service Key**: Use Supabase service role key, not anon key
+2. **Service Key**: Use D1 service role key, not anon key
 3. **CORS**: Configure allowed origins appropriately for production
 4. **Logging**: Progress logs automatically expire after 24 hours
 5. **Rate Limiting**: Consider implementing rate limiting for production use
@@ -184,7 +186,7 @@ Monitor the worker via:
 - Cloudflare Workers analytics dashboard
 - KV storage usage for progress logs
 - Worker execution logs and errors
-- Supabase database activity logs
+- D1 database activity logs
 
 ## Notes
 
