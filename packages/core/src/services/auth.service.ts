@@ -74,6 +74,7 @@ interface WorkerUserResponse {
 
 const DEFAULT_AUTH_BASE_URL = 'https://auth.tikoapps.org'
 const AUTH_SESSION_STORAGE_KEY = 'tiko_auth_session'
+const SUPABASE_COMPAT_STORAGE_KEY = 'supabase.auth.token'
 const PENDING_EMAIL_KEY = 'tiko_pending_auth_email'
 const PENDING_NAME_KEY = 'tiko_pending_auth_name'
 
@@ -560,10 +561,12 @@ export class CentralAuthService implements AuthService {
     }
 
     localStorage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(cleanSession))
+    localStorage.removeItem(SUPABASE_COMPAT_STORAGE_KEY)
   }
 
   private clearSessionMirror(): void {
     localStorage.removeItem(AUTH_SESSION_STORAGE_KEY)
+    localStorage.removeItem(SUPABASE_COMPAT_STORAGE_KEY)
   }
 }
 

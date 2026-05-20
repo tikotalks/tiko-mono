@@ -19,21 +19,42 @@ beforeEach(() => {
 })
 
 describe('AuthAPI identity endpoint client', () => {
-  it('requests magic links from the Tiko identity API instead of Supabase Auth', async () => {
-    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ ok: true, data: { queued: true } }), { status: 202 }))
+  it('bootstraps a device session before requesting magic links from the Tiko identity API', async () => {
+    const expiresAt = Math.floor(Date.now() / 1000) + 3600
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        ok: true,
+        data: {
+          user: { id: 'user_1', primaryEmail: null, createdAt: 'now', updatedAt: 'now', lastSeenAt: null },
+          device: { id: 'device_1' },
+          session: { id: 'session_1', userId: 'user_1', deviceId: 'device_1', expiresAt: new Date(expiresAt * 1000).toISOString() },
+          sessionToken: 'session-token'
+        }
+      }), { status: 201 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ ok: true, data: { queued: true } }), { status: 202 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const api = new AuthAPI({ baseUrl: 'https://id.tiko.mt' })
+    const api = new AuthAPI({ baseUrl: 'https://id.tiko.mt', appId: 'cards' })
 
     await api.sendMagicLink('caregiver@example.com')
 
-    expect(fetchMock).toHaveBeenCalledWith('https://id.tiko.mt/api/identity/email', expect.objectContaining({
+    expect(fetchMock).toHaveBeenNthCalledWith(1, 'https://id.tiko.mt/api/identity/device', expect.objectContaining({
       method: 'POST',
       headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ appId: 'cards' })
+    }))
+    expect(fetchMock).toHaveBeenNthCalledWith(2, 'https://id.tiko.mt/api/identity/email', expect.objectContaining({
+      method: 'POST',
+      headers: expect.objectContaining({
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer session-token'
+      }),
       body: JSON.stringify({ email: 'caregiver@example.com' })
     }))
-    const firstCall = fetchMock.mock.calls[0]! as unknown[]
-    expect(firstCall[0]).not.toContain('supabase')
+    expect(stored.tiko_auth_session).toContain('session-token')
+    for (const call of fetchMock.mock.calls) {
+      expect(call[0]).not.toContain('supabase')
+    }
   })
 
   it('validates stored sessions against the Tiko identity API with bearer auth', async () => {

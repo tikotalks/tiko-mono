@@ -58,6 +58,7 @@ type IdentityApiBody<T> = IdentityApiSuccess<T> | IdentityApiError
 export interface AuthAPIOptions {
   baseUrl?: string
   fetchImpl?: typeof fetch
+  appId?: string
 }
 
 const SESSION_STORAGE_KEY = 'tiko_auth_session'
@@ -78,10 +79,12 @@ function resolveIdentityBaseUrl(): string {
 export class AuthAPI {
   private readonly baseUrl: string
   private readonly fetchImpl: typeof fetch
+  private readonly appId?: string
 
   constructor(options: AuthAPIOptions = {}) {
     this.baseUrl = (options.baseUrl || resolveIdentityBaseUrl()).replace(/\/+$/, '')
     this.fetchImpl = options.fetchImpl || fetch
+    this.appId = options.appId
   }
 
   private async apiCall<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -110,10 +113,9 @@ export class AuthAPI {
   }
 
   async sendMagicLink(email: string): Promise<void> {
-    const session = this.getStoredSession()
-    const headers: Record<string, string> = {}
-    if (session?.access_token) {
-      headers.Authorization = `Bearer ${session.access_token}`
+    const session = await this.ensureSession()
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${session.access_token}`
     }
 
     await this.apiCall('/api/identity/email', {
@@ -166,6 +168,43 @@ export class AuthAPI {
 
   clearSession(): void {
     localStorage.removeItem(SESSION_STORAGE_KEY)
+  }
+
+  private async ensureSession(): Promise<AuthSession> {
+    const existingSession = this.getStoredSession()
+    if (existingSession?.access_token) {
+      return existingSession
+    }
+
+    const bundle = await this.apiCall<IdentitySessionBundle>('/api/identity/device', {
+      method: 'POST',
+      body: JSON.stringify({ appId: this.resolveAppId() })
+    })
+    this.storeIdentityBundle(bundle)
+
+    const session = this.getStoredSession()
+    if (!session?.access_token) {
+      throw new Error('Identity API did not return a usable session token')
+    }
+
+    return session
+  }
+
+  private resolveAppId(): string {
+    if (this.appId) {
+      return this.appId
+    }
+
+    if (typeof window === 'undefined') {
+      return 'tiko'
+    }
+
+    const hostname = window.location.hostname
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'local'
+    }
+
+    return hostname.split('.')[0] || 'tiko'
   }
 }
 
