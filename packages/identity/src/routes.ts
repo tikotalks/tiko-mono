@@ -1,6 +1,6 @@
 import { stripBearer } from './crypto'
 import { fingerprintFromRequest } from './fingerprint'
-import { createMagicLink, createSession, refreshSession, registerDevice, revokeSession, validateSession, verifyMagicLink } from './repository'
+import { anonymousCleanupCutoff, cleanupInactiveAnonymousUsers, createMagicLink, createSession, refreshSession, registerDevice, revokeSession, validateSession, verifyMagicLink } from './repository'
 import type { ApiBody, IdentityEnv, RegisterDeviceRequest } from './types'
 
 export async function handleIdentityRequest(request: Request, env: IdentityEnv): Promise<Response> {
@@ -58,9 +58,9 @@ export async function handleIdentityRequest(request: Request, env: IdentityEnv):
       if (!token) return jsonError('missing_session', 'Session bearer token is required.', 401, request, env)
       const session = await validateSession(env, token)
       if (!session) return jsonError('invalid_session', 'Session is invalid or expired.', 401, request, env)
-      const body = (await request.json()) as { email?: string; redirectUrl?: string }
+      const body = (await request.json()) as { email?: string; redirectUrl?: string; name?: string; displayName?: string }
       if (!body.email) return jsonError('invalid_email', 'Email is required.', 400, request, env)
-      const link = await createMagicLink(env, session.user.id, body.email, 'recovery', body.redirectUrl || null)
+      const link = await createMagicLink(env, session.user.id, body.email, 'recovery', body.redirectUrl || null, body.name || body.displayName || null)
       return json({ ok: true, data: { magicLinkId: link.magicLink.id, expiresAt: link.magicLink.expiresAt, queued: Boolean(env.MAGIC_LINK_QUEUE) } }, 202, request, env)
     }
 
@@ -95,7 +95,7 @@ function jsonError(code: string, message: string, status: number, request: Reque
 function corsHeaders(request: Request, env: IdentityEnv): Record<string, string> {
   const origin = request.headers.get('origin') || ''
   const allowed = parseAllowedOrigins(env.IDENTITY_ALLOWED_ORIGINS)
-  const allowOrigin = allowed.includes('*') || allowed.includes(origin) ? origin || '*' : allowed[0] || '*'
+  const allowOrigin = isAllowedOrigin(origin, allowed) ? origin || '*' : allowed.find((entry) => entry !== '*') || '*'
 
   return {
     'access-control-allow-origin': allowOrigin,
@@ -111,4 +111,31 @@ function parseAllowedOrigins(value?: string): string[] {
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean)
+}
+
+
+export async function cleanupInactiveAnonymousUsersForSchedule(env: IdentityEnv, scheduledTime = new Date()): Promise<{ deletedUsers: number; cutoffIso: string; retentionDays: number }> {
+  const parsedRetentionDays = Number(env.ANONYMOUS_USER_RETENTION_DAYS || 7)
+  const retentionDays = Number.isFinite(parsedRetentionDays) && parsedRetentionDays > 0 ? parsedRetentionDays : 7
+  const cutoffIso = anonymousCleanupCutoff(retentionDays, scheduledTime)
+  const result = await cleanupInactiveAnonymousUsers(env, cutoffIso)
+  return { ...result, cutoffIso, retentionDays }
+}
+
+function isAllowedOrigin(origin: string, allowed: string[]): boolean {
+  if (!origin) return allowed.includes('*')
+  if (allowed.includes('*') || allowed.includes(origin)) return true
+
+  return allowed.some((pattern) => {
+    if (!pattern.includes('*')) return false
+    const escaped = pattern
+      .split('*')
+      .map(escapeRegExp)
+      .join('.+')
+    return new RegExp(`^${escaped}$`).test(origin)
+  })
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')
 }

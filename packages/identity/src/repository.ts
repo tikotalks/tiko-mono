@@ -18,6 +18,7 @@ const DEFAULT_MAGIC_LINK_TTL_SECONDS = 60 * 15
 interface UserRow {
   id: string
   primary_email: string | null
+  display_name: string | null
   created_at: string
   updated_at: string
   last_seen_at: string | null
@@ -59,6 +60,7 @@ interface MagicLinkRow {
   expires_at: string
   consumed_at: string | null
   redirect_url: string | null
+  display_name: string | null
 }
 
 export async function registerDevice(env: IdentityEnv, request: RegisterDeviceRequest): Promise<SessionBundle> {
@@ -147,6 +149,7 @@ export async function createMagicLink(
   email: string,
   purpose: EmailTokenPurpose = 'recovery',
   redirectUrl: string | null = null,
+  displayName: string | null = null,
   ttlSeconds = DEFAULT_MAGIC_LINK_TTL_SECONDS
 ): Promise<{ magicLink: MagicLink; token: string; url: string }> {
   const normalizedEmail = normalizeEmail(email)
@@ -165,10 +168,10 @@ export async function createMagicLink(
     .run()
 
   await env.IDENTITY_DB.prepare(
-    `insert into magic_links (id, user_id, email, token_hash, state, created_at, expires_at, consumed_at, redirect_url)
-     values (?, ?, ?, ?, 'pending', ?, ?, null, ?)`
+    `insert into magic_links (id, user_id, email, token_hash, state, created_at, expires_at, consumed_at, redirect_url, display_name)
+     values (?, ?, ?, ?, 'pending', ?, ?, null, ?, ?)`
   )
-    .bind(magicLinkId, userId, normalizedEmail, tokenHash, now, expiresAt, redirectUrl)
+    .bind(magicLinkId, userId, normalizedEmail, tokenHash, now, expiresAt, redirectUrl, normalizeDisplayName(displayName))
     .run()
 
   const magicLink = await requireMagicLink(env, magicLinkId)
@@ -195,8 +198,8 @@ export async function verifyMagicLink(env: IdentityEnv, token: string): Promise<
   const now = nowIso()
   await env.IDENTITY_DB.prepare(`update magic_links set state = 'consumed', consumed_at = ? where id = ?`).bind(now, row.id).run()
   await env.IDENTITY_DB.prepare(`update email_tokens set consumed_at = ? where token_hash = ?`).bind(now, tokenHash).run()
-  await env.IDENTITY_DB.prepare(`update users set primary_email = coalesce(primary_email, ?), updated_at = ? where id = ?`)
-    .bind(row.email, now, row.user_id)
+  await env.IDENTITY_DB.prepare(`update users set primary_email = coalesce(primary_email, ?), display_name = coalesce(display_name, ?), updated_at = ? where id = ?`)
+    .bind(row.email, normalizeDisplayName(row.display_name), now, row.user_id)
     .run()
 
   const device = await env.IDENTITY_DB.prepare(`select * from devices where user_id = ? order by last_seen_at desc, created_at desc limit 1`)
@@ -213,7 +216,7 @@ export async function verifyMagicLink(env: IdentityEnv, token: string): Promise<
 async function createAnonymousUser(env: IdentityEnv, createdAt: string): Promise<IdentityUser> {
   const id = createId('usr')
   await env.IDENTITY_DB.prepare(
-    `insert into users (id, primary_email, created_at, updated_at, last_seen_at) values (?, null, ?, ?, ?)`
+    `insert into users (id, primary_email, display_name, created_at, updated_at, last_seen_at) values (?, null, null, ?, ?, ?)`
   )
     .bind(id, createdAt, createdAt, createdAt)
     .run()
@@ -335,7 +338,7 @@ function withoutTokenHash(session: IdentitySession): Omit<IdentitySession, 'toke
 }
 
 function mapUser(row: UserRow): IdentityUser {
-  return { id: row.id, primaryEmail: row.primary_email, createdAt: row.created_at, updatedAt: row.updated_at, lastSeenAt: row.last_seen_at }
+  return { id: row.id, primaryEmail: row.primary_email, displayName: row.display_name, createdAt: row.created_at, updatedAt: row.updated_at, lastSeenAt: row.last_seen_at }
 }
 
 function mapDevice(row: DeviceRow): IdentityDevice {
@@ -378,6 +381,31 @@ function mapMagicLink(row: MagicLinkRow): MagicLink {
     createdAt: row.created_at,
     expiresAt: row.expires_at,
     consumedAt: row.consumed_at,
-    redirectUrl: row.redirect_url
+    redirectUrl: row.redirect_url,
+    displayName: row.display_name
   }
+}
+
+export async function cleanupInactiveAnonymousUsers(env: IdentityEnv, cutoffIso: string): Promise<{ deletedUsers: number }> {
+  const result = await env.IDENTITY_DB.prepare(
+    `delete from users
+     where primary_email is null
+       and display_name is null
+       and coalesce(last_seen_at, updated_at, created_at) < ?`
+  )
+    .bind(cutoffIso)
+    .run()
+
+  const changes = typeof result.meta?.changes === 'number' ? result.meta.changes : 0
+  return { deletedUsers: changes }
+}
+
+export function anonymousCleanupCutoff(retentionDays = 7, from = new Date()): string {
+  const cutoff = new Date(from.getTime() - retentionDays * 24 * 60 * 60 * 1000)
+  return cutoff.toISOString()
+}
+
+function normalizeDisplayName(value: string | null | undefined): string | null {
+  const trimmed = value?.trim()
+  return trimmed || null
 }

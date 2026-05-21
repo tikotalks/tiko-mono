@@ -7,6 +7,7 @@ export interface IdentityEnv {
   IDENTITY_TOKEN_PEPPER?: string
   IDENTITY_ALLOWED_ORIGINS?: string
   MAGIC_LINK_BASE_URL?: string
+  ANONYMOUS_USER_RETENTION_DAYS?: string
 }
 
 export type SessionState = 'active' | 'revoked' | 'expired'
@@ -34,6 +35,7 @@ export interface RegisterDeviceRequest {
 export interface IdentityUser {
   id: string
   primaryEmail: string | null
+  displayName: string | null
   createdAt: string
   updatedAt: string
   lastSeenAt: string | null
@@ -86,6 +88,7 @@ export interface MagicLink {
   expiresAt: string
   consumedAt: string | null
   redirectUrl: string | null
+  displayName: string | null
 }
 
 export interface MagicLinkEmailJob {

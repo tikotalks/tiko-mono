@@ -93,8 +93,9 @@ export function useRadioItems() {
     console.log('Fetching radio items for user:', authStore.user?.id)
 
     if (!authStore.user) {
-      error.value = 'User not authenticated'
-      console.error('No authenticated user found')
+      console.warn('No authenticated user found, showing empty radio library until device session is ready')
+      items.value = []
+      error.value = null
       return
     }
 

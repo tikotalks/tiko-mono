@@ -77,6 +77,7 @@ interface WorkerUserResponse {
 interface IdentityUser {
   id: string
   primaryEmail: string | null
+  displayName: string | null
   createdAt: string
   updatedAt: string
   lastSeenAt: string | null
@@ -177,6 +178,7 @@ export class CentralAuthService implements AuthService {
         },
         body: JSON.stringify({
           email,
+          name: fullName,
           redirectUrl: this.getAuthRedirectUrl()
         })
       })
@@ -625,7 +627,7 @@ export class CentralAuthService implements AuthService {
 
   mapIdentityBundle(bundle: IdentitySessionBundle): AuthSession {
     const expiresAt = Math.floor(new Date(bundle.session.expiresAt).getTime() / 1000)
-    const displayName = bundle.device.displayName || bundle.user.primaryEmail || 'Tiko user'
+    const displayName = bundle.user.displayName || bundle.device.displayName || bundle.user.primaryEmail || 'Tiko user'
 
     return {
       access_token: bundle.sessionToken,

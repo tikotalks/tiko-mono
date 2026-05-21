@@ -209,7 +209,7 @@
   import { ref, computed, onMounted, watch, inject } from 'vue'
   import { useBemm } from 'bemm'
   import { TButton, TIcon, useParentMode, type PopupService, type ToastService } from '@tiko/ui'
-  import { useI18n, useEventBus } from '@tiko/core'
+  import { useI18n, useEventBus, useAuthStore } from '@tiko/core'
   import RadioCard from '../components/RadioCard.vue'
   import RadioPlayer from '../components/RadioPlayer.vue'
   import AddItemModal from '../components/AddItemModal.vue'
@@ -225,6 +225,7 @@
   const bemm = useBemm('radio-view')
   const parentMode = useParentMode('radio')
   const radioStore = useRadioStore()
+  const authStore = useAuthStore()
   const popupService = inject<PopupService>('popupService')!
   const toastService = inject<ToastService>('toastService')!
   const eventBus = useEventBus()
@@ -482,6 +483,8 @@
     })
 
     try {
+      console.log('Ensuring device-first auth session...')
+      await authStore.initializeFromStorage()
       console.log('Fetching radio items...')
       await fetchItems()
       console.log('Loading radio settings...')

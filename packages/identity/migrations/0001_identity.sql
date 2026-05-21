@@ -4,6 +4,7 @@
 create table if not exists users (
   id text primary key,
   primary_email text unique,
+  display_name text,
   created_at text not null,
   updated_at text not null,
   last_seen_at text
@@ -67,7 +68,8 @@ create table if not exists magic_links (
   created_at text not null,
   expires_at text not null,
   consumed_at text,
-  redirect_url text
+  redirect_url text,
+  display_name text
 );
 
 create index if not exists idx_magic_links_user_id on magic_links(user_id);
