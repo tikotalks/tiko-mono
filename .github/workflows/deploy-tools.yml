@@ -182,11 +182,11 @@ jobs:
       - name: Build UI Docs
         run: |
           pnpm --filter=@tiko/ui build
-          pnpm --filter=@tiko/ui-docs build
+          pnpm --filter=ui-docs build
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: dc2b7d14a69351375cab6de9a13ddee9
-          command: pages deploy ./tools/ui-docs/dist --project-name=tiko-ui-docs${{ needs.determine-environment.outputs.branch-suffix }} --compatibility-date=2024-08-02 --branch=${{ github.ref_name }}
+          command: pages deploy ./tools/ui-docs/dist --project-name=tiko-ui-docs${{ needs.determine-environment.outputs.branch-suffix }} --branch=${{ github.ref_name }}
