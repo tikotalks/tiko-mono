@@ -1137,7 +1137,8 @@
     "aboutThisApp": "About this App",
     "account": "Account",
     "actions": {
-      "edit": "Edit"
+      "edit": "Edit",
+      "add": "Add"
     },
     "actionsLabel": "Actions",
     "active": "Active",

@@ -20,6 +20,10 @@ export default {
       });
     }
 
+    if (url.hostname === 'items.tikoapi.org' || url.hostname === 'tts.tikoapi.org' || url.pathname.startsWith('/rest/v1/')) {
+      return handleItemsRestRequest(request, env);
+    }
+
     // Root endpoint - show status
     if (url.pathname === '/') {
       return new Response(JSON.stringify({ 
@@ -271,13 +275,89 @@ async function handleCacheClear(request: Request, env: Env): Promise<Response> {
   }
 }
 
+async function handleItemsRestRequest(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  const table = url.pathname.replace(/^\/rest\/v1\//, '').split('/')[0];
+
+  if (table === 'tts_audio') {
+    return handleTtsAudioRestRequest(request);
+  }
+
+  if (table !== 'items') {
+    return jsonResponse({ code: 'not_found', message: 'Unsupported table' }, request, 404);
+  }
+
+  if (request.method === 'HEAD') {
+    return new Response(null, { status: 200, headers: getCORSHeaders(request) });
+  }
+
+  if (request.method !== 'GET') {
+    return jsonResponse({ code: 'method_not_allowed', message: 'Only GET is currently supported' }, request, 405);
+  }
+
+  const sql = `SELECT id, template_id, title, slug, status, language_code, created_at, updated_at
+    FROM content_items
+    WHERE status IS NULL OR status != 'archived'
+    ORDER BY created_at DESC
+    LIMIT ?`;
+  const limit = clampLimit(url.searchParams.get('limit'));
+  const result = await env.CONTENT_DB.prepare(sql).bind(limit).all<Record<string, unknown>>();
+  return jsonResponse(result.results.map(rowToLegacyItem), request);
+}
+
+function handleTtsAudioRestRequest(request: Request): Response {
+  if (request.method === 'HEAD') {
+    return new Response(null, { status: 200, headers: getCORSHeaders(request) });
+  }
+
+  if (request.method !== 'GET') {
+    return jsonResponse({ code: 'method_not_allowed', message: 'Only GET is currently supported' }, request, 405);
+  }
+
+  return jsonResponse([], request);
+}
+
+function clampLimit(value: string | null): number {
+  const parsed = Number.parseInt(value || '100', 10);
+  if (!Number.isFinite(parsed)) return 100;
+  return Math.max(0, Math.min(parsed, 500));
+}
+
+function rowToLegacyItem(row: Record<string, unknown>): Record<string, unknown> {
+  return {
+    id: row.id,
+    name: row.title,
+    title: row.title,
+    slug: row.slug,
+    type: row.template_id,
+    parent_id: null,
+    user_id: null,
+    app_name: null,
+    order_index: 0,
+    is_public: true,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  };
+}
+
+function jsonResponse(body: unknown, request: Request, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      ...getCORSHeaders(request),
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
 function getCORSHeaders(request: Request): HeadersInit {
   const origin = request.headers.get('Origin') || '*';
   
   return {
     'Access-Control-Allow-Origin': origin,
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, Prefer',
+    'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Max-Age': '86400',
   };
 }

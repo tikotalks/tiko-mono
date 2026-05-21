@@ -2,6 +2,11 @@ name = "media-cache"
 main = "src/index.ts"
 compatibility_date = "2024-01-15"
 compatibility_flags = ["nodejs_compat"]
+account_id = "dc2b7d14a69351375cab6de9a13ddee9"
+
+routes = [
+  { pattern = "media.tikoapi.org/*", zone_name = "tikoapi.org" }
+]
 
 kv_namespaces = [
   { binding = "MEDIA_CACHE", id = "a26659698dbb44c48de3d06e100e5c78", preview_id = "a26659698dbb44c48de3d06e100e5c78" }

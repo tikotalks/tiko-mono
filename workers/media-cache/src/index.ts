@@ -28,29 +28,53 @@ interface CachedMediaResponse {
   deploymentVersion: string;
 }
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Content-Type': 'application/json',
-};
+function corsHeaders(request: Request): HeadersInit {
+  return {
+    'Access-Control-Allow-Origin': request.headers.get('Origin') || '*',
+    'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Credentials': 'true',
+    'Content-Type': 'application/json',
+  };
+}
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
     if (request.method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders });
+      return new Response(null, { headers: corsHeaders(request) });
+    }
+
+    if (request.method === 'HEAD') {
+      return new Response(null, { headers: corsHeaders(request) });
     }
 
     if (request.method !== 'GET') {
       return new Response(JSON.stringify({ error: 'Method not allowed' }), {
         status: 405,
-        headers: corsHeaders,
+        headers: corsHeaders(request),
       });
     }
 
     try {
+      if (url.pathname === '/media' || url.pathname === '/media/public') {
+        const media = await fetchPublicMedia(env.MEDIA_DB);
+        return new Response(JSON.stringify({ media }), { headers: corsHeaders(request) });
+      }
+
+      if (url.pathname.startsWith('/media/')) {
+        const mediaId = decodeURIComponent(url.pathname.split('/')[2] || '');
+        const media = await fetchMediaById(env.MEDIA_DB, mediaId);
+        if (!media) {
+          return new Response(JSON.stringify({ error: 'Media not found' }), {
+            status: 404,
+            headers: corsHeaders(request),
+          });
+        }
+        return new Response(JSON.stringify(media), { headers: corsHeaders(request) });
+      }
+
       const deploymentVersion = env.DEPLOYMENT_VERSION || new Date().toISOString().split('T')[0];
       const forceRefresh = url.searchParams.get('refresh') === 'true';
       const cacheKey = `public-media-${deploymentVersion}`;
@@ -61,7 +85,7 @@ export default {
           console.log('Returning cached media data');
           return new Response(cached, {
             headers: {
-              ...corsHeaders,
+              ...corsHeaders(request),
               'X-Cache-Status': 'HIT',
               'X-Deployment-Version': deploymentVersion,
             },
@@ -87,7 +111,7 @@ export default {
 
       return new Response(responseJson, {
         headers: {
-          ...corsHeaders,
+          ...corsHeaders(request),
           'X-Cache-Status': 'MISS',
           'X-Deployment-Version': deploymentVersion,
         },
@@ -96,7 +120,7 @@ export default {
       console.error('Worker error:', error);
       return new Response(JSON.stringify({ error: 'Internal server error' }), {
         status: 500,
-        headers: corsHeaders,
+        headers: corsHeaders(request),
       });
     }
   },
@@ -114,6 +138,23 @@ async function fetchPublicMedia(db: D1Database): Promise<MediaItem[]> {
     .all<Record<string, unknown>>();
 
   return rows.results.map(rowToMediaItem);
+}
+
+async function fetchMediaById(db: D1Database, id: string): Promise<MediaItem | null> {
+  if (!id) return null;
+
+  const row = await db
+    .prepare(
+      `SELECT id, file_name, file_size, mime_type, width, height, alt_text, title,
+              description, folder, tags, is_private, original_url, created_at, updated_at
+       FROM media
+       WHERE id = ?
+       LIMIT 1`,
+    )
+    .bind(id)
+    .first<Record<string, unknown>>();
+
+  return row ? rowToMediaItem(row) : null;
 }
 
 function rowToMediaItem(row: Record<string, unknown>): MediaItem {
