@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - develop
+      - development
   workflow_dispatch:
     inputs:
       target:
@@ -105,8 +106,8 @@ jobs:
           fi
 
           # For develop branch, check changed files instead of commit message
-          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
-            echo "Develop branch detected - checking changed files..."
+          if [[ "${{ github.ref }}" == "refs/heads/development" || "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "Development branch detected - checking changed files..."
             
             # Get list of changed files
             CHANGED_FILES=$(git diff --name-only HEAD^ HEAD || git diff --name-only HEAD)

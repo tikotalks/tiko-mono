@@ -2,13 +2,13 @@ name: I18n Validation
 
 on:
   push:
-    branches: [master, develop]
+    branches: [master, develop, development]
     paths:
       - 'packages/ui/src/i18n/**'
       - 'scripts/check-i18n.mjs'
       - '.github/workflows/i18n-validation.yml'
   pull_request:
-    branches: [master, develop]
+    branches: [master, develop, development]
     paths:
       - 'packages/ui/src/i18n/**'
       - 'scripts/check-i18n.mjs'

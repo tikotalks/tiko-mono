@@ -5,10 +5,11 @@ on:
     branches:
       - master
       - develop
+      - development
   workflow_dispatch:
     inputs:
       target:
-        description: 'Target app to deploy (timer, yes-no, cards, sequence, radio, todo, type, or all)'
+        description: 'Target app to deploy (timer, yes-no, cards, sequence, radio, todo, type, tiko, or all)'
         required: true
         default: 'all'
         type: choice
@@ -21,6 +22,7 @@ on:
           - radio
           - todo
           - type
+          - tiko
       message:
         description: 'Deployment message'
         required: false
@@ -41,6 +43,7 @@ jobs:
       build-radio: ${{ steps.check.outputs.build-radio }}
       build-todo: ${{ steps.check.outputs.build-todo }}
       build-type: ${{ steps.check.outputs.build-type }}
+      build-tiko: ${{ steps.check.outputs.build-tiko }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -57,6 +60,7 @@ jobs:
           echo "build-radio=false" >> $GITHUB_OUTPUT
           echo "build-todo=false" >> $GITHUB_OUTPUT
           echo "build-type=false" >> $GITHUB_OUTPUT
+          echo "build-tiko=false" >> $GITHUB_OUTPUT
 
           # Handle workflow_dispatch trigger
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
@@ -71,6 +75,7 @@ jobs:
               echo "build-radio=true" >> $GITHUB_OUTPUT
               echo "build-todo=true" >> $GITHUB_OUTPUT
               echo "build-type=true" >> $GITHUB_OUTPUT
+              echo "build-tiko=true" >> $GITHUB_OUTPUT
             elif [[ "$TARGET" == "timer" ]]; then
               echo "build-timer=true" >> $GITHUB_OUTPUT
             elif [[ "$TARGET" == "yes-no" ]]; then
@@ -85,6 +90,8 @@ jobs:
               echo "build-todo=true" >> $GITHUB_OUTPUT
             elif [[ "$TARGET" == "type" ]]; then
               echo "build-type=true" >> $GITHUB_OUTPUT
+            elif [[ "$TARGET" == "tiko" ]]; then
+              echo "build-tiko=true" >> $GITHUB_OUTPUT
             fi
             exit 0
           fi
@@ -100,21 +107,22 @@ jobs:
             echo "build-radio=true" >> $GITHUB_OUTPUT
             echo "build-todo=true" >> $GITHUB_OUTPUT
             echo "build-type=true" >> $GITHUB_OUTPUT
+            echo "build-tiko=true" >> $GITHUB_OUTPUT
             exit 0
           fi
 
           # For develop branch, check changed files instead of commit message
-          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
-            echo "Develop branch detected - checking changed files..."
+          if [[ "${{ github.ref }}" == "refs/heads/development" || "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "Development branch detected - checking changed files..."
             
             # Get list of changed files
             CHANGED_FILES=$(git diff --name-only HEAD^ HEAD || git diff --name-only HEAD)
             echo "Changed files:"
             echo "$CHANGED_FILES"
             
-            # Check if UI or Core packages changed (deploy all apps)
-            if echo "$CHANGED_FILES" | grep -E "^packages/(ui|core)/" > /dev/null; then
-              echo "UI or Core package changed - deploying all apps"
+            # Check if shared packages, dependency manifests, or this workflow changed (deploy all apps)
+            if echo "$CHANGED_FILES" | grep -E "^(packages/(ui|core)/|package.json|pnpm-lock.yaml|pnpm-workspace.yaml|\.github/workflows/deploy-apps\.yml)" > /dev/null; then
+              echo "Shared package, dependency manifest, or deploy workflow changed - deploying all apps"
               echo "build-timer=true" >> $GITHUB_OUTPUT
               echo "build-yes-no=true" >> $GITHUB_OUTPUT
               echo "build-cards=true" >> $GITHUB_OUTPUT
@@ -122,6 +130,7 @@ jobs:
               echo "build-radio=true" >> $GITHUB_OUTPUT
               echo "build-todo=true" >> $GITHUB_OUTPUT
               echo "build-type=true" >> $GITHUB_OUTPUT
+              echo "build-tiko=true" >> $GITHUB_OUTPUT
               exit 0
             fi
             
@@ -147,19 +156,22 @@ jobs:
             if echo "$CHANGED_FILES" | grep -E "^apps/type/" > /dev/null; then
               echo "build-type=true" >> $GITHUB_OUTPUT
             fi
+            if echo "$CHANGED_FILES" | grep -E "^apps/tiko/" > /dev/null; then
+              echo "build-tiko=true" >> $GITHUB_OUTPUT
+            fi
             
             exit 0
           fi
 
   check-environment:
     needs: check-triggers
-    if: needs.check-triggers.outputs.build-timer == 'true' || needs.check-triggers.outputs.build-yes-no == 'true' || needs.check-triggers.outputs.build-cards == 'true' || needs.check-triggers.outputs.build-sequence == 'true' || needs.check-triggers.outputs.build-radio == 'true' || needs.check-triggers.outputs.build-todo == 'true' || needs.check-triggers.outputs.build-type == 'true'
+    if: needs.check-triggers.outputs.build-timer == 'true' || needs.check-triggers.outputs.build-yes-no == 'true' || needs.check-triggers.outputs.build-cards == 'true' || needs.check-triggers.outputs.build-sequence == 'true' || needs.check-triggers.outputs.build-radio == 'true' || needs.check-triggers.outputs.build-todo == 'true' || needs.check-triggers.outputs.build-type == 'true' || needs.check-triggers.outputs.build-tiko == 'true'
     uses: ./.github/workflows/reusable-check-environment.yml
     secrets: inherit
 
   generate-translations:
     needs: [check-triggers, check-environment]
-    if: needs.check-triggers.outputs.build-timer == 'true' || needs.check-triggers.outputs.build-yes-no == 'true' || needs.check-triggers.outputs.build-cards == 'true' || needs.check-triggers.outputs.build-sequence == 'true' || needs.check-triggers.outputs.build-radio == 'true' || needs.check-triggers.outputs.build-todo == 'true' || needs.check-triggers.outputs.build-type == 'true'
+    if: needs.check-triggers.outputs.build-timer == 'true' || needs.check-triggers.outputs.build-yes-no == 'true' || needs.check-triggers.outputs.build-cards == 'true' || needs.check-triggers.outputs.build-sequence == 'true' || needs.check-triggers.outputs.build-radio == 'true' || needs.check-triggers.outputs.build-todo == 'true' || needs.check-triggers.outputs.build-type == 'true' || needs.check-triggers.outputs.build-tiko == 'true'
     runs-on: ubuntu-latest
     name: Generate Translations
     steps:
@@ -530,8 +542,49 @@ jobs:
           accountId: dc2b7d14a69351375cab6de9a13ddee9
           command: pages deploy ./apps/sequence/dist --project-name=tiko-sequence${{ needs.determine-environment.outputs.branch-suffix }} --commit-dirty=true --branch=${{ github.ref_name }}
 
-  # Skip tiko app for now as it has build issues
-  # deploy-tiko:
-  #   needs: check-triggers
-  #   if: needs.check-triggers.outputs.build-tiko == 'true'
-  #   ...
+  deploy-tiko:
+    needs: [determine-environment, check-triggers, check-environment, generate-translations]
+    if: needs.check-triggers.outputs.build-tiko == 'true'
+    runs-on: ubuntu-latest
+    name: Deploy Tiko Dashboard App (${{ needs.determine-environment.outputs.environment }})
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: |
+          pnpm install --no-frozen-lockfile --filter=tiko...
+
+      - name: Download translation files
+        uses: actions/download-artifact@v4
+        with:
+          name: i18n-translations
+          path: packages/core/src/i18n/generated/
+
+      - name: Build Tiko dashboard app
+        run: |
+          pnpm --filter=@tiko/ui build
+          pnpm --filter=@tiko/core build
+          pnpm --filter=tiko build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
+          VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
+          VITE_SITE_URL: https://${{ needs.determine-environment.outputs.url-suffix }}tikoapps.org
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: dc2b7d14a69351375cab6de9a13ddee9
+          command: pages deploy ./apps/tiko/dist --project-name=tiko-dashboard${{ needs.determine-environment.outputs.branch-suffix }} --commit-dirty=true --branch=${{ github.ref_name }}

@@ -24,10 +24,13 @@ jobs:
       - name: Determine deployment environment
         id: determine
         run: |
-          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+          if [[ "${{ github.ref }}" == "refs/heads/development" || "${{ github.ref }}" == "refs/heads/develop" ]]; then
             echo "environment=development" >> $GITHUB_OUTPUT
-            echo "url-suffix=develop." >> $GITHUB_OUTPUT
-            echo "branch-suffix=-develop" >> $GITHUB_OUTPUT
+            echo "url-suffix=dev." >> $GITHUB_OUTPUT
+            # Development deploys use the same Cloudflare Pages projects with branch previews,
+            # not separate -develop projects. This keeps GitHub Actions aligned with
+            # development.<project>.pages.dev and the dev-app-router.
+            echo "branch-suffix=" >> $GITHUB_OUTPUT
           else
             echo "environment=production" >> $GITHUB_OUTPUT
             echo "url-suffix=" >> $GITHUB_OUTPUT
