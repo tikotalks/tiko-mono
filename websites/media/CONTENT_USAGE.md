@@ -83,7 +83,7 @@ To add new section types:
 
 ## Testing
 
-1. Ensure your Supabase connection is configured
+1. Ensure your Tiko content API configuration is available
 2. Create the content structure in your CMS
 3. Run the marketing website: `pnpm dev`
 4. The homepage should now load content dynamically

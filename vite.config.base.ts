@@ -114,29 +114,18 @@ export const createViteConfig = (args: {
         cacheId: `${appName}-v${buildVersion}`,
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
-            handler: 'NetworkFirst',
+            // Cache Tiko media/CDN images
+            urlPattern: /^https:\/\/(?:media\.tikoapi\.org|.*\.tikocdn\.org)\/.*/i,
+            handler: 'CacheFirst' as const,
             options: {
-              cacheName: 'supabase-cache',
+              cacheName: 'image-cache',
               expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 // 1 day
-              }
-            }
+                maxEntries: 200,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
+            },
           },
-          {
-            // Cache Supabase Storage images (public/signed)
-            urlPattern: /^https:\/\/[^/]+\.supabase\.co\/storage\/v1\/object\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'image-storage-cache',
-              cacheableResponse: { statuses: [0, 200] },
-              expiration: {
-                maxEntries: 300,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
-              }
-            }
-          },
+
           {
             // Generic remote images cache (jpg/png/webp/avif/svg)
             urlPattern: /\.(?:png|jpg|jpeg|gif|webp|avif|svg)(?:\?.*)?$/i,

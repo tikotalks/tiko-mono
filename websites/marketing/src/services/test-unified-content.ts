@@ -6,9 +6,8 @@ import { UnifiedContentService } from '@tiko/core'
 
 // Use the same config as the existing content service
 const config = {
-  supabaseUrl: import.meta.env.VITE_SUPABASE_URL || 'https://kejvhvszhevfwgsztedf.supabase.co',
-  supabaseKey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'your-anon-key',
-  defaultLanguage: 'en'
+  apiUrl: import.meta.env.VITE_CONTENT_API_URL || 'https://content.tikoapi.org',
+  useCache: false
 }
 
 export async function testUnifiedContentService() {

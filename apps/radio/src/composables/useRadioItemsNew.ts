@@ -1,7 +1,7 @@
 /**
  * New Radio Items Composable using the generic item service
  *
- * This replaces the old useRadioItems that used direct Supabase calls
+ * This replaces the old useRadioItems that used direct database calls
  */
 
 import { ref } from 'vue'

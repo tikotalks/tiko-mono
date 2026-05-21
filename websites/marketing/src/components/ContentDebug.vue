@@ -56,27 +56,19 @@ async function testDirectApi() {
   try {
     debugOutput.value = { status: 'Testing direct API...' }
     
-    // Make a direct API call to test
-    const baseUrl = import.meta.env.VITE_SUPABASE_URL + '/rest/v1'
-    const apiKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-    
+    // Make a direct Cloudflare content API call to test
+    const baseUrl = import.meta.env.VITE_CONTENT_API_URL || 'https://content.tikoapi.org'
     const response = await fetch(
-      `${baseUrl}/content_section_data?section_id=eq.2be87ea5-20b6-4d35-a4ac-90b2724db534&language_code=is.null`,
-      {
-        headers: {
-          'apikey': apiKey,
-          'Content-Type': 'application/json'
-        }
-      }
+      `${baseUrl.replace(/\/$/, '')}/api/sections/2be87ea5-20b6-4d35-a4ac-90b2724db534/data?language_code=`,
+      { headers: { 'Content-Type': 'application/json' } }
     )
-    
     const data = await response.json()
     
     debugOutput.value = {
-      test: 'Direct API call',
+      test: 'Direct content API call',
       url: response.url,
       status: response.status,
-      dataLength: data.length,
+      dataLength: Array.isArray(data) ? data.length : Object.keys(data ?? {}).length,
       data
     }
   } catch (error) {

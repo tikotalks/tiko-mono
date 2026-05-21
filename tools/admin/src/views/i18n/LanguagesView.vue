@@ -47,7 +47,7 @@
           {{  t('admin.i18n.languages.checkDatabase')}}
         </p>
         <div :class="bemm('sql-instruction')">
-          <p>Run this in your Supabase SQL editor:</p>
+          <p>Run this migration through the backend database tooling:</p>
           <code>check-and-populate-languages.sql</code>
         </div>
       </div>
