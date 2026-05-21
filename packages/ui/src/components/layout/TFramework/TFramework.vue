@@ -183,7 +183,9 @@
 	const { themeStyles, config: tikoConfig } = useTikoConfig(props.config)
 
 	// Initialize device tilt based on user settings
+	// Only enable for apps (not marketing/website contexts)
 	const deviceMotionEnabled = computed(() => {
+		if (tikoConfig.value?.isApp === false) return false
 		if (!authStore.value) return true // Default to true if store not ready
 		const refs = storeToRefs(authStore.value)
 		return refs.userSettings?.value?.deviceMotion ?? true
