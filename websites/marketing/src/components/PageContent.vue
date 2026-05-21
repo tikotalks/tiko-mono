@@ -106,9 +106,11 @@ async function loadContent() {
     const startTime = Date.now();
 
     // Use different method for article pages
+    const contentLanguage = languageCode === 'en' ? undefined : languageCode;
+
     const page = props.articleSlug
-      ? await content.getPageWithArticle(pageSlug.value, props.articleSlug, languageCode)
-      : await content.getPage(pageSlug.value, languageCode, false);
+      ? await content.getPageWithArticle(pageSlug.value, props.articleSlug, contentLanguage)
+      : await content.getPage(pageSlug.value, contentLanguage, false);
 
     const loadTime = Date.now() - startTime;
 
