@@ -101,6 +101,7 @@ function corsHeaders(request: Request, env: IdentityEnv): Record<string, string>
     'access-control-allow-origin': allowOrigin,
     'access-control-allow-methods': 'GET,POST,DELETE,OPTIONS',
     'access-control-allow-headers': 'content-type,authorization',
+    'access-control-allow-credentials': 'true',
     'access-control-max-age': '86400',
     vary: 'Origin'
   }

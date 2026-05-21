@@ -7,7 +7,7 @@ routes = [
 ]
 
 [vars]
-IDENTITY_ALLOWED_ORIGINS = "https://tiko.mt,https://*.tiko.mt,https://tikoapps.org,https://*.tikoapps.org,http://localhost:3000,http://localhost:3008"
+IDENTITY_ALLOWED_ORIGINS = "https://tiko.mt,https://*.tiko.mt,https://tikoapps.org,https://*.tikoapps.org,https://development.tiko-*.pages.dev,http://localhost:3000,http://localhost:3008"
 MAGIC_LINK_BASE_URL = "https://id.tiko.mt/api/identity/verify-magic-link"
 ANONYMOUS_USER_RETENTION_DAYS = "7"
 
