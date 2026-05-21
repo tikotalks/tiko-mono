@@ -214,6 +214,9 @@ jobs:
           workingDirectory: 'workers/media-cache'
           command: deploy --env ${{ needs.determine-environment.outputs.environment }}
           wranglerVersion: '3.101.0'
+          secrets: |
+            VITE_SUPABASE_URL: SUPABASE_URL
+            VITE_SUPABASE_SERVICE_KEY: SUPABASE_SERVICE_KEY
 
       - name: Deploy sentence-engine worker
         if: needs.check-triggers.outputs.build-sentence == 'true'
@@ -235,9 +238,9 @@ jobs:
           command: deploy --env ${{ needs.determine-environment.outputs.environment }}
           wranglerVersion: '3.101.0'
           secrets: |
-            VITE_RESEND_KEY
-        env:
-          VITE_RESEND_KEY: ${{ secrets.VITE_RESEND_KEY }}
+            VITE_RESEND_KEY: RESEND_KEY
+            VITE_SUPABASE_URL: SUPABASE_URL
+            VITE_SUPABASE_SERVICE_KEY: SUPABASE_SERVICE_KEY
 
       - name: Deploy user-removal worker
         if: needs.check-triggers.outputs.build-user-removal == 'true'
@@ -249,6 +252,6 @@ jobs:
           command: deploy --env ${{ needs.determine-environment.outputs.environment }}
           wranglerVersion: '3.101.0'
           secrets: |
-            ADMIN_API_KEY
-        env:
-          ADMIN_API_KEY: ${{ secrets.ADMIN_API_KEY }}
+            VITE_SUPABASE_URL: SUPABASE_URL
+            VITE_SUPABASE_SERVICE_KEY: SUPABASE_SERVICE_KEY
+            ADMIN_API_KEY: ADMIN_API_KEY

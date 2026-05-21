@@ -21,8 +21,8 @@ describe('translation versioned service auth session selection', () => {
         for (const key of Object.keys(storage)) delete storage[key]
       })
     })
-    vi.stubEnv('VITE_LEGACY_BACKEND_REMOVED', 'https://legacy-backend.invalid')
-    vi.stubEnv('VITE_LEGACY_BACKEND_REMOVED', 'anon-key')
+    vi.stubEnv('VITE_SUPABASE_URL', 'https://example.supabase.co')
+    vi.stubEnv('VITE_SUPABASE_PUBLISHABLE_KEY', 'anon-key')
   })
 
   afterEach(() => {
@@ -33,7 +33,7 @@ describe('translation versioned service auth session selection', () => {
 
   it('uses the Tiko identity session token for authenticated translation requests', async () => {
     storage.tiko_auth_session = JSON.stringify({ access_token: 'identity-token' })
-    storage['legacy-backend.auth.token'] = JSON.stringify({ access_token: 'legacy-legacy-backend-token' })
+    storage['supabase.auth.token'] = JSON.stringify({ access_token: 'legacy-supabase-token' })
 
     const service = await loadService()
 
@@ -49,8 +49,8 @@ describe('translation versioned service auth session selection', () => {
     )
   })
 
-  it('does not fall back to legacy legacy-backend.auth.token when no Tiko identity session exists', async () => {
-    storage['legacy-backend.auth.token'] = JSON.stringify({ access_token: 'legacy-legacy-backend-token' })
+  it('does not fall back to legacy supabase.auth.token when no Tiko identity session exists', async () => {
+    storage['supabase.auth.token'] = JSON.stringify({ access_token: 'legacy-supabase-token' })
 
     const service = await loadService()
 

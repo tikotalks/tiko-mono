@@ -53,7 +53,7 @@ Apps may cache identity state for offline and fast boot, but app-local caches ar
 
 - No passwords.
 - No mandatory login before first use.
-- No legacy backend Auth dependency.
+- No Supabase Auth dependency.
 - No direct app-managed auth provider.
 - No query-string token handoff as an SSO primitive.
 - No localStorage-as-authority session model.
@@ -78,21 +78,21 @@ Email must not become:
 
 Magic links must be issued by the identity platform, validated server-side, and bound to clear session/device outcomes.
 
-## 4. legacy backend Removal Doctrine
+## 4. Supabase Removal Doctrine
 
-legacy backend must be completely removed from the Tiko runtime.
+Supabase must be completely removed from the Tiko runtime.
 
-This is not a provider swap. This is a removal of the legacy backend-shaped architecture: auth coupling, RLS assumptions, PostgREST client calls, storage assumptions, and compatibility shims.
+This is not a provider swap. This is a removal of the Supabase-shaped architecture: auth coupling, RLS assumptions, PostgREST client calls, storage assumptions, and compatibility shims.
 
 ### Required removal rules
 
-- Remove `` from runtime app/package/worker dependencies.
-- Remove legacy backend Auth from app boot and session flows.
+- Remove `@supabase/supabase-js` from runtime app/package/worker dependencies.
+- Remove Supabase Auth from app boot and session flows.
 - Remove PostgREST-style direct data access from client code.
 - Remove RLS-dependent authorization assumptions and replace them with explicit Worker-side authorization.
-- Remove legacy backend storage assumptions; keep or expand R2 for binary objects.
-- Remove legacy backend compatibility layers rather than preserving them.
-- Remove migration-era names once their replacement is stable; do not normalize `legacy-backend-*` naming in the rebuild.
+- Remove Supabase storage assumptions; keep or expand R2 for binary objects.
+- Remove Supabase compatibility layers rather than preserving them.
+- Remove migration-era names once their replacement is stable; do not normalize `supabase-*` naming in the rebuild.
 
 ### No compatibility layer
 
@@ -102,7 +102,7 @@ Adapters may exist only as temporary audit aids or one-time import tooling. They
 
 ### No user migration
 
-The clean rebuild does not migrate existing legacy backend users into the new identity system.
+The clean rebuild does not migrate existing Supabase users into the new identity system.
 
 If legacy data is ever imported for analysis, demos, or later selective recovery, it must remain outside the critical path and must not force the new user model to inherit old IDs, old account semantics, old RLS rules, or old auth flows.
 
@@ -251,7 +251,7 @@ Tiko engineering must be boring where users need trust and sharp where the platf
 
 ### Anti-patterns
 
-- Keeping old legacy backend services with new names.
+- Keeping old Supabase services with new names.
 - Wrapping legacy code so implementation can pretend to progress.
 - Creating a mega-platform before the first app works.
 - Moving every feature into shared packages prematurely.
@@ -266,7 +266,7 @@ Docs, audits, and specs come before implementation.
 Required order:
 
 1. Doctrine and project map.
-2. legacy backend/runtime dependency audit.
+2. Supabase/runtime dependency audit.
 3. Identity API specification.
 4. App boot specification.
 5. Data-domain migration/rebuild specifications.
@@ -286,7 +286,7 @@ A change is not acceptable merely because it builds. It must also answer:
 - Does the app still open immediately?
 - Did we remove legacy surface area instead of hiding it?
 - Is identity still centralized and device-first?
-- Is legacy backend absent from runtime?
+- Is Supabase absent from runtime?
 - Is Cloudflare used according to the storage/API rules?
 - Is Tiko UI preserved as Tiko UI?
 - Did we avoid unnecessary platform complexity?

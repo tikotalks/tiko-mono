@@ -15,7 +15,7 @@ Translations are managed through a database-driven system with version control a
 
 ## Architecture
 
-1. **Database**: All translations are stored in legacy backend with versioning
+1. **Database**: All translations are stored in Supabase with versioning
 2. **Admin UI**: Web interface for managing translations
 3. **Export Script**: Generates JSON files for runtime use
 4. **Runtime**: Apps use generated JSON files (never query database directly)
@@ -57,8 +57,8 @@ Expected JSON format:
 Run the export script to generate JSON files:
 
 ```bash
-# Set your legacy backend service key
-export LEGACY_BACKEND_REMOVED=your-service-key
+# Set your Supabase service key
+export SUPABASE_SERVICE_KEY=your-service-key
 
 # Export all translations
 pnpm run translations:export
@@ -107,7 +107,7 @@ Add to your build pipeline:
 ```yaml
 - name: Export Translations
   env:
-    LEGACY_BACKEND_REMOVED: ${{ secrets.LEGACY_BACKEND_REMOVED }}
+    SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
   run: pnpm run translations:export
 
 - name: Build Application
@@ -149,7 +149,7 @@ Example: If a key is missing in `fr-CA`, it will check `fr`, then `en`.
 
 ### Authentication errors
 
-- Ensure you have a valid legacy backend session
+- Ensure you have a valid Supabase session
 - For scripts, use service key authentication
 
 ### Missing translations

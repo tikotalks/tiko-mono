@@ -2,7 +2,7 @@
 
 ## Status
 
-Supersedes the older auth migration direction. Tiko is not adopting Better Auth as the default and is not preserving old legacy backend users/data as a product constraint.
+Supersedes the older auth migration direction. Tiko is not adopting Better Auth as the default and is not preserving old Supabase users/data as a product constraint.
 
 ## Goal
 
@@ -16,7 +16,7 @@ Provide one central device-first identity system for all Tiko apps with:
 - D1-backed user/device/session data;
 - no passwords;
 - no login wall;
-- no legacy backend runtime.
+- no Supabase runtime.
 
 ## Host layout
 
@@ -74,7 +74,7 @@ Never block a child behind login, password, email entry, or OAuth.
 - `magic_links`
 - `user_profile_events`
 
-Do not add `legacy_user_map`. Do not model this as a legacy backend migration bridge.
+Do not add `legacy_user_map`. Do not model this as a Supabase migration bridge.
 
 ## Security rules
 

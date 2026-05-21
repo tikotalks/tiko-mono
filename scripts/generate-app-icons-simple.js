@@ -184,9 +184,9 @@ async function resolveImageUrl(imageId) {
     return `file://${path.resolve(imageId)}`;
   }
   
-  // If it's a UUID, fetch the media entry from legacy backend
+  // If it's a UUID, fetch the media entry from Supabase
   if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(imageId)) {
-    const API_URL = 'https://legacy-backend.invalid';
+    const API_URL = 'https://kejvhvszhevfwgsztedf.supabase.co/rest/v1';
     const PUBLISHABLE_KEY = 'sb_publishable_fk77WDXOflYEwFkLf4Hlig_v2hlbbAG';
     
     try {
@@ -211,12 +211,12 @@ async function resolveImageUrl(imageId) {
     } catch (error) {
       console.error(`  Failed to resolve media URL: ${error.message}`);
       // Fallback to direct storage URL
-      return `https://legacy-backend.invalid
+      return `https://xqjibuvlhfisvgvwgfbn.supabase.co/storage/v1/object/public/media/${imageId}`;
     }
   }
   
-  // Otherwise assume it's a named icon in the default legacy backend
-  return `https://legacy-backend.invalid
+  // Otherwise assume it's a named icon in the default Supabase
+  return `https://xqjibuvlhfisvgvwgfbn.supabase.co/storage/v1/object/public/media/icons/${imageId}.png`;
 }
 
 // Generate icons for a specific app

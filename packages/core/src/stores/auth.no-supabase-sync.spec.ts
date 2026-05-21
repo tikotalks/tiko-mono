@@ -52,11 +52,11 @@ const mockSession = {
   user: mockUser
 }
 
-describe('AuthStore legacy backend removal', () => {
+describe('AuthStore Supabase removal', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
-    vi.stubEnv('VITE_AUTH_BASE_URL', 'https://legacy-backend.invalid')
+    vi.stubEnv('VITE_AUTH_BASE_URL', 'https://legacy-project.supabase.co')
 
     Object.defineProperty(window, 'localStorage', {
       value: {
@@ -68,7 +68,7 @@ describe('AuthStore legacy backend removal', () => {
     })
   })
 
-  it('syncs successful email sign-in sessions without legacy backend APIs', async () => {
+  it('syncs successful email sign-in sessions without Supabase APIs', async () => {
     authServiceMock.signInWithEmail.mockResolvedValue({
       success: true,
       user: mockUser,
@@ -84,7 +84,7 @@ describe('AuthStore legacy backend removal', () => {
     expect(authSyncServiceMock.syncSession).toHaveBeenCalledWith(mockSession)
   })
 
-  it('clears app auth state during logout without legacy backend APIs', async () => {
+  it('clears app auth state during logout without Supabase APIs', async () => {
     authServiceMock.signOut.mockResolvedValue({ success: true })
 
     const store = useAuthStore()

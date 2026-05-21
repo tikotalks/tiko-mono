@@ -73,8 +73,8 @@ The OpenAI TTS integration has been implemented with the following components:
 ### Worker Secrets Required
 
 - `OPENAI_API_KEY`: OpenAI API key for TTS generation
-- `LEGACY_BACKEND_REMOVED`: legacy backend project URL
-- `LEGACY_BACKEND_REMOVED`: legacy backend service role key
+- `SUPABASE_URL`: Supabase project URL
+- `SUPABASE_SERVICE_KEY`: Supabase service role key
 
 ### Language Fallbacks
 

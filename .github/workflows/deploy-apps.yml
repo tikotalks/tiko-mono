@@ -194,6 +194,9 @@ jobs:
       - name: Generate i18n translations
         run: pnpm generate:i18n:worker:prod
         env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
       - name: Upload translation files
         uses: actions/upload-artifact@v4
@@ -236,6 +239,9 @@ jobs:
           pnpm --filter=@tiko/core build
           pnpm --filter=timer build
         env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
           VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
           VITE_SITE_URL: https://${{ needs.determine-environment.outputs.url-suffix }}timer.tikoapps.org
@@ -281,6 +287,9 @@ jobs:
           pnpm --filter=@tiko/core build
           pnpm --filter=yes-no build
         env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
           VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
           VITE_SITE_URL: https://${{ needs.determine-environment.outputs.url-suffix }}yesno.tikoapps.org
@@ -326,6 +335,9 @@ jobs:
           pnpm --filter=@tiko/core build
           pnpm --filter=cards build
         env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
           VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
           VITE_SITE_URL: https://${{ needs.determine-environment.outputs.url-suffix }}cards.tikoapps.org
@@ -371,6 +383,9 @@ jobs:
           pnpm --filter=@tiko/core build
           pnpm --filter=radio build
         env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
           VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
           VITE_SITE_URL: https://${{ needs.determine-environment.outputs.url-suffix }}radio.tikoapps.org
@@ -416,6 +431,9 @@ jobs:
           pnpm --filter=@tiko/core build
           pnpm --filter=todo build
         env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
           VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
           VITE_SITE_URL: https://${{ needs.determine-environment.outputs.url-suffix }}todo.tikoapps.org
@@ -461,6 +479,9 @@ jobs:
           pnpm --filter=@tiko/core build
           pnpm --filter=type build
         env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
           VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
           VITE_SITE_URL: https://${{ needs.determine-environment.outputs.url-suffix }}type.tikoapps.org
@@ -507,6 +528,9 @@ jobs:
           pnpm --filter=@tiko/animations build
           cd apps/sequence && pnpm run build
         env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
           VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
           VITE_SITE_URL: https://${{ needs.determine-environment.outputs.url-suffix }}sequence.tikoapps.org
@@ -551,6 +575,9 @@ jobs:
           pnpm --filter=@tiko/core build
           pnpm --filter=tiko build
         env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
           VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
           VITE_SITE_URL: https://${{ needs.determine-environment.outputs.url-suffix }}tikoapps.org

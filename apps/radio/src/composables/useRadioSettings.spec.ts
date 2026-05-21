@@ -10,7 +10,7 @@ vi.mock('@tiko/core', () => ({
     getSettings: vi.fn(() => Promise.resolve(null)),
     updateSettings: vi.fn(() => Promise.resolve({ data: null, error: null })),
   },
-  legacy-backend: {
+  supabase: {
     from: vi.fn(() => ({
       select: vi.fn(() => ({
         eq: vi.fn(() => ({

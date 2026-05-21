@@ -26,7 +26,7 @@ Tiko is a clean Cloudflare-native rebuild, not a legacy migration.
 - No feature paywalls.
 - No password login.
 - No login wall.
-- No legacy backend runtime.
+- No Supabase runtime.
 - No old-user/data migration constraint.
 - Apps must work immediately, offline where practical.
 - Identity is device-first and invisible by default, with optional email magic-link recovery/transfer.
@@ -59,7 +59,7 @@ Target platform:
 - Lezu for translation management.
 - Capacitor for iOS distribution.
 
-The current repo still contains older pnpm/Nx/legacy backend-era code. The target is documented in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and the phased rebuild plan in [`docs/ROADMAP.md`](docs/ROADMAP.md).
+The current repo still contains older pnpm/Nx/Supabase-era code. The target is documented in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and the phased rebuild plan in [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Development branch discipline
 

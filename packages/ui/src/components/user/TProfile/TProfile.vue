@@ -333,7 +333,7 @@ const handleFileSelect = async (event: Event) => {
 
     // Force refresh the user data in auth store to ensure avatar is updated everywhere
     try {
-      // Add a small delay to ensure the profile update has propagated
+      // Add a small delay to ensure Supabase has processed the update
       await new Promise(resolve => setTimeout(resolve, 1000))
 
       if (typeof authStore.refreshUserData === 'function') {

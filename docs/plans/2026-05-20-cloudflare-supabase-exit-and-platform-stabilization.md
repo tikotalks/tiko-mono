@@ -1,8 +1,8 @@
 # Tiko Clean Cloudflare Rebuild Plan
 
-> **For Hermes:** Use `subagent-driven-development` to execute this plan phase-by-phase. This is a clean rebuild/cutover plan, not a compatibility project. Do not let builder agents add fallback adapters, old-user bridges, or “temporary” legacy backend paths unless explicitly re-approved by Sil.
+> **For Hermes:** Use `subagent-driven-development` to execute this plan phase-by-phase. This is a clean rebuild/cutover plan, not a compatibility project. Do not let builder agents add fallback adapters, old-user bridges, or “temporary” Supabase paths unless explicitly re-approved by Sil.
 
-**Goal:** Turn Tiko into a clean Cloudflare-native platform with no legacy backend runtime, no old-data burden, no password login screens, a Tiko-owned device/user identity system, Lezu-powered translations, a modern Tiko-specific UI library, tested working apps, and Capacitor-ready builds.
+**Goal:** Turn Tiko into a clean Cloudflare-native platform with no Supabase runtime, no old-data burden, no password login screens, a Tiko-owned device/user identity system, Lezu-powered translations, a modern Tiko-specific UI library, tested working apps, and Capacitor-ready builds.
 
 **Architecture:** Start fresh. Cloudflare Workers own all backend behavior. D1 is the source of truth for users, app data, content, media metadata, settings, and translation-related local references. R2 stores binary media/audio/assets. KV is cache only. Queues handle slow generation/translation jobs. Apps never talk directly to databases. Apps boot immediately by asking the Tiko identity platform for the current device user; if none exists, the platform creates one automatically.
 
@@ -16,7 +16,7 @@ The previous version of this plan was too conservative. It assumed old users and
 
 The new doctrine:
 
-- **No legacy backend.** Not auth, not data, not storage metadata, not translation tables, not admin-only paths.
+- **No Supabase.** Not auth, not data, not storage metadata, not translation tables, not admin-only paths.
 - **No old-user migration.** Existing users/data are not a constraint.
 - **No compatibility layer for old data.** If something is rebuilt, it is rebuilt cleanly.
 - **No Better Auth by default.** Tiko needs a custom identity model suited to child-facing apps and invisible onboarding.
@@ -26,7 +26,7 @@ The new doctrine:
 - **One Tiko identity platform.** All apps ask the same service who the current device user is.
 - **Cloudflare-only runtime.** External services may exist only behind Workers when needed, not as app/runtime infrastructure.
 
-This plan is therefore not “migrate users from legacy backend.” It is:
+This plan is therefore not “migrate users from Supabase.” It is:
 
 > Build the clean Tiko platform, move apps onto it, then delete the old world.
 
@@ -72,10 +72,10 @@ Not:
 
 ## Decisions
 
-- New runtime code must not add legacy backend usage.
+- New runtime code must not add Supabase usage.
 - Old users do not need to be preserved.
 - Old database schemas are references only, not constraints.
-- New data schemas should be designed from the product model, not copied from legacy backend.
+- New data schemas should be designed from the product model, not copied from Supabase.
 - Apps should keep working even without a named user/email.
 - Identity is device-first, then optionally recoverable.
 - `@tiko/ui` remains Tiko-specific; `@sil/ui` is a standard/reference, not a dependency.
@@ -91,7 +91,7 @@ Not:
 **Must say:**
 
 - no old-user constraints
-- no legacy backend runtime
+- no Supabase runtime
 - no passwords
 - no login wall
 - custom Tiko identity
@@ -142,16 +142,17 @@ Not:
 
 **Objective:** Know what exists so we can replace it cleanly, not preserve it.
 
-## Task 1.1: legacy backend removal inventory
+## Task 1.1: Supabase removal inventory
 
 **Files:**
 
-- Create: `scripts/audit-legacy-backend-usage.mjs`
-- Create: `docs/audits/legacy-backend-removal-inventory.md`
+- Create: `scripts/audit-supabase-usage.mjs`
+- Create: `docs/audits/supabase-removal-inventory.md`
 
 **Scan for:**
 
-- `legacy-backend`
+- `supabase`
+- `SUPABASE_`
 - `auth.uid`
 - `rest/v1`
 - `rpc(`
@@ -199,7 +200,7 @@ Not:
 
 **List and decide:**
 
-- legacy backend: remove
+- Supabase: remove
 - Netlify references: remove/replace with Cloudflare Pages
 - OpenAI/direct AI provider calls: allowed only behind Workers
 - Azure/other TTS providers: allowed only behind Workers if needed
@@ -219,7 +220,7 @@ Not:
   - event bus
   - HTTP client primitives
   - no direct data backend
-  - no legacy backend
+  - no Supabase
 
 - `packages/identity`
   - device identity client
@@ -557,7 +558,7 @@ npm install --package-lock-only
 - `lint`
 - `test`
 - `test:e2e`
-- `audit:legacy-backend`
+- `audit:supabase`
 - `capacitor:check`
 
 ## Task 4.4: Remove Nx after parity
@@ -686,7 +687,7 @@ LEZU_PROJECT_ID=project_xxx LEZU_API_KEY=lez_user_xxx npm run i18n:sync
 - `workers/content-api` owns D1 queries and caching.
 - Admin uses content client.
 - Websites use content client.
-- No direct legacy backend CMS access.
+- No direct Supabase CMS access.
 - No copy-paste of old schema unless current product needs it.
 
 ## Task 6.1: Create `@tiko/content`
@@ -749,7 +750,7 @@ LEZU_PROJECT_ID=project_xxx LEZU_API_KEY=lez_user_xxx npm run i18n:sync
 
 # Phase 7 — Fresh App Data on D1
 
-**Objective:** Replace all legacy backend app data with clean D1-backed APIs.
+**Objective:** Replace all Supabase app data with clean D1-backed APIs.
 
 ## Target domains
 
@@ -1113,7 +1114,7 @@ Should build each app and run Capacitor sync/config validation where possible.
 - KV namespaces documented
 - Queues documented
 - no Netlify references
-- no legacy backend secrets
+- no Supabase secrets
 
 ## Task 12.1: Cloudflare resource inventory
 
@@ -1165,15 +1166,15 @@ Rules:
 
 ---
 
-# Phase 13 — legacy backend Deletion
+# Phase 13 — Supabase Deletion
 
 **Objective:** Delete old runtime code once clean replacements exist.
 
 ## Exit criteria
 
-- audit script finds zero runtime legacy backend usage
-- no legacy backend env vars required
-- no legacy backend packages required
+- audit script finds zero runtime Supabase usage
+- no Supabase env vars required
+- no Supabase packages required
 - every app uses identity API
 - app data comes from D1-backed APIs
 - media metadata comes from D1-backed APIs
@@ -1181,7 +1182,7 @@ Rules:
 - i18n comes from Lezu through `@tiko/i18n`
 - all apps build and smoke test
 
-## Task 13.1: Remove legacy backend dependencies
+## Task 13.1: Remove Supabase dependencies
 
 **Files:**
 
@@ -1190,17 +1191,17 @@ Rules:
 - env examples
 - docs
 
-## Task 13.2: Delete legacy backend service files
+## Task 13.2: Delete Supabase service files
 
 Candidates:
 
-- `packages/core/src/lib/*legacy-backend*`
-- `packages/core/src/services/*legacy-backend*`
-- app-level `legacy-backend-*` services
-- worker legacy backend database wrappers
-- old SQL scripts that only exist for legacy backend
+- `packages/core/src/lib/*supabase*`
+- `packages/core/src/services/*supabase*`
+- app-level `supabase-*` services
+- worker Supabase database wrappers
+- old SQL scripts that only exist for Supabase
 
-## Task 13.3: Remove legacy backend secrets/docs
+## Task 13.3: Remove Supabase secrets/docs
 
 **Files:**
 
@@ -1236,7 +1237,7 @@ Required docs:
 
 `AGENTS.md` must explicitly say:
 
-- no legacy backend
+- no Supabase
 - no old-user work
 - no password login
 - use identity API
@@ -1323,7 +1324,7 @@ Deliverable:
 
 Deliverable:
 
-- no legacy backend runtime
+- no Supabase runtime
 - Cloudflare-only deploys
 - clean documentation
 
@@ -1340,7 +1341,7 @@ npm run lint
 npm run test
 npm run build
 npm run test:e2e
-npm run audit:legacy-backend
+npm run audit:supabase
 npm run audit:cloudflare
 npm run i18n:check
 npm run capacitor:check
@@ -1443,7 +1444,7 @@ Mitigation:
 
 Tiko is clean only when:
 
-- legacy backend is gone from runtime dependencies and environment requirements.
+- Supabase is gone from runtime dependencies and environment requirements.
 - Existing old users/data are not part of the platform contract.
 - Every app boots without a login screen.
 - A user/device is created automatically when needed.

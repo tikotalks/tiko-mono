@@ -30,7 +30,7 @@ describe('Real Email Magic Link Authentication', () => {
   })
 
   it('should complete magic link authentication with real email', () => {
-    // NOTE: This test requires a real legacy backend instance that sends emails
+    // NOTE: This test requires a real Supabase instance that sends emails
     // For CI/testing, we mock the OTP response but check real email delivery
 
     // Step 1: Submit email for magic link

@@ -17,13 +17,13 @@ describe('Simulated Email Authentication Test', () => {
     cy.wait(2000) // Wait for app initialization
   })
 
-  it('demonstrates the complete email flow with simulated legacy backend email', () => {
-    // Step 1: Mock the OTP endpoint to simulate legacy backend behavior
+  it('demonstrates the complete email flow with simulated Supabase email', () => {
+    // Step 1: Mock the OTP endpoint to simulate Supabase behavior
     cy.intercept('POST', '**/auth/v1/otp', {
       statusCode: 200,
       body: {
         message: 'Check your email for the login link!',
-        // In reality, legacy backend would send an email with:
+        // In reality, Supabase would send an email with:
         // - Magic link: https://yourapp.com/#access_token=xxx&refresh_token=xxx
         // - OTP code: 123456
       },
@@ -43,7 +43,7 @@ describe('Simulated Email Authentication Test', () => {
     // Step 2: Simulate what happens when user clicks magic link from email
     cy.log('Simulating user clicking magic link from email...')
 
-    // Generate mock tokens like legacy backend would
+    // Generate mock tokens like Supabase would
     const mockAccessToken =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0LXVzZXItMTIzIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiaWF0IjoxNzAzMDAwMDAwLCJleHAiOjE5MDMwMDAwMDB9.abc123'
     const mockRefreshToken = 'refresh_token_abc123'
@@ -86,7 +86,7 @@ describe('Simulated Email Authentication Test', () => {
 
     // Mock the verification endpoint
     cy.intercept('POST', '**/auth/v1/verify', req => {
-      // In a real scenario, legacy backend would verify the OTP
+      // In a real scenario, Supabase would verify the OTP
       if (req.body.token === simulatedOTPFromEmail) {
         req.reply({
           statusCode: 200,
@@ -129,7 +129,7 @@ describe('Simulated Email Authentication Test', () => {
     // This test demonstrates the structure of real email testing
     cy.log('In a real test with Mailosaur:')
     cy.log('1. User submits email')
-    cy.log('2. legacy backend sends real email to Mailosaur inbox')
+    cy.log('2. Supabase sends real email to Mailosaur inbox')
     cy.log('3. Test fetches email from Mailosaur API')
     cy.log('4. Test extracts magic link or OTP from email')
     cy.log('5. Test uses extracted data to complete authentication')
@@ -137,7 +137,7 @@ describe('Simulated Email Authentication Test', () => {
     // Show the expected email structure
     const expectedEmailStructure = {
       subject: 'Sign in to Tiko',
-      from: [{ email: 'noreply@legacy-backend.io' }],
+      from: [{ email: 'noreply@supabase.io' }],
       to: [{ email: testEmail }],
       html: {
         body: `

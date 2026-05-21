@@ -106,7 +106,7 @@ Add to your GitHub Actions workflow:
 
 - Check Mailosaur credentials are correct
 - Ensure the test email domain matches your Mailosaur server
-- Check legacy backend is configured to send emails
+- Check Supabase is configured to send emails
 
 ### Authentication not persisting
 
@@ -118,4 +118,4 @@ Add to your GitHub Actions workflow:
 
 - Add delays between tests
 - Use different email addresses for each test
-- Clear legacy backend rate limit cache if needed
+- Clear Supabase rate limit cache if needed

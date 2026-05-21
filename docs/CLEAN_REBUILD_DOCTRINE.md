@@ -16,29 +16,29 @@ The goal is: rebuild Tiko around device-first identity, Cloudflare-native APIs, 
 
 ### 1. Not a legacy migration
 
-The clean rebuild is not required to keep old users, old sessions, old legacy backend IDs, old RLS assumptions, old PostgREST contracts, or old auth behavior alive.
+The clean rebuild is not required to keep old users, old sessions, old Supabase IDs, old RLS assumptions, old PostgREST contracts, or old auth behavior alive.
 
 Legacy code is evidence. It is not law.
 
 ### 2. No user migration
 
-Existing legacy backend users are not migrated into the new identity platform.
+Existing Supabase users are not migrated into the new identity platform.
 
 The new system creates new Tiko users through the identity API. These users begin as device-first records and may later attach email for recovery or transfer.
 
-Any future legacy-data import must be explicitly scoped as a separate data import project, not a premise of the rebuild. It must not block app boot, identity API design, or the clean removal of legacy backend.
+Any future legacy-data import must be explicitly scoped as a separate data import project, not a premise of the rebuild. It must not block app boot, identity API design, or the clean removal of Supabase.
 
 ### 3. No compatibility layer
 
-No production runtime compatibility layer may be created to imitate legacy backend behavior.
+No production runtime compatibility layer may be created to imitate Supabase behavior.
 
 Forbidden examples:
 
-- a fake legacy backend client over D1
+- a fake Supabase client over D1
 - PostgREST-shaped Worker endpoints because old services expect them
-- Better Auth or custom identity wrapped to look like legacy backend Auth
+- Better Auth or custom identity wrapped to look like Supabase Auth
 - RLS-like policy assumptions hidden in client code
-- old `legacy-backend-*` service names retained as normal architecture
+- old `supabase-*` service names retained as normal architecture
 
 Temporary scripts may exist for audits, exports, or one-time data analysis. They must be clearly marked as non-runtime tooling and kept out of app/package public APIs.
 
@@ -78,7 +78,7 @@ The required sequence is:
 1. `docs/DOCTRINE.md`
 2. `docs/CLEAN_REBUILD_DOCTRINE.md`
 3. `docs/PROJECT_MAP.md`
-4. legacy backend dependency audit
+4. Supabase dependency audit
 5. Identity API spec
 6. App boot spec
 7. Worker/data-domain specs
@@ -96,7 +96,7 @@ Allowed:
 - product interaction lessons
 - accessibility patterns that still fit
 - visual direction where it serves Tiko users
-- pure utilities with no legacy backend/runtime coupling
+- pure utilities with no Supabase/runtime coupling
 - UI components that can be modernized cleanly
 - Worker code that already fits Cloudflare-first ownership
 - R2 storage patterns that are already correct
@@ -104,7 +104,7 @@ Allowed:
 
 Not allowed:
 
-- auth/session code that depends on legacy backend
+- auth/session code that depends on Supabase
 - client data services that directly model database tables
 - services that preserve RLS or PostgREST assumptions
 - compatibility adapters that become permanent
@@ -147,7 +147,7 @@ Domain specs must define:
 - queue producers/consumers if async work is needed
 - authorization rules in Worker terms
 - app/package consumers
-- old legacy backend touchpoints to delete
+- old Supabase touchpoints to delete
 
 ## Translation Rebuild Shape
 
@@ -177,7 +177,7 @@ No product implementation task should become blocked by opportunistic package-ma
 
 A rebuild step is clean when it satisfies all of these:
 
-- It removes or avoids legacy backend runtime dependency.
+- It removes or avoids Supabase runtime dependency.
 - It does not require old users to exist.
 - It does not preserve old auth semantics.
 - It is Cloudflare-native by design.
@@ -191,7 +191,7 @@ A rebuild step is clean when it satisfies all of these:
 
 A rebuild step is dirty when it does any of these:
 
-- ports a legacy backend service without changing the model
+- ports a Supabase service without changing the model
 - hides direct database assumptions behind a thin Worker
 - blocks first use behind sign-in
 - makes email mandatory

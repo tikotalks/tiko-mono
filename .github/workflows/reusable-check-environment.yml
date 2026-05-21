@@ -7,6 +7,10 @@ on:
         required: false
       CLOUDFLARE_ACCOUNT_ID:
         required: false
+      VITE_SUPABASE_URL:
+        required: false
+      VITE_SUPABASE_ANON_KEY:
+        required: false
 
 jobs:
   check:
@@ -23,6 +27,33 @@ jobs:
             exit 1
           fi
           echo "✅ CLOUDFLARE_API_TOKEN is configured"
+
+      - name: Check Supabase Environment Variables
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          MISSING_VARS=""
+
+          if [ -z "${VITE_SUPABASE_URL}" ]; then
+            MISSING_VARS="$MISSING_VARS VITE_SUPABASE_URL"
+          fi
+
+          if [ -z "${VITE_SUPABASE_ANON_KEY}" ]; then
+            MISSING_VARS="$MISSING_VARS VITE_SUPABASE_ANON_KEY"
+          fi
+
+          if [ -n "$MISSING_VARS" ]; then
+            echo "❌ ERROR: Missing required Supabase secrets:"
+            for var in $MISSING_VARS; do
+              echo "  - $var"
+            done
+            echo ""
+            echo "Please add these secrets in GitHub Settings > Secrets and variables > Actions"
+            exit 1
+          fi
+
+          echo "✅ Supabase environment variables are configured"
 
       - name: Check Cloudflare Account ID
         env:

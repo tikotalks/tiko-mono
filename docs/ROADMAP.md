@@ -21,20 +21,20 @@ Deliverables:
 Exit criteria:
 
 - builders have one source of truth;
-- no new plan mentions Better Auth, password login, legacy user maps, or legacy backend preservation as targets.
+- no new plan mentions Better Auth, password login, legacy user maps, or Supabase preservation as targets.
 
 ## Phase 1 — Audits before deletion
 
 Deliverables:
 
-- legacy backend usage audit script and report.
+- Supabase usage audit script and report.
 - App health matrix.
 - External runtime inventory.
 - Domain/deployment inventory.
 
 Exit criteria:
 
-- every legacy backend/runtime dependency is categorized as delete, replace with Worker API, replace with D1, replace with R2 metadata, replace with Lezu, or inspect manually.
+- every Supabase/runtime dependency is categorized as delete, replace with Worker API, replace with D1, replace with R2 metadata, replace with Lezu, or inspect manually.
 
 ## Phase 2 — Identity foundation
 
@@ -70,11 +70,11 @@ Deliverables:
 
 - `workers/app-api` for cards/items/sequences/settings/todo data.
 - `@tiko/data` typed client.
-- one app moved from legacy backend-shaped services to Worker API.
+- one app moved from Supabase-shaped services to Worker API.
 
 Exit criteria:
 
-- child-facing app data no longer requires direct legacy backend calls;
+- child-facing app data no longer requires direct Supabase calls;
 - access checks live in Worker code.
 
 ## Phase 5 — Media and content

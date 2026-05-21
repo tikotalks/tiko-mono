@@ -24,7 +24,7 @@ function generateColorFromUrl(url: string): string {
  * Uses a hash-based approach to avoid CORS issues
  */
 export async function getAverageColor(imageUrl: string): Promise<string> {
-  // For legacy backend URLs, we could potentially use their transformation API
+  // For Supabase URLs, we could potentially use their transformation API
   // but for now, let's use a deterministic color generation
   return Promise.resolve(generateColorFromUrl(imageUrl))
 }
