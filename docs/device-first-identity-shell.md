@@ -7,20 +7,25 @@ The full implementation plan is tracked in `.hermes/plans/2026-05-20_162624-devi
 ## Product model
 
 - App entry is immediate.
-- A device user/session is created silently on first launch through `id.tiko.mt`.
+- When entering an app without an existing account user, the app is always in Parent Mode.
+- A child profile/user context is only created after the caregiver explicitly sets a password and configures an email address to create the account.
+- A device user/session is created silently on first launch through `id.tiko.mt` so the shell can persist state without a login wall.
 - Returning launches reuse the locally stored identity session token and validate it with the identity API.
 - The user avatar/menu is the account entry point.
-- Profile/account lets caregivers set display name, avatar, email, and settings.
+- Profile/account lets caregivers set display name, avatar, email, password/parent controls, and settings.
 - Switching accounts is email magic-link based:
   1. user enters the email address for the account they want,
   2. Tiko sends a magic link,
   3. opening the link verifies the token and stores the returned session bundle locally.
 - Passwords, login walls, and “skip login” are not part of the child-facing shell.
-- Parent mode is controlled from the user context menu, not from app entry:
-  - user menu contains “Turn on parent mode” when parent mode is inactive,
-  - the shell clearly labels the active parent-mode state,
-  - parent mode may reveal additional user-menu options and header actions,
-  - the same user context menu contains “Turn off parent mode” while active.
+- Parent mode is the default state on app entry when there is no existing account user:
+  - the shell should treat the initial device session as a caregiver/parent setup context,
+  - child mode becomes available only after the caregiver sets a password and configures an email address to create the account,
+  - after account setup, parent/child mode is controlled from the user context menu, not from app entry:
+    - user menu contains “Turn on parent mode” when parent mode is inactive,
+    - the shell clearly labels the active parent-mode state,
+    - parent mode may reveal additional user-menu options and header actions,
+    - the same user context menu contains “Turn off parent mode” while active.
 
 ## Identity API contract
 
@@ -57,8 +62,8 @@ Required endpoints:
 - `TFramework` should remove skip-auth/login fallback UI.
 - `TUserMenu` should expose Profile, Switch User, and parent-mode controls from the avatar/menu.
 - `TUserMenu` should reveal extra parent-mode actions when parent mode is active and provide the matching “Turn off parent mode” action.
-- `TFramework` should show a clear parent-mode label/state and can expose parent-only header buttons while active.
-- `TProfile` should provide editable display name/avatar/email controls.
+- `TFramework` should default fresh device sessions without an existing account user into parent/setup mode, show a clear parent-mode label/state, and can expose parent-only header buttons while active.
+- `TProfile` should provide editable display name/avatar/email controls plus the password/email account-creation path required before entering child mode.
 
 Apps:
 
@@ -72,7 +77,9 @@ Apps:
 - [ ] Auth store startup silently creates or reuses a session.
 - [ ] `TAuthWrapper` no longer shows normal login/skip-login UI.
 - [ ] User menu exposes Profile + Switch User.
-- [ ] User menu exposes Turn on/off parent mode.
+- [ ] Shell defaults fresh/no-account app entry to Parent Mode.
+- [ ] Profile supports password + email account creation before child mode can be entered.
+- [ ] User menu exposes Turn on/off parent mode after account setup.
 - [ ] Shell shows a clear parent-mode label/state and supports parent-only header actions.
 - [ ] Profile supports display name, avatar, and email/magic-link account flow.
 - [ ] Identity API persists profile fields if current metadata storage is insufficient.
