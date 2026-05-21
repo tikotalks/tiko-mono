@@ -136,8 +136,6 @@ jobs:
           pnpm --filter=@tiko/core build
           pnpm --filter=admin build
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_SITE_URL: https://admin.tikoapps.org
 
       - name: Install Wrangler
@@ -189,4 +187,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: dc2b7d14a69351375cab6de9a13ddee9
-          command: pages deploy ./tools/ui-docs/dist --project-name=tiko-ui-docs${{ needs.determine-environment.outputs.branch-suffix }} --compatibility-date=2024-08-02 --branch=${{ github.ref_name }}
+          command: pages deploy ./tools/ui-docs/dist --project-name=tiko-ui-docs${{ needs.determine-environment.outputs.branch-suffix }} --branch=${{ github.ref_name }}

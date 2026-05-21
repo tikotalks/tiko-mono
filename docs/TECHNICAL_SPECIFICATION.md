@@ -4,7 +4,7 @@
 
 This document consolidates the original Tiko product/spec documents, the current repo shape, and the clean rebuild doctrine.
 
-The user-provided legacy spec correctly describes the app family and early stack, but the target architecture supersedes the Supabase/pnpm/Nx assumptions: Tiko is moving toward a clean Cloudflare-native runtime with custom device-first identity.
+The user-provided legacy spec correctly describes the app family and early stack, but the target architecture supersedes the legacy backend/pnpm/Nx assumptions: Tiko is moving toward a clean Cloudflare-native runtime with custom device-first identity.
 
 ## Product definition
 
@@ -111,7 +111,7 @@ Because these do not share a parent cookie domain, cross-app continuity must use
 
 ## Explicitly deprecated from the legacy spec
 
-- Supabase auth/database/storage metadata as runtime infrastructure.
+- legacy backend auth/database/storage metadata as runtime infrastructure.
 - Login-required flows.
 - Passwords.
 - Old-user/data migration requirements.

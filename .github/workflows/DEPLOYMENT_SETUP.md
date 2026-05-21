@@ -17,10 +17,10 @@ Each part of the Tiko monorepo deploys independently:
 
 - `CLOUDFLARE_API_TOKEN` - Your Cloudflare API token (used for all deployments)
 
-### For Supabase (used by apps)
+### For legacy backend (used by apps)
 
-- `VITE_SUPABASE_URL` - Your Supabase project URL
-- `VITE_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+- `VITE_LEGACY_BACKEND_REMOVED` - Your legacy backend project URL
+- `VITE_LEGACY_BACKEND_REMOVED` - Your legacy backend anonymous key
 
 ## Setup Instructions
 
@@ -158,16 +158,16 @@ git add . && git commit -m "docs: update readme" && git push  # No deployment
 
 Set in GitHub secrets with `VITE_` prefix:
 
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
+- `VITE_LEGACY_BACKEND_REMOVED`
+- `VITE_LEGACY_BACKEND_REMOVED`
 
 ### Runtime Variables (Workers)
 
 Set directly in Cloudflare Workers dashboard:
 
 - `OPENAI_API_KEY`
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_KEY`
+- `LEGACY_BACKEND_REMOVED`
+- `LEGACY_BACKEND_REMOVED`
 
 ### Pages Environment Variables
 

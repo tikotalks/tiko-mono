@@ -21,7 +21,7 @@ beforeEach(() => {
 })
 
 describe('LocalStorageCollectionsService', () => {
-  it('persists collections without Supabase runtime dependencies', async () => {
+  it('persists collections without legacy backend runtime dependencies', async () => {
     const service = new LocalStorageCollectionsService()
 
     const collection = await service.createCollection({ name: 'Favorites', is_public: true })

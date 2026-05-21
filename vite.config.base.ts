@@ -114,30 +114,6 @@ export const createViteConfig = (args: {
         cacheId: `${appName}-v${buildVersion}`,
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'supabase-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 // 1 day
-              }
-            }
-          },
-          {
-            // Cache Supabase Storage images (public/signed)
-            urlPattern: /^https:\/\/[^/]+\.supabase\.co\/storage\/v1\/object\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'image-storage-cache',
-              cacheableResponse: { statuses: [0, 200] },
-              expiration: {
-                maxEntries: 300,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
-              }
-            }
-          },
-          {
             // Generic remote images cache (jpg/png/webp/avif/svg)
             urlPattern: /\.(?:png|jpg|jpeg|gif|webp|avif|svg)(?:\?.*)?$/i,
             handler: 'CacheFirst',

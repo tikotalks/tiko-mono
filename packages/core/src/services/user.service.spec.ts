@@ -42,7 +42,7 @@ describe('IdentityUserService', () => {
     ])
   })
 
-  it('returns empty admin lists without requiring Supabase configuration', async () => {
+  it('returns empty admin lists without requiring legacy backend configuration', async () => {
     vi.resetModules()
     const { userService } = await import('./user.service')
 

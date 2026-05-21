@@ -452,7 +452,7 @@ export function isLanguageSupported(language: string): language is AvailableLang
 async function generateI18nFiles(options = {}) {
   // Try to use database generator first, fallback to mock data
   try {
-    if (DatabaseI18nGenerator && process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_PUBLISHABLE_KEY) {
+    if (DatabaseI18nGenerator && process.env.VITE_LEGACY_BACKEND_REMOVED && process.env.VITE_LEGACY_BACKEND_REMOVED) {
       const generator = new DatabaseI18nGenerator({
         ...options,
         verbose: options.verbose !== false

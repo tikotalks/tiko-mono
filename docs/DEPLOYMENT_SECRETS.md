@@ -5,8 +5,8 @@
 ### For All Apps
 
 - `CLOUDFLARE_API_TOKEN` - Your Cloudflare API token with Pages:Edit permission
-- `VITE_SUPABASE_URL` - Your Supabase project URL
-- `VITE_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+- `VITE_LEGACY_BACKEND_REMOVED` - Your legacy backend project URL
+- `VITE_LEGACY_BACKEND_REMOVED` - Your legacy backend anonymous key
 
 ### For Specific Apps (Optional)
 

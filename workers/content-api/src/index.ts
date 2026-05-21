@@ -20,7 +20,7 @@ export default {
       });
     }
 
-    if (url.hostname === 'items.tikoapi.org' || url.hostname === 'tts.tikoapi.org' || url.pathname.startsWith('/rest/v1/')) {
+    if (url.hostname === 'items.tikoapi.org' || url.hostname === 'tts.tikoapi.org') {
       return handleItemsRestRequest(request, env);
     }
 

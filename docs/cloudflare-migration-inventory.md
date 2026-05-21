@@ -1,10 +1,10 @@
-# Supabase Removal Inventory
+# legacy backend Removal Inventory
 
 ## Status
 
 This is a removal/replacement inventory, not a legacy migration map.
 
-Tiko is a clean Cloudflare-native rebuild. Existing Supabase users/data are not product constraints. Old schemas may inform what domains exist, but they must not force compatibility layers, old-user bridges, shared-cookie fantasies, or Better Auth assumptions.
+Tiko is a clean Cloudflare-native rebuild. Existing legacy backend users/data are not product constraints. Old schemas may inform what domains exist, but they must not force compatibility layers, old-user bridges, shared-cookie fantasies, or Better Auth assumptions.
 
 ## Target replacement model
 
@@ -16,7 +16,7 @@ Tiko is a clean Cloudflare-native rebuild. Existing Supabase users/data are not 
 - Lezu for translation management.
 - Typed Tiko clients between apps and Workers.
 
-## Current Supabase-heavy domains to remove/replace
+## Current legacy backend-heavy domains to remove/replace
 
 - Auth/session/profile/settings.
 - App items/cards/sequences.
@@ -36,11 +36,11 @@ Tiko is a clean Cloudflare-native rebuild. Existing Supabase users/data are not 
 - Worker boundaries where they already exist.
 - D1 work already started in current `development` worker/core commits.
 
-These are useful scaffolding, but each worker must be audited for direct Supabase calls and D1/R2 ownership.
+These are useful scaffolding, but each worker must be audited for direct legacy backend calls and D1/R2 ownership.
 
 ## Replacement categories
 
-Every Supabase occurrence should be classified as one of:
+Every legacy backend occurrence should be classified as one of:
 
 - delete outright;
 - replace with `identity-api`;
@@ -54,7 +54,7 @@ Every Supabase occurrence should be classified as one of:
 
 ## High-risk areas
 
-- `packages/core` is/was the largest Supabase gravity well: auth, services, stores, media, i18n, content, app data.
+- `packages/core` is/was the largest legacy backend gravity well: auth, services, stores, media, i18n, content, app data.
 - Content/CMS has the largest schema surface and should not be the first cutover domain.
 - App data and identity must be designed before broad deletion of core data assumptions.
 - Admin tooling may contain historical SQL and partially live flows; audit before porting.
@@ -73,7 +73,7 @@ Good early slices:
 
 - No `legacy_user_map`.
 - No Better Auth default.
-- No Supabase RLS compatibility layer.
+- No legacy backend RLS compatibility layer.
 - No old-data preservation work unless Sil explicitly reverses this doctrine.
 - No password login.
 - No login wall.
@@ -84,10 +84,10 @@ Good early slices:
 
 ### Core package
 
-Audit and remove/replace Supabase-shaped code under:
+Audit and remove/replace legacy backend-shaped code under:
 
-- `packages/core/src/lib/*supabase*`
-- `packages/core/src/services/*supabase*`
+- `packages/core/src/lib/*legacy-backend*`
+- `packages/core/src/services/*legacy-backend*`
 - `packages/core/src/services/auth*.ts`
 - `packages/core/src/services/content.service.ts`
 - `packages/core/src/services/item*.ts`
@@ -97,17 +97,17 @@ Audit and remove/replace Supabase-shaped code under:
 
 ### Apps
 
-Direct app-level Supabase services have existed in:
+Direct app-level legacy backend services have existed in:
 
-- `apps/cards/src/services/supabase-cards.service.ts`
-- `apps/sequence/src/services/supabase-sequence.service.ts`
-- `apps/tiko/src/services/supabase-sequence.service.ts`
+- `apps/cards/src/services/legacy-backend-cards.service.ts`
+- `apps/sequence/src/services/legacy-backend-sequence.service.ts`
+- `apps/tiko/src/services/legacy-backend-sequence.service.ts`
 
 If still present, they are replacement targets, not migration anchors.
 
 ### Workers
 
-Workers to audit for Supabase/D1/R2 correctness:
+Workers to audit for legacy backend/D1/R2 correctness:
 
 - `assets-upload`
 - `content-api`
@@ -136,7 +136,7 @@ Workers to audit for Supabase/D1/R2 correctness:
 - D1 for relational tables.
 - Worker APIs for all writes and authenticated reads.
 - No direct browser-to-D1 pattern.
-- No Supabase/PostgREST-shaped client API.
+- No legacy backend/PostgREST-shaped client API.
 
 ### Files
 
@@ -150,29 +150,29 @@ Workers to audit for Supabase/D1/R2 correctness:
 
 ## Migration matrix
 
-- Auth/session: Supabase auth/local session sync → custom Tiko identity + D1.
-- User profiles/settings: Supabase tables → D1 behind identity/app APIs.
-- App items/cards/sequences: Supabase tables/RPC → `app-api` + D1.
-- Media metadata: Supabase tables → `media-api` + D1, bytes in R2.
-- Collections: Supabase tables → D1 + Worker API.
-- i18n: Supabase tables/custom workers → Lezu + Tiko runtime fallbacks.
-- Sentence engine: Supabase-shaped persistence → D1.
-- TTS metadata: Supabase table → D1, audio bytes in R2.
-- Issue reports: Supabase table → D1.
-- Content CMS: Supabase tables/views/functions → D1 + content Worker after dedicated spec.
-- User removal/admin: Supabase admin API → new identity/data cleanup semantics after the new model exists.
+- Auth/session: legacy backend auth/local session sync → custom Tiko identity + D1.
+- User profiles/settings: legacy backend tables → D1 behind identity/app APIs.
+- App items/cards/sequences: legacy backend tables/RPC → `app-api` + D1.
+- Media metadata: legacy backend tables → `media-api` + D1, bytes in R2.
+- Collections: legacy backend tables → D1 + Worker API.
+- i18n: legacy backend tables/custom workers → Lezu + Tiko runtime fallbacks.
+- Sentence engine: legacy backend-shaped persistence → D1.
+- TTS metadata: legacy backend table → D1, audio bytes in R2.
+- Issue reports: legacy backend table → D1.
+- Content CMS: legacy backend tables/views/functions → D1 + content Worker after dedicated spec.
+- User removal/admin: legacy backend admin API → new identity/data cleanup semantics after the new model exists.
 
 ## Sequencing
 
 1. Freeze doctrine and project map.
-2. Run exact Supabase usage audit.
+2. Run exact legacy backend usage audit.
 3. Specify and prove identity API.
 4. Add app boot contract and smoke harness.
 5. Move simple worker domains to D1.
 6. Move app data domains behind Worker APIs.
 7. Move media/content/i18n with dedicated specs.
-8. Delete remaining Supabase dependencies/env vars only when audits prove replacement.
+8. Delete remaining legacy backend dependencies/env vars only when audits prove replacement.
 
 ## Next audit artifact
 
-Create `scripts/audit-supabase-usage.mjs` and `docs/audits/supabase-removal-inventory.md` with exact file-level findings, categorized by replacement target.
+Create `scripts/audit-legacy-backend-usage.mjs` and `docs/audits/legacy-backend-removal-inventory.md` with exact file-level findings, categorized by replacement target.

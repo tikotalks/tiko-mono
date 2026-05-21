@@ -83,7 +83,7 @@ To add new section types:
 
 ## Testing
 
-1. Ensure your Supabase connection is configured
+1. Ensure the Cloudflare content API / D1 content backend is configured
 2. Create the content structure in your CMS
 3. Run the marketing website: `pnpm dev`
 4. The homepage should now load content dynamically

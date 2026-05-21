@@ -6,7 +6,7 @@ The Assets system provides a centralized way to manage and serve files (images, 
 
 ### Components
 
-1. **Supabase Database** - Stores asset metadata and relationships
+1. **legacy backend Database** - Stores asset metadata and relationships
 2. **Cloudflare R2 Bucket** (`tiko-assets`) - Stores actual files
 3. **Assets Worker** - Handles uploads and API operations
 4. **Admin Panel** - Web interface for asset management
@@ -210,8 +210,8 @@ Deploy the assets-upload worker:
 ```bash
 cd workers/assets-upload
 npm install
-wrangler secret put SUPABASE_URL
-wrangler secret put SUPABASE_SERVICE_KEY
+wrangler secret put LEGACY_BACKEND_REMOVED
+wrangler secret put LEGACY_BACKEND_REMOVED
 wrangler deploy
 ```
 

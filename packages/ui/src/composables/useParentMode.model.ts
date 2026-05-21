@@ -107,7 +107,7 @@ export interface ParentModeStatus {
 }
 
 /**
- * Database schema interfaces for Supabase
+ * Database schema interfaces
  */
 export interface UserProfileParentMode {
   user_id: string

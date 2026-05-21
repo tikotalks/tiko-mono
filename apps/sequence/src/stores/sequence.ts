@@ -555,7 +555,7 @@ export const useSequenceStore = defineStore('sequence', () => {
         return null
       }
 
-      const cardData = await sequenceSupabaseService.getCard(cardId)
+      const cardData = await itemService.loadItemById(cardId, { includeChildren: false })
       if (!cardData) {
         return null
       }

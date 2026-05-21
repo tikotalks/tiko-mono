@@ -1,10 +1,10 @@
 # Migration Scripts
 
-This folder holds migration-support artifacts for the Supabase to Cloudflare move.
+This folder holds migration-support artifacts for the legacy backend to Cloudflare move.
 
 ## Files
 
-- [supabase-row-counts.sql](/Users/silvandiepen/Repositories/_tiko/tiko-mono/scripts/migration/supabase-row-counts.sql)
+- [legacy-backend-row-counts.sql](/Users/silvandiepen/Repositories/_tiko/tiko-mono/scripts/migration/legacy-backend-row-counts.sql)
   Captures row counts for the current critical tables before cutover.
 
 ## Recommended Usage
@@ -14,9 +14,9 @@ Run the row-count query against production before any live migration step and sa
 Example:
 
 ```bash
-psql "$SUPABASE_DATABASE_URL" -f scripts/migration/supabase-row-counts.sql
+psql "$LEGACY_BACKEND_REMOVED" -f scripts/migration/legacy-backend-row-counts.sql
 ```
 
 Store the result outside the repo as part of the backup artifacts listed in:
 
-- [supabase-backup-checklist.md](/Users/silvandiepen/Repositories/_tiko/tiko-mono/docs/supabase-backup-checklist.md)
+- [legacy-backend-backup-checklist.md](/Users/silvandiepen/Repositories/_tiko/tiko-mono/docs/legacy-backend-backup-checklist.md)

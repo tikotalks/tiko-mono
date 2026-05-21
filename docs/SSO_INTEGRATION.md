@@ -136,9 +136,9 @@ All apps must be registered in the Tiko main app. Current registered apps:
 
 ## Security Considerations
 
-- All authentication happens through Supabase's secure OAuth flow
+- All authentication happens through legacy backend's secure OAuth flow
 - Tokens are passed via URL parameters (consider using state parameter for additional security)
-- Sessions are managed by Supabase with automatic refresh
+- Sessions are managed by legacy backend with automatic refresh
 - Each app validates tokens independently
 
 ## Testing

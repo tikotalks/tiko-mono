@@ -1,6 +1,6 @@
 # TProfile
 
-A comprehensive user profile editing component that allows users to update their avatar, name, language preferences, and view account information. It includes avatar upload with image resizing and integration with Supabase storage.
+A comprehensive user profile editing component that allows users to update their avatar, name, language preferences, and view account information. It includes avatar upload with image resizing and integration with legacy backend storage.
 
 ## Basic Usage
 
@@ -29,7 +29,7 @@ const handleClose = () => {
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `user` | `User` | Supabase user object |
+| `user` | `User` | legacy backend user object |
 | `onClose` | `Function` | Callback when profile is closed |
 
 ## Features
@@ -39,7 +39,7 @@ const handleClose = () => {
 - Automatic image resizing (400x400px)
 - Fallback to initials with consistent colors
 - Preview before saving
-- Supabase storage integration
+- legacy backend storage integration
 
 ### Profile Fields
 - **Name** - User's display name (editable)
@@ -197,7 +197,7 @@ The component includes language selection with these options:
 ## Data Storage
 
 ### User Metadata
-Updates are stored in Supabase Auth user metadata:
+Updates are stored in legacy backend Auth user metadata:
 ```javascript
 {
   full_name: "John Doe",
@@ -209,7 +209,7 @@ Updates are stored in Supabase Auth user metadata:
 ```
 
 ### Avatar Storage
-Avatars are stored in Supabase Storage bucket named 'avatars' with:
+Avatars are stored in legacy backend Storage bucket named 'avatars' with:
 - Automatic file naming: `{user_id}-{timestamp}.jpg`
 - Cache control headers
 - Signed URL generation for private access

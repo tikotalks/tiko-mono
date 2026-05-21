@@ -2,7 +2,7 @@
 
 ## Architecture principle
 
-Tiko is an edge-native suite of child-facing apps backed by Tiko-owned APIs. The browser app is not the backend. Supabase is not the backend. Cloudflare Workers own backend behavior.
+Tiko is an edge-native suite of child-facing apps backed by Tiko-owned APIs. The browser app is not the backend. legacy backend is not the backend. Cloudflare Workers own backend behavior.
 
 ## High-level model
 

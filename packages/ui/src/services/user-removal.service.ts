@@ -173,10 +173,10 @@ export class UserRemovalService {
       console.log('Removing user profile data for:', userId)
       
       // Remove from user_profiles table
-      await this.removeFromSupabaseTable('user_profiles', userId)
+      await this.removeFromUserDataTable('user_profiles', userId)
       
       // Remove from user_settings table  
-      await this.removeFromSupabaseTable('user_settings', userId)
+      await this.removeFromUserDataTable('user_settings', userId)
       
       // Remove from any other user-related tables
       await this.removeUserAppSettings(userId)
@@ -247,8 +247,8 @@ export class UserRemovalService {
     console.log('Would remove item:', item)
   }
 
-  private async removeFromSupabaseTable(tableName: string, userId: string): Promise<void> {
-    // Remove records from Supabase table where user_id = userId
+  private async removeFromUserDataTable(tableName: string, userId: string): Promise<void> {
+    // Remove records from user data table where user_id = userId
     console.log(`Would remove from ${tableName} where user_id = ${userId}`)
   }
 
