@@ -1,6 +1,6 @@
 <template>
   <TAppLayout
-    :title="t('dashboard.title')"
+    :title="t('common.dashboard')"
     :show-header="true"
     app-name="tiko"
     @profile="handleProfile"

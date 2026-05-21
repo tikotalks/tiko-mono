@@ -1568,7 +1568,8 @@
     "visible": "Visible",
     "warning": "Warning",
     "welcome": "Welcome {name}!",
-    "yes": "Yes"
+    "yes": "Yes",
+    "user": "User"
   },
   "deployment": {
     "backups": {
@@ -2231,5 +2232,16 @@
     "yes": "Yes!",
     "yesnoSettings": "Yes/No Settings",
     "yesOrNo": "Yes or No"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome {name}!",
+    "welcomeGuest": "Welcome to Tiko",
+    "signInForBest": "Sign in to get the best experience across your Tiko apps.",
+    "chooseApp": "Choose an app to get started.",
+    "parentModeTitle": "Parent Mode",
+    "parentModeDescription": "Manage parent-only settings and controls for this device.",
+    "ssoTitle": "Single sign-on",
+    "ssoDescription": "Use your Tiko account across all Tiko apps."
   }
 }
