@@ -2,13 +2,18 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import router from './router'
 import App from './App.vue'
-import { installI18nJson, setI18nLocale } from '@tiko/core'
+import { installI18nJson, setI18nLocale, useAuthStore } from '@tiko/core'
 
 async function bootstrap() {
   const app = createApp(App)
+  const pinia = createPinia()
 
-  app.use(createPinia())
+  app.use(pinia)
   app.use(router)
+
+  const authStore = useAuthStore()
+  await authStore.initializeFromStorage()
+  authStore.setupAuthListener()
 
   // Install i18n and initialize before mount
   await installI18nJson(app)

@@ -313,7 +313,7 @@ class ItemServiceImpl {
         // Get the current item to check its current parent
         const currentItem = await this.loadItemById(itemId, { includeChildren: false });
         if (currentItem && currentItem.parent_id !== updates.parent_id) {
-          oldParentId = currentItem.parent_id;
+          oldParentId = currentItem.parent_id ?? null;
         }
       }
 
@@ -577,6 +577,10 @@ class ItemServiceImpl {
     try {
       const params = new URLSearchParams();
       params.append('user_id', `eq.${userId}`);
+
+      if (filters.app_name) {
+        params.append('app_name', `eq.${filters.app_name}`);
+      }
 
       if (filters.type) {
         params.append('type', `eq.${filters.type}`);

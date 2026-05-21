@@ -2,19 +2,25 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import router from './router'
 import App from './App.vue'
-import { useAppStore } from '@tiko/core'
+import { useAppStore, useAuthStore } from '@tiko/core'
 
-const app = createApp(App)
-const pinia = createPinia()
+async function bootstrap() {
+  const app = createApp(App)
+  const pinia = createPinia()
 
-app.use(pinia)
-app.use(router)
+  app.use(pinia)
+  app.use(router)
 
-// Initialize app
-app.mount('#app')
+  const authStore = useAuthStore()
+  await authStore.initializeFromStorage()
+  authStore.setupAuthListener()
 
-// Initialize after mount
-requestAnimationFrame(() => {
-  const appStore = useAppStore()
-  appStore.initializeNetworkMonitoring()
-})
+  app.mount('#app')
+
+  requestAnimationFrame(() => {
+    const appStore = useAppStore()
+    appStore.initializeNetworkMonitoring()
+  })
+}
+
+void bootstrap()

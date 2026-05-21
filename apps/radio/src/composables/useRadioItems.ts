@@ -104,14 +104,18 @@ export function useRadioItems() {
 
     try {
       console.log('Querying radio items...')
-      const baseItems = await itemService.getItems(authStore.user.id, {
+      const result = await itemService.getItems(authStore.user.id, {
         app_name: 'radio',
         type: 'radio_item',
       })
 
-      console.log('Items service fetch result:', baseItems)
+      console.log('Items service fetch result:', result)
 
-      const transformedItems = baseItems.map(transformFromBaseItem)
+      if (!result.success || !result.data) {
+        throw new Error(result.error || 'Failed to load radio items')
+      }
+
+      const transformedItems = result.data.map(transformFromBaseItem)
       items.value = transformedItems
       console.log('Successfully loaded', transformedItems.length, 'radio items:', transformedItems)
     } catch (err) {
