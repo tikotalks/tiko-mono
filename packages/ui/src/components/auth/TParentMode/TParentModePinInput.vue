@@ -52,7 +52,7 @@
           v-if="confirmValue.length < 4"
           :class="bemm('numpad')"
           :disable-clear="confirmValue.length === 0"
-          :disable-submit="!canSubmit"
+          :disable-submit="!canAttemptSubmit"
           @number="handleConfirmNumberClick"
           @clear="handleConfirmClearClick"
           @submit="handleSubmit"
@@ -88,7 +88,7 @@
               label: submitLabel,
               type: 'primary',
               action: handleSubmit,
-              disabled: !canSubmit,
+              disabled: !canAttemptSubmit,
               loading: isProcessing,
             },
           ]"
@@ -100,7 +100,7 @@
           <TButton
             html-button-type="submit"
             color="primary"
-            :disabled="!canSubmit"
+            :disabled="!canAttemptSubmit"
             :loading="isProcessing"
           >
             {{ submitLabel }}
@@ -164,17 +164,17 @@ const canSubmitPin = computed(() => {
   return pinValue.value.length === 4 && /^\d{4}$/.test(pinValue.value);
 });
 
-const canSubmit = computed(() => {
+const canAttemptSubmit = computed(() => {
   if (props.mode === 'unlock') {
     return canSubmitPin.value;
-  } else {
-    return (
-      pinValue.value.length === 4 &&
-      confirmValue.value.length === 4 &&
-      pinValue.value === confirmValue.value &&
-      /^\d{4}$/.test(pinValue.value)
-    );
   }
+
+  return (
+    pinValue.value.length === 4 &&
+    confirmValue.value.length === 4 &&
+    /^\d{4}$/.test(pinValue.value) &&
+    /^\d{4}$/.test(confirmValue.value)
+  );
 });
 
 const submitLabel = computed(() => {
@@ -202,14 +202,21 @@ const handlePinComplete = (value: string) => {
 const handleConfirmComplete = (value: string) => {
   if (value === pinValue.value) {
     handleSubmit();
+    return;
   }
+
+  error.value = t('parentMode.pinMismatch') || 'PINs do not match';
+  nextTick(() => {
+    confirmValue.value = '';
+    confirmInputRef.value?.focus();
+  });
 };
 
 /**
  * Handle form submission
  */
 const handleSubmit = async () => {
-  if (!canSubmit.value || isProcessing.value) return;
+  if (!canAttemptSubmit.value || isProcessing.value) return;
 
   // Submitting PIN
 
