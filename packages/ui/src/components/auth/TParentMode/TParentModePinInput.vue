@@ -205,6 +205,10 @@ const handleConfirmComplete = (value: string) => {
     return;
   }
 
+  resetConfirmWithMismatch();
+};
+
+const resetConfirmWithMismatch = () => {
   error.value = t('parentMode.pinMismatch') || 'PINs do not match';
   nextTick(() => {
     confirmValue.value = '';
@@ -233,7 +237,7 @@ const handleSubmit = async () => {
 
     // For setup mode, ensure PINs match
     if (props.mode === 'setup' && pinValue.value !== confirmValue.value) {
-      error.value = t('parentMode.pinMismatch') || 'PINs do not match';
+      resetConfirmWithMismatch();
       isProcessing.value = false;
       return;
     }
