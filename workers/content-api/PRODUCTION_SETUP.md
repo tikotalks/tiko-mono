@@ -2,90 +2,112 @@
 
 ## Live Endpoints
 
-The Tiko Content API Worker is now live at:
+The active Tiko content worker endpoints are:
 
-- **Production URL**: https://content.tikoapi.org
-- **Worker URL**: https://tiko-content-api.silvandiepen.workers.dev (redirects to custom domain)
+- **Production content API**: `https://content.tikoapi.org`
+- **Production items REST API**: `https://items.tikoapi.org`
+- **Production TTS route**: `https://tts.tikoapi.org`
+- **Identity API health**: `https://id.tiko.mt/healthz`
+
+The following hosts are **not active production endpoints** and should not be used as health checks unless DNS/routes are provisioned separately:
+
+- `https://content-staging.tikoapi.org` — no DNS record observed during QA evidence collection.
+- `https://auth.tikoapps.org` — no DNS record observed during QA evidence collection; use `https://id.tiko.mt` for identity.
 
 ## Verified Endpoints
 
-### Status Page
-```bash
-curl https://content.tikoapi.org/
-```
+### Content health
 
-### Health Check
 ```bash
 curl https://content.tikoapi.org/health
 ```
 
-### Query Content
-```bash
-curl -X POST https://content.tikoapi.org/query \
-  -H "Content-Type: application/json" \
-  -d '{"method": "getProjects", "params": {}}'
+Expected response shape:
+
+```json
+{"status":"ok","timestamp":1779433997490}
 ```
+
+### Identity health
+
+```bash
+curl https://id.tiko.mt/healthz
+```
+
+Expected response shape:
+
+```json
+{"ok":true,"service":"tiko-identity-api","hasD1":true}
+```
+
+### Query content
+
+```bash
+curl -X POST 'https://content.tikoapi.org/query?no-cache=1' \
+  -H "Content-Type: application/json" \
+  -d '{"method":"getProjects","params":{}}'
+```
+
+Expected response shape:
+
+```json
+{"data":[{"slug":"marketing"},{"slug":"media"},{"slug":"shop"}]}
+```
+
+## Current deployment state
+
+The live `tiko-content-api` Worker was rolled back on 2026-05-21 with the deployment message `Rollback content API after legacy shim regression`.
+
+Because of that rollback, the live `https://content.tikoapi.org/query` response currently returns content rows even though the repository-configured `tiko-content` D1 binding has zero rows in the key content tables. Do **not** redeploy this worker until one of these is true:
+
+1. The `tiko-content` D1 database is populated with the production content rows; or
+2. `wrangler.toml` is updated to the actual production data binding/source and verified with Wrangler evidence; or
+3. A migration/backfill plan intentionally switches production from the rolled-back legacy data source to the repo D1 binding.
+
+## Repository D1 binding evidence
+
+`workers/content-api/wrangler.toml` currently declares:
+
+- `CONTENT_DB` production database name: `tiko-content`
+- `CONTENT_DB` staging database name: `tiko-content-staging`
+- `CONTENT_CACHE` KV binding for cache responses
+
+Remote Wrangler evidence collected for `tiko-content` showed the expected schema exists, but these key tables are empty:
+
+- `content_projects`: `0`
+- `content_pages`: `0`
+- `content_sections`: `0`
+- `content_items`: `0`
+
+This is a deployment safety note: a deploy of the current repo worker against the current repo D1 binding would not serve the same project data as the live rolled-back worker.
 
 ## App Configuration
 
 To use the production worker in any Tiko app:
 
-### 1. Update .env file
 ```env
-# Enable worker for better performance
 VITE_USE_CONTENT_WORKER=true
 VITE_CONTENT_API_URL=https://content.tikoapi.org
 VITE_DEPLOYED_VERSION_ID=v1.0.0
 ```
 
-### 2. Use in code
-```typescript
-// The useContent composable automatically uses the worker when configured
-const content = useContent({ 
-  projectSlug: 'marketing',
-  useWorker: true // Optional - will use env var by default
-})
-
-// All methods work the same
-const page = await content.getPage('home', 'en')
-```
-
 ## Cache Behavior
 
 - **Default TTL**: 24 hours
-- **Cache Headers**: 
+- **Cache Headers**:
   - `X-Cache-Status`: HIT, MISS, or BYPASS
   - `X-Cache-Age`: Age of cached content in seconds
 - **Cache Busting**: Update `VITE_DEPLOYED_VERSION_ID` when deploying new content
 
-## Performance Benefits
-
-1. **Reduced Latency**: Content served from Cloudflare's edge network
-2. **Lower Database Load**: Cached queries reduce D1 usage
-3. **Cost Savings**: Fewer database queries = lower costs
-4. **Global Distribution**: Content cached in 300+ edge locations
-
 ## Monitoring
 
 Check worker status at:
-- https://dash.cloudflare.com → Workers & Pages → tiko-content-api
+
+- Cloudflare dashboard → Workers & Pages → `tiko-content-api`
 
 Monitor:
+
 - Request count
 - Cache hit rate
 - Error rate
 - Response times
-
-## Security
-
-- CORS enabled for all origins
-- D1 bindings stored as encrypted secrets
-- Rate limiting applied by Cloudflare
-- DDoS protection included
-
-## Next Steps
-
-1. Update all apps to use the worker URL
-2. Monitor cache hit rates
-3. Adjust TTL if needed
-4. Set up alerts for errors
