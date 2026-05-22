@@ -5,8 +5,7 @@ account_id = "dc2b7d14a69351375cab6de9a13ddee9"
 
 routes = [
   { pattern = "content.tikoapi.org/*", zone_name = "tikoapi.org" },
-  { pattern = "items.tikoapi.org/*", zone_name = "tikoapi.org" },
-  { pattern = "tts.tikoapi.org/*", zone_name = "tikoapi.org" }
+  { pattern = "items.tikoapi.org/*", zone_name = "tikoapi.org" }
 ]
 
 # Production route is now configured via custom domain in Cloudflare dashboard

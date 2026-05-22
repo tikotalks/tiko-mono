@@ -18,7 +18,7 @@ database_name = "tiko-db"
 database_id = "f99b61ae-6a78-4670-bb9c-cdc4f634264a"
 
 [vars]
-ENVIRONMENT = "development"
+ENVIRONMENT = "production"
 
 [env.production]
 vars = { ENVIRONMENT = "production" }
