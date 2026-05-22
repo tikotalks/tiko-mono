@@ -134,6 +134,9 @@ const DEFAULT_AUTH_BASE_URL = 'https://id.tiko.mt'
 const AUTH_SESSION_STORAGE_KEY = 'tiko_auth_session'
 const PENDING_EMAIL_KEY = 'tiko_pending_auth_email'
 const PENDING_NAME_KEY = 'tiko_pending_auth_name'
+const HOST_APP_ID_ALIASES: Record<string, string> = {
+  yesno: 'yes-no'
+}
 
 export function resolveAuthBaseUrl(): string {
   const env = import.meta.env
@@ -144,9 +147,11 @@ export function resolveAuthBaseUrl(): string {
 
 export class CentralAuthService implements AuthService {
   private readonly authBaseUrl: string
+  private readonly getHostname: () => string
 
-  constructor(authBaseUrl = resolveAuthBaseUrl()) {
+  constructor(authBaseUrl = resolveAuthBaseUrl(), getHostname = () => window.location.hostname) {
     this.authBaseUrl = stripTrailingSlash(authBaseUrl)
+    this.getHostname = getHostname
   }
 
   async signInWithEmail(): Promise<AuthResult> {
@@ -730,13 +735,7 @@ export class CentralAuthService implements AuthService {
   }
 
   private getCurrentAppId(): string {
-    const hostname = window.location.hostname
-
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return 'local'
-    }
-
-    return hostname.split('.')[0] || 'tiko'
+    return resolveAppIdFromHostname(this.getHostname())
   }
 
   private storeSession(session: AuthSession): void {
@@ -765,6 +764,30 @@ export class CentralAuthService implements AuthService {
 
 function stripTrailingSlash(value: string): string {
   return value.endsWith('/') ? value.slice(0, -1) : value
+}
+
+export function resolveAppIdFromHostname(hostname: string): string {
+  const normalizedHostname = hostname.toLowerCase()
+
+  if (normalizedHostname === 'localhost' || normalizedHostname === '127.0.0.1') {
+    return 'local'
+  }
+
+  const labels = normalizedHostname.split('.').filter(Boolean)
+
+  if (labels.length >= 4 && labels[0] === 'dev' && labels.at(-2) === 'tikoapps' && labels.at(-1) === 'org') {
+    return normalizeHostedAppId(labels[1])
+  }
+
+  if (labels.length >= 3 && labels.at(-2) === 'tikoapps' && labels.at(-1) === 'org') {
+    return normalizeHostedAppId(labels[0])
+  }
+
+  return normalizeHostedAppId(labels[0] || 'tiko')
+}
+
+function normalizeHostedAppId(appId: string): string {
+  return HOST_APP_ID_ALIASES[appId] || appId || 'tiko'
 }
 
 export { CentralAuthService as ManualAuthService }

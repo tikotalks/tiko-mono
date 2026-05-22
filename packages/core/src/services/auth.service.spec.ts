@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { CentralAuthService } from './auth.service'
+import { CentralAuthService, resolveAppIdFromHostname } from './auth.service'
 
 const mockFetch = vi.fn()
 
@@ -69,6 +69,24 @@ describe('CentralAuthService device-first identity flow', () => {
     expect(session.user.full_name).toBe('Kitchen iPad')
     expect(session.user.user_metadata.name).toBe('Kitchen iPad')
     expect(JSON.parse(localStorage.getItem('tiko_auth_session') || '{}').access_token).toBe('identity-session-token')
+  })
+
+  it('derives per-app ids for dev custom domains instead of using the dev prefix', async () => {
+    expect(resolveAppIdFromHostname('dev.yesno.tikoapps.org')).toBe('yes-no')
+    expect(resolveAppIdFromHostname('dev.radio.tikoapps.org')).toBe('radio')
+    expect(resolveAppIdFromHostname('yesno.tikoapps.org')).toBe('yes-no')
+    expect(resolveAppIdFromHostname('localhost')).toBe('local')
+  })
+
+  it('sends the app slug, not the dev environment prefix, when bootstrapping identity on dev domains', async () => {
+    service = new CentralAuthService('https://id.tiko.mt', () => 'dev.yesno.tikoapps.org')
+    mockFetch.mockResolvedValueOnce(jsonResponse({ ok: true, data: identityBundle }, 201))
+
+    await service.ensureSession()
+
+    expect(JSON.parse(mockFetch.mock.calls[0][1].body as string)).toMatchObject({
+      appId: 'yes-no'
+    })
   })
 
   it('validates a stored identity session with the bearer token', async () => {
