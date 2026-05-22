@@ -2,8 +2,7 @@ import type {
   TTSConfig,
   TTSRequest,
   TTSResponse,
-  AudioMetadata,
-  OpenAIVoice
+  AudioMetadata
 } from './types';
 import {
   OPENAI_SUPPORTED_LANGUAGES,
@@ -11,7 +10,6 @@ import {
   OPENAI_VOICES
 } from './types';
 import {
-  AZURE_SUPPORTED_LANGUAGES,
   AZURE_VOICE_MAP,
   isAzureLanguageSupported,
   getDefaultAzureVoice
@@ -26,6 +24,7 @@ class TTSService {
   private audioMetadataCache: Map<string, { metadata: AudioMetadata | null; timestamp: number }>;
   private CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
   private preferredProvider: 'openai' | 'azure' | 'auto' = 'openai';
+  private unavailableGenerationProviders = new Set<'openai' | 'azure'>();
 
   constructor() {
     // Use the deployed worker URLs as fallback
@@ -45,7 +44,7 @@ class TTSService {
   }
 
   private loadBrowserVoices() {
-    if ('speechSynthesis' in window) {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       const loadVoices = () => {
         this.browserVoicesCache = window.speechSynthesis.getVoices();
       };
@@ -55,6 +54,27 @@ class TTSService {
         speechSynthesis.onvoiceschanged = loadVoices;
       }
     }
+  }
+
+  private browserFallbackResponse(config: TTSConfig): TTSResponse {
+    return {
+      success: true,
+      metadata: {
+        provider: 'browser',
+        language: config.language,
+        voice: config.voice,
+        model: config.model,
+        originalLanguage: config.originalLanguage,
+        fallbackUsed: config.fallbackUsed,
+        speed: config.speed,
+        pitch: config.pitch,
+      },
+      cached: false,
+    };
+  }
+
+  private isGenerationEndpointUnavailable(status: number): boolean {
+    return status === 404 || status === 405 || status === 501 || status === 503;
   }
 
   private getAuthToken(): string | null {
@@ -101,7 +121,7 @@ class TTSService {
   /**
    * Get the appropriate TTS configuration for the given text and language
    */
-  getTTSConfig(text: string, language: string, requestedProvider?: 'openai' | 'azure' | 'browser'): TTSConfig {
+  getTTSConfig(_text: string, language: string, requestedProvider?: 'openai' | 'azure' | 'browser'): TTSConfig {
     // If specific provider requested, try to use it
     const provider = requestedProvider || this.preferredProvider;
     
@@ -270,11 +290,8 @@ class TTSService {
    * Generate audio using OpenAI TTS via worker
    */
   async generateOpenAIAudio(request: TTSRequest, config: TTSConfig): Promise<TTSResponse> {
-    if (!this.workerUrl) {
-      return {
-        success: false,
-        error: 'TTS worker URL not configured'
-      };
+    if (!this.workerUrl || this.unavailableGenerationProviders.has('openai')) {
+      return this.browserFallbackResponse(config);
     }
 
     try {
@@ -292,6 +309,11 @@ class TTSService {
       });
 
       if (!response.ok) {
+        if (this.isGenerationEndpointUnavailable(response.status)) {
+          this.unavailableGenerationProviders.add('openai');
+          console.warn(`[TTSService] OpenAI generation endpoint unavailable (${response.status}); falling back to browser speech`);
+          return this.browserFallbackResponse(config);
+        }
         throw new Error(`Worker responded with ${response.status}`);
       }
 
@@ -305,10 +327,7 @@ class TTSService {
       return data;
     } catch (error) {
       console.error('Error generating OpenAI audio:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to generate audio'
-      };
+      return this.browserFallbackResponse(config);
     }
   }
 
@@ -316,11 +335,8 @@ class TTSService {
    * Generate audio using Azure TTS via worker
    */
   async generateAzureAudio(request: TTSRequest, config: TTSConfig): Promise<TTSResponse> {
-    if (!this.azureWorkerUrl) {
-      return {
-        success: false,
-        error: 'Azure TTS worker URL not configured'
-      };
+    if (!this.azureWorkerUrl || this.unavailableGenerationProviders.has('azure')) {
+      return this.browserFallbackResponse(config);
     }
 
     try {
@@ -339,6 +355,11 @@ class TTSService {
       });
 
       if (!response.ok) {
+        if (this.isGenerationEndpointUnavailable(response.status)) {
+          this.unavailableGenerationProviders.add('azure');
+          console.warn(`[TTSService] Azure generation endpoint unavailable (${response.status}); falling back to browser speech`);
+          return this.browserFallbackResponse(config);
+        }
         throw new Error(`Azure worker responded with ${response.status}`);
       }
 
@@ -356,10 +377,7 @@ class TTSService {
       return data;
     } catch (error) {
       console.error('Error generating Azure audio:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to generate audio'
-      };
+      return this.browserFallbackResponse(config);
     }
   }
 
@@ -451,6 +469,7 @@ class TTSService {
   clearCache(): void {
     console.log('[TTSService] Clearing audio metadata cache');
     this.audioMetadataCache.clear();
+    this.unavailableGenerationProviders.clear();
   }
 
   /**
