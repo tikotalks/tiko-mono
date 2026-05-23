@@ -136,11 +136,11 @@ class AuthWorkerUserService implements UserService {
   async isCurrentUserAdmin(): Promise<boolean> {
     try {
       const response = await fetch(`${this.authBaseUrl}/user`, { credentials: 'include' })
-      if (!response.ok) return Boolean(this.getCurrentSessionProfile())
+      if (!response.ok) return false
       const data = await response.json() as { user?: { app_metadata?: Record<string, unknown> } }
       return data.user?.app_metadata?.role === 'admin'
     } catch {
-      return Boolean(this.getCurrentSessionProfile())
+      return false
     }
   }
 
@@ -167,7 +167,7 @@ class AuthWorkerUserService implements UserService {
         name: metadata.name || metadata.full_name || user.email.split('@')[0],
         username: metadata.username,
         avatar_url: metadata.avatar_url,
-        role: (appMetadata.role || metadata.role || 'admin') as UserProfile['role'],
+        role: normalizeRole(appMetadata.role || metadata.role),
         is_active: appMetadata.is_active !== false,
         created_at: user.created_at || new Date(0).toISOString(),
         updated_at: user.updated_at || user.created_at || new Date(0).toISOString(),
@@ -207,6 +207,10 @@ class AuthWorkerUserService implements UserService {
 
 function stripTrailingSlash(value: string): string {
   return value.endsWith('/') ? value.slice(0, -1) : value
+}
+
+function normalizeRole(value: unknown): UserProfile['role'] {
+  return value === 'admin' || value === 'moderator' || value === 'editor' || value === 'user' ? value : 'user'
 }
 
 export const userService: UserService = new AuthWorkerUserService()

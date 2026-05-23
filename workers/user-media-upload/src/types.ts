@@ -1,10 +1,13 @@
 export interface Env {
   USER_MEDIA_BUCKET: R2Bucket
   USER_MEDIA_DB: D1Database
+  IDENTITY_BASE_URL?: string
+  AUTH_BASE_URL?: string
+  ALLOWED_ORIGINS?: string
 }
 
 export interface UploadRequest {
-  userId: string
+  userId?: string
   usageType: 'profile_picture' | 'card_media' | 'general'
   metadata?: Record<string, unknown>
 }

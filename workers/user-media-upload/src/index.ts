@@ -9,6 +9,12 @@ const ALLOWED_MIME_TYPES = [
 ]
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+const DEFAULT_IDENTITY_BASE_URL = 'https://id.tiko.mt'
+const DEFAULT_ALLOWED_ORIGINS = [
+  'https://tiko.mt',
+  'https://www.tiko.mt',
+  'https://dev.tiko.mt'
+]
 
 function generateSafeFilename(originalName: string, userId: string): string {
   const timestamp = Date.now()
@@ -24,7 +30,7 @@ function generateSafeFilename(originalName: string, userId: string): string {
   return `${userId}/${timestamp}-${randomStr}-${safeName}${extension}`
 }
 
-async function getImageDimensions(file: File): Promise<{ width?: number; height?: number }> {
+async function getImageDimensions(_file: File): Promise<{ width?: number; height?: number }> {
   // For now, return empty dimensions
   // In a real implementation, we'd parse the image headers
   return { width: undefined, height: undefined }
@@ -77,59 +83,142 @@ async function saveToD1(env: Env, record: Omit<UserMediaRecord, 'id' | 'created_
   return id
 }
 
+interface VerifiedIdentity {
+  userId: string
+}
+
+async function verifyIdentity(request: Request, env: Env): Promise<VerifiedIdentity | null> {
+  const authHeader = request.headers.get('Authorization')
+
+  if (!authHeader?.startsWith('Bearer ')) {
+    return null
+  }
+
+  const identityBaseUrl = stripTrailingSlash(env.IDENTITY_BASE_URL || env.AUTH_BASE_URL || DEFAULT_IDENTITY_BASE_URL)
+  const headers = { Authorization: authHeader }
+
+  for (const path of ['/api/identity/session', '/user']) {
+    try {
+      const response = await fetch(`${identityBaseUrl}${path}`, { headers })
+
+      if (!response.ok) continue
+
+      const body = await response.json() as {
+        ok?: boolean
+        success?: boolean
+        data?: { user?: { id?: string } }
+        user?: { id?: string }
+      }
+      const userId = body.data?.user?.id || body.user?.id
+
+      if ((body.ok === true || body.success === true) && userId) {
+        return { userId }
+      }
+    } catch (error) {
+      console.error('Identity verification failed:', error)
+    }
+  }
+
+  return null
+}
+
+function jsonResponse(request: Request, env: Env, body: unknown, init: ResponseInit = {}): Response {
+  const headers = new Headers(init.headers || {})
+  headers.set('Content-Type', 'application/json')
+  applyCorsHeaders(headers, request, env)
+  return new Response(JSON.stringify(body), { ...init, headers })
+}
+
+function applyCorsHeaders(headers: Headers, request: Request, env: Env): void {
+  const origin = request.headers.get('Origin')
+
+  if (origin && isAllowedOrigin(origin, env)) {
+    headers.set('Access-Control-Allow-Origin', origin)
+    headers.set('Vary', appendVary(headers.get('Vary'), 'Origin'))
+  }
+
+  headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+  headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  headers.set('Access-Control-Max-Age', '86400')
+}
+
+function appendVary(current: string | null, value: string): string {
+  if (!current) return value
+  const parts = current.split(',').map(part => part.trim().toLowerCase())
+  return parts.includes(value.toLowerCase()) ? current : `${current}, ${value}`
+}
+
+function isAllowedOrigin(origin: string, env: Env): boolean {
+  if (env.ALLOWED_ORIGINS) {
+    return env.ALLOWED_ORIGINS.split(',').map(item => item.trim()).filter(Boolean).includes(origin)
+  }
+
+  try {
+    const hostname = new URL(origin).hostname
+    return DEFAULT_ALLOWED_ORIGINS.includes(origin)
+      || hostname === 'localhost'
+      || hostname === '127.0.0.1'
+      || hostname.endsWith('.tikoapps.org')
+      || hostname.endsWith('.pages.dev')
+  } catch {
+    return false
+  }
+}
+
+function stripTrailingSlash(value: string): string {
+  return value.endsWith('/') ? value.slice(0, -1) : value
+}
+
 async function handleUpload(request: Request, env: Env): Promise<Response> {
   try {
+    const identity = await verifyIdentity(request, env)
+
+    if (!identity) {
+      return jsonResponse(request, env, {
+        success: false,
+        error: 'Not authenticated'
+      }, { status: 401 })
+    }
+
     // Parse multipart form data
     const formData = await request.formData()
     const file = formData.get('file') as File | null
     const uploadDataStr = formData.get('data') as string | null
 
     if (!file) {
-      return new Response(JSON.stringify({ 
-        success: false, 
-        error: 'No file provided' 
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      })
+      return jsonResponse(request, env, {
+        success: false,
+        error: 'No file provided'
+      }, { status: 400 })
     }
 
     if (!uploadDataStr) {
-      return new Response(JSON.stringify({ 
-        success: false, 
-        error: 'No upload data provided' 
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      })
+      return jsonResponse(request, env, {
+        success: false,
+        error: 'No upload data provided'
+      }, { status: 400 })
     }
 
     const uploadData: UploadRequest = JSON.parse(uploadDataStr)
 
     // Validate file type
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-      return new Response(JSON.stringify({ 
-        success: false, 
-        error: 'Invalid file type. Only images are allowed.' 
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      })
+      return jsonResponse(request, env, {
+        success: false,
+        error: 'Invalid file type. Only images are allowed.'
+      }, { status: 400 })
     }
 
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
-      return new Response(JSON.stringify({ 
-        success: false, 
-        error: 'File too large. Maximum size is 10MB.' 
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      })
+      return jsonResponse(request, env, {
+        success: false,
+        error: 'File too large. Maximum size is 10MB.'
+      }, { status: 400 })
     }
 
-    // Generate safe filename
-    const filename = generateSafeFilename(file.name, uploadData.userId)
+    // Generate safe filename from verified identity, not caller-controlled form data.
+    const filename = generateSafeFilename(file.name, identity.userId)
     
     // Upload to R2
     await env.USER_MEDIA_BUCKET.put(filename, file.stream(), {
@@ -153,7 +242,7 @@ async function handleUpload(request: Request, env: Env): Promise<Response> {
 
     // Save metadata to D1
     const recordId = await saveToD1(env, {
-      user_id: uploadData.userId,
+      user_id: identity.userId,
       filename,
       original_filename: file.name,
       file_size: file.size,
@@ -173,24 +262,13 @@ async function handleUpload(request: Request, env: Env): Promise<Response> {
       ...urls
     }
 
-    return new Response(JSON.stringify(response), {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      }
-    })
+    return jsonResponse(request, env, response)
   } catch (error) {
     console.error('Upload error:', error)
-    return new Response(JSON.stringify({ 
-      success: false, 
+    return jsonResponse(request, env, {
+      success: false,
       error: error instanceof Error ? error.message : 'Upload failed'
-    }), {
-      status: 500,
-      headers: { 
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      }
-    })
+    }, { status: 500 })
   }
 }
 
@@ -232,17 +310,12 @@ async function handleTransform(request: Request, env: Env): Promise<Response> {
 }
 
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
     // Handle CORS preflight
     if (request.method === 'OPTIONS') {
-      return new Response(null, {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          'Access-Control-Max-Age': '86400',
-        }
-      })
+      const headers = new Headers()
+      applyCorsHeaders(headers, request, env)
+      return new Response(null, { status: 204, headers })
     }
 
     const url = new URL(request.url)

@@ -51,12 +51,17 @@ class UserMediaService {
     const formData = new FormData()
     formData.append('file', options.file)
     formData.append('data', JSON.stringify({
-      userId: session.user.id,
       usageType: options.usageType,
       metadata: options.metadata || {}
     }))
 
-    const result = await this.request<any>('/upload', { method: 'POST', body: formData }, false)
+    const result = await this.request<any>('/upload', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
+      },
+      body: formData
+    }, false)
     const media: UserMedia = {
       id: result.id || `upload-${Date.now()}`,
       user_id: session.user.id,
