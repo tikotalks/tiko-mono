@@ -31,12 +31,12 @@ Cloudflare data plane: D1, R2, KV cache, Queues
 ## Domain boundaries
 
 - `tiko.mt` — public product/marketing home.
-- `id.tiko.mt` — canonical identity origin.
+- `id.tiko.mt` — canonical identity origin owned by `workers/identity-api`.
 - `*.tikoapps.org` — child-facing app runtimes.
 - `api.tikoapi.org/*` — app/content/media/generation/admin APIs where consolidation is practical.
 - `*.tikocdn.org` — raw/generated/cacheable bytes.
 
-See `docs/domain-strategy.md`.
+See `docs/domain-strategy.md` and `docs/API_BOUNDARIES.md`.
 
 ## Target packages
 
@@ -61,17 +61,25 @@ Current packages are transitional. New code should move toward these boundaries.
 
 ## Identity API responsibilities
 
+`workers/identity-api` is the canonical Tiko identity service. Its public origin is `https://id.tiko.mt`, and app code should reach it through the `@tiko/identity` client seam as that package becomes the stable interface.
+
 `workers/identity-api` owns:
 
-- silent device/user creation;
-- current session lookup;
-- profile display name/handle;
-- email attach/verify;
+- silent device/user/session creation;
+- current bearer session lookup and refresh;
+- profile display name/handle fields needed by app shells;
+- optional email attach/verify for recovery or device transfer;
 - magic-link recovery/transfer;
 - session/device revocation;
-- rate limiting and audit events.
+- rate limiting, audit events, and anonymous-user cleanup policy.
 
-It must not become enterprise account management.
+It must not become enterprise account management, a password system, a login wall, or an OAuth-first account service.
+
+`workers/auth-service` is retired as a target architecture component. While it remains in the repository, it is only a compatibility shim for already-written code and must not receive new first-class Tiko identity flows. New app work must not call Better Auth, OTP, OAuth, or password endpoints as the canonical Tiko flow.
+
+`packages/core` auth assumptions are transitional. Core may adapt to the identity API for compatibility, but long-term identity types and calls belong in `packages/identity`; core should settle back to bootstrap/config/event/http primitives.
+
+See `docs/API_BOUNDARIES.md` for the accepted boundary decision and token/SSO rules. In particular, Tiko forbids token-in-query SSO between apps; bearer/session tokens must not be embedded in normal app URLs.
 
 ## App API responsibilities
 
