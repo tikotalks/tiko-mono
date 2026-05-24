@@ -1,5 +1,5 @@
 <template>
-	<main :class="bemm()">
+	<main :class="[bemm(), session.state.currentPrompt ? bemm('', 'practice-active') : '']">
 		<nav
 			v-if="session.state.currentPrompt"
 			:class="bemm('top-nav')"
@@ -40,7 +40,7 @@
 
 		<section v-if="session.state.currentPrompt" :class="bemm('practice')">
 			<div :class="bemm('prompt-card')">
-				<span :class="bemm('prompt-label')">Set the clock to</span>
+				<span :class="bemm('prompt-label')">Set to</span>
 				<strong :class="bemm('prompt-time')">{{ targetLabel }}</strong>
 				<p :class="bemm('feedback', ['', feedbackTone])">{{ session.state.feedback }}</p>
 			</div>
@@ -128,43 +128,49 @@
 			radial-gradient(circle at top left, rgb(251 191 36 / 0.35), transparent 20rem),
 			linear-gradient(180deg, #fff7ed 0%, #eff6ff 100%);
 		display: grid;
-		gap: 1.5rem;
-		grid-template-rows: auto;
+		gap: clamp(0.75rem, 2dvh, 1.5rem);
 		min-height: calc(100dvh - 4rem);
-		padding: clamp(1rem, 3vw, 2rem);
-		padding-bottom: max(1rem, env(safe-area-inset-bottom));
-		padding-left: max(clamp(1rem, 3vw, 2rem), env(safe-area-inset-left));
-		padding-right: max(clamp(1rem, 3vw, 2rem), env(safe-area-inset-right));
+		padding: clamp(0.75rem, 2.4vw, 2rem);
+		padding-bottom: max(clamp(0.75rem, 2dvh, 1.25rem), env(safe-area-inset-bottom));
+		padding-left: max(clamp(0.75rem, 2.4vw, 2rem), env(safe-area-inset-left));
+		padding-right: max(clamp(0.75rem, 2.4vw, 2rem), env(safe-area-inset-right));
+
+		&--practice-active {
+			grid-template-rows: auto minmax(0, 1fr);
+			height: calc(100dvh - 4rem);
+			overflow: hidden;
+		}
 
 		&__top-nav {
 			align-items: center;
 			display: grid;
-			gap: 0.75rem;
+			gap: 0.65rem;
 			grid-template-columns: auto 1fr;
 			max-width: 44rem;
+			min-height: 2.75rem;
 			width: 100%;
 		}
 
 		&__back-button {
 			align-items: center;
 			background: #ffffff;
-			border: 0.2rem solid #fed7aa;
+			border: 0.15rem solid #fed7aa;
 			border-radius: 999px;
-			box-shadow: 0 0.7rem 1.4rem rgb(124 45 18 / 0.12);
+			box-shadow: 0 0.45rem 0.9rem rgb(124 45 18 / 0.1);
 			color: #9a3412;
 			cursor: pointer;
 			display: inline-flex;
-			font-size: 1.1rem;
+			font-size: clamp(0.95rem, 3.5vw, 1.05rem);
 			font-weight: 950;
-			gap: 0.45rem;
-			min-height: 3.2rem;
-			padding: 0.65rem 1rem;
+			gap: 0.35rem;
+			min-height: 2.6rem;
+			padding: 0.45rem 0.85rem;
 			touch-action: manipulation;
 		}
 
 		&__nav-title {
 			color: #431407;
-			font-size: clamp(1.1rem, 5vw, 1.6rem);
+			font-size: clamp(1rem, 4.5vw, 1.45rem);
 			font-weight: 950;
 			min-width: 0;
 			overflow: hidden;
@@ -240,43 +246,56 @@
 		}
 
 		&__practice {
+			align-content: stretch;
 			align-items: center;
 			display: grid;
-			gap: clamp(0.65rem, 2vh, 1.1rem);
+			gap: clamp(0.45rem, 1.2dvh, 0.75rem);
+			grid-template-rows: auto minmax(0, 1fr) auto;
 			justify-items: center;
-			max-width: 44rem;
+			max-width: 36rem;
+			min-height: 0;
 			width: 100%;
 		}
 
 		&__prompt-card {
+			align-items: center;
 			background: #ffffff;
-			border-radius: clamp(1.2rem, 5vw, 2rem);
-			box-shadow: 0 1rem 2rem rgb(30 64 175 / 0.12);
-			max-width: 34rem;
-			padding: clamp(0.75rem, 3vw, 1rem) clamp(1rem, 4vw, 1.5rem);
-			text-align: center;
-			width: min(100%, 34rem);
+			border-radius: clamp(1rem, 4vw, 1.4rem);
+			box-shadow: 0 0.7rem 1.4rem rgb(30 64 175 / 0.1);
+			display: grid;
+			gap: 0.15rem 0.75rem;
+			grid-template-columns: auto 1fr;
+			max-width: 32rem;
+			padding: clamp(0.45rem, 1.4dvh, 0.75rem) clamp(0.8rem, 3vw, 1.1rem);
+			width: min(100%, 32rem);
 		}
 
 		&__prompt-label {
 			color: #1d4ed8;
-			display: block;
-			font-weight: 900;
+			font-size: clamp(0.75rem, 2.8vw, 0.95rem);
+			font-weight: 950;
 			text-transform: uppercase;
 		}
 
 		&__prompt-time {
 			color: #111827;
-			display: block;
-			font-size: clamp(2.4rem, 9vw, 5rem);
-			line-height: 1;
+			font-size: clamp(1.8rem, 7dvh, 3.8rem);
+			font-weight: 950;
+			line-height: 0.95;
+			text-align: right;
 		}
 
 		&__feedback {
 			border-radius: 999px;
+			font-size: clamp(0.78rem, 2.6vw, 0.95rem);
 			font-weight: 900;
-			margin: 0.75rem 0 0;
-			padding: 0.65rem 1rem;
+			grid-column: 1 / -1;
+			line-height: 1.1;
+			margin: 0;
+			overflow: hidden;
+			padding: 0.35rem 0.65rem;
+			text-overflow: ellipsis;
+			white-space: nowrap;
 
 			&--hint {
 				background: #ffedd5;
@@ -291,15 +310,30 @@
 
 		&__actions {
 			display: grid;
-			gap: 0.75rem;
+			gap: clamp(0.45rem, 1.1dvh, 0.65rem);
 			grid-template-columns: 1fr 1fr;
-			max-width: 32rem;
+			max-width: 30rem;
+			width: 100%;
+		}
+
+		&__actions .button {
+			width: 100%;
+		}
+
+		&__actions .button__container {
+			justify-content: center;
+			min-height: clamp(2.65rem, 6.8dvh, 3.5rem);
+			padding: 0.55rem 0.8rem;
 			width: 100%;
 		}
 
 		@media (max-width: 520px) {
-			gap: 0.85rem;
-			padding-top: 0.85rem;
+			gap: 0.65rem;
+			padding-top: 0.65rem;
+
+			&--practice-active {
+				gap: 0.4rem;
+			}
 
 			&__hero {
 				text-align: left;
@@ -329,9 +363,43 @@
 			&__mode-description {
 				font-size: 0.95rem;
 			}
+		}
+
+		@media (max-height: 700px) {
+			&--practice-active {
+				padding-top: 0.4rem;
+				padding-bottom: max(0.4rem, env(safe-area-inset-bottom));
+			}
+
+			&__top-nav {
+				min-height: 2.35rem;
+			}
+
+			&__back-button {
+				min-height: 2.25rem;
+				padding-block: 0.3rem;
+			}
+
+			&__practice {
+				gap: 0.35rem;
+			}
+
+			&__prompt-card {
+				padding-block: 0.35rem;
+			}
 
 			&__prompt-time {
-				font-size: clamp(2.35rem, 14vw, 3.4rem);
+				font-size: clamp(1.55rem, 6dvh, 2.4rem);
+			}
+
+			&__feedback {
+				font-size: 0.72rem;
+				padding-block: 0.25rem;
+			}
+
+			&__actions .button__container {
+				min-height: 2.3rem;
+				padding-block: 0.35rem;
 			}
 		}
 	}
