@@ -116,22 +116,33 @@ Use this progression unless real child testing shows a better path.
 ### Child learning surface
 
 - Large interactive analog clock.
+- Kid chooses the learning mode before the round starts. Do not force a hidden curriculum path only adults control.
 - Realistic/geared hand behavior: moving the minute hand moves the hour hand proportionally.
 - Color/shape-coded hands:
   - hour hand and hour value visually linked,
   - minute hand and minute value visually linked.
-- Digital time mirror with matching color treatment.
+- Digital time mirror with matching color treatment when scaffolding is enabled.
 - Spoken phrase support via explicit tap/replay.
 - Progression through at least:
   - clock anatomy,
-  - o'clock,
+  - full hours / o'clock,
   - half past.
-- Three modes:
-  - **Learn:** tiny demonstration.
-  - **Play:** short practice challenges.
-  - **Explore:** free clock manipulative.
+- Primary challenge loop:
+  1. Child selects a mode, for example **Full hours**.
+  2. App gives a target time, for example “4 o'clock”.
+  3. Child moves the clock hands to set that time.
+  4. App accepts the answer with a generous tolerance appropriate to the mode.
+  5. If correct: fireworks/celebration, then next prompt.
+  6. If close: gentle hint, not failure.
+- Multiple learning modes:
+  - **Learn:** tiny demonstration of a concept.
+  - **Set the clock:** child receives a target time and moves hands to match.
+  - **Read the clock:** app shows a clock; child chooses/says/matches the time.
+  - **Match:** pair analog clocks with digital/spoken times.
+  - **Explore:** free clock manipulative with optional scaffolds.
 - Immediate explanatory feedback:
   - “The long hand tells minutes.”
+  - “When the long hand points to 12, it is o'clock.”
   - “When the long hand points to 6, that means 30 minutes.”
   - “At half past, the short hand is halfway to the next number.”
 - No speed pressure by default.
@@ -255,8 +266,10 @@ Minimum utilities:
 - convert hour/minute to hand angles,
 - convert hand angles to nearest staged time,
 - format digital 12h/24h,
-- generate prompt by level,
-- validate answer by level,
+- generate prompt by level/mode,
+- validate answer by level/mode with generous tolerance,
+- configure per-mode tolerance, for example full-hour mode should accept near-4-o'clock answers rather than requiring pixel-perfect hand placement,
+- trigger a celebration event when a prompt is accepted,
 - detect likely mistake category:
   - hand confusion,
   - minute-number literal reading,
@@ -296,14 +309,16 @@ Minimum utilities:
 2. Create `apps/clock` from the simplest current app shell pattern.
 3. Implement pure clock math utilities with tests first.
 4. Build the interactive analog clock with realistic hour-hand movement.
-5. Add learning stages for anatomy, o'clock, and half past.
-6. Add feedback/misconception hints.
-7. Add local settings/progress and scaffold toggles.
-8. Add i18n fallback keys.
-9. Validate app build/typecheck/test.
-10. Add app metadata to the Tiko dashboard only after `clock` is buildable.
-11. Prepare Cloudflare Pages/dev-domain config and ADR follow-through.
-12. Live smoke `dev.clock.tikoapps.org` before considering production domain binding.
+5. Add child-selected learning modes, starting with Full hours / Set the clock.
+6. Add tolerant validation and fireworks celebration on accepted answers.
+7. Add learning stages for anatomy, o'clock, and half past.
+8. Add feedback/misconception hints.
+9. Add local settings/progress and scaffold toggles.
+10. Add i18n fallback keys.
+11. Validate app build/typecheck/test.
+12. Add app metadata to the Tiko dashboard only after `clock` is buildable.
+13. Prepare Cloudflare Pages/dev-domain config and ADR follow-through.
+14. Live smoke `dev.clock.tikoapps.org` before considering production domain binding.
 
 ## Acceptance criteria
 
@@ -312,6 +327,10 @@ Minimum utilities:
 - `pnpm --filter clock build` passes.
 - App opens without login or parent setup.
 - Default child flow teaches clock reading, not just displays current time.
+- Child can choose a learning mode, including Full hours / Set the clock.
+- Full-hours mode can prompt “4 o'clock” and let the child move the clock to match.
+- Validation is intentionally tolerant and not pixel-perfect.
+- Correct answers trigger a fireworks/celebration moment and advance to the next prompt.
 - Anatomy, o'clock, and half-past stages exist in v1.
 - Hour hand moves proportionally as minutes change.
 - 12h/24h formatting is covered by tests.

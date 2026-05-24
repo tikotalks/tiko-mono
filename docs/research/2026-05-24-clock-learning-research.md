@@ -190,17 +190,20 @@ Tiko Clock should be a **clock-reading tutor built around a large interactive an
 
 Core loop:
 
-1. Watch a tiny demonstration.
-2. Try one task.
-3. Get specific visual/audio feedback.
-4. Repeat a few times.
-5. Earn gentle progress.
+1. Kid chooses a learning mode, for example **Full hours**.
+2. App gives one target, for example “4 o'clock”.
+3. Kid moves the clock to set the target time.
+4. App checks generously, not too picky: answers within the mode's tolerance count as right.
+5. Correct answer triggers fireworks/celebration.
+6. App moves to the next prompt.
 
 Primary modes:
 
-- Learn: short concept introduction.
-- Play: practice challenges.
-- Explore: free clock manipulative.
-- Progress: optional caregiver view.
+- **Learn:** short concept introduction.
+- **Set the clock:** target time → move hands → tolerant check → fireworks → next.
+- **Read the clock:** shown clock → choose/match the time.
+- **Match:** analog/digital/spoken card pairs.
+- **Explore:** free clock manipulative.
+- **Progress:** optional caregiver view.
 
 The app should still have a beautiful live clock/explore mode, but that is supporting material, not the product center.
