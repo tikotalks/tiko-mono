@@ -600,6 +600,9 @@ importers:
 
   packages/core:
     dependencies:
+      '@tiko/identity':
+        specifier: workspace:*
+        version: link:../identity
       axios:
         specifier: ^1.6.7
         version: 1.13.6
@@ -627,6 +630,10 @@ importers:
         version: 1.6.1(@types/node@18.16.9)(@vitest/ui@1.6.1)(jsdom@22.1.0)(sass@1.97.3)
 
   packages/identity:
+    dependencies:
+      vue:
+        specifier: ^3.4.21
+        version: 3.5.30(typescript@5.3.3)
     devDependencies:
       typescript:
         specifier: ~5.3.3

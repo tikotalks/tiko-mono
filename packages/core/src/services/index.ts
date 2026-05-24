@@ -60,7 +60,6 @@ export {
 
 // Export active service instances
 export { authService } from './auth.service'
-export { authSyncService } from './auth-sync.service'
 export { parentModeService } from './parent-mode.service'
 export { userSettingsService } from './user-settings.service'
 export { itemService, unifiedItemService } from './item.service'

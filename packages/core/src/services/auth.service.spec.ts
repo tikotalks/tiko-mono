@@ -2,14 +2,16 @@
  * @vitest-environment jsdom
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { SessionBundle } from '@tiko/identity'
 import { CentralAuthService, resolveAppIdFromHostname } from './auth.service'
 
 const mockFetch = vi.fn()
 
-const identityBundle = {
+const identityBundle: SessionBundle = {
   user: {
     id: 'user-123',
     primaryEmail: 'test@example.com',
+    displayName: 'Kitchen iPad',
     createdAt: '2025-01-01T00:00:00.000Z',
     updatedAt: '2025-01-02T00:00:00.000Z',
     lastSeenAt: '2025-01-03T00:00:00.000Z'
@@ -98,7 +100,7 @@ describe('CentralAuthService device-first identity flow', () => {
     expect(mockFetch).toHaveBeenCalledWith(
       'https://id.tiko.mt/api/identity/session',
       expect.objectContaining({
-        method: 'GET',
+        method: 'POST',
         headers: expect.any(Headers)
       })
     )

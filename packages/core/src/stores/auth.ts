@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { authService } from '../services'
-import { authSyncService } from '../services/auth-sync.service'
 import type { AuthUser, AuthSession } from '../services/auth.service'
 
 // User profile settings interface (for auth store)
@@ -94,7 +93,6 @@ export const useAuthStore = defineStore('auth', () => {
       }
       if (result.session) {
         session.value = result.session
-        await authSyncService.syncSession(result.session)
         // Fetch user role after successful login
         await fetchUserRole()
       }
@@ -197,7 +195,6 @@ export const useAuthStore = defineStore('auth', () => {
       }
       if (result.session) {
         session.value = result.session
-        await authSyncService.syncSession(result.session)
         // Fetch user role after successful login
         await fetchUserRole()
       }
@@ -251,7 +248,6 @@ export const useAuthStore = defineStore('auth', () => {
       if (!result.success) {
         console.warn('Logout error:', result.error)
       }
-      await authSyncService.clearSession()
     } catch (err) {
       console.warn('Logout failed:', err)
     } finally {
@@ -398,7 +394,6 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = currentSession.user
         session.value = currentSession
 
-        await authSyncService.syncSession(currentSession)
 
         // Fetch user role
         await fetchUserRole()
