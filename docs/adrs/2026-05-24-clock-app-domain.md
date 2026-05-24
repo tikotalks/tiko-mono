@@ -1,15 +1,15 @@
 # ADR: Add Tiko Clock App Domain
 
-**Date:** 2026-05-24  
-**Status:** Proposed  
-**Decision owner:** Founder / Hermio  
+**Date:** 2026-05-24
+**Status:** Proposed
+**Decision owner:** Founder / Hermio
 **Related plan:** `docs/plans/2026-05-24-tiko-clock-app.md`
 
 ## Context
 
-Tiko is adding a new child-facing Clock app. Existing domain doctrine says interactive/installable apps live under the `tikoapps.org` runtime family, with development aliases using `dev.<app>.tikoapps.org`.
+Tiko is adding a new child-facing Clock app. After user clarification, Clock is primarily a clock-reading learning app, not a passive time-orientation display. Existing domain doctrine says interactive/installable apps live under the `tikoapps.org` runtime family, with development aliases using `dev.<app>.tikoapps.org`.
 
-Clock is a product app, not a marketing page, API, or CDN asset. It should follow the same isolation and deployment pattern as Timer, Cards, Todo, Type, Radio, Sequence, and Yes/No.
+Clock is a product learning app, not a marketing page, API, or CDN asset. It should follow the same isolation and deployment pattern as Timer, Cards, Todo, Type, Radio, Sequence, and Yes/No.
 
 ## Decision
 
