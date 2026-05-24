@@ -8,6 +8,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./client": "./src/client.ts",
+    "./device-owner": "./src/device-owner.ts",
     "./vue": "./src/vue.ts",
     "./routes": "./src/routes.ts",
     "./repository": "./src/repository.ts",

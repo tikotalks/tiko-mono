@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { authService } from '../services'
 import type { AuthUser, AuthSession } from '../services/auth.service'
+import { resolveAndPersistDeviceOwner, type DeviceOwner } from '@tiko/identity/device-owner'
 
 // User profile settings interface (for auth store)
 export interface UserProfileSettings {
@@ -18,6 +19,7 @@ export const useAuthStore = defineStore('auth', () => {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const userRole = ref<string | null>(null)
+  const deviceOwner = ref<DeviceOwner | null>(null)
 
   // User settings state - this is the single source of truth
   const userSettings = ref<UserProfileSettings>({})
@@ -61,6 +63,11 @@ export const useAuthStore = defineStore('auth', () => {
 
     return false;
   })
+
+  // Device owner — stable owner ID for local-first data.
+  // ownerId = user.id for claimed users, device.id for device-first users.
+  const ownerId = computed(() => deviceOwner.value?.ownerId ?? user.value?.id ?? null)
+  const isDeviceOwnerClaimed = computed(() => deviceOwner.value?.isClaimed ?? false)
 
   // Actions
   const signInWithEmail = async (email: string, password: string) => {
@@ -195,6 +202,8 @@ export const useAuthStore = defineStore('auth', () => {
       }
       if (result.session) {
         session.value = result.session
+        // Update device owner — email verification transitions device→claimed
+        deviceOwner.value = resolveAndPersistDeviceOwner(result.session.identity ?? null)
         // Fetch user role after successful login
         await fetchUserRole()
       }
@@ -254,6 +263,7 @@ export const useAuthStore = defineStore('auth', () => {
       // Clear local state
       user.value = null
       session.value = null
+      deviceOwner.value = null
       // Don't clear settings - keep them for next login
     }
   }
@@ -394,6 +404,8 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = currentSession.user
         session.value = currentSession
 
+        // Resolve and persist the device owner for local-first data.
+        deviceOwner.value = resolveAndPersistDeviceOwner(currentSession.identity ?? null)
 
         // Fetch user role
         await fetchUserRole()
@@ -445,6 +457,8 @@ export const useAuthStore = defineStore('auth', () => {
 
       user.value = currentSession.user
       session.value = currentSession
+      // Keep device owner in sync with session changes
+      deviceOwner.value = resolveAndPersistDeviceOwner(currentSession.identity ?? null)
     }
 
     // Listen for storage events to handle external session changes
@@ -454,11 +468,13 @@ export const useAuthStore = defineStore('auth', () => {
           // Session was cleared externally
           user.value = null
           session.value = null
+          deviceOwner.value = null
         } else {
           try {
             const newSession = JSON.parse(e.newValue)
             session.value = newSession
             user.value = newSession.user
+            deviceOwner.value = resolveAndPersistDeviceOwner(newSession.identity ?? null)
           } catch (err) {
             console.error('[Auth Store] Failed to parse session from storage event:', err)
           }
@@ -483,6 +499,7 @@ export const useAuthStore = defineStore('auth', () => {
         // Session was cleared
         user.value = null
         session.value = null
+        deviceOwner.value = null
       }
       void syncSessionFromServer()
     }, 30000)
@@ -547,6 +564,8 @@ export const useAuthStore = defineStore('auth', () => {
       if (result.success && result.user && result.session) {
         user.value = result.user
         session.value = result.session
+        // Update device owner — magic link verification transitions device→claimed
+        deviceOwner.value = resolveAndPersistDeviceOwner(result.session.identity ?? null)
 
         // Load user settings if available
         try {
@@ -628,12 +647,15 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading,
     error,
     userSettings,
+    deviceOwner,
 
     // Getters
     isAuthenticated,
     currentLanguage,
     currentTheme,
     isAdmin,
+    ownerId,
+    isDeviceOwnerClaimed,
 
     // Actions
     signInWithEmail,
