@@ -230,6 +230,52 @@ importers:
         specifier: ^7.3.0
         version: 7.4.0
 
+  apps/clock:
+    dependencies:
+      '@tiko/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@tiko/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      bemm:
+        specifier: ^1.0.0
+        version: 1.4.0
+      open-icon:
+        specifier: ^1.1.2
+        version: 1.1.2(vue@3.5.30)
+      pinia:
+        specifier: ^2.1.7
+        version: 2.3.1(typescript@5.3.3)(vue@3.5.30)
+      vue:
+        specifier: ^3.4.21
+        version: 3.5.30(typescript@5.3.3)
+      vue-router:
+        specifier: ^4.3.0
+        version: 4.6.4(vue@3.5.30)
+    devDependencies:
+      '@vitejs/plugin-vue':
+        specifier: ^4.6.2
+        version: 4.6.2(vite@5.4.21)(vue@3.5.30)
+      '@vue/test-utils':
+        specifier: ^2.4.4
+        version: 2.4.6
+      sass:
+        specifier: ^1.71.1
+        version: 1.97.3
+      typescript:
+        specifier: ~5.3.3
+        version: 5.3.3
+      vite:
+        specifier: ^5.1.4
+        version: 5.4.21(@types/node@18.16.9)(sass@1.97.3)
+      vitest:
+        specifier: ^1.3.1
+        version: 1.6.1(@types/node@18.16.9)(@vitest/ui@1.6.1)(jsdom@22.1.0)(sass@1.97.3)
+      vue-tsc:
+        specifier: ^1.8.27
+        version: 1.8.27(typescript@5.3.3)
+
   apps/radio:
     dependencies:
       '@tiko/core':

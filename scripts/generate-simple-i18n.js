@@ -71,6 +71,9 @@ const APP_SECTION_CONFIG = {
   'timer': {
     excluded: ['admin', 'deployment', 'media', 'content']
   },
+  'clock': {
+    excluded: ['admin', 'deployment', 'media', 'content']
+  },
   'radio': {
     excluded: ['admin', 'deployment', 'media', 'content']
   },

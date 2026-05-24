@@ -10,7 +10,8 @@ const appProjects = [
   { name: 'radio', port: 3205, command: `${smokeEnv} corepack pnpm --dir ../../apps/radio dev:no-build --host 127.0.0.1 --port 3205 --strictPort` },
   { name: 'tiko', port: 3206, command: `${smokeEnv} corepack pnpm --dir ../../apps/tiko dev:no-build --host 127.0.0.1 --port 3206 --strictPort` },
   { name: 'timer', port: 3207, command: `${smokeEnv} corepack pnpm --dir ../../apps/timer dev:no-build --host 127.0.0.1 --port 3207 --strictPort` },
-  { name: 'todo', port: 3208, command: `${smokeEnv} corepack pnpm --dir ../../apps/todo dev:no-build --host 127.0.0.1 --port 3208 --strictPort` }
+  { name: 'todo', port: 3208, command: `${smokeEnv} corepack pnpm --dir ../../apps/todo dev:no-build --host 127.0.0.1 --port 3208 --strictPort` },
+  { name: 'clock', port: 3209, command: `${smokeEnv} corepack pnpm --dir ../../apps/clock dev:no-build --host 127.0.0.1 --port 3209 --strictPort` }
 ]
 
 export default defineConfig({

@@ -8,6 +8,7 @@ routes = [
   { pattern = "dev.type.tikoapps.org/*", zone_name = "tikoapps.org" },
   { pattern = "dev.todo.tikoapps.org/*", zone_name = "tikoapps.org" },
   { pattern = "dev.cards.tikoapps.org/*", zone_name = "tikoapps.org" },
+  { pattern = "dev.clock.tikoapps.org/*", zone_name = "tikoapps.org" },
   { pattern = "dev.timer.tikoapps.org/*", zone_name = "tikoapps.org" },
   { pattern = "dev.radio.tikoapps.org/*", zone_name = "tikoapps.org" },
   { pattern = "dev.sequence.tikoapps.org/*", zone_name = "tikoapps.org" }

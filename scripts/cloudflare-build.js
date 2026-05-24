@@ -35,6 +35,7 @@ const appNameMapping = {
   'admin': 'admin',
   'yesno': 'yes-no',     // Directory is yes-no, not yesno
   'yes-no': 'yes-no',
+  'clock': 'clock',
   'timer': 'timer',
   'cards': 'cards',
   'radio': 'radio',

@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       target:
-        description: 'Target app to deploy (timer, yes-no, cards, sequence, radio, todo, type, tiko, or all)'
+        description: 'Target app to deploy (timer, yes-no, cards, sequence, radio, todo, type, tiko, clock, or all)'
         required: true
         default: 'all'
         type: choice
@@ -23,6 +23,7 @@ on:
           - todo
           - type
           - tiko
+          - clock
       message:
         description: 'Deployment message'
         required: false
@@ -44,6 +45,7 @@ jobs:
       build-todo: ${{ steps.check.outputs.build-todo }}
       build-type: ${{ steps.check.outputs.build-type }}
       build-tiko: ${{ steps.check.outputs.build-tiko }}
+      build-clock: ${{ steps.check.outputs.build-clock }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -61,6 +63,7 @@ jobs:
           echo "build-todo=false" >> $GITHUB_OUTPUT
           echo "build-type=false" >> $GITHUB_OUTPUT
           echo "build-tiko=false" >> $GITHUB_OUTPUT
+          echo "build-clock=false" >> $GITHUB_OUTPUT
 
           # Handle workflow_dispatch trigger
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
@@ -76,6 +79,7 @@ jobs:
               echo "build-todo=true" >> $GITHUB_OUTPUT
               echo "build-type=true" >> $GITHUB_OUTPUT
               echo "build-tiko=true" >> $GITHUB_OUTPUT
+              echo "build-clock=true" >> $GITHUB_OUTPUT
             elif [[ "$TARGET" == "timer" ]]; then
               echo "build-timer=true" >> $GITHUB_OUTPUT
             elif [[ "$TARGET" == "yes-no" ]]; then
@@ -92,6 +96,8 @@ jobs:
               echo "build-type=true" >> $GITHUB_OUTPUT
             elif [[ "$TARGET" == "tiko" ]]; then
               echo "build-tiko=true" >> $GITHUB_OUTPUT
+            elif [[ "$TARGET" == "clock" ]]; then
+              echo "build-clock=true" >> $GITHUB_OUTPUT
             fi
             exit 0
           fi
@@ -108,6 +114,7 @@ jobs:
             echo "build-todo=true" >> $GITHUB_OUTPUT
             echo "build-type=true" >> $GITHUB_OUTPUT
             echo "build-tiko=true" >> $GITHUB_OUTPUT
+            echo "build-clock=true" >> $GITHUB_OUTPUT
             exit 0
           fi
 
@@ -131,6 +138,7 @@ jobs:
               echo "build-todo=true" >> $GITHUB_OUTPUT
               echo "build-type=true" >> $GITHUB_OUTPUT
               echo "build-tiko=true" >> $GITHUB_OUTPUT
+              echo "build-clock=true" >> $GITHUB_OUTPUT
               exit 0
             fi
             
@@ -159,19 +167,22 @@ jobs:
             if echo "$CHANGED_FILES" | grep -E "^apps/tiko/" > /dev/null; then
               echo "build-tiko=true" >> $GITHUB_OUTPUT
             fi
+            if echo "$CHANGED_FILES" | grep -E "^apps/clock/" > /dev/null; then
+              echo "build-clock=true" >> $GITHUB_OUTPUT
+            fi
             
             exit 0
           fi
 
   check-environment:
     needs: check-triggers
-    if: needs.check-triggers.outputs.build-timer == 'true' || needs.check-triggers.outputs.build-yes-no == 'true' || needs.check-triggers.outputs.build-cards == 'true' || needs.check-triggers.outputs.build-sequence == 'true' || needs.check-triggers.outputs.build-radio == 'true' || needs.check-triggers.outputs.build-todo == 'true' || needs.check-triggers.outputs.build-type == 'true' || needs.check-triggers.outputs.build-tiko == 'true'
+    if: needs.check-triggers.outputs.build-timer == 'true' || needs.check-triggers.outputs.build-yes-no == 'true' || needs.check-triggers.outputs.build-cards == 'true' || needs.check-triggers.outputs.build-sequence == 'true' || needs.check-triggers.outputs.build-radio == 'true' || needs.check-triggers.outputs.build-todo == 'true' || needs.check-triggers.outputs.build-type == 'true' || needs.check-triggers.outputs.build-tiko == 'true' || needs.check-triggers.outputs.build-clock == 'true'
     uses: ./.github/workflows/reusable-check-environment.yml
     secrets: inherit
 
   generate-translations:
     needs: [check-triggers, check-environment]
-    if: needs.check-triggers.outputs.build-timer == 'true' || needs.check-triggers.outputs.build-yes-no == 'true' || needs.check-triggers.outputs.build-cards == 'true' || needs.check-triggers.outputs.build-sequence == 'true' || needs.check-triggers.outputs.build-radio == 'true' || needs.check-triggers.outputs.build-todo == 'true' || needs.check-triggers.outputs.build-type == 'true' || needs.check-triggers.outputs.build-tiko == 'true'
+    if: needs.check-triggers.outputs.build-timer == 'true' || needs.check-triggers.outputs.build-yes-no == 'true' || needs.check-triggers.outputs.build-cards == 'true' || needs.check-triggers.outputs.build-sequence == 'true' || needs.check-triggers.outputs.build-radio == 'true' || needs.check-triggers.outputs.build-todo == 'true' || needs.check-triggers.outputs.build-type == 'true' || needs.check-triggers.outputs.build-tiko == 'true' || needs.check-triggers.outputs.build-clock == 'true'
     runs-on: ubuntu-latest
     name: Generate Translations
     steps:
@@ -541,6 +552,53 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: dc2b7d14a69351375cab6de9a13ddee9
           command: pages deploy ./apps/sequence/dist --project-name=tiko-sequence${{ needs.determine-environment.outputs.branch-suffix }} --commit-dirty=true --branch=${{ github.ref_name }}
+
+  deploy-clock:
+    needs: [determine-environment, check-triggers, check-environment, generate-translations]
+    if: needs.check-triggers.outputs.build-clock == 'true'
+    runs-on: ubuntu-latest
+    name: Deploy Clock App (${{ needs.determine-environment.outputs.environment }})
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: |
+          pnpm install --no-frozen-lockfile --filter=clock...
+
+      - name: Download translation files
+        uses: actions/download-artifact@v4
+        with:
+          name: i18n-translations
+          path: packages/core/src/i18n/generated/
+
+      - name: Build Clock app
+        run: |
+          pnpm --filter=@tiko/ui build
+          pnpm --filter=@tiko/core build
+          pnpm --filter=clock build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_TTS_WORKER_URL: ${{ secrets.VITE_TTS_WORKER_URL }}
+          VITE_TTS_CDN_URL: ${{ secrets.VITE_TTS_CDN_URL }}
+          VITE_SITE_URL: https://${{ needs.determine-environment.outputs.url-suffix }}clock.tikoapps.org
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: dc2b7d14a69351375cab6de9a13ddee9
+          command: pages deploy ./apps/clock/dist --project-name=tiko-clock${{ needs.determine-environment.outputs.branch-suffix }} --commit-dirty=true --branch=${{ github.ref_name }}
 
   deploy-tiko:
     needs: [determine-environment, check-triggers, check-environment, generate-translations]
