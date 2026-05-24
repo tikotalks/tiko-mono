@@ -3,7 +3,7 @@ const APP_TARGETS: Record<string, string> = {
 	'dev.type.tikoapps.org': 'development.tiko-type.pages.dev',
 	'dev.todo.tikoapps.org': 'development.tiko-todo.pages.dev',
 	'dev.cards.tikoapps.org': 'development.tiko-cards.pages.dev',
-	'dev.clock.tikoapps.org': 'development.tiko-clock.pages.dev',
+	'dev.clock.tikoapps.org': 'tiko-clock.pages.dev',
 	'dev.timer.tikoapps.org': 'development.tiko-timer.pages.dev',
 	'dev.radio.tikoapps.org': 'development.tiko-radio.pages.dev',
 	'dev.sequence.tikoapps.org': 'development.tiko-sequence.pages.dev',
