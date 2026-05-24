@@ -122,23 +122,44 @@
 </script>
 
 <style lang="scss">
+	.app-layout--is-app {
+		overflow: hidden;
+	}
+
+	.app-layout--is-app .app-layout__header {
+		flex: 0 0 auto;
+		left: 0;
+		position: static;
+		width: 100%;
+	}
+
+	.app-layout--is-app .app-layout__content {
+		display: flex;
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow: hidden;
+	}
+
 	.clock-view {
 		align-items: center;
 		background:
 			radial-gradient(circle at top left, rgb(251 191 36 / 0.35), transparent 20rem),
 			linear-gradient(180deg, #fff7ed 0%, #eff6ff 100%);
+		box-sizing: border-box;
 		display: grid;
 		gap: clamp(0.75rem, 2dvh, 1.5rem);
-		min-height: calc(100dvh - 4rem);
+		justify-items: center;
+		min-height: 0;
+		overflow: hidden;
 		padding: clamp(0.75rem, 2.4vw, 2rem);
 		padding-bottom: max(clamp(0.75rem, 2dvh, 1.25rem), env(safe-area-inset-bottom));
 		padding-left: max(clamp(0.75rem, 2.4vw, 2rem), env(safe-area-inset-left));
 		padding-right: max(clamp(0.75rem, 2.4vw, 2rem), env(safe-area-inset-right));
+		width: 100%;
 
 		&--practice-active {
 			grid-template-rows: auto minmax(0, 1fr);
-			height: calc(100dvh - 4rem);
-			overflow: hidden;
+			height: 100%;
 		}
 
 		&__top-nav {
