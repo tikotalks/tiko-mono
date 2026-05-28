@@ -4,7 +4,11 @@ compatibility_date = "2025-08-03"
 account_id = "dc2b7d14a69351375cab6de9a13ddee9"
 
 routes = [
+  { pattern = "dev.tiko.tikoapps.org/*", zone_name = "tikoapps.org" },
+  { pattern = "tiko.tikoapps.org/*", zone_name = "tikoapps.org" },
   { pattern = "dev.yesno.tikoapps.org/*", zone_name = "tikoapps.org" },
+  { pattern = "dev.yes-no.tikoapps.org/*", zone_name = "tikoapps.org" },
+  { pattern = "yes-no.tikoapps.org/*", zone_name = "tikoapps.org" },
   { pattern = "dev.type.tikoapps.org/*", zone_name = "tikoapps.org" },
   { pattern = "dev.todo.tikoapps.org/*", zone_name = "tikoapps.org" },
   { pattern = "dev.cards.tikoapps.org/*", zone_name = "tikoapps.org" },
