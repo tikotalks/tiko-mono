@@ -79,6 +79,7 @@
 	)
 
 	watch(selectedStage, () => {
+		promptIndex.value = 3
 		minutesSince12.value = currentStage.value.defaultMinutes
 		feedback.value = null
 	})
@@ -111,14 +112,17 @@
 		promptIndex.value += 1
 		feedback.value = null
 		if (selectedMode.value === 'read') minutesSince12.value = prompt.value.targetMinutes
+		if (selectedMode.value === 'set') minutesSince12.value = currentStage.value.defaultMinutes
 	}
 	function celebrate() {
 		showCelebration.value = true
+		const duration = reducedCelebration.value ? 800 : 1400
 		window.setTimeout(
 			() => {
 				showCelebration.value = false
+				nextPrompt()
 			},
-			reducedCelebration.value ? 800 : 1200
+			duration
 		)
 	}
 </script>
