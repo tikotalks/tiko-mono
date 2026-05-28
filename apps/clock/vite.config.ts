@@ -7,12 +7,15 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const pwaConfig = {
 	registerType: 'autoUpdate',
 	includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+	workbox: {
+		maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+	},
 	manifest: {
 		name: 'Clock - Tiko',
 		short_name: 'Clock',
-		description: 'A playful clock-reading tutor for children',
-		theme_color: '#f59e0b',
-		background_color: '#fff7ed',
+		description: 'Clock-reading learning app',
+		theme_color: '#3b82f6',
+		background_color: '#ffffff',
 		display: 'standalone',
 		orientation: 'portrait',
 		scope: '/',
