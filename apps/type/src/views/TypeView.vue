@@ -31,8 +31,11 @@
                 :show-punct="true"
                 @item-click="token => speakWord(token.text)"
               />
+              <span :class="bemm('placeholder')" v-else-if="!currentText.trim()">
+                {{ t(keys.type.typeToSpeak) }}
+              </span>
               <template v-else>
-                {{ currentText || t(keys.type.typeToSpeak) }}
+                {{ currentText }}
               </template>
               <TButton
                 :class="bemm('reset-button')"
@@ -44,7 +47,7 @@
                 :aria-label="t(keys.type.clearText)"
               />
             </div>
-            <div v-if="currentText.trim()" :class="bemm('text-actions')">
+            <div :class="bemm('text-actions')">
               <TButton
                 type="outline"
                 color="primary"
@@ -61,6 +64,7 @@
                 @click="toggleSpeak"
                 size="medium"
                 :disabled="!canSpeak && !isSpeaking"
+                :aria-label="isSpeaking ? t(keys.type.stop) : t(keys.type.speak)"
               >
                 {{ isSpeaking ? t(keys.type.stop) : t(keys.type.speak) }}
               </TButton>
@@ -505,8 +509,19 @@
       &--has-text {
       }
       &--no-text {
-        transform: scale(0.75, 0);
+        min-height: 3em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
+    }
+
+    &__placeholder {
+      color: var(--color-foreground-tertiary);
+      font-size: 1.2em;
+      font-style: italic;
+      text-align: center;
+      width: 100%;
     }
 
     &__text-actions {
@@ -514,6 +529,7 @@
       justify-content: center;
       align-items: center;
       gap: var(--space);
+      padding-top: var(--space-s);
     }
 
     &__keyboard-area {

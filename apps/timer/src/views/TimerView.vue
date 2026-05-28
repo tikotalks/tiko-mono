@@ -15,6 +15,50 @@
           bemm('display', ['', isExpired ? 'expired' : '', timeLeft < 10 ? 'last-seconds' : ''])
         "
       />
+
+      <!-- Visible control buttons below display -->
+      <div :class="bemm('controls')">
+        <TButton
+          v-if="!isRunning"
+          type="default"
+          color="success"
+          size="large"
+          @click="start"
+          :aria-label="t('timer.start')"
+        >
+          {{ t('timer.start') }}
+        </TButton>
+        <TButton
+          v-else
+          type="default"
+          color="warning"
+          size="large"
+          @click="pause"
+          :aria-label="t('timer.pause')"
+        >
+          {{ t('timer.pause') }}
+        </TButton>
+
+        <TButton
+          type="outline"
+          color="secondary"
+          size="large"
+          @click="reset"
+          :aria-label="t('timer.reset')"
+        >
+          {{ t('timer.reset') }}
+        </TButton>
+
+        <TButton
+          type="outline"
+          color="primary"
+          size="large"
+          @click="toggleMode"
+          :aria-label="mode === 'up' ? t('timer.countDown') : t('timer.countUp')"
+        >
+          {{ mode === 'down' ? t('timer.countDown') : t('timer.countUp') }}
+        </TButton>
+      </div>
     </main>
 
     <!-- Expired Overlay -->
@@ -125,28 +169,7 @@
       text-align: center;
       font-weight: bold;
       font-variant: tabular-nums;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-
-      // &--paused{
-      //   animation: pausePulse 5s infinite;
-      //   @keyframes pausePulse {
-      //     0% { transform: translate(-50%, -50%) scale(1); }
-      //     50% { transform:  translate(-50%, -50%) scale(1.1); }
-      //     100% { transform: translate(-50%, -50%)  scale(1); }
-      //   }
-      // }
-
-      // &--last-seconds{
-      //   animation: leftPulse 1s infinite;
-      //   @keyframes leftPulse {
-      //     0% { transform: translate(-50%, -50%) scale(1); }
-      //     50% { transform:  translate(-50%, -50%) scale(1.1); }
-      //     100% { transform: translate(-50%, -50%)  scale(1); }
-      //   }
-      // }
+      flex-shrink: 0;
     }
 
     &__time {
@@ -193,6 +216,21 @@
       &--expired {
         background: var(--color-error);
       }
+    }
+
+    &__controls {
+      display: flex;
+      gap: var(--space, 1em);
+      justify-content: center;
+      flex-wrap: wrap;
+      padding: var(--space, 1em);
+      z-index: 10;
+      position: fixed;
+      bottom: var(--space, 1em);
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, var(--color-background) 30%);
+      padding-top: 3em;
     }
 
     // Controls moved to top bar

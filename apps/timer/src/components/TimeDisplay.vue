@@ -76,8 +76,8 @@
 
 <style lang="scss">
   .time-display {
-    --display-circle-size: 50vmin;
-    --display-text-size: 10vmin;
+    --display-circle-size: 45vmin;
+    --display-text-size: 9vmin;
 
     display: flex;
     flex-direction: column;
@@ -92,6 +92,8 @@
     position: relative;
     background-color: color-mix(in srgb, var(--color-secondary), transparent 50%);
     padding: var(--space);
+    width: var(--display-circle-size);
+    height: var(--display-circle-size);
     // background-color: var(--color-secondary);
     // background-image: linear-gradient(to right bottom,var(--color-background), color-mix( in srgb, var(--color-secondary), transparent 25%));
 
@@ -132,8 +134,8 @@
 
     &__container {
       background-color: var(--color-background);
-      width: var(--display-circle-size);
-      height: var(--display-circle-size);
+      width: 100%;
+      height: 100%;
       border-radius: 50%;
       box-shadow:
         0.25em 0.25em 1em rgba(0, 0, 0, 0.5),

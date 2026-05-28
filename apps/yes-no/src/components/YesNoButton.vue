@@ -1,8 +1,13 @@
 <template>
-  <div :class="bemm('', ['', props.style, props.mode === 0 ? 'no' : 'yes', props.size])">
+  <div
+    :class="bemm('', ['', effectiveStyle, props.mode === 0 ? 'no' : 'yes', props.size])"
+    role="button"
+    :aria-label="mode === 0 ? t('common.no') : t('common.yes')"
+    tabindex="0"
+  >
     <div :class="bemm('container')">
-      <img v-if="imageUrl" :src="imageUrl" :alt="props.style" />
-      <span :class="bemm('text')" v-else>
+      <img v-if="imageUrl && effectiveStyle !== 'text'" :src="imageUrl" :alt="mode === 0 ? t('common.no') : t('common.yes')" />
+      <span :class="bemm('text')" v-if="!imageUrl || effectiveStyle === 'text'">
         {{ mode == 0 ? t('common.no') : t('common.yes') }}
       </span>
     </div>
@@ -43,6 +48,14 @@
 
   // Create reactive refs for media items
   const mediaItems = ref<Record<string, any>>({})
+
+  // When images fail to load, fall back to text style so buttons remain visible
+  const effectiveStyle = computed(() => {
+    if (props.style === 'text') return 'text'
+    // If the image for this button style failed to load, use text
+    if (!imageUrl.value) return 'text'
+    return props.style
+  })
 
   const imageUrl = computed(() => {
     let currentImageId
@@ -140,21 +153,50 @@
 
       &#{$b}--yes {
         --yes-no-button__background: var(--color-success);
+        --yes-no-button__text-color: #fff;
       }
 
       &#{$b}--no {
         --yes-no-button__background: var(--color-error);
+        --yes-no-button__text-color: #fff;
+      }
+
+      #{$b}__container {
+        max-width: 100%;
+        aspect-ratio: auto;
+        min-height: 3.5em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75em 1.5em;
+        border-radius: var(--border-radius-lg, 1em);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: box-shadow 0.15s ease, transform 0.15s ease;
       }
 
       span {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
+        position: static;
+        transform: none;
+        font-size: 2em;
+        font-weight: 700;
+        color: var(--yes-no-button__text-color, #fff);
+        white-space: nowrap;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
       }
 
       &:hover {
-        transform: scale(1.1);
+        transform: scale(1.05);
+        #{$b}__container {
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+      }
+
+      &:active {
+        transform: scale(0.97);
+        #{$b}__container {
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
       }
     }
 

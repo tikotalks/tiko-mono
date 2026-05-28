@@ -34,10 +34,9 @@
           <div :class="bemm('question-controls')">
             <TButton
               :icon="'edit'"
-              type="outline"
-              :size="'large'"
+              type="ghost"
+              :size="'medium'"
               @click.stop="showQuestionInput"
-              :tooltip="t('yesno.editQuestion')"
               :aria-label="t('yesno.editQuestion')"
             />
             <TButton
@@ -48,18 +47,17 @@
                     ? Icons.VOLUME_MUTE
                     : Icons.VOLUME_III
               "
-              type="outline"
-              :size="'large'"
+              type="ghost"
+              :size="'medium'"
               @click.stop="speakQuestion"
               :disabled="isGeneratingQuestionAudio || isPlaying"
-              :tooltip="isGeneratingQuestionAudio ? 'Generating audio...' : t('common.speak')"
               :aria-label="isGeneratingQuestionAudio ? 'Generating audio...' : t('common.speak')"
             />
           </div>
         </div>
 
-        <!-- Answer buttons -->
-        <div v-if="settingsLoaded" :class="bemm('answers', ['', localSettings.buttonSize])">
+        <!-- Answer buttons — always visible, even before settings load -->
+        <div :class="bemm('answers', ['', localSettings.buttonSize])">
           <YesNoButton
             :class="bemm('answer', ['', 'yes'])"
             :mode="1"
@@ -112,7 +110,7 @@
     buttonSize: 'large' as 'small' | 'medium' | 'large',
     autoSpeak: true,
     hapticFeedback: true,
-    buttonStyle: 'icons' as 'hands' | 'icons' | 'text',
+    buttonStyle: 'text' as 'hands' | 'icons' | 'text',
     deviceMotion: true,
   })
 
