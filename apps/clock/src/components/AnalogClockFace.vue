@@ -1,7 +1,17 @@
 <template>
 	<section :class="bemm('', { interactive })" aria-label="Analog teaching clock">
 		<div :class="bemm('face-wrap')">
-			<svg :class="bemm('face')" viewBox="0 0 240 240" role="img" :aria-label="ariaLabel">
+			<svg
+				ref="faceRef"
+				:class="bemm('face')"
+				viewBox="0 0 240 240"
+				role="img"
+				:aria-label="ariaLabel"
+				@pointermove="continueDrag"
+				@pointerup="endDrag"
+				@pointercancel="endDrag"
+				@lostpointercapture="endDrag"
+			>
 				<circle :class="bemm('rim')" cx="120" cy="120" r="108" />
 				<path
 					v-if="showQuarterSlices"
@@ -37,7 +47,19 @@
 					</text>
 				</g>
 				<line
-					:class="bemm('hand', { hour: true })"
+					v-if="interactive"
+					:class="bemm('drag-target', { hour: true })"
+					x1="120"
+					y1="120"
+					x2="120"
+					y2="68"
+					:style="{ transform: `rotate(${angles.hour}deg)` }"
+					role="slider"
+					aria-label="Move short hour hand"
+					@pointerdown="startDrag($event, 'hour')"
+				/>
+				<line
+					:class="bemm('hand', { hour: true, active: activeHand === 'hour' })"
 					x1="120"
 					y1="120"
 					x2="120"
@@ -45,7 +67,19 @@
 					:style="{ transform: `rotate(${angles.hour}deg)` }"
 				/>
 				<line
-					:class="bemm('hand', { minute: true })"
+					v-if="interactive"
+					:class="bemm('drag-target', { minute: true })"
+					x1="120"
+					y1="120"
+					x2="120"
+					y2="36"
+					:style="{ transform: `rotate(${angles.minute}deg)` }"
+					role="slider"
+					aria-label="Move long minute hand"
+					@pointerdown="startDrag($event, 'minute')"
+				/>
+				<line
+					:class="bemm('hand', { minute: true, active: activeHand === 'minute' })"
 					x1="120"
 					y1="120"
 					x2="120"
@@ -70,10 +104,15 @@
 </template>
 
 <script setup lang="ts">
-	import { computed } from 'vue'
+	import { computed, ref } from 'vue'
 	import { useBemm } from 'bemm'
-	import type { ClockStage } from '../models/clock.model'
-	import { addMinutesForStage, timeToAngles } from '../utils/clock-geometry'
+	import type { ClockHandKind, ClockStage } from '../models/clock.model'
+	import {
+		addMinutesForStage,
+		dragHandToClockTime,
+		pointerToAngle,
+		timeToAngles,
+	} from '../utils/clock-geometry'
 	import { formatDigital, formatSpoken } from '../utils/clock-time'
 
 	const props = withDefaults(
@@ -100,12 +139,14 @@
 	}>()
 
 	const bemm = useBemm('analog-clock-face', { includeBaseClass: true })
+	const faceRef = ref<SVGSVGElement | null>(null)
+	const activeHand = ref<ClockHandKind | null>(null)
 
-	const angles = computed(() => timeToAngles(props.minutes ?? props.minutesSince12 ?? 0))
+	const currentMinutes = computed(() => props.minutes ?? props.minutesSince12 ?? 0)
+	const angles = computed(() => timeToAngles(currentMinutes.value))
 	const stepSize = computed(() => (props.stage === 'half-past' ? 30 : 60))
 	const ariaLabel = computed(
-		() =>
-			`${formatDigital(props.minutes ?? props.minutesSince12 ?? 0)} ${formatSpoken(props.minutes ?? props.minutesSince12 ?? 0, props.stage)}`
+		() => `${formatDigital(currentMinutes.value)} ${formatSpoken(currentMinutes.value, props.stage)}`
 	)
 
 	const numbers = computed(() =>
@@ -129,10 +170,45 @@
 		})
 	)
 
-	function step(delta: number) {
-		const next = addMinutesForStage(props.minutes ?? props.minutesSince12 ?? 0, delta, props.stage)
+	function emitMinutes(next: number) {
 		emit('update:minutes', next)
 		emit('update:minutesSince12', next)
+	}
+
+	function step(delta: number) {
+		emitMinutes(addMinutesForStage(currentMinutes.value, delta, props.stage))
+	}
+
+	function startDrag(event: PointerEvent, hand: ClockHandKind) {
+		if (!props.interactive) return
+		activeHand.value = hand
+		faceRef.value?.setPointerCapture(event.pointerId)
+		updateFromPointer(event)
+	}
+
+	function continueDrag(event: PointerEvent) {
+		if (!activeHand.value) return
+		updateFromPointer(event)
+	}
+
+	function endDrag(event?: PointerEvent) {
+		if (event && faceRef.value?.hasPointerCapture(event.pointerId)) {
+			faceRef.value.releasePointerCapture(event.pointerId)
+		}
+		activeHand.value = null
+	}
+
+	function updateFromPointer(event: PointerEvent) {
+		if (!activeHand.value || !faceRef.value) return
+		event.preventDefault()
+		const angle = pointerToAngle(event.clientX, event.clientY, faceRef.value.getBoundingClientRect())
+		const next = dragHandToClockTime(
+			activeHand.value,
+			angle,
+			currentMinutes.value,
+			props.stage
+		)
+		emitMinutes(next)
 	}
 </script>
 
@@ -150,6 +226,7 @@
 		&__face {
 			width: 100%;
 			height: 100%;
+			touch-action: none;
 			filter: drop-shadow(0 1rem 2rem color-mix(in srgb, var(--color-foreground) 12%, transparent));
 		}
 
@@ -177,9 +254,14 @@
 			font-weight: 700;
 		}
 
-		&__hand {
+		&__hand,
+		&__drag-target {
 			transform-origin: 120px 120px;
 			stroke-linecap: round;
+		}
+
+		&__hand {
+			pointer-events: none;
 
 			&--hour {
 				stroke: var(--color-primary);
@@ -188,6 +270,19 @@
 			&--minute {
 				stroke: var(--color-secondary);
 				stroke-width: 5;
+			}
+			&--active {
+				filter: drop-shadow(0 0 0.4rem color-mix(in srgb, var(--color-foreground) 22%, transparent));
+			}
+		}
+
+		&__drag-target {
+			cursor: grab;
+			stroke: transparent;
+			stroke-width: 28;
+
+			&:active {
+				cursor: grabbing;
 			}
 		}
 

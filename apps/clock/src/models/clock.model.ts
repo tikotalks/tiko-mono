@@ -1,8 +1,11 @@
 export type ClockStage = 'anatomy' | 'full-hours' | 'half-past'
 export type ClockMode = 'learn' | 'set' | 'read' | 'match' | 'explore'
+export type ClockHandKind = 'hour' | 'minute'
 export type ValidationStatus = 'accepted' | 'close' | 'needs-help'
 export type MisconceptionKind =
+	| 'hand-confusion'
 	| 'minute-hand-position'
+	| 'minute-number-literal'
 	| 'hour-hand-position'
 	| 'next-hour-confusion'
 	| 'half-past-hour-position'

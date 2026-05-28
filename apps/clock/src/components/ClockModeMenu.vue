@@ -79,6 +79,7 @@
 
 		&__stage,
 		&__mode {
+			scroll-margin-top: 7rem;
 			min-height: 5.25rem;
 			border: 2px solid color-mix(in srgb, var(--color-foreground) 12%, var(--color-background));
 			border-radius: var(--border-radius-l);
