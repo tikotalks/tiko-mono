@@ -26,37 +26,82 @@ interface AudioMetadata {
   file_size_bytes: number;
 }
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
+const ALLOWED_ORIGIN_PATTERNS = [
+  /^https:\/\/(dev\.)?[a-z0-9-]+\.tikoapps\.org$/,
+  /^https:\/\/tiko\.mt$/,
+  /^https:\/\/dev\.tiko\.mt$/,
+  /^http:\/\/localhost(?::\d+)?$/,
+  /^http:\/\/127\.0\.0\.1(?::\d+)?$/,
+];
+
+function isAllowedOrigin(origin: string): boolean {
+  return ALLOWED_ORIGIN_PATTERNS.some((pattern) => pattern.test(origin));
+}
+
+function corsHeaders(request: Request): HeadersInit {
+  const origin = request.headers.get('Origin');
+  const headers: Record<string, string> = {
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, Prefer',
+    'Access-Control-Max-Age': '86400',
+    'Vary': 'Origin',
+  };
+
+  if (origin && isAllowedOrigin(origin)) {
+    headers['Access-Control-Allow-Origin'] = origin;
+    headers['Access-Control-Allow-Credentials'] = 'true';
+  } else if (!origin) {
+    headers['Access-Control-Allow-Origin'] = '*';
+  }
+
+  return headers;
+}
+
+function withCors(request: Request, headers: HeadersInit = {}): HeadersInit {
+  return {
+    ...corsHeaders(request),
+    ...headers,
+  };
+}
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     // Handle CORS preflight
     if (request.method === 'OPTIONS') {
-      return new Response(null, { headers: CORS_HEADERS });
+      return new Response(null, { status: 204, headers: corsHeaders(request) });
     }
 
     const url = new URL(request.url);
     
     try {
+      if (url.pathname === '/rest/v1/tts_audio') {
+        return await handleLegacyTtsAudioRequest(request, env);
+      }
+
       switch (url.pathname) {
         case '/generate':
           if (request.method !== 'POST') {
             return new Response('Method not allowed', { 
               status: 405,
-              headers: CORS_HEADERS 
+              headers: corsHeaders(request) 
             });
           }
           return await handleGenerateTTS(request, env);
           
+        case '/metadata':
+          if (request.method !== 'GET') {
+            return new Response('Method not allowed', { 
+              status: 405,
+              headers: corsHeaders(request) 
+            });
+          }
+          return await handleGetMetadata(request, env);
+
         case '/audio':
           if (request.method !== 'GET') {
             return new Response('Method not allowed', { 
               status: 405,
-              headers: CORS_HEADERS 
+              headers: corsHeaders(request) 
             });
           }
           return await handleGetAudio(request, env);
@@ -64,7 +109,7 @@ export default {
         default:
           return new Response('Not found', { 
             status: 404,
-            headers: CORS_HEADERS 
+            headers: corsHeaders(request) 
           });
       }
     } catch (error) {
@@ -77,7 +122,7 @@ export default {
         { 
           status: 500,
           headers: {
-            ...CORS_HEADERS,
+            ...corsHeaders(request),
             'Content-Type': 'application/json'
           }
         }
@@ -99,7 +144,7 @@ async function handleGenerateTTS(request: Request, env: Env): Promise<Response> 
       { 
         status: 400,
         headers: {
-          ...CORS_HEADERS,
+          ...corsHeaders(request),
           'Content-Type': 'application/json'
         }
       }
@@ -120,7 +165,7 @@ async function handleGenerateTTS(request: Request, env: Env): Promise<Response> 
       }),
       {
         headers: {
-          ...CORS_HEADERS,
+          ...corsHeaders(request),
           'Content-Type': 'application/json'
         }
       }
@@ -184,7 +229,7 @@ async function handleGenerateTTS(request: Request, env: Env): Promise<Response> 
       }),
       {
         headers: {
-          ...CORS_HEADERS,
+          ...corsHeaders(request),
           'Content-Type': 'application/json'
         }
       }
@@ -202,7 +247,7 @@ async function handleGenerateTTS(request: Request, env: Env): Promise<Response> 
         {
           status: 429,
           headers: {
-            ...CORS_HEADERS,
+            ...corsHeaders(request),
             'Content-Type': 'application/json'
           }
         }
@@ -217,12 +262,75 @@ async function handleGenerateTTS(request: Request, env: Env): Promise<Response> 
       {
         status: 500,
         headers: {
-          ...CORS_HEADERS,
+          ...corsHeaders(request),
           'Content-Type': 'application/json'
         }
       }
     );
   }
+}
+
+
+
+async function handleLegacyTtsAudioRequest(request: Request, env: Env): Promise<Response> {
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    return new Response(
+      JSON.stringify({ code: 'method_not_allowed', message: 'Only GET is currently supported' }),
+      {
+        status: 405,
+        headers: withCors(request, { 'Content-Type': 'application/json' })
+      }
+    );
+  }
+
+  if (request.method === 'HEAD') {
+    return new Response(null, { status: 200, headers: corsHeaders(request) });
+  }
+
+  const url = new URL(request.url);
+  const legacyHash = url.searchParams.get('text_hash');
+  const textHash = legacyHash?.startsWith('eq.') ? legacyHash.slice(3) : legacyHash;
+
+  if (!textHash) {
+    return new Response(JSON.stringify([]), {
+      headers: withCors(request, { 'Content-Type': 'application/json' })
+    });
+  }
+
+  const audio = await checkExistingAudio(textHash, env);
+  return new Response(JSON.stringify(audio ? [audio] : []), {
+    headers: withCors(request, {
+      'Content-Type': 'application/json',
+      'Cache-Control': audio ? 'public, max-age=300' : 'no-cache'
+    })
+  });
+}
+
+async function handleGetMetadata(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  const textHash = url.searchParams.get('textHash') || url.searchParams.get('text_hash');
+
+  if (!textHash) {
+    return new Response(
+      JSON.stringify({ success: false, error: 'Missing textHash parameter' }),
+      {
+        status: 400,
+        headers: withCors(request, { 'Content-Type': 'application/json' })
+      }
+    );
+  }
+
+  const audio = await checkExistingAudio(textHash, env);
+
+  return new Response(
+    JSON.stringify({ success: true, data: audio }),
+    {
+      headers: withCors(request, {
+        'Content-Type': 'application/json',
+        'Cache-Control': audio ? 'public, max-age=300' : 'no-cache'
+      })
+    }
+  );
 }
 
 async function handleGetAudio(request: Request, env: Env): Promise<Response> {
@@ -232,7 +340,7 @@ async function handleGetAudio(request: Request, env: Env): Promise<Response> {
   if (!key) {
     return new Response('Missing key parameter', { 
       status: 400,
-      headers: CORS_HEADERS 
+      headers: corsHeaders(request) 
     });
   }
 
@@ -241,14 +349,14 @@ async function handleGetAudio(request: Request, env: Env): Promise<Response> {
   if (!object) {
     return new Response('Audio not found', { 
       status: 404,
-      headers: CORS_HEADERS 
+      headers: corsHeaders(request) 
     });
   }
 
   const headers = new Headers();
   headers.set('Content-Type', object.httpMetadata?.contentType || 'audio/mpeg');
   headers.set('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
-  Object.entries(CORS_HEADERS).forEach(([key, value]) => {
+  Object.entries(corsHeaders(request)).forEach(([key, value]) => {
     headers.set(key, value);
   });
 

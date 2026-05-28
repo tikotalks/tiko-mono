@@ -89,25 +89,36 @@ class TTSService {
     }
   }
 
-  private async apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  private async fetchAudioMetadata(textHash: string): Promise<AudioMetadata | null> {
     const token = this.getAuthToken();
+    const params = new URLSearchParams({ textHash });
 
-    const response = await fetch(`${this.metadataApiUrl}/rest/v1/${endpoint}`, {
-      ...options,
+    const response = await fetch(`${this.metadataApiUrl}/metadata?${params.toString()}`, {
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        'Prefer': 'return=representation',
-        ...options.headers
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       }
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
-      throw new Error(`API request failed: ${JSON.stringify(errorData)}`);
+      throw new Error(`TTS metadata request failed: ${JSON.stringify(errorData)}`);
     }
 
-    return response.json();
+    const payload = await response.json();
+    const data = payload?.data;
+
+    return data ? {
+      url: data.audio_url,
+      provider: data.provider as 'openai' | 'browser',
+      language: data.language,
+      voice: data.voice,
+      model: data.model,
+      generatedAt: data.generated_at,
+      size: data.file_size_bytes,
+      duration: data.duration_seconds ?? data.duration
+    } : null;
   }
 
   /**
@@ -250,23 +261,8 @@ class TTSService {
     }
 
     try {
-      const params = new URLSearchParams();
-      params.append('text_hash', `eq.${textHash}`);
-
-      console.log('[TTSService] Checking database for audio hash:', textHash);
-      const response = await this.apiRequest<any[]>(`tts_audio?${params.toString()}`);
-      const data = response[0];
-
-      const metadata = data ? {
-        url: data.audio_url,
-        provider: data.provider as 'openai' | 'browser',
-        language: data.language,
-        voice: data.voice,
-        model: data.model,
-        generatedAt: data.created_at,
-        size: data.file_size_bytes,
-        duration: data.duration_seconds
-      } : null;
+      console.log('[TTSService] Checking worker metadata for audio hash:', textHash);
+      const metadata = await this.fetchAudioMetadata(textHash);
 
       // Cache the result (even if null)
       this.audioMetadataCache.set(textHash, {
