@@ -1,6 +1,16 @@
 import { vi } from 'vitest'
 import { config } from '@vue/test-utils'
 
+process.env.VITE_ITEMS_API_URL = 'https://items.test.tikoapi.org'
+process.env.VITE_MEDIA_API_URL = 'https://media.test.tikoapi.org'
+process.env.VITE_CONTENT_API_URL = 'https://content.test.tikoapi.org'
+
+global.navigator = {
+	...global.navigator,
+	onLine: true,
+	vibrate: vi.fn(() => true),
+}
+
 const localStorageMock = {
 	getItem: vi.fn(),
 	setItem: vi.fn(),
@@ -8,7 +18,7 @@ const localStorageMock = {
 	removeItem: vi.fn(),
 }
 
-global.localStorage = localStorageMock as unknown as Storage
+global.localStorage = localStorageMock
 
 config.global.stubs = {
 	transition: false,
