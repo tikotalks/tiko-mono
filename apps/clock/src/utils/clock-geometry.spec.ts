@@ -1,48 +1,24 @@
 import { describe, expect, it } from 'vitest'
-import {
-	getHandAngles,
-	getTimeFromAngles,
-	normalizeClockTime,
-	validateClockAnswer,
-} from './clock-geometry'
+import { addMinutesForStage, angleToMinutes, timeToAngles } from './clock-geometry'
 
-describe('clock geometry', () => {
-	it('moves the hour hand proportionally at half past', () => {
-		expect(getHandAngles({ hour: 3, minute: 30 })).toEqual({ hour: 105, minute: 180 })
+describe('clock-geometry', () => {
+	it('maps 3:00 to the expected hand angles', () => {
+		expect(timeToAngles(180)).toEqual({ hour: 90, minute: 0 })
 	})
 
-	it('normalizes twelve as zero minutes since twelve for analog math', () => {
-		expect(normalizeClockTime({ hour: 12, minute: 0 }).minutesSinceTwelve).toBe(0)
-		expect(normalizeClockTime({ hour: 4, minute: 0 }).minutesSinceTwelve).toBe(240)
+	it('maps 3:30 to the expected geared hand angles', () => {
+		expect(timeToAngles(210)).toEqual({ hour: 105, minute: 180 })
 	})
 
-	it('converts hand angles back to staged full-hour time', () => {
-		expect(getTimeFromAngles({ hour: 120, minute: 2 }, 'full-hours')).toEqual({
-			hour: 4,
-			minute: 0,
-		})
+	it('moves the hour hand proportionally when minutes move', () => {
+		const start = timeToAngles(180)
+		const moved = timeToAngles(addMinutesForStage(180, 30, 'half-past'))
+		expect(moved.hour).toBeGreaterThan(start.hour)
+		expect(moved.hour).toBe(105)
 	})
 
-	it('accepts full-hour answers with generous tolerance', () => {
-		const result = validateClockAnswer({
-			target: { hour: 4, minute: 0 },
-			answer: { hour: 4, minute: 3 },
-			mode: 'full-hours',
-		})
-
-		expect(result.accepted).toBe(true)
-		expect(result.celebrate).toBe(true)
-		expect(result.feedback).toBe('Great! That is 4 o’clock.')
-	})
-
-	it('gives a specific hint when the minute hand is not on twelve for full hours', () => {
-		const result = validateClockAnswer({
-			target: { hour: 4, minute: 0 },
-			answer: { hour: 4, minute: 20 },
-			mode: 'full-hours',
-		})
-
-		expect(result.accepted).toBe(false)
-		expect(result.mistake).toBe('minute-hand-not-twelve')
+	it('handles wraparound near 12 when converting an angle', () => {
+		expect(angleToMinutes(359, 'full-hours')).toBe(0)
+		expect(angleToMinutes(-1, 'full-hours')).toBe(0)
 	})
 })

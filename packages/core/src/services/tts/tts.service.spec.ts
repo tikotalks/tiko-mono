@@ -35,6 +35,8 @@ describe('TTSService', () => {
       model: 'tts-1',
     });
     expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(String(mockFetch.mock.calls[0][0])).toMatch(/^https:\/\/tts\.tikoapi\.org\/metadata\?textHash=/);
+    expect(String(mockFetch.mock.calls[0][0])).not.toContain('/rest/v1/tts_audio');
     expect(String(mockFetch.mock.calls[1][0])).toBe('https://tts.tikoapi.org/generate');
     expect(console.error).not.toHaveBeenCalledWith(
       'Error generating OpenAI audio:',
