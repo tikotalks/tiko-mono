@@ -6,22 +6,27 @@ export default defineConfig({
 	name: 'Clock',
 	icon: {
 		mediaId: 'clock',
-		color: BaseColors.ORANGE,
+		color: BaseColors.BLUE,
 	},
-	description: 'Clock-reading tutor for children',
+	description: 'Clock-reading learning app',
 	theme: {
-		primary: BaseColors.ORANGE,
-		secondary: BaseColors.BLUE,
+		primary: BaseColors.BLUE,
+		secondary: BaseColors.YELLOW,
 		tertiary: BaseColors.GREEN,
 	},
 	auth: {
+		show: false,
+		required: false,
 		skipAuth: true,
 	},
 	splash: {
 		show: true,
 		appName: 'Clock',
-		color: BaseColors.ORANGE,
-		themeColor: ColorValue.ORANGE,
+		color: ColorValue.BLUE,
+		themeColor: ColorValue.BLUE,
 		loadingText: 'Loading Clock...',
+	},
+	i18n: {
+		categories: ['common', 'clock'],
 	},
 })

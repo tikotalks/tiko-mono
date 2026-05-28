@@ -1,12 +1,12 @@
 import { createAppRouter } from '@tiko/ui'
-import ClockView from '../views/ClockView.vue'
+import ClockLearningView from '../views/ClockLearningView.vue'
 
 const router = createAppRouter({
 	routes: [
 		{
 			path: '/',
-			name: 'Clock',
-			component: ClockView,
+			name: 'ClockHome',
+			component: ClockLearningView,
 		},
 	],
 })
