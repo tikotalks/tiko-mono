@@ -92,12 +92,11 @@ class TTSService {
   private async apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const token = this.getAuthToken();
 
-    const response = await fetch(`${this.metadataApiUrl}/rest/v1/${endpoint}`, {
+    const response = await fetch(`${this.metadataApiUrl}${endpoint}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
         ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        'Prefer': 'return=representation',
         ...options.headers
       }
     });
@@ -250,11 +249,8 @@ class TTSService {
     }
 
     try {
-      const params = new URLSearchParams();
-      params.append('text_hash', `eq.${textHash}`);
-
       console.log('[TTSService] Checking database for audio hash:', textHash);
-      const response = await this.apiRequest<any[]>(`tts_audio?${params.toString()}`);
+      const response = await this.apiRequest<any[]>(`/metadata?text_hash=${encodeURIComponent(textHash)}`);
       const data = response[0];
 
       const metadata = data ? {
