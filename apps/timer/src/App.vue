@@ -1,35 +1,6 @@
 <template>
   <TFramework :config="frameworkConfig" :background-image="backgroundImage" :loading="loading">
     <template #topbar-actions>
-      <!-- Timer Controls -->
-      <TButton
-        v-if="!isRunning"
-        icon="play"
-        type="icon-only"
-        size="medium"
-        @click="start"
-        :aria-label="t('timer.start')"
-      />
-      <TButton
-        v-else
-        icon="pause"
-        type="outline"
-        color="success"
-        size="medium"
-        @click="pause"
-        :aria-label="t('timer.pause')"
-        :tooltip="{ value: t('timer.pause'), delay: 0.5, position: ToolTipPosition.BOTTOM }"
-      />
-
-      <TButton
-        icon="arrow-rotate-top-left"
-        type="outline"
-        size="medium"
-        @click="reset"
-        :aria-label="t('timer.reset')"
-        :tooltip="{ value: t('timer.reset'), delay: 0.5, position: ToolTipPosition.BOTTOM }"
-      />
-
       <!-- Edit Timer Button -->
       <TButton
         icon="edit"
@@ -38,20 +9,6 @@
         @click="showEditSettings"
         :aria-label="t('common.settings')"
         :tooltip="{ value: t('common.settings'), delay: 0.5, position: ToolTipPosition.BOTTOM }"
-      />
-
-      <!-- Mode Toggle -->
-      <TButton
-        :icon="mode === 'up' ? 'arrow-up' : 'arrow-down'"
-        type="outline"
-        size="medium"
-        @click="toggleMode"
-        :aria-label="mode === 'up' ? t('timer.countDown') : t('timer.countUp')"
-        :tooltip="{
-          value: mode === 'up' ? t('timer.countDown') : t('timer.countUp'),
-          delay: 0.5,
-          position: ToolTipPosition.BOTTOM,
-        }"
       />
     </template>
 

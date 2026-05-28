@@ -107,20 +107,6 @@ const defaultMenuItems = computed<Partial<ContextMenuItem>[]>(() => {
     },
   )
 
-  if (props.enableParentMode) {
-    items.push({
-      id: 'separator-parent',
-      type: 'separator'
-    })
-    items.push({
-      id: 'parent-mode',
-      label: t('parentMode.parentMode'),
-      icon: 'shield',
-      action: () => emit('parent-mode'),
-      type: 'default'
-    })
-  }
-
   items.push(
     {
       id: 'separator1',
@@ -134,6 +120,22 @@ const defaultMenuItems = computed<Partial<ContextMenuItem>[]>(() => {
       type: 'default'
     }
   )
+
+  if (props.enableParentMode) {
+    items.push(
+      {
+        id: 'separator-parent',
+        type: 'separator'
+      },
+      {
+        id: 'parent-mode',
+        label: t('parentMode.parentMode'),
+        icon: 'shield',
+        action: () => emit('parent-mode'),
+        type: 'default'
+      }
+    )
+  }
 
   return items
 })

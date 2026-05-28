@@ -76,8 +76,8 @@
 
 <style lang="scss">
   .time-display {
-    --display-circle-size: 45vmin;
-    --display-text-size: 9vmin;
+    --display-circle-size: 50vmin;
+    --display-text-size: 14vmin;
 
     display: flex;
     flex-direction: column;

@@ -164,7 +164,7 @@
       #{$b}__container {
         max-width: 100%;
         aspect-ratio: auto;
-        min-height: 3.5em;
+        min-height: 4em;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -183,6 +183,37 @@
         white-space: nowrap;
         text-transform: uppercase;
         letter-spacing: 0.05em;
+      }
+
+      // Size variants
+      &#{$b}--large {
+        #{$b}__container {
+          min-height: 5em;
+          padding: 1em 2em;
+        }
+        span {
+          font-size: 3em;
+        }
+      }
+
+      &#{$b}--medium {
+        #{$b}__container {
+          min-height: 4em;
+          padding: 0.75em 1.5em;
+        }
+        span {
+          font-size: 2.5em;
+        }
+      }
+
+      &#{$b}--small {
+        #{$b}__container {
+          min-height: 3em;
+          padding: 0.5em 1em;
+        }
+        span {
+          font-size: 2em;
+        }
       }
 
       &:hover {

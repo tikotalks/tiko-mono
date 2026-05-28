@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useAppStore, useAuthStore, itemService, useHaptic } from '@tiko/core'
+import { useAppStore, useAuthStore, itemService, useHaptic, debugLog } from '@tiko/core'
 
 export interface YesNoSettings {
   buttonSize: 'small' | 'medium' | 'large'
@@ -23,7 +23,7 @@ export const useYesNoStore = defineStore('yesno', () => {
   // Settings with defaults
   const defaultSettings: YesNoSettings = {
     buttonSize: 'large',
-    buttonStyle: 'icons',
+    buttonStyle: 'text',
     autoSpeak: true,
     hapticFeedback: true,
   }
@@ -66,7 +66,7 @@ export const useYesNoStore = defineStore('yesno', () => {
       try {
         const userId = authStore.user?.id
         if (!userId) {
-          console.log('[YesNoStore] No user ID available - running in skip auth mode')
+          debugLog.log('[YesNoStore] No user ID available - running in skip auth mode')
           // In skip auth mode, just update local history without saving to DB
           questionHistory.value = [question.trim(), ...questionHistory.value].slice(0, 20)
           return
@@ -128,7 +128,7 @@ export const useYesNoStore = defineStore('yesno', () => {
     }
 
     // Could emit events here for analytics
-    console.log(`Answer: ${answer} to question: "${currentQuestion.value}"`)
+    debugLog.log(`Answer: ${answer} to question: "${currentQuestion.value}"`)
   }
 
   const speakAnswer = async (
@@ -183,7 +183,7 @@ export const useYesNoStore = defineStore('yesno', () => {
     try {
       const userId = authStore.user?.id
       if (!userId) {
-        console.log('[YesNoStore] No user ID available - running in skip auth mode')
+        debugLog.log('[YesNoStore] No user ID available - running in skip auth mode')
         // In skip auth mode, questions are only stored locally
         return
       }
@@ -192,7 +192,7 @@ export const useYesNoStore = defineStore('yesno', () => {
         app_name: 'yesno',
         type: 'question',
       })
-      console.log('[YesNoStore] Loaded questions from items:', items.data?.length || 0)
+      debugLog.log('[YesNoStore] Loaded questions from items:', items.data?.length || 0)
 
       // Store full items
       questionItems.value = items.data ?? []
@@ -214,17 +214,17 @@ export const useYesNoStore = defineStore('yesno', () => {
   }
 
   const loadState = async () => {
-    console.log('[YesNoStore] Loading state...')
+    debugLog.log('[YesNoStore] Loading state...')
     await appStore.loadAppSettings('yes-no')
 
     const appSettings = appStore.getAppSettings('yes-no')
-    console.log('[YesNoStore] Retrieved settings:', appSettings)
+    debugLog.log('[YesNoStore] Retrieved settings:', appSettings)
 
     if (appSettings?.currentQuestion) {
       currentQuestion.value = appSettings.currentQuestion
-      console.log('[YesNoStore] Loaded question:', appSettings.currentQuestion)
+      debugLog.log('[YesNoStore] Loaded question:', appSettings.currentQuestion)
     } else {
-      console.log('[YesNoStore] No saved question found, using default')
+      debugLog.log('[YesNoStore] No saved question found, using default')
     }
 
     // Load questions from Items service
@@ -232,7 +232,7 @@ export const useYesNoStore = defineStore('yesno', () => {
   }
 
   const toggleFavorite = async (itemId: string) => {
-    console.log('[YesNoStore] toggleFavorite called for:', itemId)
+    debugLog.log('[YesNoStore] toggleFavorite called for:', itemId)
     try {
       const item = questionItems.value.find(q => q.id === itemId)
       if (!item) {
@@ -240,13 +240,13 @@ export const useYesNoStore = defineStore('yesno', () => {
         return
       }
 
-      console.log('[YesNoStore] Toggling favorite from', item.is_favorite, 'to', !item.is_favorite)
+      debugLog.log('[YesNoStore] Toggling favorite from', item.is_favorite, 'to', !item.is_favorite)
 
       const result = await itemService.updateItem(itemId, {
         is_favorite: !item.is_favorite,
       })
 
-      console.log('[YesNoStore] Update result:', result)
+      debugLog.log('[YesNoStore] Update result:', result)
 
       // Reload to reflect changes
       await loadQuestionsFromItems()
@@ -256,10 +256,10 @@ export const useYesNoStore = defineStore('yesno', () => {
   }
 
   const deleteQuestion = async (itemId: string) => {
-    console.log('[YesNoStore] deleteQuestion called for:', itemId)
+    debugLog.log('[YesNoStore] deleteQuestion called for:', itemId)
     try {
       const result = await itemService.deleteItem(itemId)
-      console.log('[YesNoStore] Delete result:', result)
+      debugLog.log('[YesNoStore] Delete result:', result)
 
       // Reload to reflect changes
       await loadQuestionsFromItems()
@@ -272,7 +272,7 @@ export const useYesNoStore = defineStore('yesno', () => {
     try {
       const userId = authStore.user?.id
       if (!userId) {
-        console.log('[YesNoStore] No user ID available - running in skip auth mode')
+        debugLog.log('[YesNoStore] No user ID available - running in skip auth mode')
         // In skip auth mode, just clear local history
         questionHistory.value = []
         return

@@ -97,7 +97,7 @@
 <script setup lang="ts">
   import { ref, computed, onMounted, onUnmounted, reactive, watch, toRefs, inject } from 'vue'
   import { useBemm } from 'bemm'
-  import { useI18n, useSpeak } from '@tiko/core'
+  import { useI18n, useSpeak, debugLog } from '@tiko/core'
   import {
     TButton,
     TAppLayout,
@@ -372,11 +372,11 @@
 
   const showFullHistory = () => {
     // TODO: Implement full history modal/page
-    console.log('Show full history - not implemented yet')
+      debugLog.log('Show full history - not implemented yet')
   }
 
   const handleProfile = () => {
-    console.log('Profile clicked')
+      debugLog.log('Profile clicked')
     // TODO: Navigate to profile page or open profile modal
   }
 
@@ -390,7 +390,7 @@
   }
 
   const handleLogout = () => {
-    console.log('User logged out')
+      debugLog.log('User logged out')
     // The auth store handles the logout, this is just for any cleanup
   }
 
@@ -465,8 +465,8 @@
     padding-bottom: env(safe-area-inset-bottom);
 
     &__display-area {
-      min-height: 120px;
-      flex: 1 1 auto; /* Can shrink but not grow beyond content */
+      min-height: 160px;
+      flex: 1 1 auto;
       display: flex;
       height: 100%;
       align-items: center;
@@ -474,8 +474,8 @@
       padding: var(--space);
       padding-top: var(--spacing);
       backdrop-filter: blur(10px);
-      overflow-y: auto; /* Allow scrolling if content is too tall */
-      -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     &__text-display {
@@ -500,6 +500,7 @@
       overflow-wrap: break-word;
       transform: scale(1, 1);
       transition: transform 0.3s ease-in-out;
+      position: relative;
 
       &:empty::before {
         content: attr(placeholder);
@@ -509,7 +510,7 @@
       &--has-text {
       }
       &--no-text {
-        min-height: 3em;
+        min-height: 4em;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -518,10 +519,11 @@
 
     &__placeholder {
       color: var(--color-foreground-tertiary);
-      font-size: 1.2em;
+      font-size: 1.1em;
       font-style: italic;
       text-align: center;
       width: 100%;
+      user-select: none;
     }
 
     &__text-actions {

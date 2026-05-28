@@ -163,6 +163,7 @@
       align-items: center;
       justify-content: center;
       gap: var(--space-lg);
+      padding-bottom: 6em; // clear fixed controls bar
     }
 
     &__display {
@@ -224,13 +225,29 @@
       justify-content: center;
       flex-wrap: wrap;
       padding: var(--space, 1em);
-      z-index: 10;
+      padding-bottom: calc(var(--space, 1em) + 12px); // clear progress bar
+      z-index: 110; // above progress bar (z-index: 100)
       position: fixed;
-      bottom: var(--space, 1em);
+      bottom: 0;
       left: 0;
       right: 0;
-      background: linear-gradient(transparent, var(--color-background) 30%);
+      background: linear-gradient(transparent 0%, var(--color-background) 30%);
       padding-top: 3em;
+
+      .button {
+        min-width: 5em;
+        font-weight: 600;
+        font-size: 1.1em;
+      }
+
+      @media screen and (max-width: 720px) {
+        gap: 0.75em;
+        .button {
+          min-width: 4em;
+          font-size: 1em;
+          padding: 0.6em 1em;
+        }
+      }
     }
 
     // Controls moved to top bar

@@ -82,7 +82,7 @@
   import { ref, computed, onMounted, reactive, watch, toRefs, inject } from 'vue'
   import { useBemm } from 'bemm'
   import { TButton, TIcon, TAppLayout, useParentMode, useDeviceTilt } from '@tiko/ui'
-  import { useSpeak, useI18n, useTextToSpeech } from '@tiko/core'
+  import { useSpeak, useI18n, useTextToSpeech, debugLog } from '@tiko/core'
   import { Icons } from 'open-icon'
   import { useYesNoStore } from '../stores/yesno'
   import YesNoSettingsForm from '../components/YesNoSettingsForm.vue'
@@ -142,7 +142,7 @@
   watch(
     () => currentLocale.value,
     async newLocale => {
-      console.log('[YesNoView] Locale changed to:', newLocale)
+      debugLog.log('[YesNoView] Locale changed to:', newLocale)
       await preloadAnswers()
     }
   )
@@ -181,12 +181,12 @@
   // while onApply handles user-initiated question saves
   watch(currentQuestion, async (newQuestion, oldQuestion) => {
     if (newQuestion && newQuestion !== oldQuestion) {
-      console.log('[YesNoView] Question changed programmatically to:', newQuestion)
+        debugLog.log('[YesNoView] Question changed programmatically to:', newQuestion)
       // Preload just the new question (Yes/No are already cached)
       try {
         const speakLanguage = currentLocale.value.split('-')[0]
         await preloadAudio([{ text: newQuestion, language: speakLanguage }])
-        console.log('[YesNoView] Question audio preloaded via watcher')
+        debugLog.log('[YesNoView] Question audio preloaded via watcher')
       } catch (error) {
         console.warn('[YesNoView] Failed to preload question audio via watcher:', error)
       }
@@ -219,9 +219,7 @@
   }
 
   const showQuestionInput = () => {
-    console.log('[YesNoView] showQuestionInput called')
-    console.log('[YesNoView] popupService:', popupService)
-    console.log('[YesNoView] QuestionInputForm:', QuestionInputForm)
+    debugLog.log('[YesNoView] showQuestionInput called')
 
     try {
       popupService.open({
@@ -234,7 +232,7 @@
         },
         props: {
           onApply: async (question: string) => {
-            console.log('[YesNoView] onApply called with:', question)
+            debugLog.log('[YesNoView] onApply called with:', question)
             await yesNoStore.setQuestion(question)
 
             // Show loading state while generating audio
@@ -243,9 +241,9 @@
             // Immediately preload audio for the new question (don't play, just cache)
             try {
               const speakLanguage = currentLocale.value.split('-')[0]
-              console.log('[YesNoView] Preloading audio for new question:', question)
+              debugLog.log('[YesNoView] Preloading audio for new question:', question)
               await preloadAudio([{ text: question, language: speakLanguage }])
-              console.log('[YesNoView] New question audio preloaded successfully')
+              debugLog.log('[YesNoView] New question audio preloaded successfully')
             } catch (error) {
               console.warn('[YesNoView] Failed to preload new question audio:', error)
             } finally {
@@ -257,7 +255,7 @@
           },
         },
       })
-      console.log('[YesNoView] Popup opened successfully')
+      debugLog.log('[YesNoView] Popup opened successfully')
     } catch (error) {
       console.error('[YesNoView] Error opening popup:', error)
     }
@@ -283,7 +281,7 @@
   }
 
   const handleProfile = () => {
-    console.log('Profile clicked')
+    debugLog.log('Profile clicked')
     // TODO: Navigate to profile page or open profile modal
   }
 
@@ -292,7 +290,7 @@
   }
 
   const handleLogout = () => {
-    console.log('User logged out')
+    debugLog.log('User logged out')
     // The auth store handles the logout, this is just for any cleanup
   }
 
@@ -313,7 +311,7 @@
       const noText = t('common.no')
       const currentQuestionText = currentQuestion.value || 'Do you want to play?'
 
-      console.log('[YesNoView] Preloading audio for:', {
+      debugLog.log('[YesNoView] Preloading audio for:', {
         yesText,
         noText,
         currentQuestionText,
@@ -326,7 +324,7 @@
         { text: currentQuestionText, language: speakLanguage },
       ])
 
-      console.log('[YesNoView] Audio preloaded successfully')
+      debugLog.log('[YesNoView] Audio preloaded successfully')
     } catch (error) {
       console.warn('[YesNoView] Failed to preload audio (will fallback to browser TTS):', error)
     }
@@ -334,10 +332,10 @@
 
   // Initialize
   onMounted(async () => {
-    console.log('[YesNoView] Component mounted, loading state...')
+    debugLog.log('[YesNoView] Component mounted, loading state...')
     try {
       await yesNoStore.loadState()
-      console.log('[YesNoView] State loaded successfully')
+      debugLog.log('[YesNoView] State loaded successfully')
 
       // Mark settings as loaded
       settingsLoaded.value = true
@@ -414,24 +412,39 @@
     }
 
     &__answers {
-      display: flex;
-      // gap: var(--space-s);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space, 1em);
       width: 90vw;
+      max-width: 700px;
       justify-content: center;
       font-size: 15vmin;
 
       position: fixed;
-      bottom: 10vh;
+      bottom: 5vh;
+      left: 50%;
+      transform: translateX(-50%);
       height: fit-content;
+      z-index: 5;
 
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-
+      &--large {
+        width: 90vw;
+      }
       &--medium {
         width: 70vw;
       }
       &--small {
         width: 60vw;
+      }
+
+      @media screen and (max-width: 720px) {
+        width: 95vw;
+        bottom: 3vh;
+
+        &--medium,
+        &--small {
+          width: 90vw;
+        }
       }
     }
 
@@ -447,7 +460,9 @@
       transition: background-color 0.2s ease;
 
       position: absolute;
-      top: 20vh;
+      top: 15vh;
+      width: 90vw;
+      max-width: 600px;
 
       &:hover {
         background-color: rgba(255, 255, 255, 0.1);
@@ -456,11 +471,13 @@
       &-text {
         font-size: 2em;
         text-align: center;
+        font-weight: 500;
       }
 
       &-controls {
         display: flex;
         gap: var(--space-s);
+        opacity: 0.7;
 
         .yes-no__question:hover & {
           opacity: 1;
