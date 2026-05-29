@@ -11,7 +11,8 @@
     "build": "tsc --noEmit -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "db:apply:local": "wrangler d1 execute IDENTITY_DB --file=../../packages/identity/migrations/0001_identity.sql --local",
-    "db:apply:remote": "wrangler d1 execute IDENTITY_DB --file=../../packages/identity/migrations/0001_identity.sql --remote --yes"
+    "db:apply:remote": "wrangler d1 execute IDENTITY_DB --file=../../packages/identity/migrations/0001_identity.sql --remote --yes",
+    "test": "vitest run"
   },
   "dependencies": {
     "@tiko/identity": "workspace:*"
