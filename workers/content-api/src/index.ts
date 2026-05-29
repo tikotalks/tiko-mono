@@ -350,15 +350,38 @@ function jsonResponse(body: unknown, request: Request, status = 200): Response {
   });
 }
 
+const ALLOWED_ORIGIN_PATTERNS = [
+  /^https:\/\/(dev\.)?[a-z0-9-]+\.tikoapps\.org$/,
+  /^https:\/\/tiko\.mt$/,
+  /^https:\/\/dev\.tiko\.mt$/,
+  /^http:\/\/localhost(?::\d+)?$/,
+  /^http:\/\/127\.0\.0\.1(?::\d+)?$/,
+];
+
+function isAllowedOrigin(origin: string): boolean {
+  return ALLOWED_ORIGIN_PATTERNS.some((pattern) => pattern.test(origin));
+}
+
 function getCORSHeaders(request: Request): HeadersInit {
-  const origin = request.headers.get('Origin') || '*';
-  
+  const origin = request.headers.get('Origin');
+
+  if (origin && isAllowedOrigin(origin)) {
+    return {
+      'Access-Control-Allow-Origin': origin,
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, Prefer',
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Max-Age': '86400',
+      'Vary': 'Origin',
+    };
+  }
+
+  // No origin or unrecognised origin — no CORS headers (browser will block credentialed requests)
   return {
-    'Access-Control-Allow-Origin': origin,
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, Prefer',
-    'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Max-Age': '86400',
+    'Vary': 'Origin',
   };
 }
 

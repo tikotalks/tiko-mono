@@ -1,46 +1,6 @@
 <template>
   <div :class="bemm()">
-    <!-- Direct click handler when parent mode is enabled but locked -->
-    <div
-      v-if="shouldShowParentMode()"
-      :class="bemm('trigger')"
-      ref="triggerRef"
-      @click="handleAvatarClick"
-      @keydown="handleKeyDown"
-      role="button"
-      tabindex="0"
-      :aria-expanded="false"
-      :aria-haspopup="true"
-      :aria-label="ariaLabel"
-    >
-      <TAvatar
-        :src="user?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture"
-        :name="displayName"
-        :email="user?.email"
-        :size="avatarSize"
-        :show-online-status="showOnlineStatus"
-        :is-online="isOnline"
-      />
-
-      <!-- User info (desktop only) -->
-      <div v-if="showUserInfo && !isMobile" :class="bemm('info')">
-        <span :class="bemm('name')">{{ displayName }}</span>
-        <span v-if="userRole" :class="bemm('role')">{{ userRole }}</span>
-      </div>
-
-      <TIcon
-        v-if="showChevron"
-        name="chevron-down"
-        :class="bemm('chevron')"
-      />
-    </div>
-
-    <!-- Context menu when parent mode is disabled or unlocked -->
-    <TContextMenu
-      v-else
-      ref="contextMenuRef"
-      :config="menuConfig"
-    >
+    <TContextMenu ref="contextMenuRef" :config="menuConfig">
       <div
         :class="bemm('trigger')"
         ref="triggerRef"
@@ -77,20 +37,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, inject } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useBemm } from 'bemm'
-import { useAuthStore } from '@tiko/core'
+import { useI18n } from '@tiko/core'
 import TAvatar from '../../media/TAvatar/TAvatar.vue'
 import TIcon from '../../ui-elements/TIcon/TIcon.vue'
 import TContextMenu from '../TContextMenu/TContextMenu.vue'
 import type { ContextMenuItem, ContextMenuConfig } from '../TContextMenu/ContextMenu.model'
 import { ContextMenuConfigDefault } from '../TContextMenu/ContextMenu.model'
-import TProfile from '../../user/TProfile/TProfile.vue'
-import TUserSettings from '../../user/TUserSettings/TUserSettings.vue'
-import TParentModePinInput from '../../auth/TParentMode/TParentModePinInput.vue'
-import { useI18n } from '@tiko/core';
-import { useParentMode } from '../../../composables/useParentMode'
-import { toastService } from '../../feedback/TToast/TToast.service'
 import type { TUserMenuProps, TUserMenuEmits } from './TUserMenu.model'
 
 const props = withDefaults(defineProps<TUserMenuProps>(), {
@@ -105,12 +59,7 @@ const props = withDefaults(defineProps<TUserMenuProps>(), {
 const emit = defineEmits<TUserMenuEmits>()
 
 const bemm = useBemm('user-menu')
-const { t, keys } = useI18n()
-const authStore = useAuthStore()
-const parentMode = useParentMode()
-
-// Inject services
-const popupService = inject<any>('popupService')
+const { t } = useI18n()
 
 // Refs
 const triggerRef = ref<HTMLElement>()
@@ -118,7 +67,7 @@ const contextMenuRef = ref<InstanceType<typeof TContextMenu>>()
 const isMobile = ref(false)
 
 // Computed
-const user = computed(() => props.user || authStore.user)
+const user = computed(() => props.user)
 
 const displayName = computed(() => {
   const currentUser = user.value
@@ -141,36 +90,6 @@ const ariaLabel = computed(() =>
 const defaultMenuItems = computed<Partial<ContextMenuItem>[]>(() => {
   const items: Partial<ContextMenuItem>[] = []
 
-  // Always add parent mode option if enabled (provides fallback)
-  if (props.enableParentMode) {
-    const isUnlocked = parentMode.isUnlocked?.value ?? false
-    items.push({
-      id: 'parent-mode',
-      label: isUnlocked ? t('parentMode.lockParentMode') : t('parentMode.parentMode'),
-      icon: isUnlocked ? 'lock' : 'shield',
-      action: () => {
-        if (isUnlocked) {
-          // Lock parent mode
-          if (parentMode.lock) {
-            parentMode.lock()
-            toastService.show({
-              message: t('parentMode.parentModeLocked') || 'Parent mode locked',
-              type: 'info'
-            })
-          }
-        } else {
-          // Show unlock/setup dialog
-          handleParentMode()
-        }
-      },
-      type: 'default'
-    })
-    items.push({
-      id: 'separator-parent',
-      type: 'separator'
-    })
-  }
-
   items.push(
     {
       id: 'profile',
@@ -186,6 +105,9 @@ const defaultMenuItems = computed<Partial<ContextMenuItem>[]>(() => {
       action: handleSettings,
       type: 'default'
     },
+  )
+
+  items.push(
     {
       id: 'separator1',
       type: 'separator'
@@ -198,6 +120,22 @@ const defaultMenuItems = computed<Partial<ContextMenuItem>[]>(() => {
       type: 'default'
     }
   )
+
+  if (props.enableParentMode) {
+    items.push(
+      {
+        id: 'separator-parent',
+        type: 'separator'
+      },
+      {
+        id: 'parent-mode',
+        label: t('parentMode.parentMode'),
+        icon: 'shield',
+        action: () => emit('parent-mode'),
+        type: 'default'
+      }
+    )
+  }
 
   return items
 })
@@ -216,165 +154,25 @@ const menuConfig = computed<ContextMenuConfig>(() => ({
 }))
 
 // Methods
-const toggleMenu = () => {
-  contextMenuRef.value?.toggle()
-}
-
-const handleAvatarClick = () => {
-  if (shouldShowParentMode()) {
-    handleParentMode()
-  } else {
-    toggleMenu()
-  }
-}
-
-const shouldShowParentMode = () => {
-  const isUnlocked = parentMode.isUnlocked?.value ?? false
-  const result = props.enableParentMode && !isUnlocked
-  console.log('[TUserMenu] shouldShowParentMode calculation:', {
-    enableParentMode: props.enableParentMode,
-    isUnlocked: isUnlocked,
-    parentMode: parentMode,
-    result
-  })
-  return result
-}
-
-const handleParentMode = () => {
-  if (!popupService) {
-    console.error('[TUserMenu] PopupService not available for parent mode')
-    toastService.show({
-      message: 'Unable to open parent mode dialog. Please refresh the page.',
-      type: 'error'
-    })
-    return
-  }
-
-  // Check if parentMode is properly initialized
-  const isParentModeEnabled = parentMode.isEnabled?.value ?? false
-  console.log('[TUserMenu] Opening parent mode dialog. Enabled:', isParentModeEnabled)
-
-  if (!isParentModeEnabled) {
-    showParentModeSetup()
-  } else {
-    showParentModeUnlock()
-  }
-}
-
-const showParentModeSetup = () => {
-  popupService.open({
-    component: TParentModePinInput,
-    title: t('parentMode.setUpParentMode') || 'Set Up Parent Mode',
-    description: t('parentMode.createPinDescription') || 'Create a 4-digit PIN to protect settings',
-    props: {
-      mode: 'setup',
-      onPinEntered: handlePinSetup,
-      onCancel: () => popupService.close()
-    }
-  })
-}
-
-const showParentModeUnlock = () => {
-  popupService.open({
-    component: TParentModePinInput,
-    title: t('parentMode.enterParentPin') || 'Enter Parent PIN',
-    description: t('parentMode.enterPinDescription') || 'Enter your PIN to unlock parent mode',
-    props: {
-      mode: 'unlock',
-      onPinEntered: handlePinUnlock,
-      onCancel: () => popupService.close()
-    }
-  })
-}
-
-const handlePinSetup = async (pin: string) => {
-  const result = await parentMode.enable(pin)
-  if (result.success) {
-    popupService.close()
-    toastService.show({
-      message: t('parentMode.parentModeEnabled') || 'Parent mode enabled successfully',
-      type: 'success'
-    })
-  } else {
-    toastService.show({
-      message: result.error || t('parentMode.pinSetupFailed') || 'Failed to set up PIN',
-      type: 'error'
-    })
-  }
-}
-
-const handlePinUnlock = async (pin: string) => {
-  const result = await parentMode.unlock(pin)
-  if (result.success) {
-    popupService.close()
-    toastService.show({
-      message: t('parentMode.parentModeUnlocked') || 'Parent mode unlocked successfully',
-      type: 'success'
-    })
-  } else {
-    toastService.show({
-      message: t('parentMode.incorrectPin') || 'Incorrect PIN',
-      type: 'error'
-    })
-  }
-}
-
 const handleKeyDown = (event: KeyboardEvent) => {
   if (event.key === 'Enter' || event.key === ' ') {
     event.preventDefault()
-    handleAvatarClick()
+    contextMenuRef.value?.toggle()
   } else if (event.key === 'Escape') {
     contextMenuRef.value?.close()
   }
 }
 
 const handleProfile = () => {
-  if (!user.value || !popupService) {
-    console.error('Cannot open profile: user or popupService not available')
-    return
-  }
-
-  popupService.open({
-    component: TProfile,
-    title: t('profile.title'),
-    props: {
-      user: user.value
-    },
-    on: {
-      'close': () => popupService.close()
-    }
-  })
-
   emit('profile')
 }
 
 const handleSettings = () => {
-  if (!user.value || !popupService) {
-    console.error('Cannot open settings: user or popupService not available')
-    return
-  }
-
-  popupService.open({
-    component: TUserSettings,
-    title: t('settings.userSettings'),
-    props: {
-      user: user.value
-    },
-    on: {
-      'close': () => popupService.close()
-    }
-  })
-
   emit('settings')
 }
 
-const handleLogout = async () => {
-  try {
-    await authStore.logout()
-    emit('logout')
-  } catch (error) {
-    console.error('Logout failed:', error)
-  }
+const handleLogout = () => {
+  emit('logout')
 }
 
 const updateIsMobile = () => {
@@ -382,14 +180,9 @@ const updateIsMobile = () => {
 }
 
 // Lifecycle
-onMounted(async () => {
+onMounted(() => {
   updateIsMobile()
   window.addEventListener('resize', updateIsMobile)
-
-  // Initialize parent mode if available
-  if (parentMode.initialize) {
-    await parentMode.initialize()
-  }
 })
 
 onUnmounted(() => {

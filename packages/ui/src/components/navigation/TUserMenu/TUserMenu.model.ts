@@ -16,4 +16,5 @@ export interface TUserMenuEmits {
   (e: 'logout'): void
   (e: 'profile'): void
   (e: 'settings'): void
+  (e: 'parent-mode'): void
 }

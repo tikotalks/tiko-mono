@@ -31,8 +31,11 @@
                 :show-punct="true"
                 @item-click="token => speakWord(token.text)"
               />
+              <span :class="bemm('placeholder')" v-else-if="!currentText.trim()">
+                {{ t(keys.type.typeToSpeak) }}
+              </span>
               <template v-else>
-                {{ currentText || t(keys.type.typeToSpeak) }}
+                {{ currentText }}
               </template>
               <TButton
                 :class="bemm('reset-button')"
@@ -44,7 +47,7 @@
                 :aria-label="t(keys.type.clearText)"
               />
             </div>
-            <div v-if="currentText.trim()" :class="bemm('text-actions')">
+            <div :class="bemm('text-actions')">
               <TButton
                 type="outline"
                 color="primary"
@@ -61,6 +64,7 @@
                 @click="toggleSpeak"
                 size="medium"
                 :disabled="!canSpeak && !isSpeaking"
+                :aria-label="isSpeaking ? t(keys.type.stop) : t(keys.type.speak)"
               >
                 {{ isSpeaking ? t(keys.type.stop) : t(keys.type.speak) }}
               </TButton>
@@ -93,7 +97,7 @@
 <script setup lang="ts">
   import { ref, computed, onMounted, onUnmounted, reactive, watch, toRefs, inject } from 'vue'
   import { useBemm } from 'bemm'
-  import { useI18n, useSpeak } from '@tiko/core'
+  import { useI18n, useSpeak, debugLog } from '@tiko/core'
   import {
     TButton,
     TAppLayout,
@@ -368,11 +372,11 @@
 
   const showFullHistory = () => {
     // TODO: Implement full history modal/page
-    console.log('Show full history - not implemented yet')
+      debugLog.log('Show full history - not implemented yet')
   }
 
   const handleProfile = () => {
-    console.log('Profile clicked')
+      debugLog.log('Profile clicked')
     // TODO: Navigate to profile page or open profile modal
   }
 
@@ -386,7 +390,7 @@
   }
 
   const handleLogout = () => {
-    console.log('User logged out')
+      debugLog.log('User logged out')
     // The auth store handles the logout, this is just for any cleanup
   }
 
@@ -461,8 +465,8 @@
     padding-bottom: env(safe-area-inset-bottom);
 
     &__display-area {
-      min-height: 120px;
-      flex: 1 1 auto; /* Can shrink but not grow beyond content */
+      min-height: 160px;
+      flex: 1 1 auto;
       display: flex;
       height: 100%;
       align-items: center;
@@ -470,8 +474,8 @@
       padding: var(--space);
       padding-top: var(--spacing);
       backdrop-filter: blur(10px);
-      overflow-y: auto; /* Allow scrolling if content is too tall */
-      -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     &__text-display {
@@ -496,6 +500,7 @@
       overflow-wrap: break-word;
       transform: scale(1, 1);
       transition: transform 0.3s ease-in-out;
+      position: relative;
 
       &:empty::before {
         content: attr(placeholder);
@@ -505,8 +510,20 @@
       &--has-text {
       }
       &--no-text {
-        transform: scale(0.75, 0);
+        min-height: 4em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
+    }
+
+    &__placeholder {
+      color: var(--color-foreground-tertiary);
+      font-size: 1.1em;
+      font-style: italic;
+      text-align: center;
+      width: 100%;
+      user-select: none;
     }
 
     &__text-actions {
@@ -514,6 +531,7 @@
       justify-content: center;
       align-items: center;
       gap: var(--space);
+      padding-top: var(--space-s);
     }
 
     &__keyboard-area {

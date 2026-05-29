@@ -20,8 +20,8 @@
 
 <style lang="scss">
   .time-number {
-    width: 0.75em;
-    height: 1em;
+    width: 0.9em;
+    height: 1.2em;
     overflow: hidden;
     background-color: var(--color-background);
     border: 2px solid var(--color-accent);
@@ -35,10 +35,11 @@
       transition: transform 0.3s ease;
     }
     &__item {
-      height: 1em;
-      width: 0.75em;
-      line-height: 1em;
+      height: 1.2em;
+      width: 0.9em;
+      line-height: 1.2em;
       text-align: center;
+      font-weight: 600;
     }
   }
 </style>

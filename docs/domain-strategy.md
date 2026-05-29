@@ -34,10 +34,12 @@ Current Cloudflare Pages projects discovered:
 - `tiko-timer` → `timer.tikoapps.org`
 - `tiko-todo` → `todo.tikoapps.org`
 - `tiko-type` → `type.tikoapps.org`
-- `tiko-yes-no` → `yes-no.tikoapps.org`, `yesno.tikoapps.org`
-- `tiko-radio` → pages.dev only currently
+- `tiko-yes-no` → `yes-no.tikoapps.org`, `yesno.tikoapps.org`, `dev.yesno.tikoapps.org`
+- `tiko-radio` → `radio.tikoapps.org`, `dev.radio.tikoapps.org`
+- `tiko-sequence` → `sequence.tikoapps.org`, `dev.sequence.tikoapps.org`
+- `tiko-dashboard` → pages.dev only currently; `dev.tiko.tikoapps.org` is served through the `tiko-dev-app-router` Worker and production `tiko.tikoapps.org` must remain a safe holding response until Sil approves production promotion.
 
-Current DNS also has `sequence.tikoapps.org`, but the Pages API listing did not show a `tiko-sequence` project/custom-domain binding. Treat this as a deployment/domain mismatch to fix.
+Current DNS/Pages evidence is maintained through the Cloudflare API and should be re-checked before changing production routes.
 
 ---
 
@@ -84,7 +86,8 @@ Why:
 
 Canonical app domains:
 
-- `https://tiko.tikoapps.org` — Tiko shell/dashboard/app launcher
+- `https://tiko.tikoapps.org` — Tiko shell/dashboard/app launcher; production route is held behind an explicit “pending approval” Worker response until Sil approves production promotion
+- `https://dev.tiko.tikoapps.org` — development Tiko shell/dashboard/app launcher, proxied by `tiko-dev-app-router` to `development.tiko-dashboard.pages.dev`
 - `https://cards.tikoapps.org` — Cards
 - `https://sequence.tikoapps.org` — Sequence
 - `https://type.tikoapps.org` — Type
@@ -96,6 +99,7 @@ Canonical app domains:
 Aliases/redirects:
 
 - `https://yes-no.tikoapps.org` → `https://yesno.tikoapps.org`
+- `https://dev.yes-no.tikoapps.org` → `https://dev.yesno.tikoapps.org`
 
 Internal tools on this family:
 
@@ -227,7 +231,8 @@ Recommended role:
 
 ## Apps
 
-- `tiko.tikoapps.org` → main Tiko shell/app launcher
+- `tiko.tikoapps.org` → main Tiko shell/app launcher; Worker holding response until production promotion is approved
+- `dev.tiko.tikoapps.org` → development Tiko shell/app launcher
 - `cards.tikoapps.org` → Cards app
 - `sequence.tikoapps.org` → Sequence app
 - `type.tikoapps.org` → Type app
@@ -295,12 +300,15 @@ Include:
 
 ## Task D2: Fix app domain gaps
 
-Observed issues:
+Observed issues now closed for dev routing:
 
-- `radio.tikoapps.org` is not currently bound as a Pages custom domain even though `tiko-radio` exists.
-- `sequence.tikoapps.org` has DNS, but Pages API did not show a `tiko-sequence` Pages project/custom-domain binding.
-- `tiko.tikoapps.org` is missing for the main app shell.
-- `admin.tikoapps.org` exists in DNS but must be verified against Pages/API access and protection.
+- `dev.tiko.tikoapps.org` is served through `workers/dev-app-router` and targets `development.tiko-dashboard.pages.dev`.
+- `yes-no.tikoapps.org` and `dev.yes-no.tikoapps.org` are redirect aliases to the canonical `yesno` hosts.
+- `tiko.tikoapps.org` is intentionally a Worker holding response until production promotion is explicitly approved.
+
+Remaining production decision:
+
+- Bind/promote the production launcher only after Sil approves which production branch/deployment should serve `tiko.tikoapps.org`.
 
 ## Task D3: Decide `yesno` vs `yes-no`
 

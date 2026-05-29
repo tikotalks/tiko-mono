@@ -1,114 +1,96 @@
-export type ClockLearningMode = 'full-hours' | 'half-hours' | 'quarter-hours' | 'five-minutes'
+import type { ClockAngles, ClockHandKind, ClockStage } from '../models/clock.model'
+import { coerceMinutesForStage, normalizeMinutes } from './clock-time'
 
-export interface ClockTime {
-	hour: number
-	minute: number
+function roundedHandMinutes(angle: number, increment = 1): number {
+	const normalizedAngle = normalizeAngle(angle)
+	const minute = Math.round((normalizedAngle / 360) * 60)
+	const snapped = Math.round((minute === 60 ? 0 : minute) / increment) * increment
+	return normalizeMinutes(snapped) % 60
 }
 
-export interface HandAngles {
-	hour: number
-	minute: number
+export function timeToAngles(minutesSince12: number): ClockAngles {
+	const minutes = normalizeMinutes(minutesSince12)
+	return { hour: (minutes / 720) * 360, minute: ((minutes % 60) / 60) * 360 }
 }
 
-export interface ValidationResult {
-	accepted: boolean
-	celebrate: boolean
-	feedback: string
-	mistake?: 'minute-hand-not-twelve' | 'wrong-hour' | 'wrong-minute'
+export function angleToMinutes(angle: number, stage: ClockStage = 'full-hours'): number {
+	const raw = roundedHandMinutes(angle)
+	return coerceMinutesForStage(raw, stage)
 }
 
-const MINUTES_ON_CLOCK = 12 * 60
-
-export function normalizeClockTime(time: ClockTime) {
-	const hour = ((Math.round(time.hour) - 1 + 12) % 12) + 1
-	const minute = Math.max(0, Math.min(59, Math.round(time.minute)))
-	const hourIndex = hour % 12
-	const minutesSinceTwelve = hourIndex * 60 + minute
-
-	return { hour, minute, minutesSinceTwelve }
+export function addMinutesForStage(minutes: number, delta: number, stage: ClockStage): number {
+	return coerceMinutesForStage(normalizeMinutes(minutes + delta), stage)
 }
 
-export function getHandAngles(time: ClockTime): HandAngles {
-	const normalized = normalizeClockTime(time)
+export function shortestMinuteDistance(a: number, b: number): number {
+	const diff = Math.abs(normalizeMinutes(a) - normalizeMinutes(b)) % 720
+	return Math.min(diff, 720 - diff)
+}
 
-	return {
-		hour: (normalized.minutesSinceTwelve / MINUTES_ON_CLOCK) * 360,
-		minute: normalized.minute * 6,
+export function minuteAngleToClockTime(
+	angle: number,
+	currentMinutes: number,
+	stage: ClockStage
+): number {
+	const hourBase = Math.floor(normalizeMinutes(currentMinutes) / 60) * 60
+	const minute = roundedHandMinutes(angle, stage === 'anatomy' ? 1 : 5)
+	return normalizeMinutes(hourBase + minute)
+}
+
+export function dragMinuteHandToAngle(
+	angle: number,
+	currentMinutes: number,
+	stage: ClockStage
+): number {
+	const current = normalizeMinutes(currentMinutes)
+	const currentMinute = current % 60
+	const nextMinute = roundedHandMinutes(angle, stage === 'anatomy' ? 1 : 5)
+	let delta = nextMinute - currentMinute
+	if (delta > 30) delta -= 60
+	if (delta < -30) delta += 60
+	return normalizeMinutes(current + delta)
+}
+
+export function hourAngleToClockTime(
+	angle: number,
+	currentMinutes: number,
+	stage: ClockStage
+): number {
+	const raw = normalizeMinutes((normalizeAngle(angle) / 360) * 720)
+	const snapped = stage === 'anatomy' ? Math.round(raw) : Math.round(raw / 5) * 5
+	const minute = normalizeMinutes(currentMinutes) % 60
+	if (stage === 'full-hours' || stage === 'half-past') return normalizeMinutes(snapped)
+	return normalizeMinutes(Math.floor(snapped / 60) * 60 + minute)
+}
+
+export function dragHandToClockTime(
+	hand: ClockHandKind,
+	angle: number,
+	currentMinutes: number,
+	stage: ClockStage
+): number {
+	return hand === 'minute'
+		? dragMinuteHandToAngle(angle, currentMinutes, stage)
+		: hourAngleToClockTime(angle, currentMinutes, stage)
+}
+
+export function normalizeAngle(angle: number): number {
+	return ((angle % 360) + 360) % 360
+}
+
+export function pointerToAngle(
+	clientX: number,
+	clientY: number,
+	rectOrPointerX: DOMRect | number,
+	pointerY?: number
+): number {
+	if (typeof rectOrPointerX === 'number') {
+		const radians = Math.atan2((pointerY ?? 0) - clientY, rectOrPointerX - clientX)
+		return normalizeAngle((radians * 180) / Math.PI + 90)
 	}
-}
-
-export function getTimeFromAngles(angles: HandAngles, mode: ClockLearningMode): ClockTime {
-	const minuteStep =
-		mode === 'full-hours' ? 60 : mode === 'half-hours' ? 30 : mode === 'quarter-hours' ? 15 : 5
-	const minute = Math.round((((angles.minute % 360) + 360) % 360) / 6 / minuteStep) * minuteStep
-	const normalizedMinute = minute === 60 ? 0 : minute
-	const hourFromAngle = Math.round((((angles.hour % 360) + 360) % 360) / 30) || 12
-	const hour = ((hourFromAngle - 1 + 12) % 12) + 1
-
-	return { hour, minute: normalizedMinute }
-}
-
-function circularDistance(a: number, b: number, modulo: number) {
-	const distance = Math.abs(a - b) % modulo
-	return Math.min(distance, modulo - distance)
-}
-
-export function formatClockTime(time: ClockTime) {
-	const normalized = normalizeClockTime(time)
-	if (normalized.minute === 0) return `${normalized.hour} o’clock`
-	if (normalized.minute < 10) return `${normalized.hour}:0${normalized.minute}`
-	return `${normalized.hour}:${normalized.minute}`
-}
-
-export function validateClockAnswer({
-	target,
-	answer,
-	mode,
-}: {
-	target: ClockTime
-	answer: ClockTime
-	mode: ClockLearningMode
-}): ValidationResult {
-	const targetNormalized = normalizeClockTime(target)
-	const answerNormalized = normalizeClockTime(answer)
-	const minuteTolerance = mode === 'full-hours' ? 5 : mode === 'half-hours' ? 6 : 4
-	const hourTolerance = mode === 'full-hours' ? 8 : 10
-
-	const minuteDistance = circularDistance(answerNormalized.minute, targetNormalized.minute, 60)
-	const answerAngles = getHandAngles(answerNormalized)
-	const targetAngles = getHandAngles(targetNormalized)
-	const hourDistance = circularDistance(answerAngles.hour, targetAngles.hour, 360)
-
-	if (mode === 'full-hours' && minuteDistance > minuteTolerance) {
-		return {
-			accepted: false,
-			celebrate: false,
-			mistake: 'minute-hand-not-twelve',
-			feedback: 'Move the long hand to 12 for o’clock.',
-		}
-	}
-
-	if (hourDistance > hourTolerance) {
-		return {
-			accepted: false,
-			celebrate: false,
-			mistake: 'wrong-hour',
-			feedback: 'The short hand is pointing to a different hour.',
-		}
-	}
-
-	if (minuteDistance > minuteTolerance) {
-		return {
-			accepted: false,
-			celebrate: false,
-			mistake: 'wrong-minute',
-			feedback: 'Try moving the long hand closer to the minute mark.',
-		}
-	}
-
-	return {
-		accepted: true,
-		celebrate: true,
-		feedback: `Great! That is ${formatClockTime(targetNormalized)}.`,
-	}
+	const rect = rectOrPointerX
+	const centerX = rect.left + rect.width / 2
+	const centerY = rect.top + rect.height / 2
+	const radians = Math.atan2(clientY - centerY, clientX - centerX)
+	return normalizeAngle((radians * 180) / Math.PI + 90)
 }

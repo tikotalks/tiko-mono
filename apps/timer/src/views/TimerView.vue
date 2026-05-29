@@ -15,6 +15,50 @@
           bemm('display', ['', isExpired ? 'expired' : '', timeLeft < 10 ? 'last-seconds' : ''])
         "
       />
+
+      <!-- Visible control buttons below display -->
+      <div :class="bemm('controls')">
+        <TButton
+          v-if="!isRunning"
+          type="default"
+          color="success"
+          size="large"
+          @click="start"
+          :aria-label="t('timer.start')"
+        >
+          {{ t('timer.start') }}
+        </TButton>
+        <TButton
+          v-else
+          type="default"
+          color="warning"
+          size="large"
+          @click="pause"
+          :aria-label="t('timer.pause')"
+        >
+          {{ t('timer.pause') }}
+        </TButton>
+
+        <TButton
+          type="outline"
+          color="secondary"
+          size="large"
+          @click="reset"
+          :aria-label="t('timer.reset')"
+        >
+          {{ t('timer.reset') }}
+        </TButton>
+
+        <TButton
+          type="outline"
+          color="primary"
+          size="large"
+          @click="toggleMode"
+          :aria-label="mode === 'up' ? t('timer.countDown') : t('timer.countUp')"
+        >
+          {{ mode === 'down' ? t('timer.countDown') : t('timer.countUp') }}
+        </TButton>
+      </div>
     </main>
 
     <!-- Expired Overlay -->
@@ -119,34 +163,14 @@
       align-items: center;
       justify-content: center;
       gap: var(--space-lg);
+      padding-bottom: 6em; // clear fixed controls bar
     }
 
     &__display {
       text-align: center;
       font-weight: bold;
       font-variant: tabular-nums;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-
-      // &--paused{
-      //   animation: pausePulse 5s infinite;
-      //   @keyframes pausePulse {
-      //     0% { transform: translate(-50%, -50%) scale(1); }
-      //     50% { transform:  translate(-50%, -50%) scale(1.1); }
-      //     100% { transform: translate(-50%, -50%)  scale(1); }
-      //   }
-      // }
-
-      // &--last-seconds{
-      //   animation: leftPulse 1s infinite;
-      //   @keyframes leftPulse {
-      //     0% { transform: translate(-50%, -50%) scale(1); }
-      //     50% { transform:  translate(-50%, -50%) scale(1.1); }
-      //     100% { transform: translate(-50%, -50%)  scale(1); }
-      //   }
-      // }
+      flex-shrink: 0;
     }
 
     &__time {
@@ -192,6 +216,37 @@
 
       &--expired {
         background: var(--color-error);
+      }
+    }
+
+    &__controls {
+      display: flex;
+      gap: var(--space, 1em);
+      justify-content: center;
+      flex-wrap: wrap;
+      padding: var(--space, 1em);
+      padding-bottom: calc(var(--space, 1em) + 12px); // clear progress bar
+      z-index: 110; // above progress bar (z-index: 100)
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent 0%, var(--color-background) 30%);
+      padding-top: 3em;
+
+      .button {
+        min-width: 5em;
+        font-weight: 600;
+        font-size: 1.1em;
+      }
+
+      @media screen and (max-width: 720px) {
+        gap: 0.75em;
+        .button {
+          min-width: 4em;
+          font-size: 1em;
+          padding: 0.6em 1em;
+        }
       }
     }
 
