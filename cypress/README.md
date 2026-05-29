@@ -1,6 +1,19 @@
-# Cypress E2E Tests for Authentication
+# Cypress E2E Tests
 
-This directory contains end-to-end tests for the Tiko authentication flows using Cypress.
+This directory contains end-to-end tests for all Tiko Universe apps using Cypress.
+
+## App Test Suites
+
+| App | Directory | Port |
+|---|---|---|
+| Timer | `e2e/timer/` | 3001 |
+| Todo | `e2e/todo/` | 3002 |
+| Sequence | `e2e/sequence/` | 3003 |
+| Type | `e2e/type/` | 3004 |
+| Radio | `e2e/radio/` | 3005 |
+| Yes-No | `e2e/yes-no/` | 3006 |
+| Cards | `e2e/cards/` | 3007 |
+| Auth | `e2e/auth/` | 3001 |
 
 ## Setup
 
