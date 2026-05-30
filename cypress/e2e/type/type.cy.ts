@@ -22,7 +22,7 @@ describe('Type App', () => {
     cy.clearLocalStorage()
     cy.clearCookies()
     cy.visit(APP_URL)
-    cy.wait(2000)
+    cy.get('.type-view', { timeout: 10000 }).should('exist')
   })
 
   describe('Page load', () => {
@@ -31,9 +31,7 @@ describe('Type App', () => {
     })
 
     it('should display the virtual keyboard', () => {
-      // Virtual keyboard should be visible
       cy.get('.type-view').then($view => {
-        // Check for keyboard-like elements (keys)
         const keys = $view.find('[class*="key"]')
         expect(keys.length).to.be.at.least(1)
       })
@@ -41,7 +39,6 @@ describe('Type App', () => {
 
     it('should show the text display area', () => {
       cy.get('.type-view').then($view => {
-        // Text area should exist (may have --no-text initially)
         const textArea = $view.find('[class*="text"]')
         expect(textArea.length).to.be.at.least(1)
       })
@@ -50,7 +47,6 @@ describe('Type App', () => {
 
   describe('Keyboard mode toggle', () => {
     it('should cycle keyboard modes (ABC -> 123 -> abc)', () => {
-      // The keyboard mode button is outline, primary, large
       cy.get('.type-view button').then($buttons => {
         const buttons = Array.from($buttons)
         const modeBtn = buttons.find(
@@ -73,12 +69,10 @@ describe('Type App', () => {
 
   describe('Text input', () => {
     it('should accept input from virtual keyboard', () => {
-      // Click a letter key
       cy.get('.type-view').then($view => {
         const keys = $view.find('[class*="key"]')
         if (keys.length > 0) {
           cy.wrap(keys.first()).click()
-          // Text display should update
           cy.get('.type-view').should('exist')
         }
       })
@@ -87,7 +81,6 @@ describe('Type App', () => {
 
   describe('Clear text', () => {
     it('should have a clear/reset button', () => {
-      // Clear button has BEMM class type-view__reset-button (only visible when text exists)
       cy.get('.type-view__reset-button, .type-view button').should('exist')
     })
   })
@@ -109,7 +102,6 @@ describe('Type App', () => {
 
   describe('Settings', () => {
     it('should have a settings/parent mode button', () => {
-      // Settings button is outline type with shield or settings icon
       cy.get('.type-view button').should('exist')
     })
   })

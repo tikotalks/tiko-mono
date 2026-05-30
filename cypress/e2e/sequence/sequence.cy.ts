@@ -19,7 +19,7 @@ describe('Sequence App', () => {
     cy.clearLocalStorage()
     cy.clearCookies()
     cy.visit(APP_URL)
-    cy.wait(2000)
+    cy.get('.sequence-view', { timeout: 10000 }).should('exist')
   })
 
   describe('Home page', () => {
@@ -51,7 +51,6 @@ describe('Sequence App', () => {
         if (cards.length > 0) {
           cy.wrap(cards.first()).click()
           cy.wait(1500)
-          // Should navigate into group or play mode
           cy.get('.sequence-view, .play-view').should('exist')
         }
       })
@@ -60,14 +59,12 @@ describe('Sequence App', () => {
 
   describe('Group navigation', () => {
     it('should show breadcrumbs when inside a group', () => {
-      // Navigate into a group
       cy.get('.sequence-view').then($view => {
         const cards = $view.find('[class*="card"]')
         if (cards.length > 0) {
           cy.wrap(cards.first()).click()
           cy.wait(1500)
 
-          // Check for breadcrumbs
           cy.get('.sequence-view__breadcrumb').then($breadcrumbs => {
             if ($breadcrumbs.length > 0) {
               cy.get('.sequence-view__breadcrumb').first().should('exist')
@@ -137,24 +134,21 @@ describe('Sequence App - Play View', () => {
     cy.clearLocalStorage()
     cy.clearCookies()
     cy.visit(APP_URL)
-    cy.wait(2000)
+    cy.get('.sequence-view', { timeout: 10000 }).should('exist')
   })
 
   describe('Play view', () => {
     it('should render the play view when navigating to play mode', () => {
-      // Navigate to a sequence card that triggers play mode
       cy.get('.sequence-view').then($view => {
         const cards = $view.find('[class*="card"]')
         if (cards.length > 0) {
           cy.wrap(cards.first()).click()
           cy.wait(2000)
 
-          // If we're on play view
           cy.get('body').then($body => {
             if ($body.find('.play-view').length > 0) {
               cy.get('.play-view').should('exist')
 
-              // Check for back button
               cy.get('.play-view button').then($buttons => {
                 const backBtn = Array.from($buttons).find(
                   (btn: HTMLElement) => btn.textContent.match(/back/i)

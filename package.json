@@ -37,6 +37,7 @@
     "test:e2e:radio": "cypress run --spec 'cypress/e2e/radio/*.cy.ts'",
     "test:e2e:cards": "cypress run --spec 'cypress/e2e/cards/*.cy.ts'",
     "test:e2e:sequence": "cypress run --spec 'cypress/e2e/sequence/*.cy.ts'",
+    "test:e2e:clock": "cypress run --spec 'cypress/e2e/clock/*.cy.ts'",
     "ios": "node scripts/ios-app-interactive.js",
     "analyze-icons": "node scripts/analyze-icons-accurate.js",
     "analyze-icons:all": "for app in apps/*; do echo \"\\n=== Analyzing $app ===\"; node scripts/analyze-icons-accurate.js \"$app\"; done",

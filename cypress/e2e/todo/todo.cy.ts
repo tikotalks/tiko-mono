@@ -18,7 +18,7 @@ describe('Todo App', () => {
     cy.clearLocalStorage()
     cy.clearCookies()
     cy.visit(APP_URL)
-    cy.wait(2000)
+    cy.get('.home-view', { timeout: 10000 }).should('exist')
   })
 
   describe('Home page', () => {
@@ -27,12 +27,10 @@ describe('Todo App', () => {
     })
 
     it('should display a card grid', () => {
-      // TCardGrid should render — look for grid-like container
       cy.get('.home-view').then($view => {
-        // Card grid exists in the view
-        expect($view.find('.t-card-grid, [class*="card"], [class*="grid"]').length).to.be.at.least(
-          0
-        )
+        expect(
+          $view.find('.t-card-grid, [class*="card"], [class*="grid"]').length
+        ).to.be.at.least(0)
       })
     })
 
@@ -56,12 +54,11 @@ describe('Todo App - Todo View', () => {
     cy.clearLocalStorage()
     cy.clearCookies()
     cy.visit(APP_URL)
-    cy.wait(2000)
+    cy.get('.home-view', { timeout: 10000 }).should('exist')
   })
 
   describe('Todo step view (navigated)', () => {
     it('should render the todo view when navigating to a todo', () => {
-      // If there are todo cards, click one to navigate
       cy.get('.home-view').then($view => {
         const cards = $view.find('[class*="card"]')
         if (cards.length > 0) {
@@ -76,7 +73,6 @@ describe('Todo App - Todo View', () => {
 
   describe('Step interactions', () => {
     beforeEach(() => {
-      // Try to navigate to a todo
       cy.get('.home-view').then($view => {
         const cards = $view.find('[class*="card"]')
         if (cards.length > 0) {
@@ -103,7 +99,6 @@ describe('Todo App - Todo View', () => {
     })
 
     it('should allow toggling view mode', () => {
-      // View mode toggle button is in header-actions
       cy.get('.todo-view button').then($buttons => {
         const buttons = Array.from($buttons)
         const viewToggle = buttons.find(
@@ -114,7 +109,6 @@ describe('Todo App - Todo View', () => {
         if (viewToggle) {
           cy.wrap(viewToggle).click()
           cy.wait(500)
-          // Root div should get --horizontal or --vertical modifier
           cy.get('.todo-view').should('exist')
         }
       })
@@ -130,7 +124,6 @@ describe('Todo App - Todo View', () => {
           cy.wait(1500)
           cy.url().should('include', '/todo/')
 
-          // Click back button
           cy.get('.todo-view').then($todoView => {
             const backBtn = $todoView.find('[class*="back"]')
             if (backBtn.length > 0) {

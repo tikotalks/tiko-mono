@@ -13,6 +13,7 @@ This directory contains end-to-end tests for all Tiko Universe apps using Cypres
 | Radio | `e2e/radio/` | 3005 |
 | Yes-No | `e2e/yes-no/` | 3006 |
 | Cards | `e2e/cards/` | 3007 |
+| Clock | `e2e/clock/` | 3012 |
 | Auth | `e2e/auth/` | 3001 |
 
 ## Setup
@@ -48,6 +49,9 @@ pnpm test:e2e:open
 
 # Run only authentication tests
 pnpm test:e2e:auth
+
+# Run only clock tests
+pnpm test:e2e:clock
 ```
 
 ## Test Coverage

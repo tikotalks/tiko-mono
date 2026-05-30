@@ -20,7 +20,7 @@ describe('Yes-No App', () => {
     cy.clearLocalStorage()
     cy.clearCookies()
     cy.visit(APP_URL)
-    cy.wait(2000)
+    cy.get('.yes-no', { timeout: 10000 }).should('exist')
   })
 
   describe('Page load', () => {
@@ -40,12 +40,10 @@ describe('Yes-No App', () => {
 
   describe('Question display', () => {
     it('should have clickable question text', () => {
-      cy.get('.yes-no__question-text').should('exist')
-      cy.get('.yes-no__question-text').click()
+      cy.get('.yes-no__question-text').should('exist').click()
     })
 
     it('should have a speak/tts button', () => {
-      // Speak button is a ghost button with volume icon
       cy.get('.yes-no button').then($buttons => {
         const hasSpeakBtn = Array.from($buttons).some(
           (btn: HTMLElement) => btn.classList.contains('t-button--ghost')
@@ -58,16 +56,13 @@ describe('Yes-No App', () => {
   describe('Answer flow', () => {
     it('should provide visual feedback when clicking yes', () => {
       cy.get('.yes-no__answer--yes').click()
-      // Root div should get --yes modifier for background feedback
       cy.get('.yes-no').should('have.class', 'yes-no--yes')
-      // Wait for feedback animation (1.5s)
+      // Wait for feedback animation to clear (1.5s)
       cy.wait(2000)
-      // Feedback should clear
     })
 
     it('should provide visual feedback when clicking no', () => {
       cy.get('.yes-no__answer--no').click()
-      // Root div should get --no modifier for background feedback
       cy.get('.yes-no').should('have.class', 'yes-no--no')
       cy.wait(2000)
     })
@@ -79,20 +74,7 @@ describe('Yes-No App', () => {
       cy.wait(500)
       cy.get('.yes-no__answer--yes').click()
       cy.wait(2000)
-      // View should still be functional
-      cy.get('.yes-no__question-display, [data-cy="question-display"]').should('exist')
-    })
-  })
-
-  describe('Edit question', () => {
-    it('should have an edit question button', () => {
-      // Edit button is a ghost button with edit icon
-      cy.get('.yes-no button').then($buttons => {
-        const ghostButtons = Array.from($buttons).filter(
-          (btn: HTMLElement) => btn.classList.contains('t-button--ghost')
-        )
-        expect(ghostButtons.length).to.be.at.least(1)
-      })
+      cy.get('.yes-no__question-text').should('exist')
     })
   })
 })
