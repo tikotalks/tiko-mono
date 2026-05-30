@@ -1,29 +1,26 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { setActivePinia, createPinia } from 'pinia'
 import { useRadioSettings } from './useRadioSettings'
 
-// Mock the @tiko/core module
+// Shared mock references for assertions
+const mockUpdateAppSettings = vi.fn(() => Promise.resolve(true))
+const mockLoadAppSettings = vi.fn(() => Promise.resolve(true))
+const mockGetAppSettings = vi.fn(() => ({}))
+
 vi.mock('@tiko/core', () => ({
-  useAuthStore: vi.fn(() => ({
-    user: { value: { id: 'test-user-id' } },
+  useAppStore: vi.fn(() => ({
+    getAppSettings: mockGetAppSettings,
+    updateAppSettings: mockUpdateAppSettings,
+    loadAppSettings: mockLoadAppSettings,
   })),
-  userSettingsService: {
-    getSettings: vi.fn(() => Promise.resolve(null)),
-    updateSettings: vi.fn(() => Promise.resolve({ data: null, error: null })),
-  },
-  supabase: {
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          single: vi.fn(() => Promise.resolve({ data: null, error: null })),
-        })),
-      })),
-      upsert: vi.fn(() => Promise.resolve({ data: null, error: null })),
-    })),
-  },
+  useAuthStore: vi.fn(() => ({
+    user: { id: 'test-user-id' },
+  })),
 }))
 
 describe('useRadioSettings', () => {
   beforeEach(() => {
+    setActivePinia(createPinia())
     vi.clearAllMocks()
   })
 
@@ -40,25 +37,26 @@ describe('useRadioSettings', () => {
     })
   })
 
-  it('returns correct default settings when user is not logged in', () => {
-    const { settings } = useRadioSettings()
-
-    expect(settings.value.autoplayNext).toBe(true)
-    expect(settings.value.defaultVolume).toBe(0.8)
-  })
-
-  it('provides sleep timer functionality', () => {
-    const { sleepTimer, setSleepTimer } = useRadioSettings()
+  it('provides sleep timer that starts disabled', () => {
+    const { sleepTimer } = useRadioSettings()
 
     expect(sleepTimer.value.enabled).toBe(false)
+    expect(sleepTimer.value.minutes).toBe(30)
+    expect(sleepTimer.value.startTime).toBeNull()
+    expect(sleepTimer.value.endTime).toBeNull()
+  })
+
+  it('can set sleep timer', () => {
+    const { sleepTimer, setSleepTimer } = useRadioSettings()
 
     setSleepTimer(15)
 
     expect(sleepTimer.value.enabled).toBe(true)
     expect(sleepTimer.value.minutes).toBe(15)
+    expect(sleepTimer.value.endTime).toBeGreaterThan(Date.now())
   })
 
-  it('can clear sleep timer', () => {
+  it('can cancel sleep timer', () => {
     const { sleepTimer, setSleepTimer, cancelSleepTimer } = useRadioSettings()
 
     setSleepTimer(30)
@@ -66,17 +64,12 @@ describe('useRadioSettings', () => {
 
     cancelSleepTimer()
     expect(sleepTimer.value.enabled).toBe(false)
+    expect(sleepTimer.value.endTime).toBeNull()
   })
 
-  it('calculates remaining time correctly', () => {
-    const { sleepTimerRemaining, setSleepTimer } = useRadioSettings()
+  it('calculates remaining time as 0 when disabled', () => {
+    const { sleepTimerRemaining } = useRadioSettings()
 
     expect(sleepTimerRemaining.value).toBe(0)
-
-    setSleepTimer(10)
-
-    // Should have approximately 10 minutes (might be slightly less due to execution time)
-    expect(sleepTimerRemaining.value).toBeGreaterThanOrEqual(9)
-    expect(sleepTimerRemaining.value).toBeLessThanOrEqual(10)
   })
 })

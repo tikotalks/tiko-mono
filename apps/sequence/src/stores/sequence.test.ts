@@ -1,15 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useYesNoStore } from './yesno'
-import { itemService } from '@tiko/core'
+import { useSequenceStore } from './sequence'
 
-// Mock the @tiko/core module
+// Shared mock references
+const mockUpdateAppSettings = vi.fn(() => Promise.resolve(true))
+const mockLoadAppSettings = vi.fn(() => Promise.resolve(true))
+const mockGetAppSettings = vi.fn(() => ({}))
+
 vi.mock('@tiko/core', () => ({
   useAppStore: vi.fn(() => ({
-    getAppSettings: vi.fn(() => ({})),
-    setAppSettings: vi.fn(() => Promise.resolve(true)),
-    updateAppSettings: vi.fn(() => Promise.resolve(true)),
-    loadAppSettings: vi.fn(() => Promise.resolve(true)),
+    getAppSettings: mockGetAppSettings,
+    updateAppSettings: mockUpdateAppSettings,
+    loadAppSettings: mockLoadAppSettings,
+    isOnline: true,
   })),
   useAuthStore: vi.fn(() => ({
     user: { id: 'test-user-id' },
@@ -20,135 +23,112 @@ vi.mock('@tiko/core', () => ({
     updateItem: vi.fn(() => Promise.resolve({ data: null, error: null })),
     deleteItem: vi.fn(() => Promise.resolve({ data: null, error: null })),
   },
+  useI18nSimple: vi.fn(() => ({
+    currentLocale: { value: 'en' },
+  })),
+  useSpeak: vi.fn(() => ({
+    speak: vi.fn(() => Promise.resolve()),
+    stop: vi.fn(),
+  })),
 }))
 
-describe('useYesNoStore', () => {
+vi.mock('../services/sequence.service', () => ({
+  sequenceService: {
+    loadSequence: vi.fn(() => Promise.resolve([])),
+    loadAllSequence: vi.fn(() => Promise.resolve([])),
+  },
+}))
+
+vi.mock('../services/sequence-offline-storage.service', () => ({
+  offlineStorageService: {
+    storeSequence: vi.fn(() => Promise.resolve()),
+    getSequence: vi.fn(() => Promise.resolve(null)),
+    hasOfflineData: vi.fn(() => Promise.resolve(false)),
+    clearUserData: vi.fn(() => Promise.resolve()),
+    updateSyncMetadata: vi.fn(() => Promise.resolve()),
+    getSyncMetadata: vi.fn(() => Promise.resolve(null)),
+  },
+}))
+
+describe('useSequenceStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
   })
 
-  it('initializes with default values', () => {
-    const store = useYesNoStore()
+  it('initializes with default settings', () => {
+    const store = useSequenceStore()
 
-    expect(store.currentQuestion).toBe('Do you want to play?')
-    expect(store.questionHistory).toEqual([])
-    expect(store.isPlaying).toBe(false)
-  })
-
-  it('has default settings', () => {
-    const store = useYesNoStore()
-
-    expect(store.settings.buttonSize).toBe('large')
     expect(store.settings.autoSpeak).toBe(true)
+    expect(store.settings.showHints).toBe(false)
     expect(store.settings.hapticFeedback).toBe(true)
+    expect(store.settings.showCuratedItems).toBe(true)
+    expect(store.settings.showHiddenItems).toBe(false)
+    expect(store.settings.hiddenItems).toEqual([])
+    expect(store.settings.enableAnimations).toBe(true)
+    expect(store.settings.enableSounds).toBe(true)
+    expect(store.settings.enableRewardAnimations).toBe(true)
   })
 
-  it('can set a new question', () => {
-    const store = useYesNoStore()
+  it('initializes with empty cache', () => {
+    const store = useSequenceStore()
 
-    store.setQuestion('Are you happy?')
-
-    expect(store.currentQuestion).toBe('Are you happy?')
+    expect(store.cardCache.size).toBe(0)
+    expect(store.allSequenceLoaded).toBe(false)
+    expect(store.isLoadingSequence).toBe(false)
+    expect(store.hasOfflineData).toBe(false)
   })
 
-  it('can set questions', () => {
-    const store = useYesNoStore()
+  it('initializes play state with defaults', () => {
+    const store = useSequenceStore()
+    const playState = store.currentPlayState
 
-    store.setQuestion('Are you happy?')
-
-    expect(store.currentQuestion).toBe('Are you happy?')
+    expect(playState.currentSequenceId).toBeNull()
+    expect(playState.shuffledItems).toEqual([])
+    expect(playState.selectedItems).toEqual([])
+    expect(playState.correctOrder).toEqual([])
+    expect(playState.isPlaying).toBe(false)
+    expect(playState.isComplete).toBe(false)
   })
 
-  it('can clear history', async () => {
-    const store = useYesNoStore()
+  it('clears cache correctly', async () => {
+    const store = useSequenceStore()
 
-    // Mock itemService to return a question when getItems is called
-    vi.mocked(itemService.getItems).mockResolvedValueOnce([
-      {
-        id: '1',
-        user_id: 'test-user-id',
-        app_name: 'yesno',
-        type: 'question',
-        name: 'Test question',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        is_favorite: false,
-        order_index: 0,
-        metadata: {},
-      },
-    ])
+    await store.clearCache()
 
-    await store.setQuestion('Test question')
-    // Wait for the async operations to complete
-    await new Promise(resolve => setTimeout(resolve, 10))
-
-    expect(store.questionHistory).toHaveLength(1)
-
-    await store.clearHistory()
-    expect(store.questionHistory).toEqual([])
+    expect(store.cardCache.size).toBe(0)
+    expect(store.allSequenceLoaded).toBe(false)
   })
 
-  it('can speak questions', async () => {
-    const store = useYesNoStore()
+  it('loadState calls appStore.loadAppSettings', async () => {
+    const store = useSequenceStore()
 
-    store.setQuestion('Are you ready?')
+    await store.loadState()
 
-    // Start speaking (this sets isPlaying to true temporarily)
-    const speakPromise = store.speakQuestion()
-
-    // Check that speech is initiated - should be true during speech
-    // Note: Due to the async nature of the mock, we need to check immediately after calling
-    // In a real implementation, this would be true during the actual speech
-    expect(typeof speakPromise).toBe('object') // Promise returned
-
-    await speakPromise
-
-    // After speaking is done, isPlaying should be false
-    expect(store.isPlaying).toBe(false)
+    expect(mockLoadAppSettings).toHaveBeenCalledWith('sequence')
   })
 
-  it('can handle answers', async () => {
-    const store = useYesNoStore()
+  it('saveState calls appStore.updateAppSettings', async () => {
+    const store = useSequenceStore()
 
-    await store.handleAnswer('yes')
+    await store.saveState()
 
-    // Answer handling should not throw errors
-    expect(true).toBe(true)
+    expect(mockUpdateAppSettings).toHaveBeenCalledWith('sequence', expect.any(Object))
   })
 
-  it('can select questions', () => {
-    const store = useYesNoStore()
+  it('updateSettings calls appStore.updateAppSettings', async () => {
+    const store = useSequenceStore()
 
-    store.selectQuestion('Selected question')
+    await store.updateSettings({ showHints: true })
 
-    expect(store.currentQuestion).toBe('Selected question')
+    expect(mockUpdateAppSettings).toHaveBeenCalledWith('sequence', expect.objectContaining({
+      showHints: true,
+    }))
   })
 
-  it('can update button size setting', async () => {
-    const store = useYesNoStore()
+  it('stopCurrentAudio does not throw', () => {
+    const store = useSequenceStore()
 
-    await store.updateSettings({ buttonSize: 'small' })
-
-    // The settings would be updated via the appStore mock
-    expect(store.settings.buttonSize).toBe('large') // Still default due to mocking
-  })
-
-  it('can update auto speak setting', async () => {
-    const store = useYesNoStore()
-
-    await store.updateSettings({ autoSpeak: false })
-
-    // The settings would be updated via the appStore mock
-    expect(store.settings.autoSpeak).toBe(true) // Still default due to mocking
-  })
-
-  it('can update haptic feedback setting', async () => {
-    const store = useYesNoStore()
-
-    await store.updateSettings({ hapticFeedback: false })
-
-    // The settings would be updated via the appStore mock
-    expect(store.settings.hapticFeedback).toBe(true) // Still default due to mocking
+    expect(() => store.stopCurrentAudio()).not.toThrow()
   })
 })
