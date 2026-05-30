@@ -15,6 +15,16 @@ binding = "IMAGE_DB"
 database_name = "tiko-image-generation"
 database_id = "ab7cdbd1-e50a-4862-b8eb-681d263c3f66"
 
+[[d1_databases]]
+binding = "IDENTITY_DB"
+database_name = "tiko-identity"
+database_id = "036a1726-ac16-48a9-ab76-22c3a88ca7ae"
+
+[[kv_namespaces]]
+binding = "IDENTITY_SESSION_CACHE"
+id = "32bcc7c6d5074a95a1ea62ee772da3be"
+preview_id = "32bcc7c6d5074a95a1ea62ee772da3be"
+
 [vars]
 ENVIRONMENT = "development"
 
@@ -34,6 +44,16 @@ bucket_name = "user-media"
 binding = "IMAGE_DB"
 database_name = "tiko-image-generation"
 database_id = "ab7cdbd1-e50a-4862-b8eb-681d263c3f66"
+
+[[env.production.d1_databases]]
+binding = "IDENTITY_DB"
+database_name = "tiko-identity"
+database_id = "036a1726-ac16-48a9-ab76-22c3a88ca7ae"
+
+[[env.production.kv_namespaces]]
+binding = "IDENTITY_SESSION_CACHE"
+id = "32bcc7c6d5074a95a1ea62ee772da3be"
+preview_id = "32bcc7c6d5074a95a1ea62ee772da3be"
 
 [env.production.vars]
 ENVIRONMENT = "production"

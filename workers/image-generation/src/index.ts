@@ -1,6 +1,13 @@
 import OpenAI from 'openai'
+import {
+  requireAuth,
+  requireAuthWithRateLimit,
+  AuthError,
+  type AuthEnv,
+  type RateLimitConfig,
+} from '@tiko/auth-middleware'
 
-export interface Env {
+export interface Env extends AuthEnv {
   MEDIA_BUCKET: R2Bucket
   USER_MEDIA_BUCKET: R2Bucket
   IMAGE_DB: D1Database
@@ -44,10 +51,43 @@ interface MediaRecord {
   _table: 'media' | 'user_media'
 }
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+const ALLOWED_ORIGIN_PATTERNS = [
+  /^https:\/\/(dev\.)?[a-z0-9-]+\.tikoapps\.org$/,
+  /^https:\/\/tiko\.mt$/,
+  /^https:\/\/dev\.tiko\.mt$/,
+  /^http:\/\/localhost(?::\d+)?$/,
+  /^http:\/\/127\.0\.0\.1(?::\d+)?$/,
+]
+
+function isAllowedOrigin(origin: string): boolean {
+  return ALLOWED_ORIGIN_PATTERNS.some((pattern) => pattern.test(origin))
+}
+
+function getCORSHeaders(request: Request): Record<string, string> {
+  const origin = request.headers.get('Origin')
+
+  if (origin && isAllowedOrigin(origin)) {
+    return {
+      'Access-Control-Allow-Origin': origin,
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Max-Age': '86400',
+      'Vary': 'Origin',
+    }
+  }
+
+  return {
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Max-Age': '86400',
+    'Vary': 'Origin',
+  }
+}
+
+const IMAGE_RATE_LIMIT: RateLimitConfig = {
+  free: { rpm: 10, rpd: 5 },
+  pro: { rpm: 60, rpd: 50 },
 }
 
 export default {
@@ -55,22 +95,34 @@ export default {
     const url = new URL(request.url)
 
     if (request.method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders })
+      return new Response(null, { status: 204, headers: getCORSHeaders(request) })
     }
 
     try {
       const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY })
 
       if (url.pathname === '/generate' && request.method === 'POST') {
+        // Require authentication and rate limiting
+        try {
+          await requireAuthWithRateLimit(request, env as AuthEnv, IMAGE_RATE_LIMIT, {
+            scopes: ['image'],
+          })
+        } catch (error) {
+          if (error instanceof AuthError) {
+            return json({ error: error.message }, error.status, request)
+          }
+          throw error
+        }
+
         const data: GenerationRequest = await request.json()
 
         if (!data.userId || !data.items || !Array.isArray(data.items)) {
-          return json({ error: 'Invalid request data' }, 400)
+          return json({ error: 'Invalid request data' }, 400, request)
         }
 
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
         if (!uuidRegex.test(data.userId)) {
-          return json({ error: 'Invalid user ID format', details: 'User ID must be a valid UUID' }, 400)
+          return json({ error: 'Invalid user ID format', details: 'User ID must be a valid UUID' }, 400, request)
         }
 
         const tableName: 'media' | 'user_media' = data.scope === 'global' ? 'media' : 'user_media'
@@ -85,13 +137,25 @@ export default {
           ctx.waitUntil(processGenerationQueue(mediaRecords, env, openai))
         }
 
-        return json({ success: mediaRecords.length > 0, queued: mediaRecords.length, records: mediaRecords })
+        return json({ success: mediaRecords.length > 0, queued: mediaRecords.length, records: mediaRecords }, 200, request)
       }
 
       if (url.pathname.startsWith('/progress/') && request.method === 'GET') {
+        // Require authentication for progress endpoint
+        try {
+          await requireAuth(request, env as AuthEnv, {
+            scopes: ['image'],
+          })
+        } catch (error) {
+          if (error instanceof AuthError) {
+            return json({ error: error.message }, error.status, request)
+          }
+          throw error
+        }
+
         const userId = url.pathname.split('/')[2]
         const headers = new Headers({
-          ...corsHeaders,
+          ...getCORSHeaders(request),
           'Content-Type': 'text/event-stream',
           'Cache-Control': 'no-cache',
           Connection: 'keep-alive',
@@ -116,19 +180,22 @@ export default {
         return new Response(stream, { headers })
       }
 
-      return new Response('Not Found', { status: 404, headers: corsHeaders })
+      return new Response('Not Found', { status: 404, headers: getCORSHeaders(request) })
     } catch (error) {
       console.error('Worker error:', error)
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      return json({ error: 'Internal server error', message: errorMessage, stack: error instanceof Error ? error.stack : undefined }, 500)
+      return json({ error: 'Internal server error', message: errorMessage }, 500, request)
     }
   },
 }
 
-function json(body: unknown, status = 200): Response {
+function json(body: unknown, status = 200, request?: Request): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    headers: {
+      ...(request ? getCORSHeaders(request) : {}),
+      'Content-Type': 'application/json',
+    },
   })
 }
 

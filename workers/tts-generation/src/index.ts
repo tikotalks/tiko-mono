@@ -1,7 +1,13 @@
 import { OpenAI } from 'openai';
 import { getOpenAILanguage } from './language-mapping';
+import {
+  requireAuthWithRateLimit,
+  AuthError,
+  type AuthEnv,
+  type RateLimitConfig,
+} from '@tiko/auth-middleware';
 
-export interface Env {
+export interface Env extends AuthEnv {
   AUDIO_BUCKET: R2Bucket;
   OPENAI_API_KEY: string;
   TTS_DB: D1Database;
@@ -59,6 +65,12 @@ function getCORSHeaders(request: Request): Record<string, string> {
     'Vary': 'Origin',
   };
 }
+
+const TTS_RATE_LIMIT: RateLimitConfig = {
+  free: { rpm: 10, rpd: 50 },
+  pro: { rpm: 60, rpd: 10000 },
+  proUnlimited: true,
+};
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -147,6 +159,27 @@ async function handleGetMetadata(request: Request, env: Env): Promise<Response> 
 }
 
 async function handleGenerateTTS(request: Request, env: Env): Promise<Response> {
+  // Require authentication and rate limiting
+  try {
+    await requireAuthWithRateLimit(request, env as AuthEnv, TTS_RATE_LIMIT, {
+      scopes: ['tts'],
+    });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      return new Response(
+        JSON.stringify({ success: false, error: error.message }),
+        {
+          status: error.status,
+          headers: {
+            ...getCORSHeaders(request),
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+    }
+    throw error;
+  }
+
   const body: TTSRequest = await request.json();
   
   // Validate request

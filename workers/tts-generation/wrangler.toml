@@ -17,6 +17,16 @@ binding = "TTS_DB"
 database_name = "tiko-db"
 database_id = "f99b61ae-6a78-4670-bb9c-cdc4f634264a"
 
+[[d1_databases]]
+binding = "IDENTITY_DB"
+database_name = "tiko-identity"
+database_id = "036a1726-ac16-48a9-ab76-22c3a88ca7ae"
+
+[[kv_namespaces]]
+binding = "IDENTITY_SESSION_CACHE"
+id = "32bcc7c6d5074a95a1ea62ee772da3be"
+preview_id = "32bcc7c6d5074a95a1ea62ee772da3be"
+
 [vars]
 ENVIRONMENT = "production"
 
@@ -32,6 +42,16 @@ preview_bucket_name = "tiko-tts-audio-preview"
 binding = "TTS_DB"
 database_name = "tiko-db"
 database_id = "f99b61ae-6a78-4670-bb9c-cdc4f634264a"
+
+[[env.production.d1_databases]]
+binding = "IDENTITY_DB"
+database_name = "tiko-identity"
+database_id = "036a1726-ac16-48a9-ab76-22c3a88ca7ae"
+
+[[env.production.kv_namespaces]]
+binding = "IDENTITY_SESSION_CACHE"
+id = "32bcc7c6d5074a95a1ea62ee772da3be"
+preview_id = "32bcc7c6d5074a95a1ea62ee772da3be"
 
 # Secrets to be set:
 # OPENAI_API_KEY - OpenAI API key
