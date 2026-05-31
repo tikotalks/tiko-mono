@@ -52,6 +52,16 @@ vi.mock('../services/sequence-offline-storage.service', () => ({
 
 describe('useSequenceStore', () => {
   beforeEach(() => {
+    // Mock sessionStorage (not available in node test environment)
+    Object.defineProperty(globalThis, 'sessionStorage', {
+      value: {
+        getItem: vi.fn(() => null),
+        setItem: vi.fn(),
+        removeItem: vi.fn(),
+        clear: vi.fn(),
+      },
+      writable: true,
+    })
     setActivePinia(createPinia())
     vi.clearAllMocks()
   })

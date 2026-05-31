@@ -13,6 +13,25 @@ vi.mock('@tiko/core', () => ({
 
 describe('useTypeStore', () => {
   beforeEach(() => {
+    // Mock speechSynthesis (not available in node test environment)
+    Object.defineProperty(globalThis, 'speechSynthesis', {
+      value: {
+        getVoices: vi.fn(() => [
+          { name: 'Voice 1', lang: 'en-US', default: true, localService: true, voiceURI: 'voice-1' },
+          { name: 'Voice 2', lang: 'en-US', default: false, localService: true, voiceURI: 'voice-2' },
+          { name: 'Voice 3', lang: 'es-ES', default: false, localService: false, voiceURI: 'voice-3' },
+        ]),
+        speak: vi.fn(),
+        cancel: vi.fn(),
+        pause: vi.fn(),
+        resume: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        speaking: false,
+        paused: false,
+      },
+      writable: true,
+    })
     setActivePinia(createPinia())
     vi.clearAllMocks()
   })
